@@ -1,119 +1,42 @@
 
+# Melhorias na Pagina Arcano Cloner - Bonus e Upscaler
 
-# Nova Pagina de Vendas - Arcano Cloner (`/planos-arcanocloner`)
+## Resumo das Mudanças
 
-## Visao Geral
-Criar uma landing page de vendas completa para o Arcano Cloner, inspirada no design da referencia (figmaispro.com/studio-ia) com tons de roxo/violeta e preto, usando a familia de fontes Space Grotesk. A pagina tera imagens placeholder para substituicao posterior.
+Arquivo unico a modificar: `src/pages/PlanosArcanoCloner.tsx`
 
-## Estrutura da Pagina (de cima para baixo)
+## 1. Upscaler Antes/Depois com Slider Interativo
 
-### 1. Hero Section
-- Grid de fotos geradas ao fundo (placeholders) com efeito blur e gradiente roxo
-- Titulo principal: "Crie ensaios fotograficos profissionais com IA" com destaque em gradiente roxo/fuchsia para "sem prompt, sem complicacao"
-- Subtitulo: "Basta subir sua foto e escolher a referencia. Resultado pronto em segundos."
-- Badge de social proof: "+5.000 pessoas ja estao usando"
-- CTA principal: "QUERO O ARCANO CLONER" com seta
-- Texto abaixo do CTA: "Por apenas R$ 47,00 - 56 fotos incluidas"
-- Badges de confianca: "Sem prompt", "Pronto em segundos", "Facil de usar"
+Substituir o placeholder estatico (grid de 2 colunas com "Imagem Antes" / "Imagem Depois") pelo componente `HeroBeforeAfterSlider` ja existente no projeto. Usar as mesmas imagens do upscaler (`/images/upscaler-hero-antes.webp` e `/images/upscaler-hero-depois.webp`) com versoes mobile. O slider sera arrastavel igual ao da pagina planos-upscaler-creditos.
 
-### 2. Secao de Dores (problemas atuais)
-- Titulo: "Chega de..." com cards para cada dor:
-  - Sessoes de fotos caras (R$300-R$1.000)
-  - Precisar se deslocar ate um estudio
-  - Comprar roupas novas para cada ensaio
-  - Precisar escrever prompts complexos
-  - Depender de fotografo e equipamento
-- Card de solucao: "Com o Arcano Cloner voce resolve tudo isso" com destaque visual
+## 2. Secao de Bonus Reorganizada
 
-### 3. Galeria de Imagens Geradas
-- Titulo: "Veja o que o Arcano Cloner e capaz de fazer"
-- Grid 2x3 ou 3x2 com imagens placeholder (divs com gradiente roxo e icone de imagem)
-- Cada imagem com label tipo "Ensaio Corporativo", "Fashion", "Lifestyle" etc.
+Separar os 3 bonus atuais (que estao num grid 3 colunas) em secoes individuais dedicadas:
 
-### 4. Como Funciona (Passo a Passo)
-- Titulo: "Simples assim. Sem prompt. Sem complicacao."
-- 4 passos com icones numerados:
-  1. Suba uma foto do seu rosto
-  2. Escolha uma foto de referencia
-  3. Selecione o tamanho da imagem
-  4. Clique em Gerar e pronto!
-- Visual com cards conectados por linhas
+### Bonus 1: +300 Referencias Profissionais
+- Titulo e subtitulo
+- Carrossel horizontal com imagens placeholder em formato de celular/card (estilo do primeiro print - fotos em cards arredondados passando horizontalmente)
+- Animacao de scroll automatico infinito com CSS (marquee style)
+- Cards com borda roxa sutil e cantos arredondados
 
-### 5. Motor de Geracao
-- Destaque: "Powered by NanoBanana Pro"
-- "O motor de geracao de imagens mais avancado do mercado"
-- Badge tecnico com visual premium
+### Bonus 2: Curso de Apresentacao (renomear de "Mini Curso" para "Curso")
+- Layout lado a lado: cards de aulas na esquerda, imagem placeholder na direita (estilo do segundo print)
+- Cada card de aula com: badge "Aula 01", "Aula 02", titulo, topicos em bullet points
+- Icone decorativo no card
+- Imagem placeholder a direita com borda roxa e cantos arredondados
+- No mobile: empilha verticalmente
 
-### 6. Bonus Section
-- Biblioteca com +300 referencias profissionais (fotos de referencia prontas)
-- Mini curso de apresentacao da ferramenta
-- Upscaler gratuito para melhorar as imagens geradas
+### Bonus 3: Upscaler Gratuito
+- Mantido como esta (slider antes/depois ja corrigido no item 1)
 
-### 7. Secao Upscaler (Antes e Depois)
-- Titulo: "Bonus: Upscaler gratuito para suas imagens"
-- Slider antes/depois com imagens placeholder
-- Texto explicativo sobre a melhoria de qualidade
+## 3. Cards de bonus com mesma altura
 
-### 8. Secao de Precos
-- Plano unico com destaque visual forte
-- Titulo: "Tudo isso por apenas"
-- Preco: R$ 47,00 (pagamento unico)
-- Lista do que esta incluso:
-  - 56 fotos (4.500 creditos)
-  - Acesso a biblioteca com +300 referencias
-  - Mini curso de apresentacao
-  - Upscaler gratuito
-  - Acesso a todas as ferramentas de IA
-  - Suporte via WhatsApp
-- Countdown timer (1h persistente via localStorage)
-- CTA: "Comprar Agora"
-
-### 9. Garantia de 7 dias
-- Card com icone de escudo
-- Texto sobre garantia incondicional de 7 dias
-
-### 10. Teste Gratuito
-- Secao similar ao UpscalerTrialSection existente, mas adaptada para o Arcano Cloner
-- Mockup borrado com botao "Fazer Teste Gratis"
-- Verificacao por OTP via email (mesmo fluxo do upscaler)
-- Nota: inicialmente sera um mockup visual; integracao real do trial em etapa futura
-
-### 11. FAQ
-- Perguntas frequentes em acordeao (mesmo estilo do upscaler):
-  - O que e o Arcano Cloner?
-  - Preciso saber usar prompt?
-  - Quanto tempo leva para gerar uma foto?
-  - Quantas fotos posso gerar?
-  - Como funciona a biblioteca de referencias?
-  - O que e o Upscaler bonus?
-  - Tem garantia?
-
-### 12. Footer
-- Logo ArcanoApp + copyright (mesmo estilo do PlanosUpscalerCreditos)
-
-## Arquivos a Criar
-
-### `src/pages/PlanosArcanoCloner.tsx`
-- Pagina principal com todas as secoes inline (como PlanosUpscalerCreditos)
-- Usa os mesmos componentes de animacao (AnimatedSection, FadeIn, StaggeredAnimation)
-- Meta Pixel tracking (ViewContent + InitiateCheckout)
-- Countdown timer persistente
-- Scroll suave para secao de precos
-
-### `src/App.tsx`
-- Adicionar lazy import e rota `/planos-arcanocloner`
-
-## Design e Cores
-- Background: gradiente de `#0f0a15` via `#1a0f25` para `#0a0510` (mesmo do upscaler)
-- Acentos: gradiente fuchsia-500 para purple-600 (botoes e destaques)
-- Cards: `bg-white/5` com `border-white/10` e `rounded-3xl`
-- Fonte: Space Grotesk (ja configurada no projeto)
-- Imagens placeholder: divs com gradiente roxo, icone central e label
+Remover o grid de 3 colunas atual e substituir por secoes separadas full-width para cada bonus.
 
 ## Detalhes Tecnicos
-- Reutiliza hooks existentes: `useScrollAnimation`, `useIsMobile`, `appendUtmToUrl`
-- Reutiliza componentes UI: Button, Card, Badge, Accordion
-- Checkout via link externo (placeholder URL para ser substituido depois)
-- Sem dependencia de dados do banco (pagina estatica)
-- Lazy loading da pagina no App.tsx
 
+- Importar `HeroBeforeAfterSlider` de `@/components/upscaler`
+- Importar `useIsMobile` (ja importado)
+- Definir constantes para as imagens do upscaler antes/depois
+- Carrossel de referencias: usar CSS animation (translateX) com duplicacao dos itens para efeito infinito
+- Cards de aulas: usar divs estilizadas com bg-white/5 e border-white/10
