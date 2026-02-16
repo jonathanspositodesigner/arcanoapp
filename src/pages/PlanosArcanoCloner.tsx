@@ -139,20 +139,23 @@ const PlanosArcanoCloner = () => {
       {/* ==================== HERO ==================== */}
       <section className="relative px-4 md:px-6 pt-12 md:pt-20 pb-10 md:pb-16 w-full overflow-hidden">
         
-        {/* Carousel background */}
-        <HeroCarouselBackground />
+       {/* Hero visual block with carousel + PNG */}
+        <div className="relative h-[350px] md:h-[450px] lg:h-[500px] w-full mb-4">
+          {/* Carousel background */}
+          <HeroCarouselBackground />
 
-        <div className="relative z-10 flex flex-col items-center text-center max-w-5xl mx-auto">
-
-          {/* PNG hero image with purple glow */}
-          <div className="relative mb-6 md:mb-8">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 md:w-96 md:h-96 bg-fuchsia-500/30 blur-[100px] rounded-full" />
+          {/* PNG hero image with purple glow - centered over carousel */}
+          <div className="absolute inset-0 z-10 flex items-end justify-center pb-0">
+            <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-64 h-64 md:w-96 md:h-96 bg-fuchsia-500/30 blur-[100px] rounded-full" />
             <img 
               src="/images/arcano-cloner-hero.webp" 
               alt="Arcano Cloner" 
-              className="relative z-10 w-48 h-auto md:w-72 lg:w-80 object-contain mx-auto drop-shadow-2xl"
+              className="relative z-10 w-64 md:w-80 lg:w-96 h-auto object-contain drop-shadow-2xl"
             />
           </div>
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center text-center max-w-5xl mx-auto">
 
           {/* Social proof badge */}
           <FadeIn delay={100} duration={600}>
