@@ -150,7 +150,7 @@ const PlanosArcanoCloner = () => {
         {/* Layer 3: Hero PNG image - LARGE, centered */}
         <div className="absolute inset-0 z-[10] flex items-center justify-center pointer-events-none">
           <img 
-            src="/images/arcano-cloner-hero.webp?v=3" 
+            src="/images/arcano-cloner-hero.webp?v=4" 
             alt="Arcano Cloner" 
             className="w-[320px] md:w-[450px] lg:w-[520px] h-auto object-contain drop-shadow-2xl mt-[-5%]"
           />
