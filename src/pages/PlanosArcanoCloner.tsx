@@ -9,6 +9,7 @@ import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { HeroBeforeAfterSlider } from "@/components/upscaler";
 import logoHorizontal from "@/assets/logo_horizontal.png";
+import ExpandingGallery from "@/components/combo-artes/ExpandingGallery";
 
 const UPSCALER_BEFORE_IMAGE_DESKTOP = "/images/upscaler-hero-antes.webp";
 const UPSCALER_AFTER_IMAGE_DESKTOP = "/images/upscaler-hero-depois.webp";
@@ -88,12 +89,12 @@ const PlanosArcanoCloner = () => {
   };
 
   const galleryItems = [
-    { label: "Ensaio Corporativo" },
-    { label: "Fashion" },
-    { label: "Lifestyle" },
-    { label: "Casual" },
-    { label: "Artístico" },
-    { label: "Profissional" },
+    { label: "Ensaio Corporativo", imageUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&q=80" },
+    { label: "Fashion", imageUrl: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&q=80" },
+    { label: "Lifestyle", imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=80" },
+    { label: "Casual", imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80" },
+    { label: "Artístico", imageUrl: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&q=80" },
+    { label: "Profissional", imageUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&q=80" },
   ];
 
   const steps = [
@@ -246,18 +247,7 @@ const PlanosArcanoCloner = () => {
             <p className="text-white/50 text-center text-sm mb-10">Todas as imagens abaixo foram geradas com a ferramenta</p>
           </AnimatedSection>
 
-          <StaggeredAnimation className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6" staggerDelay={100}>
-            {galleryItems.map((item, index) => (
-              <div key={index} className="group relative aspect-[3/4] rounded-2xl overflow-hidden bg-gradient-to-br from-fuchsia-600/20 via-purple-700/20 to-indigo-800/20 border border-white/10 hover:border-fuchsia-500/40 transition-all duration-300">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Image className="h-12 w-12 text-white/20" />
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                  <span className="text-white text-sm font-medium">{item.label}</span>
-                </div>
-              </div>
-            ))}
-          </StaggeredAnimation>
+          <ExpandingGallery items={galleryItems} />
         </div>
       </AnimatedSection>
 
