@@ -83,10 +83,6 @@ export default function UpscalerTrialSection() {
       setJobId(null);
       endSubmit();
       toast.success("Imagem melhorada com sucesso!");
-      // If no uses remaining, finish trial after delay so user sees result
-      if (usesRemaining <= 0) {
-        setTimeout(() => finishTrial(), 5000);
-      }
     } else if (update.status === 'failed' || update.status === 'cancelled') {
       setStatus('failed');
       setProgress(0);
@@ -336,6 +332,10 @@ export default function UpscalerTrialSection() {
   }, [processedFile, email, selectedCategory, pessoasFraming, comidaDetailLevel, isLongeMode, isPessoas, isSpecialWorkflow, isComidaMode, startSubmit, endSubmit, consumeUse]);
 
   const handleNewUpload = () => {
+    if (usesRemaining <= 0) {
+      finishTrial();
+      return;
+    }
     // Clean up old preview URL
     if (inputPreviewUrl) {
       URL.revokeObjectURL(inputPreviewUrl);
@@ -433,7 +433,9 @@ export default function UpscalerTrialSection() {
                     className="border-fuchsia-500/30 text-fuchsia-300 hover:bg-fuchsia-500/10"
                     onClick={handleNewUpload}
                   >
-                    Testar outra imagem ({usesRemaining} {usesRemaining === 1 ? 'teste restante' : 'testes restantes'})
+                    {usesRemaining > 0 
+                      ? `Testar outra imagem (${usesRemaining} ${usesRemaining === 1 ? 'teste restante' : 'testes restantes'})` 
+                      : '✅ Teste Concluído'}
                   </Button>
                 </div>
               )}
