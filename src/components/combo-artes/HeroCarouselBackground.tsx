@@ -27,12 +27,10 @@ const HeroCarouselBackground = () => {
         ))}
       </div>
 
-      {/* Gradient overlay - strong bottom-up fade */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0f0a15] via-[#0f0a15]/80 to-transparent" />
-      {/* Top fade */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0f0a15]/60 to-transparent" />
-      {/* Purple tint overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-purple-900/50 via-purple-900/20 to-transparent" />
+      {/* Gradient overlay - only bottom half */}
+      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0f0a15] via-[#0f0a15]/60 to-transparent" />
+      {/* Purple tint overlay - only bottom portion */}
+      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-purple-900/40 to-transparent" />
     </div>
   );
 };

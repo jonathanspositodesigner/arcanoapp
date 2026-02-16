@@ -157,7 +157,7 @@ const PlanosArcanoCloner = () => {
         </div>
 
         {/* Layer 4: Bottom gradient overlay (above photo, below text) */}
-        <div className="absolute inset-0 z-[15] pointer-events-none bg-gradient-to-t from-[#0f0a15] via-[#0f0a15]/70 to-transparent" />
+        <div className="absolute inset-0 z-[15] pointer-events-none bg-gradient-to-t from-[#0f0a15] via-[#0f0a15]/50 to-transparent" style={{ top: '50%' }} />
 
         {/* Layer 5: Text content - overlaps bottom of photo */}
         <div className="relative z-[20] flex flex-col items-center justify-end text-center min-h-[600px] md:min-h-[700px] lg:min-h-[750px] px-4 md:px-6 pb-10 md:pb-16 pt-12">
@@ -176,7 +176,7 @@ const PlanosArcanoCloner = () => {
             </FadeIn>
 
             {/* Headline */}
-            <h1 className="font-space-grotesk font-bold text-2xl md:text-4xl lg:text-5xl text-white mb-3 md:mb-4 leading-[1.2]">
+            <h1 className="font-space-grotesk font-bold text-xl md:text-2xl lg:text-3xl text-white mb-3 md:mb-4 leading-[1.2]">
               Crie ensaios fotográficos{" "}
               <br className="hidden md:block" />
               profissionais com IA{" "}
