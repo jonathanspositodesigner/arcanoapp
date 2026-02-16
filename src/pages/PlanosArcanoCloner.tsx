@@ -67,7 +67,7 @@ const PlanosArcanoCloner = () => {
       (window as any).fbq('track', 'ViewContent', {
         content_name: 'Arcano Cloner Landing Page',
         content_category: 'AI Tool',
-        value: 47.00,
+        value: 39.90,
         currency: 'BRL'
       });
     }
@@ -81,7 +81,7 @@ const PlanosArcanoCloner = () => {
     if (typeof window !== 'undefined' && (window as any).fbq) {
       (window as any).fbq('track', 'InitiateCheckout', {
         content_name: 'Arcano Cloner',
-        value: 47.00,
+        value: 39.90,
         currency: 'BRL'
       });
     }
@@ -108,7 +108,7 @@ const PlanosArcanoCloner = () => {
     { question: "O que é o Arcano Cloner?", answer: "O Arcano Cloner é uma ferramenta de inteligência artificial que gera ensaios fotográficos profissionais a partir da sua foto e uma referência. Não é necessário escrever prompts — basta enviar as imagens e clicar em gerar." },
     { question: "Preciso saber usar prompt?", answer: "Não! Essa é a grande vantagem do Arcano Cloner. Diferente de outras ferramentas de IA, você não precisa escrever nenhum prompt. Basta subir sua foto e escolher a referência." },
     { question: "Quanto tempo leva para gerar uma foto?", answer: "O resultado fica pronto em poucos segundos. O Arcano Cloner utiliza o motor NanoBanana Pro, o mais avançado do mercado, garantindo velocidade e qualidade." },
-    { question: "Quantas fotos posso gerar?", answer: "Com o plano de R$ 47,00 você recebe 4.500 créditos, o que equivale a aproximadamente 56 fotos geradas." },
+    { question: "Quantas fotos posso gerar?", answer: "Com o plano de R$ 39,90 você recebe 4.200 créditos, o que equivale a aproximadamente 70 fotos geradas." },
     { question: "Como funciona a biblioteca de referências?", answer: "Você terá acesso a mais de 300 fotos de referência profissionais organizadas por categoria (corporativo, fashion, lifestyle, etc). Basta escolher uma referência e gerar." },
     { question: "O que é o Upscaler bônus?", answer: "É uma ferramenta gratuita inclusa que melhora a qualidade e resolução das suas imagens geradas, tornando-as ainda mais profissionais." },
     { question: "Tem garantia?", answer: "Sim! Oferecemos garantia incondicional de 7 dias. Se não gostar, devolvemos 100% do seu dinheiro, sem perguntas." },
@@ -124,7 +124,7 @@ const PlanosArcanoCloner = () => {
   ];
 
   const includedItems = [
-    "56 fotos (4.500 créditos)",
+    "~70 fotos (4.200 créditos)",
     "Biblioteca com +300 referências profissionais",
     "Curso de apresentação da ferramenta",
     "Upscaler gratuito para melhorar imagens",
@@ -532,7 +532,7 @@ const PlanosArcanoCloner = () => {
                 <div className="text-purple-400 text-sm line-through mb-1">R$ 97,00</div>
                 <div className="flex items-baseline justify-center gap-1">
                   <span className="text-purple-400 text-lg">R$</span>
-                  <span className="text-5xl font-bold text-white">47,00</span>
+                  <span className="text-5xl font-bold text-white">39,90</span>
                 </div>
                 <p className="text-purple-400 text-base mt-1">Pagamento único</p>
               </div>
@@ -548,9 +548,9 @@ const PlanosArcanoCloner = () => {
               <div className="flex flex-col items-center mb-6">
                 <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-white bg-gradient-to-r from-fuchsia-600 to-purple-600">
                   <Sparkles className="w-4 h-4" />
-                  56 fotos incluídas
+                  ~70 fotos incluídas
                 </span>
-                <span className="text-sm text-purple-400 mt-1">4.500 créditos</span>
+                <span className="text-sm text-purple-400 mt-1">4.200 créditos</span>
               </div>
 
               <ul className="space-y-3">
