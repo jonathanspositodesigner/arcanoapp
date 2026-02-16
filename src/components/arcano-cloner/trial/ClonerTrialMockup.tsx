@@ -103,7 +103,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
           >
             {usesRemaining > 0 
               ? `Testar novamente (${usesRemaining} ${usesRemaining === 1 ? 'teste restante' : 'testes restantes'})` 
-              : 'Teste concluído'}
+              : '✅ Teste Concluído'}
           </Button>
         </div>
       </div>

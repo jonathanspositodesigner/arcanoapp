@@ -62,9 +62,6 @@ export default function ClonerTrialSection() {
       setJobId(null);
       endSubmit();
       toast.success("Imagem gerada com sucesso!");
-      if (usesRemaining <= 0) {
-        setTimeout(() => finishTrial(), 5000);
-      }
     } else if (update.status === 'failed' || update.status === 'cancelled') {
       setStatus('failed');
       setProgress(0);
@@ -283,6 +280,10 @@ export default function ClonerTrialSection() {
   }, [userFile, referenceFile, email, aspectRatio, creativity, startSubmit, endSubmit, consumeUse]);
 
   const handleNewUpload = () => {
+    if (usesRemaining <= 0) {
+      finishTrial();
+      return;
+    }
     if (userImage) URL.revokeObjectURL(userImage);
     if (referenceImage) URL.revokeObjectURL(referenceImage);
     setUserImage(null);
