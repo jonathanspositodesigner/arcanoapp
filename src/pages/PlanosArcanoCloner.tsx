@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ArrowRight, Shield, Clock, Star, Zap, Upload, Image, Sparkles, Camera, MousePointerClick, BookOpen, Gift, Play, Maximize, ChevronDown, Video } from "lucide-react";
+import { Check, ArrowRight, Shield, Clock, Star, Zap, Upload, Image, Sparkles, Camera, MousePointerClick, BookOpen, Gift, Play, Maximize, ChevronDown, Video, DollarSign, Car, Shirt, Bot, CameraOff } from "lucide-react";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -114,11 +114,11 @@ const PlanosArcanoCloner = () => {
   ];
 
   const painPoints = [
-    { emoji: "💸", text: "Pagar R$300 a R$1.000 por sessão de fotos" },
-    { emoji: "🚗", text: "Se deslocar até um estúdio fotográfico" },
-    { emoji: "👔", text: "Comprar roupas novas para cada ensaio" },
-    { emoji: "🤖", text: "Escrever prompts complexos para gerar imagens" },
-    { emoji: "📸", text: "Depender de fotógrafo e equipamento caro" },
+    { icon: DollarSign, text: "Pagar R$300 a R$1.000 por sessão de fotos" },
+    { icon: Car, text: "Se deslocar até um estúdio fotográfico" },
+    { icon: Shirt, text: "Comprar roupas novas para cada ensaio" },
+    { icon: Bot, text: "Escrever prompts complexos para gerar imagens" },
+    { icon: CameraOff, text: "Depender de fotógrafo e equipamento caro" },
   ];
 
   const includedItems = [
@@ -209,12 +209,17 @@ const PlanosArcanoCloner = () => {
           </AnimatedSection>
 
           <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" staggerDelay={100}>
-            {painPoints.map((pain, index) => (
-              <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-red-500/30 transition-all duration-300 flex flex-col items-center justify-center min-h-[140px]">
-                <div className="text-4xl md:text-5xl mb-4">{pain.emoji}</div>
-                <p className="text-white/80 text-base md:text-lg">{pain.text}</p>
-              </div>
-            ))}
+            {painPoints.map((pain, index) => {
+              const IconComp = pain.icon;
+              return (
+                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-purple-500/30 transition-all duration-300 flex flex-col items-center justify-center min-h-[140px]">
+                  <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4">
+                    <IconComp className="h-6 w-6 text-purple-400" />
+                  </div>
+                  <p className="text-white/80 text-base md:text-lg">{pain.text}</p>
+                </div>
+              );
+            })}
           </StaggeredAnimation>
 
           <AnimatedSection as="div" delay={400}>
