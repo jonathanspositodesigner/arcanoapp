@@ -1,43 +1,24 @@
 
 
-# Reverter "Arcano Studio" para "Arcano Cloner" em todo o frontend
+# Mostrar fotos da biblioteca em ordem aleatoria
 
-## Resumo
-Todas as 93 ocorrencias de "Arcano Studio" encontradas em 11 arquivos serao revertidas para "Arcano Cloner". Nenhuma alteracao no banco de dados ou backend -- apenas textos no frontend.
+## O que muda
+Um unico arquivo: `src/components/arcano-cloner/PhotoLibraryModal.tsx` -- este componente e compartilhado pelo Arcano Cloner, Veste AI e Pose Changer.
 
-## Arquivos a alterar
+## Como funciona hoje
+As fotos sao buscadas do banco ordenadas por `created_at` (mais recentes primeiro), sempre na mesma ordem.
 
-### 1. `src/components/layout/AppSidebar.tsx`
-- Menu lateral: nome da ferramenta "Arcano Studio" -> "Arcano Cloner"
+## Solucao
+Após buscar as fotos do banco, embaralhar o array usando o algoritmo Fisher-Yates antes de exibir. Isso garante ordem aleatoria a cada abertura do modal ou troca de filtro.
 
-### 2. `src/pages/ArcanoClonerTool.tsx`
-- Titulo h1 da pagina
-- Chamadas `getCreditCost('Arcano Studio', 80)` -> `'Arcano Cloner'`
-- Chamadas `registerJob(jobId, 'Arcano Studio', ...)` -> `'Arcano Cloner'`
+## Detalhes tecnicos
 
-### 3. `src/pages/GeradorPersonagemTool.tsx`
-- Label do atalho "Arcano Studio" -> "Arcano Cloner"
+### Arquivo: `src/components/arcano-cloner/PhotoLibraryModal.tsx`
 
-### 4. `src/pages/FerramentasIAAplicativo.tsx`
-- Nome da ferramenta estatica e mapeamento de slug
+1. Adicionar uma funcao utilitaria de embaralhamento (Fisher-Yates shuffle) no topo do arquivo
+2. Apos receber os dados da query (linhas 82-86), embaralhar o array antes de salvar no state:
+   - No `reset`: embaralhar `data` antes de `setPhotos`
+   - No append (carregar mais): embaralhar apenas os novos itens antes de concatenar
 
-### 5. `src/pages/PlanosCreditos.tsx`
-- Nome no card de plano
-
-### 6. `src/pages/Planos.tsx`, `src/pages/Planos2.tsx`, `src/pages/PlanosUpscalerCreditos.tsx`
-- Lista de ferramentas AI
-
-### 7. `src/ai/JobManager.ts`
-- Chave do mapeamento de nomes (precisa bater com os registerJob)
-
-### 8. `src/components/admin/AdminAIToolsUsageTab.tsx`
-- Labels, filtros e mapeamentos no painel admin
-
-### 9. `src/components/admin/AIToolsProfitTable.tsx`
-- Placeholder de exemplo
-
-## O que NAO muda
-- Nomes de tabelas no banco (ex: `arcano_cloner_jobs`)
-- Slugs de URL (`/arcano-cloner-tool`)
-- Valores internos mapeados (ex: `'arcano_cloner'`)
+Isso mantem a paginacao funcionando e garante que cada pagina carregada tambem venha em ordem aleatoria.
 
