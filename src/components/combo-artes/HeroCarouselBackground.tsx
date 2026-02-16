@@ -13,7 +13,7 @@ const HeroCarouselBackground = () => {
   const doubled = [...carouselImages, ...carouselImages];
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none flex items-center">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none flex items-start pt-8 md:pt-12">
       {/* Single row - scrolls left */}
       <div className="flex gap-4 animate-carousel-scroll">
         {doubled.map((src, i) => (
