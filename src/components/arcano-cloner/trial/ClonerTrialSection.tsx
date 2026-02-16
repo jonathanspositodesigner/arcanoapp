@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useClonerTrialState } from "./useClonerTrialState";
 import TrialSignupModal from "@/components/upscaler/trial/TrialSignupModal";
 import ClonerTrialMockup from "./ClonerTrialMockup";
+import PhotoLibraryModal from "@/components/arcano-cloner/PhotoLibraryModal";
 import { ImageCompressionModal } from "@/components/ai-tools";
 import { optimizeForAI, getImageDimensions, MAX_AI_DIMENSION } from "@/hooks/useImageOptimizer";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
@@ -29,6 +30,9 @@ export default function ClonerTrialSection() {
   // Settings
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');
   const [creativity, setCreativity] = useState(4);
+
+  // Photo library
+  const [showPhotoLibrary, setShowPhotoLibrary] = useState(false);
 
   // Compression modal
   const [showCompressionModal, setShowCompressionModal] = useState(false);
@@ -382,6 +386,7 @@ export default function ClonerTrialSection() {
               onReferenceImageSelect={(file) => handleFileSelect(file, 'reference')}
               onGenerate={handleGenerate}
               onNewUpload={handleNewUpload}
+              onOpenLibrary={() => setShowPhotoLibrary(true)}
               isProcessing={status === 'uploading' || status === 'processing'}
               progress={progress}
               status={status}
@@ -398,6 +403,30 @@ export default function ClonerTrialSection() {
         onClose={closeSignup}
         onVerified={onVerified}
         toolName="cloner"
+      />
+
+      {/* Photo Library Modal */}
+      <PhotoLibraryModal
+        isOpen={showPhotoLibrary}
+        onClose={() => setShowPhotoLibrary(false)}
+        onSelectPhoto={async (url: string) => {
+          setShowPhotoLibrary(false);
+          try {
+            toast.info('Carregando referência...');
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const file = new File([blob], 'reference.jpg', { type: 'image/jpeg' });
+            await processFile(file, 'reference');
+          } catch (err) {
+            console.error('[ClonerTrial] Library select error:', err);
+            toast.error('Erro ao carregar referência');
+          }
+        }}
+        onUploadPhoto={(dataUrl: string, file: File) => {
+          setShowPhotoLibrary(false);
+          setReferenceImage(dataUrl);
+          setReferenceFile(file);
+        }}
       />
 
       {/* Image Compression Modal */}

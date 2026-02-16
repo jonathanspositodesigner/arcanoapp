@@ -23,6 +23,7 @@ interface ClonerTrialMockupProps {
   onReferenceImageSelect: (file: File) => void;
   onGenerate: () => void;
   onNewUpload: () => void;
+  onOpenLibrary?: () => void;
   // Status
   isProcessing: boolean;
   progress: number;
@@ -43,6 +44,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
   onReferenceImageSelect,
   onGenerate,
   onNewUpload,
+  onOpenLibrary,
   isProcessing,
   progress,
   status,
@@ -176,19 +178,26 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
             <ImageIcon className="w-3 h-3 text-purple-400" />
             Referência
           </p>
-          <div
-            className="aspect-[3/4] rounded-xl border-2 border-dashed border-purple-500/30 bg-purple-900/20 flex items-center justify-center cursor-pointer hover:border-fuchsia-500/50 transition-colors overflow-hidden"
-            onClick={() => refInputRef.current?.click()}
-          >
-            {referenceImage ? (
+          {referenceImage ? (
+            <div className="relative aspect-[3/4] rounded-xl border-2 border-purple-500/30 bg-purple-900/20 overflow-hidden group">
               <img src={referenceImage} alt="Referência" className="w-full h-full object-cover" />
-            ) : (
-              <div className="flex flex-col items-center gap-2 text-purple-400">
-                <ImageIcon className="w-8 h-8" />
-                <span className="text-[10px]">Enviar referência</span>
-              </div>
-            )}
-          </div>
+              <button
+                type="button"
+                className="absolute inset-x-0 bottom-0 bg-black/70 text-fuchsia-300 text-[10px] font-semibold py-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => onOpenLibrary?.()}
+              >
+                Trocar Imagem
+              </button>
+            </div>
+          ) : (
+            <div
+              className="aspect-[3/4] rounded-xl border-2 border-dashed border-purple-500/30 bg-purple-900/20 flex flex-col items-center justify-center cursor-pointer hover:border-fuchsia-500/50 transition-colors gap-3"
+              onClick={() => onOpenLibrary?.()}
+            >
+              <ImageIcon className="w-8 h-8 text-purple-400" />
+              <span className="text-[10px] text-purple-400 text-center px-2">Escolher da biblioteca ou enviar</span>
+            </div>
+          )}
           <input ref={refInputRef} type="file" accept="image/*" className="hidden" onChange={handleRefFileChange} />
         </div>
       </div>
