@@ -127,7 +127,6 @@ const PlanosArcanoCloner = () => {
   const includedItems = [
     "~70 fotos (4.200 créditos)",
     "Biblioteca com +300 referências profissionais",
-    "Curso de apresentação da ferramenta",
     "Upscaler gratuito para melhorar imagens",
     "Acesso a todas as ferramentas de IA",
     "Suporte exclusivo via WhatsApp",
@@ -407,82 +406,13 @@ const PlanosArcanoCloner = () => {
         </div>
       </AnimatedSection>
 
-      {/* ==================== BONUS 2: CURSO ==================== */}
-      <AnimatedSection className="px-4 py-10 md:py-14 bg-black/30">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-4 py-1.5 mb-4">
-              <Play className="h-4 w-4 text-fuchsia-400" />
-              <span className="text-fuchsia-300 text-sm font-semibold">BÔNUS 02</span>
-            </div>
-            <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-white mb-2">
-              Curso de <span className="text-fuchsia-400">Apresentação</span>
-            </h3>
-            <p className="text-white/50 text-sm max-w-lg mx-auto">Vídeos explicativos para você dominar a ferramenta em minutos</p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-            {/* Lesson cards */}
-            <div className="space-y-4">
-              {[
-                {
-                  badge: "Aula 01",
-                  title: "Introdução ao Arcano Cloner",
-                  topics: ["Como acessar a ferramenta", "Visão geral do painel", "Primeiros passos"]
-                },
-                {
-                  badge: "Aula 02",
-                  title: "Gerando sua primeira foto",
-                  topics: ["Enviando sua foto", "Escolhendo referência", "Ajustando configurações"]
-                },
-                {
-                  badge: "Aula 03",
-                  title: "Dicas para melhores resultados",
-                  topics: ["Fotos ideais para envio", "Usando o Upscaler", "Truques avançados"]
-                }
-              ].map((lesson, index) => (
-                <div key={index} className="bg-white/5 border border-white/10 rounded-2xl p-5 md:p-6 hover:border-fuchsia-500/30 transition-all duration-300">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/30 flex items-center justify-center shrink-0">
-                      <Video className="h-5 w-5 text-fuchsia-400" />
-                    </div>
-                    <div className="flex-1">
-                      <span className="inline-block text-xs font-semibold text-fuchsia-400 bg-fuchsia-500/10 px-2.5 py-0.5 rounded-full mb-2">{lesson.badge}</span>
-                      <h4 className="text-white font-semibold text-base mb-2">{lesson.title}</h4>
-                      <ul className="space-y-1">
-                        {lesson.topics.map((topic, ti) => (
-                          <li key={ti} className="flex items-center gap-2 text-white/50 text-sm">
-                            <div className="w-1 h-1 rounded-full bg-fuchsia-400 shrink-0" />
-                            {topic}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Course preview placeholder */}
-            <div className="aspect-[4/3] lg:aspect-auto rounded-2xl bg-gradient-to-br from-fuchsia-600/15 via-purple-700/10 to-indigo-800/15 border border-purple-500/30 overflow-hidden flex items-center justify-center">
-              <div className="flex flex-col items-center gap-3">
-                <div className="w-16 h-16 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/30 flex items-center justify-center">
-                  <Play className="h-8 w-8 text-fuchsia-400 ml-1" />
-                </div>
-                <span className="text-white/30 text-sm">Preview do Curso</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </AnimatedSection>
-
-      {/* ==================== BONUS 3: UPSCALER GRATUITO ==================== */}
+      {/* ==================== BONUS 2: UPSCALER GRATUITO ==================== */}
       <AnimatedSection className="px-4 py-10 md:py-14 pb-16 md:pb-20 bg-black/30">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-4 py-1.5 mb-4">
               <Gift className="h-4 w-4 text-fuchsia-400" />
-              <span className="text-fuchsia-300 text-sm font-semibold">BÔNUS 03</span>
+              <span className="text-fuchsia-300 text-sm font-semibold">BÔNUS 02</span>
             </div>
             <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-white mb-2">
               Upscaler gratuito para <span className="text-fuchsia-400">suas imagens</span>
