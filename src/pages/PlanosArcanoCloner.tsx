@@ -119,6 +119,7 @@ const PlanosArcanoCloner = () => {
     { icon: Shirt, text: "Comprar roupas novas para cada ensaio" },
     { icon: Bot, text: "Escrever prompts complexos para gerar imagens" },
     { icon: CameraOff, text: "Depender de fotógrafo e equipamento caro" },
+    { icon: BookOpen, text: "Perder dinheiro com várias plataformas e fazer cursos complexos para gerar uma foto profissional" },
   ];
 
   const includedItems = [
