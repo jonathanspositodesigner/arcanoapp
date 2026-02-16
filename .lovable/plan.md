@@ -1,44 +1,55 @@
 
 
-# Corrigir Hero - Layout igual ao print de referencia (Studio IA)
+# Corrigir Hero - Exatamente igual ao print de referencia
 
-## Problemas atuais
-- Tem 2 fileiras de carrossel (deveria ser apenas 1)
-- Foto PNG esta separada do carrossel (deveria estar sobreposta)
-- Nao tem degradê roxo suave de baixo pra cima (corte duro)
-- Os nomes/labels das fotos nao passam por cima da foto PNG
+## Problemas identificados
+1. **Foto PNG nao foi trocada** - ainda esta usando a antiga, precisa usar `nanobanana-RECORDADA-2.webp`
+2. **Foto PNG muito pequena e separada** - no print ela e ENORME, ocupa quase toda a altura, sobrepoe as fotos do carrossel
+3. **Texto nao passa por cima da foto** - no print o logo, headline e subtitulo ficam POR CIMA da parte inferior da foto PNG
+4. **Degradê roxo fraco** - precisa de um glow roxo forte atras da pessoa, subindo de baixo
 
-## O que sera feito (baseado no print de referencia)
+## O que sera feito
 
 ### 1. Trocar a foto PNG
-- Copiar `nanobanana-RECORDADA-2.webp` para `public/images/arcano-cloner-hero.webp` (substituir a atual)
+- Copiar `nanobanana-RECORDADA-2.webp` para `public/images/arcano-cloner-hero.webp` (substituir)
 
-### 2. Refazer `HeroCarouselBackground.tsx`
-- **Uma unica fileira** de fotos (nao duas), centralizada verticalmente
-- Fotos maiores tipo cards (`w-48 h-64 md:w-56 md:h-72`) com `rounded-2xl`
-- Scroll infinito para a esquerda (manter `animate-carousel-scroll`)
-- Sem blur nas fotos - elas aparecem nitidas mas com leve escurecimento (`brightness-75`)
-- Sem a segunda fileira (remover Row 2)
-- Manter overlay de fade mas ajustar: degradê forte de baixo pra cima (`from-[#0f0a15] via-[#0f0a15]/80 to-transparent`) para suavizar a transicao
+### 2. Reestruturar o layout do Hero completamente
+No print de referencia, tudo e uma unica composicao sobreposta:
+- Carrossel de fotos ao fundo (fileira unica, sem blur)
+- Foto PNG GIGANTE centralizada por cima, ocupando quase toda a altura
+- Glow roxo forte atras da pessoa
+- Gradiente suave de baixo pra cima (roxo/escuro)
+- Texto (social proof, headline, subtitle, CTA) fica na parte inferior, SOBREPONDO a parte de baixo da foto PNG
 
-### 3. Reposicionar foto PNG sobre o carrossel
-- A foto PNG fica centralizada **por cima** do carrossel (position absolute, centrada)
-- Tamanho maior (`w-64 md:w-80 lg:w-96`)
-- z-index acima do carrossel mas abaixo do texto
-- Glow roxo atras da foto (manter o blur fuchsia)
+### 3. Mudancas em `HeroCarouselBackground.tsx`
+- Manter fileira unica (ja esta correto)
+- Manter fotos sem blur com brightness-75 (ja esta correto)
+- Ajustar gradientes para ficar mais suave
 
-### 4. Degradê roxo de baixo pra cima
-- Adicionar um gradiente roxo (`from-purple-900/60 to-transparent`) subindo por cima de tudo (carrossel + foto) para eliminar o recorte duro
-- Isso cria a transicao suave igual no print
+### 4. Mudancas em `PlanosArcanoCloner.tsx`
+- Remover a separacao entre o bloco visual e o bloco de texto
+- Tudo fica dentro de uma unica section com position relative
+- A foto PNG fica com position absolute, centralizada, MUITO grande (tipo `max-w-2xl` ou `w-[500px] md:w-[600px] lg:w-[700px]`)
+- O conteudo de texto (social proof, headline, subtitle, trust badges) fica com z-index ACIMA da foto, posicionado na parte inferior da section
+- Isso faz o texto "passar por cima" da parte de baixo da foto, igual no print
+- Glow roxo grande e difuso atras da foto
 
-### 5. Layout geral do hero
-- O container do carrossel + foto tem altura fixa (`h-[350px] md:h-[450px] lg:h-[500px]`)
-- Carrossel ocupa toda a largura, centralizado verticalmente
-- Foto PNG sobreposta ao centro, parte inferior dela se funde com o degradê
-- Texto (headline, social proof, badges) fica abaixo desse bloco visual
+### Estrutura final
+```text
+section (relative, altura grande ~700px)
+  |-- HeroCarouselBackground (absolute, fundo)
+  |-- Glow roxo (absolute, centro)
+  |-- Foto PNG (absolute, centro, muito grande, z-10)
+  |-- Gradiente de baixo pra cima (absolute, z-15)
+  |-- Conteudo texto (relative, z-20, flex col, justify-end, padding-bottom)
+       |-- Social proof badge
+       |-- Headline
+       |-- Subtitle
+       |-- Trust badges
+```
 
 ### Arquivos alterados
-- `public/images/arcano-cloner-hero.webp` - substituir pela nova foto
-- `src/components/combo-artes/HeroCarouselBackground.tsx` - refazer com 1 fileira + degradê correto
-- `src/pages/PlanosArcanoCloner.tsx` - ajustar posicionamento da foto PNG sobre o carrossel
+- `public/images/arcano-cloner-hero.webp` - substituir pela foto nova
+- `src/components/combo-artes/HeroCarouselBackground.tsx` - ajustes finos nos gradientes
+- `src/pages/PlanosArcanoCloner.tsx` - reestruturar hero para composicao sobreposta com texto passando por cima da foto
 
