@@ -26,6 +26,15 @@ interface PhotoItem {
 
 const ITEMS_PER_PAGE = 20;
 
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   isOpen,
   onClose,
@@ -79,10 +88,11 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
         return;
       }
 
+      const shuffledData = shuffleArray(data || []);
       if (reset) {
-        setPhotos(data || []);
+        setPhotos(shuffledData);
       } else {
-        setPhotos(prev => [...prev, ...(data || [])]);
+        setPhotos(prev => [...prev, ...shuffledData]);
       }
 
       // If we got less than expected, we've reached the end
