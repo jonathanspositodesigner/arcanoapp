@@ -13,34 +13,26 @@ const HeroCarouselBackground = () => {
   const doubled = [...carouselImages, ...carouselImages];
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Row 1 - scrolls left */}
-      <div className="flex gap-3 animate-carousel-scroll mt-4">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none flex items-center">
+      {/* Single row - scrolls left */}
+      <div className="flex gap-4 animate-carousel-scroll">
         {doubled.map((src, i) => (
           <img
             key={`r1-${i}`}
             src={src}
             alt=""
-            className="w-32 h-44 md:w-40 md:h-56 rounded-2xl object-cover flex-shrink-0"
+            className="w-48 h-64 md:w-56 md:h-72 rounded-2xl object-cover flex-shrink-0 brightness-75"
             loading="lazy"
           />
         ))}
       </div>
-      {/* Row 2 - scrolls right */}
-      <div className="flex gap-3 animate-carousel-scroll-reverse mt-3">
-        {[...doubled].reverse().map((src, i) => (
-          <img
-            key={`r2-${i}`}
-            src={src}
-            alt=""
-            className="w-32 h-44 md:w-40 md:h-56 rounded-2xl object-cover flex-shrink-0"
-            loading="lazy"
-          />
-        ))}
-      </div>
-      {/* Fade overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0f0a15]/40 via-transparent to-[#0f0a15]/90" />
-      <div className="absolute inset-0 opacity-30 blur-[2px]" />
+
+      {/* Gradient overlay - strong bottom-up fade */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0f0a15] via-[#0f0a15]/80 to-transparent" />
+      {/* Top fade */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0f0a15]/60 to-transparent" />
+      {/* Purple tint overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-purple-900/50 via-purple-900/20 to-transparent" />
     </div>
   );
 };
