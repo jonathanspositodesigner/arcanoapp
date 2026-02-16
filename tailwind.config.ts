@@ -189,6 +189,14 @@ export default {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" },
         },
+        "carousel-scroll": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        "carousel-scroll-reverse": {
+          "0%": { transform: "translateX(-50%)" },
+          "100%": { transform: "translateX(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -204,6 +212,8 @@ export default {
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "shimmer": "shimmer 2s ease-in-out infinite",
         "marquee-scroll": "marquee-scroll 30s linear infinite",
+        "carousel-scroll": "carousel-scroll 35s linear infinite",
+        "carousel-scroll-reverse": "carousel-scroll-reverse 35s linear infinite",
       },
     },
   },
