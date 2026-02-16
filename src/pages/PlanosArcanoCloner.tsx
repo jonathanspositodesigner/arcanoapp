@@ -171,17 +171,7 @@ const PlanosArcanoCloner = () => {
             </p>
           </FadeIn>
 
-          {/* CTA */}
-          <FadeIn delay={400} duration={700}>
-            <Button
-              onClick={scrollToPricing}
-              className="relative w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40"
-            >
-              QUERO O ARCANO CLONER
-              <ArrowRight className="h-5 w-5 ml-2" />
-            </Button>
-            <p className="text-white/50 text-sm mt-3">Por apenas <span className="text-fuchsia-400 font-semibold">R$ 47,00</span> — 56 fotos incluídas</p>
-          </FadeIn>
+          {/* CTA removed - price shown only in pricing section */}
 
           {/* Trust badges */}
           <FadeIn delay={600} duration={700}>
