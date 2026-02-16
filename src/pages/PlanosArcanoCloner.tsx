@@ -137,76 +137,81 @@ const PlanosArcanoCloner = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] font-space-grotesk">
 
       {/* ==================== HERO ==================== */}
-      <section className="relative px-4 md:px-6 pt-12 md:pt-20 pb-10 md:pb-16 w-full overflow-hidden">
+      <section className="relative min-h-[600px] md:min-h-[700px] lg:min-h-[750px] w-full overflow-hidden">
         
-       {/* Hero visual block with carousel + PNG */}
-        <div className="relative h-[350px] md:h-[450px] lg:h-[500px] w-full mb-4">
-          {/* Carousel background */}
-          <HeroCarouselBackground />
+        {/* Layer 1: Carousel background (absolute) */}
+        <HeroCarouselBackground />
 
-          {/* PNG hero image with purple glow - centered over carousel */}
-          <div className="absolute inset-0 z-10 flex items-end justify-center pb-0">
-            <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-64 h-64 md:w-96 md:h-96 bg-fuchsia-500/30 blur-[100px] rounded-full" />
-            <img 
-              src="/images/arcano-cloner-hero.webp" 
-              alt="Arcano Cloner" 
-              className="relative z-10 w-64 md:w-80 lg:w-96 h-auto object-contain drop-shadow-2xl"
-            />
-          </div>
+        {/* Layer 2: Purple glow behind person */}
+        <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
+          <div className="w-[300px] h-[400px] md:w-[500px] md:h-[600px] bg-fuchsia-600/40 blur-[120px] md:blur-[150px] rounded-full" />
         </div>
 
-        <div className="relative z-10 flex flex-col items-center text-center max-w-5xl mx-auto">
+        {/* Layer 3: Hero PNG image - LARGE, centered */}
+        <div className="absolute inset-0 z-[10] flex items-end justify-center pointer-events-none">
+          <img 
+            src="/images/arcano-cloner-hero.webp" 
+            alt="Arcano Cloner" 
+            className="w-[400px] md:w-[550px] lg:w-[650px] h-auto object-contain drop-shadow-2xl"
+          />
+        </div>
 
-          {/* Social proof badge */}
-          <FadeIn delay={100} duration={600}>
-            <div className="relative inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-5 md:mb-6">
-              <div className="flex -space-x-2">
-                <img src="/images/social-proof-1.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
-                <img src="/images/social-proof-2.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
-                <img src="/images/social-proof-3.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+        {/* Layer 4: Bottom gradient overlay (above photo, below text) */}
+        <div className="absolute inset-0 z-[15] pointer-events-none bg-gradient-to-t from-[#0f0a15] via-[#0f0a15]/70 to-transparent" />
+
+        {/* Layer 5: Text content - overlaps bottom of photo */}
+        <div className="relative z-[20] flex flex-col items-center justify-end text-center min-h-[600px] md:min-h-[700px] lg:min-h-[750px] px-4 md:px-6 pb-10 md:pb-16 pt-12">
+
+          <div className="mt-auto flex flex-col items-center">
+            {/* Social proof badge */}
+            <FadeIn delay={100} duration={600}>
+              <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-5 md:mb-6">
+                <div className="flex -space-x-2">
+                  <img src="/images/social-proof-1.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                  <img src="/images/social-proof-2.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                  <img src="/images/social-proof-3.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                </div>
+                <span className="text-white/80 text-xs font-medium">+5.000 pessoas já estão usando</span>
               </div>
-              <span className="text-white/80 text-xs font-medium">+5.000 pessoas já estão usando</span>
-            </div>
-          </FadeIn>
+            </FadeIn>
 
-          {/* Headline */}
-          <h1 className="relative font-space-grotesk font-bold text-2xl md:text-4xl lg:text-5xl text-white mb-3 md:mb-4 leading-[1.2]">
-            Crie ensaios fotográficos{" "}
-            <br className="hidden md:block" />
-            profissionais com IA{" "}
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
-              sem prompt, sem complicação
-            </span>
-          </h1>
+            {/* Headline */}
+            <h1 className="font-space-grotesk font-bold text-2xl md:text-4xl lg:text-5xl text-white mb-3 md:mb-4 leading-[1.2]">
+              Crie ensaios fotográficos{" "}
+              <br className="hidden md:block" />
+              profissionais com IA{" "}
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
+                sem prompt, sem complicação
+              </span>
+            </h1>
 
-          {/* Subtitle */}
-          <FadeIn delay={300} duration={700}>
-            <p className="relative text-sm md:text-base text-white/60 mb-6 md:mb-8 max-w-lg leading-relaxed mx-auto">
-              Basta subir sua foto e escolher a referência.{" "}
-              <span className="text-fuchsia-400 font-semibold">Resultado pronto em segundos.</span>
-            </p>
-          </FadeIn>
+            {/* Subtitle */}
+            <FadeIn delay={300} duration={700}>
+              <p className="text-sm md:text-base text-white/60 mb-6 md:mb-8 max-w-lg leading-relaxed mx-auto">
+                Basta subir sua foto e escolher a referência.{" "}
+                <span className="text-fuchsia-400 font-semibold">Resultado pronto em segundos.</span>
+              </p>
+            </FadeIn>
 
-          {/* CTA removed - price shown only in pricing section */}
-
-          {/* Trust badges */}
-          <FadeIn delay={600} duration={700}>
-            <div className="relative flex flex-wrap justify-center items-center gap-3 mt-6 md:gap-0 md:divide-x md:divide-white/10">
-              <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                <Sparkles className="h-3.5 w-3.5 text-fuchsia-400" />
-                <span>Sem prompt</span>
+            {/* Trust badges */}
+            <FadeIn delay={600} duration={700}>
+              <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10">
+                <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
+                  <Sparkles className="h-3.5 w-3.5 text-fuchsia-400" />
+                  <span>Sem prompt</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
+                  <Clock className="h-3.5 w-3.5 text-fuchsia-400" />
+                  <span>Pronto em segundos</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
+                  <MousePointerClick className="h-3.5 w-3.5 text-fuchsia-400" />
+                  <span>Fácil de usar</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                <Clock className="h-3.5 w-3.5 text-fuchsia-400" />
-                <span>Pronto em segundos</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                <MousePointerClick className="h-3.5 w-3.5 text-fuchsia-400" />
-                <span>Fácil de usar</span>
-              </div>
-            </div>
-          </FadeIn>
+            </FadeIn>
+          </div>
         </div>
       </section>
 
