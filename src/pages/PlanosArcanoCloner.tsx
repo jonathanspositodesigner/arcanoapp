@@ -390,12 +390,14 @@ const PlanosArcanoCloner = () => {
                   {Array.from({ length: 8 }).map((_, i) => (
                     <div
                       key={`${setIndex}-${i}`}
-                      className="w-[140px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl bg-gradient-to-br from-fuchsia-600/20 via-purple-700/15 to-indigo-800/20 border border-purple-500/20 overflow-hidden flex items-center justify-center"
+                      className="w-[140px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 overflow-hidden"
                     >
-                      <div className="flex flex-col items-center gap-2">
-                        <Camera className="h-8 w-8 text-white/15" />
-                        <span className="text-white/20 text-xs">Ref {i + 1}</span>
-                      </div>
+                      <img
+                        src={`/images/refs/ref-${i + 1}.jpg`}
+                        alt={`Referência profissional ${i + 1}`}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
                     </div>
                   ))}
                 </div>
