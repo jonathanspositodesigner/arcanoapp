@@ -88,14 +88,14 @@ export default function TrialSignupModal({ open, onClose, onVerified }: TrialSig
       <DialogContent className="bg-[#1A0A2E] border-purple-500/30 text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-center">
-            {step === "form" ? "🎁 Libere 3 Testes Grátis" : "🔑 Digite o Código"}
+            {step === "form" ? "🎁 Libere 1 Teste Grátis" : "🔑 Digite o Código"}
           </DialogTitle>
         </DialogHeader>
 
         {step === "form" ? (
           <div className="space-y-4 pt-2">
             <p className="text-purple-200 text-sm text-center">
-              Preencha seus dados e receba um código de verificação no email para liberar 3 upscales gratuitos.
+              Preencha seus dados e receba um código de verificação no email para liberar 1 upscale gratuito.
             </p>
 
             <div className="space-y-2">
