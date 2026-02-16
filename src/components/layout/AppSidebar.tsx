@@ -30,7 +30,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
 
   const aiToolLinks = [
     { name: "Upscaler Arcano V3", path: "/upscaler-selection", badge: null, badgeColor: null, disabled: false },
-    { name: "Arcano Studio", path: "/arcano-cloner-tool", badge: "Novo", badgeColor: "bg-green-500", disabled: false },
+    { name: "Arcano Cloner", path: "/arcano-cloner-tool", badge: "Novo", badgeColor: "bg-green-500", disabled: false },
     { name: "Pose Changer", path: "/pose-changer-tool", badge: null, badgeColor: null, disabled: false },
     { name: "Veste AI", path: "/veste-ai-tool", badge: null, badgeColor: null, disabled: false },
     { name: "Forja de Selos 3D", path: "#", badge: "Em breve", badgeColor: "bg-purple-400/30", textColor: "text-purple-300", disabled: true },

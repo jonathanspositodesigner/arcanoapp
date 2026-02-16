@@ -201,7 +201,7 @@ const PlanosUpscalerCreditos = () => {
   const [expandedAiTools, setExpandedAiTools] = useState<Record<string, boolean>>({});
 
   const aiToolsList = [
-    "Arcano Studio",
+    "Arcano Cloner",
     "IA que muda a roupa",
     "IA que muda pose",
     "Upscale Arcano v2.0",

@@ -32,7 +32,7 @@ const availableTools = [
     color: "from-rose-500 to-orange-500"
   },
   {
-    name: "Arcano Studio",
+    name: "Arcano Cloner",
     description: "Crie clones com IA usando uma foto de referência",
     icon: Star,
     color: "from-orange-500 to-amber-500"

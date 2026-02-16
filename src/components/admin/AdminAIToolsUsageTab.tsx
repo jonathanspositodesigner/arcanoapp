@@ -70,7 +70,7 @@ const TOOL_FILTERS = [
   { value: "Pose Changer", label: "Pose Changer" },
   { value: "Veste AI", label: "Veste AI" },
   { value: "Video Upscaler", label: "Video Upscaler" },
-  { value: "Arcano Studio", label: "Arcano Studio" },
+  { value: "Arcano Cloner", label: "Arcano Cloner" },
   { value: "Gerador Avatar", label: "Gerador Avatar" },
   { value: "Gerar Imagem", label: "Gerar Imagem" },
   { value: "Gerar Vídeo", label: "Gerar Vídeo" },
@@ -224,7 +224,7 @@ const AdminAIToolsUsageTab = () => {
       "Pose Changer": "bg-orange-500/20 text-orange-400 border-orange-500/30",
       "Veste AI": "bg-pink-500/20 text-pink-400 border-pink-500/30",
       "Video Upscaler": "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
-      "Arcano Studio": "bg-blue-500/20 text-blue-400 border-blue-500/30",
+      "Arcano Cloner": "bg-blue-500/20 text-blue-400 border-blue-500/30",
       "Gerador Avatar": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
       "Gerar Imagem": "bg-amber-500/20 text-amber-400 border-amber-500/30",
       "Gerar Vídeo": "bg-rose-500/20 text-rose-400 border-rose-500/30",
@@ -238,7 +238,7 @@ const AdminAIToolsUsageTab = () => {
       case "Pose Changer": return "pose_changer_jobs";
       case "Veste AI": return "veste_ai_jobs";
       case "Video Upscaler": return "video_upscaler_jobs";
-      case "Arcano Studio": return "arcano_cloner_jobs";
+      case "Arcano Cloner": return "arcano_cloner_jobs";
       case "Gerador Avatar": return "character_generator_jobs";
       case "Gerar Imagem": return "image_generator_jobs";
       case "Gerar Vídeo": return "video_generator_jobs";
