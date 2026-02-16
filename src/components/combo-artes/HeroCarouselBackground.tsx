@@ -21,7 +21,7 @@ const HeroCarouselBackground = () => {
             key={`r1-${i}`}
             src={src}
             alt=""
-            className="w-48 h-64 md:w-56 md:h-72 rounded-2xl object-cover flex-shrink-0 brightness-75"
+            className="w-48 h-64 md:w-56 md:h-72 rounded-2xl object-cover flex-shrink-0 brightness-75 blur-[2px]"
             loading="lazy"
           />
         ))}
