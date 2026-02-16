@@ -12,9 +12,10 @@ interface TrialSignupModalProps {
   open: boolean;
   onClose: () => void;
   onVerified: (email: string, usesRemaining: number) => void;
+  toolName?: string;
 }
 
-export default function TrialSignupModal({ open, onClose, onVerified }: TrialSignupModalProps) {
+export default function TrialSignupModal({ open, onClose, onVerified, toolName = 'upscaler' }: TrialSignupModalProps) {
   const [step, setStep] = useState<"form" | "otp">("form");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -29,7 +30,7 @@ export default function TrialSignupModal({ open, onClose, onVerified }: TrialSig
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("landing-trial-code/send", {
-        body: { email: email.trim(), name: name.trim() },
+        body: { email: email.trim(), name: name.trim(), tool_name: toolName },
       });
 
       if (error) throw error;
@@ -63,7 +64,7 @@ export default function TrialSignupModal({ open, onClose, onVerified }: TrialSig
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("landing-trial-code/verify", {
-        body: { email: email.trim(), code },
+        body: { email: email.trim(), code, tool_name: toolName },
       });
 
       if (error) throw error;
@@ -95,7 +96,7 @@ export default function TrialSignupModal({ open, onClose, onVerified }: TrialSig
         {step === "form" ? (
           <div className="space-y-4 pt-2">
             <p className="text-purple-200 text-sm text-center">
-              Preencha seus dados e receba um código de verificação no email para liberar 1 upscale gratuito.
+              Preencha seus dados e receba um código de verificação no email para liberar 1 {toolName === 'cloner' ? 'geração gratuita' : 'upscale gratuito'}.
             </p>
 
             <div className="space-y-2">

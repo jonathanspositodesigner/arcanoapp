@@ -31,7 +31,26 @@ function generateCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-function buildCodeEmailHtml(code: string, name: string): string {
+function getToolConfig(toolName: string) {
+  if (toolName === 'cloner') {
+    return {
+      usesTotal: 1,
+      emailSubject: '🔑 Seu código de teste gratuito - Arcano Cloner',
+      usesLabel: '1 teste gratuito',
+      toolLabel: 'Arcano Cloner',
+    };
+  }
+  // Default: upscaler
+  return {
+    usesTotal: 3,
+    emailSubject: '🔑 Seu código de teste gratuito - Upscaler Arcano',
+    usesLabel: '3 testes gratuitos',
+    toolLabel: 'Upscaler Arcano',
+  };
+}
+
+function buildCodeEmailHtml(code: string, name: string, toolName: string): string {
+  const config = getToolConfig(toolName);
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background-color:#0D0221;font-family:Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0D0221;padding:40px 20px;">
@@ -43,7 +62,7 @@ function buildCodeEmailHtml(code: string, name: string): string {
 </td></tr>
 <tr><td style="padding-bottom:24px;">
 <p style="color:#c4b5fd;font-size:16px;line-height:1.6;margin:0;text-align:center;">
-Olá <strong style="color:#fff;">${name}</strong>, use o código abaixo para liberar <strong style="color:#fff;">3 testes gratuitos</strong> do Upscaler Arcano:
+Olá <strong style="color:#fff;">${name}</strong>, use o código abaixo para liberar <strong style="color:#fff;">${config.usesLabel}</strong> do ${config.toolLabel}:
 </p>
 </td></tr>
 <tr><td align="center" style="padding-bottom:24px;">
@@ -79,6 +98,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
+    const toolName = body.tool_name || 'upscaler';
 
     // === SEND ===
     if (path === "send") {
@@ -90,47 +110,42 @@ serve(async (req) => {
       const normalizedEmail = email.trim().toLowerCase();
       const nameClean = name.trim().substring(0, 100);
 
-      // Validate email format
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
         return new Response(JSON.stringify({ error: "Email inválido" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Check rate limit - 1 per email per 2 minutes
       const { data: existing } = await supabaseAdmin
         .from("landing_page_trials")
         .select("id, created_at, code_verified, uses_remaining")
         .eq("email", normalizedEmail)
+        .eq("tool_name", toolName)
         .maybeSingle();
 
       if (existing) {
-        // If already verified and has uses, just return success
-      if (existing.code_verified && existing.uses_remaining > 0) {
+        if (existing.code_verified && existing.uses_remaining > 0) {
           return new Response(JSON.stringify({ already_verified: true, uses_remaining: existing.uses_remaining }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
-        // If already verified but no uses left
         if (existing.code_verified && existing.uses_remaining <= 0) {
           return new Response(JSON.stringify({ already_verified: true, uses_remaining: 0, finished: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
-        // Rate limit check
         const createdAt = new Date(existing.created_at).getTime();
         if (Date.now() - createdAt < 120000) {
           return new Response(JSON.stringify({ error: "Aguarde 2 minutos antes de solicitar um novo código" }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
-        // Update with new code
         const code = generateCode();
         await supabaseAdmin
           .from("landing_page_trials")
           .update({ code, created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 86400000).toISOString(), code_verified: false })
           .eq("id", existing.id);
 
-        // Send email
         const token = await getSendPulseToken();
-        const html = buildCodeEmailHtml(code, nameClean);
+        const config = getToolConfig(toolName);
+        const html = buildCodeEmailHtml(code, nameClean, toolName);
         const htmlBase64 = btoa(unescape(encodeURIComponent(html)));
         await fetch("https://api.sendpulse.com/smtp/emails", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ email: { html: htmlBase64, text: "", subject: "🔑 Seu código de teste gratuito - Upscaler Arcano", from: { name: "Arcano App", email: "contato@voxvisual.com.br" }, to: [{ name: nameClean, email: normalizedEmail }] } }),
+          body: JSON.stringify({ email: { html: htmlBase64, text: "", subject: config.emailSubject, from: { name: "Arcano App", email: "contato@voxvisual.com.br" }, to: [{ name: nameClean, email: normalizedEmail }] } }),
         });
 
         return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -138,23 +153,31 @@ serve(async (req) => {
 
       // New trial
       const code = generateCode();
+      const config = getToolConfig(toolName);
       const { error: insertErr } = await supabaseAdmin
         .from("landing_page_trials")
-        .insert({ email: normalizedEmail, name: nameClean, code, expires_at: new Date(Date.now() + 86400000).toISOString() });
+        .insert({ 
+          email: normalizedEmail, 
+          name: nameClean, 
+          code, 
+          expires_at: new Date(Date.now() + 86400000).toISOString(),
+          tool_name: toolName,
+          uses_remaining: config.usesTotal,
+          uses_total: config.usesTotal,
+        });
 
       if (insertErr) {
         console.error("Insert error:", insertErr);
         return new Response(JSON.stringify({ error: "Erro ao criar trial" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Send email
       const token = await getSendPulseToken();
-      const html = buildCodeEmailHtml(code, nameClean);
+      const html = buildCodeEmailHtml(code, nameClean, toolName);
       const htmlBase64 = btoa(unescape(encodeURIComponent(html)));
       const sendRes = await fetch("https://api.sendpulse.com/smtp/emails", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ email: { html: htmlBase64, text: "", subject: "🔑 Seu código de teste gratuito - Upscaler Arcano", from: { name: "Arcano App", email: "contato@voxvisual.com.br" }, to: [{ name: nameClean, email: normalizedEmail }] } }),
+        body: JSON.stringify({ email: { html: htmlBase64, text: "", subject: config.emailSubject, from: { name: "Arcano App", email: "contato@voxvisual.com.br" }, to: [{ name: nameClean, email: normalizedEmail }] } }),
       });
 
       if (!sendRes.ok) {
@@ -178,6 +201,7 @@ serve(async (req) => {
         .from("landing_page_trials")
         .select("*")
         .eq("email", normalizedEmail)
+        .eq("tool_name", toolName)
         .maybeSingle();
 
       if (!trial) {
@@ -213,6 +237,7 @@ serve(async (req) => {
         .from("landing_page_trials")
         .select("*")
         .eq("email", normalizedEmail)
+        .eq("tool_name", toolName)
         .eq("code_verified", true)
         .maybeSingle();
 

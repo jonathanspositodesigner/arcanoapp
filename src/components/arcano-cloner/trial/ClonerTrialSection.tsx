@@ -260,7 +260,7 @@ export default function ClonerTrialSection() {
       console.log('[ClonerTrial] Edge function response:', response);
 
       const { data: consumeData, error: consumeErr } = await supabase.functions.invoke("landing-trial-code/consume", {
-        body: { email },
+        body: { email, tool_name: "cloner" },
       });
 
       if (!consumeErr && !consumeData?.error) {
@@ -396,6 +396,7 @@ export default function ClonerTrialSection() {
         open={phase === "signup"}
         onClose={closeSignup}
         onVerified={onVerified}
+        toolName="cloner"
       />
 
       {/* Image Compression Modal */}

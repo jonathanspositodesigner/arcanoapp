@@ -784,24 +784,28 @@ async function handleRun(req: Request) {
     await logStepFailure(jobId, 'run_workflow', `START_FAILED_REFUNDED: ${startErrorMsg}`, data);
     
     try {
-      await supabase.rpc('refund_upscaler_credits', {
-        _user_id: userId,
-        _amount: creditCost,
-        _description: `START_FAILED_REFUNDED: ${startErrorMsg.slice(0, 100)}`
-      });
+      if (!isTrialMode) {
+        await supabase.rpc('refund_upscaler_credits', {
+          _user_id: userId,
+          _amount: creditCost,
+          _description: `START_FAILED_REFUNDED: ${startErrorMsg.slice(0, 100)}`
+        });
+      }
       
       await supabase
         .from('arcano_cloner_jobs')
         .update({ 
           status: 'failed', 
           error_message: `START_FAILED_REFUNDED: ${startErrorMsg}`,
-          credits_refunded: true,
+          credits_refunded: !isTrialMode,
           completed_at: new Date().toISOString(),
           raw_api_response: data
         })
         .eq('id', jobId);
       
-      console.log(`[ArcanoCloner] Job ${jobId} refunded ${creditCost} credits (start failed)`);
+      if (!isTrialMode) {
+        console.log(`[ArcanoCloner] Job ${jobId} refunded ${creditCost} credits (start failed)`);
+      }
     } catch (refundError) {
       console.error(`[ArcanoCloner] Refund failed for job ${jobId}:`, refundError);
       await supabase
@@ -835,23 +839,27 @@ async function handleRun(req: Request) {
     await logStepFailure(jobId, 'run_exception', `START_EXCEPTION_REFUNDED: ${errorMessage}`);
     
     try {
-      await supabase.rpc('refund_upscaler_credits', {
-        _user_id: userId,
-        _amount: creditCost,
-        _description: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}`
-      });
+      if (!isTrialMode) {
+        await supabase.rpc('refund_upscaler_credits', {
+          _user_id: userId,
+          _amount: creditCost,
+          _description: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}`
+        });
+      }
       
       await supabase
         .from('arcano_cloner_jobs')
         .update({ 
           status: 'failed', 
           error_message: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`,
-          credits_refunded: true,
+          credits_refunded: !isTrialMode,
           completed_at: new Date().toISOString()
         })
         .eq('id', jobId);
       
-      console.log(`[ArcanoCloner] Job ${jobId} refunded ${creditCost} credits (exception)`);
+      if (!isTrialMode) {
+        console.log(`[ArcanoCloner] Job ${jobId} refunded ${creditCost} credits (exception)`);
+      }
     } catch (refundError) {
       console.error(`[ArcanoCloner] Refund failed for job ${jobId}:`, refundError);
       await supabase

@@ -42,7 +42,7 @@ export function useTrialState() {
 
     // Sync with backend: "send" endpoint returns real uses_remaining for verified users
     supabase.functions.invoke("landing-trial-code/send", {
-      body: { email: saved.email, name: "sync" },
+      body: { email: saved.email, name: "sync", tool_name: "upscaler" },
     }).then(({ data }) => {
       if (data?.already_verified) {
         const serverUses = data.uses_remaining ?? 0;
