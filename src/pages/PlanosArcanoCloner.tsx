@@ -11,6 +11,7 @@ import { HeroBeforeAfterSlider } from "@/components/upscaler";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import ExpandingGallery from "@/components/combo-artes/ExpandingGallery";
 import HeroCarouselBackground from "@/components/combo-artes/HeroCarouselBackground";
+import ClonerTrialSection from "@/components/arcano-cloner/trial/ClonerTrialSection";
 
 const UPSCALER_BEFORE_IMAGE_DESKTOP = "/images/upscaler-hero-antes.webp";
 const UPSCALER_AFTER_IMAGE_DESKTOP = "/images/upscaler-hero-depois.webp";
@@ -546,34 +547,9 @@ const PlanosArcanoCloner = () => {
         </div>
       </AnimatedSection>
 
-      {/* ==================== FREE TRIAL (Visual Mockup) ==================== */}
-      <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-white mb-3">
-            Quer <span className="text-fuchsia-400">testar antes</span> de comprar?
-          </h2>
-          <p className="text-white/50 text-sm mb-8">Faça um teste gratuito do Arcano Cloner e veja o resultado por conta própria</p>
-
-          {/* Blurred mockup */}
-          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-white/5 aspect-video max-w-lg mx-auto">
-            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-600/20 to-purple-800/20 flex items-center justify-center blur-sm">
-              <div className="grid grid-cols-2 gap-3 p-8 w-full">
-                <div className="aspect-[3/4] rounded-xl bg-white/10" />
-                <div className="aspect-[3/4] rounded-xl bg-white/10" />
-              </div>
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-              <Button
-                onClick={scrollToPricing}
-                className="bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white font-bold rounded-full px-8 py-6 text-lg shadow-xl shadow-fuchsia-500/30"
-              >
-                Fazer Teste Grátis
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </Button>
-            </div>
-          </div>
-          <p className="text-white/30 text-xs mt-3">* Verificação por email necessária</p>
-        </div>
+      {/* ==================== FREE TRIAL (Functional) ==================== */}
+      <AnimatedSection className="!p-0">
+        <ClonerTrialSection />
       </AnimatedSection>
 
       {/* ==================== FAQ ==================== */}

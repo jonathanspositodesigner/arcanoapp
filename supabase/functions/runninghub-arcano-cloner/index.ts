@@ -381,8 +381,11 @@ async function handleRun(req: Request) {
     userId,
     creditCost,
     creativity,
-    customPrompt
+    customPrompt,
+    trial_mode
   } = await req.json();
+
+  const isTrialMode = trial_mode === true;
   
   // ========== INPUT VALIDATION ==========
   if (!jobId || typeof jobId !== 'string' || jobId.length > 100) {
@@ -438,27 +441,31 @@ async function handleRun(req: Request) {
     }
   }
 
-  // Validate creditCost
-  if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) {
-    return new Response(JSON.stringify({ 
-      error: 'Invalid credit cost (must be 1-500)', 
-      code: 'INVALID_CREDIT_COST'
-    }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  // Validate creditCost (skip for trial mode)
+  if (!isTrialMode) {
+    if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) {
+      return new Response(JSON.stringify({ 
+        error: 'Invalid credit cost (must be 1-500)', 
+        code: 'INVALID_CREDIT_COST'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
   }
 
-  // Validate userId
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  if (!userId || typeof userId !== 'string' || !uuidRegex.test(userId)) {
-    return new Response(JSON.stringify({ 
-      error: 'Valid userId is required', 
-      code: 'INVALID_USER_ID'
-    }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  // Validate userId (skip for trial mode)
+  if (!isTrialMode) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!userId || typeof userId !== 'string' || !uuidRegex.test(userId)) {
+      return new Response(JSON.stringify({ 
+        error: 'Valid userId is required', 
+        code: 'INVALID_USER_ID'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
   }
 
   // Log step: starting
@@ -549,60 +556,65 @@ async function handleRun(req: Request) {
     });
   }
 
-  // Consume credits
-  await logStep(jobId, 'consuming_credits', { amount: creditCost });
-  console.log(`[ArcanoCloner] Consuming ${creditCost} credits for user ${userId}`);
-  
-  const { data: creditResult, error: creditError } = await supabase.rpc(
-    'consume_upscaler_credits', 
-    {
-      _user_id: userId,
-      _amount: creditCost,
-      _description: 'Arcano Cloner'
+  // Consume credits (skip for trial mode)
+  if (!isTrialMode) {
+    await logStep(jobId, 'consuming_credits', { amount: creditCost });
+    console.log(`[ArcanoCloner] Consuming ${creditCost} credits for user ${userId}`);
+    
+    const { data: creditResult, error: creditError } = await supabase.rpc(
+      'consume_upscaler_credits', 
+      {
+        _user_id: userId,
+        _amount: creditCost,
+        _description: 'Arcano Cloner'
+      }
+    );
+
+    if (creditError) {
+      console.error('[ArcanoCloner] Credit consumption error:', creditError);
+      await logStepFailure(jobId, 'consume_credits', creditError.message);
+      return new Response(JSON.stringify({ 
+        error: 'Erro ao processar créditos',
+        code: 'CREDIT_ERROR',
+        details: creditError.message
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
-  );
 
-  if (creditError) {
-    console.error('[ArcanoCloner] Credit consumption error:', creditError);
-    await logStepFailure(jobId, 'consume_credits', creditError.message);
-    return new Response(JSON.stringify({ 
-      error: 'Erro ao processar créditos',
-      code: 'CREDIT_ERROR',
-      details: creditError.message
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
+      const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
+      console.log('[ArcanoCloner] Insufficient credits:', errorMsg);
+      await logStepFailure(jobId, 'consume_credits', errorMsg);
+      return new Response(JSON.stringify({ 
+        error: errorMsg,
+        code: 'INSUFFICIENT_CREDITS',
+        currentBalance: creditResult?.[0]?.new_balance
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log(`[ArcanoCloner] Credits consumed. New balance: ${creditResult[0].new_balance}`);
+  } else {
+    console.log(`[ArcanoCloner] Trial mode - skipping credit consumption`);
+    await logStep(jobId, 'trial_mode_skip_credits');
   }
-
-  if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
-    const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
-    console.log('[ArcanoCloner] Insufficient credits:', errorMsg);
-    await logStepFailure(jobId, 'consume_credits', errorMsg);
-    return new Response(JSON.stringify({ 
-      error: errorMsg,
-      code: 'INSUFFICIENT_CREDITS',
-      currentBalance: creditResult?.[0]?.new_balance
-    }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
-  console.log(`[ArcanoCloner] Credits consumed. New balance: ${creditResult[0].new_balance}`);
 
   // CRITICAL: Mark credits as charged for idempotent refund on failure
   await supabase
     .from('arcano_cloner_jobs')
     .update({ 
-      credits_charged: true,
-      user_credit_cost: creditCost,
+      credits_charged: !isTrialMode,
+      user_credit_cost: isTrialMode ? 0 : creditCost,
       user_file_name: userFileName,
       reference_file_name: referenceFileName,
       aspect_ratio: finalAspectRatio,
     })
     .eq('id', jobId);
-  console.log(`[ArcanoCloner] Job ${jobId} marked as credits_charged=true`);
+  console.log(`[ArcanoCloner] Job ${jobId} marked as credits_charged=${!isTrialMode}`);
 
   try {
     // Check queue availability via Queue Manager
