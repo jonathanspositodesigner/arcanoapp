@@ -1,23 +1,43 @@
 
-# Mover botoes Download e Gerar Nova para o painel de controles
 
-## Problema
-Os botoes "Baixar" e "Nova" aparecem abaixo da imagem gerada (dentro da area de resultado), ficando escondidos quando a imagem e grande e o usuario precisa rolar para encontra-los.
+# Reverter "Arcano Studio" para "Arcano Cloner" em todo o frontend
 
-## Solucao
-Mover esses botoes para a barra inferior (bottom bar) junto com os botoes de modelo, proporcao e gerar. Eles so aparecerao quando houver resultado pronto (`resultBase64` existir).
+## Resumo
+Todas as 93 ocorrencias de "Arcano Studio" encontradas em 11 arquivos serao revertidas para "Arcano Cloner". Nenhuma alteracao no banco de dados ou backend -- apenas textos no frontend.
 
-## Mudancas no arquivo `src/pages/GerarImagemTool.tsx`
+## Arquivos a alterar
 
-### 1. Remover botoes de baixo da imagem
-Remover o bloco de botoes "Baixar" e "Nova" que fica abaixo da imagem (linhas 229-236). A area de resultado mostrara apenas a imagem.
+### 1. `src/components/layout/AppSidebar.tsx`
+- Menu lateral: nome da ferramenta "Arcano Studio" -> "Arcano Cloner"
 
-### 2. Adicionar botoes na barra inferior (condicionalmente)
-Na secao "Controls + Generate button row" (linha 325), adicionar os botoes "Baixar" e "Nova" antes do spacer (`flex-1`), visiveis apenas quando `resultBase64` existe:
+### 2. `src/pages/ArcanoClonerTool.tsx`
+- Titulo h1 da pagina
+- Chamadas `getCreditCost('Arcano Studio', 80)` -> `'Arcano Cloner'`
+- Chamadas `registerJob(jobId, 'Arcano Studio', ...)` -> `'Arcano Cloner'`
 
-```text
-[Modelo] [Proporcao] [Baixar*] [Nova*] --- spacer --- [Gerar]
-                      * so aparecem com resultado pronto
-```
+### 3. `src/pages/GeradorPersonagemTool.tsx`
+- Label do atalho "Arcano Studio" -> "Arcano Cloner"
 
-Os botoes terao estilo compacto compativel com os demais controles da barra.
+### 4. `src/pages/FerramentasIAAplicativo.tsx`
+- Nome da ferramenta estatica e mapeamento de slug
+
+### 5. `src/pages/PlanosCreditos.tsx`
+- Nome no card de plano
+
+### 6. `src/pages/Planos.tsx`, `src/pages/Planos2.tsx`, `src/pages/PlanosUpscalerCreditos.tsx`
+- Lista de ferramentas AI
+
+### 7. `src/ai/JobManager.ts`
+- Chave do mapeamento de nomes (precisa bater com os registerJob)
+
+### 8. `src/components/admin/AdminAIToolsUsageTab.tsx`
+- Labels, filtros e mapeamentos no painel admin
+
+### 9. `src/components/admin/AIToolsProfitTable.tsx`
+- Placeholder de exemplo
+
+## O que NAO muda
+- Nomes de tabelas no banco (ex: `arcano_cloner_jobs`)
+- Slugs de URL (`/arcano-cloner-tool`)
+- Valores internos mapeados (ex: `'arcano_cloner'`)
+
