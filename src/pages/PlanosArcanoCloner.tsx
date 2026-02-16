@@ -148,7 +148,7 @@ const PlanosArcanoCloner = () => {
         </div>
 
         {/* Layer 3: Hero PNG image - LARGE, centered */}
-        <div className="absolute inset-0 z-[10] flex items-end justify-center pointer-events-none translate-y-8 md:translate-y-12">
+        <div className="absolute inset-0 z-[10] flex items-end justify-center pointer-events-none -translate-y-16 md:-translate-y-20">
           <img 
             src="/images/arcano-cloner-hero.webp" 
             alt="Arcano Cloner" 
