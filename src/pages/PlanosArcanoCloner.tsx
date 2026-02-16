@@ -277,12 +277,12 @@ const PlanosArcanoCloner = () => {
 
           <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 auto-rows-fr" staggerDelay={100}>
             {[
-              { icon: DollarSign, title: "Empreendedores de Renda Extra", text: "Quer faturar vendendo ensaios fotográficos profissionais sem precisar de câmera ou estúdio" },
-              { icon: Briefcase, title: "Profissionais e Executivos", text: "Precisa de fotos profissionais para LinkedIn, currículo ou portfólio sem gastar uma fortuna" },
+              { icon: DollarSign, title: "Empreendedores Digitais", text: "Quer faturar vendendo ensaios fotográficos profissionais sem precisar de câmera ou estúdio" },
+              { icon: Briefcase, title: "Profissionais e Executivos", text: "Quer se posicionar de forma profissional nas redes sociais com fotos que transmitem autoridade e credibilidade" },
               { icon: Music, title: "Músicos e Artistas", text: "Crie presskits, capas de álbum e materiais visuais incríveis sem depender de fotógrafo" },
-              { icon: User, title: "Usuários Comuns", text: "Quer fotos incríveis para redes sociais, perfis de namoro ou uso pessoal com qualidade de estúdio" },
               { icon: Rocket, title: "Infoprodutores", text: "Precisa de imagens profissionais para anúncios, páginas de venda e conteúdo digital" },
               { icon: Share2, title: "Social Media e Criadores", text: "Produza conteúdo visual de alto nível para seus clientes ou para suas próprias redes" },
+              { icon: User, title: "Usuários Comuns", text: "Quer fotos incríveis para redes sociais, perfis de namoro ou uso pessoal com qualidade de estúdio" },
             ].map((item, index) => {
               const IconComp = item.icon;
               return (
