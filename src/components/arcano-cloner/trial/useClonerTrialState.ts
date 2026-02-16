@@ -41,7 +41,7 @@ export function useClonerTrialState() {
 
     // Sync with backend
     supabase.functions.invoke("landing-trial-code/send", {
-      body: { email: saved.email, name: "sync" },
+      body: { email: saved.email, name: "sync", tool_name: "cloner" },
     }).then(({ data }) => {
       if (data?.already_verified) {
         const serverUses = data.uses_remaining ?? 0;

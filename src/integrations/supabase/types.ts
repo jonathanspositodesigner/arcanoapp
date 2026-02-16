@@ -1773,6 +1773,7 @@ export type Database = {
           expires_at: string
           id: string
           name: string
+          tool_name: string
           uses_remaining: number
           uses_total: number
           verified_at: string | null
@@ -1785,6 +1786,7 @@ export type Database = {
           expires_at?: string
           id?: string
           name: string
+          tool_name?: string
           uses_remaining?: number
           uses_total?: number
           verified_at?: string | null
@@ -1797,6 +1799,7 @@ export type Database = {
           expires_at?: string
           id?: string
           name?: string
+          tool_name?: string
           uses_remaining?: number
           uses_total?: number
           verified_at?: string | null

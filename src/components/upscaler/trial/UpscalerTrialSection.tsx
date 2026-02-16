@@ -315,7 +315,7 @@ export default function UpscalerTrialSection() {
       console.log('[TrialUpscaler] Edge function response:', response);
       
       const { data: consumeData, error: consumeErr } = await supabase.functions.invoke("landing-trial-code/consume", {
-        body: { email },
+        body: { email, tool_name: "upscaler" },
       });
 
       if (!consumeErr && !consumeData?.error) {
