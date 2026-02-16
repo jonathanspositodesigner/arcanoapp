@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface GalleryItem {
   imageUrl: string;
-  label: string;
+  label?: string;
 }
 
 interface ExpandingGalleryProps {
@@ -70,20 +70,18 @@ const ExpandingGallery = ({ items }: ExpandingGalleryProps) => {
                     <span className="inline-block px-3 py-1 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs font-medium tracking-wider uppercase mb-2">
                       Imagem gerada com Arcano Cloner
                     </span>
-                    <h3 className="text-white font-semibold text-lg md:text-xl">
-                      {item.label}
-                    </h3>
+                    {item.label && (
+                      <h3 className="text-white font-semibold text-lg md:text-xl">
+                        {item.label}
+                      </h3>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* Inactive overlay with vertical label */}
+              {/* Inactive overlay */}
               {!isActive && (
-                <div className="absolute inset-0 bg-black/20 flex items-end justify-center pb-4">
-                  <span className="text-white/70 text-xs font-medium [writing-mode:vertical-lr] rotate-180 tracking-widest uppercase">
-                    {item.label}
-                  </span>
-                </div>
+                <div className="absolute inset-0 bg-black/20" />
               )}
             </div>
           );
