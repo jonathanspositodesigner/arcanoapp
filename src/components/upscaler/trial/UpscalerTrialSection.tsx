@@ -382,7 +382,7 @@ export default function UpscalerTrialSection() {
                       <Sparkles className="w-5 h-5 mr-2" />
                       Fazer Teste Grátis
                     </Button>
-                    <p className="text-purple-300/60 text-sm">3 upscales gratuitos • Sem compromisso</p>
+                    <p className="text-purple-300/60 text-sm">1 upscale gratuito • Sem compromisso</p>
                   </>
                 ) : (
                   <div className="text-center px-6 max-w-md">
