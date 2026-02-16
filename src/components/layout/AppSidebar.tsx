@@ -171,19 +171,25 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
           {/* Gerar Imagem */}
           <button
             onClick={() => handleNavAndClose("/gerar-imagem")}
-            className="w-full flex items-center text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+            className="w-full flex items-center justify-between text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
           >
-            <ImagePlus className="h-3.5 w-3.5 mr-1.5" />
-            Gerar Imagem
+            <span className="flex items-center">
+              <ImagePlus className="h-3.5 w-3.5 mr-1.5" />
+              Gerar Imagem
+            </span>
+            <span className="text-[8px] font-bold bg-fuchsia-500/30 text-fuchsia-300 px-1.5 py-0.5 rounded-full leading-none">NanoBanana Pro</span>
           </button>
 
           {/* Gerar Vídeo */}
           <button
             onClick={() => handleNavAndClose("/gerar-video")}
-            className="w-full flex items-center text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+            className="w-full flex items-center justify-between text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
           >
-            <Video className="h-3.5 w-3.5 mr-1.5" />
-            Gerar Vídeo
+            <span className="flex items-center">
+              <Video className="h-3.5 w-3.5 mr-1.5" />
+              Gerar Vídeo
+            </span>
+            <span className="text-[8px] font-bold bg-blue-500/30 text-blue-300 px-1.5 py-0.5 rounded-full leading-none">Google Veo3</span>
           </button>
 
           {/* Sites de IA - Hidden for now, links preserved in externalLinks array above */}
