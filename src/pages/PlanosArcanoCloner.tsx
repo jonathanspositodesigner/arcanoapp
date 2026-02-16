@@ -18,7 +18,7 @@ const UPSCALER_AFTER_IMAGE_DESKTOP = "/images/upscaler-hero-depois.webp";
 const UPSCALER_BEFORE_IMAGE_MOBILE = "/images/upscaler-hero-antes-mobile.webp";
 const UPSCALER_AFTER_IMAGE_MOBILE = "/images/upscaler-hero-depois-mobile.webp";
 
-const CHECKOUT_URL = "https://example.com/checkout-placeholder";
+const CHECKOUT_URL = "https://payfast.greenn.com.br/y3u2u3d";
 
 const PlanosArcanoCloner = () => {
   const isMobile = useIsMobile();
