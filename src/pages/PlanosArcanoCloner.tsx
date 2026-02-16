@@ -152,9 +152,9 @@ const PlanosArcanoCloner = () => {
           <FadeIn delay={100} duration={600}>
             <div className="relative inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-5 md:mb-6">
               <div className="flex -space-x-2">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 border-2 border-[#0f0a15]" />
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 border-2 border-[#0f0a15]" />
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-pink-500 to-fuchsia-600 border-2 border-[#0f0a15]" />
+                <img src="/images/social-proof-1.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                <img src="/images/social-proof-2.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                <img src="/images/social-proof-3.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
               </div>
               <span className="text-white/80 text-xs font-medium">+5.000 pessoas já estão usando</span>
             </div>
