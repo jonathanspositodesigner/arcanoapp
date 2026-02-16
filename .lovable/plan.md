@@ -1,121 +1,43 @@
 
-# Problemas Encontrados no Trial do Arcano Cloner
+# Correção: Resultado do Trial Bloqueado pelo Overlay "Teste Concluído"
 
-Apos vasculhar toda a implementacao, encontrei **4 problemas criticos** que impedem o funcionamento e **1 problema menor**. Nada vai funcionar como esta agora.
+## Problema
 
----
+Quando o processamento termina e `usesRemaining` chega a 0, um `setTimeout(() => finishTrial(), 5000)` dispara automaticamente após 5 segundos. Isso muda o `phase` para `"finished"`, que ativa um overlay com blur cobrindo **toda a interface**, incluindo o resultado que o usuário acabou de esperar. O usuário nunca consegue ver o resultado direito.
 
-## Problema 1: RLS bloqueia INSERT do job (CRITICO)
+Isso acontece **tanto no Cloner quanto no Upscaler**.
 
-A tabela `arcano_cloner_jobs` tem RLS ativado com esta politica de INSERT:
+## Solução
 
-```text
-WITH CHECK: auth.uid() IS NOT NULL AND user_id = auth.uid()
-```
+1. **Remover o `setTimeout(() => finishTrial(), 5000)`** de ambos os componentes (Cloner e Upscaler)
+2. **No ClonerTrialMockup**: quando `usesRemaining === 0` e tem resultado, mostrar o resultado normalmente + um botão "Teste Concluído" que o próprio usuário clica
+3. **Ao clicar "Teste Concluído"**: chamar `onNewUpload` que reseta o estado, e aí sim o `phase` pode ir para `"finished"` mostrando o CTA de compra
+4. **Mesma lógica no Upscaler trial mockup** para manter consistência
 
-O trial insere com `user_id: null` e sem autenticacao. Resultado: **erro "violates row-level security policy"** no momento de criar o job. Nada funciona a partir daqui.
+## Mudanças por arquivo
 
-**Comparacao**: A tabela `upscaler_jobs` tem `WITH CHECK: true` (permite qualquer insert), por isso o trial do upscaler funciona.
+### 1. `src/components/arcano-cloner/trial/ClonerTrialSection.tsx`
+- Linha 65-67: Remover o bloco `if (usesRemaining <= 0) { setTimeout(() => finishTrial(), 5000); }`
+- Modificar `handleNewUpload` (linha 285): quando `usesRemaining <= 0`, chamar `finishTrial()` ao invés de resetar para novo upload
 
-**Correcao**: Adicionar politica que permita INSERT anonimo quando `user_id IS NULL`:
+### 2. `src/components/arcano-cloner/trial/ClonerTrialMockup.tsx`
+- Na view de resultado (linhas 98-108): quando `usesRemaining === 0`, trocar o texto do botão de "Teste concluído" (desabilitado) para um botão ativo "Teste Concluído" que chama `onNewUpload`
+- O resultado fica visível o tempo todo, sem overlay, sem blur
 
-```sql
-CREATE POLICY "Allow anonymous trial inserts"
-ON public.arcano_cloner_jobs FOR INSERT
-TO anon
-WITH CHECK (user_id IS NULL);
-```
+### 3. `src/components/upscaler/trial/UpscalerTrialSection.tsx`
+- Linhas 87-89: Remover o `setTimeout(() => finishTrial(), 5000)` 
+- Aplicar a mesma lógica: quando `handleNewUpload` é chamado com 0 usos restantes, chamar `finishTrial()`
 
----
+### 4. Upscaler trial mockup (se existir componente equivalente)
+- Mesma correção: resultado sempre visível, botão manual para o usuário fechar
 
-## Problema 2: RLS bloqueia SELECT/Realtime do job (CRITICO)
-
-A politica de SELECT exige `user_id = auth.uid()`. Como o job do trial tem `user_id: null` e o usuario nao esta autenticado:
-
-- O **polling** do `useJobStatusSync` retorna vazio (nao encontra o job)
-- O **Realtime** nao envia updates (filtrado pelo RLS)
-- O usuario fica preso na tela de "Processando..." para sempre
-
-**Correcao**: Adicionar politica de SELECT para jobs anonimos:
-
-```sql
-CREATE POLICY "Allow anonymous trial select"
-ON public.arcano_cloner_jobs FOR SELECT
-TO anon
-USING (user_id IS NULL);
-```
-
----
-
-## Problema 3: Trials compartilham a mesma tabela sem separacao (CRITICO)
-
-A tabela `landing_page_trials` **nao tem coluna `tool_name`**. Se um usuario ja fez o trial do Upscaler, ele tera 0 `uses_remaining` e **nao conseguira usar o trial do Cloner**.
-
-O `TrialSignupModal` (compartilhado) e o `landing-trial-code` Edge Function tratam todos os trials como uma unica coisa.
-
-**Correcao**: Duas opcoes:
-- **Opcao A (simples)**: Adicionar coluna `tool_name` a tabela e atualizar a Edge Function para filtrar por ferramenta
-- **Opcao B (mais simples)**: Ignorar a tabela compartilhada para o cloner e criar um registro separado com um email prefixado (ex: `cloner:email@test.com`) como chave unica - gambiarra, mas nao precisa de migracao
-
-Recomendo a **Opcao A**: adicionar coluna `tool_name TEXT DEFAULT 'upscaler'` e ajustar os endpoints `send`, `verify`, `consume` para filtrar por `tool_name`.
-
----
-
-## Problema 4: Refund tenta processar userId null em trial mode (MEDIO)
-
-Nas linhas 786-842 da Edge Function, quando o start falha e nao retorna `taskId`, o codigo tenta fazer refund com `userId` que e `null` no trial mode:
+## Fluxo corrigido
 
 ```text
-await supabase.rpc('refund_upscaler_credits', {
-  _user_id: userId,  // null no trial!
-  ...
-});
+Resultado pronto
+  -> Mostra o resultado na tela (sem overlay, sem blur)
+  -> Botão "Teste Concluído" visível abaixo do resultado
+  -> Usuário analisa o resultado quanto tempo quiser
+  -> Usuário clica "Teste Concluído"
+  -> Agora sim: mostra tela de "Comprar Agora" com overlay
 ```
-
-Isso causa erro na RPC. Precisa do guard `if (!isTrialMode)` antes do bloco de refund.
-
----
-
-## Problema 5: Email de OTP menciona Upscaler (MENOR)
-
-O template do email na Edge Function `landing-trial-code` diz: "3 testes gratuitos do **Upscaler Arcano**". Para o trial do Cloner deveria dizer "1 teste gratuito do **Arcano Cloner**".
-
----
-
-## Plano de Correcao
-
-### Etapa 1: Migracao de banco
-- Adicionar coluna `tool_name TEXT DEFAULT 'upscaler' NOT NULL` a tabela `landing_page_trials`
-- Adicionar politica RLS de INSERT anonimo na `arcano_cloner_jobs` (quando `user_id IS NULL`)
-- Adicionar politica RLS de SELECT anonimo na `arcano_cloner_jobs` (quando `user_id IS NULL`)
-
-### Etapa 2: Edge Function `landing-trial-code`
-- Aceitar parametro `tool_name` nos endpoints `send`, `verify`, `consume`
-- Filtrar registros por `tool_name` em todas as queries
-- Configurar `uses_total` = 1 para cloner (vs 3 para upscaler)
-- Adaptar template de email baseado no `tool_name`
-
-### Etapa 3: Edge Function `runninghub-arcano-cloner`
-- Adicionar guard `if (!isTrialMode)` nos blocos de refund (linhas ~786-860)
-
-### Etapa 4: Frontend
-- `TrialSignupModal`: passar prop `toolName` para o endpoint
-- `useClonerTrialState`: enviar `tool_name: 'cloner'` nas chamadas ao `landing-trial-code`
-- `ClonerTrialSection`: enviar `tool_name: 'cloner'` no consume
-
-### Etapa 5: Frontend Upscaler (retrocompatibilidade)
-- `useTrialState`: enviar `tool_name: 'upscaler'` nas chamadas
-- `UpscalerTrialSection`: enviar `tool_name: 'upscaler'` no consume
-
-### Arquivos modificados
-
-| Arquivo | Mudanca |
-|---------|---------|
-| Migracao SQL | RLS + coluna tool_name |
-| `supabase/functions/landing-trial-code/index.ts` | Suporte a tool_name + template condicional |
-| `supabase/functions/runninghub-arcano-cloner/index.ts` | Guard de refund no trial mode |
-| `src/components/upscaler/trial/TrialSignupModal.tsx` | Prop toolName |
-| `src/components/upscaler/trial/useTrialState.ts` | Enviar tool_name |
-| `src/components/upscaler/trial/UpscalerTrialSection.tsx` | Enviar tool_name |
-| `src/components/arcano-cloner/trial/useClonerTrialState.ts` | Enviar tool_name: cloner |
-| `src/components/arcano-cloner/trial/ClonerTrialSection.tsx` | Enviar tool_name: cloner |
