@@ -114,12 +114,12 @@ const PlanosArcanoCloner = () => {
   ];
 
   const painPoints = [
+    { icon: BookOpen, text: "Perder dinheiro com várias plataformas e fazer cursos complexos para gerar uma foto profissional" },
+    { icon: Bot, text: "Escrever prompts complexos para gerar imagens" },
     { icon: DollarSign, text: "Pagar R$300 a R$1.000 por sessão de fotos" },
     { icon: Car, text: "Se deslocar até um estúdio fotográfico" },
     { icon: Shirt, text: "Comprar roupas novas para cada ensaio" },
-    { icon: Bot, text: "Escrever prompts complexos para gerar imagens" },
     { icon: CameraOff, text: "Depender de fotógrafo e equipamento caro" },
-    { icon: BookOpen, text: "Perder dinheiro com várias plataformas e fazer cursos complexos para gerar uma foto profissional" },
   ];
 
   const includedItems = [
@@ -209,12 +209,12 @@ const PlanosArcanoCloner = () => {
             </h2>
           </AnimatedSection>
 
-          <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" staggerDelay={100}>
+          <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 auto-rows-fr" staggerDelay={100}>
             {painPoints.map((pain, index) => {
               const IconComp = pain.icon;
               return (
-                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-purple-500/30 transition-all duration-300 flex flex-col items-center justify-center min-h-[140px]">
-                  <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4">
+                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-purple-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full">
+                  <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4 shrink-0">
                     <IconComp className="h-6 w-6 text-purple-400" />
                   </div>
                   <p className="text-white/80 text-base md:text-lg">{pain.text}</p>
