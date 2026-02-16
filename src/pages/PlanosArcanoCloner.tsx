@@ -137,7 +137,7 @@ const PlanosArcanoCloner = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] font-space-grotesk">
 
       {/* ==================== HERO ==================== */}
-      <section className="relative min-h-[600px] md:min-h-[700px] lg:min-h-[750px] w-full overflow-hidden">
+      <section className="relative h-screen w-full overflow-hidden">
         
         {/* Layer 1: Carousel background (absolute) */}
         <HeroCarouselBackground />
@@ -148,11 +148,11 @@ const PlanosArcanoCloner = () => {
         </div>
 
         {/* Layer 3: Hero PNG image - LARGE, centered */}
-        <div className="absolute inset-0 z-[10] flex items-end justify-center pointer-events-none -translate-y-16 md:-translate-y-20">
+        <div className="absolute inset-0 z-[10] flex items-center justify-center pointer-events-none">
           <img 
             src="/images/arcano-cloner-hero.webp" 
             alt="Arcano Cloner" 
-            className="w-[280px] md:w-[385px] lg:w-[455px] h-auto object-contain drop-shadow-2xl"
+            className="w-[320px] md:w-[450px] lg:w-[520px] h-auto object-contain drop-shadow-2xl mt-[-5%]"
           />
         </div>
 
@@ -160,24 +160,27 @@ const PlanosArcanoCloner = () => {
         <div className="absolute inset-0 z-[15] pointer-events-none bg-gradient-to-t from-[#0f0a15] via-[#0f0a15]/50 to-transparent" style={{ top: '50%' }} />
 
         {/* Layer 5: Text content - overlaps bottom of photo */}
-        <div className="relative z-[20] flex flex-col items-center justify-end text-center min-h-[600px] md:min-h-[700px] lg:min-h-[750px] px-4 md:px-6 pb-10 md:pb-16 pt-12">
+        <div className="relative z-[20] flex flex-col items-center justify-end text-center h-screen px-4 md:px-6 pb-12 md:pb-16 pt-12">
 
           <div className="mt-auto flex flex-col items-center">
             {/* Social proof badge */}
             <FadeIn delay={100} duration={600}>
-              <div className="inline-flex items-center gap-1.5 bg-white/[0.07] border border-white/10 rounded-full px-2.5 py-1 mb-4 md:mb-5 scale-[0.7] origin-center">
-                <div className="flex -space-x-1.5">
-                  <img src="/images/social-proof-1.png" alt="" className="w-5 h-5 rounded-full border-[1.5px] border-[#0f0a15] object-cover" />
-                  <img src="/images/social-proof-2.png" alt="" className="w-5 h-5 rounded-full border-[1.5px] border-[#0f0a15] object-cover" />
-                  <img src="/images/social-proof-3.png" alt="" className="w-5 h-5 rounded-full border-[1.5px] border-[#0f0a15] object-cover" />
+              <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-5 md:mb-6">
+                <div className="flex -space-x-2">
+                  <img src="/images/social-proof-1.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                  <img src="/images/social-proof-2.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                  <img src="/images/social-proof-3.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                 </div>
-                <span className="text-white/80 text-[10px] font-medium">+5.000 pessoas já estão usando</span>
+                <span className="text-white/80 text-xs font-medium">+5.000 pessoas já estão usando</span>
               </div>
             </FadeIn>
 
             {/* Headline */}
             <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3 md:mb-4 leading-[1.2]">
-              Crie ensaios fotográficos profissionais com IA{" "}
+              Crie ensaios fotográficos{" "}
+              <br className="hidden md:block" />
+              profissionais com IA{" "}
+              <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
                 sem prompt, sem complicação
               </span>
