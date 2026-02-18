@@ -229,7 +229,7 @@ const PlanosArcanoCloner = () => {
             {painPoints.map((pain, index) => {
               const IconComp = pain.icon;
               return (
-                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-purple-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full">
+                <div key={index} className={`bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-purple-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full${index === 0 ? ' hidden sm:flex' : ''}`}>
                   <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4 shrink-0">
                     <IconComp className="h-6 w-6 text-purple-400" />
                   </div>
