@@ -24,16 +24,26 @@ const ClonerDemoAnimation: React.FC = () => {
   const [cursorPos, setCursorPos] = useState({ x: 30, y: 40 });
   const [cursorVisible, setCursorVisible] = useState(false);
   const [cursorClicking, setCursorClicking] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  // Refs to measure real element positions
+  const contentAreaRef = useRef<HTMLDivElement>(null);
+  const faceCardRef = useRef<HTMLDivElement>(null);
+  const refCardRef = useRef<HTMLDivElement>(null);
+  const ratioBtnRef = useRef<HTMLDivElement>(null);
+  const genBtnRef = useRef<HTMLButtonElement>(null);
+
+  // Calculate element center as % of content area
+  const getPct = (elRef: React.RefObject<HTMLElement>) => {
+    if (!contentAreaRef.current || !elRef.current) return { x: 50, y: 50 };
+    const container = contentAreaRef.current.getBoundingClientRect();
+    const el = elRef.current.getBoundingClientRect();
+    return {
+      x: ((el.left + el.width / 2 - container.left) / container.width) * 100,
+      y: ((el.top + el.height / 2 - container.top) / container.height) * 100,
+    };
+  };
 
   const clearAll = () => {
     if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
@@ -70,37 +80,32 @@ const ClonerDemoAnimation: React.FC = () => {
   useEffect(() => {
     resetAnimation();
 
-    // Desktop positions (5-col grid: left panel = 3/5, right = 2/5)
-    // Mobile positions (single col: full width left panel)
-    const pos = {
-      faceCard:   isMobile ? { x: 25, y: 22 } : { x: 22, y: 45 },
-      refCardStart: isMobile ? { x: 25, y: 22 } : { x: 22, y: 45 },
-      refCard:    isMobile ? { x: 75, y: 22 } : { x: 57, y: 45 },
-      ratioBtn:   isMobile ? { x: 38, y: 52 } : { x: 18, y: 72 },
-      genBtn:     isMobile ? { x: 50, y: 80 } : { x: 50, y: 88 },
-    };
-
     if (step === 0) {
-      animateCursor(pos.faceCard.x, pos.faceCard.y, 300, () => {
+      const pos = getPct(faceCardRef);
+      animateCursor(pos.x, pos.y, 300, () => {
         timeoutRef.current = setTimeout(() => setFaceVisible(true), 200);
       });
     } else if (step === 1) {
+      const facePos = getPct(faceCardRef);
+      const refPos = getPct(refCardRef);
       setCursorVisible(true);
-      setCursorPos(pos.refCardStart);
-      animateCursor(pos.refCard.x, pos.refCard.y, 400, () => {
+      setCursorPos(facePos);
+      animateCursor(refPos.x, refPos.y, 400, () => {
         timeoutRef.current = setTimeout(() => setRefVisible(true), 200);
       });
     } else if (step === 2) {
       setFaceVisible(true);
       setRefVisible(true);
-      animateCursor(pos.ratioBtn.x, pos.ratioBtn.y, 300, () => {
+      const ratioPos = getPct(ratioBtnRef);
+      animateCursor(ratioPos.x, ratioPos.y, 300, () => {
         timeoutRef.current = setTimeout(() => setSelectedRatio('1:1'), 150);
       });
     } else if (step === 3) {
       setFaceVisible(true);
       setRefVisible(true);
       setSelectedRatio('1:1');
-      animateCursor(pos.genBtn.x, pos.genBtn.y, 200, () => {
+      const genPos = getPct(genBtnRef);
+      animateCursor(genPos.x, genPos.y, 200, () => {
         timeoutRef.current = setTimeout(() => {
           setButtonClicked(true);
           setLoadingProgress(0);
@@ -119,7 +124,7 @@ const ClonerDemoAnimation: React.FC = () => {
         }, 300);
       });
     }
-  }, [step, isMobile]);
+  }, [step]);
 
   // Step advancement loop
   useEffect(() => {
@@ -176,7 +181,7 @@ const ClonerDemoAnimation: React.FC = () => {
         </div>
 
         {/* Content area */}
-        <div className="p-4 md:p-6 relative" style={{ minHeight: 320 }}>
+        <div ref={contentAreaRef} className="p-4 md:p-6 relative" style={{ minHeight: 320 }}>
           {/* Animated cursor */}
           <div
             className={cn(
@@ -208,7 +213,7 @@ const ClonerDemoAnimation: React.FC = () => {
               {/* Face + Ref cards row */}
               <div className="grid grid-cols-2 gap-3">
                  {/* Face card */}
-                 <div className={cn(
+                 <div ref={faceCardRef} className={cn(
                    'relative border-2 border-dashed rounded-xl overflow-hidden transition-all duration-300',
                    step === 0
                      ? 'border-fuchsia-500/70 shadow-lg shadow-fuchsia-500/20'
@@ -254,7 +259,7 @@ const ClonerDemoAnimation: React.FC = () => {
                  </div>
 
                  {/* Ref card */}
-                 <div className={cn(
+                 <div ref={refCardRef} className={cn(
                    'relative border-2 border-dashed rounded-xl overflow-hidden transition-all duration-300',
                    step === 1
                      ? 'border-fuchsia-500/70 shadow-lg shadow-fuchsia-500/20'
@@ -329,28 +334,29 @@ const ClonerDemoAnimation: React.FC = () => {
                   Proporção
                 </p>
                 <div className="grid grid-cols-4 gap-1.5">
-                  {[
-                    { value: '9:16', label: 'Stories', icon: <Smartphone className="w-3 h-3" /> },
-                    { value: '1:1', label: 'Quadrado', icon: <Square className="w-3 h-3" /> },
-                    { value: '3:4', label: 'Feed Vert.', icon: <RectangleVertical className="w-3 h-3" /> },
-                    { value: '16:9', label: 'Retangular', icon: <RectangleHorizontal className="w-3 h-3" /> },
-                  ].map((opt) => (
-                    <div
-                      key={opt.value}
-                      className={cn(
-                        'flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-lg border text-center transition-all duration-300',
-                        selectedRatio === opt.value
-                          ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 border-fuchsia-500 text-white scale-105'
-                          : 'bg-purple-900/30 border-purple-500/30 text-purple-300'
-                      )}
-                    >
-                      <span className={selectedRatio === opt.value ? 'text-white' : 'text-purple-400'}>
-                        {opt.icon}
-                      </span>
-                      <span className="text-[8px] font-medium leading-tight">{opt.label}</span>
-                      <span className="text-[7px] opacity-70">{opt.value}</span>
-                    </div>
-                  ))}
+                   {[
+                     { value: '9:16', label: 'Stories', icon: <Smartphone className="w-3 h-3" />, isQuadrado: false },
+                     { value: '1:1', label: 'Quadrado', icon: <Square className="w-3 h-3" />, isQuadrado: true },
+                     { value: '3:4', label: 'Feed Vert.', icon: <RectangleVertical className="w-3 h-3" />, isQuadrado: false },
+                     { value: '16:9', label: 'Retangular', icon: <RectangleHorizontal className="w-3 h-3" />, isQuadrado: false },
+                   ].map((opt) => (
+                     <div
+                       key={opt.value}
+                       ref={opt.isQuadrado ? ratioBtnRef : undefined}
+                       className={cn(
+                         'flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-lg border text-center transition-all duration-300',
+                         selectedRatio === opt.value
+                           ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 border-fuchsia-500 text-white scale-105'
+                           : 'bg-purple-900/30 border-purple-500/30 text-purple-300'
+                       )}
+                     >
+                       <span className={selectedRatio === opt.value ? 'text-white' : 'text-purple-400'}>
+                         {opt.icon}
+                       </span>
+                       <span className="text-[8px] font-medium leading-tight">{opt.label}</span>
+                       <span className="text-[7px] opacity-70">{opt.value}</span>
+                     </div>
+                   ))}
                 </div>
               </div>
 
@@ -370,6 +376,7 @@ const ClonerDemoAnimation: React.FC = () => {
 
               {/* Generate button */}
               <button
+                ref={genBtnRef}
                 className={cn(
                   'w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-200',
                   'bg-gradient-to-r from-fuchsia-600 to-purple-600 shadow-lg shadow-fuchsia-500/30',
