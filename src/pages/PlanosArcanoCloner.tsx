@@ -385,7 +385,7 @@ const PlanosArcanoCloner = () => {
             <div className="absolute left-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-r from-[#0a0510] to-transparent z-10 pointer-events-none" />
             <div className="absolute right-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-l from-[#0a0510] to-transparent z-10 pointer-events-none" />
 
-            <div className="marquee-refs-track flex gap-4">
+            <div className="marquee-refs-track flex gap-4" style={{ animationDuration: '15s' }}>
               {/* Flat list: 8 originals + 8 duplicates — translateX(-50%) aligns perfectly */}
               {[...Array.from({ length: 8 }, (_, i) => i), ...Array.from({ length: 8 }, (_, i) => i)].map((i, idx) => (
                 <div
