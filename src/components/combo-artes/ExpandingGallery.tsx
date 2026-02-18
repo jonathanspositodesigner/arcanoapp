@@ -67,8 +67,8 @@ const ExpandingGallery = ({ items }: ExpandingGalleryProps) => {
               {isActive && (
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent">
                   <div className="absolute bottom-6 left-6 right-6">
-                    <span className="inline-block px-3 py-1 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs font-medium tracking-wider uppercase mb-2">
-                      Imagem gerada com Arcano Cloner
+                    <span className="inline-block px-2.5 py-0.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-[10px] font-medium tracking-wide uppercase mb-1.5">
+                      Arcano Cloner
                     </span>
                     {item.label && (
                       <h3 className="text-white font-semibold text-lg md:text-xl">
