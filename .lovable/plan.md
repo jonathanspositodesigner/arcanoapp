@@ -1,41 +1,30 @@
 
-## Problema Identificado
+## Diagnóstico Real
 
-O carrossel do Bônus 01 (+300 Referências Profissionais) tem dois bugs na versão mobile:
+O CSS inline via `<style>` tag dentro do JSX está sendo ignorado ou sobrescrito. O código mostra `6s` para mobile e `30s` para desktop, mas o usuário confirma que nada mudou — o carrossel ainda vai na mesma velocidade lenta de sempre (~25-30s).
 
-**Bug 1 - Reset no meio do caminho**: A animação usa `translateX(-50%)` para criar o loop infinito, mas os 8 cards estão divididos em dois `<div>` filhos separados dentro do track. Isso faz o ponto de "50%" não coincidir com o final do primeiro set, causando o reset visual antes de terminar.
+**Causa**: `<style>` tags dentro do JSX não têm garantia de aplicação consistente em todos os browsers/contextos. Estilos em `<style>` tags dinâmicas podem ser ignorados ou sobrescritos por outros estilos com maior especificidade.
 
-**Bug 2 - Velocidade ainda lenta**: 15s ainda é devagar para mobile. Vamos reduzir para 8s no mobile.
+## Solução Definitiva
 
----
+Usar `style={{ animationDuration: '15s' }}` **diretamente no elemento** `.marquee-refs-track`. Estilos inline no React têm prioridade máxima — nada pode sobrescrevê-los.
 
-## Solução
+Manter a velocidade que o usuário quer: **15s** (nem 6s, nem 5s, nem 30s — exatamente 15s).
 
-### 1. Corrigir a estrutura HTML do carrossel
+## Alteração Técnica
 
-Em vez de dois grupos separados, criar uma **lista flat** com os 16 cards (8 originais + 8 duplicados) todos no mesmo nível:
+**Arquivo**: `src/pages/PlanosArcanoCloner.tsx` (linha ~388)
 
-```
-ANTES (bugado):
-track > [grupo1: card1..card8] + [grupo2: card1..card8]
-                                  ^ translateX(-50%) aponta aqui errado
-
-DEPOIS (correto):
-track > card1..card8..card1..card8  (todos no mesmo nível)
-                    ^ translateX(-50%) aponta exatamente na metade = loop perfeito
+Mudar:
+```tsx
+<div className="marquee-refs-track flex gap-4">
 ```
 
-### 2. Velocidade mobile
+Para:
+```tsx
+<div className="marquee-refs-track flex gap-4" style={{ animationDuration: '15s' }}>
+```
 
-- **Mobile**: `8s` (quase o dobro mais rápido que os 15s atuais)  
-- **Desktop**: `30s` (mantém igual)
+Isso aplica `15s` diretamente no elemento via React style prop, que tem especificidade máxima e **não pode ser sobrescrito por nenhum CSS**, seja do `<style>` tag, seja do Tailwind, seja do cache do browser.
 
----
-
-## Alterações Técnicas
-
-**Arquivo**: `src/pages/PlanosArcanoCloner.tsx`
-
-- Substituir o `.map` de 2 sets aninhados por um único array de 16 itens flat (8 + 8 duplicados)
-- Mudar `animationDuration` de `'15s'` para `'8s'` no mobile
-- Manter `translateX(-50%)` no keyframe (funciona corretamente com lista flat)
+O keyframe `marquee-refs` no `<style>` permanece — apenas o `animation-duration` muda para o inline style.
