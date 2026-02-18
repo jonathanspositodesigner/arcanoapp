@@ -365,13 +365,26 @@ const PlanosArcanoCloner = () => {
           </div>
 
           {/* Infinite marquee carousel */}
+          <style>{`
+            @keyframes marquee-refs {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            .marquee-refs-track {
+              animation: marquee-refs linear infinite;
+              will-change: transform;
+            }
+          `}</style>
           <div className="relative overflow-hidden">
             {/* Fade edges */}
             <div className="absolute left-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-r from-[#0a0510] to-transparent z-10 pointer-events-none" />
             <div className="absolute right-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-l from-[#0a0510] to-transparent z-10 pointer-events-none" />
 
-            <div className="flex gap-4 animate-marquee-scroll" style={{ animationDuration: isMobile ? '20s' : '30s' }}>
-              {/* Duplicate items for infinite scroll */}
+            <div
+              className="marquee-refs-track flex gap-4"
+              style={{ animationDuration: isMobile ? '15s' : '30s' }}
+            >
+              {/* Duplicate items for seamless infinite loop */}
               {[...Array(2)].map((_, setIndex) => (
                 <div key={setIndex} className="flex gap-4 shrink-0">
                   {Array.from({ length: 8 }).map((_, i) => (
