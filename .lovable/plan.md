@@ -1,71 +1,107 @@
 
-## Objetivo
+## Configuração do Produto 159713 — Arcano Cloner (4.200 Créditos Vitalícios)
 
-Na seção "Veja o que o Arcano Cloner é capaz de fazer", o componente `ExpandingGallery` deve:
-- **Mobile**: exibir as fotos em **coluna vertical**, uma abaixo da outra, sem setas de navegação
-- **Desktop** (`md:` em diante): manter o comportamento atual de expanding gallery horizontal com setas
+### Confirmação: Revogação de créditos em reembolso
 
----
+**Já está implementado e funcionando.** Ambos os webhooks possuem lógica completa para reembolso:
 
-## Alteração: `src/components/combo-artes/ExpandingGallery.tsx`
+- Quando o status é `refunded` ou `chargeback`, o sistema localiza o usuário pelo email
+- Chama o RPC `revoke_credits_on_refund` que remove os créditos do saldo lifetime
+- Em chargebacks, o email vai automaticamente para a blacklist
+- O RPC `revoke_credits_on_refund` existe e está ativo no banco
 
-### 1. Esconder as setas no mobile
-
-As setas ficam dentro de uma `<div className="flex justify-end gap-2 mb-4">`. Basta adicionar `hidden md:flex` para que só apareçam no desktop:
-
-```tsx
-// De:
-<div className="flex justify-end gap-2 mb-4">
-
-// Para:
-<div className="hidden md:flex justify-end gap-2 mb-4">
-```
-
-### 2. Layout vertical no mobile, horizontal no desktop
-
-O container da galeria atualmente é `flex gap-2 h-[400px]...`. No mobile, precisamos mudar para `flex-col` com altura automática. No desktop, mantém o comportamento horizontal com altura fixa.
-
-```tsx
-// De:
-<div className="flex gap-2 h-[400px] md:h-[500px] lg:h-[600px]">
-
-// Para:
-<div className="flex flex-col md:flex-row gap-3 md:gap-2 md:h-[500px] lg:h-[600px]">
-```
-
-### 3. Cards no mobile: altura fixa em bloco vertical, sem o expanding effect
-
-No mobile, cada card deve ter uma altura fixa (como no print: ~200px) e ocupar largura total. No desktop, mantém o `flex-[6]` / `flex-[0.6]` do expanding effect.
-
-```tsx
-// De:
-className={`relative overflow-hidden rounded-xl transition-all duration-500 ease-in-out ${
-  isActive ? "flex-[6] grayscale-0" : "flex-[0.6] md:flex-[0.8] grayscale brightness-50 ..."
-}`}
-
-// Para:
-className={`relative overflow-hidden rounded-xl transition-all duration-500 ease-in-out
-  h-[200px] md:h-auto    ← altura fixa mobile
-  md:${isActive ? "flex-[6] grayscale-0" : "flex-[0.8] grayscale brightness-50 hover:flex-[1.2] cursor-pointer"}
-`}
-```
-
-Na prática, como o Tailwind não suporta classes dinâmicas condicionais com `md:` em template strings assim, vamos usar uma abordagem com `clsx`-style concatenation, usando `w-full` no mobile e os flex values apenas no md+.
+Assim que o produto 159713 for adicionado ao mapeamento, a revogação automática já vai funcionar para ele também. Nenhuma mudança extra é necessária nesse aspecto.
 
 ---
 
-## Resumo das mudanças
+### O que será feito
 
-**Arquivo único**: `src/components/combo-artes/ExpandingGallery.tsx`
+Três mudanças nos webhooks, sem tocar em mais nada:
 
-| Elemento | Mobile | Desktop |
-|---|---|---|
-| Setas de navegação | Ocultas (`hidden`) | Visíveis (`md:flex`) |
-| Direção do container | Vertical (`flex-col`) | Horizontal (`md:flex-row`) |
-| Altura do container | Automática | `md:h-[500px] lg:h-[600px]` |
-| Altura dos cards | `h-[200px]` fixo | Controlada pelo flex expanding |
-| Expanding effect (click) | Sem efeito | Mantido |
-| Grayscale nos inativos | Sem grayscale (todos coloridos) | Mantido |
-| Label/badge | Mostra em todos | Só no ativo |
+**1. `supabase/functions/webhook-greenn-artes/index.ts`**
 
-No mobile, todas as fotos ficam empilhadas verticalmente com altura uniforme de ~200px, todas coloridas e com o label visível no canto inferior esquerdo — idêntico ao print enviado pelo usuário.
+- Adicionar `159713: { amount: 4200, name: 'Arcano Cloner' }` no `CREDITS_PRODUCT_MAPPING` (linha 52)
+- Criar constante `ARCANO_CLONER_PRODUCT_IDS = [159713]` para detecção no template de email
+- Na função `sendCreditsWelcomeEmail`: adicionar bloco `if (isArcanoCloner)` **antes** do bloco `if (isUpscaler)` com template exclusivo do Arcano Cloner
+
+**2. `supabase/functions/webhook-greenn-creditos/index.ts`**
+
+- Adicionar `159713: 4200` no `PRODUCT_CREDITS` (linha 21)
+
+---
+
+### Template de Email — Arcano Cloner
+
+**Assunto:** `🤖 Arcano Cloner | Acesso Ativado! +4.200 Créditos`
+**Remetente:** `Arcano App <contato@voxvisual.com.br>`
+**Botão CTA:** → `https://arcanolab.voxvisual.com.br/`
+
+Visual do template (fundo escuro, identidade Arcano Cloner):
+
+```text
+┌─────────────────────────────────────────┐
+│  Fundo: #0D0221  |  Container: #1A0A2E  │
+├─────────────────────────────────────────┤
+│                                         │
+│   🤖  ARCANO CLONER                     │
+│   Ferramenta de Fotos com IA            │
+│                                         │
+│   ✅ ACESSO ATIVADO                     │
+│                                         │
+├─────────────────────────────────────────┤
+│  Olá, [Nome]!                           │
+│  Você adquiriu o Arcano Cloner —        │
+│  a ferramenta de geração de fotos       │
+│  com inteligência artificial.           │
+├── BOX GRADIENTE #7c3aed → #ec4899 ─────┤
+│         +4.200                          │
+│    créditos adicionados                 │
+│    à sua conta (VITALÍCIOS)             │
+├─────────────────────────────────────────┤
+│  📋 DADOS DO SEU PRIMEIRO ACESSO:       │
+│  Email: [email]                         │
+│  Senha: [email]                         │
+│  ⚠️ Troque sua senha no 1º acesso       │
+├─────────────────────────────────────────┤
+│  ┌─────────────────────────────────┐    │
+│  │  🚀 ACESSAR MEU PRODUTO         │    │
+│  └─────────────────────────────────┘    │
+│     → arcanolab.voxvisual.com.br/       │
+├─────────────────────────────────────────┤
+│  © Arcano App                           │
+└─────────────────────────────────────────┘
+```
+
+---
+
+### Fluxo completo após a mudança
+
+```text
+Compra do produto 159713
+        │
+        ▼
+webhook-greenn-artes recebe o evento
+        │
+        ├── status = "paid" → adiciona 4.200 créditos lifetime
+        │                   → ativa Premium Pro
+        │                   → envia email Arcano Cloner
+        │
+        └── status = "refunded" → revoga créditos (já funciona!)
+                                → blacklist em caso de chargeback
+```
+
+---
+
+### Resumo técnico
+
+| Item | Valor |
+|---|---|
+| Product ID | 159713 |
+| Créditos | 4.200 (lifetime/vitalício) |
+| Webhook principal | webhook-greenn-artes |
+| Webhook secundário | webhook-greenn-creditos |
+| URL do botão CTA | https://arcanolab.voxvisual.com.br/ |
+| Assunto do email | 🤖 Arcano Cloner | Acesso Ativado! +4.200 Créditos |
+| Remetente | Arcano App <contato@voxvisual.com.br> |
+| Revogação em reembolso | Já funciona — nenhuma mudança necessária |
+| Produto 156957 | NÃO será tocado |
