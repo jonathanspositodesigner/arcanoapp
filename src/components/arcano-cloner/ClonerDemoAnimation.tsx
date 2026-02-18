@@ -24,8 +24,16 @@ const ClonerDemoAnimation: React.FC = () => {
   const [cursorPos, setCursorPos] = useState({ x: 30, y: 40 });
   const [cursorVisible, setCursorVisible] = useState(false);
   const [cursorClicking, setCursorClicking] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const clearAll = () => {
     if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
@@ -62,34 +70,39 @@ const ClonerDemoAnimation: React.FC = () => {
   useEffect(() => {
     resetAnimation();
 
+    // Desktop positions (5-col grid: left panel = 3/5, right = 2/5)
+    // Mobile positions (single col: full width left panel)
+    const pos = {
+      faceCard:   isMobile ? { x: 25, y: 22 } : { x: 22, y: 45 },
+      refCardStart: isMobile ? { x: 25, y: 22 } : { x: 22, y: 45 },
+      refCard:    isMobile ? { x: 75, y: 22 } : { x: 57, y: 45 },
+      ratioBtn:   isMobile ? { x: 38, y: 52 } : { x: 18, y: 72 },
+      genBtn:     isMobile ? { x: 50, y: 80 } : { x: 50, y: 88 },
+    };
+
     if (step === 0) {
-      // Move cursor to face card, click, show face
-      animateCursor(22, 45, 300, () => {
+      animateCursor(pos.faceCard.x, pos.faceCard.y, 300, () => {
         timeoutRef.current = setTimeout(() => setFaceVisible(true), 200);
       });
     } else if (step === 1) {
-      // Move cursor to ref card, click, show ref
       setCursorVisible(true);
-      setCursorPos({ x: 22, y: 45 });
-      animateCursor(57, 45, 400, () => {
+      setCursorPos(pos.refCardStart);
+      animateCursor(pos.refCard.x, pos.refCard.y, 400, () => {
         timeoutRef.current = setTimeout(() => setRefVisible(true), 200);
       });
     } else if (step === 2) {
-      // Keep images, move cursor to ratio selector
       setFaceVisible(true);
       setRefVisible(true);
-      animateCursor(18, 72, 300, () => {
+      animateCursor(pos.ratioBtn.x, pos.ratioBtn.y, 300, () => {
         timeoutRef.current = setTimeout(() => setSelectedRatio('1:1'), 150);
       });
     } else if (step === 3) {
-      // Keep images + ratio, click generate button
       setFaceVisible(true);
       setRefVisible(true);
       setSelectedRatio('1:1');
-      animateCursor(50, 88, 200, () => {
+      animateCursor(pos.genBtn.x, pos.genBtn.y, 200, () => {
         timeoutRef.current = setTimeout(() => {
           setButtonClicked(true);
-          // Start loading bar
           setLoadingProgress(0);
           let prog = 0;
           progressIntervalRef.current = setInterval(() => {
@@ -106,7 +119,7 @@ const ClonerDemoAnimation: React.FC = () => {
         }, 300);
       });
     }
-  }, [step]);
+  }, [step, isMobile]);
 
   // Step advancement loop
   useEffect(() => {
