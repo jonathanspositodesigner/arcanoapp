@@ -371,8 +371,13 @@ const PlanosArcanoCloner = () => {
               100% { transform: translateX(-50%); }
             }
             .marquee-refs-track {
-              animation: marquee-refs linear infinite;
+              animation: marquee-refs 6s linear infinite;
               will-change: transform;
+            }
+            @media (min-width: 768px) {
+              .marquee-refs-track {
+                animation-duration: 30s;
+              }
             }
           `}</style>
           <div className="relative overflow-hidden">
@@ -380,10 +385,7 @@ const PlanosArcanoCloner = () => {
             <div className="absolute left-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-r from-[#0a0510] to-transparent z-10 pointer-events-none" />
             <div className="absolute right-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-l from-[#0a0510] to-transparent z-10 pointer-events-none" />
 
-            <div
-              className="marquee-refs-track flex gap-4"
-              style={{ animationDuration: isMobile ? '8s' : '30s' }}
-            >
+            <div className="marquee-refs-track flex gap-4">
               {/* Flat list: 8 originals + 8 duplicates — translateX(-50%) aligns perfectly */}
               {[...Array.from({ length: 8 }, (_, i) => i), ...Array.from({ length: 8 }, (_, i) => i)].map((i, idx) => (
                 <div
