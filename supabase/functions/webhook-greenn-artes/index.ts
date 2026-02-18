@@ -57,7 +57,9 @@ const CREDITS_PRODUCT_MAPPING: Record<number, { amount: number; name: string }> 
   // Upscaler Arcano - Planos
   156954: { amount: 1800, name: 'Upscaler Arcano - Plano Starter' },
   156957: { amount: 4200, name: 'Upscaler Arcano - Plano Pro' },
-  156960: { amount: 12000, name: 'Upscaler Arcano - Plano Studio' }
+  156960: { amount: 12000, name: 'Upscaler Arcano - Plano Studio' },
+  // Arcano Cloner
+  159713: { amount: 4200, name: 'Arcano Cloner' }
 }
 
 // Mapeamento de planos Upscaler Arcano (para email personalizado)
@@ -66,6 +68,9 @@ const UPSCALER_PLAN_NAMES: Record<number, string> = {
   156957: 'Pro',
   156960: 'Studio'
 }
+
+// Produtos Arcano Cloner (para email personalizado)
+const ARCANO_CLONER_PRODUCT_IDS: number[] = [159713]
 
 // Textos de email por idioma
 const emailTexts = {
@@ -434,9 +439,10 @@ async function sendCreditsWelcomeEmail(
   const dedupKey = `${email}|creditos-${creditsAmount}|${dedupMinute}`
   const trackingId = crypto.randomUUID()
   
-  // Detectar se é produto Upscaler Arcano
+  // Detectar tipo de produto
+  const isArcanoCloner = productId ? ARCANO_CLONER_PRODUCT_IDS.includes(productId) : false
   const upscalerPlanName = productId ? UPSCALER_PLAN_NAMES[productId] : null
-  const isUpscaler = !!upscalerPlanName
+  const isUpscaler = !!upscalerPlanName && !isArcanoCloner
   
   try {
     // Tentar INSERT primeiro (atômico)
@@ -501,7 +507,63 @@ async function sendCreditsWelcomeEmail(
     let emailSubject: string
     let senderName: string
     
-    if (isUpscaler) {
+    if (isArcanoCloner) {
+      // ========================================
+      // TEMPLATE ARCANO CLONER
+      // ========================================
+      const platformUrl = 'https://arcanolab.voxvisual.com.br/'
+      const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
+      
+      emailSubject = `🤖 Arcano Cloner | Acesso Ativado! +${creditsFormatted} Créditos`
+      senderName = 'Arcano App'
+      
+      emailHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+body{font-family:sans-serif;background:#0D0221;padding:20px}
+.container{max-width:600px;margin:0 auto;background:#1A0A2E;padding:40px;border-radius:16px;border:1px solid rgba(124,58,237,0.4)}
+.header{text-align:center;padding:24px 0 16px}
+.robot-icon{font-size:48px;display:block;margin-bottom:12px}
+h1{background:linear-gradient(135deg,#a78bfa,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:32px;margin:0 0 4px;letter-spacing:2px}
+.subtitle{color:#c4b5fd;font-size:15px;margin:0 0 16px}
+.badge{display:inline-block;background:linear-gradient(135deg,rgba(34,197,94,0.2),rgba(16,185,129,0.2));border:1px solid rgba(34,197,94,0.4);color:#4ade80;padding:8px 20px;border-radius:20px;font-weight:bold;font-size:14px}
+.divider{border:none;border-top:1px solid rgba(124,58,237,0.2);margin:24px 0}
+.credits-box{background:linear-gradient(135deg,#7c3aed 0%,#ec4899 100%);padding:32px;border-radius:16px;text-align:center;margin:24px 0}
+.credits-amount{font-size:56px;font-weight:bold;color:#fff;line-height:1}
+.credits-label{color:rgba(255,255,255,0.9);margin-top:10px;font-size:16px}
+.credits-lifetime{color:rgba(255,255,255,0.7);font-size:13px;margin-top:4px;letter-spacing:1px;text-transform:uppercase}
+.credentials{background:rgba(255,255,255,0.04);padding:20px 24px;border-radius:12px;margin:20px 0;border:1px solid rgba(255,255,255,0.08)}
+.credentials h3{color:#a78bfa;margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:1px}
+.credentials p{color:#e2e8f0;margin:6px 0;font-size:14px}
+.warning{color:#fbbf24;font-size:13px;margin-top:10px;display:flex;align-items:center;gap:6px}
+.cta-button{display:block;background:linear-gradient(135deg,#7c3aed,#ec4899);color:white;text-align:center;padding:18px;border-radius:12px;text-decoration:none;margin:24px 0;font-weight:bold;font-size:18px;letter-spacing:0.5px}
+.footer{text-align:center;color:#4b5563;font-size:12px;margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.05)}
+p{color:#cbd5e1}
+strong{color:#e2e8f0}
+</style></head><body><div class="container">
+<div class="header">
+  <span class="robot-icon">🤖</span>
+  <h1>ARCANO CLONER</h1>
+  <div class="subtitle">Ferramenta de Fotos com Inteligência Artificial</div>
+  <div class="badge">✅ ACESSO ATIVADO</div>
+</div>
+<hr class="divider">
+<p>${t.greeting}${name ? ` <strong>${name}</strong>` : ''}!</p>
+<p>Você adquiriu o <strong>Arcano Cloner</strong> — a ferramenta de geração de fotos com inteligência artificial. Seus créditos vitalícios já foram adicionados à sua conta!</p>
+<div class="credits-box">
+  <div class="credits-amount">+${creditsFormatted}</div>
+  <div class="credits-label">créditos adicionados à sua conta</div>
+  <div class="credits-lifetime">⭐ VITALÍCIOS ⭐</div>
+</div>
+<div class="credentials">
+  <h3>📋 Dados do seu primeiro acesso:</h3>
+  <p><strong>Email:</strong> ${email}</p>
+  <p><strong>Senha:</strong> ${email}</p>
+  <p class="warning">⚠️ <span>${t.securityWarning}</span></p>
+</div>
+<a href="${clickTrackingUrl}" class="cta-button">🚀 ACESSAR MEU PRODUTO</a>
+<p style="text-align:center;color:#6b7280;font-size:13px">arcanolab.voxvisual.com.br</p>
+<div class="footer">© Arcano App<br>Dúvidas? Responda este email!</div>
+</div><img src="${trackingBaseUrl}?id=${trackingId}&action=open" width="1" height="1" style="display:none"/></body></html>`
+    } else if (isUpscaler) {
       // ========================================
       // TEMPLATE UPSCALER ARCANO
       // ========================================
@@ -567,7 +629,9 @@ p{color:#cbd5e1}
       body: JSON.stringify({
         email: {
           html: btoa(unescape(encodeURIComponent(emailHtml))),
-          text: isUpscaler 
+          text: isArcanoCloner 
+            ? `Arcano Cloner - +${creditsFormatted} créditos vitalícios! Email: ${email}, Senha: ${email}`
+            : isUpscaler 
             ? `Upscaler Arcano - Plano ${upscalerPlanName} - +${creditsFormatted} créditos! Email: ${email}, Senha: ${email}`
             : `+${creditsFormatted} créditos adicionados! Email: ${email}, Senha: ${email}`,
           subject: emailSubject,
@@ -585,7 +649,7 @@ p{color:#cbd5e1}
       email_content: emailHtml
     }).eq('id', logId)
     
-    console.log(`   ├─ [${requestId}] ${result.result === true ? '✅ Email de créditos enviado' : '❌ Falha no email de créditos'}${isUpscaler ? ` (Upscaler ${upscalerPlanName})` : ''}`)
+    console.log(`   ├─ [${requestId}] ${result.result === true ? '✅ Email de créditos enviado' : '❌ Falha no email de créditos'}${isArcanoCloner ? ' (Arcano Cloner)' : isUpscaler ? ` (Upscaler ${upscalerPlanName})` : ''}`)
   } catch (error) {
     console.log(`   ├─ [${requestId}] ❌ Erro email créditos: ${error}`)
     try {
