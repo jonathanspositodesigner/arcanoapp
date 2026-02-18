@@ -388,19 +388,28 @@ const ClonerDemoAnimation: React.FC = () => {
             </div>
 
             {/* Right panel - result */}
-            <div className="md:col-span-2">
+            <div className={cn(
+              'transition-all duration-700 ease-in-out',
+              showResult ? 'md:col-span-3' : 'md:col-span-2'
+            )}>
               <div className={cn(
                 'relative rounded-xl overflow-hidden border-2 transition-all duration-700',
                 showResult
-                  ? 'border-fuchsia-500/60 shadow-xl shadow-fuchsia-500/30 opacity-100 translate-x-0'
-                  : 'border-purple-500/20 opacity-30 translate-x-4'
+                  ? 'border-fuchsia-400/80 shadow-2xl opacity-100'
+                  : 'border-purple-500/20 opacity-30'
               )}
                 style={{
-                  transform: showResult ? 'translateX(0)' : 'translateX(12px)',
-                  transition: 'all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  transform: showResult ? 'translateX(0) scale(1)' : 'translateX(12px) scale(0.97)',
+                  transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  boxShadow: showResult
+                    ? '0 0 40px 8px rgba(217,70,239,0.35), 0 0 80px 16px rgba(168,85,247,0.18)'
+                    : undefined,
                 }}
               >
-                 <div className="aspect-square bg-purple-900/30 relative overflow-hidden">
+                 <div className={cn(
+                   'relative overflow-hidden bg-purple-900/30 transition-all duration-700',
+                   showResult ? 'aspect-[4/3]' : 'aspect-square'
+                 )}>
                    {/* Empty state */}
                    {!showResult && (
                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
@@ -408,65 +417,92 @@ const ClonerDemoAnimation: React.FC = () => {
                        <span className="text-[10px] text-purple-300/30">Resultado</span>
                      </div>
                    )}
-                   {/* Result skeleton representation */}
+                   {/* Result skeleton — expanded highlight */}
                    {showResult && (
-                     <div className={cn(
-                       'absolute inset-0 flex flex-col transition-all duration-700',
-                       showResult ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
-                     )}>
-                       {/* Simulated generated image skeleton */}
-                       <div className="flex-1 relative bg-gradient-to-br from-purple-900/60 via-fuchsia-900/30 to-purple-800/50 flex items-center justify-center">
-                         {/* Abstract "generated person" representation */}
-                         <div className="relative flex flex-col items-center gap-2">
-                           {/* Head */}
-                           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-fuchsia-400/60 to-purple-500/50 border-2 border-fuchsia-400/50 flex items-center justify-center shadow-lg shadow-fuchsia-500/30">
-                             <svg viewBox="0 0 24 24" className="w-7 h-7 fill-fuchsia-200/80">
-                               <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-                             </svg>
+                     <div className="absolute inset-0 flex flex-col bg-gradient-to-br from-[#2a0a4a] via-[#1e0a3a] to-[#2a0a4a]">
+                       {/* Animated glow bg */}
+                       <div className="absolute inset-0 opacity-40">
+                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-fuchsia-500/30 blur-3xl animate-pulse" />
+                         <div className="absolute top-1/4 left-1/4 w-24 h-24 rounded-full bg-purple-600/20 blur-2xl animate-pulse" style={{ animationDelay: '400ms' }} />
+                       </div>
+                       {/* Main content */}
+                       <div className="flex-1 flex items-center justify-center relative z-10 p-4">
+                         <div className="flex flex-col items-center gap-4 w-full">
+                           {/* Large avatar skeleton */}
+                           <div className="relative">
+                             <div className="absolute -inset-3 rounded-full bg-fuchsia-500/20 blur-md animate-pulse" />
+                             <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-fuchsia-400/70 to-purple-600/60 border-2 border-fuchsia-400/70 flex items-center justify-center shadow-2xl shadow-fuchsia-500/50">
+                               <svg viewBox="0 0 24 24" className="w-11 h-11 fill-fuchsia-100/90">
+                                 <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                               </svg>
+                             </div>
+                             <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-fuchsia-500 border-2 border-[#1e0a3a] flex items-center justify-center">
+                               <Check className="w-3 h-3 text-white" />
+                             </div>
                            </div>
-                           {/* Body skeleton lines */}
-                           <div className="space-y-1.5 flex flex-col items-center">
-                             <div className="h-2 w-20 rounded-full bg-fuchsia-400/30 animate-pulse" />
-                             <div className="h-1.5 w-14 rounded-full bg-purple-400/25 animate-pulse" style={{ animationDelay: '100ms' }} />
-                             <div className="h-1.5 w-16 rounded-full bg-purple-400/20 animate-pulse" style={{ animationDelay: '200ms' }} />
+                           {/* Skeleton body lines */}
+                           <div className="space-y-2 flex flex-col items-center w-full max-w-[160px]">
+                             <div className="h-2.5 w-full rounded-full bg-fuchsia-400/35 animate-pulse" />
+                             <div className="h-2 w-4/5 rounded-full bg-purple-400/25 animate-pulse" style={{ animationDelay: '120ms' }} />
+                             <div className="h-2 w-3/5 rounded-full bg-purple-400/20 animate-pulse" style={{ animationDelay: '240ms' }} />
                            </div>
-                         </div>
-                         {/* Corner sparkles */}
-                         <div className="absolute top-2 left-2 flex gap-0.5">
-                           {['✦','✦'].map((s, i) => (
-                             <span key={i} className="text-fuchsia-400/60 text-[8px] animate-pulse" style={{ animationDelay: `${i * 200}ms` }}>{s}</span>
-                           ))}
+                           {/* Stats row */}
+                           <div className="flex gap-3 mt-1">
+                             {[
+                               { label: 'HD', icon: '🎨' },
+                               { label: '1:1', icon: '⬛' },
+                               { label: '~15s', icon: '⚡' },
+                             ].map((stat) => (
+                               <div key={stat.label} className="flex flex-col items-center gap-0.5 bg-white/5 border border-fuchsia-500/20 rounded-lg px-3 py-1.5">
+                                 <span className="text-xs">{stat.icon}</span>
+                                 <span className="text-[9px] text-fuchsia-300 font-bold">{stat.label}</span>
+                               </div>
+                             ))}
+                           </div>
                          </div>
                        </div>
-                       {/* Result badge */}
-                       <div className="absolute top-2 right-2">
-                         <div className="bg-fuchsia-500/90 backdrop-blur-sm rounded-full px-2 py-0.5 flex items-center gap-1">
+                       {/* Bottom bar */}
+                       <div className="bg-black/40 backdrop-blur-sm px-3 py-2 flex items-center justify-between border-t border-fuchsia-500/20">
+                         <div className="flex items-center gap-1.5">
+                           <Sparkles className="w-3.5 h-3.5 text-fuchsia-400 animate-pulse" />
+                           <span className="text-[10px] text-fuchsia-300 font-semibold">Imagem pronta!</span>
+                         </div>
+                         <div className="bg-fuchsia-500/80 rounded-lg px-2.5 py-1 flex items-center gap-1">
+                           <svg viewBox="0 0 24 24" className="w-3 h-3 fill-white"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v4h5.66V9h3.84L12 2z"/></svg>
+                           <span className="text-[9px] text-white font-bold">Baixar</span>
+                         </div>
+                       </div>
+                       {/* Top badge */}
+                       <div className="absolute top-2.5 right-2.5">
+                         <div className="bg-fuchsia-500 rounded-full px-2.5 py-1 flex items-center gap-1 shadow-lg shadow-fuchsia-500/50 animate-pulse">
                            <Sparkles className="w-3 h-3 text-white" />
-                           <span className="text-[9px] text-white font-bold">Pronto!</span>
+                           <span className="text-[10px] text-white font-bold">Pronto! ✓</span>
                          </div>
                        </div>
-                       <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
-                         <span className="text-[9px] text-white/80 bg-black/50 rounded px-1.5 py-0.5">
-                           1:1 · HD
-                         </span>
-                         <div className="flex gap-1">
-                           {['✦','✦','✦'].map((s, i) => (
-                             <span key={i} className="text-fuchsia-400 text-[10px] animate-pulse" style={{ animationDelay: `${i * 150}ms` }}>{s}</span>
-                           ))}
-                         </div>
-                       </div>
+                       {/* Floating sparkles */}
+                       {['✦','✦','✦','✦'].map((s, i) => (
+                         <span
+                           key={i}
+                           className="absolute text-fuchsia-400 animate-pulse pointer-events-none"
+                           style={{
+                             fontSize: `${8 + i * 2}px`,
+                             top: `${[15, 70, 25, 80][i]}%`,
+                             left: `${[10, 85, 80, 12][i]}%`,
+                             animationDelay: `${i * 200}ms`,
+                           }}
+                         >{s}</span>
+                       ))}
                      </div>
                    )}
                  </div>
-               </div>
-
+              </div>
               {/* Result label */}
               <div className={cn(
                 'mt-2 text-center transition-all duration-500',
                 showResult ? 'opacity-100' : 'opacity-0'
               )}>
-                <span className="text-[10px] text-fuchsia-300/80 font-medium">
-                  Imagem gerada em ~15s ✓
+                <span className="text-xs text-fuchsia-300/90 font-semibold">
+                  ⚡ Gerado em ~15 segundos — sem prompt, sem complicação
                 </span>
               </div>
             </div>
