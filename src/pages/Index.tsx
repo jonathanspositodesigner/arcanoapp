@@ -87,12 +87,15 @@ const Index = () => {
     }
   };
 
-  // Verificar acessos do usuário (apenas se logado)
-  const hasToolAccess = isLoggedIn && userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug));
-  const hasArtesAccess = isLoggedIn && userPacks.some(p => ARTES_SLUGS.includes(p.pack_slug));
-  // hasPromptsAccess: premium SIM, mas NÃO se o único pack é de ferramenta/crédito
+  // Aguarda AMBOS carregarem antes de calcular qualquer acesso (evita flash de estado errado)
+  const isLoading = isPremiumLoading || isPacksLoading;
+
+  // Verificar acessos do usuário — só calcula depois que tudo carregou
+  const hasToolAccess = !isLoading && isLoggedIn && userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug));
+  const hasArtesAccess = !isLoading && isLoggedIn && userPacks.some(p => ARTES_SLUGS.includes(p.pack_slug));
+  // hasPromptsAccess: premium SIM, mas NÃO se TODOS os packs são de ferramenta/crédito
   const hasToolOnlyPacks = userPacks.length > 0 && userPacks.every(p => TOOL_SLUGS.includes(p.pack_slug));
-  const hasPromptsAccess = isLoggedIn && isPremium && !hasToolOnlyPacks;
+  const hasPromptsAccess = !isLoading && isLoggedIn && isPremium && !hasToolOnlyPacks;
 
   // LATAM que comprou apenas upscaler
   const hasOnlyUpscaler = userPacks.some(p => p.pack_slug === 'upscaller-arcano') && 
@@ -153,7 +156,6 @@ const Index = () => {
     return false;
   };
 
-  const isLoading = isPremiumLoading || isPacksLoading;
 
   // Card para usuário NÃO logado (descoberta)
   const DiscoverCard = ({ card }: { card: CardData }) => (
