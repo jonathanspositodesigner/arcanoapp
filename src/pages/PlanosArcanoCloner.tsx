@@ -382,24 +382,20 @@ const PlanosArcanoCloner = () => {
 
             <div
               className="marquee-refs-track flex gap-4"
-              style={{ animationDuration: isMobile ? '15s' : '30s' }}
+              style={{ animationDuration: isMobile ? '8s' : '30s' }}
             >
-              {/* Duplicate items for seamless infinite loop */}
-              {[...Array(2)].map((_, setIndex) => (
-                <div key={setIndex} className="flex gap-4 shrink-0">
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <div
-                      key={`${setIndex}-${i}`}
-                      className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 overflow-hidden"
-                    >
-                      <img
-                        src={`/images/refs/ref-${i + 1}.jpg`}
-                        alt={`Referência profissional ${i + 1}`}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                  ))}
+              {/* Flat list: 8 originals + 8 duplicates — translateX(-50%) aligns perfectly */}
+              {[...Array.from({ length: 8 }, (_, i) => i), ...Array.from({ length: 8 }, (_, i) => i)].map((i, idx) => (
+                <div
+                  key={idx}
+                  className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 overflow-hidden"
+                >
+                  <img
+                    src={`/images/refs/ref-${i + 1}.jpg`}
+                    alt={`Referência profissional ${i + 1}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
                 </div>
               ))}
             </div>
