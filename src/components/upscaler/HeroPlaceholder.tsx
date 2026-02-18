@@ -9,7 +9,7 @@ interface HeroPlaceholderProps {
 export const HeroPlaceholder = ({ onReveal, buttonText, locale = "pt" }: HeroPlaceholderProps) => {
   return (
     <div 
-      className="relative w-full aspect-[9/16] md:aspect-[2/3] rounded-3xl overflow-hidden border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10 cursor-pointer"
+      className="relative w-full aspect-[3/4] md:aspect-[2/3] rounded-3xl overflow-hidden border-2 border-white/10 shadow-2xl shadow-fuchsia-500/10 cursor-pointer"
       onClick={onReveal}
     >
       {/* Imagem de preview como background */}
