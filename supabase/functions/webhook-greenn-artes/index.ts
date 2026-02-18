@@ -750,6 +750,43 @@ async function processCreditsWebhook(
     }, { onConflict: 'id' })
     console.log(`   ├─ ✅ Profile atualizado`)
 
+    // ── IDEMPOTÊNCIA: checar se este contract/sale já foi processado ──
+    const contractId = payload.contract?.id || payload.sale?.id
+    if (contractId) {
+      const { data: alreadyProcessed } = await supabase
+        .from('webhook_logs')
+        .select('id')
+        .eq('product_id', productId)
+        .eq('result', 'success')
+        .neq('id', logId)
+        .filter('payload->contract->>id', 'eq', String(contractId))
+        .maybeSingle()
+
+      // fallback: checar também via sale id
+      let alreadyProcessedViaSale = null
+      if (!alreadyProcessed) {
+        const { data } = await supabase
+          .from('webhook_logs')
+          .select('id')
+          .eq('product_id', productId)
+          .eq('result', 'success')
+          .neq('id', logId)
+          .filter('payload->sale->>id', 'eq', String(contractId))
+          .maybeSingle()
+        alreadyProcessedViaSale = data
+      }
+
+      if (alreadyProcessed || alreadyProcessedViaSale) {
+        console.log(`   ├─ ⚠️ DUPLICATA DETECTADA: contract/sale ${contractId} já processado. Ignorando.`)
+        await supabase.from('webhook_logs').update({ 
+          result: 'duplicate', 
+          error_message: `Webhook duplicado - contract/sale ${contractId} já processado`,
+          platform: 'creditos'
+        }).eq('id', logId)
+        return
+      }
+    }
+
     // Adicionar créditos vitalícios
     const { data: creditsResult, error: creditsError } = await supabase.rpc('add_lifetime_credits', {
       _user_id: userId,
