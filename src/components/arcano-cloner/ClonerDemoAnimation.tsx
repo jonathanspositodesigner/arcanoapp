@@ -387,125 +387,91 @@ const ClonerDemoAnimation: React.FC = () => {
               </div>
             </div>
 
-            {/* Right panel - result */}
-            <div className={cn(
-              'transition-all duration-700 ease-in-out',
-              showResult ? 'md:col-span-3' : 'md:col-span-2'
-            )}>
-              <div className={cn(
-                'relative rounded-xl overflow-hidden border-2 transition-all duration-700',
-                showResult
-                  ? 'border-fuchsia-400/80 shadow-2xl opacity-100'
-                  : 'border-purple-500/20 opacity-30'
-              )}
-                style={{
-                  transform: showResult ? 'translateX(0) scale(1)' : 'translateX(12px) scale(0.97)',
-                  transition: 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                  boxShadow: showResult
-                    ? '0 0 40px 8px rgba(217,70,239,0.35), 0 0 80px 16px rgba(168,85,247,0.18)'
-                    : undefined,
-                }}
-              >
-                 <div className={cn(
-                   'relative overflow-hidden bg-purple-900/30 transition-all duration-700',
-                   showResult ? 'aspect-[4/3]' : 'aspect-square'
-                 )}>
-                   {/* Empty state */}
-                   {!showResult && (
-                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                       <Sparkles className="w-8 h-8 text-purple-400/30" />
-                       <span className="text-[10px] text-purple-300/30">Resultado</span>
-                     </div>
-                   )}
-                   {/* Result skeleton — expanded highlight */}
-                   {showResult && (
-                     <div className="absolute inset-0 flex flex-col bg-gradient-to-br from-[#2a0a4a] via-[#1e0a3a] to-[#2a0a4a]">
-                       {/* Animated glow bg */}
-                       <div className="absolute inset-0 opacity-40">
-                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-fuchsia-500/30 blur-3xl animate-pulse" />
-                         <div className="absolute top-1/4 left-1/4 w-24 h-24 rounded-full bg-purple-600/20 blur-2xl animate-pulse" style={{ animationDelay: '400ms' }} />
-                       </div>
-                       {/* Main content */}
-                       <div className="flex-1 flex items-center justify-center relative z-10 p-4">
-                         <div className="flex flex-col items-center gap-4 w-full">
-                           {/* Large avatar skeleton */}
-                           <div className="relative">
-                             <div className="absolute -inset-3 rounded-full bg-fuchsia-500/20 blur-md animate-pulse" />
-                             <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-fuchsia-400/70 to-purple-600/60 border-2 border-fuchsia-400/70 flex items-center justify-center shadow-2xl shadow-fuchsia-500/50">
-                               <svg viewBox="0 0 24 24" className="w-11 h-11 fill-fuchsia-100/90">
-                                 <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-                               </svg>
-                             </div>
-                             <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-fuchsia-500 border-2 border-[#1e0a3a] flex items-center justify-center">
-                               <Check className="w-3 h-3 text-white" />
-                             </div>
-                           </div>
-                           {/* Skeleton body lines */}
-                           <div className="space-y-2 flex flex-col items-center w-full max-w-[160px]">
-                             <div className="h-2.5 w-full rounded-full bg-fuchsia-400/35 animate-pulse" />
-                             <div className="h-2 w-4/5 rounded-full bg-purple-400/25 animate-pulse" style={{ animationDelay: '120ms' }} />
-                             <div className="h-2 w-3/5 rounded-full bg-purple-400/20 animate-pulse" style={{ animationDelay: '240ms' }} />
-                           </div>
-                           {/* Stats row */}
-                           <div className="flex gap-3 mt-1">
-                             {[
-                               { label: 'HD', icon: '🎨' },
-                               { label: '1:1', icon: '⬛' },
-                               { label: '~15s', icon: '⚡' },
-                             ].map((stat) => (
-                               <div key={stat.label} className="flex flex-col items-center gap-0.5 bg-white/5 border border-fuchsia-500/20 rounded-lg px-3 py-1.5">
-                                 <span className="text-xs">{stat.icon}</span>
-                                 <span className="text-[9px] text-fuchsia-300 font-bold">{stat.label}</span>
-                               </div>
-                             ))}
-                           </div>
-                         </div>
-                       </div>
-                       {/* Bottom bar */}
-                       <div className="bg-black/40 backdrop-blur-sm px-3 py-2 flex items-center justify-between border-t border-fuchsia-500/20">
-                         <div className="flex items-center gap-1.5">
-                           <Sparkles className="w-3.5 h-3.5 text-fuchsia-400 animate-pulse" />
-                           <span className="text-[10px] text-fuchsia-300 font-semibold">Imagem pronta!</span>
-                         </div>
-                         <div className="bg-fuchsia-500/80 rounded-lg px-2.5 py-1 flex items-center gap-1">
-                           <svg viewBox="0 0 24 24" className="w-3 h-3 fill-white"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v4h5.66V9h3.84L12 2z"/></svg>
-                           <span className="text-[9px] text-white font-bold">Baixar</span>
-                         </div>
-                       </div>
-                       {/* Top badge */}
-                       <div className="absolute top-2.5 right-2.5">
-                         <div className="bg-fuchsia-500 rounded-full px-2.5 py-1 flex items-center gap-1 shadow-lg shadow-fuchsia-500/50 animate-pulse">
-                           <Sparkles className="w-3 h-3 text-white" />
-                           <span className="text-[10px] text-white font-bold">Pronto! ✓</span>
-                         </div>
-                       </div>
-                       {/* Floating sparkles */}
-                       {['✦','✦','✦','✦'].map((s, i) => (
-                         <span
-                           key={i}
-                           className="absolute text-fuchsia-400 animate-pulse pointer-events-none"
-                           style={{
-                             fontSize: `${8 + i * 2}px`,
-                             top: `${[15, 70, 25, 80][i]}%`,
-                             left: `${[10, 85, 80, 12][i]}%`,
-                             animationDelay: `${i * 200}ms`,
-                           }}
-                         >{s}</span>
-                       ))}
-                     </div>
-                   )}
-                 </div>
-              </div>
-              {/* Result label */}
-              <div className={cn(
-                'mt-2 text-center transition-all duration-500',
-                showResult ? 'opacity-100' : 'opacity-0'
-              )}>
-                <span className="text-xs text-fuchsia-300/90 font-semibold">
-                  ⚡ Gerado em ~15 segundos — sem prompt, sem complicação
-                </span>
+            {/* Right panel - static placeholder */}
+            <div className="md:col-span-2">
+              <div className="relative rounded-xl overflow-hidden border-2 border-purple-500/20 opacity-30">
+                <div className="aspect-square bg-purple-900/30 flex flex-col items-center justify-center gap-2">
+                  <Sparkles className="w-8 h-8 text-purple-400/30" />
+                  <span className="text-[10px] text-purple-300/30">Resultado</span>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Result overlay modal — absolute over entire mockup */}
+        <div
+          className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none"
+          style={{
+            opacity: showResult ? 1 : 0,
+            transform: showResult ? 'scale(1)' : 'scale(0.85)',
+            transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-[#2a0a4a]/97 via-[#1e0a3a]/95 to-[#2a0a4a]/97 backdrop-blur-md" />
+          <div className="relative z-10 flex flex-col items-center justify-center w-full h-full p-6">
+            {/* Floating sparkles */}
+            {['✦','✦','✦','✦','✦','✦'].map((s, i) => (
+              <span
+                key={i}
+                className="absolute text-fuchsia-400 animate-pulse pointer-events-none select-none"
+                style={{
+                  fontSize: `${9 + i * 2}px`,
+                  top: `${[10, 75, 18, 82, 5, 88][i]}%`,
+                  left: `${[8, 88, 82, 6, 50, 48][i]}%`,
+                  animationDelay: `${i * 180}ms`,
+                }}
+              >{s}</span>
+            ))}
+
+            {/* Glow behind avatar */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-fuchsia-500/20 blur-3xl pointer-events-none" />
+
+            {/* Top badge */}
+            <div className="mb-5 bg-fuchsia-500 rounded-full px-3 py-1.5 flex items-center gap-1.5 shadow-lg shadow-fuchsia-500/60 animate-bounce">
+              <Sparkles className="w-3.5 h-3.5 text-white" />
+              <span className="text-xs text-white font-bold">Pronto! ✓</span>
+            </div>
+
+            {/* Large avatar */}
+            <div className="relative mb-5">
+              <div className="absolute -inset-4 rounded-full bg-fuchsia-500/25 blur-xl animate-pulse" />
+              <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-fuchsia-400/80 to-purple-600/70 border-2 border-fuchsia-400/80 flex items-center justify-center shadow-2xl shadow-fuchsia-500/60">
+                <svg viewBox="0 0 24 24" className="w-16 h-16 fill-fuchsia-100/90">
+                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                </svg>
+              </div>
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-fuchsia-500 border-2 border-[#1e0a3a] flex items-center justify-center">
+                <Check className="w-4 h-4 text-white" />
+              </div>
+            </div>
+
+            {/* Title */}
+            <h3 className="text-white font-bold text-lg mb-1">Imagem gerada!</h3>
+            <p className="text-fuchsia-300/80 text-xs mb-5">Sem prompt. Sem complicação.</p>
+
+            {/* Stats row */}
+            <div className="flex gap-3 mb-6">
+              {[
+                { label: 'HD', icon: '🎨' },
+                { label: '1:1', icon: '⬛' },
+                { label: '~15s', icon: '⚡' },
+              ].map((stat) => (
+                <div key={stat.label} className="flex flex-col items-center gap-0.5 bg-white/5 border border-fuchsia-500/30 rounded-xl px-4 py-2">
+                  <span className="text-base">{stat.icon}</span>
+                  <span className="text-[10px] text-fuchsia-300 font-bold">{stat.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Download button */}
+            <div className="bg-gradient-to-r from-fuchsia-600 to-purple-600 rounded-xl px-6 py-3 flex items-center gap-2 shadow-lg shadow-fuchsia-500/40">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v4h5.66V9h3.84L12 2z"/></svg>
+              <span className="text-sm text-white font-bold">Baixar Imagem</span>
+            </div>
+
+            {/* Footer text */}
+            <p className="mt-4 text-[11px] text-fuchsia-300/60">⚡ Gerado em ~15 segundos</p>
           </div>
         </div>
       </div>
