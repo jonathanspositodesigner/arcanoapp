@@ -262,6 +262,24 @@ const PlanosArcanoCloner = () => {
           </AnimatedSection>
 
           <ExpandingGallery items={galleryItems} />
+
+          <div className="mt-10 flex flex-wrap justify-center gap-3">
+            <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-4 py-2">
+              <Zap className="h-4 w-4 text-fuchsia-400" />
+              <span className="text-fuchsia-300 text-sm font-medium">Motor de IA Avançado</span>
+            </div>
+            <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-4 py-2">
+              <MousePointerClick className="h-4 w-4 text-fuchsia-400" />
+              <span className="text-fuchsia-300 text-sm font-medium">Sem Precisar de Prompt</span>
+            </div>
+            <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-4 py-2">
+              <Clock className="h-4 w-4 text-fuchsia-400" />
+              <span className="text-fuchsia-300 text-sm font-medium">Geração em Segundos</span>
+            </div>
+          </div>
+          <p className="text-white/50 text-center text-sm mt-4 max-w-xl mx-auto">
+            Tecnologia de ponta que garante resultados fotorrealistas em poucos segundos. Qualidade profissional sem precisar de nenhum conhecimento técnico.
+          </p>
         </div>
       </AnimatedSection>
 
@@ -334,22 +352,6 @@ const PlanosArcanoCloner = () => {
         </div>
       </AnimatedSection>
 
-      {/* ==================== ENGINE / NANOBANANA PRO ==================== */}
-      <AnimatedSection className="px-4 py-16 md:py-20">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-5 py-2 mb-6">
-            <Zap className="h-4 w-4 text-fuchsia-400" />
-            <span className="text-fuchsia-300 text-sm font-semibold">Powered by NanoBanana Pro</span>
-          </div>
-          <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-white mb-4">
-            O motor de geração de imagens{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">mais avançado do mercado</span>
-          </h2>
-          <p className="text-white/60 max-w-xl mx-auto">
-            Tecnologia de ponta que garante resultados fotorrealistas em poucos segundos. Qualidade profissional sem precisar de nenhum conhecimento técnico.
-          </p>
-        </div>
-      </AnimatedSection>
 
       {/* ==================== BONUS HEADER ==================== */}
       <AnimatedSection className="px-4 pt-16 md:pt-20 pb-6 bg-black/30">
