@@ -1,107 +1,63 @@
 
-## Configuração do Produto 159713 — Arcano Cloner (4.200 Créditos Vitalícios)
+## Problema identificado e correção
 
-### Confirmação: Revogação de créditos em reembolso
+### Causa raiz
 
-**Já está implementado e funcionando.** Ambos os webhooks possuem lógica completa para reembolso:
+Quando alguém compra o produto 159713 (Arcano Cloner) ou os produtos de créditos do Upscaler (156954, 156957, 156960):
 
-- Quando o status é `refunded` ou `chargeback`, o sistema localiza o usuário pelo email
-- Chama o RPC `revoke_credits_on_refund` que remove os créditos do saldo lifetime
-- Em chargebacks, o email vai automaticamente para a blacklist
-- O RPC `revoke_credits_on_refund` existe e está ativo no banco
+1. O webhook adiciona créditos e ativa `premium_users` (isPremium = true)
+2. Mas **nunca cria um registro em `user_pack_purchases`**
+3. A home usa `userPacks` (de `user_pack_purchases`) para saber o que mostrar como "comprado"
+4. Resultado: `userPacks` vazio → `hasToolAccess = false` → não mostra Ferramentas de IA
+5. Como `isPremium = true`, `hasPromptsAccess = true` → mostra Biblioteca de Prompts errado
 
-Assim que o produto 159713 for adicionado ao mapeamento, a revogação automática já vai funcionar para ele também. Nenhuma mudança extra é necessária nesse aspecto.
-
----
-
-### O que será feito
-
-Três mudanças nos webhooks, sem tocar em mais nada:
+### O que será corrigido
 
 **1. `supabase/functions/webhook-greenn-artes/index.ts`**
 
-- Adicionar `159713: { amount: 4200, name: 'Arcano Cloner' }` no `CREDITS_PRODUCT_MAPPING` (linha 52)
-- Criar constante `ARCANO_CLONER_PRODUCT_IDS = [159713]` para detecção no template de email
-- Na função `sendCreditsWelcomeEmail`: adicionar bloco `if (isArcanoCloner)` **antes** do bloco `if (isUpscaler)` com template exclusivo do Arcano Cloner
+Na função `processCreditsWebhook()`, após adicionar os créditos, criar/atualizar registro em `user_pack_purchases` com o slug correto:
+
+```
+159713 → pack_slug: 'arcano-cloner',    access_type: 'vitalicio'
+156954 → pack_slug: 'upscaller-arcano', access_type: 'vitalicio'
+156957 → pack_slug: 'upscaller-arcano', access_type: 'vitalicio'
+156960 → pack_slug: 'upscaller-arcano', access_type: 'vitalicio'
+156946, 156948, 156952 → pack_slug: 'upscaller-arcano', access_type: 'vitalicio'
+```
 
 **2. `supabase/functions/webhook-greenn-creditos/index.ts`**
 
-- Adicionar `159713: 4200` no `PRODUCT_CREDITS` (linha 21)
+Mesma lógica: após adicionar créditos, criar `user_pack_purchases` com o slug correto para cada produto.
 
----
+**3. `src/pages/Index.tsx`**
 
-### Template de Email — Arcano Cloner
+Dois ajustes no frontend:
 
-**Assunto:** `🤖 Arcano Cloner | Acesso Ativado! +4.200 Créditos`
-**Remetente:** `Arcano App <contato@voxvisual.com.br>`
-**Botão CTA:** → `https://arcanolab.voxvisual.com.br/`
+- Adicionar `'arcano-cloner'` ao array `TOOL_SLUGS` (linha 23-28)
+- Corrigir `hasPromptsAccess` para NÃO incluir usuários que só compraram ferramentas/créditos:
 
-Visual do template (fundo escuro, identidade Arcano Cloner):
-
-```text
-┌─────────────────────────────────────────┐
-│  Fundo: #0D0221  |  Container: #1A0A2E  │
-├─────────────────────────────────────────┤
-│                                         │
-│   🤖  ARCANO CLONER                     │
-│   Ferramenta de Fotos com IA            │
-│                                         │
-│   ✅ ACESSO ATIVADO                     │
-│                                         │
-├─────────────────────────────────────────┤
-│  Olá, [Nome]!                           │
-│  Você adquiriu o Arcano Cloner —        │
-│  a ferramenta de geração de fotos       │
-│  com inteligência artificial.           │
-├── BOX GRADIENTE #7c3aed → #ec4899 ─────┤
-│         +4.200                          │
-│    créditos adicionados                 │
-│    à sua conta (VITALÍCIOS)             │
-├─────────────────────────────────────────┤
-│  📋 DADOS DO SEU PRIMEIRO ACESSO:       │
-│  Email: [email]                         │
-│  Senha: [email]                         │
-│  ⚠️ Troque sua senha no 1º acesso       │
-├─────────────────────────────────────────┤
-│  ┌─────────────────────────────────┐    │
-│  │  🚀 ACESSAR MEU PRODUTO         │    │
-│  └─────────────────────────────────┘    │
-│     → arcanolab.voxvisual.com.br/       │
-├─────────────────────────────────────────┤
-│  © Arcano App                           │
-└─────────────────────────────────────────┘
+```typescript
+const ALL_TOOL_SLUGS = [...TOOL_SLUGS, 'arcano-cloner'];
+const hasToolOnlyPacks = userPacks.length > 0 && userPacks.every(p => ALL_TOOL_SLUGS.includes(p.pack_slug));
+const hasPromptsAccess = isLoggedIn && isPremium && !hasToolOnlyPacks;
 ```
 
----
+Comportamento após a correção:
 
-### Fluxo completo após a mudança
+| Quem comprou | Ferramentas de IA | Biblioteca de Prompts |
+|---|---|---|
+| Arcano Cloner (159713) | Aparece como comprado ✅ | Não aparece ✅ |
+| Upscaler créditos (156954/57/60) | Aparece como comprado ✅ | Não aparece ✅ |
+| Pacote puro de créditos (156946/48/52) | Aparece como comprado ✅ | Não aparece ✅ |
+| Assinatura de prompts | Não interfere ✅ | Aparece como comprado ✅ |
+| Usuário existente sem packs mas com premium | Não interfere ✅ | Mantém acesso ✅ |
 
-```text
-Compra do produto 159713
-        │
-        ▼
-webhook-greenn-artes recebe o evento
-        │
-        ├── status = "paid" → adiciona 4.200 créditos lifetime
-        │                   → ativa Premium Pro
-        │                   → envia email Arcano Cloner
-        │
-        └── status = "refunded" → revoga créditos (já funciona!)
-                                → blacklist em caso de chargeback
-```
+### Impacto em usuários existentes
 
----
+O registro `user_pack_purchases` será criado para **compras futuras**. Para o usuário de teste `valentina-colodete@...`, o webhook precisa ser reacionado (ou fazer um upsert manual). Após implementar, vou simular novamente a compra para corrigir o registro dela.
 
-### Resumo técnico
+### Arquivos modificados
 
-| Item | Valor |
-|---|---|
-| Product ID | 159713 |
-| Créditos | 4.200 (lifetime/vitalício) |
-| Webhook principal | webhook-greenn-artes |
-| Webhook secundário | webhook-greenn-creditos |
-| URL do botão CTA | https://arcanolab.voxvisual.com.br/ |
-| Assunto do email | 🤖 Arcano Cloner | Acesso Ativado! +4.200 Créditos |
-| Remetente | Arcano App <contato@voxvisual.com.br> |
-| Revogação em reembolso | Já funciona — nenhuma mudança necessária |
-| Produto 156957 | NÃO será tocado |
+1. `supabase/functions/webhook-greenn-artes/index.ts` — adiciona criação de pack purchase após créditos
+2. `supabase/functions/webhook-greenn-creditos/index.ts` — mesma lógica
+3. `src/pages/Index.tsx` — corrige `TOOL_SLUGS` e `hasPromptsAccess`
