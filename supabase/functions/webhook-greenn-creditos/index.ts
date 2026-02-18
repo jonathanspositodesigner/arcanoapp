@@ -411,35 +411,22 @@ async function processGreennCreditosWebhook(
     
     console.log(`   ├─ [${requestId}] 💰 Créditos a adicionar: ${creditAmount.toLocaleString('pt-BR')}`)
 
-    // Verificar duplicidade por contract/sale id (via payload JSONB)
+    // Verificar duplicidade por greenn_contract_id (coluna indexada)
     if (contractId) {
-      const { data: existingViaContract } = await supabase
+      const { data: existingLog } = await supabase
         .from('webhook_logs')
         .select('id')
         .eq('product_id', productId)
         .eq('result', 'success')
+        .eq('greenn_contract_id', String(contractId))
         .neq('id', logId)
-        .filter('payload->contract->>id', 'eq', String(contractId))
         .maybeSingle()
-
-      let existingViaSale = null
-      if (!existingViaContract) {
-        const { data } = await supabase
-          .from('webhook_logs')
-          .select('id')
-          .eq('product_id', productId)
-          .eq('result', 'success')
-          .neq('id', logId)
-          .filter('payload->sale->>id', 'eq', String(contractId))
-          .maybeSingle()
-        existingViaSale = data
-      }
       
-      if (existingViaContract || existingViaSale) {
-        console.log(`   ├─ [${requestId}] ⏭️ DUPLICATA: contract/sale ${contractId} já processado. Ignorando.`)
+      if (existingLog) {
+        console.log(`   ├─ [${requestId}] ⏭️ DUPLICATA: contract ${contractId} já processado. Ignorando.`)
         await supabase.from('webhook_logs').update({ 
           result: 'duplicate',
-          error_message: `Webhook duplicado - contract/sale ${contractId} já processado`
+          error_message: `Webhook duplicado - contract ${contractId} já processado`
         }).eq('id', logId)
         return
       }
@@ -618,10 +605,9 @@ serve(async (req) => {
       email,
       status,
       product_id: productId,
-      product_name: productName,
-      contract_id: contractId,
       payload,
-      result: 'received'
+      result: 'received',
+      greenn_contract_id: contractId ? String(contractId) : null
     }).select('id').single()
 
     const logId = logData?.id

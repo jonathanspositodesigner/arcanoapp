@@ -758,25 +758,11 @@ async function processCreditsWebhook(
         .select('id')
         .eq('product_id', productId)
         .eq('result', 'success')
+        .eq('greenn_contract_id', String(contractId))
         .neq('id', logId)
-        .filter('payload->contract->>id', 'eq', String(contractId))
         .maybeSingle()
 
-      // fallback: checar também via sale id
-      let alreadyProcessedViaSale = null
-      if (!alreadyProcessed) {
-        const { data } = await supabase
-          .from('webhook_logs')
-          .select('id')
-          .eq('product_id', productId)
-          .eq('result', 'success')
-          .neq('id', logId)
-          .filter('payload->sale->>id', 'eq', String(contractId))
-          .maybeSingle()
-        alreadyProcessedViaSale = data
-      }
-
-      if (alreadyProcessed || alreadyProcessedViaSale) {
+      if (alreadyProcessed) {
         console.log(`   ├─ ⚠️ DUPLICATA DETECTADA: contract/sale ${contractId} já processado. Ignorando.`)
         await supabase.from('webhook_logs').update({ 
           result: 'duplicate', 
@@ -1287,6 +1273,7 @@ serve(async (req) => {
      .catch(() => {})
 
     // Log to webhook_logs (durable) - platform já detecta créditos
+    const greennContractId = payload.contract?.id || payload.sale?.id || null
     const { data: logEntry, error: logError } = await supabase
       .from('webhook_logs')
       .insert({
@@ -1297,7 +1284,8 @@ serve(async (req) => {
         status,
         utm_source: utmSource,
         from_app: fromApp,
-        result: 'received'
+        result: 'received',
+        greenn_contract_id: greennContractId ? String(greennContractId) : null
       })
       .select('id')
       .single()

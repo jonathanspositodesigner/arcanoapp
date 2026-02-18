@@ -1,0 +1,1 @@
+ALTER TABLE public.webhook_logs ADD COLUMN IF NOT EXISTS greenn_contract_id TEXT;
