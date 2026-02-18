@@ -370,7 +370,7 @@ const PlanosArcanoCloner = () => {
             <div className="absolute left-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-r from-[#0a0510] to-transparent z-10 pointer-events-none" />
             <div className="absolute right-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-l from-[#0a0510] to-transparent z-10 pointer-events-none" />
 
-            <div className="flex gap-4 animate-marquee-scroll">
+            <div className="flex gap-4 animate-marquee-scroll" style={{ animationDuration: isMobile ? '20s' : '30s' }}>
               {/* Duplicate items for infinite scroll */}
               {[...Array(2)].map((_, setIndex) => (
                 <div key={setIndex} className="flex gap-4 shrink-0">
