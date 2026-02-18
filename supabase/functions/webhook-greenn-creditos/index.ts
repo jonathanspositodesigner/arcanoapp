@@ -25,7 +25,9 @@ const PRODUCT_CREDITS: Record<number, number> = {
   // Upscaler Arcano - Planos
   156954: 1800,   // Upscaler Arcano - Plano Starter (R$ 29,90)
   156957: 4200,   // Upscaler Arcano - Plano Pro (R$ 39,90)
-  156960: 12000   // Upscaler Arcano - Plano Studio (R$ 99,90)
+  156960: 12000,  // Upscaler Arcano - Plano Studio (R$ 99,90)
+  // Arcano Cloner
+  159713: 4200    // Arcano Cloner (4.200 créditos vitalícios)
 }
 
 // Textos de email por idioma
