@@ -364,14 +364,11 @@ const PlanosArcanoCloner = () => {
             <p className="text-white/50 text-sm max-w-lg mx-auto">Biblioteca completa com fotos de referência prontas para usar na geração de imagens</p>
           </div>
 
-          {/* Infinite marquee carousel */}
-          <div className="relative overflow-hidden">
-            {/* Fade edges */}
+          {/* Infinite marquee carousel - left direction */}
+          <div className="relative overflow-hidden mb-4">
             <div className="absolute left-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-r from-[#0a0510] to-transparent z-10 pointer-events-none" />
             <div className="absolute right-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-l from-[#0a0510] to-transparent z-10 pointer-events-none" />
-
             <div className="marquee-refs-track flex gap-4" style={{ animationDuration: '15s' }}>
-              {/* Flat list: 8 originals + 8 duplicates — translateX(-50%) aligns perfectly */}
               {[...Array.from({ length: 8 }, (_, i) => i), ...Array.from({ length: 8 }, (_, i) => i)].map((i, idx) => (
                 <div
                   key={idx}
@@ -379,6 +376,27 @@ const PlanosArcanoCloner = () => {
                 >
                   <img
                     src={`/images/refs/ref-${i + 1}.jpg`}
+                    alt={`Referência profissional ${i + 1}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Infinite marquee carousel - right direction */}
+          <div className="relative overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-r from-[#0a0510] to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-l from-[#0a0510] to-transparent z-10 pointer-events-none" />
+            <div className="marquee-refs-track-reverse flex gap-4" style={{ animationDuration: '15s' }}>
+              {[...Array.from({ length: 8 }, (_, i) => i), ...Array.from({ length: 8 }, (_, i) => i)].map((i, idx) => (
+                <div
+                  key={idx}
+                  className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 overflow-hidden"
+                >
+                  <img
+                    src={`/images/refs/ref-${((i + 4) % 8) + 1}.jpg`}
                     alt={`Referência profissional ${i + 1}`}
                     className="w-full h-full object-cover"
                     loading="lazy"

@@ -377,8 +377,19 @@ All colors MUST be HSL.
   100% { transform: translateX(-50%); }
 }
 
+@keyframes marquee-refs-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
 .marquee-refs-track {
   animation: marquee-refs 15s linear infinite !important;
+  animation-duration: 15s !important;
+  will-change: transform;
+}
+
+.marquee-refs-track-reverse {
+  animation: marquee-refs-reverse 15s linear infinite !important;
   animation-duration: 15s !important;
   will-change: transform;
 }
