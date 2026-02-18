@@ -153,7 +153,7 @@ const PlanosArcanoCloner = () => {
           <img 
             src="/images/arcano-cloner-hero.webp?v=4" 
             alt="Arcano Cloner" 
-            className="w-[320px] md:w-[450px] lg:w-[520px] h-auto object-contain drop-shadow-2xl mt-[-5%]"
+            className="w-[415px] md:w-[450px] lg:w-[520px] h-auto object-contain drop-shadow-2xl -translate-y-[10%] md:-translate-y-[5%]"
           />
         </div>
 
@@ -161,7 +161,7 @@ const PlanosArcanoCloner = () => {
         <div className="absolute inset-0 z-[15] pointer-events-none bg-gradient-to-t from-[#0f0a15] via-[#0f0a15]/50 to-transparent" style={{ top: '50%' }} />
 
         {/* Layer 5: Text content - overlaps bottom of photo */}
-        <div className="relative z-[20] flex flex-col items-center justify-end text-center h-screen px-4 md:px-6 pb-12 md:pb-16 pt-12">
+        <div className="relative z-[20] flex flex-col items-center justify-end text-center h-screen px-4 md:px-6 pb-28 md:pb-16 pt-12">
 
           <div className="mt-auto flex flex-col items-center">
             {/* Social proof badge */}
