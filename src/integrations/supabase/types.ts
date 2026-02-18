@@ -3368,6 +3368,7 @@ export type Database = {
           email: string | null
           error_message: string | null
           from_app: boolean | null
+          greenn_contract_id: string | null
           id: string
           mapping_type: string | null
           payload: Json
@@ -3382,6 +3383,7 @@ export type Database = {
           email?: string | null
           error_message?: string | null
           from_app?: boolean | null
+          greenn_contract_id?: string | null
           id?: string
           mapping_type?: string | null
           payload: Json
@@ -3396,6 +3398,7 @@ export type Database = {
           email?: string | null
           error_message?: string | null
           from_app?: boolean | null
+          greenn_contract_id?: string | null
           id?: string
           mapping_type?: string | null
           payload?: Json
