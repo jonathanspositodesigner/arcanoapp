@@ -284,6 +284,21 @@ const PlanosArcanoCloner = () => {
         </div>
       </AnimatedSection>
 
+      {/* ==================== HOW IT WORKS ==================== */}
+      <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+        <div className="max-w-5xl mx-auto">
+          <AnimatedSection as="div" delay={100}>
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
+              Simples assim.{" "}
+              <span className="text-fuchsia-400">Sem prompt. Sem complicação.</span>
+            </h2>
+            <p className="text-white/50 text-center text-sm mb-12">4 passos e seu ensaio está pronto</p>
+          </AnimatedSection>
+
+          <ClonerDemoAnimation />
+        </div>
+      </AnimatedSection>
+
       {/* ==================== PARA QUEM É ==================== */}
       <AnimatedSection className="px-4 py-16 md:py-20">
         <div className="max-w-5xl mx-auto">
@@ -319,21 +334,6 @@ const PlanosArcanoCloner = () => {
               );
             })}
           </StaggeredAnimation>
-        </div>
-      </AnimatedSection>
-
-      {/* ==================== HOW IT WORKS ==================== */}
-      <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
-        <div className="max-w-5xl mx-auto">
-          <AnimatedSection as="div" delay={100}>
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
-              Simples assim.{" "}
-              <span className="text-fuchsia-400">Sem prompt. Sem complicação.</span>
-            </h2>
-            <p className="text-white/50 text-center text-sm mb-12">4 passos e seu ensaio está pronto</p>
-          </AnimatedSection>
-
-          <ClonerDemoAnimation />
         </div>
       </AnimatedSection>
 
