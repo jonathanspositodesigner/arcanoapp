@@ -371,13 +371,8 @@ const PlanosArcanoCloner = () => {
               100% { transform: translateX(-50%); }
             }
             .marquee-refs-track {
-              animation: marquee-refs 6s linear infinite;
+              animation: marquee-refs 15s linear infinite;
               will-change: transform;
-            }
-            @media (min-width: 768px) {
-              .marquee-refs-track {
-                animation-duration: 30s;
-              }
             }
           `}</style>
           <div className="relative overflow-hidden">
