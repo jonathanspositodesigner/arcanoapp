@@ -264,18 +264,18 @@ const PlanosArcanoCloner = () => {
 
           <ExpandingGallery items={galleryItems} />
 
-          <div className="mt-10 flex flex-wrap justify-center gap-3">
-            <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-4 py-2">
-              <Zap className="h-4 w-4 text-fuchsia-400" />
-              <span className="text-fuchsia-300 text-sm font-medium">Motor de IA Avançado</span>
+          <div className="mt-10 flex flex-nowrap justify-center gap-2">
+            <div className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-3 py-1.5 shrink-0">
+              <Zap className="h-3 w-3 text-fuchsia-400 shrink-0" />
+              <span className="text-fuchsia-300 text-[11px] font-medium whitespace-nowrap">Motor de IA</span>
             </div>
-            <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-4 py-2">
-              <MousePointerClick className="h-4 w-4 text-fuchsia-400" />
-              <span className="text-fuchsia-300 text-sm font-medium">Sem Precisar de Prompt</span>
+            <div className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-3 py-1.5 shrink-0">
+              <MousePointerClick className="h-3 w-3 text-fuchsia-400 shrink-0" />
+              <span className="text-fuchsia-300 text-[11px] font-medium whitespace-nowrap">Sem Prompt</span>
             </div>
-            <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-4 py-2">
-              <Clock className="h-4 w-4 text-fuchsia-400" />
-              <span className="text-fuchsia-300 text-sm font-medium">Geração em Segundos</span>
+            <div className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-3 py-1.5 shrink-0">
+              <Clock className="h-3 w-3 text-fuchsia-400 shrink-0" />
+              <span className="text-fuchsia-300 text-[11px] font-medium whitespace-nowrap">Em Segundos</span>
             </div>
           </div>
           <p className="text-white/50 text-center text-sm mt-4 max-w-xl mx-auto">
