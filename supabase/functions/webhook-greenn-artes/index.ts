@@ -801,6 +801,43 @@ async function processCreditsWebhook(
       console.log(`   ├─ ℹ️ Plano ${existingPremium.plan_type} mantido (superior ao Pro)`)
     }
 
+    // Criar/atualizar registro em user_pack_purchases para exibição correta na home
+    const PRODUCT_PACK_SLUGS: Record<number, string> = {
+      159713: 'arcano-cloner',
+      156954: 'upscaller-arcano',
+      156957: 'upscaller-arcano',
+      156960: 'upscaller-arcano',
+      156946: 'upscaller-arcano',
+      156948: 'upscaller-arcano',
+      156952: 'upscaller-arcano',
+    }
+    const packSlugForProduct = productId ? PRODUCT_PACK_SLUGS[productId] : null
+    if (packSlugForProduct && userId) {
+      const { data: existingPackPurchase } = await supabase
+        .from('user_pack_purchases')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('pack_slug', packSlugForProduct)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (!existingPackPurchase) {
+        await supabase.from('user_pack_purchases').insert({
+          user_id: userId,
+          pack_slug: packSlugForProduct,
+          access_type: 'vitalicio',
+          has_bonus_access: false,
+          expires_at: null,
+          greenn_contract_id: payload.contract?.id || payload.sale?.id,
+          product_name: creditsProduct.name,
+          platform: 'creditos'
+        })
+        console.log(`   ├─ ✅ user_pack_purchases criado: ${packSlugForProduct}`)
+      } else {
+        console.log(`   ├─ ℹ️ user_pack_purchases já existe: ${packSlugForProduct}`)
+      }
+    }
+
     // Marcar sucesso ANTES do email
     await supabase.from('webhook_logs').update({ 
       result: 'success',

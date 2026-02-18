@@ -24,7 +24,8 @@ const TOOL_SLUGS = [
   'upscaller-arcano',
   'forja-selos-3d-ilimitada',
   'ia-muda-pose',
-  'ia-muda-roupa'
+  'ia-muda-roupa',
+  'arcano-cloner'
 ];
 
 // Slugs de packs de artes (exclui ferramentas, bonus e cursos)
@@ -89,7 +90,9 @@ const Index = () => {
   // Verificar acessos do usuário (apenas se logado)
   const hasToolAccess = isLoggedIn && userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug));
   const hasArtesAccess = isLoggedIn && userPacks.some(p => ARTES_SLUGS.includes(p.pack_slug));
-  const hasPromptsAccess = isLoggedIn && isPremium;
+  // hasPromptsAccess: premium SIM, mas NÃO se o único pack é de ferramenta/crédito
+  const hasToolOnlyPacks = userPacks.length > 0 && userPacks.every(p => TOOL_SLUGS.includes(p.pack_slug));
+  const hasPromptsAccess = isLoggedIn && isPremium && !hasToolOnlyPacks;
 
   // LATAM que comprou apenas upscaler
   const hasOnlyUpscaler = userPacks.some(p => p.pack_slug === 'upscaller-arcano') && 
