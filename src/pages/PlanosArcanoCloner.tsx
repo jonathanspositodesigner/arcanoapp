@@ -12,6 +12,7 @@ import logoHorizontal from "@/assets/logo_horizontal.png";
 import ExpandingGallery from "@/components/combo-artes/ExpandingGallery";
 import HeroCarouselBackground from "@/components/combo-artes/HeroCarouselBackground";
 import ClonerTrialSection from "@/components/arcano-cloner/trial/ClonerTrialSection";
+import ClonerDemoAnimation from "@/components/arcano-cloner/ClonerDemoAnimation";
 
 const UPSCALER_BEFORE_IMAGE_DESKTOP = "/images/upscaler-hero-antes.webp";
 const UPSCALER_AFTER_IMAGE_DESKTOP = "/images/upscaler-hero-depois.webp";
@@ -332,23 +333,7 @@ const PlanosArcanoCloner = () => {
             <p className="text-white/50 text-center text-sm mb-12">4 passos e seu ensaio está pronto</p>
           </AnimatedSection>
 
-          <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8" staggerDelay={150}>
-            {steps.map((step, index) => {
-              const IconComponent = step.icon;
-              return (
-                <div key={index} className="text-center flex flex-col items-center relative">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-fuchsia-500/30">
-                    {index + 1}
-                  </div>
-                  <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/30 flex items-center justify-center mb-5">
-                    <IconComponent className="h-10 w-10 text-fuchsia-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">{step.title}</h3>
-                  <p className="text-white/60 text-sm max-w-[200px]">{step.description}</p>
-                </div>
-              );
-            })}
-          </StaggeredAnimation>
+          <ClonerDemoAnimation />
         </div>
       </AnimatedSection>
 
