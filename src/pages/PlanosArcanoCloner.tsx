@@ -417,7 +417,7 @@ const PlanosArcanoCloner = () => {
               <span className="text-fuchsia-300 text-sm font-semibold">BÔNUS 02</span>
             </div>
             <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-white mb-2">
-              Upscaler gratuito para <span className="text-fuchsia-400">suas imagens</span>
+              Upscaler para <span className="text-fuchsia-400">suas imagens</span>
             </h3>
             <p className="text-white/50 text-sm max-w-lg mx-auto">Melhore a qualidade de qualquer imagem com nosso upscaler de IA incluso</p>
           </div>
