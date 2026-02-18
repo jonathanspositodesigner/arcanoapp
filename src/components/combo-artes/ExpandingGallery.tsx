@@ -23,8 +23,8 @@ const ExpandingGallery = ({ items }: ExpandingGalleryProps) => {
 
   return (
     <div className="relative">
-      {/* Navigation arrows */}
-      <div className="flex justify-end gap-2 mb-4">
+      {/* Navigation arrows - hidden on mobile */}
+      <div className="hidden md:flex justify-end gap-2 mb-4">
         <button
           onClick={handlePrev}
           className="w-10 h-10 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 flex items-center justify-center text-fuchsia-400 hover:bg-fuchsia-500/30 transition-colors"
@@ -41,8 +41,8 @@ const ExpandingGallery = ({ items }: ExpandingGalleryProps) => {
         </button>
       </div>
 
-      {/* Gallery container */}
-      <div className="flex gap-2 h-[400px] md:h-[500px] lg:h-[600px]">
+      {/* Gallery container - vertical on mobile, horizontal on desktop */}
+      <div className="flex flex-col md:flex-row gap-3 md:gap-2 md:h-[500px] lg:h-[600px]">
         {items.map((item, index) => {
           const isActive = index === activeIndex;
 
@@ -50,11 +50,15 @@ const ExpandingGallery = ({ items }: ExpandingGalleryProps) => {
             <div
               key={index}
               onClick={() => setActiveIndex(index)}
-              className={`relative overflow-hidden rounded-xl transition-all duration-500 ease-in-out ${
+              className={[
+                "relative overflow-hidden rounded-xl transition-all duration-500 ease-in-out",
+                // Mobile: fixed height, full width, no expanding effect
+                "h-[200px] w-full",
+                // Desktop: auto height, flex expanding effect
                 isActive
-                  ? "flex-[6] grayscale-0"
-                  : "flex-[0.6] md:flex-[0.8] grayscale brightness-50 hover:flex-[1] md:hover:flex-[1.2] cursor-pointer"
-              }`}
+                  ? "md:h-auto md:flex-[6] md:grayscale-0"
+                  : "md:h-auto md:flex-[0.8] md:grayscale md:brightness-50 md:hover:flex-[1.2] md:cursor-pointer",
+              ].join(" ")}
             >
               <img
                 src={item.imageUrl}
@@ -63,25 +67,23 @@ const ExpandingGallery = ({ items }: ExpandingGalleryProps) => {
                 loading="lazy"
               />
 
-              {/* Active overlay with label */}
-              {isActive && (
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent">
-                  <div className="absolute bottom-6 left-6 right-6">
-                    <span className="inline-block px-2.5 py-0.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-[10px] font-medium tracking-wide uppercase mb-1.5">
-                      Arcano Cloner
-                    </span>
-                    {item.label && (
-                      <h3 className="text-white font-semibold text-lg md:text-xl">
-                        {item.label}
-                      </h3>
-                    )}
-                  </div>
+              {/* Overlay with label - always visible on mobile, only on active on desktop */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent">
+                <div className="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-6">
+                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-[10px] font-medium tracking-wide uppercase mb-1.5">
+                    Arcano Cloner
+                  </span>
+                  {item.label && (
+                    <h3 className="text-white font-semibold text-base md:text-xl">
+                      {item.label}
+                    </h3>
+                  )}
                 </div>
-              )}
+              </div>
 
-              {/* Inactive overlay */}
+              {/* Inactive overlay - only on desktop */}
               {!isActive && (
-                <div className="absolute inset-0 bg-black/20" />
+                <div className="hidden md:block absolute inset-0 bg-black/20" />
               )}
             </div>
           );
