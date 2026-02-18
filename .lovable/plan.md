@@ -1,43 +1,88 @@
 
-# Correção: Animação sumindo + cursor fora do botão 1:1
+# Resultado como Modal Overlay — Animação Centralizada
 
-## Problema 1 — Resultado some antes de ser visto
+## Problema
 
-O timer do step 3 (`STEP_DURATIONS[3] = 3200ms`) começa a contar do início do step, mas a sequência interna é:
-- ~200ms delay inicial do cursor
-- ~600ms movimento do cursor
-- ~250ms clique
-- ~300ms delay após clique para iniciar loading
-- ~1600ms loading (100 ticks de 40ms com +2.5%)
-- ~200ms reveal do resultado
+O resultado (`showResult`) aparece no **painel direito** do grid (`md:col-span-3`), dentro do layout existente. Isso:
+- Empurra os elementos de baixo e altera o layout da página
+- Fica pequeno e pouco impactante
+- Prejudica a navegabilidade, pois a seção "cresce" verticalmente
 
-Total interno: ~3150ms — quase igual ao timer. O resultado aparece por menos de 100ms antes do reset.
+## Solução
 
-**Correção:** Aumentar `STEP_DURATIONS[3]` de `3200` para `5500ms` para o resultado ficar visível por ~2 segundos antes de reiniciar o loop.
+Transformar o resultado em um **overlay modal posicionado absolutamente** sobre o mockup inteiro (`position: absolute, inset: 0`), com `z-index` alto, que aparece com animação de **fade + scale** na frente de tudo, sem mover nenhum elemento da página.
 
-## Problema 2 — Cursor posicionado errado no botão Quadrado
+## O que muda no código
 
-No step 2, o cursor vai para `animateCursor(38, 72, ...)`. O botão "1:1 Quadrado" é o **segundo botão** numa grade de 4 botões iguais dentro do seletor de proporção. Com base no layout:
+**Arquivo:** `src/components/arcano-cloner/ClonerDemoAnimation.tsx`
 
-- O seletor ocupa a largura do painel esquerdo (`md:col-span-3` de 5 = ~60% da largura total)
-- Os 4 botões dividem esse espaço em 4 colunas iguais
-- O botão "Quadrado" (índice 1) está aproximadamente em **~28% do horizontal** (dentro do col-span-3)
-- Verticalmente, o seletor fica depois das duas cards e tem sua posição em torno de **~70% do container**
+### 1. Painel direito (resultado) — remover `col-span-3` dinâmico
 
-**Correção:** Ajustar cursor de `(38, 72)` para `(22, 72)` — movendo para a esquerda para cair no segundo botão da grade (Stories=col1, Quadrado=col2).
+Atualmente o painel direito usa `showResult ? 'md:col-span-3' : 'md:col-span-2'`, o que redefine o grid. Isso será revertido para um `md:col-span-2` fixo e estático — o painel volta a ser apenas o placeholder "aguardando resultado".
 
-Na realidade, o painel esquerdo vai de 0% a ~60% da largura total do mockup. O botão Quadrado é o 2º de 4 no painel esquerdo, então sua posição horizontal absoluta no mockup fica em torno de:
-- Painel: 0-60%, grid col 2/4 = botão em ~22.5% a ~37.5% do painel = centro ~30% do painel = ~18% do total
+### 2. Novo overlay modal de resultado
 
-**Valor ajustado:** `(18, 72)` — cursor vai cair no centro do botão Quadrado.
+Adicionar um novo `<div>` com `position: absolute, inset: 0, z-50` **dentro do container do mockup** (o `<div>` com `relative` na linha 152). Esse overlay:
 
-## Mudanças no arquivo
+- Aparece quando `showResult === true`
+- Cobre todo o mockup com `bg-[#1A0A2E]/95 backdrop-blur-sm`
+- Conteúdo centralizado com `flex items-center justify-center`
+- Animação de entrada: `opacity 0→1` + `scale 0.85→1` com `cubic-bezier` elástico
+- Conteúdo grande e impactante — avatar 32x32, título grande, stats, botão de download
 
-**`src/components/arcano-cloner/ClonerDemoAnimation.tsx`**
+### 3. Layout do overlay
 
-| Linha | Mudança |
-|---|---|
-| 6 | `STEP_DURATIONS[3]`: `3200` → `5500` |
-| 81 | `animateCursor(38, 72, ...)` → `animateCursor(18, 72, ...)` |
+```text
+┌──────────────────────────────────────────────┐
+│  [topo da barra arcano.app / cloner]         │
+│                                              │
+│  ┌────────────────────────────────────────┐  │
+│  │         (mockup fica atrás)            │  │
+│  │  ╔══════════════════════════════════╗  │  │
+│  │  ║   ✦  ✦  ✦                       ║  │  │
+│  │  ║                                  ║  │  │
+│  │  ║       [Avatar 32x32 glow]        ║  │  │
+│  │  ║                                  ║  │  │
+│  │  ║    Pronto! ✓  Imagem gerada      ║  │  │
+│  │  ║    [HD]  [1:1]  [~15s]           ║  │  │
+│  │  ║                                  ║  │  │
+│  │  ║   [  ⬇ Baixar Imagem   ]         ║  │  │
+│  │  ║                                  ║  │  │
+│  │  ║  ⚡ Sem prompt. Sem complicação.  ║  │  │
+│  │  ╚══════════════════════════════════╝  │  │
+│  └────────────────────────────────────────┘  │
+└──────────────────────────────────────────────┘
+```
 
-Duas linhas apenas, cirúrgico e preciso.
+### 4. Efeitos visuais do overlay
+
+- **Background:** `bg-gradient-to-br from-[#2a0a4a]/98 via-[#1e0a3a]/95 to-[#2a0a4a]/98` com `backdrop-blur-md`
+- **Avatar:** 32x32 rounded-full com glow `shadow-fuchsia-500/60` e ring animado
+- **Badge "Pronto!":** pill verde-fuchsia animado com `animate-bounce`
+- **Sparkles flutuantes:** 6 ícones em posições absolutas com `animate-pulse`
+- **Glow central:** `blur-3xl` fuchsia/purple atrás do avatar
+- **Barra inferior:** botão "Baixar" com gradiente fuchsia + texto "⚡ Gerado em ~15s"
+- **Borda:** `border-2 border-fuchsia-500/50` com `rounded-xl` no overlay inteiro
+
+### 5. Transição de entrada
+
+```css
+transform: showResult ? 'scale(1)' : 'scale(0.85)'
+opacity: showResult ? 1 : 0
+transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)
+```
+
+O efeito "salta para frente" com bounce elástico, cobrindo o mockup de forma cinematográfica.
+
+## Mudanças técnicas resumidas
+
+| O que muda | Antes | Depois |
+|---|---|---|
+| Painel direito col-span | `showResult ? col-3 : col-2` | `col-2` fixo |
+| Resultado | Dentro do col-span-3 do grid | Overlay absoluto sobre o mockup |
+| Impacto visual | Pequeno e lateral | Tela cheia do mockup |
+| Layout da página | Cresce ao mostrar resultado | Layout estável sempre |
+
+## Arquivo modificado
+
+- `src/components/arcano-cloner/ClonerDemoAnimation.tsx` — linhas 390-510 (painel direito + novo overlay)
