@@ -377,7 +377,7 @@ const PlanosArcanoCloner = () => {
                   {Array.from({ length: 8 }).map((_, i) => (
                     <div
                       key={`${setIndex}-${i}`}
-                      className="w-[140px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 overflow-hidden"
+                      className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 overflow-hidden"
                     >
                       <img
                         src={`/images/refs/ref-${i + 1}.jpg`}
