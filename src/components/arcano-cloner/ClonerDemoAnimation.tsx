@@ -194,77 +194,114 @@ const ClonerDemoAnimation: React.FC = () => {
             <div className="md:col-span-3 space-y-3">
               {/* Face + Ref cards row */}
               <div className="grid grid-cols-2 gap-3">
-                {/* Face card */}
-                <div className={cn(
-                  'relative border-2 border-dashed rounded-xl overflow-hidden transition-all duration-300',
-                  step === 0
-                    ? 'border-fuchsia-500/70 shadow-lg shadow-fuchsia-500/20'
-                    : 'border-purple-500/30',
-                )}>
-                  <div className="aspect-square bg-purple-900/20 relative">
-                    <img
-                      src="/images/arcano-cloner-hero.webp"
-                      alt="Sua foto"
-                      className={cn(
-                        'w-full h-full object-cover transition-all duration-700',
-                        faceVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
-                      )}
-                    />
-                    {!faceVisible && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                        <Upload className="w-7 h-7 text-purple-400/60" />
-                        <span className="text-[10px] text-purple-300/50 font-medium">Sua Foto</span>
-                      </div>
-                    )}
-                    {faceVisible && (
-                      <div className="absolute bottom-1.5 left-1.5 bg-black/60 backdrop-blur-sm rounded-md px-1.5 py-0.5">
-                        <span className="text-[9px] text-white font-medium">✓ Sua Foto</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                 {/* Face card */}
+                 <div className={cn(
+                   'relative border-2 border-dashed rounded-xl overflow-hidden transition-all duration-300',
+                   step === 0
+                     ? 'border-fuchsia-500/70 shadow-lg shadow-fuchsia-500/20'
+                     : 'border-purple-500/30',
+                 )}>
+                   <div className="aspect-square bg-purple-900/20 relative">
+                     {/* Skeleton representation when empty */}
+                     {!faceVisible && (
+                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                         <Upload className="w-7 h-7 text-purple-400/60" />
+                         <span className="text-[10px] text-purple-300/50 font-medium">Sua Foto</span>
+                       </div>
+                     )}
+                     {/* Skeleton filled state */}
+                     {faceVisible && (
+                       <div className={cn(
+                         'absolute inset-0 flex flex-col transition-all duration-700',
+                         faceVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+                       )}>
+                         {/* Face silhouette skeleton */}
+                         <div className="flex-1 flex items-center justify-center bg-purple-800/30">
+                           <div className="relative flex flex-col items-center gap-1.5">
+                             {/* Head circle */}
+                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/50 to-fuchsia-500/40 border border-fuchsia-400/30 flex items-center justify-center">
+                               <svg viewBox="0 0 24 24" className="w-6 h-6 fill-fuchsia-300/60">
+                                 <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                               </svg>
+                             </div>
+                             {/* Skeleton lines */}
+                             <div className="space-y-1">
+                               <div className="h-1.5 w-16 rounded-full bg-purple-500/30 animate-pulse" />
+                               <div className="h-1 w-10 mx-auto rounded-full bg-purple-500/20 animate-pulse" style={{ animationDelay: '150ms' }} />
+                             </div>
+                           </div>
+                         </div>
+                         <div className="bg-fuchsia-600/20 px-2 py-1 flex items-center gap-1">
+                           <Check className="w-3 h-3 text-fuchsia-400" />
+                           <span className="text-[9px] text-fuchsia-300 font-medium">Sua Foto</span>
+                         </div>
+                       </div>
+                     )}
+                   </div>
+                 </div>
 
-                {/* Ref card */}
-                <div className={cn(
-                  'relative border-2 border-dashed rounded-xl overflow-hidden transition-all duration-300',
-                  step === 1
-                    ? 'border-fuchsia-500/70 shadow-lg shadow-fuchsia-500/20'
-                    : 'border-purple-500/30',
-                )}>
-                  <div className="aspect-square bg-purple-900/20 relative">
-                    <img
-                      src="/images/refs/ref-3.jpg"
-                      alt="Referência"
-                      className={cn(
-                        'w-full h-full object-cover transition-all duration-700',
-                        refVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
-                      )}
-                    />
-                    {!refVisible && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                        <Image className="w-7 h-7 text-purple-400/60" />
-                        <span className="text-[10px] text-purple-300/50 font-medium">Referência</span>
-                      </div>
-                    )}
-                    {refVisible && (
-                      <div className="absolute bottom-1.5 left-1.5 bg-black/60 backdrop-blur-sm rounded-md px-1.5 py-0.5">
-                        <span className="text-[9px] text-white font-medium">✓ Referência</span>
-                      </div>
-                    )}
-                    {/* Library modal simulation on step 1 */}
-                    {step === 1 && !refVisible && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-full h-full grid grid-cols-3 gap-0.5 p-0.5 animate-fade-in">
-                          {[1,2,3,4,5,6].map(n => (
-                            <div key={n} className="bg-purple-800/40 rounded-sm overflow-hidden">
-                              <img src={`/images/refs/ref-${n}.jpg`} alt="" className="w-full h-full object-cover opacity-80" />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                 {/* Ref card */}
+                 <div className={cn(
+                   'relative border-2 border-dashed rounded-xl overflow-hidden transition-all duration-300',
+                   step === 1
+                     ? 'border-fuchsia-500/70 shadow-lg shadow-fuchsia-500/20'
+                     : 'border-purple-500/30',
+                 )}>
+                   <div className="aspect-square bg-purple-900/20 relative">
+                     {!refVisible && step !== 1 && (
+                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                         <Image className="w-7 h-7 text-purple-400/60" />
+                         <span className="text-[10px] text-purple-300/50 font-medium">Referência</span>
+                       </div>
+                     )}
+                     {/* Library grid skeleton simulation on step 1 */}
+                     {step === 1 && !refVisible && (
+                       <div className="absolute inset-0 p-1.5 animate-fade-in">
+                         <div className="grid grid-cols-3 gap-1 h-full">
+                           {[0,1,2,3,4,5].map(n => (
+                             <div key={n} className={cn(
+                               'rounded bg-purple-700/40 border border-purple-500/20 flex items-center justify-center transition-all duration-300',
+                               n === 4 ? 'border-fuchsia-500/60 bg-fuchsia-700/30 scale-105' : ''
+                             )}>
+                               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-purple-400/40">
+                                 <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                               </svg>
+                             </div>
+                           ))}
+                         </div>
+                       </div>
+                     )}
+                     {/* Skeleton filled state */}
+                     {refVisible && (
+                       <div className={cn(
+                         'absolute inset-0 flex flex-col transition-all duration-700',
+                         refVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+                       )}>
+                         <div className="flex-1 flex items-center justify-center bg-purple-800/30">
+                           <div className="relative flex flex-col items-center gap-1.5">
+                             {/* Landscape/photo icon skeleton */}
+                             <div className="w-12 h-9 rounded-lg bg-gradient-to-br from-purple-500/40 to-fuchsia-500/30 border border-fuchsia-400/30 flex items-center justify-center overflow-hidden">
+                               {/* Simulated sky/ground */}
+                               <div className="w-full h-1/2 bg-purple-600/30" />
+                               <div className="absolute bottom-0 w-full h-1/2 bg-purple-800/30" />
+                               <svg viewBox="0 0 24 24" className="absolute w-6 h-6 fill-fuchsia-300/50">
+                                 <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                               </svg>
+                             </div>
+                             <div className="space-y-1">
+                               <div className="h-1.5 w-14 rounded-full bg-purple-500/30 animate-pulse" />
+                               <div className="h-1 w-8 mx-auto rounded-full bg-purple-500/20 animate-pulse" style={{ animationDelay: '200ms' }} />
+                             </div>
+                           </div>
+                         </div>
+                         <div className="bg-fuchsia-600/20 px-2 py-1 flex items-center gap-1">
+                           <Check className="w-3 h-3 text-fuchsia-400" />
+                           <span className="text-[9px] text-fuchsia-300 font-medium">Referência</span>
+                         </div>
+                       </div>
+                     )}
+                   </div>
+                 </div>
               </div>
 
               {/* Aspect ratio selector */}
@@ -363,45 +400,65 @@ const ClonerDemoAnimation: React.FC = () => {
                   transition: 'all 0.7s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 }}
               >
-                <div className="aspect-square bg-purple-900/30 relative">
-                  <img
-                    src="/images/gallery/gallery-2.webp"
-                    alt="Resultado"
-                    className={cn(
-                      'w-full h-full object-cover transition-all duration-700',
-                      showResult ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
-                    )}
-                  />
-                  {!showResult && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                      <Sparkles className="w-8 h-8 text-purple-400/30" />
-                      <span className="text-[10px] text-purple-300/30">Resultado</span>
-                    </div>
-                  )}
-                  {/* Sparkles on result */}
-                  {showResult && (
-                    <>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                      <div className="absolute top-2 right-2">
-                        <div className="bg-fuchsia-500/90 backdrop-blur-sm rounded-full px-2 py-0.5 flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 text-white" />
-                          <span className="text-[9px] text-white font-bold">Pronto!</span>
-                        </div>
-                      </div>
-                      <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
-                        <span className="text-[9px] text-white/80 bg-black/50 rounded px-1.5 py-0.5">
-                          1:1 · HD
-                        </span>
-                        <div className="flex gap-1">
-                          {['✦','✦','✦'].map((s, i) => (
-                            <span key={i} className="text-fuchsia-400 text-[10px] animate-pulse" style={{ animationDelay: `${i * 150}ms` }}>{s}</span>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
+                 <div className="aspect-square bg-purple-900/30 relative overflow-hidden">
+                   {/* Empty state */}
+                   {!showResult && (
+                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                       <Sparkles className="w-8 h-8 text-purple-400/30" />
+                       <span className="text-[10px] text-purple-300/30">Resultado</span>
+                     </div>
+                   )}
+                   {/* Result skeleton representation */}
+                   {showResult && (
+                     <div className={cn(
+                       'absolute inset-0 flex flex-col transition-all duration-700',
+                       showResult ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
+                     )}>
+                       {/* Simulated generated image skeleton */}
+                       <div className="flex-1 relative bg-gradient-to-br from-purple-900/60 via-fuchsia-900/30 to-purple-800/50 flex items-center justify-center">
+                         {/* Abstract "generated person" representation */}
+                         <div className="relative flex flex-col items-center gap-2">
+                           {/* Head */}
+                           <div className="w-12 h-12 rounded-full bg-gradient-to-br from-fuchsia-400/60 to-purple-500/50 border-2 border-fuchsia-400/50 flex items-center justify-center shadow-lg shadow-fuchsia-500/30">
+                             <svg viewBox="0 0 24 24" className="w-7 h-7 fill-fuchsia-200/80">
+                               <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+                             </svg>
+                           </div>
+                           {/* Body skeleton lines */}
+                           <div className="space-y-1.5 flex flex-col items-center">
+                             <div className="h-2 w-20 rounded-full bg-fuchsia-400/30 animate-pulse" />
+                             <div className="h-1.5 w-14 rounded-full bg-purple-400/25 animate-pulse" style={{ animationDelay: '100ms' }} />
+                             <div className="h-1.5 w-16 rounded-full bg-purple-400/20 animate-pulse" style={{ animationDelay: '200ms' }} />
+                           </div>
+                         </div>
+                         {/* Corner sparkles */}
+                         <div className="absolute top-2 left-2 flex gap-0.5">
+                           {['✦','✦'].map((s, i) => (
+                             <span key={i} className="text-fuchsia-400/60 text-[8px] animate-pulse" style={{ animationDelay: `${i * 200}ms` }}>{s}</span>
+                           ))}
+                         </div>
+                       </div>
+                       {/* Result badge */}
+                       <div className="absolute top-2 right-2">
+                         <div className="bg-fuchsia-500/90 backdrop-blur-sm rounded-full px-2 py-0.5 flex items-center gap-1">
+                           <Sparkles className="w-3 h-3 text-white" />
+                           <span className="text-[9px] text-white font-bold">Pronto!</span>
+                         </div>
+                       </div>
+                       <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+                         <span className="text-[9px] text-white/80 bg-black/50 rounded px-1.5 py-0.5">
+                           1:1 · HD
+                         </span>
+                         <div className="flex gap-1">
+                           {['✦','✦','✦'].map((s, i) => (
+                             <span key={i} className="text-fuchsia-400 text-[10px] animate-pulse" style={{ animationDelay: `${i * 150}ms` }}>{s}</span>
+                           ))}
+                         </div>
+                       </div>
+                     </div>
+                   )}
+                 </div>
+               </div>
 
               {/* Result label */}
               <div className={cn(
