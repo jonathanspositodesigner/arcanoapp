@@ -3,7 +3,7 @@ import { Upload, Image, Square, Smartphone, RectangleVertical, RectangleHorizont
 import { cn } from '@/lib/utils';
 
 // Step durations in ms
-const STEP_DURATIONS = [2200, 2200, 1800, 3200];
+const STEP_DURATIONS = [2200, 2200, 1800, 5500];
 const TOTAL_DURATION = STEP_DURATIONS.reduce((a, b) => a + b, 0); // ~9.4s
 
 const stepLabels = [
@@ -78,7 +78,7 @@ const ClonerDemoAnimation: React.FC = () => {
       // Keep images, move cursor to ratio selector
       setFaceVisible(true);
       setRefVisible(true);
-      animateCursor(38, 72, 300, () => {
+      animateCursor(18, 72, 300, () => {
         timeoutRef.current = setTimeout(() => setSelectedRatio('1:1'), 150);
       });
     } else if (step === 3) {
