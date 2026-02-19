@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { ArrowLeft, Download, ImagePlus, Sparkles, X, Loader2, Paperclip, ChevronDown, Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -37,6 +37,7 @@ const GerarImagemTool = () => {
   const { getCreditCost } = useAIToolSettings();
 
   const [prompt, setPrompt] = useState('');
+  const [isDragOver, setIsDragOver] = useState(false);
   const [model, setModel] = useState<'normal' | 'pro'>('pro');
   const [aspectRatio, setAspectRatio] = useState<string>('1:1');
   const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
@@ -54,36 +55,75 @@ const GerarImagemTool = () => {
   const creditCostPro = isUnlimited ? getCreditCost('gerar_imagem_pro', 60) : 100;
   const currentCreditCost = model === 'pro' ? creditCostPro : creditCostNormal;
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
+  const processFiles = useCallback((files: File[]) => {
     const remaining = 5 - referenceImages.length;
-    const toProcess = Array.from(files).slice(0, remaining);
+    const toProcess = files.filter(f => f.type.startsWith('image/')).slice(0, remaining);
 
     for (const file of toProcess) {
-      if (!file.type.startsWith('image/')) continue;
-      
       const reader = new FileReader();
       reader.onload = () => {
         const dataUrl = reader.result as string;
         const base64 = dataUrl.split(',')[1];
-        setReferenceImages(prev => [...prev, {
-          file,
-          preview: dataUrl,
-          base64,
-          mimeType: file.type,
-        }]);
+        setReferenceImages(prev => {
+          if (prev.length >= 5) return prev;
+          return [...prev, { file, preview: dataUrl, base64, mimeType: file.type }];
+        });
       };
       reader.readAsDataURL(file);
     }
+  }, [referenceImages.length]);
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    processFiles(Array.from(files));
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const removeReferenceImage = (index: number) => {
     setReferenceImages(prev => prev.filter((_, i) => i !== index));
   };
+
+  // Drag & drop handlers
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (referenceImages.length < 5) setIsDragOver(true);
+  }, [referenceImages.length]);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    const files = Array.from(e.dataTransfer.files);
+    processFiles(files);
+  }, [processFiles]);
+
+  // Ctrl+V paste handler
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      if (referenceImages.length >= 5) return;
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      const imageFiles: File[] = [];
+      for (const item of Array.from(items)) {
+        if (item.type.startsWith('image/')) {
+          const file = item.getAsFile();
+          if (file) imageFiles.push(file);
+        }
+      }
+      if (imageFiles.length > 0) processFiles(imageFiles);
+    };
+
+    window.addEventListener('paste', handlePaste);
+    return () => window.removeEventListener('paste', handlePaste);
+  }, [processFiles, referenceImages.length]);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -211,8 +251,21 @@ const GerarImagemTool = () => {
           </div>
         </div>
 
-        {/* Main content area - image result centered */}
-        <div className="flex-1 flex items-center justify-center p-4">
+        {/* Main content area - image result centered + drag & drop zone */}
+        <div
+          className="flex-1 flex items-center justify-center p-4 relative"
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          {/* Drag overlay */}
+          {isDragOver && (
+            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-fuchsia-900/60 backdrop-blur-sm border-2 border-dashed border-fuchsia-400 rounded-none pointer-events-none">
+              <ImagePlus className="h-12 w-12 text-fuchsia-300 mb-2" />
+              <p className="text-fuchsia-200 font-semibold text-sm">Solte para adicionar referência</p>
+            </div>
+          )}
+
           {resultBase64 ? (
             <div className="w-full max-w-2xl space-y-3">
               <div className="rounded-2xl overflow-hidden border border-purple-500/20 bg-black/30 shadow-2xl">
@@ -240,6 +293,7 @@ const GerarImagemTool = () => {
             <div className="flex flex-col items-center gap-3 text-purple-500/60">
               <Sparkles className="h-12 w-12" />
               <p className="text-sm text-center">Digite um prompt e clique em Gerar</p>
+              <p className="text-xs text-purple-500/40 text-center">Arraste imagens aqui ou cole com Ctrl+V para adicionar referências</p>
               <div className="mt-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-500/10 to-purple-600/10 border border-fuchsia-500/20 max-w-sm">
                 <p className="text-[11px] text-fuchsia-300 text-center font-medium">🔥 Preço Promocional de Lançamento!</p>
                 <p className="text-[10px] text-purple-400 text-center mt-1">Aproveite os preços especiais por tempo limitado.</p>
@@ -251,19 +305,19 @@ const GerarImagemTool = () => {
         {/* Reference images preview strip */}
         {referenceImages.length > 0 && (
           <div className="sticky bottom-[110px] z-20 px-4">
-            <div className="max-w-3xl mx-auto flex gap-2 items-center bg-[#1a1525]/90 backdrop-blur-md rounded-xl p-2 border border-purple-500/20">
+            <div className="max-w-3xl mx-auto flex gap-2 items-center bg-[#1a1525]/90 backdrop-blur-md rounded-xl p-2 border border-purple-500/20 overflow-x-auto">
               {referenceImages.map((img, idx) => (
-                <div key={idx} className="relative w-12 h-12 rounded-lg overflow-hidden border border-purple-500/30 flex-shrink-0">
-                  <img src={img.preview} alt="" className="w-full h-full object-cover" />
+                <div key={idx} className="relative w-14 h-14 rounded-lg overflow-visible flex-shrink-0">
+                  <img src={img.preview} alt="" className="w-full h-full object-cover rounded-lg border border-purple-500/30" />
                   <button
                     onClick={() => removeReferenceImage(idx)}
-                    className="absolute -top-1 -right-1 bg-red-600 rounded-full p-0.5"
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-600 hover:bg-red-500 rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
                   >
-                    <X className="h-2.5 w-2.5 text-white" />
+                    <X className="h-3 w-3 text-white" />
                   </button>
                 </div>
               ))}
-              <span className="text-[10px] text-purple-400 ml-1">{referenceImages.length}/5</span>
+              <span className="text-[10px] text-purple-400 ml-1 flex-shrink-0">{referenceImages.length}/5</span>
             </div>
           </div>
         )}
