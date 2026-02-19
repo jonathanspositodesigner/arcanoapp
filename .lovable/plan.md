@@ -1,82 +1,70 @@
 
-## Diagnóstico Preciso
+## Problema
+O email enviado na compra do Arcano Cloner é o mesmo template genérico de "créditos adicionados" — não menciona o produto comprado, não explica o que é a ferramenta, não causa impacto.
 
-### Dados confirmados no banco
-Todas as 3 usuárias de teste têm:
-- `user_pack_purchases`: `pack_slug = 'arcano-cloner'`, `access_type = 'vitalicio'`, `is_active = true`
-- `premium_users`: `is_active = true`, `billing_period = 'lifetime'`
-- RPC `get_user_packs`: retorna corretamente o pack `arcano-cloner`
+## O que será feito
 
-### Causa raiz identificada
+### Arquivo: `supabase/functions/webhook-greenn-creditos/index.ts`
 
-A lógica no `Index.tsx` tem uma falha de condição de corrida / timing:
+**1. Criar uma função dedicada `sendArcanoClonnerEmail`** (separada da função genérica `sendWelcomeEmail`) com um template totalmente novo, focado no produto:
 
-```typescript
-// linha 91 - hasToolAccess
-const hasToolAccess = isLoggedIn && userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug));
+**Estrutura do novo email:**
+- Header: "Você comprou o Arcano Cloner!" com identidade visual dark (roxa/dourada)
+- Bloco principal: Explicação clara do que é o produto — "Ferramenta de IA para criar fotos com alta fidelidade ao seu rosto"
+- Bloco de créditos: Destacar os 4.200 créditos vitalícios incluídos na compra
+- Credenciais de acesso (email + senha temporária)
+- Botão CTA: "Acessar o Arcano Cloner agora"
+- Aviso de troca de senha
 
-// linha 94-95 - hasPromptsAccess
-const hasToolOnlyPacks = userPacks.length > 0 && userPacks.every(p => TOOL_SLUGS.includes(p.pack_slug));
-const hasPromptsAccess = isLoggedIn && isPremium && !hasToolOnlyPacks;
-```
-
-O problema: enquanto os dados carregam, existe um momento onde `isPremium = true` mas `userPacks = []` (ainda não chegou do banco). Nesse momento:
-- `hasToolOnlyPacks = false` (array vazio → `.length > 0` é false)
-- `hasPromptsAccess = true && true && !false = true` → **mostra Biblioteca de Prompts errado**
-- `hasToolAccess = false` (array vazio) → **não mostra Ferramentas de IA**
-
-Além disso, há o `isLoading` que combina `isPremiumLoading || isPacksLoading` — mas o `isPremium` pode resolver antes dos `userPacks`, causando um flash de estado incorreto.
-
-### Solução: simplificar totalmente a lógica de acesso
-
-A lógica correta é direta e sem ambiguidade:
-
-**Ferramentas de IA** → mostrar se tem qualquer pack em `TOOL_SLUGS`
-**Biblioteca de Prompts** → mostrar se `isPremium = true` E NÃO tem apenas packs de ferramenta
-**Artes** → mostrar se tem qualquer pack em `ARTES_SLUGS`
-
-O que muda: aguardar que AMBOS (`isPremium` e `userPacks`) estejam carregados antes de calcular qualquer acesso. Isso é garantido usando `isLoading` corretamente como guard.
-
-### Arquivo modificado: `src/pages/Index.tsx`
-
-**Mudança 1 — linha 55-56:** garantir que o `isLoading` cubra os dois estados antes de qualquer cálculo
-
-**Mudança 2 — linhas 91-95:** reescrever a lógica de acesso para ser baseada exclusivamente nos dados já carregados, usando um guard explícito:
+**2. Lógica de desvio por produto (linha ~547):** Verificar se `productId === 159713` e chamar o novo template ao invés do genérico:
 
 ```typescript
-// Só calcula acessos depois que TUDO carregou
-const isLoading = isPremiumLoading || isPacksLoading;
+// Na linha ~547, substituir:
+await sendWelcomeEmail(supabase, email, clientName, creditAmount, isNewUser, requestId, userLocale)
 
-// Quando ainda carregando, todos os acessos são false (evita flash)
-const hasToolAccess  = !isLoading && isLoggedIn && userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug));
-const hasArtesAccess = !isLoading && isLoggedIn && userPacks.some(p => ARTES_SLUGS.includes(p.pack_slug));
-
-// Prompts: premium SIM, mas não se TODOS os packs são de ferramenta
-// E só calcula depois que tudo carregou (evita o flash do estado intermediário)
-const hasToolOnlyPacks = userPacks.length > 0 && userPacks.every(p => TOOL_SLUGS.includes(p.pack_slug));
-const hasPromptsAccess = !isLoading && isLoggedIn && isPremium && !hasToolOnlyPacks;
+// Por:
+if (productId === 159713) {
+  await sendArcanoClonnerEmail(supabase, email, clientName, creditAmount, isNewUser, requestId)
+} else {
+  await sendWelcomeEmail(supabase, email, clientName, creditAmount, isNewUser, requestId, userLocale)
+}
 ```
 
-**Mudança 3 — mover `isLoading` para antes dos cálculos de acesso** (atualmente está na linha 156, depois dos cálculos nas linhas 91-95, o que significa que os cálculos acontecem com dados incompletos):
+**3. Conteúdo do novo template `sendArcanoClonnerEmail`:**
 
-```typescript
-// ANTES (atual — bugado):
-const hasToolAccess = ...   // linha 91 — calcula com dados que podem estar incompletos
-const isLoading = isPremiumLoading || isPacksLoading;  // linha 156 — só definido depois!
+```
+ASSUNTO: 🎉 Seu Arcano Cloner está ativado! Comece a criar agora
 
-// DEPOIS (correto):
-const isLoading = isPremiumLoading || isPacksLoading;  // definir PRIMEIRO
-const hasToolAccess = !isLoading && ...               // só calcula quando tudo carregou
+HEADER: Arcano Cloner ativado com sucesso!
+
+CORPO:
+"Parabéns pela sua compra! Você agora tem acesso ao Arcano Cloner
+— a ferramenta de IA para criar fotos com alta fidelidade
+ao seu rosto e aparência."
+
+[BOX DESTAQUE - O QUE É O ARCANO CLONER]
+"Envie uma foto sua + uma imagem de referência e a IA recria
+você na cena com precisão e criatividade ajustável."
+
+[BOX CRÉDITOS]
+"+4.200 créditos vitalícios incluídos na sua compra"
+"= 42 gerações disponíveis (100 créditos por geração)"
+
+[BOX CREDENCIAIS]
+Email: iris-dolores@...
+Senha temporária: [email]
+⚠️ Troque sua senha no primeiro acesso
+
+[BOTÃO CTA]
+🚀 Acessar o Arcano Cloner agora
+
+[RODAPÉ]
+Link direto: arcanoapp.voxvisual.com.br
 ```
 
-### Resultado esperado
+**Visual:** Dark mode com tons roxo (#8b5cf6) e dourado (#d4af37), igual ao estilo do app.
 
-| Usuário | Ferramentas de IA | Biblioteca de Prompts |
-|---|---|---|
-| Compradora Arcano Cloner | Aparece como comprado (verde) | Não aparece |
-| Compradora Upscaler Arcano | Aparece como comprado (verde) | Não aparece |
-| Assinante mensal (sem packs) | Não aparece | Aparece como comprado (verde) |
-| Assinante mensal + upscaler | Aparece como comprado (verde) | Aparece como comprado (verde) |
-
-### Único arquivo modificado
-- `src/pages/Index.tsx` — reorganizar e adicionar `!isLoading` guard nas linhas de cálculo de acesso
+### Impacto
+- Apenas o template do email é alterado — zero impacto na lógica de créditos ou banco
+- Funciona apenas para produto 159713 (Arcano Cloner)
+- Todos os outros produtos continuam recebendo o email genérico de créditos
