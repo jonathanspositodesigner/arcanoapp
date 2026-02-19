@@ -1,19 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ArrowRight, Shield, Clock, Star, Zap, Upload, Image, Sparkles, Camera, MousePointerClick, BookOpen, Gift, Play, Maximize, ChevronDown, Video, DollarSign, Car, Shirt, Bot, CameraOff, Briefcase, Music, User, Rocket, Share2 } from "lucide-react";
+import { Check, ArrowRight, Shield, Clock, Zap, Sparkles, MousePointerClick, Upload, Image, Play, Maximize, BookOpen, Gift, DollarSign, Car, Shirt, Bot, CameraOff, Briefcase, Music, User, Rocket, Share2, Star } from "lucide-react";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { HeroBeforeAfterSlider } from "@/components/upscaler";
 import logoHorizontal from "@/assets/logo_horizontal.png";
-import ExpandingGallery from "@/components/combo-artes/ExpandingGallery";
 import HeroCarouselBackground from "@/components/combo-artes/HeroCarouselBackground";
 import { LazySection } from "@/components/combo-artes/LazySection";
-import ClonerTrialSection from "@/components/arcano-cloner/trial/ClonerTrialSection";
-import ClonerDemoAnimation from "@/components/arcano-cloner/ClonerDemoAnimation";
+
+// Lazy-loaded heavy components (below the fold)
+const ExpandingGallery = lazy(() => import("@/components/combo-artes/ExpandingGallery"));
+const ClonerDemoAnimation = lazy(() => import("@/components/arcano-cloner/ClonerDemoAnimation"));
+const ClonerTrialSection = lazy(() => import("@/components/arcano-cloner/trial/ClonerTrialSection"));
+const HeroBeforeAfterSlider = lazy(() => import("@/components/upscaler").then(m => ({ default: m.HeroBeforeAfterSlider })));
 
 const UPSCALER_BEFORE_IMAGE_DESKTOP = "/images/upscaler-hero-antes.webp";
 const UPSCALER_AFTER_IMAGE_DESKTOP = "/images/upscaler-hero-depois.webp";
@@ -154,6 +156,9 @@ const PlanosArcanoCloner = () => {
           <img 
             src="/images/arcano-cloner-hero.webp?v=4" 
             alt="Arcano Cloner" 
+            fetchPriority="high"
+            decoding="sync"
+            loading="eager"
             className="w-[415px] md:w-[450px] lg:w-[520px] h-auto object-contain drop-shadow-2xl -translate-y-[10%] md:-translate-y-[5%]"
           />
         </div>
@@ -166,7 +171,7 @@ const PlanosArcanoCloner = () => {
 
           <div className="mt-auto flex flex-col items-center">
             {/* Social proof badge */}
-            <FadeIn delay={100} duration={600}>
+            <FadeIn duration={600}>
               <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-5 md:mb-6">
                 <div className="flex -space-x-2">
                   <img src="/images/social-proof-1.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
@@ -189,7 +194,7 @@ const PlanosArcanoCloner = () => {
             </h1>
 
             {/* Subtitle */}
-            <FadeIn delay={300} duration={700}>
+            <FadeIn duration={700}>
               <p className="text-sm md:text-base text-white/60 mb-6 md:mb-8 max-w-lg leading-relaxed mx-auto">
                 Basta subir sua foto e escolher a referência.{" "}
                 <span className="text-fuchsia-400 font-semibold">Resultado pronto em segundos.</span>
@@ -197,7 +202,7 @@ const PlanosArcanoCloner = () => {
             </FadeIn>
 
             {/* Trust badges */}
-            <FadeIn delay={600} duration={700}>
+            <FadeIn duration={700}>
               <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10">
                 <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
                   <Sparkles className="h-3.5 w-3.5 text-fuchsia-400" />
@@ -266,7 +271,9 @@ const PlanosArcanoCloner = () => {
             <p className="text-white/50 text-center text-sm mb-10">Todas as imagens abaixo foram geradas com a ferramenta</p>
           </AnimatedSection>
 
-          <ExpandingGallery items={galleryItems} />
+          <Suspense fallback={<div className="min-h-[300px]" />}>
+            <ExpandingGallery items={galleryItems} />
+          </Suspense>
 
           <div className="mt-10 flex flex-nowrap justify-center gap-2">
             <div className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-3 py-1.5 shrink-0">
@@ -301,7 +308,9 @@ const PlanosArcanoCloner = () => {
             <p className="text-white/50 text-center text-sm mb-12">4 passos e seu ensaio está pronto</p>
           </AnimatedSection>
 
-          <ClonerDemoAnimation />
+          <Suspense fallback={<div className="min-h-[400px]" />}>
+            <ClonerDemoAnimation />
+          </Suspense>
         </div>
       </AnimatedSection>
       </LazySection>
@@ -431,11 +440,13 @@ const PlanosArcanoCloner = () => {
             <p className="text-white/50 text-sm max-w-lg mx-auto">Melhore a qualidade de qualquer imagem com nosso upscaler de IA incluso</p>
           </div>
 
-          <HeroBeforeAfterSlider
-            beforeImage={isMobile ? UPSCALER_BEFORE_IMAGE_MOBILE : UPSCALER_BEFORE_IMAGE_DESKTOP}
-            afterImage={isMobile ? UPSCALER_AFTER_IMAGE_MOBILE : UPSCALER_AFTER_IMAGE_DESKTOP}
-            locale="pt"
-          />
+          <Suspense fallback={<div className="min-h-[300px]" />}>
+            <HeroBeforeAfterSlider
+              beforeImage={isMobile ? UPSCALER_BEFORE_IMAGE_MOBILE : UPSCALER_BEFORE_IMAGE_DESKTOP}
+              afterImage={isMobile ? UPSCALER_AFTER_IMAGE_MOBILE : UPSCALER_AFTER_IMAGE_DESKTOP}
+              locale="pt"
+            />
+          </Suspense>
         </div>
       </AnimatedSection>
       </LazySection>
@@ -563,7 +574,9 @@ const PlanosArcanoCloner = () => {
       {/* ==================== FREE TRIAL (Functional) ==================== */}
       <LazySection>
       <AnimatedSection className="!p-0">
-        <ClonerTrialSection />
+        <Suspense fallback={<div className="min-h-[400px]" />}>
+          <ClonerTrialSection />
+        </Suspense>
       </AnimatedSection>
       </LazySection>
 

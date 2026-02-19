@@ -21,8 +21,11 @@ const HeroCarouselBackground = () => {
             key={`r1-${i}`}
             src={src}
             alt=""
+            width={224}
+            height={288}
+            decoding="async"
+            loading={i < 5 ? "eager" : "lazy"}
             className="w-48 h-64 md:w-56 md:h-72 rounded-2xl object-cover flex-shrink-0 brightness-75 blur-[2px]"
-            loading="lazy"
           />
         ))}
       </div>
