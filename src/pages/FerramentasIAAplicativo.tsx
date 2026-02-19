@@ -63,7 +63,7 @@ const FerramentasIAAplicativo = () => {
   const [loading, setLoading] = useState(true);
 
   // Preferred order for tools
-  const preferredOrder = ["upscaller-arcano", "upscaller-arcano-video", "ia-muda-pose", "ia-muda-roupa", "arcano-cloner", "forja-selos-3d-ilimitada"];
+  const preferredOrder = ["arcano-cloner", "upscaller-arcano", "upscaller-arcano-video", "ia-muda-pose", "ia-muda-roupa", "forja-selos-3d-ilimitada"];
 
   useEffect(() => {
     const fetchTools = async () => {
