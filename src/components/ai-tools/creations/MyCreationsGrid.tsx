@@ -90,11 +90,11 @@ const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
           Gere algo em uma das ferramentas de IA para aparecer nesta lista.
         </p>
         <Button
-          onClick={() => navigate('/upscaler-arcano')}
+          onClick={() => navigate('/ferramentas-ia-aplicativo')}
           className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:opacity-90 text-white"
         >
           <Sparkles className="w-4 h-4 mr-2" />
-          Ir para Upscaler Arcano
+          Ir para as Ferramentas de IA
         </Button>
       </div>
     );
