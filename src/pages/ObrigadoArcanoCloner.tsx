@@ -66,7 +66,7 @@ const ObrigadoArcanoCloner = () => {
 
           {/* Description */}
           <p className="text-white/70 text-base md:text-lg leading-relaxed max-w-xl mb-8">
-            Se o pagamento já foi processado, clique no botão abaixo para acessar sua compra e começar a criar ensaios fotográficos profissionais agora mesmo.
+            <span className="font-bold text-fuchsia-400">Se o pagamento já foi processado,</span> clique no botão abaixo para acessar sua compra e começar a criar ensaios fotográficos profissionais agora mesmo.
           </p>
 
           {/* CTA Button */}
