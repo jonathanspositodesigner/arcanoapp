@@ -1,31 +1,44 @@
 
-# Corrigir Carregamento Prematuro das Imagens da Gallery
+
+# Otimizar FCP da Pagina /planos-upscaler-arcano
 
 ## Problema
-As imagens `gallery-1.webp` a `gallery-6.webp` estao sendo carregadas junto com o FCP, antes do usuario chegar na secao. Dois motivos:
+As imagens dos depoimentos e de outras secoes estao carregando junto com o FCP porque:
 
-1. **LazySection com rootMargin muito grande**: O `rootMargin` padrao e `500px`, que dispara o carregamento muito cedo
-2. **Mobile carousel renderiza TODAS as 6 imagens no DOM** (linha 77-102 do ExpandingGallery): Mesmo com `opacity: 0`, o browser carrega todas porque estao no DOM sem `loading="lazy"` efetivo (estao dentro de divs com `position: absolute`)
-3. **Desktop tambem renderiza todas as 6** com `loading="lazy"`, mas como estao todas no mesmo viewport do container, o browser pre-carrega todas
+1. **Nenhuma secao abaixo do hero usa LazySection** - Todas renderizam imediatamente no primeiro paint
+2. **BeforeAfterGalleryPT** usa `Suspense` sem `LazySection`, entao o chunk JS e baixado imediatamente no mount da pagina
+3. **LazySocialProofWrapper** tem `rootMargin: 500px`, disparando o carregamento dos avatares dos depoimentos muito cedo
+4. **FadeIn com delays no hero** (100ms a 800ms) atrasa a exibicao do conteudo principal
 
 ## Solucoes
 
-### 1. Reduzir rootMargin do LazySection da gallery
-Na pagina `PlanosArcanoCloner.tsx`, passar `rootMargin="100px"` no `LazySection` que envolve a gallery, para so carregar quando o usuario estiver bem proximo.
+### 1. Envolver todas as secoes abaixo do hero com LazySection
+Importar `LazySection` e envolver cada secao com `rootMargin="100px"`:
+- Secao da Dor (linha 456)
+- BeforeAfterGalleryPT / Suspense (linha 521)
+- Para Quem E (linha 526)
+- Como Funciona (linha 555)
+- Preco/CTA (linha 592)
+- Beneficios (linha 669)
+- FAQ (linha 697)
 
-### 2. Renderizar apenas a imagem ativa no mobile
-No `ExpandingGallery.tsx`, no carousel mobile, em vez de renderizar todas as 6 imagens com opacity toggle, renderizar apenas a imagem ativa (e opcionalmente a anterior/proxima para transicao suave). Isso evita que o browser carregue 6 imagens de uma vez.
+### 2. Reduzir rootMargin do LazySocialProofWrapper
+Alterar de `500px` para `100px` no `LazySocialProofWrapper.tsx` (linha 33) para que os avatares dos depoimentos so carreguem quando o usuario estiver proximo.
 
-### 3. Adicionar `loading="lazy"` e `decoding="async"` em todas as `<img>` do ExpandingGallery
-Garantir que tanto no mobile quanto no desktop as imagens tenham esses atributos.
+### 3. Remover delays do FadeIn no hero
+Zerar os delays dos `FadeIn` no hero (linhas 383, 404, 411, 431) para que o conteudo principal apareca instantaneamente. Manter apenas no ScrollIndicator.
 
-## Arquivos a Modificar
+## Detalhes Tecnicos
 
-| Arquivo | Mudanca |
-|---|---|
-| `src/pages/PlanosArcanoCloner.tsx` | Passar `rootMargin="100px"` no LazySection da gallery |
-| `src/components/combo-artes/ExpandingGallery.tsx` | Mobile: renderizar so 3 imagens (atual, anterior, proxima). Desktop: adicionar `decoding="async"`. |
+### Arquivo: `src/pages/PlanosUpscalerArcano.tsx`
+- Adicionar import do `LazySection` de `@/components/combo-artes/LazySection`
+- Envolver 7 secoes com `<LazySection rootMargin="100px">`
+- Remover `delay` props dos `FadeIn` no hero (social proof badge, subtitulo, slider, feature badges)
+
+### Arquivo: `src/components/upscaler/LazySocialProofWrapper.tsx`
+- Alterar `rootMargin` de `'500px'` para `'100px'` (linha 33)
 
 ## Impacto
-- As 6 imagens da gallery (total ~1.365 KiB) deixam de ser carregadas no FCP
-- Economia de ~1.3 MB no carregamento inicial da pagina
+- Imagens dos depoimentos (avatares) e da galeria antes/depois deixam de carregar no FCP
+- Todas as secoes abaixo do fold so renderizam quando o usuario se aproximar
+- Hero aparece instantaneamente sem delays de animacao
