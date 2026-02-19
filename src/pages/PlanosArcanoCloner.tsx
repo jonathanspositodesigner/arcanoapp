@@ -224,7 +224,7 @@ const PlanosArcanoCloner = () => {
 
       {/* ==================== PAIN POINTS ==================== */}
       <LazySection>
-      <AnimatedSection className="px-3 md:px-4 py-10 md:py-20 bg-black/30">
+      <AnimatedSection className="px-3 md:px-4 pt-4 pb-10 md:py-20 bg-black/30">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" className="text-center" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-2 md:mb-12">
