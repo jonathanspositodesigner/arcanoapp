@@ -11,6 +11,7 @@ import { HeroBeforeAfterSlider } from "@/components/upscaler";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import ExpandingGallery from "@/components/combo-artes/ExpandingGallery";
 import HeroCarouselBackground from "@/components/combo-artes/HeroCarouselBackground";
+import { LazySection } from "@/components/combo-artes/LazySection";
 import ClonerTrialSection from "@/components/arcano-cloner/trial/ClonerTrialSection";
 import ClonerDemoAnimation from "@/components/arcano-cloner/ClonerDemoAnimation";
 
@@ -217,6 +218,7 @@ const PlanosArcanoCloner = () => {
       </section>
 
       {/* ==================== PAIN POINTS ==================== */}
+      <LazySection>
       <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" className="text-center" delay={100}>
@@ -250,8 +252,10 @@ const PlanosArcanoCloner = () => {
           </AnimatedSection>
         </div>
       </AnimatedSection>
+      </LazySection>
 
       {/* ==================== GALLERY ==================== */}
+      <LazySection>
       <AnimatedSection className="px-4 py-16 md:py-20">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
@@ -283,8 +287,10 @@ const PlanosArcanoCloner = () => {
           </p>
         </div>
       </AnimatedSection>
+      </LazySection>
 
       {/* ==================== HOW IT WORKS ==================== */}
+      <LazySection>
       <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
@@ -298,8 +304,10 @@ const PlanosArcanoCloner = () => {
           <ClonerDemoAnimation />
         </div>
       </AnimatedSection>
+      </LazySection>
 
       {/* ==================== PARA QUEM É ==================== */}
+      <LazySection>
       <AnimatedSection className="px-4 py-16 md:py-20">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
@@ -336,9 +344,10 @@ const PlanosArcanoCloner = () => {
           </StaggeredAnimation>
         </div>
       </AnimatedSection>
-
+      </LazySection>
 
       {/* ==================== BONUS HEADER ==================== */}
+      <LazySection>
       <AnimatedSection className="px-4 pt-16 md:pt-20 pb-6 bg-black/30">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
@@ -429,8 +438,10 @@ const PlanosArcanoCloner = () => {
           />
         </div>
       </AnimatedSection>
+      </LazySection>
 
       {/* ==================== PRICING ==================== */}
+      <LazySection>
       <div id="pricing-section">
         <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30" animation="scale">
           <div className="max-w-xl mx-auto">
@@ -547,13 +558,17 @@ const PlanosArcanoCloner = () => {
           </div>
         </div>
       </AnimatedSection>
+      </LazySection>
 
       {/* ==================== FREE TRIAL (Functional) ==================== */}
+      <LazySection>
       <AnimatedSection className="!p-0">
         <ClonerTrialSection />
       </AnimatedSection>
+      </LazySection>
 
       {/* ==================== FAQ ==================== */}
+      <LazySection>
       <AnimatedSection className="px-4 py-16 md:py-20">
         <div className="max-w-2xl mx-auto">
           <AnimatedSection as="div" delay={100}>
@@ -583,6 +598,7 @@ const PlanosArcanoCloner = () => {
           </AnimatedSection>
         </div>
       </AnimatedSection>
+      </LazySection>
 
       {/* ==================== FOOTER ==================== */}
       <footer className="border-t border-white/10 py-8 px-4">
