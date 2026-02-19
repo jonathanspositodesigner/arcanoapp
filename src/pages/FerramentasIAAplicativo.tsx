@@ -293,7 +293,7 @@ const FerramentasIAAplicativo = () => {
                 <Button
                   size="sm"
                   className={`w-full text-[11px] sm:text-sm h-8 sm:h-9 font-medium ${
-                    hasAccess 
+                    hasAccess || (isUpscalerArcano && hasUpscalerPack)
                       ? "bg-green-500 hover:bg-green-600" 
                       : "bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90"
                   } text-white`}
