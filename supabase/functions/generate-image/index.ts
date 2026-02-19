@@ -197,54 +197,27 @@ serve(async (req) => {
 
     console.log(`[generate-image] Job ${jobId} — model: ${isProModel ? "pro" : "normal"}, aspect_ratio: ${aspect_ratio}`);
 
-    // === Try Pro model (2 attempts) ===
-    let geminiResponse: Response | null = null;
-    let usedFallback = false;
-    let effectiveCreditCost = creditCost;
+    // === Call selected model (2 attempts, no fallback) ===
+    const selectedGeminiModel = isProModel ? proGeminiModel : flashGeminiModel;
+    const effectiveCreditCost = creditCost;
 
-    if (isProModel) {
-      console.log(`[generate-image] Trying Pro model (up to 2 attempts)...`);
-      geminiResponse = await callGeminiWithRetry(GEMINI_API_KEY, proGeminiModel, parts, 2);
+    console.log(`[generate-image] Trying ${isProModel ? "Pro" : "Normal"} model (up to 2 attempts)...`);
+    const geminiResponse = await callGeminiWithRetry(GEMINI_API_KEY, selectedGeminiModel, parts, 2);
 
-      if (!geminiResponse.ok) {
-        // Pro failed — try Flash as fallback
-        console.warn(`[generate-image] Pro model failed (${geminiResponse.status}), falling back to Flash...`);
-        usedFallback = true;
-        geminiResponse = await callGeminiWithRetry(GEMINI_API_KEY, flashGeminiModel, parts, 2);
-
-        if (geminiResponse.ok) {
-          // Refund the difference between Pro and Flash cost
-          const diff = creditCost - flashCreditCost;
-          if (diff > 0) {
-            await serviceClient.rpc("refund_upscaler_credits", {
-              _user_id: userId,
-              _amount: diff,
-              _description: "Estorno parcial: fallback para modelo Normal",
-            });
-            effectiveCreditCost = flashCreditCost;
-          }
-        }
-      }
-    } else {
-      // Normal model — 2 attempts
-      console.log(`[generate-image] Trying Normal model (up to 2 attempts)...`);
-      geminiResponse = await callGeminiWithRetry(GEMINI_API_KEY, flashGeminiModel, parts, 2);
-    }
-
-    // Both models failed
+    // Model failed after retries — refund and return error
     if (!geminiResponse.ok) {
       const errText = await geminiResponse.text();
-      console.error(`[generate-image] All attempts failed. Last status: ${geminiResponse.status}`, errText);
+      console.error(`[generate-image] ${isProModel ? "Pro" : "Normal"} model failed after retries (${geminiResponse.status})`, errText);
 
       await serviceClient.rpc("refund_upscaler_credits", {
         _user_id: userId,
         _amount: creditCost,
-        _description: "Estorno: todos os modelos falharam",
+        _description: `Estorno: modelo ${isProModel ? "Pro" : "Normal"} falhou`,
       });
 
       await serviceClient.from("image_generator_jobs").update({
         status: "failed",
-        error_message: `Gemini API error ${geminiResponse.status}: alta demanda, tente novamente`,
+        error_message: `Gemini API error ${geminiResponse.status}: tente novamente em instantes`,
         credits_refunded: true,
         completed_at: new Date().toISOString(),
       }).eq("id", jobId);
@@ -322,12 +295,12 @@ serve(async (req) => {
     await serviceClient.from("image_generator_jobs").update({
       status: "completed",
       output_url: outputUrl,
-      model: usedFallback ? "normal" : (isProModel ? "pro" : "normal"),
+      model: isProModel ? "pro" : "normal",
       user_credit_cost: effectiveCreditCost,
       completed_at: new Date().toISOString(),
     }).eq("id", jobId);
 
-    console.log(`[generate-image] Job ${jobId} completed${usedFallback ? " (via Flash fallback)" : ""}`);
+    console.log(`[generate-image] Job ${jobId} completed`);
 
     return new Response(JSON.stringify({
       success: true,
@@ -335,7 +308,6 @@ serve(async (req) => {
       output_url: outputUrl,
       image_base64: imageBase64,
       mime_type: imageMimeType,
-      used_fallback: usedFallback,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
