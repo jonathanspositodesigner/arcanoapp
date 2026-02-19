@@ -93,9 +93,12 @@ const Index = () => {
   // Verificar acessos do usuário — só calcula depois que tudo carregou
   const hasToolAccess = !isLoading && isLoggedIn && userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug));
   const hasArtesAccess = !isLoading && isLoggedIn && userPacks.some(p => ARTES_SLUGS.includes(p.pack_slug));
-  // hasPromptsAccess: premium SIM, mas NÃO se TODOS os packs são de ferramenta/crédito
-  const hasToolOnlyPacks = userPacks.length > 0 && userPacks.every(p => TOOL_SLUGS.includes(p.pack_slug));
-  const hasPromptsAccess = !isLoading && isLoggedIn && isPremium && !hasToolOnlyPacks;
+  // hasPromptsAccess: premium SIM, mas NÃO se tem qualquer pack de ferramenta (mesmo que também tenha outros)
+  // Aguarda os packs carregarem para não dar falso positivo durante o loading
+  const hasAnyToolPack = !isLoading && userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug));
+  const hasNonToolPack = !isLoading && userPacks.some(p => !TOOL_SLUGS.includes(p.pack_slug));
+  // Só tem acesso à biblioteca de prompts se: é premium E (não tem nenhum pack de ferramenta OU tem pack não-ferramenta também)
+  const hasPromptsAccess = !isLoading && isLoggedIn && isPremium && (!hasAnyToolPack || hasNonToolPack);
 
   // LATAM que comprou apenas upscaler
   const hasOnlyUpscaler = userPacks.some(p => p.pack_slug === 'upscaller-arcano') && 
