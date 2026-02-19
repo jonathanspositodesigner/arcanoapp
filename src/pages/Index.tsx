@@ -52,7 +52,7 @@ const Index = () => {
   const { subscribe } = usePushNotifications();
   const [showAuthModal, setShowAuthModal] = useState(true);
   const signupInProgressRef = useRef(false);
-  const { isPremium, isLoading: isPremiumLoading } = usePremiumStatus();
+  const { isPremium, planType, isLoading: isPremiumLoading } = usePremiumStatus();
   const { user, userPacks, isLoading: isPacksLoading } = usePackAccess();
   const { isLatam } = useLocale();
 
@@ -90,15 +90,13 @@ const Index = () => {
   // Aguarda AMBOS carregarem antes de calcular qualquer acesso (evita flash de estado errado)
   const isLoading = isPremiumLoading || isPacksLoading;
 
+  const TOOL_PLAN_TYPES = ['arcano_pro'];
+
   // Verificar acessos do usuário — só calcula depois que tudo carregou
   const hasToolAccess = !isLoading && isLoggedIn && userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug));
   const hasArtesAccess = !isLoading && isLoggedIn && userPacks.some(p => ARTES_SLUGS.includes(p.pack_slug));
-  // hasPromptsAccess: premium SIM, mas NÃO se tem qualquer pack de ferramenta (mesmo que também tenha outros)
-  // Aguarda os packs carregarem para não dar falso positivo durante o loading
-  const hasAnyToolPack = !isLoading && userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug));
-  const hasNonToolPack = !isLoading && userPacks.some(p => !TOOL_SLUGS.includes(p.pack_slug));
-  // Só tem acesso à biblioteca de prompts se: é premium E (não tem nenhum pack de ferramenta OU tem pack não-ferramenta também)
-  const hasPromptsAccess = !isLoading && isLoggedIn && isPremium && (!hasAnyToolPack || hasNonToolPack);
+  // hasPromptsAccess: premium SIM, mas NUNCA se planType for de ferramenta (arcano_pro, etc.)
+  const hasPromptsAccess = !isLoading && isLoggedIn && isPremium && !TOOL_PLAN_TYPES.includes(planType ?? '');
 
   // LATAM que comprou apenas upscaler
   const hasOnlyUpscaler = userPacks.some(p => p.pack_slug === 'upscaller-arcano') && 
