@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X, User, Rocket, PenTool } from "lucide-react";
+import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MousePointerClick, MessageCircle, ZoomIn, X, User, Rocket, PenTool } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
@@ -375,54 +375,79 @@ const PlanosUpscalerArcano = () => {
         </div>
       ) : (
         <>
-          {/* HERO SECTION - Renderiza imediatamente para LCP */}
-          <section className="px-3 md:px-4 py-10 md:py-20 w-full">
-            <div className="flex flex-col items-center text-center">
-              {/* H1 sem FadeIn para ser visível imediatamente (LCP) */}
-              <div className="w-full max-w-[95vw] md:max-w-[60vw]">
-                <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
-                  {t('tools:upscaler.hero.title1')}{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
-                    {t('tools:upscaler.hero.title2')}
-                  </span>
-                </h1>
-              </div>
-
-              {/* Hero Image sem FadeIn para LCP */}
-              <div className="w-full max-w-[95vw] md:max-w-[60vw] mb-6 md:mb-8">
-                {isMobile && !heroRevealed ? (
-                  <HeroPlaceholder
-                    onReveal={() => setHeroRevealed(true)}
-                    buttonText={t('tools:upscaler.hero.seeToolPower')}
-                    locale="pt"
-                  />
-                ) : (
-                  <HeroBeforeAfterSlider
-                    beforeImage={isMobile ? upscalerHeroAntesMobile : upscalerHeroAntesDesktop}
-                    afterImage={isMobile ? upscalerHeroDepoisMobile : upscalerHeroDepoisDesktop}
-                    label={t('tools:upscaler.hero.dragToCompare')}
-                    locale="pt"
-                  />
-                )}
-              </div>
+          {/* HERO SECTION - Layout com respiro */}
+           <section className="px-4 md:px-6 pt-12 md:pt-20 pb-6 md:pb-10 w-full">
+            <div className="flex flex-col items-center text-center max-w-7xl mx-auto">
               
-              <FadeIn delay={400} duration={700}>
-                <p className="text-base md:text-lg lg:text-xl text-white/70 mb-4 md:mb-6 max-w-2xl">
+              {/* Social proof badge */}
+              <FadeIn delay={100} duration={600}>
+                <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-5 md:mb-6 scale-[0.84] md:scale-100 origin-center">
+                  <div className="flex -space-x-2">
+                    <img src="/images/social-proof-1.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                    <img src="/images/social-proof-2.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                    <img src="/images/social-proof-3.png" alt="" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                  </div>
+                  <span className="text-white/80 text-xs font-medium">+5.000 profissionais já estão usando</span>
+                </div>
+              </FadeIn>
+
+              {/* Título principal */}
+              <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3 md:mb-4 leading-[1.25]">
+                {t('tools:upscaler.hero.title1')}{' '}
+                <br className="hidden md:block" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
+                  {t('tools:upscaler.hero.title2')}
+                </span>
+              </h1>
+
+              {/* Subtítulo */}
+              <FadeIn delay={300} duration={700}>
+                <p className="text-xs md:text-sm text-white/60 mb-4 md:mb-6 max-w-lg leading-relaxed mx-auto">
                   {t('tools:upscaler.hero.subtitle')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.hero.sharp')}</span>
                 </p>
               </FadeIn>
 
-              <FadeIn delay={500} duration={700}>
-                <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/40 rounded-2xl px-6 py-3 mb-6 md:mb-8 max-w-xl">
-                  <p className="text-red-400 font-bold text-sm md:text-base flex items-center justify-center gap-2">
-                    🔥 Últimos dias de venda do Upscaler na versão vitalícia
-                  </p>
+              {/* Before/After Slider - menos largo */}
+              <FadeIn delay={400} duration={700}>
+                <div className="w-[90vw] md:w-[50vw] lg:w-[42vw] md:[&_.space-y-3>div:first-child]:!aspect-[5/3] [&_.space-y-3>div:first-child]:!h-auto mb-5 md:mb-6">
+                  {isMobile && !heroRevealed ? (
+                    <HeroPlaceholder
+                      onReveal={() => setHeroRevealed(true)}
+                      buttonText={t('tools:upscaler.hero.seeToolPower')}
+                      locale="pt"
+                    />
+                  ) : (
+                    <HeroBeforeAfterSlider
+                      beforeImage={isMobile ? upscalerHeroAntesMobile : upscalerHeroAntesDesktop}
+                      afterImage={isMobile ? upscalerHeroDepoisMobile : upscalerHeroDepoisDesktop}
+                      label={t('tools:upscaler.hero.dragToCompare')}
+                      locale="pt"
+                    />
+                  )}
+                </div>
+              </FadeIn>
+
+              {/* Feature badges */}
+              <FadeIn delay={600} duration={700}>
+                <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10">
+                  <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
+                    <Clock className="h-3.5 w-3.5 text-fuchsia-400" />
+                    <span>Mais rápido que um miojo</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
+                    <MousePointerClick className="h-3.5 w-3.5 text-fuchsia-400" />
+                    <span>Fácil de usar</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
+                    <Star className="h-3.5 w-3.5 text-fuchsia-400" />
+                    <span>+10.000 imagens melhoradas</span>
+                  </div>
                 </div>
               </FadeIn>
 
               {/* Scroll Indicator */}
               <FadeIn delay={800} duration={700}>
-                <ScrollIndicator className="mt-12 hidden md:flex" text={t('tools:upscaler.scrollMore')} />
+                <ScrollIndicator className="mt-10 hidden md:flex" text={t('tools:upscaler.scrollMore')} />
               </FadeIn>
             </div>
           </section>
