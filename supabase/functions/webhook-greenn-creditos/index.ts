@@ -281,6 +281,175 @@ async function sendWelcomeEmail(
   }
 }
 
+async function sendArcanoClonnerEmail(
+  supabase: any,
+  email: string,
+  name: string,
+  creditAmount: number,
+  isNewUser: boolean,
+  requestId: string
+): Promise<void> {
+  if (!isNewUser) {
+    console.log(`   ├─ [${requestId}] 📧 Usuário existente - pulando email Arcano Cloner`)
+    return
+  }
+
+  try {
+    const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
+    const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
+
+    if (!clientId || !clientSecret) {
+      console.log(`   ├─ [${requestId}] ⚠️ SendPulse não configurado`)
+      return
+    }
+
+    const tokenResponse = await fetch("https://api.sendpulse.com/oauth/access_token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        grant_type: "client_credentials",
+        client_id: clientId,
+        client_secret: clientSecret
+      }),
+    })
+
+    if (!tokenResponse.ok) {
+      console.log(`   ├─ [${requestId}] ❌ Falha ao obter token SendPulse`)
+      return
+    }
+
+    const { access_token } = await tokenResponse.json()
+
+    const subject = `🎉 Seu Arcano Cloner está ativado! Comece a criar agora`
+    const appUrl = 'https://arcanoapp.voxvisual.com.br'
+
+    const arcanoHtml = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arcano Cloner Ativado</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d0d1a; color: #e2e8f0; }
+    .wrapper { max-width: 600px; margin: 0 auto; padding: 24px 16px; }
+    .header { background: linear-gradient(135deg, #1a0a2e 0%, #16213e 50%, #0f3460 100%); border-radius: 16px 16px 0 0; padding: 40px 32px; text-align: center; border-bottom: 2px solid #8b5cf6; }
+    .header-badge { display: inline-block; background: rgba(139,92,246,0.2); border: 1px solid #8b5cf6; color: #c4b5fd; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 6px 16px; border-radius: 50px; margin-bottom: 20px; }
+    .header h1 { font-size: 28px; font-weight: 800; color: #ffffff; line-height: 1.2; margin-bottom: 8px; }
+    .header h1 span { color: #d4af37; }
+    .header p { color: #94a3b8; font-size: 15px; }
+    .body { background: #111827; padding: 32px; }
+    .greeting { font-size: 16px; color: #cbd5e1; margin-bottom: 24px; line-height: 1.6; }
+    .greeting strong { color: #ffffff; }
+    .product-box { background: linear-gradient(135deg, #1e1b4b 0%, #1a1a3e 100%); border: 1px solid #4c1d95; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+    .product-box-title { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+    .product-box-title .icon { font-size: 24px; }
+    .product-box-title h2 { font-size: 18px; font-weight: 700; color: #8b5cf6; }
+    .product-box p { color: #94a3b8; font-size: 14px; line-height: 1.7; }
+    .product-box p strong { color: #c4b5fd; }
+    .credits-box { background: linear-gradient(135deg, #1c1008 0%, #261a0a 100%); border: 2px solid #d4af37; border-radius: 12px; padding: 24px; margin-bottom: 20px; text-align: center; }
+    .credits-box .credits-label { font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #92400e; margin-bottom: 8px; }
+    .credits-box .credits-amount { font-size: 52px; font-weight: 900; color: #d4af37; line-height: 1; margin-bottom: 4px; }
+    .credits-box .credits-sub { font-size: 14px; color: #b45309; font-weight: 600; margin-bottom: 12px; }
+    .credits-box .credits-detail { font-size: 13px; color: #78716c; }
+    .credentials-box { background: #1e2939; border: 1px solid #374151; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+    .credentials-box h3 { font-size: 14px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #6b7280; margin-bottom: 16px; }
+    .credential-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #374151; }
+    .credential-row:last-of-type { border-bottom: none; }
+    .credential-label { font-size: 13px; color: #6b7280; font-weight: 600; }
+    .credential-value { font-size: 13px; color: #e2e8f0; font-family: monospace; background: #111827; padding: 4px 10px; border-radius: 6px; }
+    .warning-row { margin-top: 12px; display: flex; align-items: flex-start; gap: 10px; background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); border-radius: 8px; padding: 12px; }
+    .warning-row .warning-icon { font-size: 18px; flex-shrink: 0; }
+    .warning-row p { font-size: 13px; color: #fbbf24; line-height: 1.5; }
+    .cta-button { display: block; background: linear-gradient(135deg, #7c3aed, #5b21b6); color: #ffffff !important; text-align: center; padding: 18px 32px; border-radius: 12px; text-decoration: none; font-size: 16px; font-weight: 700; margin: 24px 0; letter-spacing: 0.5px; }
+    .footer { background: #0d1117; border-radius: 0 0 16px 16px; padding: 24px 32px; text-align: center; border-top: 1px solid #1f2937; }
+    .footer p { font-size: 12px; color: #4b5563; margin-bottom: 6px; }
+    .footer a { color: #8b5cf6; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="header-badge">✨ Compra Confirmada</div>
+      <h1>Arcano <span>Cloner</span><br>ativado com sucesso!</h1>
+      <p>Sua ferramenta de IA está pronta para usar</p>
+    </div>
+
+    <div class="body">
+      <p class="greeting">
+        Olá${name ? `, <strong>${name}</strong>` : ''}! 🎉<br><br>
+        Parabéns pela sua compra! Você agora tem acesso ao <strong>Arcano Cloner</strong> — a ferramenta de IA para criar fotos com <strong>alta fidelidade ao seu rosto e aparência</strong>.
+      </p>
+
+      <div class="product-box">
+        <div class="product-box-title">
+          <span class="icon">🧬</span>
+          <h2>O que é o Arcano Cloner?</h2>
+        </div>
+        <p>
+          Envie <strong>uma foto sua</strong> + <strong>uma imagem de referência</strong> e a IA recria você na cena com precisão e criatividade ajustável. Ideal para criar conteúdo personalizado, avatares realistas e fotos artísticas com o seu rosto.
+        </p>
+      </div>
+
+      <div class="credits-box">
+        <div class="credits-label">💎 Créditos Vitalícios Incluídos</div>
+        <div class="credits-amount">+4.200</div>
+        <div class="credits-sub">créditos vitalícios na sua conta</div>
+        <div class="credits-detail">= 42 gerações disponíveis · 100 créditos por geração</div>
+      </div>
+
+      <div class="credentials-box">
+        <h3>📋 Dados de Acesso</h3>
+        <div class="credential-row">
+          <span class="credential-label">Email</span>
+          <span class="credential-value">${email}</span>
+        </div>
+        <div class="credential-row">
+          <span class="credential-label">Senha temporária</span>
+          <span class="credential-value">${email}</span>
+        </div>
+        <div class="warning-row">
+          <span class="warning-icon">⚠️</span>
+          <p>Por segurança, <strong>troque sua senha</strong> no primeiro acesso.</p>
+        </div>
+      </div>
+
+      <a href="${appUrl}" class="cta-button">🚀 Acessar o Arcano Cloner agora</a>
+    </div>
+
+    <div class="footer">
+      <p>Link direto: <a href="${appUrl}">${appUrl}</a></p>
+      <p style="margin-top:8px">© Ferramentas IA Arcanas · Arcano Cloner</p>
+    </div>
+  </div>
+</body>
+</html>`
+
+    const emailResponse = await fetch("https://api.sendpulse.com/smtp/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${access_token}`
+      },
+      body: JSON.stringify({
+        email: {
+          html: btoa(unescape(encodeURIComponent(arcanoHtml))),
+          text: `Arcano Cloner ativado! Acesse em: ${appUrl}\nEmail: ${email}\nSenha temporária: ${email}\n+4.200 créditos vitalícios incluídos.`,
+          subject,
+          from: { name: 'Arcano App', email: 'contato@voxvisual.com.br' },
+          to: [{ email, name: name || "" }],
+        },
+      }),
+    })
+
+    const result = await emailResponse.json()
+    console.log(`   ├─ [${requestId}] ${result.result === true ? '✅ Email Arcano Cloner enviado' : '❌ Falha no email Arcano Cloner'}`)
+
+  } catch (error) {
+    console.log(`   ├─ [${requestId}] ❌ Erro email Arcano Cloner: ${error}`)
+  }
+}
+
 // ============================================================================
 // PROCESSAMENTO EM BACKGROUND
 // ============================================================================
@@ -544,7 +713,11 @@ async function processGreennCreditosWebhook(
     }
 
     // Enviar email de boas-vindas (apenas para novos usuários)
-    await sendWelcomeEmail(supabase, email, clientName, creditAmount, isNewUser, requestId, userLocale)
+    if (productId === 159713) {
+      await sendArcanoClonnerEmail(supabase, email, clientName, creditAmount, isNewUser, requestId)
+    } else {
+      await sendWelcomeEmail(supabase, email, clientName, creditAmount, isNewUser, requestId, userLocale)
+    }
 
     // Atualizar log com sucesso
     await supabase.from('webhook_logs').update({ 
