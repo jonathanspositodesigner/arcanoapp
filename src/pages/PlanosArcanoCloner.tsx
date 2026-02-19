@@ -14,7 +14,7 @@ import { LazySection } from "@/components/combo-artes/LazySection";
 // Lazy-loaded heavy components (below the fold)
 const ExpandingGallery = lazy(() => import("@/components/combo-artes/ExpandingGallery"));
 const ClonerDemoAnimation = lazy(() => import("@/components/arcano-cloner/ClonerDemoAnimation"));
-const ClonerTrialSection = lazy(() => import("@/components/arcano-cloner/trial/ClonerTrialSection"));
+
 const HeroBeforeAfterSlider = lazy(() => import("@/components/upscaler").then(m => ({ default: m.HeroBeforeAfterSlider })));
 
 const UPSCALER_BEFORE_IMAGE_DESKTOP = "/images/upscaler-hero-antes.webp";
@@ -571,14 +571,6 @@ const PlanosArcanoCloner = () => {
       </AnimatedSection>
       </LazySection>
 
-      {/* ==================== FREE TRIAL (Functional) ==================== */}
-      <LazySection>
-      <AnimatedSection className="!p-0">
-        <Suspense fallback={<div className="min-h-[400px]" />}>
-          <ClonerTrialSection />
-        </Suspense>
-      </AnimatedSection>
-      </LazySection>
 
       {/* ==================== FAQ ==================== */}
       <LazySection>
