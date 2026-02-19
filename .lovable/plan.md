@@ -1,42 +1,41 @@
 
-## Página de Obrigado — Arcano Cloner
+# Substituir Hero de /planos-upscaler-arcano
 
-### O que será criado
+## Objetivo
 
-Uma página `/obrigado-arcanocloner` com identidade visual idêntica à página `/planos-arcanocloner`, com mensagem de boas-vindas, agradecimento pela compra e um botão de acesso ao produto.
-
----
-
-### Identidade Visual (copiada da página de planos)
-
-- Fundo: `bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510]`
-- Fonte: `font-space-grotesk`
-- Cores de destaque: gradiente `fuchsia-400 → purple-500`
-- Bordas e cards: `border-white/10`, `bg-white/5`, `rounded-3xl`
-- Glow roxo de fundo (blur fuchsia)
-- Logo `logo_horizontal.png` no topo
+Apagar a hero section atual da página `/planos-upscaler-arcano` e substituí-la pela hero section idêntica à da página `/planos-upscaler-creditos`, mantendo todas as configurações visuais e de layout.
 
 ---
 
-### Conteúdo da Página
+## O que muda na Hero
 
-**Seção principal (centralizada, tela cheia):**
-- Logo no topo
-- Ícone de check verde animado (celebração de compra)
-- Título: **"Obrigado pela sua compra! 🎉"**
-- Subtítulo: **"Seja bem-vindo ao Arcano Cloner"**
-- Texto: *"Se o pagamento já foi processado, clique no botão abaixo para acessar sua compra e começar a criar ensaios fotográficos profissionais agora mesmo."*
-- **Botão principal verde** → "Acessar minha compra" → link para `/ferramentas-ia-aplicativo`
-- Pequena nota: *"Pode levar alguns minutos para o acesso ser liberado após o pagamento."*
+### Hero atual (será removida):
+- Fonte `font-bebas`, tamanho muito grande (`text-4xl md:text-5xl lg:text-6xl xl:text-7xl`)
+- Sem social proof badge
+- Slider sem restrição de largura especial (`max-w-[95vw] md:max-w-[60vw]`) com aspect ratio padrão
+- Bloco de alerta vermelho "🔥 Últimos dias de venda do Upscaler na versão vitalícia"
+- Sem feature badges (miojo, fácil de usar, imagens melhoradas)
 
-**Seção de lembrete (cards menores abaixo):**
-- O que o usuário recebeu: ~70 fotos, biblioteca +300 referências, Upscaler bônus, suporte via WhatsApp
+### Hero nova (copiada da PlanosUpscalerCreditos):
+- Fonte `font-space-grotesk font-bold`, tamanho moderno (`text-2xl md:text-3xl lg:text-4xl`)
+- Social proof badge: avatares + "+5.000 profissionais já estão usando"
+- Slider mais estreito: `w-[90vw] md:w-[50vw] lg:w-[42vw]` com override `!aspect-[5/3]` no desktop
+- Feature badges: Clock "Mais rápido que um miojo" / MousePointerClick "Fácil de usar" / Star "+10.000 imagens melhoradas"
+- Scroll Indicator mantido
+- Layout `max-w-7xl mx-auto` centralizado
 
 ---
 
-### Arquivos a Serem Criados/Editados
+## Arquivo a editar
 
 | Arquivo | Ação |
 |---|---|
-| `src/pages/ObrigadoArcanoCloner.tsx` | Criar — página de obrigado completa |
-| `src/App.tsx` | Editar — adicionar rota `/obrigado-arcanocloner` |
+| `src/pages/PlanosUpscalerArcano.tsx` | Substituir toda a `<section>` da hero (linhas 378–428) pelo código da hero de `PlanosUpscalerCreditos` |
+
+---
+
+## Detalhes técnicos
+
+- Adicionar import de `Clock, MousePointerClick, Star` no bloco de imports (Clock e Star já estão, MousePointerClick precisa ser adicionado)
+- Substituir o bloco JSX da hero section (~50 linhas) pelo equivalente da página de referência
+- Nenhuma alteração nas outras seções da página (dor, antes/depois, preços, etc.)
