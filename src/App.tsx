@@ -139,6 +139,7 @@ const TesteGratis = lazy(() => import("./pages/TesteGratis"));
 const GerarImagemTool = lazy(() => import("./pages/GerarImagemTool"));
 const GerarVideoTool = lazy(() => import("./pages/GerarVideoTool"));
 const PlanosArcanoCloner = lazy(() => import("./pages/PlanosArcanoCloner"));
+const ObrigadoArcanoCloner = lazy(() => import("./pages/ObrigadoArcanoCloner"));
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
 
@@ -310,6 +311,7 @@ const AppContent = () => {
            <Route path="/gerar-imagem" element={<GerarImagemTool />} />
            <Route path="/gerar-video" element={<GerarVideoTool />} />
            <Route path="/planos-arcanocloner" element={<PlanosArcanoCloner />} />
+           <Route path="/obrigado-arcanocloner" element={<ObrigadoArcanoCloner />} />
           
            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
            <Route path="*" element={<NotFound />} />
