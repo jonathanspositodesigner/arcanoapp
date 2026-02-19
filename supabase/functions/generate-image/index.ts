@@ -6,6 +6,57 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const ASPECT_RATIO_MAP: Record<string, string> = {
+  "1:1":  "square 1:1 aspect ratio",
+  "16:9": "wide horizontal landscape 16:9 widescreen aspect ratio",
+  "9:16": "tall vertical portrait 9:16 aspect ratio (like a phone screen)",
+  "4:3":  "standard horizontal 4:3 aspect ratio",
+  "3:4":  "vertical portrait 3:4 aspect ratio",
+};
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function callGeminiWithRetry(
+  apiKey: string,
+  model: string,
+  parts: any[],
+  maxRetries: number
+): Promise<Response> {
+  let lastErr: Response | null = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+
+    const resp = await fetch(geminiUrl, {
+      method: "POST",
+      headers: {
+        "x-goog-api-key": apiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents: [{ parts }],
+        generationConfig: {
+          responseModalities: ["IMAGE", "TEXT"],
+          imageConfig: { imageSize: "2K" },
+        },
+      }),
+    });
+
+    if (resp.ok) return resp;
+
+    const isRetryable = resp.status === 503 || resp.status === 429;
+    console.warn(`[generate-image] ${model} attempt ${attempt}/${maxRetries} failed (${resp.status})`);
+
+    lastErr = resp;
+
+    if (!isRetryable || attempt === maxRetries) break;
+
+    await sleep(3000);
+  }
+
+  return lastErr!;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -55,7 +106,8 @@ serve(async (req) => {
 
     // Determine model and cost
     const isProModel = model === "pro";
-    const geminiModel = isProModel ? "gemini-3-pro-image-preview" : "gemini-2.5-flash-image";
+    const proGeminiModel  = "gemini-3-pro-image-preview";
+    const flashGeminiModel = "gemini-2.5-flash-image";
     const toolName = isProModel ? "gerar_imagem_pro" : "gerar_imagem";
 
     // Check if user is IA Unlimited
@@ -67,7 +119,7 @@ serve(async (req) => {
       .maybeSingle();
     const isUnlimited = premiumData?.plan_type === "arcano_unlimited";
 
-    // Get credit cost from settings (used for IA Unlimited)
+    // Get credit cost from settings
     const { data: settingsData } = await serviceClient
       .from("ai_tool_settings")
       .select("credit_cost")
@@ -81,7 +133,10 @@ serve(async (req) => {
       creditCost = isProModel ? 100 : 80;
     }
 
-    // Consume credits
+    // Flash fallback cost (cheaper)
+    const flashCreditCost = isUnlimited ? (settingsData?.credit_cost ?? 40) : 80;
+
+    // Consume credits (charge Pro cost upfront)
     const { data: consumeResult } = await serviceClient.rpc("consume_upscaler_credits", {
       _user_id: userId,
       _amount: creditCost,
@@ -125,67 +180,81 @@ serve(async (req) => {
 
     const jobId = jobData.id;
 
-    // Build Gemini API request
+    // Build parts with reference images
     const parts: any[] = [];
-
-    // Add reference images if provided (image-to-image)
     if (reference_images && Array.isArray(reference_images) && reference_images.length > 0) {
       for (const refImg of reference_images.slice(0, 5)) {
         if (refImg.base64 && refImg.mimeType) {
-          parts.push({
-            inlineData: {
-              mimeType: refImg.mimeType,
-              data: refImg.base64,
-            },
-          });
+          parts.push({ inlineData: { mimeType: refImg.mimeType, data: refImg.base64 } });
         }
       }
     }
 
-    // Add text prompt
-    parts.push({ text: prompt.trim() });
+    // Inject aspect ratio into the text prompt
+    const arLabel = ASPECT_RATIO_MAP[aspect_ratio] || "square 1:1 aspect ratio";
+    const finalPrompt = `${prompt.trim()}. Generate this image in ${arLabel}.`;
+    parts.push({ text: finalPrompt });
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent`;
+    console.log(`[generate-image] Job ${jobId} — model: ${isProModel ? "pro" : "normal"}, aspect_ratio: ${aspect_ratio}`);
 
-    console.log(`[generate-image] Calling ${geminiModel} for job ${jobId}`);
+    // === Try Pro model (2 attempts) ===
+    let geminiResponse: Response | null = null;
+    let usedFallback = false;
+    let effectiveCreditCost = creditCost;
 
-    const geminiResponse = await fetch(geminiUrl, {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": GEMINI_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [{ parts }],
-        generationConfig: {
-          responseModalities: ["IMAGE", "TEXT"],
-          imageConfig: {
-            imageSize: "2K",
-          },
-        },
-      }),
-    });
+    if (isProModel) {
+      console.log(`[generate-image] Trying Pro model (up to 2 attempts)...`);
+      geminiResponse = await callGeminiWithRetry(GEMINI_API_KEY, proGeminiModel, parts, 2);
 
+      if (!geminiResponse.ok) {
+        // Pro failed — try Flash as fallback
+        console.warn(`[generate-image] Pro model failed (${geminiResponse.status}), falling back to Flash...`);
+        usedFallback = true;
+        geminiResponse = await callGeminiWithRetry(GEMINI_API_KEY, flashGeminiModel, parts, 2);
+
+        if (geminiResponse.ok) {
+          // Refund the difference between Pro and Flash cost
+          const diff = creditCost - flashCreditCost;
+          if (diff > 0) {
+            await serviceClient.rpc("refund_upscaler_credits", {
+              _user_id: userId,
+              _amount: diff,
+              _description: "Estorno parcial: fallback para modelo Normal",
+            });
+            effectiveCreditCost = flashCreditCost;
+          }
+        }
+      }
+    } else {
+      // Normal model — 2 attempts
+      console.log(`[generate-image] Trying Normal model (up to 2 attempts)...`);
+      geminiResponse = await callGeminiWithRetry(GEMINI_API_KEY, flashGeminiModel, parts, 2);
+    }
+
+    // Both models failed
     if (!geminiResponse.ok) {
       const errText = await geminiResponse.text();
-      console.error(`[generate-image] Gemini API error ${geminiResponse.status}:`, errText);
+      console.error(`[generate-image] All attempts failed. Last status: ${geminiResponse.status}`, errText);
 
-      // Refund credits
       await serviceClient.rpc("refund_upscaler_credits", {
         _user_id: userId,
         _amount: creditCost,
-        _description: "Estorno: erro na API Gemini",
+        _description: "Estorno: todos os modelos falharam",
       });
 
       await serviceClient.from("image_generator_jobs").update({
         status: "failed",
-        error_message: `Gemini API error: ${geminiResponse.status}`,
+        error_message: `Gemini API error ${geminiResponse.status}: alta demanda, tente novamente`,
         credits_refunded: true,
         completed_at: new Date().toISOString(),
       }).eq("id", jobId);
 
-      return new Response(JSON.stringify({ error: "Erro na geração de imagem", details: errText }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      const userMessage = geminiResponse.status === 503 || geminiResponse.status === 429
+        ? "API de geração sobrecarregada. Seus créditos foram estornados. Tente novamente em alguns instantes."
+        : "Erro na geração de imagem. Seus créditos foram estornados.";
+
+      return new Response(JSON.stringify({ error: userMessage }), {
+        status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -211,7 +280,7 @@ serve(async (req) => {
 
       await serviceClient.rpc("refund_upscaler_credits", {
         _user_id: userId,
-        _amount: creditCost,
+        _amount: effectiveCreditCost,
         _description: "Estorno: sem imagem na resposta",
       });
 
@@ -222,7 +291,7 @@ serve(async (req) => {
         completed_at: new Date().toISOString(),
       }).eq("id", jobId);
 
-      return new Response(JSON.stringify({ error: "Nenhuma imagem gerada" }), {
+      return new Response(JSON.stringify({ error: "Nenhuma imagem gerada. Seus créditos foram estornados." }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -253,10 +322,12 @@ serve(async (req) => {
     await serviceClient.from("image_generator_jobs").update({
       status: "completed",
       output_url: outputUrl,
+      model: usedFallback ? "normal" : (isProModel ? "pro" : "normal"),
+      user_credit_cost: effectiveCreditCost,
       completed_at: new Date().toISOString(),
     }).eq("id", jobId);
 
-    console.log(`[generate-image] Job ${jobId} completed successfully`);
+    console.log(`[generate-image] Job ${jobId} completed${usedFallback ? " (via Flash fallback)" : ""}`);
 
     return new Response(JSON.stringify({
       success: true,
@@ -264,6 +335,7 @@ serve(async (req) => {
       output_url: outputUrl,
       image_base64: imageBase64,
       mime_type: imageMimeType,
+      used_fallback: usedFallback,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

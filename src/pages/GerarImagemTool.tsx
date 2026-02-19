@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-const ASPECT_RATIOS = ['1:1', '16:9', '9:16', '4:3', '3:4'] as const;
+
 
 interface ReferenceImage {
   file: File;
@@ -394,27 +394,40 @@ const GerarImagemTool = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Aspect ratio dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
-                    <span>⬜</span>
-                    <span className="font-medium">{aspectRatio}</span>
-                    <ChevronDown className="h-3 w-3 text-purple-400 flex-shrink-0" />
+              {/* Aspect ratio visual buttons */}
+              {([
+                { ratio: '9:16',  label: 'Story',  w: 14, h: 22 },
+                { ratio: '1:1',   label: 'Quadrado', w: 18, h: 18 },
+                { ratio: '3:4',   label: 'Retrato', w: 16, h: 20 },
+                { ratio: '4:3',   label: 'Clássico', w: 22, h: 16 },
+                { ratio: '16:9',  label: 'Wide',   w: 26, h: 14 },
+              ] as const).map(({ ratio, label, w, h }) => {
+                const isSelected = aspectRatio === ratio;
+                return (
+                  <button
+                    key={ratio}
+                    type="button"
+                    disabled={isGenerating}
+                    onClick={() => setAspectRatio(ratio)}
+                    className={`flex flex-col items-center justify-center gap-0.5 px-1.5 py-1 rounded-lg border transition-all disabled:opacity-40 ${
+                      isSelected
+                        ? 'border-fuchsia-500 bg-fuchsia-500/20 text-fuchsia-300'
+                        : 'border-purple-500/25 bg-purple-900/40 text-purple-400 hover:border-purple-400/50 hover:text-purple-200'
+                    }`}
+                  >
+                    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none">
+                      <rect
+                        x="1" y="1" width={w - 2} height={h - 2}
+                        rx="1.5"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        fill={isSelected ? 'rgba(217,70,239,0.15)' : 'rgba(147,51,234,0.1)'}
+                      />
+                    </svg>
+                    <span className="text-[8px] font-medium leading-none">{label}</span>
                   </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
-                  {ASPECT_RATIOS.map(ratio => (
-                    <DropdownMenuItem
-                      key={ratio}
-                      onClick={() => setAspectRatio(ratio)}
-                      className={`text-xs ${aspectRatio === ratio ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-purple-200'}`}
-                    >
-                      {ratio}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                );
+              })}
 
               {resultBase64 && (
                 <>
