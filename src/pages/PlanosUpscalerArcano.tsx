@@ -12,6 +12,7 @@ import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, 
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton, LazySocialProofWrapper } from "@/components/upscaler";
+import { LazySection } from "@/components/combo-artes/LazySection";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
 
 // Hero images - Desktop uses high-res, Mobile uses optimized 600x900 versions
@@ -380,7 +381,7 @@ const PlanosUpscalerArcano = () => {
             <div className="flex flex-col items-center text-center max-w-7xl mx-auto">
               
               {/* Social proof badge */}
-              <FadeIn delay={100} duration={600}>
+              <FadeIn delay={0} duration={400}>
                 <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-5 md:mb-6 scale-[0.84] md:scale-100 origin-center">
                   <div className="flex -space-x-2">
                     <img src="/images/social-proof-1.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
@@ -401,14 +402,14 @@ const PlanosUpscalerArcano = () => {
               </h1>
 
               {/* Subtítulo */}
-              <FadeIn delay={300} duration={700}>
+              <FadeIn delay={0} duration={400}>
                 <p className="text-xs md:text-sm text-white/60 mb-4 md:mb-6 max-w-lg leading-relaxed mx-auto">
                   {t('tools:upscaler.hero.subtitle')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.hero.sharp')}</span>
                 </p>
               </FadeIn>
 
               {/* Before/After Slider - menos largo */}
-              <FadeIn delay={400} duration={700}>
+              <FadeIn delay={0} duration={400}>
                 <div className="w-[90vw] md:w-[50vw] lg:w-[42vw] md:[&_.space-y-3>div:first-child]:!aspect-[5/3] [&_.space-y-3>div:first-child]:!h-auto mb-5 md:mb-6">
                   {isMobile && !heroRevealed ? (
                     <HeroPlaceholder
@@ -428,7 +429,7 @@ const PlanosUpscalerArcano = () => {
               </FadeIn>
 
               {/* Feature badges */}
-              <FadeIn delay={600} duration={700}>
+              <FadeIn delay={0} duration={400}>
                 <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10">
                   <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
                     <Infinity className="h-3.5 w-3.5 text-fuchsia-400" />
@@ -453,6 +454,7 @@ const PlanosUpscalerArcano = () => {
           </section>
 
           {/* SEÇÃO DA DOR */}
+          <LazySection rootMargin="100px">
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
             <div className="max-w-5xl mx-auto">
               <AnimatedSection as="div" className="text-center" delay={100}>
@@ -516,13 +518,17 @@ const PlanosUpscalerArcano = () => {
               </AnimatedSection>
             </div>
           </AnimatedSection>
+          </LazySection>
 
           {/* SEÇÃO ANTES/DEPOIS - Lazy loaded */}
+          <LazySection rootMargin="100px">
           <Suspense fallback={<SectionSkeleton height="600px" />}>
             <BeforeAfterGalleryPT onZoomClick={openModal} isMobile={isMobile} />
           </Suspense>
+          </LazySection>
 
           {/* PARA QUEM É */}
+          <LazySection rootMargin="100px">
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
@@ -550,8 +556,10 @@ const PlanosUpscalerArcano = () => {
               </StaggeredAnimation>
             </div>
           </AnimatedSection>
+          </LazySection>
 
           {/* COMO FUNCIONA */}
+          <LazySection rootMargin="100px">
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
@@ -584,11 +592,15 @@ const PlanosUpscalerArcano = () => {
               </StaggeredAnimation>
             </div>
           </AnimatedSection>
+          </LazySection>
 
           {/* PROVA SOCIAL - Lazy loaded with Intersection Observer */}
+          <LazySection rootMargin="100px">
           <LazySocialProofWrapper locale="pt" onZoomClick={openModal} isMobile={isMobile} />
+          </LazySection>
 
           {/* SEÇÃO DE PREÇO E CTA - Com Card */}
+          <LazySection rootMargin="100px">
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
             <div className="max-w-lg mx-auto">
               <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
@@ -664,8 +676,10 @@ const PlanosUpscalerArcano = () => {
               </Card>
             </div>
           </AnimatedSection>
+          </LazySection>
 
           {/* BENEFÍCIOS (O QUE FAZ) */}
+          <LazySection rootMargin="100px">
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
@@ -692,8 +706,10 @@ const PlanosUpscalerArcano = () => {
               </StaggeredAnimation>
             </div>
           </AnimatedSection>
+          </LazySection>
 
           {/* FAQ SECTION - Depois do preço */}
+          <LazySection rootMargin="100px">
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-2xl mx-auto">
               <AnimatedSection as="div" delay={100}>
@@ -722,6 +738,7 @@ const PlanosUpscalerArcano = () => {
               </AnimatedSection>
             </div>
           </AnimatedSection>
+          </LazySection>
 
         </>
       )}

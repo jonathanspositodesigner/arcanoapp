@@ -30,7 +30,7 @@ export const LazySocialProofWrapper = ({ locale, onZoomClick, isMobile = false }
           observer.disconnect();
         }
       },
-      { rootMargin: '500px', threshold: 0 }
+      { rootMargin: '100px', threshold: 0 }
     );
 
     observer.observe(element);
