@@ -315,45 +315,7 @@ const PlanosArcanoCloner = () => {
       </AnimatedSection>
       </LazySection>
 
-      {/* ==================== PARA QUEM É ==================== */}
-      <LazySection>
-      <AnimatedSection className="px-4 py-16 md:py-20">
-        <div className="max-w-5xl mx-auto">
-          <AnimatedSection as="div" delay={100}>
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
-              Quem já está{" "}
-              <span className="text-fuchsia-400">lucrando e se destacando</span>{" "}
-              com o Arcano Cloner
-            </h2>
-            <p className="text-white/50 text-center text-sm mb-12">
-              Se você se encaixa em pelo menos um desses perfis, o Arcano Cloner foi feito pra você
-            </p>
-          </AnimatedSection>
 
-          <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 auto-rows-fr" staggerDelay={100}>
-            {[
-              { icon: DollarSign, title: "Empreendedores Digitais", text: "Quer faturar vendendo ensaios fotográficos profissionais sem precisar de câmera ou estúdio" },
-              { icon: Briefcase, title: "Profissionais e Executivos", text: "Quer se posicionar de forma profissional nas redes sociais com fotos que transmitem autoridade e credibilidade" },
-              { icon: Music, title: "Músicos e Artistas", text: "Crie presskits, capas de álbum e materiais visuais incríveis sem depender de fotógrafo" },
-              { icon: Rocket, title: "Infoprodutores", text: "Precisa de imagens profissionais para anúncios, páginas de venda e conteúdo digital" },
-              { icon: Share2, title: "Social Media e Criadores", text: "Produza conteúdo visual de alto nível para seus clientes ou para suas próprias redes" },
-              { icon: User, title: "Usuários Comuns", text: "Quer fotos incríveis para redes sociais, perfis de namoro ou uso pessoal com qualidade de estúdio" },
-            ].map((item, index) => {
-              const IconComp = item.icon;
-              return (
-                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col items-center text-center h-full">
-                  <div className="w-14 h-14 rounded-2xl bg-fuchsia-500/10 flex items-center justify-center mb-4">
-                    <IconComp className="w-7 h-7 text-fuchsia-400" />
-                  </div>
-                  <h3 className="text-white font-semibold text-lg mb-2">{item.title}</h3>
-                  <p className="text-white/60 text-sm leading-relaxed">{item.text}</p>
-                </div>
-              );
-            })}
-          </StaggeredAnimation>
-        </div>
-      </AnimatedSection>
-      </LazySection>
 
       {/* ==================== BONUS HEADER ==================== */}
       <LazySection>
@@ -447,6 +409,46 @@ const PlanosArcanoCloner = () => {
               locale="pt"
             />
           </Suspense>
+        </div>
+      </AnimatedSection>
+      </LazySection>
+
+      {/* ==================== PARA QUEM É ==================== */}
+      <LazySection>
+      <AnimatedSection className="px-4 py-16 md:py-20">
+        <div className="max-w-5xl mx-auto">
+          <AnimatedSection as="div" delay={100}>
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
+              Quem já está{" "}
+              <span className="text-fuchsia-400">lucrando e se destacando</span>{" "}
+              com o Arcano Cloner
+            </h2>
+            <p className="text-white/50 text-center text-sm mb-12">
+              Se você se encaixa em pelo menos um desses perfis, o Arcano Cloner foi feito pra você
+            </p>
+          </AnimatedSection>
+
+          <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 auto-rows-fr" staggerDelay={100}>
+            {[
+              { icon: DollarSign, title: "Empreendedores Digitais", text: "Quer faturar vendendo ensaios fotográficos profissionais sem precisar de câmera ou estúdio" },
+              { icon: Briefcase, title: "Profissionais e Executivos", text: "Quer se posicionar de forma profissional nas redes sociais com fotos que transmitem autoridade e credibilidade" },
+              { icon: Music, title: "Músicos e Artistas", text: "Crie presskits, capas de álbum e materiais visuais incríveis sem depender de fotógrafo" },
+              { icon: Rocket, title: "Infoprodutores", text: "Precisa de imagens profissionais para anúncios, páginas de venda e conteúdo digital" },
+              { icon: Share2, title: "Social Media e Criadores", text: "Produza conteúdo visual de alto nível para seus clientes ou para suas próprias redes" },
+              { icon: User, title: "Usuários Comuns", text: "Quer fotos incríveis para redes sociais, perfis de namoro ou uso pessoal com qualidade de estúdio" },
+            ].map((item, index) => {
+              const IconComp = item.icon;
+              return (
+                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col items-center text-center h-full">
+                  <div className="w-14 h-14 rounded-2xl bg-fuchsia-500/10 flex items-center justify-center mb-4">
+                    <IconComp className="w-7 h-7 text-fuchsia-400" />
+                  </div>
+                  <h3 className="text-white font-semibold text-lg mb-2">{item.title}</h3>
+                  <p className="text-white/60 text-sm leading-relaxed">{item.text}</p>
+                </div>
+              );
+            })}
+          </StaggeredAnimation>
         </div>
       </AnimatedSection>
       </LazySection>
