@@ -74,32 +74,42 @@ const ExpandingGallery = ({ items }: ExpandingGalleryProps) => {
         >
           {/* aspect ratio 3:5 = padding-top: 166.67% */}
           <div className="relative w-full" style={{ paddingTop: "166.67%" }}>
-            {items.map((item, index) => (
-              <div
-                key={index}
-                className="absolute inset-0 transition-opacity duration-500"
-                style={{ opacity: index === mobileIndex ? 1 : 0, pointerEvents: index === mobileIndex ? "auto" : "none" }}
-              >
-                <img
-                  src={item.imageUrl}
-                  alt={item.label}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent">
-                  <div className="absolute bottom-5 left-5 right-5">
-                    <span className="inline-block px-2.5 py-0.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-[10px] font-medium tracking-wide uppercase mb-1.5">
-                      Feito com o Arcano Cloner
-                    </span>
-                    {item.label && (
-                      <h3 className="text-white font-semibold text-base">
-                        {item.label}
-                      </h3>
-                    )}
+            {items.map((item, index) => {
+              // Only render active, previous and next slides to avoid loading all images
+              const isAdjacent =
+                index === mobileIndex ||
+                index === (mobileIndex - 1 + items.length) % items.length ||
+                index === (mobileIndex + 1) % items.length;
+              if (!isAdjacent) return null;
+
+              return (
+                <div
+                  key={index}
+                  className="absolute inset-0 transition-opacity duration-500"
+                  style={{ opacity: index === mobileIndex ? 1 : 0, pointerEvents: index === mobileIndex ? "auto" : "none" }}
+                >
+                  <img
+                    src={item.imageUrl}
+                    alt={item.label}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent">
+                    <div className="absolute bottom-5 left-5 right-5">
+                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-[10px] font-medium tracking-wide uppercase mb-1.5">
+                        Feito com o Arcano Cloner
+                      </span>
+                      {item.label && (
+                        <h3 className="text-white font-semibold text-base">
+                          {item.label}
+                        </h3>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -153,6 +163,7 @@ const ExpandingGallery = ({ items }: ExpandingGalleryProps) => {
                 alt={item.label}
                 className="absolute inset-0 w-full h-full object-cover"
                 loading="lazy"
+                decoding="async"
               />
 
               {isActive && (

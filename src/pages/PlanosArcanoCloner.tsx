@@ -260,7 +260,7 @@ const PlanosArcanoCloner = () => {
       </LazySection>
 
       {/* ==================== GALLERY ==================== */}
-      <LazySection>
+      <LazySection rootMargin="100px">
       <AnimatedSection className="px-4 py-16 md:py-20">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
