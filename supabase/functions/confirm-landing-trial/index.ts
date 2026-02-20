@@ -186,10 +186,35 @@ serve(async (req) => {
       });
     }
 
-    // Redirect directly to the tool page
+    // Generate magic link for auto-login
+    const { data: magicLink, error: magicError } = await supabaseAdmin.auth.admin.generateLink({
+      type: "magiclink",
+      email,
+      options: {
+        redirectTo: `${getAppUrl()}/arcano-cloner-tool`,
+      },
+    });
+
+    if (magicError || !magicLink?.properties?.action_link) {
+      console.error("[confirm-landing-trial] Magic link error:", magicError);
+      // Fallback: redirect without login
+      return new Response(null, {
+        status: 302,
+        headers: { Location: `${getAppUrl()}/arcano-cloner-tool` },
+      });
+    }
+
+    // Replace Supabase default domain with custom domain in the action link
+    const actionLink = magicLink.properties.action_link;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    
+    // The action_link points to Supabase auth endpoint - we need to use it as-is
+    // because it handles the token verification and session creation
+    console.log("[confirm-landing-trial] Redirecting to magic link for auto-login");
+    
     return new Response(null, {
       status: 302,
-      headers: { Location: `${getAppUrl()}/arcano-cloner-tool` },
+      headers: { Location: actionLink },
     });
   } catch (error: any) {
     console.error("[confirm-landing-trial] Error:", error);
