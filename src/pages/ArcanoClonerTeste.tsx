@@ -316,7 +316,7 @@ const ArcanoClonerTeste = () => {
 
 
 
-      {/* ==================== BONUS HEADER ==================== */}
+      {/* ==================== BONUS (OCULTO)
       <LazySection>
       <AnimatedSection className="px-4 pt-16 md:pt-20 pb-6 bg-black/30">
         <div className="max-w-5xl mx-auto">
@@ -328,89 +328,11 @@ const ArcanoClonerTeste = () => {
           </AnimatedSection>
         </div>
       </AnimatedSection>
-
-      {/* ==================== BONUS 1: +300 REFERÊNCIAS ==================== */}
       <AnimatedSection className="px-4 py-10 md:py-14 bg-black/30">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-4 py-1.5 mb-4">
-              <BookOpen className="h-4 w-4 text-fuchsia-400" />
-              <span className="text-fuchsia-300 text-sm font-semibold">BÔNUS 01</span>
-            </div>
-            <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-white mb-2">
-              +300 Referências <span className="text-fuchsia-400">Profissionais</span>
-            </h3>
-            <p className="text-white/50 text-sm max-w-lg mx-auto">Biblioteca completa com fotos de referência prontas para usar na geração de imagens</p>
-          </div>
-
-          {/* Infinite marquee carousel - left direction */}
-          <div className="relative overflow-hidden mb-4">
-            <div className="absolute left-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-r from-[#0a0510] to-transparent z-10 pointer-events-none" />
-            <div className="absolute right-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-l from-[#0a0510] to-transparent z-10 pointer-events-none" />
-            <div className="marquee-refs-track flex gap-4" style={{ animationDuration: '15s' }}>
-              {[...Array.from({ length: 8 }, (_, i) => i), ...Array.from({ length: 8 }, (_, i) => i)].map((i, idx) => (
-                <div
-                  key={idx}
-                  className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 overflow-hidden"
-                >
-                  <img
-                    src={`/images/refs/ref-${i + 1}.jpg`}
-                    alt={`Referência profissional ${i + 1}`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Infinite marquee carousel - right direction */}
-          <div className="relative overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-r from-[#0a0510] to-transparent z-10 pointer-events-none" />
-            <div className="absolute right-0 top-0 bottom-0 w-16 md:w-24 bg-gradient-to-l from-[#0a0510] to-transparent z-10 pointer-events-none" />
-            <div className="marquee-refs-track-reverse flex gap-4" style={{ animationDuration: '15s' }}>
-              {[...Array.from({ length: 8 }, (_, i) => i), ...Array.from({ length: 8 }, (_, i) => i)].map((i, idx) => (
-                <div
-                  key={idx}
-                  className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 overflow-hidden"
-                >
-                  <img
-                    src={`/images/refs/ref-${((i + 4) % 8) + 1}.jpg`}
-                    alt={`Referência profissional ${i + 1}`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </AnimatedSection>
-
-      {/* ==================== BONUS 2: UPSCALER GRATUITO ==================== */}
-      <AnimatedSection className="px-4 py-10 md:py-14 pb-16 md:pb-20 bg-black/30">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-4 py-1.5 mb-4">
-              <Gift className="h-4 w-4 text-fuchsia-400" />
-              <span className="text-fuchsia-300 text-sm font-semibold">BÔNUS 02</span>
-            </div>
-            <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-white mb-2">
-              Upscaler para <span className="text-fuchsia-400">suas imagens</span>
-            </h3>
-            <p className="text-white/50 text-sm max-w-lg mx-auto">Melhore a qualidade de qualquer imagem com nosso upscaler de IA incluso</p>
-          </div>
-
-          <Suspense fallback={<div className="min-h-[300px]" />}>
-            <HeroBeforeAfterSlider
-              beforeImage={isMobile ? UPSCALER_BEFORE_IMAGE_MOBILE : UPSCALER_BEFORE_IMAGE_DESKTOP}
-              afterImage={isMobile ? UPSCALER_AFTER_IMAGE_MOBILE : UPSCALER_AFTER_IMAGE_DESKTOP}
-              locale="pt"
-            />
-          </Suspense>
-        </div>
+        ... bonus 1 e 2 ...
       </AnimatedSection>
       </LazySection>
+      ==================== */}
 
       {/* ==================== PARA QUEM É (OCULTO) ====================
       <LazySection>
