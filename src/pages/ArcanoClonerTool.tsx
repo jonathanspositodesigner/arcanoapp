@@ -32,6 +32,7 @@ import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecove
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
 import { getAIErrorMessage } from '@/utils/errorMessages';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
+import LandingTrialExpiredModal from '@/components/arcano-cloner/LandingTrialExpiredModal';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -935,6 +936,9 @@ const ArcanoClonerTool: React.FC = () => {
         onClose={() => setShowAuthModal(false)}
         onAuthSuccess={handleAuthSuccess}
       />
+
+      {/* Landing Trial Expired Modal */}
+      <LandingTrialExpiredModal userId={user?.id} balance={credits} />
     </div>
     </AppLayout>
   );

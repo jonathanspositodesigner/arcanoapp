@@ -35,6 +35,7 @@ import { getAIErrorMessage } from '@/utils/errorMessages';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 import AIToolsAuthModal from '@/components/ai-tools/AIToolsAuthModal';
 import { useAIToolsAuthModal } from '@/hooks/useAIToolsAuthModal';
+import LandingTrialExpiredModal from '@/components/arcano-cloner/LandingTrialExpiredModal';
 
 // Max dimension for mobile slider preview optimization
 const SLIDER_PREVIEW_MAX_PX = 1500;
@@ -1552,6 +1553,9 @@ const UpscalerArcanoTool: React.FC = () => {
         onClose={() => setShowAuthModal(false)}
         onAuthSuccess={handleAuthSuccess}
       />
+
+      {/* Landing Trial Expired Modal */}
+      <LandingTrialExpiredModal userId={user?.id} balance={credits} />
     </AppLayout>
   );
 };
