@@ -11,7 +11,7 @@ const CREDITS_EXPIRY_HOURS = 24;
 
 // Get the app URL for redirects
 function getAppUrl(): string {
-  return "https://arcanoapp.lovable.app";
+  return "https://arcanoapp.com.br";
 }
 
 function errorPage(message: string): Response {
