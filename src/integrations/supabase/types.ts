@@ -1764,6 +1764,48 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_cloner_trials: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string
+          credits_expire_at: string | null
+          credits_granted: number
+          email: string
+          id: string
+          name: string
+          token: string
+          token_expires_at: string
+          user_id: string | null
+          whatsapp: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string
+          credits_expire_at?: string | null
+          credits_granted?: number
+          email: string
+          id?: string
+          name: string
+          token?: string
+          token_expires_at?: string
+          user_id?: string | null
+          whatsapp: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string
+          credits_expire_at?: string | null
+          credits_granted?: number
+          email?: string
+          id?: string
+          name?: string
+          token?: string
+          token_expires_at?: string
+          user_id?: string | null
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       landing_page_trials: {
         Row: {
           code: string
@@ -2836,6 +2878,7 @@ export type Database = {
           balance: number
           created_at: string | null
           id: string
+          landing_trial_expires_at: string | null
           lifetime_balance: number
           monthly_balance: number
           updated_at: string | null
@@ -2845,6 +2888,7 @@ export type Database = {
           balance?: number
           created_at?: string | null
           id?: string
+          landing_trial_expires_at?: string | null
           lifetime_balance?: number
           monthly_balance?: number
           updated_at?: string | null
@@ -2854,6 +2898,7 @@ export type Database = {
           balance?: number
           created_at?: string | null
           id?: string
+          landing_trial_expires_at?: string | null
           lifetime_balance?: number
           monthly_balance?: number
           updated_at?: string | null
@@ -3537,6 +3582,13 @@ export type Database = {
           success: boolean
         }[]
       }
+      check_landing_trial_status: {
+        Args: { _user_id: string }
+        Returns: {
+          credits_expired: boolean
+          is_landing_trial: boolean
+        }[]
+      }
       check_profile_exists: {
         Args: { check_email: string }
         Returns: {
@@ -3602,6 +3654,13 @@ export type Database = {
       delete_user_ai_creation: {
         Args: { p_creation_id: string }
         Returns: boolean
+      }
+      expire_landing_trial_credits: {
+        Args: { _user_id: string }
+        Returns: {
+          new_balance: number
+          was_expired: boolean
+        }[]
       }
       get_ai_tools_cost_averages: {
         Args: never

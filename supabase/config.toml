@@ -138,3 +138,9 @@ verify_jwt = false
 
 [functions.landing-trial-code]
 verify_jwt = false
+
+[functions.send-landing-trial-email]
+verify_jwt = false
+
+[functions.confirm-landing-trial]
+verify_jwt = false

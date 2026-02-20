@@ -22,6 +22,11 @@ export const useUpscalerCredits = (userId: string | undefined) => {
     }
 
     try {
+      // First check if landing trial credits expired
+      const { data: expiryData } = await supabase.rpc('expire_landing_trial_credits', {
+        _user_id: userId
+      });
+
       // Fetch breakdown
       const { data: breakdownData, error: breakdownError } = await supabase.rpc('get_upscaler_credits_breakdown', {
         _user_id: userId

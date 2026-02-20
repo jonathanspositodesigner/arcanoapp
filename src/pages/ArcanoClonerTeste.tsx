@@ -10,6 +10,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import HeroCarouselBackground from "@/components/combo-artes/HeroCarouselBackground";
 import { LazySection } from "@/components/combo-artes/LazySection";
+import LandingTrialSignupSection from "@/components/arcano-cloner/LandingTrialSignupSection";
 
 // Lazy-loaded heavy components (below the fold)
 const ExpandingGallery = lazy(() => import("@/components/combo-artes/ExpandingGallery"));
@@ -435,6 +436,10 @@ const ArcanoClonerTeste = () => {
         </AnimatedSection>
       </LazySection>
 
+      {/* ==================== TESTE GRÁTIS ==================== */}
+      <LazySection>
+        <LandingTrialSignupSection />
+      </LazySection>
 
       {/* ==================== FAQ ==================== */}
       <LazySection>
