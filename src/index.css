@@ -383,13 +383,13 @@ All colors MUST be HSL.
 }
 
 .marquee-refs-track {
-  animation: marquee-refs 15s linear infinite !important;
-  animation-duration: 15s !important;
+  animation: marquee-refs 20s linear infinite !important;
+  animation-duration: 20s !important;
   will-change: transform;
 }
 
 .marquee-refs-track-reverse {
-  animation: marquee-refs-reverse 15s linear infinite !important;
-  animation-duration: 15s !important;
+  animation: marquee-refs-reverse 20s linear infinite !important;
+  animation-duration: 20s !important;
   will-change: transform;
 }
