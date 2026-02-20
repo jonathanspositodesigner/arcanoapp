@@ -401,11 +401,11 @@ const ArcanoClonerTeste = () => {
             <div className="absolute right-0 top-0 w-20 h-full bg-gradient-to-l from-[#0a0510] to-transparent z-10 pointer-events-none" />
             <div className="flex gap-4 marquee-refs-track">
               {[...Array(2)].flatMap((_, setIndex) =>
-                [1, 2, 3, 4, 5, 6].map((num) => (
+                [1, 2, 3, 4, 5, 6, 3, 1, 5, 2].map((num, idx) => (
                   <img
-                    key={`r1-${setIndex}-${num}`}
+                    key={`r1-${setIndex}-${idx}`}
                     src={`/images/gallery/gallery-${num}.webp`}
-                    alt={`Resultado ${num}`}
+                    alt={`Resultado ${idx + 1}`}
                     className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 object-cover"
                     loading="lazy"
                   />
@@ -420,11 +420,11 @@ const ArcanoClonerTeste = () => {
             <div className="absolute right-0 top-0 w-20 h-full bg-gradient-to-l from-[#0a0510] to-transparent z-10 pointer-events-none" />
             <div className="flex gap-4 marquee-refs-track-reverse">
               {[...Array(2)].flatMap((_, setIndex) =>
-                [4, 5, 6, 1, 2, 3].map((num) => (
+                [4, 5, 6, 1, 2, 3, 6, 4, 1, 5].map((num, idx) => (
                   <img
-                    key={`r2-${setIndex}-${num}`}
+                    key={`r2-${setIndex}-${idx}`}
                     src={`/images/gallery/gallery-${num}.webp`}
-                    alt={`Resultado ${num}`}
+                    alt={`Resultado ${idx + 1}`}
                     className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 object-cover"
                     loading="lazy"
                   />
