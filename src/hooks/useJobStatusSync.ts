@@ -195,6 +195,20 @@ export function useJobStatusSync({
     isCompletedRef.current = false;
     lastKnownStatusRef.current = null;
     
+    // CLEANUP OPORTUNÍSTICO: ao montar, dispara limpeza server-side de jobs presos
+    // Isso garante que mesmo se o usuário fechou e reabriu a aba, jobs > 10 min são limpos
+    fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({}),
+      }
+    ).catch(e => console.error('[JobSync] Cleanup trigger failed:', e));
+    
     // 1. REALTIME SUBSCRIPTION
     const channel = supabase
       .channel(`job-sync-${toolType}-${jobId}`)
