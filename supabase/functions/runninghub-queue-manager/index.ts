@@ -725,6 +725,9 @@ async function handleProcessNext(): Promise<Response> {
 
 async function handleFinish(req: Request): Promise<Response> {
   try {
+    // Limpeza oportunística: qualquer finish limpa jobs presos de todos
+    await cleanupStaleJobs();
+    
     const { table, jobId, status, outputUrl, errorMessage, taskId, rhCost, webhookPayload } = await req.json();
     
     if (!table || !jobId) {
@@ -888,6 +891,9 @@ async function handleStatus(): Promise<Response> {
 
 async function handleEnqueue(req: Request): Promise<Response> {
   try {
+    // Limpeza oportunística: qualquer enqueue limpa jobs presos de todos
+    await cleanupStaleJobs();
+    
     const { table, jobId, creditCost } = await req.json();
     
     if (!table || !jobId) {
