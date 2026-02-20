@@ -1,36 +1,25 @@
 
-## Corrigir erro "non-2xx status code" no Refinamento
+## Alterar Slider de Criatividade: 1-6 para 0-100
 
-### Problema identificado
-Os logs da edge function mostram que o Google Gemini esta retornando `finishReason: "MALFORMED_FUNCTION_CALL"` em vez de gerar uma imagem. Isso acontece quando o modelo "se confunde" e tenta chamar funcoes internas dele (como inpainting, crop) em vez de gerar a imagem.
+### Mudancas
 
-A edge function retorna HTTP 500 com a mensagem real, mas o `supabase.functions.invoke()` no frontend transforma qualquer resposta non-2xx na mensagem generica "Edge Function returned a non-2xx status code", escondendo o erro real.
+**1. Componente `src/components/arcano-cloner/CreativitySlider.tsx`**
+- Mudar `min` de 1 para 0, `max` de 6 para 100, `step` de 1 para 1
+- Valor padrao ja vem do pai (sera 0)
+- Trocar label "Mais fiel" por "Mais fiel" (manter), "Muito criativo" por "Muito criativo" (manter)
+- Adicionar texto de recomendacao abaixo do slider: "Recomendado: entre 0 e 30"
 
-### Solucao (2 arquivos)
+**2. Frontend `src/pages/ArcanoClonerTool.tsx`**
+- Mudar `useState(4)` para `useState(0)` na linha 71
 
-**1. Edge function `supabase/functions/generate-image/index.ts`** (linhas 262-281)
+**3. Edge function `supabase/functions/runninghub-arcano-cloner/index.ts`** (linha 720)
+- Mudar o clamp de `Math.min(6, Math.max(1, ...))` para `Math.min(100, Math.max(0, ...))`
+- Mudar fallback de `4` para `0`
 
-- Detectar o `finishReason` da resposta do Gemini (`MALFORMED_FUNCTION_CALL`, `SAFETY`, `RECITATION`) e gerar mensagens amigaveis em portugues
-- Mudar o status HTTP de 500 para **200** quando o erro e tratado (com campo `error` no JSON), para que o frontend consiga ler a mensagem real. Isso e necessario porque `supabase.functions.invoke` nao expoe o body de respostas non-2xx de forma confiavel
-- Manter o estorno automatico de creditos (ja funciona)
-- Adicionar campo `refunded: true` na resposta para o frontend saber que os creditos ja foram devolvidos
-
-Mensagens por tipo de erro:
-- `MALFORMED_FUNCTION_CALL`: "A IA nao conseguiu processar esta imagem. Tente usar um prompt diferente ou outra imagem de referencia. Seus creditos foram estornados."
-- `SAFETY`: "Imagem bloqueada pelo filtro de seguranca. Tente usar outra imagem. Seus creditos foram estornados."
-- `RECITATION`: "A IA detectou conteudo protegido por direitos autorais. Tente com outra imagem. Seus creditos foram estornados."
-- Outros: "Nenhuma imagem gerada. Tente novamente com um prompt diferente. Seus creditos foram estornados."
-
-**2. Frontend `src/pages/ArcanoClonerTool.tsx`** (linhas 646-650)
-
-- Melhorar o tratamento de erro na funcao `handleRefine`:
-  - Para erros non-2xx do `supabase.functions.invoke`, tentar extrair o body real via `error.context.json()`
-  - Se nao conseguir extrair, mostrar mensagem generica amigavel em portugues: "Erro ao refinar imagem. Tente novamente."
-  - Para erros retornados como 200 com `data.error`, mostrar a mensagem real da edge function (ja amigavel)
-  - Substituir "Nenhuma imagem gerada" por "Nenhuma imagem gerada. Tente novamente."
+**4. Edge function `supabase/functions/runninghub-queue-manager/index.ts`** (linha 1143)
+- Mudar fallback de `4` para `0`
 
 ### O que NAO muda
-- A geracao normal de imagem NanoBanana continua igual
-- O custo de 30 creditos do refinamento continua igual
-- O estorno automatico continua funcionando
-- A timeline de refinamento continua funcionando
+- O nodeId 133 continua sendo usado
+- O valor enviado continua sendo um numero inteiro em string
+- Tudo mais (fotos, prompt, aspect ratio) fica igual
