@@ -375,124 +375,64 @@ const ArcanoClonerTeste = () => {
       </LazySection>
       */}
 
-      {/* ==================== PRICING ==================== */}
+      {/* ==================== PRICING (OCULTO) ====================
       <LazySection>
       <div id="pricing-section">
         <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30" animation="scale">
-          <div className="max-w-xl mx-auto">
-            <div className="text-center mb-6">
-              <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-2">
-                Tudo isso por <span className="text-fuchsia-400">apenas</span>
-              </h2>
-              <p className="text-white/60 text-sm">Pagamento único — sem mensalidade</p>
+          ... pricing + guarantee hidden ...
+        </AnimatedSection>
+      </div>
+      </LazySection>
+      ==================== */}
+
+      {/* ==================== RESULTADOS DE USUÁRIOS ==================== */}
+      <LazySection>
+        <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="fade">
+          <div className="max-w-4xl mx-auto text-center mb-10">
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3">
+              Veja alguns <span className="text-fuchsia-400">resultados</span> de usuários
+            </h2>
+            <p className="text-white/60 text-sm md:text-base">Fotos geradas por usuários reais do Arcano Cloner</p>
+          </div>
+
+          {/* Carrossel 1 - direita */}
+          <div className="relative overflow-hidden mb-4">
+            <div className="absolute left-0 top-0 w-20 h-full bg-gradient-to-r from-[#0a0510] to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 w-20 h-full bg-gradient-to-l from-[#0a0510] to-transparent z-10 pointer-events-none" />
+            <div className="flex gap-4 marquee-refs-track">
+              {[...Array(2)].flatMap((_, setIndex) =>
+                [1, 2, 3, 4, 5, 6].map((num) => (
+                  <img
+                    key={`r1-${setIndex}-${num}`}
+                    src={`/images/gallery/gallery-${num}.webp`}
+                    alt={`Resultado ${num}`}
+                    className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 object-cover"
+                    loading="lazy"
+                  />
+                ))
+              )}
             </div>
+          </div>
 
-            {/* Countdown */}
-            <div className="flex items-center justify-center gap-2 mb-8">
-              <span className="text-purple-300 text-sm">Essa oferta expira em</span>
-              <div className="flex items-center gap-1">
-                <Clock className="w-3 h-3 text-red-500" />
-                <div className="flex items-center gap-0.5">
-                  <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[24px] text-center">
-                    <span className="text-red-400 font-mono font-bold text-xs">{countdown.hours}</span>
-                  </div>
-                  <span className="text-red-400 font-bold text-xs">:</span>
-                  <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[24px] text-center">
-                    <span className="text-red-400 font-mono font-bold text-xs">{countdown.minutes}</span>
-                  </div>
-                  <span className="text-red-400 font-bold text-xs">:</span>
-                  <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[24px] text-center">
-                    <span className="text-red-400 font-mono font-bold text-xs">{countdown.seconds}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Single pricing card */}
-            <Card className="relative p-8 flex flex-col rounded-xl bg-[#1A0A2E] border-2 border-fuchsia-500/50 shadow-lg shadow-fuchsia-500/20">
-              {/* Badge */}
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <Badge className="bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white px-4 py-1 text-sm font-bold rounded-full">
-                  OFERTA ESPECIAL
-                </Badge>
-              </div>
-
-              <div className="text-center mb-6 mt-2">
-                <h3 className="text-xl font-bold text-white">Arcano Cloner</h3>
-                <p className="text-sm text-purple-400 mt-0.5">Gere ensaios fotográficos com IA</p>
-              </div>
-
-              <div className="text-center mb-6">
-                <div className="text-purple-400 text-sm line-through mb-1">R$ 97,00</div>
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-purple-400 text-lg">R$</span>
-                  <span className="text-5xl font-bold text-white">39,90</span>
-                </div>
-                <p className="text-purple-400 text-base mt-1">Pagamento único</p>
-              </div>
-
-              <Button
-                onClick={handlePurchase}
-                className="w-full mb-6 text-lg h-14 bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white font-bold rounded-full shadow-xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02]"
-              >
-                COMPRAR AGORA
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </Button>
-
-              <div className="flex flex-col items-center mb-6">
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-white bg-gradient-to-r from-fuchsia-600 to-purple-600">
-                  <Sparkles className="w-4 h-4" />
-                  ~70 fotos incluídas
-                </span>
-                <span className="text-sm text-purple-400 mt-1">4.200 créditos</span>
-              </div>
-
-              <ul className="space-y-3">
-                {includedItems.map((item, index) => (
-                  <li key={index} className="flex items-start gap-2.5 text-base">
-                    <Check className="w-5 h-5 text-fuchsia-400 shrink-0 mt-0.5" />
-                    <span className="text-purple-200">{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </Card>
-
-            {/* Trust badges */}
-            <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
-              <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
-                <Shield className="h-3 w-3 text-green-400" />
-                Pagamento seguro
-              </span>
-              <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
-                <Zap className="h-3 w-3 text-yellow-400" />
-                Acesso imediato
-              </span>
-              <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
-                <Shield className="h-3 w-3 text-fuchsia-400" />
-                7 dias de garantia
-              </span>
+          {/* Carrossel 2 - esquerda */}
+          <div className="relative overflow-hidden">
+            <div className="absolute left-0 top-0 w-20 h-full bg-gradient-to-r from-[#0a0510] to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 w-20 h-full bg-gradient-to-l from-[#0a0510] to-transparent z-10 pointer-events-none" />
+            <div className="flex gap-4 marquee-refs-track-reverse">
+              {[...Array(2)].flatMap((_, setIndex) =>
+                [4, 5, 6, 1, 2, 3].map((num) => (
+                  <img
+                    key={`r2-${setIndex}-${num}`}
+                    src={`/images/gallery/gallery-${num}.webp`}
+                    alt={`Resultado ${num}`}
+                    className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 object-cover"
+                    loading="lazy"
+                  />
+                ))
+              )}
             </div>
           </div>
         </AnimatedSection>
-      </div>
-
-      {/* ==================== GUARANTEE ==================== */}
-      <AnimatedSection className="px-4 py-16 md:py-20">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-gradient-to-br from-green-500/10 to-emerald-600/10 border border-green-500/30 rounded-3xl p-8 md:p-12 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-green-500/20 flex items-center justify-center mx-auto mb-6">
-              <Shield className="h-8 w-8 text-green-400" />
-            </div>
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-white mb-4">
-              Garantia incondicional de{" "}
-              <span className="text-green-400">7 dias</span>
-            </h2>
-            <p className="text-white/60 max-w-md mx-auto">
-              Se dentro de 7 dias você não gostar do Arcano Cloner por qualquer motivo, basta nos enviar uma mensagem e devolveremos 100% do seu dinheiro. Sem perguntas, sem burocracia.
-            </p>
-          </div>
-        </div>
-      </AnimatedSection>
       </LazySection>
 
 
