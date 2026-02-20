@@ -639,6 +639,7 @@ const ArcanoClonerTool: React.FC = () => {
           model: 'pro',
           aspect_ratio: aspectRatio,
           reference_images: referenceImages,
+          source: 'arcano_cloner_refine',
         },
       });
 
