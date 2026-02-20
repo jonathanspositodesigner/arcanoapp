@@ -22,8 +22,8 @@ const CreativitySlider: React.FC<CreativitySliderProps> = ({
       
       <div className="px-1">
         <Slider
-          min={1}
-          max={6}
+          min={0}
+          max={100}
           step={1}
           value={[value]}
           onValueChange={(vals) => onChange(vals[0])}
@@ -38,6 +38,7 @@ const CreativitySlider: React.FC<CreativitySliderProps> = ({
           </span>
           <span className="text-[9px] text-purple-400">Muito criativo</span>
         </div>
+        <p className="text-[9px] text-purple-300/70 text-center mt-1">Recomendado: entre 0 e 30</p>
       </div>
     </div>
   );

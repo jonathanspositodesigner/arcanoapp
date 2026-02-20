@@ -68,7 +68,7 @@ const ArcanoClonerTool: React.FC = () => {
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');
 
   // Creativity & custom prompt states
-  const [creativity, setCreativity] = useState(4);
+  const [creativity, setCreativity] = useState(0);
   const [customPromptEnabled, setCustomPromptEnabled] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
 

@@ -717,7 +717,7 @@ async function handleRun(req: Request) {
 
     // Build node info list for Arcano Cloner API
     // Node 58 = User photo, Node 62 = Reference photo, Node 69 = Prompt, Node 85 = Aspect Ratio
-    const finalCreativity = String(Math.min(6, Math.max(1, Number(creativity) || 4)));
+    const finalCreativity = String(Math.min(100, Math.max(0, Number(creativity) || 0)));
     const finalCustomPrompt = customPrompt || '';
 
     const nodeInfoList = [
