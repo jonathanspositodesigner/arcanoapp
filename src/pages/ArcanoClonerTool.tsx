@@ -643,11 +643,22 @@ const ArcanoClonerTool: React.FC = () => {
         },
       });
 
-      if (error) throw new Error(error.message || 'Erro ao refinar imagem');
+      if (error) {
+        // Try to extract real error from edge function response
+        let realMessage = 'Erro ao refinar imagem. Tente novamente.';
+        try {
+          const ctx = (error as any)?.context;
+          if (ctx && typeof ctx.json === 'function') {
+            const body = await ctx.json();
+            if (body?.error) realMessage = body.error;
+          }
+        } catch { /* ignore extraction failure */ }
+        throw new Error(realMessage);
+      }
       if (data?.error) throw new Error(data.error);
 
       const newUrl = data?.output_url;
-      if (!newUrl) throw new Error('Nenhuma imagem gerada');
+      if (!newUrl) throw new Error('Nenhuma imagem gerada. Tente novamente.');
 
       const newIndex = refinementHistory.length === 0 ? 1 : refinementHistory.length;
       const newVersion: RefinementVersion = {

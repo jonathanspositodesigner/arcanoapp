@@ -237,8 +237,9 @@ serve(async (req) => {
         ? "API de geração sobrecarregada. Seus créditos foram estornados. Tente novamente em alguns instantes."
         : "Erro na geração de imagem. Seus créditos foram estornados.";
 
-      return new Response(JSON.stringify({ error: userMessage }), {
-        status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      // Return HTTP 200 with error field so frontend can read the message
+      return new Response(JSON.stringify({ error: userMessage, refunded: true }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -260,23 +261,39 @@ serve(async (req) => {
     }
 
     if (!imageBase64) {
-      console.error("[generate-image] No image in response:", JSON.stringify(geminiData).slice(0, 500));
+      // Detect specific Gemini finishReason for user-friendly messages
+      const finishReason = candidates?.[0]?.finishReason || "";
+      let userErrorMessage: string;
+
+      if (finishReason === "MALFORMED_FUNCTION_CALL") {
+        userErrorMessage = "A IA não conseguiu processar esta imagem. Tente usar um prompt diferente ou outra imagem de referência. Seus créditos foram estornados.";
+      } else if (finishReason === "SAFETY") {
+        userErrorMessage = "Imagem bloqueada pelo filtro de segurança. Tente usar outra imagem. Seus créditos foram estornados.";
+      } else if (finishReason === "RECITATION") {
+        userErrorMessage = "A IA detectou conteúdo protegido por direitos autorais. Tente com outra imagem. Seus créditos foram estornados.";
+      } else {
+        userErrorMessage = "Nenhuma imagem gerada. Tente novamente com um prompt diferente. Seus créditos foram estornados.";
+      }
+
+      console.error(`[generate-image] No image in response. finishReason: ${finishReason}`, JSON.stringify(geminiData).slice(0, 500));
 
       await serviceClient.rpc("refund_upscaler_credits", {
         _user_id: userId,
         _amount: effectiveCreditCost,
-        _description: "Estorno: sem imagem na resposta",
+        _description: `Estorno: ${finishReason || "sem imagem na resposta"}`,
       });
 
       await serviceClient.from("image_generator_jobs").update({
         status: "failed",
-        error_message: "Nenhuma imagem gerada na resposta",
+        error_message: finishReason || "Nenhuma imagem gerada na resposta",
         credits_refunded: true,
         completed_at: new Date().toISOString(),
       }).eq("id", jobId);
 
-      return new Response(JSON.stringify({ error: "Nenhuma imagem gerada. Seus créditos foram estornados." }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      // Return HTTP 200 with error field so frontend can read the message
+      // (supabase.functions.invoke hides the body on non-2xx responses)
+      return new Response(JSON.stringify({ error: userErrorMessage, refunded: true }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
