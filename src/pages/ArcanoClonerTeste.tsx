@@ -406,7 +406,7 @@ const ArcanoClonerTeste = () => {
                     key={`r1-${setIndex}-${num}`}
                     src={`/images/results/result-${num}.webp`}
                     alt={`Resultado ${num}`}
-                    className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 object-cover"
+                    className="w-[255px] md:w-[234px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 object-cover"
                     loading="lazy"
                   />
                 ))
@@ -425,7 +425,7 @@ const ArcanoClonerTeste = () => {
                     key={`r2-${setIndex}-${num}`}
                     src={`/images/results/result-${num}.webp`}
                     alt={`Resultado ${num}`}
-                    className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 object-cover"
+                    className="w-[255px] md:w-[234px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 object-cover"
                     loading="lazy"
                   />
                 ))
