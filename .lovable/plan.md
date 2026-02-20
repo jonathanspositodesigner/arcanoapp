@@ -1,44 +1,66 @@
 
 
-## Problema Real
+## Botao "Refinar" no Arcano Cloner (30 creditos)
 
-O timer de 10 minutos no frontend ja existe e funciona (`useJobStatusSync.ts`), mas **so funciona se o usuario ficar com a aba aberta**. Se fechar a aba, o timer morre e o job fica preso para sempre.
+### Resumo
+Adicionar um botao "Refinar" ao lado de "Nova" e "Baixar HD" que permite ao usuario modificar o resultado gerado usando a API do Google Gemini (edge function `generate-image` que ja existe). O custo sera fixo em 30 creditos para todos os usuarios.
 
-A funcao `cleanup_all_stale_ai_jobs` no banco tambem ja existe, mas so roda "oportunisticamente" quando alguem aciona os endpoints `/check`, `/process-next` ou `/check-user-active` do queue manager. Se ninguem estiver usando o sistema naquele momento, ninguem limpa.
+### Funcionalidades
+1. Botao "Refinar" aparece ao lado de "Nova" e "Baixar HD" quando o resultado esta pronto
+2. Ao clicar, os inputs do lado esquerdo mudam para mostrar:
+   - Campo de upload de imagem (opcional) - para enviar referencia extra
+   - Campo de prompt (textarea) com placeholder "Escreva aqui o que vc quer modificar na imagem"
+   - Botao "Enviar Refinamento" (30 creditos) e botao "Cancelar" para voltar ao modo normal
+3. Ao submeter, o sistema:
+   - Busca a imagem atual do resultado como base64
+   - Envia para a edge function `generate-image` com o prompt do usuario + imagem atual como referencia + imagem extra (se tiver)
+   - Mostra loading no visor enquanto processa
+4. Novo resultado substitui o anterior no visor
+5. Linha do tempo horizontal embaixo do visor com thumbnails de cada versao (Original, Refinamento 1, 2, etc.)
+6. Clicar em qualquer thumbnail mostra aquela versao no visor e o "Baixar HD" baixa a selecionada
+7. Todos os refinamentos ficam salvos automaticamente em "Minhas Criacoes" (a edge function `generate-image` ja salva na tabela `image_generator_jobs`)
 
-## Solucao (Sem Cron, Sem Custo Extra)
+### Detalhes Tecnicos
 
-Garantir que a limpeza rode em **TODOS** os endpoints do queue manager, nao so em 3 deles. Assim, qualquer interacao de qualquer usuario limpa jobs presos de todos.
+**Arquivo principal:** `src/pages/ArcanoClonerTool.tsx`
 
-### Endpoints que ja limpam:
-- `/check` - ja chama `cleanupStaleJobs()`
-- `/process-next` - ja chama `cleanupStaleJobs()`
-- `/check-user-active` - ja chama `cleanupStaleJobs()`
+Novos estados:
+- `refineMode` (boolean) - controla se o painel de refinamento esta ativo
+- `refinePrompt` (string) - texto do prompt de refinamento
+- `refineReferenceFile` (File | null) - imagem extra opcional
+- `refineReferencePreview` (string | null) - preview da imagem extra
+- `isRefining` (boolean) - loading do refinamento
+- `refinementHistory` (array de `{ url: string, label: string }`) - timeline de versoes
+- `selectedHistoryIndex` (number) - qual versao esta selecionada no visor
 
-### Endpoints que NAO limpam (vao passar a limpar):
-- `/enqueue` - quando qualquer usuario enfileira um job novo
-- `/finish` - quando qualquer job termina (sucesso ou falha)
-- `/webhook` - quando RunningHub envia resultado
+Logica `handleRefine`:
+1. Verifica creditos (30)
+2. Busca imagem atual como base64 (fetch + canvas)
+3. Se tiver imagem extra, converte para base64 tambem
+4. Chama `supabase.functions.invoke('generate-image')` com:
+   - `prompt`: texto do usuario
+   - `model`: "pro" (usa Gemini Pro para melhor qualidade de refinamento)
+   - `aspect_ratio`: mesmo do resultado atual
+   - `reference_images`: array com a imagem atual + imagem extra (se tiver)
+5. Ao receber resposta com sucesso:
+   - Adiciona `output_url` ao `refinementHistory`
+   - Atualiza `outputImage` para o novo resultado
+   - Sai do `refineMode`
+   - Atualiza creditos
 
-Isso significa que **toda vez que qualquer usuario fizer qualquer acao** (iniciar job, receber resultado, verificar status), o sistema automaticamente varre e cancela jobs presos de todos os usuarios.
+**Novo componente:** `src/components/arcano-cloner/RefinePanel.tsx`
+- Textarea para o prompt
+- Upload de imagem opcional
+- Botao "Refinar" com custo (30 creditos)
+- Botao "Cancelar"
 
-### Reforco adicional: verificacao no mount da pagina
+**Novo componente:** `src/components/arcano-cloner/RefinementTimeline.tsx`
+- Lista horizontal scrollavel de thumbnails
+- Thumbnail selecionado tem borda destacada (fuchsia)
+- Labels: "Original", "Refinamento 1", "Refinamento 2"...
+- Ao clicar, atualiza o visor e o botao de download
 
-Alem disso, vamos adicionar uma chamada ao `cleanup_all_stale_ai_jobs` quando o usuario abrir qualquer ferramenta de IA. Isso garante que mesmo que o usuario feche e reabra a pagina, os jobs presos sao limpos imediatamente.
+**Custo:** 30 creditos fixo para todos (hardcoded por enquanto, sem entrada em `ai_tool_settings`)
 
-## Detalhes Tecnicos
-
-**Arquivo:** `supabase/functions/runninghub-queue-manager/index.ts`
-
-Mudancas:
-1. Adicionar `await cleanupStaleJobs()` no inicio de `handleEnqueue()`
-2. Adicionar `await cleanupStaleJobs()` no inicio de `handleFinish()`
-3. Adicionar `await cleanupStaleJobs()` no handler de webhook (se existir endpoint separado, ou no inicio do processamento de webhook)
-
-**Arquivo:** `src/hooks/useJobStatusSync.ts`
-
-Mudancas:
-4. No mount do hook (quando `enabled` vira true), chamar o endpoint `/check` do queue manager uma vez. Isso dispara `cleanupStaleJobs()` no servidor e garante que jobs antigos daquele usuario sejam limpos antes de iniciar um novo.
-
-Isso cria uma rede de limpeza "automatica" sem nenhum cron job, sem custo extra. A limpeza acontece naturalmente durante o uso normal do sistema. O unico cenario onde um job ficaria preso seria se NINGUEM usar o sistema por mais de 10 minutos (o que e aceitavel, pois nao ha urgencia se nao ha usuarios ativos).
+**Salvamento:** Automatico via edge function `generate-image` que ja cria registro em `image_generator_jobs` com `output_url`, e a RPC `get_user_ai_creations` ja lista esses registros em "Minhas Criacoes"
 
