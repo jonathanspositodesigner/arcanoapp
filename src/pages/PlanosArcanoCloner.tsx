@@ -222,7 +222,7 @@ const PlanosArcanoCloner = () => {
         </div>
       </section>
 
-      {/* ==================== PAIN POINTS ==================== */}
+      {/* ==================== PAIN POINTS (OCULTO)
       <LazySection>
       <AnimatedSection className="px-3 md:px-4 pt-4 pb-10 md:py-20 bg-black/30">
         <div className="max-w-5xl mx-auto">
@@ -231,12 +231,11 @@ const PlanosArcanoCloner = () => {
               Chega de...
             </h2>
           </AnimatedSection>
-
           <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 auto-rows-fr" staggerDelay={100}>
             {painPoints.map((pain, index) => {
               const IconComp = pain.icon;
               return (
-                <div key={index} className={`bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-purple-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full${index === 0 ? ' hidden sm:flex' : ''}`}>
+                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-purple-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full">
                   <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4 shrink-0">
                     <IconComp className="h-6 w-6 text-purple-400" />
                   </div>
@@ -245,12 +244,11 @@ const PlanosArcanoCloner = () => {
               );
             })}
           </StaggeredAnimation>
-
           <AnimatedSection as="div" delay={400}>
             <div className="mt-10 md:mt-12 bg-gradient-to-r from-fuchsia-500/10 to-purple-600/10 border border-fuchsia-500/30 rounded-3xl p-8 text-center">
               <Sparkles className="h-8 w-8 text-fuchsia-400 mx-auto mb-4" />
               <p className="text-xl md:text-2xl text-white font-semibold">
-                Com o <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">Arcano Cloner</span> você resolve tudo isso
+                Com o Arcano Cloner você resolve tudo isso
               </p>
               <p className="text-white/60 mt-2">Sem estúdio. Sem fotógrafo. Sem prompt. Sem complicação.</p>
             </div>
@@ -258,6 +256,7 @@ const PlanosArcanoCloner = () => {
         </div>
       </AnimatedSection>
       </LazySection>
+      ==================== */}
 
       {/* ==================== GALLERY ==================== */}
       <LazySection rootMargin="100px">
@@ -413,7 +412,7 @@ const PlanosArcanoCloner = () => {
       </AnimatedSection>
       </LazySection>
 
-      {/* ==================== PARA QUEM É ==================== */}
+      {/* ==================== PARA QUEM É (OCULTO) ====================
       <LazySection>
       <AnimatedSection className="px-4 py-16 md:py-20">
         <div className="max-w-5xl mx-auto">
@@ -452,6 +451,7 @@ const PlanosArcanoCloner = () => {
         </div>
       </AnimatedSection>
       </LazySection>
+      */}
 
       {/* ==================== PRICING ==================== */}
       <LazySection>
