@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Sparkles } from "lucide-react";
@@ -12,13 +12,24 @@ interface LandingTrialExpiredModalProps {
 
 export const LandingTrialExpiredModal = ({ userId, balance }: LandingTrialExpiredModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [hasChecked, setHasChecked] = useState(false);
+  const prevBalanceRef = useRef<number | null>(null);
+  const checkingRef = useRef(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!userId || balance > 0 || hasChecked) return;
+    if (!userId || balance > 0) {
+      prevBalanceRef.current = balance;
+      return;
+    }
+
+    // balance === 0: check on initial mount (prevBalance null) or transition from >0
+    const shouldCheck = prevBalanceRef.current === null || prevBalanceRef.current > 0;
+    prevBalanceRef.current = balance;
+
+    if (!shouldCheck || checkingRef.current) return;
 
     const checkTrialStatus = async () => {
+      checkingRef.current = true;
       try {
         const { data, error } = await supabase.rpc("check_landing_trial_status", {
           _user_id: userId,
@@ -33,12 +44,12 @@ export const LandingTrialExpiredModal = ({ userId, balance }: LandingTrialExpire
       } catch (err) {
         console.error("Error checking landing trial status:", err);
       } finally {
-        setHasChecked(true);
+        checkingRef.current = false;
       }
     };
 
     checkTrialStatus();
-  }, [userId, balance, hasChecked]);
+  }, [userId, balance]);
 
   if (!isOpen) return null;
 
