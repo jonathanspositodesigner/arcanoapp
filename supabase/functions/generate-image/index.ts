@@ -96,7 +96,7 @@ serve(async (req) => {
   const userId = claimsData.claims.sub as string;
 
   try {
-    const { prompt, model, aspect_ratio, reference_images } = await req.json();
+    const { prompt, model, aspect_ratio, reference_images, source } = await req.json();
 
     if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
       return new Response(JSON.stringify({ error: "Prompt é obrigatório" }), {
@@ -108,39 +108,50 @@ serve(async (req) => {
     const isProModel = model === "pro";
     const proGeminiModel  = "gemini-3-pro-image-preview";
     const flashGeminiModel = "gemini-2.5-flash-image";
-    const toolName = isProModel ? "gerar_imagem_pro" : "gerar_imagem";
-
-    // Check if user is IA Unlimited
-    const { data: premiumData } = await serviceClient
-      .from("premium_users")
-      .select("plan_type")
-      .eq("user_id", userId)
-      .eq("is_active", true)
-      .maybeSingle();
-    const isUnlimited = premiumData?.plan_type === "arcano_unlimited";
-
-    // Get credit cost from settings
-    const { data: settingsData } = await serviceClient
-      .from("ai_tool_settings")
-      .select("credit_cost")
-      .eq("tool_name", toolName)
-      .single();
 
     let creditCost: number;
-    if (isUnlimited) {
-      creditCost = settingsData?.credit_cost ?? (isProModel ? 60 : 40);
+    let toolDescription: string;
+
+    if (source === "arcano_cloner_refine") {
+      // Refinamento Arcano Cloner: custo fixo de 30 créditos
+      creditCost = 30;
+      toolDescription = "Refinamento Arcano Cloner";
     } else {
-      creditCost = isProModel ? 100 : 80;
+      const toolName = isProModel ? "gerar_imagem_pro" : "gerar_imagem";
+
+      // Check if user is IA Unlimited
+      const { data: premiumData } = await serviceClient
+        .from("premium_users")
+        .select("plan_type")
+        .eq("user_id", userId)
+        .eq("is_active", true)
+        .maybeSingle();
+      const isUnlimited = premiumData?.plan_type === "arcano_unlimited";
+
+      // Get credit cost from settings
+      const { data: settingsData } = await serviceClient
+        .from("ai_tool_settings")
+        .select("credit_cost")
+        .eq("tool_name", toolName)
+        .single();
+
+      if (isUnlimited) {
+        creditCost = settingsData?.credit_cost ?? (isProModel ? 60 : 40);
+      } else {
+        creditCost = isProModel ? 100 : 80;
+      }
+
+      toolDescription = `Gerar Imagem (${isProModel ? "NanoBanana Pro" : "NanoBanana Normal"})`;
     }
 
     // Flash fallback cost (cheaper)
-    const flashCreditCost = isUnlimited ? (settingsData?.credit_cost ?? 40) : 80;
+    const flashCreditCost = creditCost;
 
-    // Consume credits (charge Pro cost upfront)
+    // Consume credits
     const { data: consumeResult } = await serviceClient.rpc("consume_upscaler_credits", {
       _user_id: userId,
       _amount: creditCost,
-      _description: `Gerar Imagem (${isProModel ? "NanoBanana Pro" : "NanoBanana Normal"})`,
+      _description: toolDescription,
     });
 
     const consumeRow = Array.isArray(consumeResult) ? consumeResult[0] : consumeResult;
