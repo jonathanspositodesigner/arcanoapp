@@ -186,28 +186,10 @@ serve(async (req) => {
       });
     }
 
-    // Generate magic link for auto-login
-    const { data: magicLink, error: magicError } = await supabaseAdmin.auth.admin.generateLink({
-      type: "magiclink",
-      email,
-      options: {
-        redirectTo: `${getAppUrl()}/arcano-cloner-tool`,
-      },
-    });
-
-    if (magicError || !magicLink?.properties?.action_link) {
-      console.error("[confirm-landing-trial] Magic link error:", magicError);
-      // Fallback: redirect to login
-      return new Response(null, {
-        status: 302,
-        headers: { Location: `${getAppUrl()}/arcano-cloner-tool` },
-      });
-    }
-
-    // Redirect to magic link (auto-login)
+    // Redirect directly to the tool page
     return new Response(null, {
       status: 302,
-      headers: { Location: magicLink.properties.action_link },
+      headers: { Location: `${getAppUrl()}/arcano-cloner-tool` },
     });
   } catch (error: any) {
     console.error("[confirm-landing-trial] Error:", error);
