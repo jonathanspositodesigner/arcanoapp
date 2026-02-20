@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw } from 'lucide-react';
+import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Wand2 } from 'lucide-react';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -33,6 +33,8 @@ import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
 import { getAIErrorMessage } from '@/utils/errorMessages';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 import LandingTrialExpiredModal from '@/components/arcano-cloner/LandingTrialExpiredModal';
+import RefinePanel from '@/components/arcano-cloner/RefinePanel';
+import RefinementTimeline, { type RefinementVersion } from '@/components/arcano-cloner/RefinementTimeline';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -111,6 +113,15 @@ const ArcanoClonerTool: React.FC = () => {
   const [activeJobId, setActiveJobId] = useState<string | undefined>();
   const { showAuthModal, setShowAuthModal, handleAuthSuccess: hookAuthSuccess } = useAIToolsAuthModal({ user, refetchCredits });
   const [activeStatus, setActiveStatus] = useState<string | undefined>();
+
+  // Refine states
+  const [refineMode, setRefineMode] = useState(false);
+  const [refinePrompt, setRefinePrompt] = useState('');
+  const [refineReferenceFile, setRefineReferenceFile] = useState<File | null>(null);
+  const [refineReferencePreview, setRefineReferencePreview] = useState<string | null>(null);
+  const [isRefining, setIsRefining] = useState(false);
+  const [refinementHistory, setRefinementHistory] = useState<RefinementVersion[]>([]);
+  const [selectedHistoryIndex, setSelectedHistoryIndex] = useState(0);
 
   const canProcess = userImage && referenceImage && status === 'idle';
   const isProcessing = status === 'uploading' || status === 'processing' || status === 'waiting';
@@ -529,6 +540,13 @@ const ArcanoClonerTool: React.FC = () => {
     setDebugErrorMessage(null);
     setAspectRatio('1:1');
     clearGlobalJob();
+    setRefineMode(false);
+    setRefinePrompt('');
+    setRefineReferenceFile(null);
+    setRefineReferencePreview(null);
+    setIsRefining(false);
+    setRefinementHistory([]);
+    setSelectedHistoryIndex(0);
   };
 
   const handleNewImage = () => {
@@ -543,6 +561,128 @@ const ArcanoClonerTool: React.FC = () => {
     setFailedAtStep(null);
     setDebugErrorMessage(null);
     clearGlobalJob();
+    // Clear refine state
+    setRefineMode(false);
+    setRefinePrompt('');
+    setRefineReferenceFile(null);
+    setRefineReferencePreview(null);
+    setIsRefining(false);
+    setRefinementHistory([]);
+    setSelectedHistoryIndex(0);
+  };
+
+  // Convert image URL to base64
+  const imageUrlToBase64 = async (url: string): Promise<{ base64: string; mimeType: string }> => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        const [header, base64] = dataUrl.split(',');
+        const mimeType = header.match(/:(.*?);/)?.[1] || 'image/png';
+        resolve({ base64, mimeType });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const fileToBase64 = async (file: File): Promise<{ base64: string; mimeType: string }> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        const [header, base64] = dataUrl.split(',');
+        const mimeType = header.match(/:(.*?);/)?.[1] || 'image/png';
+        resolve({ base64, mimeType });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Handle refine submission
+  const handleRefine = async () => {
+    if (!outputImage || !refinePrompt.trim() || !user?.id) return;
+
+    const REFINE_COST = 30;
+
+    const freshCredits = await checkBalance();
+    if (freshCredits < REFINE_COST) {
+      setNoCreditsReason('insufficient');
+      setShowNoCreditsModal(true);
+      return;
+    }
+
+    setIsRefining(true);
+
+    try {
+      // Get current output as base64
+      const currentImage = await imageUrlToBase64(outputImage);
+      const referenceImages: { base64: string; mimeType: string }[] = [currentImage];
+
+      // Add extra reference if provided
+      if (refineReferenceFile) {
+        const extraRef = await fileToBase64(refineReferenceFile);
+        referenceImages.push(extraRef);
+      }
+
+      // If this is the first refinement, add original to history
+      if (refinementHistory.length === 0) {
+        setRefinementHistory([{ url: outputImage, label: 'Original' }]);
+      }
+
+      const { data, error } = await supabase.functions.invoke('generate-image', {
+        body: {
+          prompt: refinePrompt.trim(),
+          model: 'pro',
+          aspect_ratio: aspectRatio,
+          reference_images: referenceImages,
+        },
+      });
+
+      if (error) throw new Error(error.message || 'Erro ao refinar imagem');
+      if (data?.error) throw new Error(data.error);
+
+      const newUrl = data?.output_url;
+      if (!newUrl) throw new Error('Nenhuma imagem gerada');
+
+      const newIndex = refinementHistory.length === 0 ? 1 : refinementHistory.length;
+      const newVersion: RefinementVersion = {
+        url: newUrl,
+        label: `Refinamento ${newIndex}`,
+      };
+
+      setRefinementHistory(prev => {
+        const updated = prev.length === 0
+          ? [{ url: outputImage, label: 'Original' }, newVersion]
+          : [...prev, newVersion];
+        setSelectedHistoryIndex(updated.length - 1);
+        return updated;
+      });
+
+      setOutputImage(newUrl);
+      setRefineMode(false);
+      setRefinePrompt('');
+      setRefineReferenceFile(null);
+      setRefineReferencePreview(null);
+      refetchCredits();
+      toast.success('Imagem refinada com sucesso!');
+    } catch (err: any) {
+      console.error('[ArcanoCloner] Refine error:', err);
+      toast.error(err.message || 'Erro ao refinar imagem');
+    } finally {
+      setIsRefining(false);
+    }
+  };
+
+  // Handle selecting a version from the timeline
+  const handleSelectVersion = (index: number) => {
+    setSelectedHistoryIndex(index);
+    if (refinementHistory[index]) {
+      setOutputImage(refinementHistory[index].url);
+    }
   };
 
   // Download result
@@ -588,148 +728,159 @@ const ArcanoClonerTool: React.FC = () => {
           {/* Left Side - Inputs (2/7 on desktop) */}
           <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
 
-            {/* User Image - Character/Photo Switch */}
-            <PersonInputSwitch
-              image={userImage}
-              onImageChange={handleUserImageChange}
-              userId={user?.id}
-              disabled={isProcessing}
-            />
-
-            {/* Reference Image - New Component */}
-            <ReferenceImageCard
-              image={referenceImage}
-              onClearImage={handleClearReference}
-              onOpenLibrary={() => setShowPhotoLibrary(true)}
-              disabled={isProcessing}
-            />
-
-            {/* Aspect Ratio Selector */}
-            <AspectRatioSelector
-              value={aspectRatio}
-              onChange={setAspectRatio}
-              disabled={isProcessing}
-            />
-
-            {/* Creativity Slider */}
-            <CreativitySlider
-              value={creativity}
-              onChange={setCreativity}
-              disabled={isProcessing}
-            />
-
-            {/* Custom Prompt Toggle */}
-            <CustomPromptToggle
-              enabled={customPromptEnabled}
-              onEnabledChange={setCustomPromptEnabled}
-              prompt={customPrompt}
-              onPromptChange={setCustomPrompt}
-              disabled={isProcessing}
-            />
-
-            {/* Action Button */}
-            <Button
-              size="sm"
-              className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs disabled:opacity-50"
-              disabled={!canProcess || isProcessing || isSubmitting}
-              onClick={handleProcess}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                  Iniciando...
-                </>
-              ) : status === 'uploading' ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                  Enviando...
-                </>
-              ) : status === 'waiting' ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                  Fila #{queuePosition}
-                </>
-              ) : status === 'processing' ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                  {Math.round(progress)}%
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                  Gerar Imagem
-                  <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
-                    <Coins className="w-3.5 h-3.5" />
-                    {creditCost}
-                  </span>
-                </>
-              )}
-            </Button>
-
-            {/* Cancel button when in queue */}
-            {status === 'waiting' && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full text-xs border-red-500/30 text-red-300 hover:bg-red-500/10"
-                onClick={handleCancelQueue}
-              >
-                <XCircle className="w-3.5 h-3.5 mr-1.5" />
-                Sair da Fila
-              </Button>
-            )}
-
-            {/* Reconcile button - appears after 60s of processing */}
-            {isProcessing && showReconcileButton && jobId && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full text-xs border-amber-500/30 text-amber-300 hover:bg-amber-500/10"
-                disabled={isReconciling}
-                onClick={async () => {
-                  setIsReconciling(true);
-                  try {
-                    const { data, error } = await supabase.functions.invoke(
-                      'runninghub-arcano-cloner/reconcile',
-                      { body: { jobId } }
-                    );
-                    if (error) throw error;
-                    if (data?.reconciled && data?.status === 'completed') {
-                      toast.success('Status atualizado! Imagem pronta.');
-                    } else if (data?.reconciled && data?.status === 'failed') {
-                      toast.error('O processamento falhou na RunningHub.');
-                    } else if (data?.alreadyFinalized) {
-                      toast.info('Job já finalizado, aguarde a atualização.');
-                    } else {
-                      toast.info('Ainda processando. Tente novamente em alguns segundos.');
-                    }
-                  } catch (err) {
-                    console.error('[ArcanoCloner] Reconcile error:', err);
-                    toast.error('Erro ao atualizar status');
-                  } finally {
-                    setIsReconciling(false);
-                  }
+            {refineMode ? (
+              <RefinePanel
+                prompt={refinePrompt}
+                onPromptChange={setRefinePrompt}
+                referencePreview={refineReferencePreview}
+                onReferenceChange={(file, preview) => {
+                  setRefineReferenceFile(file);
+                  setRefineReferencePreview(preview);
                 }}
-              >
-                {isReconciling ? (
-                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-                )}
-                Atualizar status
-              </Button>
-            )}
+                onSubmit={handleRefine}
+                onCancel={() => {
+                  setRefineMode(false);
+                  setRefinePrompt('');
+                  setRefineReferenceFile(null);
+                  setRefineReferencePreview(null);
+                }}
+                isRefining={isRefining}
+              />
+            ) : (
+              <>
+                {/* User Image - Character/Photo Switch */}
+                <PersonInputSwitch
+                  image={userImage}
+                  onImageChange={handleUserImageChange}
+                  userId={user?.id}
+                  disabled={isProcessing}
+                />
 
-            {/* Debug Panel - commented until backend is ready */}
-            {/* <JobDebugPanel
-              jobId={jobId}
-              tableName="arcano_cloner_jobs"
-              currentStep={currentStep}
-              failedAtStep={failedAtStep}
-              errorMessage={debugErrorMessage}
-              position={queuePosition}
-              status={status}
-            /> */}
+                {/* Reference Image - New Component */}
+                <ReferenceImageCard
+                  image={referenceImage}
+                  onClearImage={handleClearReference}
+                  onOpenLibrary={() => setShowPhotoLibrary(true)}
+                  disabled={isProcessing}
+                />
+
+                {/* Aspect Ratio Selector */}
+                <AspectRatioSelector
+                  value={aspectRatio}
+                  onChange={setAspectRatio}
+                  disabled={isProcessing}
+                />
+
+                {/* Creativity Slider */}
+                <CreativitySlider
+                  value={creativity}
+                  onChange={setCreativity}
+                  disabled={isProcessing}
+                />
+
+                {/* Custom Prompt Toggle */}
+                <CustomPromptToggle
+                  enabled={customPromptEnabled}
+                  onEnabledChange={setCustomPromptEnabled}
+                  prompt={customPrompt}
+                  onPromptChange={setCustomPrompt}
+                  disabled={isProcessing}
+                />
+
+                {/* Action Button */}
+                <Button
+                  size="sm"
+                  className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs disabled:opacity-50"
+                  disabled={!canProcess || isProcessing || isSubmitting}
+                  onClick={handleProcess}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                      Iniciando...
+                    </>
+                  ) : status === 'uploading' ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                      Enviando...
+                    </>
+                  ) : status === 'waiting' ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                      Fila #{queuePosition}
+                    </>
+                  ) : status === 'processing' ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                      {Math.round(progress)}%
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                      Gerar Imagem
+                      <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                        <Coins className="w-3.5 h-3.5" />
+                        {creditCost}
+                      </span>
+                    </>
+                  )}
+                </Button>
+
+                {/* Cancel button when in queue */}
+                {status === 'waiting' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-xs border-red-500/30 text-red-300 hover:bg-red-500/10"
+                    onClick={handleCancelQueue}
+                  >
+                    <XCircle className="w-3.5 h-3.5 mr-1.5" />
+                    Sair da Fila
+                  </Button>
+                )}
+
+                {/* Reconcile button - appears after 60s of processing */}
+                {isProcessing && showReconcileButton && jobId && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-xs border-amber-500/30 text-amber-300 hover:bg-amber-500/10"
+                    disabled={isReconciling}
+                    onClick={async () => {
+                      setIsReconciling(true);
+                      try {
+                        const { data, error } = await supabase.functions.invoke(
+                          'runninghub-arcano-cloner/reconcile',
+                          { body: { jobId } }
+                        );
+                        if (error) throw error;
+                        if (data?.reconciled && data?.status === 'completed') {
+                          toast.success('Status atualizado! Imagem pronta.');
+                        } else if (data?.reconciled && data?.status === 'failed') {
+                          toast.error('O processamento falhou na RunningHub.');
+                        } else if (data?.alreadyFinalized) {
+                          toast.info('Job já finalizado, aguarde a atualização.');
+                        } else {
+                          toast.info('Ainda processando. Tente novamente em alguns segundos.');
+                        }
+                      } catch (err) {
+                        console.error('[ArcanoCloner] Reconcile error:', err);
+                        toast.error('Erro ao atualizar status');
+                      } finally {
+                        setIsReconciling(false);
+                      }
+                    }}
+                  >
+                    {isReconciling ? (
+                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                    )}
+                    Atualizar status
+                  </Button>
+                )}
+              </>
+            )}
           </div>
 
           {/* Right Side - Result Viewer (5/7 on desktop) */}
@@ -800,6 +951,14 @@ const ArcanoClonerTool: React.FC = () => {
                       />
                     </TransformComponent>
                   </TransformWrapper>
+                ) : isRefining ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                    <div className="relative">
+                      <div className="w-14 h-14 rounded-full border-4 border-fuchsia-500/30 border-t-fuchsia-500 animate-spin" />
+                      <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-fuchsia-400" />
+                    </div>
+                    <p className="text-sm text-white font-medium">Refinando imagem...</p>
+                  </div>
                 ) : isProcessing ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                     <div className="relative">
@@ -879,6 +1038,16 @@ const ArcanoClonerTool: React.FC = () => {
                     Nova
                   </Button>
                   <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-8 text-xs bg-fuchsia-600/80 border-fuchsia-400/50 text-white hover:bg-fuchsia-500/90"
+                    onClick={() => setRefineMode(true)}
+                    disabled={isRefining}
+                  >
+                    <Wand2 className="w-3.5 h-3.5 mr-1.5" />
+                    Refinar
+                  </Button>
+                  <Button
                     size="sm"
                     className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white"
                     onClick={handleDownload}
@@ -888,6 +1057,13 @@ const ArcanoClonerTool: React.FC = () => {
                   </Button>
                 </div>
               )}
+
+              {/* Refinement Timeline */}
+              <RefinementTimeline
+                versions={refinementHistory}
+                selectedIndex={selectedHistoryIndex}
+                onSelect={handleSelectVersion}
+              />
             </Card>
           </div>
         </div>
