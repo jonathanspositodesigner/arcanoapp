@@ -68,7 +68,7 @@ serve(async (req) => {
       // Already confirmed - redirect to app
       return new Response(null, {
         status: 302,
-        headers: { Location: `${getAppUrl()}/arcano-cloner` },
+        headers: { Location: `${getAppUrl()}/arcano-cloner-tool` },
       });
     }
 
@@ -191,7 +191,7 @@ serve(async (req) => {
       type: "magiclink",
       email,
       options: {
-        redirectTo: `${getAppUrl()}/arcano-cloner`,
+        redirectTo: `${getAppUrl()}/arcano-cloner-tool`,
       },
     });
 
@@ -200,7 +200,7 @@ serve(async (req) => {
       // Fallback: redirect to login
       return new Response(null, {
         status: 302,
-        headers: { Location: `${getAppUrl()}/arcano-cloner` },
+        headers: { Location: `${getAppUrl()}/arcano-cloner-tool` },
       });
     }
 
