@@ -1,15 +1,17 @@
 
 
-## Ativar Rodrigo Sacre - Direto no banco
+## Simplificar seção de teste grátis
 
-Sem criar função, sem blacklist, sem mexer em nada. Apenas 3 queries SQL diretas:
+Remover o formulário de cadastro (nome, email, WhatsApp) da seção de teste grátis na página `/arcanocloner-teste` e substituir por um único botão "Ir para o Arcano Cloner" que leva para `https://arcanoapp.voxvisual.com.br/arcano-cloner-tool`.
 
-1. **INSERT em `premium_users`** - plano arcano_unlimited, 30 dias, ativo
-2. **Chamar RPC `reset_upscaler_credits`** - dar os 1800 créditos mensais
-3. Pronto. Acabou.
+### Arquivo alterado
 
-Se o webhook cair depois e resetar os créditos dele pra 1800 de novo, não faz diferença nenhuma porque o reset coloca em 1800 de qualquer jeito (não soma, reseta). Só seria "problema" se ele já tivesse gasto parte dos créditos e o webhook resetasse pra 1800 de novo - mas aí ele ganharia uns créditos a mais, nada grave.
-
-### Nenhum arquivo criado ou alterado
-Zero código. Só queries no banco.
+**`src/components/arcano-cloner/LandingTrialSignupSection.tsx`**
+- Remover todos os states (name, email, whatsapp, isSubmitting, isSuccess)
+- Remover a função handleSubmit e toda lógica de envio
+- Remover o formulário com os 3 inputs
+- Remover a tela de sucesso (verificação de email)
+- Manter a seção visual (título, badge "Teste Grátis", subtítulo)
+- Colocar um único botão "Ir para o Arcano Cloner" com link para `https://arcanoapp.voxvisual.com.br/arcano-cloner-tool`
+- O botão manterá o estilo gradient fuchsia/purple existente
 
