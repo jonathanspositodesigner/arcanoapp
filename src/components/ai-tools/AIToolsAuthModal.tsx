@@ -238,13 +238,13 @@ export default function AIToolsAuthModal({
             <Gift className="w-8 h-8 text-purple-400" />
           </div>
           <h2 className="text-xl font-bold text-white">
-            Ganhe 300 créditos grátis!
+            Ganhe 180 créditos grátis!
           </h2>
           <p className="text-sm text-purple-300 mt-1">
             Faça login ou crie sua conta para começar
           </p>
           <p className="text-xs text-purple-400/80 mt-1">
-            ⏳ Créditos válidos por 1 mês
+            ⏳ Créditos válidos por 24 horas
           </p>
         </div>
 
@@ -302,7 +302,7 @@ export default function AIToolsAuthModal({
               variant="purple"
               labels={{
                 title: 'Criar Conta',
-                subtitle: 'Cadastre-se e ganhe 300 créditos grátis',
+                subtitle: 'Cadastre-se e ganhe 180 créditos grátis',
                 email: 'Email',
                 emailPlaceholder: 'seu@email.com',
                 name: 'Nome (opcional)',
@@ -331,7 +331,7 @@ export default function AIToolsAuthModal({
                   Enviamos um link de confirmação para <strong className="text-white">{verifiedEmail || email}</strong>
                 </p>
                 <p className="text-xs text-purple-400 mt-2">
-                  Clique no link do email para confirmar e receber seus 300 créditos automaticamente.
+                  Clique no link do email para confirmar e receber seus 180 créditos automaticamente.
                 </p>
                 <p className="text-xs text-yellow-400/90 mt-2 bg-yellow-500/10 rounded-md px-3 py-2">
                   ⚠️ Não encontrou? Confira também na pasta de <strong>Spam</strong> ou <strong>Lixo eletrônico</strong>.

@@ -53,7 +53,7 @@ function buildFreeTrialEmailHtml(confirmLink: string): string {
         </td></tr>
         <tr><td style="padding-bottom:24px;">
           <p style="color:#c4b5fd;font-size:16px;line-height:1.6;margin:0;text-align:center;">
-            Clique no botão abaixo para confirmar seu email e receber <strong style="color:#ffffff;">300 créditos grátis</strong> para usar nas ferramentas de IA.
+            Clique no botão abaixo para confirmar seu email e receber <strong style="color:#ffffff;">180 créditos grátis</strong> (válidos por 24 horas) para usar nas ferramentas de IA.
           </p>
         </td></tr>
         <tr><td align="center" style="padding-bottom:24px;">
@@ -64,7 +64,7 @@ function buildFreeTrialEmailHtml(confirmLink: string): string {
         <tr><td style="padding-bottom:16px;">
           <div style="background:rgba(139,92,246,0.15);border-radius:8px;padding:16px;border:1px solid rgba(139,92,246,0.2);">
             <p style="color:#a78bfa;font-size:14px;text-align:center;margin:0;">
-              ⏳ Créditos válidos por 1 mês após o resgate
+              ⏳ Créditos válidos por 24 horas após o resgate
             </p>
           </div>
         </td></tr>
@@ -166,7 +166,7 @@ serve(async (req) => {
       email: {
         html: htmlBase64,
         text: "",
-        subject: "🎁 Confirme seu email e resgate 300 créditos grátis!",
+        subject: "🎁 Confirme seu email e resgate 180 créditos grátis!",
         from: { name: "Arcano App", email: "contato@voxvisual.com.br" },
         to: [{ name: normalizedEmail, email: normalizedEmail }],
       },

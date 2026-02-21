@@ -109,7 +109,7 @@ const TesteGratis = () => {
 
       if (result.success) {
         setPageState('success');
-        toast.success('300 créditos adicionados!');
+        toast.success('180 créditos adicionados!');
         setTimeout(() => navigate('/ferramentas-ia-aplicativo'), 2500);
       } else {
         toast.error(result.error || 'Erro ao resgatar créditos');
@@ -219,8 +219,8 @@ const TesteGratis = () => {
                 <Gift className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Teste Grátis</h2>
-              <p className="text-purple-300 text-sm">Ganhe 300 créditos para usar nas Ferramentas de IA</p>
-              <p className="text-purple-400/80 text-xs mt-1">⏳ Créditos válidos por 1 mês</p>
+              <p className="text-purple-300 text-sm">Ganhe 180 créditos para usar nas Ferramentas de IA</p>
+              <p className="text-purple-400/80 text-xs mt-1">⏳ Créditos válidos por 24 horas</p>
             </div>
             <form onSubmit={checkEligibility} className="space-y-4">
               <div className="relative">
@@ -257,7 +257,7 @@ const TesteGratis = () => {
                 <Lock className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Faça Login</h2>
-              <p className="text-purple-300 text-sm">Digite sua senha para resgatar seus 300 créditos</p>
+              <p className="text-purple-300 text-sm">Digite sua senha para resgatar seus 180 créditos</p>
             </div>
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
@@ -315,8 +315,8 @@ const TesteGratis = () => {
                 <User className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Crie sua Conta</h2>
-              <p className="text-purple-300 text-sm">Cadastre-se para ganhar 300 créditos grátis</p>
-              <p className="text-purple-400/80 text-xs mt-1">⏳ Créditos válidos por 1 mês</p>
+              <p className="text-purple-300 text-sm">Cadastre-se para ganhar 180 créditos grátis</p>
+              <p className="text-purple-400/80 text-xs mt-1">⏳ Créditos válidos por 24 horas</p>
             </div>
             <form onSubmit={handleSignup} className="space-y-4">
               <div>
@@ -414,7 +414,7 @@ const TesteGratis = () => {
               <CheckCircle className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Parabéns! 🎉</h2>
-            <p className="text-green-400 text-lg font-semibold mb-2">300 créditos adicionados!</p>
+            <p className="text-green-400 text-lg font-semibold mb-2">180 créditos adicionados!</p>
             <p className="text-purple-300 text-sm mb-6">Redirecionando para as Ferramentas de IA...</p>
             <Loader2 className="w-6 h-6 text-fuchsia-400 animate-spin mx-auto" />
           </div>
@@ -432,7 +432,7 @@ const TesteGratis = () => {
             </p>
             <p className="text-fuchsia-400 font-semibold mb-4">{email}</p>
             <p className="text-purple-400 text-xs mb-6">
-              Após confirmar seu email, faça login nesta página para resgatar seus 300 créditos.
+              Após confirmar seu email, faça login nesta página para resgatar seus 180 créditos.
             </p>
             <Button
               onClick={() => { setPageState('email'); setPassword(''); setName(''); }}
