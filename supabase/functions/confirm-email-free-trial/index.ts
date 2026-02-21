@@ -22,7 +22,7 @@ function buildSuccessHtml(): string {
         </td></tr>
         <tr><td style="padding-bottom:24px;">
           <p style="color:#c4b5fd;font-size:16px;line-height:1.6;margin:0;text-align:center;">
-            Seu email foi confirmado e seus <strong style="color:#ffffff;">300 créditos grátis</strong> já estão na sua conta. Faça login para começar a usar!
+            Seu email foi confirmado e seus <strong style="color:#ffffff;">180 créditos grátis</strong> já estão na sua conta. Válidos por 24 horas!
           </p>
         </td></tr>
         <tr><td align="center" style="padding-bottom:24px;">
@@ -178,7 +178,7 @@ serve(async (req) => {
           .insert({
             user_id: tokenData.user_id,
             email: tokenData.email,
-            credits_granted: 300,
+            credits_granted: 180,
           });
 
         // UPSERT into upscaler_credits
@@ -187,9 +187,10 @@ serve(async (req) => {
           .upsert(
             {
               user_id: tokenData.user_id,
-              monthly_balance: 300,
+              monthly_balance: 180,
               lifetime_balance: 0,
-              balance: 300,
+              balance: 180,
+              landing_trial_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
             },
             { onConflict: "user_id" }
           );
@@ -202,10 +203,10 @@ serve(async (req) => {
             .from("upscaler_credit_transactions")
             .insert({
               user_id: tokenData.user_id,
-              amount: 300,
+              amount: 180,
               balance_type: "monthly",
               type: "grant",
-              description: "300 créditos grátis (fallback via confirm-email)",
+              description: "180 créditos grátis - válidos por 24h (fallback)",
             });
           creditsClaimed = true;
           console.log(`[confirm-email-free-trial] Fallback succeeded for ${tokenData.user_id}`);

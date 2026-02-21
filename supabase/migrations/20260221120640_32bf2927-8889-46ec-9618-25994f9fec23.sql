@@ -1,0 +1,38 @@
+
+CREATE OR REPLACE FUNCTION public.claim_arcano_free_trial_atomic(p_user_id uuid, p_email text)
+RETURNS TABLE(already_claimed boolean, credits_granted integer)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_credits integer := 180;
+  v_balance_after integer;
+BEGIN
+  PERFORM pg_advisory_xact_lock(hashtext(p_email));
+
+  IF EXISTS (SELECT 1 FROM arcano_cloner_free_trials WHERE email = p_email) THEN
+    RETURN QUERY SELECT true::boolean, 0::integer;
+    RETURN;
+  END IF;
+
+  INSERT INTO arcano_cloner_free_trials (user_id, email, credits_granted)
+  VALUES (p_user_id, p_email, v_credits);
+
+  INSERT INTO upscaler_credits (user_id, monthly_balance, lifetime_balance, balance, landing_trial_expires_at)
+  VALUES (p_user_id, v_credits, 0, v_credits, now() + interval '24 hours')
+  ON CONFLICT (user_id) DO UPDATE
+  SET monthly_balance = upscaler_credits.monthly_balance + v_credits,
+      balance = upscaler_credits.balance + v_credits,
+      landing_trial_expires_at = now() + interval '24 hours',
+      updated_at = now();
+
+  SELECT balance INTO v_balance_after
+  FROM upscaler_credits WHERE user_id = p_user_id;
+
+  INSERT INTO upscaler_credit_transactions (user_id, amount, balance_after, transaction_type, credit_type, description)
+  VALUES (p_user_id, v_credits, v_balance_after, 'bonus', 'monthly', '180 créditos grátis - válidos por 24h');
+
+  RETURN QUERY SELECT false::boolean, v_credits::integer;
+END;
+$$;

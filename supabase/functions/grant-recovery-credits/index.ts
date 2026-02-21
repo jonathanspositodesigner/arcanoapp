@@ -38,11 +38,11 @@ function buildRecoveryEmailHtml(loginLink: string): string {
       <table width="100%" style="max-width:500px;background-color:#1A0A2E;border-radius:12px;border:1px solid rgba(139,92,246,0.2);padding:40px;">
         <tr><td align="center" style="padding-bottom:24px;">
           <div style="font-size:48px;margin-bottom:12px;">🎉</div>
-          <h1 style="color:#ffffff;font-size:24px;margin:0;">Seus 300 créditos grátis já estão na sua conta!</h1>
+          <h1 style="color:#ffffff;font-size:24px;margin:0;">Seus 180 créditos grátis já estão na sua conta!</h1>
         </td></tr>
         <tr><td style="padding-bottom:24px;">
           <p style="color:#c4b5fd;font-size:16px;line-height:1.6;margin:0;text-align:center;">
-            Identificamos um problema técnico que impediu a entrega dos seus créditos gratuitos no momento do cadastro. Já corrigimos isso e seus <strong style="color:#ffffff;">300 créditos grátis</strong> foram adicionados à sua conta!
+            Identificamos um problema técnico que impediu a entrega dos seus créditos gratuitos no momento do cadastro. Já corrigimos isso e seus <strong style="color:#ffffff;">180 créditos grátis</strong> foram adicionados à sua conta!
           </p>
         </td></tr>
         <tr><td align="center" style="padding-bottom:24px;">
@@ -53,7 +53,7 @@ function buildRecoveryEmailHtml(loginLink: string): string {
         <tr><td style="padding-bottom:16px;">
           <div style="background:rgba(139,92,246,0.15);border-radius:8px;padding:16px;border:1px solid rgba(139,92,246,0.2);">
             <p style="color:#a78bfa;font-size:14px;text-align:center;margin:0;">
-              ⏳ Créditos válidos por 1 mês a partir de hoje
+              ⏳ Créditos válidos por 24 horas a partir de hoje
             </p>
           </div>
         </td></tr>
@@ -94,7 +94,7 @@ serve(async (req) => {
         email: {
           html: htmlBase64,
           text: "",
-          subject: "🎉 Seus 300 créditos grátis já estão na sua conta!",
+          subject: "🎉 Seus 180 créditos grátis já estão na sua conta!",
           from: { name: "Arcano App", email: "contato@voxvisual.com.br" },
           to: [{ name: sendCopyTo, email: sendCopyTo }],
         },
@@ -187,7 +187,7 @@ serve(async (req) => {
             .insert({
               user_id: user.user_id,
               email: user.email,
-              credits_granted: 300,
+              credits_granted: 180,
             });
 
           if (trialError && !trialError.message?.includes("duplicate")) {
@@ -200,9 +200,9 @@ serve(async (req) => {
             .upsert(
               {
                 user_id: user.user_id,
-                monthly_balance: 300,
-                lifetime_balance: 0,
-                balance: 300,
+              monthly_balance: 180,
+              lifetime_balance: 0,
+              balance: 180,
               },
               { onConflict: "user_id" }
             );
@@ -217,10 +217,10 @@ serve(async (req) => {
             .from("upscaler_credit_transactions")
             .insert({
               user_id: user.user_id,
-              amount: 300,
+              amount: 180,
               balance_type: "monthly",
               type: "grant",
-              description: "Recuperação: 300 créditos grátis (falha no resgate original)",
+              description: "Recuperação: 180 créditos grátis (falha no resgate original)",
             });
 
           if (txError) {
@@ -258,7 +258,7 @@ serve(async (req) => {
               email: {
                 html: htmlBase64,
                 text: "",
-                subject: "🎉 Seus 300 créditos grátis já estão na sua conta!",
+                subject: "🎉 Seus 180 créditos grátis já estão na sua conta!",
                 from: { name: "Arcano App", email: "contato@voxvisual.com.br" },
                 to: [{ name: user.email, email: user.email }],
               },
