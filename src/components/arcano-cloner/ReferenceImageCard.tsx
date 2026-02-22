@@ -8,6 +8,9 @@ interface ReferenceImageCardProps {
   onClearImage: () => void;
   onOpenLibrary: () => void;
   disabled?: boolean;
+  title?: string;
+  emptyLabel?: string;
+  emptySubLabel?: string;
 }
 
 const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
@@ -15,6 +18,9 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
   onClearImage,
   onOpenLibrary,
   disabled = false,
+  title = 'Foto de Referência',
+  emptyLabel = 'Escolher da biblioteca',
+  emptySubLabel = 'Ou envie sua foto',
 }) => {
   return (
     <Card className={cn(
@@ -25,7 +31,7 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
       <div className="px-2 py-1 border-b border-purple-500/20">
         <h3 className="text-[10px] font-semibold text-white flex items-center gap-1">
           <ImageIcon className="w-3 h-3 text-purple-400" />
-          Foto de Referência
+           {title}
         </h3>
       </div>
 
@@ -66,8 +72,8 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
               <div className="w-8 h-8 rounded-lg bg-fuchsia-500/20 border border-dashed border-fuchsia-500/40 flex items-center justify-center">
                 <Plus className="w-4 h-4 text-fuchsia-400" />
               </div>
-              <p className="text-[10px] text-purple-200 font-medium">Escolher da biblioteca</p>
-              <p className="text-[9px] text-purple-400">Ou envie sua foto</p>
+              <p className="text-[10px] text-purple-200 font-medium">{emptyLabel}</p>
+              <p className="text-[9px] text-purple-400">{emptySubLabel}</p>
             </div>
           </div>
         )}

@@ -16,7 +16,7 @@ import { useAIJob } from '@/contexts/AIJobContext';
 import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/layout/AppLayout';
 import ReferenceImageCard from '@/components/arcano-cloner/ReferenceImageCard';
-import PhotoLibraryModal from '@/components/arcano-cloner/PhotoLibraryModal';
+import FlyerLibraryModal from '@/components/flyer-maker/FlyerLibraryModal';
 import CreativitySlider from '@/components/arcano-cloner/CreativitySlider';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
@@ -453,8 +453,10 @@ const FlyerMakerTool: React.FC = () => {
                 image={referenceImage} 
                 onClearImage={() => { setReferenceImage(null); setReferenceFile(null); }} 
                 onOpenLibrary={() => setShowPhotoLibrary(true)} 
-                disabled={isProcessing} 
-                
+                disabled={isProcessing}
+                title="Flyer de Referência"
+                emptyLabel="Escolher da biblioteca"
+                emptySubLabel="Ou envie seu flyer"
               />
 
               <Card className="p-3 bg-purple-900/20 border-purple-500/30">
@@ -598,7 +600,7 @@ const FlyerMakerTool: React.FC = () => {
           </div>
         </div>
 
-        <PhotoLibraryModal isOpen={showPhotoLibrary} onClose={() => setShowPhotoLibrary(false)} onSelectPhoto={(url) => { handleReferenceImageChange(url); setShowPhotoLibrary(false); }} />
+        <FlyerLibraryModal isOpen={showPhotoLibrary} onClose={() => setShowPhotoLibrary(false)} onSelectPhoto={(url) => { handleReferenceImageChange(url); setShowPhotoLibrary(false); }} />
         <NoCreditsModal isOpen={showNoCreditsModal} onClose={() => setShowNoCreditsModal(false)} reason={noCreditsReason} />
         <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeToolName} activeStatus={activeStatus} />
         <AIToolsAuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onAuthSuccess={handleAuthSuccess} />
