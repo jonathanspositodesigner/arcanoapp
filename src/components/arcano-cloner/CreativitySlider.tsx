@@ -6,12 +6,16 @@ interface CreativitySliderProps {
   value: number;
   onChange: (value: number) => void;
   disabled?: boolean;
+  max?: number;
+  showRecommendation?: boolean;
 }
 
 const CreativitySlider: React.FC<CreativitySliderProps> = ({
   value,
   onChange,
   disabled = false,
+  max = 100,
+  showRecommendation = true,
 }) => {
   return (
     <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-2">
@@ -23,7 +27,7 @@ const CreativitySlider: React.FC<CreativitySliderProps> = ({
       <div className="px-1">
         <Slider
           min={0}
-          max={100}
+          max={max}
           step={1}
           value={[value]}
           onValueChange={(vals) => onChange(vals[0])}
@@ -38,7 +42,7 @@ const CreativitySlider: React.FC<CreativitySliderProps> = ({
           </span>
           <span className="text-[9px] text-purple-400">Muito criativo</span>
         </div>
-        <p className="text-[9px] text-purple-300/70 text-center mt-1">Recomendado: entre 0 e 30</p>
+        {showRecommendation && <p className="text-[9px] text-purple-300/70 text-center mt-1">Recomendado: entre 0 e 30</p>}
       </div>
     </div>
   );
