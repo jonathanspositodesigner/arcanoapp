@@ -521,8 +521,8 @@ const FlyerMakerTool: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <Button variant={imageSize === '3:4' ? 'default' : 'outline'} onClick={() => setImageSize('3:4')} size="sm" className="text-xs h-8" disabled={isProcessing}>Feed (3:4)</Button>
-                <Button variant={imageSize === '9:16' ? 'default' : 'outline'} onClick={() => setImageSize('9:16')} size="sm" className="text-xs h-8" disabled={isProcessing}>Stories (9:16)</Button>
+                <Button variant="outline" onClick={() => setImageSize('3:4')} size="sm" className={`text-xs h-8 ${imageSize === '3:4' ? 'border-cyan-400 bg-purple-700/40 text-white' : 'border-purple-700/40 bg-purple-900/20 text-purple-400 hover:text-purple-200'}`} disabled={isProcessing}>Feed (3:4)</Button>
+                <Button variant="outline" onClick={() => setImageSize('9:16')} size="sm" className={`text-xs h-8 ${imageSize === '9:16' ? 'border-cyan-400 bg-purple-700/40 text-white' : 'border-purple-700/40 bg-purple-900/20 text-purple-400 hover:text-purple-200'}`} disabled={isProcessing}>Stories (9:16)</Button>
               </div>
 
               <CreativitySlider value={creativity} onChange={setCreativity} disabled={isProcessing} max={5} showRecommendation={false} />
