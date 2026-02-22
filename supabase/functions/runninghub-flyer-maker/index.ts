@@ -342,35 +342,28 @@ async function handleRun(req: Request) {
       waited_in_queue: false, status: 'running', started_at: new Date().toISOString(), position: 0, api_account: accountName || 'primary'
     }).eq('id', jobId);
 
-    // Fill missing artist slots with first artist's image
-    const firstArtist = artistFileNames[0];
-    const allArtistFiles = [
-      artistFileNames[0] || firstArtist,
-      artistFileNames[1] || firstArtist,
-      artistFileNames[2] || firstArtist,
-      artistFileNames[3] || firstArtist,
-      artistFileNames[4] || firstArtist,
-    ];
-
     const finalImageSize = imageSize === '9:16' ? '9:16' : '3:4';
     const finalCreativity = String(Math.min(5, Math.max(0, Number(creativity) || 0)));
 
-    const nodeInfoList = [
-      { nodeId: "11", fieldName: "image", fieldValue: allArtistFiles[0] },
-      { nodeId: "12", fieldName: "image", fieldValue: allArtistFiles[1] },
-      { nodeId: "13", fieldName: "image", fieldValue: allArtistFiles[2] },
-      { nodeId: "14", fieldName: "image", fieldValue: allArtistFiles[3] },
-      { nodeId: "15", fieldName: "image", fieldValue: allArtistFiles[4] },
-      { nodeId: "1", fieldName: "image", fieldValue: referenceFileName },
-      { nodeId: "28", fieldName: "image", fieldValue: logoFileName },
-      { nodeId: "6", fieldName: "text", fieldValue: dateTimeLocation || '' },
-      { nodeId: "10", fieldName: "text", fieldValue: artistNames || '' },
-      { nodeId: "7", fieldName: "text", fieldValue: title || '' },
-      { nodeId: "9", fieldName: "text", fieldValue: footerPromo || '' },
-      { nodeId: "103", fieldName: "text", fieldValue: address || '' },
-      { nodeId: "68", fieldName: "aspectRatio", fieldValue: finalImageSize },
-      { nodeId: "111", fieldName: "value", fieldValue: finalCreativity },
-    ];
+    // Only include artist nodes that have actual images - NO duplication
+    const artistNodes = [11, 12, 13, 14, 15];
+    const nodeInfoList: { nodeId: string; fieldName: string; fieldValue: string }[] = [];
+    
+    for (let i = 0; i < artistNodes.length; i++) {
+      if (artistFileNames[i]) {
+        nodeInfoList.push({ nodeId: String(artistNodes[i]), fieldName: "image", fieldValue: artistFileNames[i] });
+      }
+    }
+
+    nodeInfoList.push({ nodeId: "1", fieldName: "image", fieldValue: referenceFileName });
+    nodeInfoList.push({ nodeId: "28", fieldName: "image", fieldValue: logoFileName });
+    nodeInfoList.push({ nodeId: "6", fieldName: "text", fieldValue: dateTimeLocation || '' });
+    nodeInfoList.push({ nodeId: "10", fieldName: "text", fieldValue: artistNames || '' });
+    nodeInfoList.push({ nodeId: "7", fieldName: "text", fieldValue: title || '' });
+    nodeInfoList.push({ nodeId: "9", fieldName: "text", fieldValue: footerPromo || '' });
+    nodeInfoList.push({ nodeId: "103", fieldName: "text", fieldValue: address || '' });
+    nodeInfoList.push({ nodeId: "68", fieldName: "aspectRatio", fieldValue: finalImageSize });
+    nodeInfoList.push({ nodeId: "111", fieldName: "value", fieldValue: finalCreativity });
 
     const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
     const requestBody = { nodeInfoList, instanceType: "default", usePersonalQueue: false, webhookUrl };
@@ -465,9 +458,14 @@ async function handleReconcile(req: Request) {
   });
   const queryData = await queryResponse.json();
 
-  if (queryData.status === 'SUCCESS' && queryData.results?.length > 0) {
-    const imageResult = queryData.results.find((r: any) => ['png', 'jpg', 'jpeg', 'webp'].includes(r.outputType));
-    const outputUrl = imageResult?.url || queryData.results[0]?.url;
+  console.log('[FlyerMaker] Reconcile queryData:', JSON.stringify(queryData));
+
+  const taskStatus = queryData.data?.taskStatus || queryData.status;
+  const outputFileList = queryData.data?.outputFileList || queryData.results;
+
+  if (taskStatus === 'SUCCESS' && outputFileList?.length > 0) {
+    const imageResult = outputFileList.find((r: any) => ['png', 'jpg', 'jpeg', 'webp'].includes(r.fileType || r.outputType));
+    const outputUrl = imageResult?.fileUrl || imageResult?.url || outputFileList[0]?.fileUrl || outputFileList[0]?.url;
 
     await fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/finish`, {
       method: 'POST',
@@ -480,7 +478,7 @@ async function handleReconcile(req: Request) {
     });
   }
 
-  if (queryData.status === 'FAILED') {
+  if (taskStatus === 'FAILED') {
     await fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/finish`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
