@@ -454,7 +454,7 @@ const FlyerMakerTool: React.FC = () => {
                 onClearImage={() => { setReferenceImage(null); setReferenceFile(null); }} 
                 onOpenLibrary={() => setShowPhotoLibrary(true)} 
                 disabled={isProcessing} 
-                label="Flyer de Referência"
+                
               />
 
               <Card className="p-3 bg-purple-900/20 border-purple-500/30">
@@ -508,7 +508,7 @@ const FlyerMakerTool: React.FC = () => {
                 <Button variant={imageSize === '9:16' ? 'default' : 'outline'} onClick={() => setImageSize('9:16')} size="sm" className="text-xs h-8" disabled={isProcessing}>Stories (9:16)</Button>
               </div>
 
-              <CreativitySlider value={creativity} onChange={setCreativity} disabled={isProcessing} max={5} />
+              <CreativitySlider value={creativity} onChange={setCreativity} disabled={isProcessing} />
 
               <Button
                 size="sm"
@@ -583,10 +583,10 @@ const FlyerMakerTool: React.FC = () => {
           </div>
         </div>
 
-        <PhotoLibraryModal open={showPhotoLibrary} onOpenChange={setShowPhotoLibrary} onSelectImage={(url) => { handleReferenceImageChange(url); setShowPhotoLibrary(false); }} />
-        <NoCreditsModal open={showNoCreditsModal} onOpenChange={setShowNoCreditsModal} reason={noCreditsReason} />
-        <ActiveJobBlockModal open={showActiveJobModal} onOpenChange={setShowActiveJobModal} toolName={activeToolName} status={activeStatus} />
-        <AIToolsAuthModal open={showAuthModal} onOpenChange={setShowAuthModal} onSuccess={handleAuthSuccess} />
+        <PhotoLibraryModal isOpen={showPhotoLibrary} onClose={() => setShowPhotoLibrary(false)} onSelectPhoto={(url) => { handleReferenceImageChange(url); setShowPhotoLibrary(false); }} />
+        <NoCreditsModal isOpen={showNoCreditsModal} onClose={() => setShowNoCreditsModal(false)} reason={noCreditsReason} />
+        <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeToolName} activeStatus={activeStatus} />
+        <AIToolsAuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onAuthSuccess={handleAuthSuccess} />
       </div>
     </AppLayout>
   );
