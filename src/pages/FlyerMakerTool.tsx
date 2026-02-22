@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Sparkles, Download, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Plus, Trash2, Upload } from 'lucide-react';
+import { Sparkles, Download, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Plus, Trash2, Upload, Wand2 } from 'lucide-react';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -427,8 +427,133 @@ const FlyerMakerTool: React.FC = () => {
     } catch (e) { console.error(e); toast.error('Erro ao cancelar'); }
   };
 
-  // ... (Refine logic simplified for brevity, assume similar to ArcanoCloner)
-  // Reuse handleRefine logic from ArcanoCloner but adapted for outputImage
+  // Convert image URL to base64
+  const imageUrlToBase64 = async (url: string): Promise<{ base64: string; mimeType: string }> => {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        const [header, base64] = dataUrl.split(',');
+        const mimeType = header.match(/:(.*?);/)?.[1] || 'image/png';
+        resolve({ base64, mimeType });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const fileToBase64 = async (file: File): Promise<{ base64: string; mimeType: string }> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        const [header, base64] = dataUrl.split(',');
+        const mimeType = header.match(/:(.*?);/)?.[1] || 'image/png';
+        resolve({ base64, mimeType });
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleRefine = async () => {
+    if (!outputImage || !refinePrompt.trim() || !user?.id) return;
+
+    const REFINE_COST = 30;
+    const freshCredits = await checkBalance();
+    if (freshCredits < REFINE_COST) {
+      setNoCreditsReason('insufficient');
+      setShowNoCreditsModal(true);
+      return;
+    }
+
+    setIsRefining(true);
+
+    try {
+      const currentImage = await imageUrlToBase64(outputImage);
+      const referenceImages: { base64: string; mimeType: string }[] = [currentImage];
+
+      if (refineReferenceFile) {
+        const extraRef = await fileToBase64(refineReferenceFile);
+        referenceImages.push(extraRef);
+      }
+
+      if (refinementHistory.length === 0) {
+        setRefinementHistory([{ url: outputImage, label: 'Original' }]);
+      }
+
+      const { data, error } = await supabase.functions.invoke('generate-image', {
+        body: {
+          prompt: refinePrompt.trim(),
+          model: 'pro',
+          aspect_ratio: imageSize === '9:16' ? '9:16' : '3:4',
+          reference_images: referenceImages,
+          source: 'flyer_maker_refine',
+        },
+      });
+
+      if (error) {
+        let realMessage = 'Erro ao refinar imagem. Tente novamente.';
+        try {
+          const ctx = (error as any)?.context;
+          if (ctx && typeof ctx.json === 'function') {
+            const body = await ctx.json();
+            if (body?.error) realMessage = body.error;
+          }
+        } catch { /* ignore */ }
+        throw new Error(realMessage);
+      }
+      if (data?.error) throw new Error(data.error);
+
+      const newUrl = data?.output_url;
+      if (!newUrl) throw new Error('Nenhuma imagem gerada. Tente novamente.');
+
+      const newIndex = refinementHistory.length === 0 ? 1 : refinementHistory.length;
+      const newVersion: RefinementVersion = {
+        url: newUrl,
+        label: `Refinamento ${newIndex}`,
+      };
+
+      setRefinementHistory(prev => {
+        const updated = prev.length === 0
+          ? [{ url: outputImage, label: 'Original' }, newVersion]
+          : [...prev, newVersion];
+        setSelectedHistoryIndex(updated.length - 1);
+        return updated;
+      });
+
+      setOutputImage(newUrl);
+      setRefineMode(false);
+      setRefinePrompt('');
+      setRefineReferenceFile(null);
+      setRefineReferencePreview(null);
+      refetchCredits();
+      toast.success('Imagem refinada com sucesso!');
+    } catch (err: any) {
+      console.error('[FlyerMaker] Refine error:', err);
+      toast.error(err.message || 'Erro ao refinar imagem');
+    } finally {
+      setIsRefining(false);
+    }
+  };
+
+  const handleSelectVersion = (index: number) => {
+    setSelectedHistoryIndex(index);
+    if (refinementHistory[index]) {
+      setOutputImage(refinementHistory[index].url);
+    }
+  };
+
+  const handleNew = () => {
+    setOutputImage(null);
+    setRefinementHistory([]);
+    setSelectedHistoryIndex(0);
+    setRefineMode(false);
+    setRefinePrompt('');
+    setStatus('idle');
+  };
 
   return (
     <AppLayout fullScreen>
@@ -527,6 +652,26 @@ const FlyerMakerTool: React.FC = () => {
 
               <CreativitySlider value={creativity} onChange={setCreativity} disabled={isProcessing} max={5} showRecommendation={false} />
 
+              {refineMode && outputImage && (
+                <RefinePanel
+                  prompt={refinePrompt}
+                  onPromptChange={setRefinePrompt}
+                  referencePreview={refineReferencePreview}
+                  onReferenceChange={(file, preview) => {
+                    setRefineReferenceFile(file);
+                    setRefineReferencePreview(preview);
+                  }}
+                  onSubmit={handleRefine}
+                  onCancel={() => {
+                    setRefineMode(false);
+                    setRefinePrompt('');
+                    setRefineReferenceFile(null);
+                    setRefineReferencePreview(null);
+                  }}
+                  isRefining={isRefining}
+                />
+              )}
+
               <Button
                 size="sm"
                 className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs mt-2"
@@ -563,10 +708,23 @@ const FlyerMakerTool: React.FC = () => {
                 <div className="relative flex-1 min-h-0 flex items-center justify-center">
                   {outputImage ? (
                     <TransformWrapper ref={transformRef} initialScale={1} minScale={0.5} maxScale={4}>
-                      <TransformComponent wrapperClass="w-full h-full flex items-center justify-center" contentClass="w-full h-full flex items-center justify-center">
+                      <TransformComponent
+                        wrapperStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        contentStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
                         <img src={outputImage} alt="Resultado" className="max-w-full max-h-full object-contain" />
                       </TransformComponent>
                     </TransformWrapper>
+                  ) : isRefining ? (
+                    <div className="flex flex-col items-center p-8">
+                      <div className="relative w-16 h-16 mb-4">
+                        <div className="absolute inset-0 rounded-full border-4 border-fuchsia-500/30"></div>
+                        <div className="absolute inset-0 rounded-full border-4 border-t-fuchsia-400 animate-spin"></div>
+                        <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-fuchsia-400" />
+                      </div>
+                      <p className="text-white font-medium mb-1">Refinando imagem...</p>
+                      <p className="text-xs text-purple-300 animate-pulse">A IA está modificando sua imagem</p>
+                    </div>
                   ) : (
                     <div className="text-center p-8">
                       {isProcessing ? (
@@ -587,14 +745,21 @@ const FlyerMakerTool: React.FC = () => {
                       )}
                     </div>
                   )}
+
+                  {outputImage && !isRefining && (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                      <Button onClick={handleNew} variant="outline" size="sm" className="text-xs h-8 border-purple-500/30 text-purple-300 bg-black/60 backdrop-blur-sm hover:bg-black/80"><RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Nova</Button>
+                      <Button onClick={() => setRefineMode(true)} variant="outline" size="sm" className="text-xs h-8 border-fuchsia-500/40 text-fuchsia-300 bg-black/60 backdrop-blur-sm hover:bg-black/80"><Wand2 className="w-3.5 h-3.5 mr-1.5" /> Refinar</Button>
+                      <Button onClick={() => download({ url: outputImage!, filename: `flyer-${Date.now()}.png` })} size="sm" className="text-xs h-8 bg-green-600/90 hover:bg-green-700 text-white backdrop-blur-sm"><Download className="w-3.5 h-3.5 mr-1.5" /> Baixar HD</Button>
+                    </div>
+                  )}
                 </div>
 
-                {outputImage && (
-                  <div className="p-2 border-t border-purple-500/20 bg-black/20 flex gap-2 justify-center">
-                    <Button onClick={() => setOutputImage(null)} variant="outline" size="sm" className="text-xs h-8 border-purple-500/30 text-purple-300"><RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Nova</Button>
-                    <Button onClick={() => download({ url: outputImage!, filename: `flyer-${Date.now()}.png` })} size="sm" className="text-xs h-8 bg-green-600 hover:bg-green-700 text-white"><Download className="w-3.5 h-3.5 mr-1.5" /> Baixar HD</Button>
-                  </div>
-                )}
+                <RefinementTimeline
+                  versions={refinementHistory}
+                  selectedIndex={selectedHistoryIndex}
+                  onSelect={handleSelectVersion}
+                />
               </Card>
             </div>
           </div>
