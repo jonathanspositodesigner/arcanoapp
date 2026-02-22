@@ -57,9 +57,10 @@ const WEBAPP_IDS = {
   video_upscaler_jobs: '2018810750139109378',
   arcano_cloner_jobs: '2019877042115842050',
   character_generator_jobs: '2020943778751713282',
+  flyer_maker_jobs: '2025656642724962305',
 };
 
-const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs'] as const;
+const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs'] as const;
 type JobTable = typeof JOB_TABLES[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -73,6 +74,7 @@ const TOOL_CONFIG: Record<JobTable, { name: string; url: string; emoji: string }
   video_upscaler_jobs: { name: 'Video Upscaler', url: '/video-upscaler-tool', emoji: '🎬' },
   arcano_cloner_jobs: { name: 'Arcano Cloner', url: '/arcano-cloner-tool', emoji: '👤' },
   character_generator_jobs: { name: 'Gerador Personagem', url: '/gerador-personagem', emoji: '🧑‍🎨' },
+  flyer_maker_jobs: { name: 'Flyer Maker', url: '/flyer-maker', emoji: '🎭' },
 };
 
 /**
@@ -557,6 +559,7 @@ async function handleCheckUserActive(req: Request): Promise<Response> {
       'veste_ai_jobs': 'Veste AI',
       'arcano_cloner_jobs': 'Arcano Cloner',
       'character_generator_jobs': 'Gerador Personagem',
+      'flyer_maker_jobs': 'Flyer Maker',
     };
     
     // Verificar em TODAS as tabelas - incluir STARTING e PENDING recente (< 35s)
@@ -1154,6 +1157,29 @@ async function startJobOnRunningHub(
         { nodeId: "42", fieldName: "image", fieldValue: job.low_angle_image_url || job.low_angle_file_name },
       ];
       break;
+
+    case 'flyer_maker_jobs': {
+      webappId = WEBAPP_IDS.flyer_maker_jobs;
+      const artistFiles = (job.artist_photo_file_names as string[]) || [];
+      const firstArtist = artistFiles[0] || '';
+      nodeInfoList = [
+        { nodeId: "11", fieldName: "image", fieldValue: artistFiles[0] || firstArtist },
+        { nodeId: "12", fieldName: "image", fieldValue: artistFiles[1] || firstArtist },
+        { nodeId: "13", fieldName: "image", fieldValue: artistFiles[2] || firstArtist },
+        { nodeId: "14", fieldName: "image", fieldValue: artistFiles[3] || firstArtist },
+        { nodeId: "15", fieldName: "image", fieldValue: artistFiles[4] || firstArtist },
+        { nodeId: "1", fieldName: "image", fieldValue: job.reference_file_name || job.reference_image_url },
+        { nodeId: "28", fieldName: "image", fieldValue: job.logo_file_name || job.logo_url },
+        { nodeId: "6", fieldName: "text", fieldValue: job.date_time_location || '' },
+        { nodeId: "10", fieldName: "text", fieldValue: job.artist_names || '' },
+        { nodeId: "7", fieldName: "text", fieldValue: job.title || '' },
+        { nodeId: "9", fieldName: "text", fieldValue: job.footer_promo || '' },
+        { nodeId: "103", fieldName: "text", fieldValue: job.address || '' },
+        { nodeId: "68", fieldName: "aspectRatio", fieldValue: job.image_size || '3:4' },
+        { nodeId: "111", fieldName: "value", fieldValue: String(job.creativity ?? 0) },
+      ];
+      break;
+    }
       
     default:
       console.error(`[QueueManager] Unknown table: ${table}`);

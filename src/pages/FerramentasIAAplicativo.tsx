@@ -49,6 +49,7 @@ const FerramentasIAAplicativo = () => {
     "ia-muda-pose": t('ferramentas.descriptions.mudaPose'),
     "ia-muda-roupa": t('ferramentas.descriptions.mudaRoupa'),
     "arcano-cloner": "Crie ensaios fotográficos ultra realistas com IA",
+    "flyer-maker": "Crie flyers incríveis com IA",
   };
 
   // Smart back navigation
@@ -63,7 +64,7 @@ const FerramentasIAAplicativo = () => {
   const [loading, setLoading] = useState(true);
 
   // Preferred order for tools
-  const preferredOrder = ["arcano-cloner", "upscaller-arcano", "upscaller-arcano-video", "ia-muda-pose", "ia-muda-roupa", "forja-selos-3d-ilimitada"];
+  const preferredOrder = ["flyer-maker", "arcano-cloner", "upscaller-arcano", "upscaller-arcano-video", "ia-muda-pose", "ia-muda-roupa", "forja-selos-3d-ilimitada"];
 
   useEffect(() => {
     const fetchTools = async () => {
@@ -85,9 +86,19 @@ const FerramentasIAAplicativo = () => {
           checkout_link_vitalicio: null,
           checkout_link_membro_vitalicio: null,
         };
+
+        const flyerMakerTool: ToolData = {
+          id: 'flyer-maker-static',
+          name: 'Flyer Maker',
+          slug: 'flyer-maker',
+          cover_url: null, // Using default icon logic
+          price_vitalicio: null,
+          checkout_link_vitalicio: null,
+          checkout_link_membro_vitalicio: null,
+        };
         
-        // Combine database tools with static tool
-        const allTools = [...data, arcanoClonerTool];
+        // Combine database tools with static tools
+        const allTools = [...data, arcanoClonerTool, flyerMakerTool];
         
         // Sort by preferred order
         const sorted = allTools.sort((a, b) => {
@@ -120,6 +131,9 @@ const FerramentasIAAplicativo = () => {
     if (slug === "arcano-cloner") {
       return "/arcano-cloner-tool";
     }
+    if (slug === "flyer-maker") {
+      return "/flyer-maker";
+    }
     return `/ferramenta-ia-artes/${slug}`;
   };
 
@@ -130,6 +144,7 @@ const FerramentasIAAplicativo = () => {
     "ia-muda-pose": "Pose Changer",
     "ia-muda-roupa": "Veste AI",
     "arcano-cloner": "Arcano Cloner",
+    "flyer-maker": "Flyer Maker",
   };
 
   const getPurchaseRoute = (tool: ToolData) => {
@@ -159,6 +174,7 @@ const FerramentasIAAplicativo = () => {
       return true;
     }
     if (slug === "arcano-cloner") return true;
+    if (slug === "flyer-maker") return true;
     if (bonusTools.includes(slug)) {
       return isPremium;
     }
@@ -243,7 +259,7 @@ const FerramentasIAAplicativo = () => {
         onClick={handleCardClick}
       >
         <div className="aspect-[16/9] sm:aspect-[3/4] relative overflow-hidden">
-          {tool.slug === "arcano-cloner" && (
+          {(tool.slug === "arcano-cloner" || tool.slug === "flyer-maker") && (
             <div className="absolute top-2 right-2 z-10 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
               <Sparkles className="w-3 h-3" />
               NOVO
@@ -263,7 +279,7 @@ const FerramentasIAAplicativo = () => {
                 ? "bg-gradient-to-br from-gray-500 to-gray-600" 
                 : "bg-gradient-to-br from-purple-500 to-fuchsia-600"
             }`}>
-              {tool.slug === "arcano-cloner" ? (
+              {tool.slug === "arcano-cloner" || tool.slug === "flyer-maker" ? (
                 <Users className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
               ) : (
                 <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
