@@ -14,7 +14,7 @@ interface JobRecoveryResult {
 
 interface UseNotificationTokenRecoveryProps {
   userId: string | null | undefined;
-  toolTable: 'upscaler_jobs' | 'pose_changer_jobs' | 'veste_ai_jobs' | 'video_upscaler_jobs' | 'arcano_cloner_jobs';
+  toolTable: 'upscaler_jobs' | 'pose_changer_jobs' | 'veste_ai_jobs' | 'video_upscaler_jobs' | 'arcano_cloner_jobs' | 'flyer_maker_jobs';
   onRecovery: (result: JobRecoveryResult) => void;
 }
 
