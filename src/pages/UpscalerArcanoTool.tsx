@@ -513,6 +513,8 @@ const UpscalerArcanoTool: React.FC = () => {
     setStatus('uploading');
     setProgress(10);
 
+    let createdJobId: string | null = null;
+
     try {
       // Step 1: Upload image FIRST (before creating job to prevent orphans)
       const base64Data = inputImage.split(',')[1];
@@ -580,6 +582,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
       console.log('[Upscaler] Job created with image:', job.id);
       setJobId(job.id);
+      createdJobId = job.id;
       setProgress(45);
 
       // Step 3: Call edge function with URL (not base64)
@@ -625,6 +628,21 @@ const UpscalerArcanoTool: React.FC = () => {
 
     } catch (error: any) {
       console.error('[Upscaler] Error:', error);
+
+      // Marcar job como failed no banco imediatamente para evitar jobs órfãos
+      if (createdJobId) {
+        try {
+          await supabase.rpc('mark_pending_job_as_failed', {
+            p_table_name: 'upscaler_jobs',
+            p_job_id: createdJobId,
+            p_error_message: `Erro no cliente: ${(error.message || 'Desconhecido').substring(0, 200)}`
+          });
+          console.log('[Upscaler] Job marked as failed in DB:', createdJobId);
+        } catch (rpcErr) {
+          console.error('[Upscaler] Failed to mark job in DB:', rpcErr);
+        }
+      }
+
       setStatus('error');
       setLastError({
         message: error.message || 'Erro desconhecido',
