@@ -525,7 +525,7 @@ const FlyerMakerTool: React.FC = () => {
                 <Button variant={imageSize === '9:16' ? 'default' : 'outline'} onClick={() => setImageSize('9:16')} size="sm" className="text-xs h-8" disabled={isProcessing}>Stories (9:16)</Button>
               </div>
 
-              <CreativitySlider value={creativity} onChange={setCreativity} disabled={isProcessing} />
+              <CreativitySlider value={creativity} onChange={setCreativity} disabled={isProcessing} max={5} showRecommendation={false} />
 
               <Button
                 size="sm"
