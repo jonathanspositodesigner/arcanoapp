@@ -1,30 +1,34 @@
 
-## Correcoes: Modo Refinar no Flyer Maker
 
-### Problema 1: Inputs nao somem ao clicar em Refinar
-Atualmente o `RefinePanel` aparece JUNTO com todos os inputs (referencia, fotos, logo, textos, botao Gerar). O correto e: ao clicar em "Refinar", esconder todos os controles de geracao e mostrar APENAS o RefinePanel.
+## Renomear "Refinar" para "Fazer Alteracao" -- apenas no Flyer Maker
 
-**Correcao em `src/pages/FlyerMakerTool.tsx`:**
-Envolver todos os inputs iniciais (linhas 577-692) com `{!refineMode && (...)}` e mover o RefinePanel para fora desse bloco, de modo que quando `refineMode === true`, so apareca o RefinePanel.
+O Arcano Cloner continuara com os textos originais ("Refinar", "Refinando", etc.). Apenas o Flyer Maker tera os novos rotulos.
 
-### Problema 2: Edge function nao reconhece `flyer_maker_refine`
-O `generate-image` Edge Function so trata `source === "arcano_cloner_refine"` com custo fixo de 30 creditos. O source `flyer_maker_refine` cai no `else` e cobra 80-100 creditos (preco de geracao normal). 
+### Arquivo 1: `src/components/arcano-cloner/RefinePanel.tsx`
 
-**Correcao em `supabase/functions/generate-image/index.ts`:**
-Adicionar `flyer_maker_refine` na condicao junto com `arcano_cloner_refine`:
+Adicionar 3 props **opcionais** com valores padrao que preservam o texto atual do Arcano Cloner:
 
-```
-if (source === "arcano_cloner_refine" || source === "flyer_maker_refine") {
-  creditCost = 30;
-  toolDescription = source === "flyer_maker_refine" 
-    ? "Refinamento Flyer Maker" 
-    : "Refinamento Arcano Cloner";
-}
-```
+| Prop | Padrao (Arcano Cloner) | Valor no Flyer Maker |
+|------|----------------------|---------------------|
+| `title` | "Refinar Resultado" | "Fazer Alteracao" |
+| `buttonLabel` | "Refinar" | "Fazer Alteracao" |
+| `loadingLabel` | "Refinando..." | "Alterando..." |
 
-### Resumo
+Usar essas props nos locais onde os textos estao hardcoded (linha 45 titulo, linha 109 loading, linha 114 botao).
 
-| Arquivo | Alteracao |
-|---------|-----------|
-| `src/pages/FlyerMakerTool.tsx` | Esconder inputs quando `refineMode === true`, mostrar so RefinePanel |
-| `supabase/functions/generate-image/index.ts` | Adicionar `flyer_maker_refine` com custo fixo 30 creditos |
+### Arquivo 2: `src/pages/FlyerMakerTool.tsx`
+
+| Local | Antes | Depois |
+|-------|-------|--------|
+| Botao no resultado (linha ~754) | "Refinar" | "Fazer Alteracao" |
+| RefinePanel props (linha ~677) | sem props de texto | `title="Fazer Alteracao"` `buttonLabel="Fazer Alteracao"` `loadingLabel="Alterando..."` |
+| Toast sucesso (linha ~533) | "Imagem refinada com sucesso!" | "Alteracao feita com sucesso!" |
+| Toast/msg erro (linha ~498) | "Erro ao refinar imagem..." | "Erro ao alterar imagem..." |
+| Toast erro catch (linha ~536) | "Erro ao refinar imagem" | "Erro ao alterar imagem" |
+| Label historico (linha ~516) | "Refinamento X" | "Alteracao X" |
+
+### Resultado
+
+- Arcano Cloner: zero mudancas, continua usando os defaults do RefinePanel
+- Flyer Maker: todos os textos visiveis ao usuario mudam de "Refinar/Refinando/Refinamento" para "Fazer Alteracao/Alterando/Alteracao"
+
