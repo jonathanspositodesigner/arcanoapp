@@ -1,49 +1,72 @@
 
 
-## Ajustes no Slider de Criatividade e Verificacao da Integracao
+## Correcoes no Flyer Maker - 3 Problemas
 
-### 1. Atualizar o componente CreativitySlider para aceitar `max` e esconder a recomendacao
+### 1. Job preso em "processando" - Reconcile com API v2 incorreta
 
-O componente `CreativitySlider` e compartilhado entre o Arcano Cloner (0-100) e o Flyer Maker (0-5). Para suportar ambos:
+O endpoint `/reconcile` da Edge Function esta usando a API `openapi/v2/query` e esperando `queryData.status` e `queryData.results`, mas a resposta da API v2 retorna os dados dentro de `queryData.data` (ex: `queryData.data.taskStatus`, `queryData.data.outputFileList`). Por isso o reconcile nunca consegue encontrar o resultado e o job fica preso.
 
-- Adicionar prop opcional `max` (default: 100) na interface `CreativitySliderProps`
-- Adicionar prop opcional `showRecommendation` (default: true)
-- Usar `max` no `<Slider max={max}>` ao inves do valor fixo 100
+**Correcao no arquivo:** `supabase/functions/runninghub-flyer-maker/index.ts` (funcao `handleReconcile`)
 
-**Arquivo:** `src/components/arcano-cloner/CreativitySlider.tsx`
+Atualizar a logica de parsing da resposta do `/reconcile` para:
+- Verificar `queryData.data?.taskStatus === 'SUCCESS'` em vez de `queryData.status === 'SUCCESS'`
+- Buscar resultados em `queryData.data?.outputFileList` em vez de `queryData.results`
+- Verificar falha com `queryData.data?.taskStatus === 'FAILED'`
 
-### 2. Passar `max={5}` no FlyerMakerTool
+### 2. Textos sempre em CAIXA ALTA (uppercase)
 
-No `FlyerMakerTool.tsx`, linha 528, atualizar o uso do slider:
+Os inputs de texto que o usuario digita devem ser convertidos para maiusculo automaticamente.
 
+**Correcao no arquivo:** `src/pages/FlyerMakerTool.tsx`
+
+Nas 5 linhas dos `onChange` dos inputs de texto, aplicar `.toUpperCase()`:
+- `setDateTimeLocation(e.target.value.toUpperCase())`
+- `setTitle(e.target.value.toUpperCase())`
+- `setAddress(e.target.value.toUpperCase())`
+- `setArtistNames(e.target.value.toUpperCase())`
+- `setFooterPromo(e.target.value.toUpperCase())`
+
+Tambem adicionar `uppercase` na className dos inputs para garantir a exibicao visual.
+
+### 3. Nao duplicar fotos de artistas nos nodes vazios
+
+Atualmente, se o usuario envia 2 fotos, o sistema preenche os nodes 3, 4 e 5 repetindo a primeira foto. O correto e enviar APENAS as fotos fornecidas e deixar os nodes restantes vazios (string vazia).
+
+**Correcao no arquivo:** `supabase/functions/runninghub-flyer-maker/index.ts` (funcao `handleRun`)
+
+Trocar a logica de preenchimento de:
 ```
-<CreativitySlider value={creativity} onChange={setCreativity} disabled={isProcessing} max={5} showRecommendation={false} />
+const allArtistFiles = [
+  artistFileNames[0] || firstArtist,
+  artistFileNames[1] || firstArtist,
+  ...
+];
 ```
 
-Isso garante que o slider do Flyer Maker va de 0 a 5 e nao mostre a recomendacao. O Arcano Cloner continua funcionando de 0 a 100 sem mudancas.
+Para:
+```
+const allArtistFiles = [
+  artistFileNames[0] || '',
+  artistFileNames[1] || '',
+  artistFileNames[2] || '',
+  artistFileNames[3] || '',
+  artistFileNames[4] || '',
+];
+```
 
-### 3. Verificacao da integracao com a API
+E incluir apenas os nodes de artista que tem imagem no `nodeInfoList`:
+```
+// Nodes de artista - so inclui os que tem imagem
+const artistNodes = [11, 12, 13, 14, 15];
+for (let i = 0; i < artistNodes.length; i++) {
+  if (artistFileNames[i]) {
+    nodeInfoList.push({ nodeId: String(artistNodes[i]), fieldName: "image", fieldValue: artistFileNames[i] });
+  }
+}
+```
 
-Ja verifiquei a Edge Function (`runninghub-flyer-maker/index.ts`) e os inputs estao corretos:
+### Resumo dos arquivos alterados
 
-| Campo | Node | fieldName | Status |
-|---|---|---|---|
-| Fotos artistas 1-5 | 11-15 | image | OK |
-| Flyer de referencia | 1 | image | OK |
-| Logo do local | 28 | image | OK |
-| Data hora e local | 6 | text | OK |
-| Nomes dos artistas | 10 | text | OK |
-| Titulo | 7 | text | OK |
-| Promocao de rodape | 9 | text | OK |
-| Endereco | 103 | text | OK |
-| Tamanho (aspectRatio) | 68 | aspectRatio | OK |
-| Criatividade (0-5) | 111 | value | OK |
-
-O WebApp ID `2025656642724962305` esta correto. A logica de duplicar a primeira foto do artista para preencher os 5 slots (nodes 11-15) tambem esta implementada. O clamp `Math.min(5, Math.max(0, ...))` na Edge Function garante que o valor de criatividade sempre fica entre 0 e 5.
-
-### Resumo das mudancas
-
-Apenas 2 arquivos precisam de alteracao:
-1. `CreativitySlider.tsx` - adicionar props `max` e `showRecommendation`
-2. `FlyerMakerTool.tsx` - passar `max={5}` e `showRecommendation={false}`
+1. `supabase/functions/runninghub-flyer-maker/index.ts` - Corrigir reconcile API parsing + nao duplicar fotos de artistas
+2. `src/pages/FlyerMakerTool.tsx` - Textos em uppercase
 
