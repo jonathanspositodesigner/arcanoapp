@@ -8,6 +8,7 @@ import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { usePromoClaimStatus } from "@/hooks/usePromoClaimStatus";
 import { Sparkles, Loader2, Play, Users } from "lucide-react";
 import arcanoClonerCover from "@/assets/arcano-cloner-cover.webp";
+import flyerMakerCover from "@/assets/flyer-maker-preview.webp";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -49,7 +50,7 @@ const FerramentasIAAplicativo = () => {
     "ia-muda-pose": t('ferramentas.descriptions.mudaPose'),
     "ia-muda-roupa": t('ferramentas.descriptions.mudaRoupa'),
     "arcano-cloner": "Crie ensaios fotográficos ultra realistas com IA",
-    "flyer-maker": "Crie flyers incríveis com IA",
+    "flyer-maker": "Crie flyers para eventos incríveis com IA",
   };
 
   // Smart back navigation
@@ -64,7 +65,7 @@ const FerramentasIAAplicativo = () => {
   const [loading, setLoading] = useState(true);
 
   // Preferred order for tools
-  const preferredOrder = ["flyer-maker", "arcano-cloner", "upscaller-arcano", "upscaller-arcano-video", "ia-muda-pose", "ia-muda-roupa", "forja-selos-3d-ilimitada"];
+  const preferredOrder = ["arcano-cloner", "upscaller-arcano", "upscaller-arcano-video", "ia-muda-pose", "ia-muda-roupa", "forja-selos-3d-ilimitada", "flyer-maker"];
 
   useEffect(() => {
     const fetchTools = async () => {
@@ -91,7 +92,7 @@ const FerramentasIAAplicativo = () => {
           id: 'flyer-maker-static',
           name: 'Flyer Maker',
           slug: 'flyer-maker',
-          cover_url: null, // Using default icon logic
+          cover_url: flyerMakerCover,
           price_vitalicio: null,
           checkout_link_vitalicio: null,
           checkout_link_membro_vitalicio: null,
@@ -239,7 +240,7 @@ const FerramentasIAAplicativo = () => {
   const renderToolCard = (tool: ToolData) => {
     const hasAccess = checkToolAccess(tool.slug);
     const description = toolDescriptions[tool.slug] || "Ferramenta de IA";
-    const isComingSoon = tool.slug === "forja-selos-3d-ilimitada";
+    const isComingSoon = tool.slug === "forja-selos-3d-ilimitada" || tool.slug === "flyer-maker";
     const isUpscalerArcano = tool.slug === "upscaller-arcano";
     
     const handleCardClick = (e: React.MouseEvent) => {
@@ -259,7 +260,7 @@ const FerramentasIAAplicativo = () => {
         onClick={handleCardClick}
       >
         <div className="aspect-[16/9] sm:aspect-[3/4] relative overflow-hidden">
-          {(tool.slug === "arcano-cloner" || tool.slug === "flyer-maker") && (
+          {tool.slug === "arcano-cloner" && (
             <div className="absolute top-2 right-2 z-10 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
               <Sparkles className="w-3 h-3" />
               NOVO
