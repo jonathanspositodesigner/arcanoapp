@@ -1,45 +1,55 @@
 
-## Alterar creditos de teste gratis para 180 com expiracao de 24 horas
 
-### Resumo
-Mudar de 300 para 180 creditos em todos os lugares (RPC, modais, paginas, emails) e atualizar a validade de "1 mes" para "24 horas".
+## Correção: Marcar job como failed imediatamente quando Edge Function falha no cliente
 
-### 1. RPC `claim_arcano_free_trial_atomic` (migracao SQL)
-- Mudar `v_credits := v_credit_cost * 3` para `v_credits := 180`
-- Adicionar `landing_trial_expires_at = now() + interval '24 hours'` no upsert
-- Atualizar descricao da transacao para "180 creditos gratis - validos por 24h"
+### O que muda
+Uma unica alteracao no arquivo `src/pages/UpscalerArcanoTool.tsx`, no bloco catch (linhas 626-636).
 
-### 2. Frontend - 3 arquivos
+### Detalhes tecnicos
 
-**`src/components/arcano-cloner/ArcanoClonerAuthModal.tsx`**
-- Linha 256: "300 creditos" -> "180 creditos"
-- Linha 262: "1 mes" -> "24 horas"
-- Linha 317: "300 creditos" -> "180 creditos"
-- Linha 345: "300 creditos" -> "180 creditos"
+**Mudanca 1 - Antes do try (linha 516):**
+Declarar variavel `let createdJobId: string | null = null;` para que o catch consiga acessar o ID do job.
 
-**`src/components/ai-tools/AIToolsAuthModal.tsx`**
-- Linha 241: "300 creditos" -> "180 creditos"
-- Linha 247: "1 mes" -> "24 horas"
-- Linha 305: "300 creditos" -> "180 creditos"
-- Linha 334: "300 creditos" -> "180 creditos"
+**Mudanca 2 - Apos criar o job (linha 582):**
+Adicionar `createdJobId = job.id;` logo apos `setJobId(job.id);`
 
-**`src/pages/TesteGratis.tsx`**
-- Linhas 112, 222, 260, 318, 417, 435: "300 creditos" -> "180 creditos"
-- Linhas 223, 319: "1 mes" -> "24 horas"
+**Mudanca 3 - No catch (linhas 626-636):**
+Adicionar chamada ao RPC `mark_pending_job_as_failed` antes de atualizar a UI:
 
-### 3. Edge Functions - 3 arquivos
+```typescript
+} catch (error: any) {
+  console.error('[Upscaler] Error:', error);
+  
+  // Marcar job como failed no banco imediatamente
+  if (createdJobId) {
+    try {
+      await supabase.rpc('mark_pending_job_as_failed', {
+        p_table_name: 'upscaler_jobs',
+        p_job_id: createdJobId,
+        p_error_message: `Erro no cliente: ${(error.message || 'Desconhecido').substring(0, 200)}`
+      });
+      console.log('[Upscaler] Job marked as failed in DB:', createdJobId);
+    } catch (rpcErr) {
+      console.error('[Upscaler] Failed to mark job in DB:', rpcErr);
+    }
+  }
+  
+  setStatus('error');
+  setLastError({
+    message: error.message || 'Erro desconhecido',
+    code: 'UPLOAD_ERROR',
+    solution: 'Tente novamente ou use uma imagem menor.'
+  });
+  toast.error('Erro ao processar imagem');
+  endSubmit();
+}
+```
 
-**`supabase/functions/confirm-email-free-trial/index.ts`**
-- Linha 25: "300 creditos" -> "180 creditos" (email HTML)
-- Linha 181: `credits_granted: 300` -> `credits_granted: 180`
-- Linha 208: descricao "300 creditos" -> "180 creditos"
+### Riscos: ZERO
+- O RPC `mark_pending_job_as_failed` ja existe e e usado pelo watchdog ha semanas
+- So atualiza jobs com status `pending` do proprio usuario (seguro)
+- Se o RPC falhar, o try/catch interno engole o erro e o watchdog continua como backup
+- Nenhuma outra parte do fluxo e alterada
 
-**`supabase/functions/send-free-trial-confirmation-email/index.ts`**
-- Linha 56: "300 creditos" -> "180 creditos" (email HTML)
-- Linha 169: subject "300 creditos" -> "180 creditos"
-
-**`supabase/functions/claim-arcano-free-trial/index.ts` e `claim-free-trial/index.ts`**
-- Fallback `|| 300` -> `|| 180`
-
-### 4. Edge Function `grant-recovery-credits/index.ts`
-- Todas as referencias de "300 creditos" -> "180 creditos" (linhas 41, 45, 97, 190, 223, 261)
+### Arquivo afetado
+- `src/pages/UpscalerArcanoTool.tsx` (3 edicoes pontuais, ~12 linhas adicionadas)
