@@ -574,85 +574,106 @@ const FlyerMakerTool: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 flex-1 lg:min-h-0">
             {/* INPUTS */}
             <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto pr-1 custom-scrollbar">
-              <ReferenceImageCard 
-                image={referenceImage} 
-                onClearImage={() => { setReferenceImage(null); setReferenceFile(null); }} 
-                onOpenLibrary={() => setShowPhotoLibrary(true)} 
-                disabled={isProcessing}
-                title="Flyer de Referência"
-                emptyLabel="Escolher da biblioteca"
-                emptySubLabel="Ou envie seu flyer"
-              />
+              {!refineMode ? (
+                <>
+                  <ReferenceImageCard 
+                    image={referenceImage} 
+                    onClearImage={() => { setReferenceImage(null); setReferenceFile(null); }} 
+                    onOpenLibrary={() => setShowPhotoLibrary(true)} 
+                    disabled={isProcessing}
+                    title="Flyer de Referência"
+                    emptyLabel="Escolher da biblioteca"
+                    emptySubLabel="Ou envie seu flyer"
+                  />
 
-              <Card className="p-3 bg-purple-900/20 border-purple-500/30">
-                <Label className="text-xs text-purple-200 mb-2 block">Fotos dos Artistas (1-5)</Label>
-                <div className="grid grid-cols-5 gap-1">
-                  {artistPhotos.map((photo, idx) => (
-                    <div key={idx} className="relative aspect-square rounded overflow-hidden group">
-                      <img src={photo.url} alt="" className="w-full h-full object-cover" />
-                      <button onClick={() => removeArtistPhoto(idx)} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity" disabled={isProcessing}>
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                  <Card className="p-3 bg-purple-900/20 border-purple-500/30">
+                    <Label className="text-xs text-purple-200 mb-2 block">Fotos dos Artistas (1-5)</Label>
+                    <div className="grid grid-cols-5 gap-1">
+                      {artistPhotos.map((photo, idx) => (
+                        <div key={idx} className="relative aspect-square rounded overflow-hidden group">
+                          <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                          <button onClick={() => removeArtistPhoto(idx)} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity" disabled={isProcessing}>
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                      {artistPhotos.length < 5 && (
+                        <label className={`aspect-square rounded border-2 border-dashed border-purple-500/30 flex items-center justify-center cursor-pointer hover:bg-purple-500/10 transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
+                          <input type="file" accept="image/*" className="hidden" onChange={handleArtistPhotoUpload} disabled={isProcessing} />
+                          <Plus className="w-5 h-5 text-purple-400" />
+                        </label>
+                      )}
                     </div>
-                  ))}
-                  {artistPhotos.length < 5 && (
-                    <label className={`aspect-square rounded border-2 border-dashed border-purple-500/30 flex items-center justify-center cursor-pointer hover:bg-purple-500/10 transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
-                      <input type="file" accept="image/*" className="hidden" onChange={handleArtistPhotoUpload} disabled={isProcessing} />
-                      <Plus className="w-5 h-5 text-purple-400" />
-                    </label>
-                  )}
-                </div>
-              </Card>
+                  </Card>
 
-              <Card className="p-3 bg-purple-900/20 border-purple-500/30">
-                <Label className="text-xs text-purple-200 mb-2 block">Logo do Local</Label>
-                {logoImage ? (
-                  <div className="relative h-20 rounded overflow-hidden group">
-                    <img src={logoImage} alt="" className="w-full h-full object-contain bg-black/20" />
-                    <button onClick={() => { setLogoImage(null); setLogoFile(null); }} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity" disabled={isProcessing}>
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                  <Card className="p-3 bg-purple-900/20 border-purple-500/30">
+                    <Label className="text-xs text-purple-200 mb-2 block">Logo do Local</Label>
+                    {logoImage ? (
+                      <div className="relative h-20 rounded overflow-hidden group">
+                        <img src={logoImage} alt="" className="w-full h-full object-contain bg-black/20" />
+                        <button onClick={() => { setLogoImage(null); setLogoFile(null); }} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity" disabled={isProcessing}>
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className={`h-20 rounded border-2 border-dashed border-purple-500/30 flex flex-col items-center justify-center cursor-pointer hover:bg-purple-500/10 transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={isProcessing} />
+                        <Upload className="w-5 h-5 text-purple-400 mb-1" />
+                        <span className="text-[10px] text-purple-300">Upload Logo</span>
+                      </label>
+                    )}
+                  </Card>
+
+                  <div className="space-y-2">
+                    <div>
+                      <Label className="text-[10px] text-purple-300 mb-0.5 block">Data e Horário:</Label>
+                      <Input placeholder="SEG.18.ABR - 18H" value={dateTimeLocation} onChange={e => setDateTimeLocation(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8 uppercase" />
+                    </div>
+                    <div>
+                      <Label className="text-[10px] text-purple-300 mb-0.5 block">Título do Evento:</Label>
+                      <Input placeholder="DEU FERIAS" value={title} onChange={e => setTitle(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8 uppercase" />
+                    </div>
+                    <div>
+                      <Label className="text-[10px] text-purple-300 mb-0.5 block">Endereço:</Label>
+                      <Input placeholder="ENDEREÇO DO LOCAL..." value={address} onChange={e => setAddress(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8 uppercase" />
+                    </div>
+                    <div>
+                      <Label className="text-[10px] text-purple-300 mb-0.5 block">Nomes dos Artistas:</Label>
+                      <Input placeholder="DJ ALOK - RASTA CHINELA..." value={artistNames} onChange={e => setArtistNames(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8 uppercase" />
+                    </div>
+                    <div>
+                      <Label className="text-[10px] text-purple-300 mb-0.5 block">Rodapé / Promoção:</Label>
+                      <Input placeholder="ENTRADA OFF PARA ELAS..." value={footerPromo} onChange={e => setFooterPromo(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8 uppercase" />
+                    </div>
                   </div>
-                ) : (
-                  <label className={`h-20 rounded border-2 border-dashed border-purple-500/30 flex flex-col items-center justify-center cursor-pointer hover:bg-purple-500/10 transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
-                    <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={isProcessing} />
-                    <Upload className="w-5 h-5 text-purple-400 mb-1" />
-                    <span className="text-[10px] text-purple-300">Upload Logo</span>
-                  </label>
-                )}
-              </Card>
 
-              <div className="space-y-2">
-                <div>
-                  <Label className="text-[10px] text-purple-300 mb-0.5 block">Data e Horário:</Label>
-                  <Input placeholder="SEG.18.ABR - 18H" value={dateTimeLocation} onChange={e => setDateTimeLocation(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8 uppercase" />
-                </div>
-                <div>
-                  <Label className="text-[10px] text-purple-300 mb-0.5 block">Título do Evento:</Label>
-                  <Input placeholder="DEU FERIAS" value={title} onChange={e => setTitle(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8 uppercase" />
-                </div>
-                <div>
-                  <Label className="text-[10px] text-purple-300 mb-0.5 block">Endereço:</Label>
-                  <Input placeholder="ENDEREÇO DO LOCAL..." value={address} onChange={e => setAddress(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8 uppercase" />
-                </div>
-                <div>
-                  <Label className="text-[10px] text-purple-300 mb-0.5 block">Nomes dos Artistas:</Label>
-                  <Input placeholder="DJ ALOK - RASTA CHINELA..." value={artistNames} onChange={e => setArtistNames(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8 uppercase" />
-                </div>
-                <div>
-                  <Label className="text-[10px] text-purple-300 mb-0.5 block">Rodapé / Promoção:</Label>
-                  <Input placeholder="ENTRADA OFF PARA ELAS..." value={footerPromo} onChange={e => setFooterPromo(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8 uppercase" />
-                </div>
-              </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button variant="outline" onClick={() => setImageSize('3:4')} size="sm" className={`text-xs h-8 ${imageSize === '3:4' ? 'border-cyan-400 bg-purple-700/40 text-white' : 'border-purple-700/40 bg-purple-900/20 text-purple-400 hover:text-purple-200'}`} disabled={isProcessing}>Feed (3:4)</Button>
+                    <Button variant="outline" onClick={() => setImageSize('9:16')} size="sm" className={`text-xs h-8 ${imageSize === '9:16' ? 'border-cyan-400 bg-purple-700/40 text-white' : 'border-purple-700/40 bg-purple-900/20 text-purple-400 hover:text-purple-200'}`} disabled={isProcessing}>Stories (9:16)</Button>
+                  </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" onClick={() => setImageSize('3:4')} size="sm" className={`text-xs h-8 ${imageSize === '3:4' ? 'border-cyan-400 bg-purple-700/40 text-white' : 'border-purple-700/40 bg-purple-900/20 text-purple-400 hover:text-purple-200'}`} disabled={isProcessing}>Feed (3:4)</Button>
-                <Button variant="outline" onClick={() => setImageSize('9:16')} size="sm" className={`text-xs h-8 ${imageSize === '9:16' ? 'border-cyan-400 bg-purple-700/40 text-white' : 'border-purple-700/40 bg-purple-900/20 text-purple-400 hover:text-purple-200'}`} disabled={isProcessing}>Stories (9:16)</Button>
-              </div>
+                  <CreativitySlider value={creativity} onChange={setCreativity} disabled={isProcessing} max={5} showRecommendation={false} />
 
-              <CreativitySlider value={creativity} onChange={setCreativity} disabled={isProcessing} max={5} showRecommendation={false} />
+                  <Button
+                    size="sm"
+                    className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs mt-2"
+                    disabled={!canProcess || isProcessing || isSubmitting}
+                    onClick={handleProcess}
+                  >
+                    {isSubmitting || isProcessing ? (
+                      <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Processando...</>
+                    ) : (
+                      <><Sparkles className="w-3.5 h-3.5 mr-1.5" /> Gerar Flyer <span className="ml-2 flex items-center gap-1 text-xs opacity-90"><Coins className="w-3 h-3" /> {creditCost}</span></>
+                    )}
+                  </Button>
 
-              {refineMode && outputImage && (
+                  {status === 'waiting' && (
+                    <Button variant="outline" size="sm" className="w-full text-xs border-red-500/30 text-red-300 hover:bg-red-500/10" onClick={handleCancelQueue}>
+                      <XCircle className="w-3.5 h-3.5 mr-1.5" /> Sair da Fila
+                    </Button>
+                  )}
+                </>
+              ) : (
                 <RefinePanel
                   prompt={refinePrompt}
                   onPromptChange={setRefinePrompt}
@@ -670,25 +691,6 @@ const FlyerMakerTool: React.FC = () => {
                   }}
                   isRefining={isRefining}
                 />
-              )}
-
-              <Button
-                size="sm"
-                className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs mt-2"
-                disabled={!canProcess || isProcessing || isSubmitting}
-                onClick={handleProcess}
-              >
-                {isSubmitting || isProcessing ? (
-                  <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Processando...</>
-                ) : (
-                  <><Sparkles className="w-3.5 h-3.5 mr-1.5" /> Gerar Flyer <span className="ml-2 flex items-center gap-1 text-xs opacity-90"><Coins className="w-3 h-3" /> {creditCost}</span></>
-                )}
-              </Button>
-
-              {status === 'waiting' && (
-                <Button variant="outline" size="sm" className="w-full text-xs border-red-500/30 text-red-300 hover:bg-red-500/10" onClick={handleCancelQueue}>
-                  <XCircle className="w-3.5 h-3.5 mr-1.5" /> Sair da Fila
-                </Button>
               )}
             </div>
 
