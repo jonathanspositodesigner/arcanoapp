@@ -21,7 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 // ==================== TYPES ====================
 
-export type ToolType = 'upscaler' | 'pose_changer' | 'veste_ai' | 'video_upscaler' | 'arcano_cloner' | 'character_generator';
+export type ToolType = 'upscaler' | 'pose_changer' | 'veste_ai' | 'video_upscaler' | 'arcano_cloner' | 'character_generator' | 'flyer_maker';
 export type JobStatus = 'pending' | 'queued' | 'starting' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 export interface JobResult {
@@ -62,6 +62,7 @@ const TABLE_MAP: Record<ToolType, string> = {
   video_upscaler: 'video_upscaler_jobs',
   arcano_cloner: 'arcano_cloner_jobs',
   character_generator: 'character_generator_jobs',
+  flyer_maker: 'flyer_maker_jobs',
 };
 
 // Edge function names mapping
@@ -72,6 +73,7 @@ const EDGE_FUNCTION_MAP: Record<ToolType, string> = {
   video_upscaler: 'runninghub-video-upscaler/run',
   arcano_cloner: 'runninghub-arcano-cloner/run',
   character_generator: 'runninghub-character-generator/run',
+  flyer_maker: 'runninghub-flyer-maker/run',
 };
 
 // Tool names for display
@@ -82,6 +84,7 @@ const TOOL_NAMES: Record<string, ToolType> = {
   'Veste AI': 'veste_ai',
   'Arcano Cloner': 'arcano_cloner',
   'Gerador Avatar': 'character_generator',
+  'Flyer Maker': 'flyer_maker',
 };
 
 // ==================== CORE FUNCTIONS ====================

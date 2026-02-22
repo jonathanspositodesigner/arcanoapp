@@ -1581,6 +1581,135 @@ export type Database = {
         }
         Relationships: []
       }
+      flyer_maker_jobs: {
+        Row: {
+          address: string | null
+          api_account: string
+          artist_count: number | null
+          artist_names: string | null
+          artist_photo_file_names: Json | null
+          artist_photo_urls: Json | null
+          completed_at: string | null
+          created_at: string | null
+          creativity: number | null
+          credits_charged: boolean | null
+          credits_refunded: boolean | null
+          current_step: string | null
+          date_time_location: string | null
+          error_message: string | null
+          failed_at_step: string | null
+          footer_promo: string | null
+          id: string
+          image_size: string | null
+          job_payload: Json | null
+          logo_file_name: string | null
+          logo_url: string | null
+          output_url: string | null
+          position: number | null
+          queue_wait_seconds: number | null
+          raw_api_response: Json | null
+          raw_webhook_payload: Json | null
+          reference_file_name: string | null
+          reference_image_url: string | null
+          rh_cost: number | null
+          session_id: string
+          started_at: string | null
+          status: string
+          step_history: Json | null
+          task_id: string | null
+          thumbnail_url: string | null
+          title: string | null
+          updated_at: string | null
+          user_credit_cost: number | null
+          user_id: string | null
+          waited_in_queue: boolean | null
+        }
+        Insert: {
+          address?: string | null
+          api_account?: string
+          artist_count?: number | null
+          artist_names?: string | null
+          artist_photo_file_names?: Json | null
+          artist_photo_urls?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          creativity?: number | null
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
+          current_step?: string | null
+          date_time_location?: string | null
+          error_message?: string | null
+          failed_at_step?: string | null
+          footer_promo?: string | null
+          id?: string
+          image_size?: string | null
+          job_payload?: Json | null
+          logo_file_name?: string | null
+          logo_url?: string | null
+          output_url?: string | null
+          position?: number | null
+          queue_wait_seconds?: number | null
+          raw_api_response?: Json | null
+          raw_webhook_payload?: Json | null
+          reference_file_name?: string | null
+          reference_image_url?: string | null
+          rh_cost?: number | null
+          session_id: string
+          started_at?: string | null
+          status?: string
+          step_history?: Json | null
+          task_id?: string | null
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_credit_cost?: number | null
+          user_id?: string | null
+          waited_in_queue?: boolean | null
+        }
+        Update: {
+          address?: string | null
+          api_account?: string
+          artist_count?: number | null
+          artist_names?: string | null
+          artist_photo_file_names?: Json | null
+          artist_photo_urls?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          creativity?: number | null
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
+          current_step?: string | null
+          date_time_location?: string | null
+          error_message?: string | null
+          failed_at_step?: string | null
+          footer_promo?: string | null
+          id?: string
+          image_size?: string | null
+          job_payload?: Json | null
+          logo_file_name?: string | null
+          logo_url?: string | null
+          output_url?: string | null
+          position?: number | null
+          queue_wait_seconds?: number | null
+          raw_api_response?: Json | null
+          raw_webhook_payload?: Json | null
+          reference_file_name?: string | null
+          reference_image_url?: string | null
+          rh_cost?: number | null
+          session_id?: string
+          started_at?: string | null
+          status?: string
+          step_history?: Json | null
+          task_id?: string | null
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_credit_cost?: number | null
+          user_id?: string | null
+          waited_in_queue?: boolean | null
+        }
+        Relationships: []
+      }
       google_api_config: {
         Row: {
           id: string

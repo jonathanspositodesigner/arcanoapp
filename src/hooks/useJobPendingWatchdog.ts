@@ -28,6 +28,7 @@ const TABLE_NAME_MAP: Record<ToolType, string> = {
   video_upscaler: 'video_upscaler_jobs',
   arcano_cloner: 'arcano_cloner_jobs',
   character_generator: 'character_generator_jobs',
+  flyer_maker: 'flyer_maker_jobs',
 };
 
 interface UseJobPendingWatchdogOptions {
