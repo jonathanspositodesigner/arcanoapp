@@ -495,7 +495,7 @@ const FlyerMakerTool: React.FC = () => {
       });
 
       if (error) {
-        let realMessage = 'Erro ao refinar imagem. Tente novamente.';
+        let realMessage = 'Erro ao alterar imagem. Tente novamente.';
         try {
           const ctx = (error as any)?.context;
           if (ctx && typeof ctx.json === 'function') {
@@ -513,7 +513,7 @@ const FlyerMakerTool: React.FC = () => {
       const newIndex = refinementHistory.length === 0 ? 1 : refinementHistory.length;
       const newVersion: RefinementVersion = {
         url: newUrl,
-        label: `Refinamento ${newIndex}`,
+        label: `Alteração ${newIndex}`,
       };
 
       setRefinementHistory(prev => {
@@ -530,10 +530,10 @@ const FlyerMakerTool: React.FC = () => {
       setRefineReferenceFile(null);
       setRefineReferencePreview(null);
       refetchCredits();
-      toast.success('Imagem refinada com sucesso!');
+      toast.success('Alteração feita com sucesso!');
     } catch (err: any) {
       console.error('[FlyerMaker] Refine error:', err);
-      toast.error(err.message || 'Erro ao refinar imagem');
+      toast.error(err.message || 'Erro ao alterar imagem');
     } finally {
       setIsRefining(false);
     }
@@ -675,6 +675,9 @@ const FlyerMakerTool: React.FC = () => {
                 </>
               ) : (
                 <RefinePanel
+                  title="Fazer Alteração"
+                  buttonLabel="Fazer Alteração"
+                  loadingLabel="Alterando..."
                   prompt={refinePrompt}
                   onPromptChange={setRefinePrompt}
                   referencePreview={refineReferencePreview}
@@ -751,7 +754,7 @@ const FlyerMakerTool: React.FC = () => {
                   {outputImage && !isRefining && (
                     <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
                       <Button onClick={handleNew} variant="outline" size="sm" className="text-xs h-8 border-purple-500/30 text-purple-300 bg-black/60 backdrop-blur-sm hover:bg-black/80"><RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Nova</Button>
-                      <Button onClick={() => setRefineMode(true)} variant="outline" size="sm" className="text-xs h-8 border-fuchsia-500/40 text-fuchsia-300 bg-black/60 backdrop-blur-sm hover:bg-black/80"><Wand2 className="w-3.5 h-3.5 mr-1.5" /> Refinar</Button>
+                      <Button onClick={() => setRefineMode(true)} variant="outline" size="sm" className="text-xs h-8 border-fuchsia-500/40 text-fuchsia-300 bg-black/60 backdrop-blur-sm hover:bg-black/80"><Wand2 className="w-3.5 h-3.5 mr-1.5" /> Fazer Alteração</Button>
                       <Button onClick={() => download({ url: outputImage!, filename: `flyer-${Date.now()}.png` })} size="sm" className="text-xs h-8 bg-green-600/90 hover:bg-green-700 text-white backdrop-blur-sm"><Download className="w-3.5 h-3.5 mr-1.5" /> Baixar HD</Button>
                     </div>
                   )}

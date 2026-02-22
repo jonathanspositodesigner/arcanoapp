@@ -12,6 +12,9 @@ interface RefinePanelProps {
   onCancel: () => void;
   isRefining: boolean;
   disabled?: boolean;
+  title?: string;
+  buttonLabel?: string;
+  loadingLabel?: string;
 }
 
 const REFINE_COST = 30;
@@ -25,6 +28,9 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
   onCancel,
   isRefining,
   disabled,
+  title: panelTitle = 'Refinar Resultado',
+  buttonLabel = 'Refinar',
+  loadingLabel = 'Refinando...',
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -42,7 +48,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
     <div className="flex flex-col gap-2 p-3 bg-fuchsia-900/20 border border-fuchsia-500/30 rounded-lg">
       <h4 className="text-xs font-semibold text-fuchsia-300 flex items-center gap-1.5">
         <Wand2 className="w-3.5 h-3.5" />
-        Refinar Resultado
+        {panelTitle}
       </h4>
 
       <Textarea
@@ -106,12 +112,12 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
           {isRefining ? (
             <>
               <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
-              Refinando...
+              {loadingLabel}
             </>
           ) : (
             <>
               <Wand2 className="w-3.5 h-3.5 mr-1" />
-              Refinar
+              {buttonLabel}
               <span className="ml-1.5 flex items-center gap-0.5 text-[10px] opacity-90">
                 <Coins className="w-3 h-3" />
                 {REFINE_COST}
