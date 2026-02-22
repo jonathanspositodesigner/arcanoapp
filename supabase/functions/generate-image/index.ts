@@ -112,10 +112,12 @@ serve(async (req) => {
     let creditCost: number;
     let toolDescription: string;
 
-    if (source === "arcano_cloner_refine") {
-      // Refinamento Arcano Cloner: custo fixo de 30 créditos
+    if (source === "arcano_cloner_refine" || source === "flyer_maker_refine") {
+      // Refinamento: custo fixo de 30 créditos
       creditCost = 30;
-      toolDescription = "Refinamento Arcano Cloner";
+      toolDescription = source === "flyer_maker_refine" 
+        ? "Refinamento Flyer Maker" 
+        : "Refinamento Arcano Cloner";
     } else {
       const toolName = isProModel ? "gerar_imagem_pro" : "gerar_imagem";
 
