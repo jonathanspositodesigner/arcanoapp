@@ -496,11 +496,26 @@ const FlyerMakerTool: React.FC = () => {
               </Card>
 
               <div className="space-y-2">
-                <Input placeholder="SEG.18.ABR - 18H" value={dateTimeLocation} onChange={e => setDateTimeLocation(e.target.value)} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8" />
-                <Input placeholder="DEU FERIAS" value={title} onChange={e => setTitle(e.target.value)} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8" />
-                <Input placeholder="Endereço do local..." value={address} onChange={e => setAddress(e.target.value)} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8" />
-                <Input placeholder="DJ ALOK - RASTA CHINELA..." value={artistNames} onChange={e => setArtistNames(e.target.value)} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8" />
-                <Input placeholder="ENTRADA OFF PARA ELAS..." value={footerPromo} onChange={e => setFooterPromo(e.target.value)} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8" />
+                <div>
+                  <Label className="text-[10px] text-purple-300 mb-0.5 block">Data e Horário:</Label>
+                  <Input placeholder="seg.18.abr - 18h" value={dateTimeLocation} onChange={e => setDateTimeLocation(e.target.value)} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8" />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-purple-300 mb-0.5 block">Título do Evento:</Label>
+                  <Input placeholder="deu ferias" value={title} onChange={e => setTitle(e.target.value)} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8" />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-purple-300 mb-0.5 block">Endereço:</Label>
+                  <Input placeholder="endereço do local..." value={address} onChange={e => setAddress(e.target.value)} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8" />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-purple-300 mb-0.5 block">Nomes dos Artistas:</Label>
+                  <Input placeholder="dj alok - rasta chinela..." value={artistNames} onChange={e => setArtistNames(e.target.value)} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8" />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-purple-300 mb-0.5 block">Rodapé / Promoção:</Label>
+                  <Input placeholder="entrada off para elas..." value={footerPromo} onChange={e => setFooterPromo(e.target.value)} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8" />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
