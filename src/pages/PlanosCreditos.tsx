@@ -52,9 +52,9 @@ const creditPlans = [
   { 
     credits: "+1.500", 
     description: "~25 upscalers", 
-    price: "29,90",
+    price: "19,90",
     originalPrice: "39,90",
-    savings: "25",
+    savings: "",
     link: "https://payfast.greenn.com.br/9trhhb9",
     icon: Coins,
     color: "from-purple-500 to-fuchsia-500"
@@ -62,9 +62,9 @@ const creditPlans = [
   { 
     credits: "+4.200", 
     description: "~70 upscalers", 
-    price: "39,90",
+    price: "29,90",
     originalPrice: "49,90",
-    savings: "52",
+    savings: "46",
     link: "https://payfast.greenn.com.br/y3u2u3d", 
     popular: true,
     icon: Zap,
@@ -73,9 +73,9 @@ const creditPlans = [
   { 
     credits: "+10.800", 
     description: "~180 upscalers", 
-    price: "99,90",
+    price: "79,90",
     originalPrice: "149,90",
-    savings: "54",
+    savings: "44",
     link: "https://payfast.greenn.com.br/vwfzrw2", 
     bestValue: true,
     icon: Star,
