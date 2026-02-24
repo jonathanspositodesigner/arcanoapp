@@ -228,14 +228,15 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
             </button>
           </a>
 
-          {/* Indique e Ganhe */}
+          {/* Indique e Ganhe Créditos */}
           {user && (
             <button
               onClick={() => setShowReferralModal(true)}
-              className="w-full flex items-center text-left text-[12px] font-medium text-yellow-300 hover:text-yellow-200 py-2 px-2.5 rounded-lg hover:bg-yellow-500/20 transition-colors"
+              className="w-full flex items-center text-left text-[13px] font-bold text-yellow-200 hover:text-yellow-100 py-2.5 px-3 rounded-lg bg-yellow-500/15 border border-yellow-400/25 hover:bg-yellow-500/25 transition-all animate-pulse-glow shadow-[0_0_12px_rgba(234,179,8,0.15)]"
+              style={{ animationDuration: '3s' }}
             >
-              <Gift className="h-3.5 w-3.5 mr-1.5" />
-              Indique e Ganhe
+              <Gift className="h-4 w-4 mr-2 text-yellow-300" />
+              Indique e Ganhe Créditos!
             </button>
           )}
         </div>
