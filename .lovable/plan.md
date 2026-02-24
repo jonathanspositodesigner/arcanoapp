@@ -1,66 +1,103 @@
 
 
-## Unificar planos2 dentro do webhook-greenn existente
+## Plano: Emails de boas-vindas por plano + Correção de acesso Premium para Planos v2
 
-Em vez de manter um webhook separado (`webhook-greenn-planos2`), vamos adicionar a logica dos novos planos diretamente no `webhook-greenn` que ja esta configurado na Greenn.
+Existem 3 problemas para resolver:
 
 ---
 
-### Como vai funcionar
+### Problema 1: Nenhum email é enviado ao comprador dos Planos v2
 
-Quando o `webhook-greenn` receber um pagamento, ele vai verificar o `product.id`:
+Atualmente, o `processPlanos2Webhook` faz o upsert na subscription e reseta créditos, mas **nao envia nenhum email de boas-vindas**. O fluxo legado tem a funcao `sendWelcomeEmail`, mas ela so conhece os planos antigos.
 
-- Se for **148926, 148936, 148937** (Arcano Premium legado) --> segue o fluxo atual (premium_users), nada muda
-- Se for **160732, 160735, 160738, 160742** (Planos v2) --> redireciona para a logica do planos2 (planos2_subscriptions)
+**Solucao**: Criar uma funcao `sendPlanos2WelcomeEmail` dentro do `webhook-greenn/index.ts` com template especifico para cada plano (Starter, Pro, Ultimate, Unlimited). O email segue o padrao SendPulse existente, com:
+- Nome do plano e beneficios especificos
+- Credenciais de acesso (email/senha)
+- Link CTA para `https://arcanoapp.voxvisual.com.br/`
+- Tracking de abertura/clique via `welcome-email-tracking`
 
-Ou seja, um unico webhook, dois fluxos internos separados por product ID.
+Templates por plano:
+- **Starter**: "Plano Starter ativado! 1.800 creditos, 5 prompts premium/dia"
+- **Pro**: "Plano Pro ativado! 4.200 creditos, 10 prompts premium/dia, geracao de imagens e videos"
+- **Ultimate**: "Plano Ultimate ativado! 10.800 creditos, 24 prompts premium/dia, geracao de imagens e videos"
+- **Unlimited**: "Plano IA Unlimited ativado! Creditos ilimitados, sem limite de prompts, 50% OFF nas ferramentas"
+
+Chamar essa funcao no final do `processPlanos2Webhook`, apos o sucesso do upsert.
+
+---
+
+### Problema 2: Compradores dos Planos v2 nao veem a Biblioteca de Prompts nem Ferramentas de IA na home
+
+A raiz do problema: a funcao SQL `is_premium()` so verifica a tabela `premium_users`. Planos v2 ficam em `planos2_subscriptions` - entao esses usuarios nunca sao detectados como premium.
+
+A cascata:
+1. `is_premium()` retorna `false` para usuarios planos2
+2. `AuthContext.tsx` seta `isPremium = false`
+3. `Index.tsx` calcula `hasPromptsAccess = false` (precisa de `isPremium`)
+4. Sidebar/TopBar mostram "Torne-se Premium" em vez de "Premium Ativo"
+
+**Solucao**: Atualizar a funcao SQL `is_premium()` para tambem verificar `planos2_subscriptions`:
+
+```text
+SELECT EXISTS (
+  SELECT 1 FROM premium_users
+  WHERE user_id = auth.uid() AND is_active = true
+  AND (expires_at IS NULL OR expires_at > now())
+)
+OR EXISTS (
+  SELECT 1 FROM planos2_subscriptions
+  WHERE user_id = auth.uid() AND is_active = true
+  AND plan_slug != 'free'
+  AND (expires_at IS NULL OR expires_at > now())
+)
+```
+
+Isso resolve de uma vez:
+- Badge "Premium Ativo" na sidebar e topbar
+- Acesso a "Biblioteca de Prompts" na home (hasPromptsAccess)
+- Acesso as "Ferramentas de IA" na home
+
+---
+
+### Problema 3: Starter nao libera 5 prompts premium/dia
+
+O hook `useDailyPromptLimit` usa `planType` do sistema legado (`arcano_basico`, `arcano_pro`), nao conhece os slugs do planos2 (`starter`, `pro`, etc). Como o planType vem de `premium_users` e usuarios planos2 nao tem registro la, o limite nunca e aplicado corretamente.
+
+**Solucao**: Atualizar `useDailyPromptLimit.ts` para tambem consultar `planos2_subscriptions.daily_prompt_limit` quando o usuario for planos2. Ou melhor, integrar com o `usePlanos2Access` ja existente. Adicionar ao Index.tsx a verificacao de planos2 para desbloquear ferramentas.
+
+Tambem precisa atualizar `Index.tsx` para considerar `isPlanos2User` ao calcular `hasPromptsAccess` e `hasToolAccess`.
 
 ---
 
 ### Detalhes tecnicos
 
-**Arquivo editado:** `supabase/functions/webhook-greenn/index.ts`
+**Arquivos modificados:**
 
-1. Adicionar o mapeamento `PLANOS2_PRODUCTS` (igual ao que ja existe no webhook-planos2) no topo do arquivo, logo apos o `PRODUCT_ID_TO_PLAN`:
+1. **`supabase/functions/webhook-greenn/index.ts`**
+   - Adicionar funcao `sendPlanos2WelcomeEmail()` com template HTML por plano
+   - Chamar no final de `processPlanos2Webhook` apos sucesso
 
-```text
-160732 -> starter (1800 creditos, 5 prompts/dia, sem imagem/video, cost_multiplier 1.0)
-160735 -> pro (4200 creditos, 10 prompts/dia, com imagem/video, cost_multiplier 1.0)
-160738 -> ultimate (10800 creditos, 24 prompts/dia, com imagem/video, cost_multiplier 1.0)
-160742 -> unlimited (99999 creditos, sem limite prompts, com imagem/video, cost_multiplier 0.5)
-```
+2. **Migracao SQL** (nova)
+   - `CREATE OR REPLACE FUNCTION is_premium()` para incluir check em `planos2_subscriptions`
 
-2. Dentro da funcao `processGreennWebhook`, logo apos o check de blacklist (linha ~208), adicionar:
+3. **`src/pages/Index.tsx`**
+   - Importar `usePlanos2Access`
+   - Incluir `isPlanos2User && planSlug !== 'free'` no calculo de `hasPromptsAccess`
+   - Incluir planos2 com `has_image_generation` no calculo de `hasToolAccess`
 
-```text
-Se productId esta em PLANOS2_PRODUCTS:
-  -> Chamar processPlanos2Webhook(supabase, payload, logId, requestId, userId, planConfig)
-  -> return (nao continua no fluxo legado)
-```
+4. **`src/hooks/useDailyPromptLimit.ts`**
+   - Aceitar `dailyPromptLimit` opcional do planos2
+   - Usar esse limite quando presente, em vez de hardcoded por planType
 
-3. Criar funcao `processPlanos2Webhook` que faz:
-   - Calcular expiracao: se `offerName` contem "anual" OU `productPeriod >= 365` -> 365 dias, senao -> 30 dias
-   - Upsert em `planos2_subscriptions` com todos os campos (slug, creditos, limites, cost_multiplier, expires_at)
-   - Resetar creditos via `reset_upscaler_credits`
-   - Marcar webhook_logs como success
-
-4. No bloco de desativacao (canceled/unpaid/refunded/chargeback, linhas 319-349), adicionar:
-   - Verificar se o usuario tem `planos2_subscriptions` com plan_slug != 'free'
-   - Se sim, resetar para Free (plan_slug='free', credits=300, sem imagem/video, cost_multiplier=1.0, expires_at=null)
-   - Zerar creditos via `reset_upscaler_credits` com 0
-   - Manter o blacklist em caso de chargeback (ja existe)
-
-**Arquivo deletado:** `supabase/functions/webhook-greenn-planos2/index.ts` (nao sera mais necessario)
-
-**config.toml:** Remover a entrada `[functions.webhook-greenn-planos2]`
+5. **`src/pages/BibliotecaPrompts.tsx`**
+   - Passar o `daily_prompt_limit` do planos2 para `useDailyPromptLimit`
 
 ---
 
 ### Resumo
 
-- **1 arquivo editado:** `supabase/functions/webhook-greenn/index.ts`
-- **1 arquivo/funcao deletado:** `webhook-greenn-planos2`
-- **Nenhuma migracao SQL** -- tudo ja existe no banco
-- O fluxo legado (Arcano Premium) continua 100% intacto
-- Os planos v2 passam a ser processados pelo mesmo webhook, diferenciados apenas pelo product ID
+- 1 funcao SQL atualizada (`is_premium`)
+- 1 edge function editada (`webhook-greenn`)
+- 3 arquivos frontend editados (`Index.tsx`, `useDailyPromptLimit.ts`, `BibliotecaPrompts.tsx`)
+- Nenhum arquivo novo criado, nenhum deletado
 
