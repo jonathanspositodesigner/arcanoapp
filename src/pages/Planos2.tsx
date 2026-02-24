@@ -77,6 +77,26 @@ const Planos2 = () => {
   
   const plans = {
     mensal: [{
+      name: "Free",
+      price: "0",
+      originalPrice: null,
+      perMonth: true,
+      paymentUrl: "",
+      credits: "300 créditos de IA",
+      features: [
+        { text: 'Sem acesso a prompts premium', included: false },
+        { text: 'Sem acesso ao conteúdo premium', included: false },
+        { text: t('planos.features.dailyUpdates'), included: true },
+        { text: t('planos.features.immediateRelease'), included: true },
+        { text: 'Suporte exclusivo via WhatsApp', included: false },
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: 'Geração de Imagem com NanoBanana Pro', included: false },
+        { text: 'Geração de Vídeo com Veo 3', included: false },
+        { text: 'Fila prioritária nas gerações de IA', included: false }
+      ],
+      popular: false,
+      promo: false
+    }, {
       name: "Starter",
       price: "19,90",
       originalPrice: "29,90",
@@ -162,6 +182,26 @@ const Planos2 = () => {
       hasCountdown: true
     }],
     anual: [{
+      name: "Free",
+      price: "0",
+      originalPrice: null,
+      perMonth: true,
+      paymentUrl: "",
+      credits: "300 créditos de IA",
+      features: [
+        { text: 'Sem acesso a prompts premium', included: false },
+        { text: 'Sem acesso ao conteúdo premium', included: false },
+        { text: t('planos.features.dailyUpdates'), included: true },
+        { text: t('planos.features.immediateRelease'), included: true },
+        { text: 'Suporte exclusivo via WhatsApp', included: false },
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: 'Geração de Imagem com NanoBanana Pro', included: false },
+        { text: 'Geração de Vídeo com Veo 3', included: false },
+        { text: 'Fila prioritária nas gerações de IA', included: false }
+      ],
+      popular: false,
+      promo: false
+    }, {
       name: "Starter",
       price: "19,90",
       originalPrice: null,
@@ -328,7 +368,7 @@ const Planos2 = () => {
 
         {/* Plans Grid */}
         <StaggeredAnimation 
-          className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-6xl mx-auto"
+          className="grid grid-cols-1 lg:grid-cols-5 gap-4 max-w-7xl mx-auto"
           itemClassName="w-full"
           staggerDelay={150}
           animation="fade-up"
@@ -383,16 +423,22 @@ const Planos2 = () => {
               </div>
 
               <Button 
-                onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
+                onClick={() => {
+                  if (plan.name === "Free") {
+                    navigate('/login');
+                  } else {
+                    window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank');
+                  }
+                }}
                 className={`w-full mb-2 text-sm h-9 ${isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
               >
-                {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
+                {plan.name === "Free" ? "Criar conta grátis" : (plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>
 
               {/* Savings Badge - fixed height container */}
               <div className="h-[28px] mb-2 flex items-center justify-center">
                 {billingPeriod === "anual" ? (
-                  plan.name === "Starter" ? (
+                  plan.name === "Starter" || plan.name === "Free" ? (
                     <div className="flex items-center justify-center gap-1.5 bg-gray-800/50 border border-gray-600/30 rounded-full px-3 py-1 whitespace-nowrap">
                       <Tag className="w-3 h-3 text-gray-400 flex-shrink-0" />
                       <span className="text-[10px] text-gray-400">Sem diferença comparado ao mensal</span>
