@@ -102,7 +102,7 @@ const Planos2 = () => {
       originalPrice: null,
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/kbgwmH",
-      credits: "5.000 créditos de IA",
+      credits: "4.200 créditos de IA",
       features: [
         { text: t('planos.features.24PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -119,11 +119,11 @@ const Planos2 = () => {
       hasTrial: false
     }, {
       name: "Ultimate",
-      price: "49,90",
-      originalPrice: "59,90",
+      price: "59,90",
+      originalPrice: null,
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
-      credits: "10.000 créditos de IA",
+      credits: "10.800 créditos de IA",
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -141,8 +141,8 @@ const Planos2 = () => {
       bestSeller: true
     }, {
       name: "IA Unlimited",
-      price: "119,90",
-      originalPrice: "189,90",
+      price: "149,90",
+      originalPrice: "249,90",
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
       credits: "Créditos Ilimitados",
@@ -190,9 +190,9 @@ const Planos2 = () => {
       perMonth: true,
       yearlyTotal: "406,80",
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/MgExub",
-      credits: "5.000 créditos de IA",
-      images: 83,
-      savings: "R$72",
+      credits: "4.200 créditos de IA",
+      images: 70,
+      savings: "15%",
       features: [
         { text: t('planos.features.24PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -209,14 +209,14 @@ const Planos2 = () => {
       hasTrial: false
     }, {
       name: "Ultimate",
-      price: "39,90",
+      price: "49,90",
       originalPrice: "59,90",
       perMonth: true,
-      yearlyTotal: "478,80",
+      yearlyTotal: "598,80",
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
-      credits: "10.000 créditos de IA",
-      images: 166,
-      savings: "R$120",
+      credits: "10.800 créditos de IA",
+      images: 180,
+      savings: "17%",
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -233,14 +233,14 @@ const Planos2 = () => {
       hasTrial: false,
       bestSeller: true
     }, {
-    name: "IA Unlimited",
-      price: "99,90",
-      originalPrice: "189,90",
+      name: "IA Unlimited",
+      price: "119,90",
+      originalPrice: "149,90",
       perMonth: true,
-      yearlyTotal: "1198,80",
+      yearlyTotal: "1.438,80",
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Uqlls1",
       credits: "Créditos Ilimitados",
-      savings: "R$240",
+      savings: "20%",
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -276,6 +276,13 @@ const Planos2 = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 pb-16">
+        {/* Limited Time Promo Banner */}
+        <div className="bg-gradient-to-r from-red-600 to-orange-500 rounded-xl text-center max-w-6xl mx-auto py-3 px-4 mb-6 animate-pulse">
+          <span className="text-white font-bold tracking-wide text-sm md:text-base flex items-center justify-center gap-2">
+            🔥 Promoção por tempo limitado! 🔥
+          </span>
+        </div>
+
         <AnimatedSection animation="fade-up" className="text-center mb-10" as="div">
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-6">
             {t('planos.title')}
