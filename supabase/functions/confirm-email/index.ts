@@ -144,6 +144,54 @@ serve(async (req) => {
 
     console.log(`[confirm-email] Email confirmed for user: ${tokenData.user_id}`);
 
+    // Grant 300 free monthly credits for new users (Planos v2 - Free plan)
+    try {
+      // Check if user already has a planos2 subscription
+      const { data: existingSub } = await supabaseAdmin
+        .from("planos2_subscriptions")
+        .select("id")
+        .eq("user_id", tokenData.user_id)
+        .maybeSingle();
+
+      if (!existingSub) {
+        // Create free plan subscription
+        await supabaseAdmin
+          .from("planos2_subscriptions")
+          .insert({
+            user_id: tokenData.user_id,
+            plan_slug: "free",
+            is_active: true,
+            credits_per_month: 300,
+            daily_prompt_limit: 0,
+            has_image_generation: false,
+            has_video_generation: false,
+          });
+
+        // Grant 300 monthly credits only if user has no credits yet
+        const { data: existingCredits } = await supabaseAdmin
+          .from("upscaler_credits")
+          .select("balance")
+          .eq("user_id", tokenData.user_id)
+          .maybeSingle();
+
+        if (!existingCredits || existingCredits.balance === 0) {
+          await supabaseAdmin.rpc("reset_upscaler_credits", {
+            _user_id: tokenData.user_id,
+            _amount: 300,
+            _description: "Créditos mensais - Plano Free (300/mês)",
+          });
+          console.log(`[confirm-email] Granted 300 free monthly credits to user: ${tokenData.user_id}`);
+        } else {
+          console.log(`[confirm-email] User already has credits, skipping free grant: ${tokenData.user_id}`);
+        }
+      } else {
+        console.log(`[confirm-email] User already has planos2 subscription, skipping: ${tokenData.user_id}`);
+      }
+    } catch (freeErr) {
+      // Don't block email confirmation if free credits fail
+      console.error("[confirm-email] Error granting free credits (non-blocking):", freeErr);
+    }
+
     // Redirect directly to the app homepage
     return new Response(null, {
       status: 302,
