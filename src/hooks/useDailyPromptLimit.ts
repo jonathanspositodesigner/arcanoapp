@@ -14,15 +14,19 @@ interface DailyPromptLimitResult {
   refetch: () => Promise<void>;
 }
 
-export const useDailyPromptLimit = (user: User | null, planType: string | null): DailyPromptLimitResult => {
+export const useDailyPromptLimit = (user: User | null, planType: string | null, planos2DailyLimit?: number | null): DailyPromptLimitResult => {
   const [copiesUsed, setCopiesUsed] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Apply limit based on plan type
+  // Planos2 daily limit takes priority when provided (number or null=unlimited)
+  const hasPlanos2Limit = planos2DailyLimit !== undefined && planos2DailyLimit !== null && planos2DailyLimit > 0;
+  
+  // Legacy plan limits
   const isBasicPlan = planType === "arcano_basico";
   const isProPlan = planType === "arcano_pro";
-  const hasLimit = isBasicPlan || isProPlan;
-  const dailyLimit = isBasicPlan ? BASIC_PLAN_DAILY_LIMIT : isProPlan ? PRO_PLAN_DAILY_LIMIT : Infinity;
+  
+  const hasLimit = hasPlanos2Limit || isBasicPlan || isProPlan;
+  const dailyLimit = hasPlanos2Limit ? planos2DailyLimit! : isBasicPlan ? BASIC_PLAN_DAILY_LIMIT : isProPlan ? PRO_PLAN_DAILY_LIMIT : Infinity;
 
   const fetchDailyCount = useCallback(async () => {
     if (!user) {

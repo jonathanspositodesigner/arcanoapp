@@ -216,6 +216,143 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
 }
 
 // ============================================================================
+// EMAIL BOAS-VINDAS PLANOS V2
+// ============================================================================
+async function sendPlanos2WelcomeEmail(
+  supabase: any, email: string, name: string, planSlug: string,
+  creditsPerMonth: number, dailyPromptLimit: number | null,
+  hasImageGen: boolean, hasVideoGen: boolean, costMultiplier: number,
+  requestId: string
+): Promise<void> {
+  const planNames: Record<string, string> = {
+    'starter': 'Plano Starter',
+    'pro': 'Plano Pro',
+    'ultimate': 'Plano Ultimate',
+    'unlimited': 'Plano IA Unlimited',
+  }
+  const planDisplayName = planNames[planSlug] || planSlug
+
+  const benefits: Record<string, string[]> = {
+    'starter': [
+      '✅ 1.800 créditos mensais (~30 imagens/mês)',
+      '✅ 5 prompts premium por dia',
+      '✅ Acesso à Biblioteca de Prompts',
+      '✅ Atualizações diárias',
+    ],
+    'pro': [
+      '✅ 4.200 créditos mensais (~70 imagens/mês)',
+      '✅ 10 prompts premium por dia',
+      '✅ Geração de Imagens com IA',
+      '✅ Geração de Vídeos com IA',
+      '✅ Acesso à Biblioteca de Prompts',
+      '✅ Atualizações diárias',
+    ],
+    'ultimate': [
+      '✅ 10.800 créditos mensais (~180 imagens/mês)',
+      '✅ 24 prompts premium por dia',
+      '✅ Geração de Imagens com IA',
+      '✅ Geração de Vídeos com IA',
+      '✅ Acesso à Biblioteca de Prompts',
+      '✅ Atualizações diárias',
+    ],
+    'unlimited': [
+      '✅ Créditos ilimitados',
+      '✅ Sem limite de prompts',
+      '✅ 50% OFF em todas as Ferramentas de IA',
+      '✅ Geração de Imagens com IA',
+      '✅ Geração de Vídeos com IA',
+      '✅ Acesso à Biblioteca de Prompts',
+      '✅ Atualizações diárias',
+    ],
+  }
+
+  const planBenefits = benefits[planSlug] || benefits['starter']
+  const benefitsHtml = planBenefits.map(b => `<p style="margin:4px 0;font-size:14px;">${b}</p>`).join('')
+
+  const trackingId = crypto.randomUUID()
+  const dedupMinute = new Date().toISOString().slice(0, 16).replace(/[-T:]/g, '')
+  const dedupKey = `${email}|planos2_${planSlug}|${dedupMinute}`
+
+  try {
+    const { data: inserted, error: insertError } = await supabase
+      .from('welcome_email_logs')
+      .insert({
+        email, name,
+        platform: 'promptverso',
+        product_info: `Planos2: ${planDisplayName}`,
+        status: 'pending',
+        tracking_id: trackingId,
+        template_used: `planos2_${planSlug}`,
+        locale: 'pt',
+        dedup_key: dedupKey
+      })
+      .select('id')
+      .single()
+
+    if (insertError?.code === '23505') {
+      console.log(`   ├─ [${requestId}] ⏭️ Email planos2 duplicado bloqueado`)
+      return
+    }
+    if (insertError) {
+      console.log(`   ├─ [${requestId}] ❌ Erro log email planos2: ${insertError.message}`)
+      return
+    }
+
+    const logId = inserted.id
+    const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
+    const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")
+
+    if (!clientId || !clientSecret) {
+      await supabase.from('welcome_email_logs').update({ status: 'failed', error_message: 'SendPulse não configurado' }).eq('id', logId)
+      return
+    }
+
+    const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
+    const platformUrl = 'https://arcanoapp.voxvisual.com.br/'
+    const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
+
+    const tokenResponse = await fetch("https://api.sendpulse.com/oauth/access_token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ grant_type: "client_credentials", client_id: clientId, client_secret: clientSecret }),
+    })
+
+    if (!tokenResponse.ok) {
+      await supabase.from('welcome_email_logs').update({ status: 'failed', error_message: 'Falha token SendPulse' }).eq('id', logId)
+      return
+    }
+
+    const { access_token } = await tokenResponse.json()
+
+    const welcomeHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body{font-family:sans-serif;background:#f4f4f4;padding:20px}.container{max-width:600px;margin:0 auto;background:white;padding:40px;border-radius:12px}h1{color:#552b99;text-align:center}.cta-button{display:block;background:#552b99;color:white;text-align:center;padding:16px;border-radius:8px;text-decoration:none;margin:20px 0;font-size:16px;font-weight:bold}.credentials{background:#f8f4ff;padding:20px;border-radius:8px;margin:20px 0}.plan-badge{background:linear-gradient(135deg,#552b99,#8b5cf6);color:white;padding:8px 16px;border-radius:20px;font-size:14px;display:inline-block;font-weight:bold}.benefits{background:#f0fdf4;padding:20px;border-radius:8px;margin:20px 0;border-left:4px solid #22c55e}</style></head><body><div class="container"><h1>🎉 ${planDisplayName} Ativado!</h1><p>Olá${name ? ` <strong>${name}</strong>` : ''}!</p><p>Sua assinatura do <strong>${planDisplayName}</strong> foi ativada com sucesso!</p><div style="text-align:center"><span class="plan-badge">✨ ${planDisplayName}</span></div><div class="benefits"><h3 style="margin-top:0;">Seus benefícios:</h3>${benefitsHtml}</div><div class="credentials"><h3>📋 Dados do seu acesso:</h3><p><strong>Email:</strong> ${email}</p><p><strong>Senha:</strong> ${email}</p><p>⚠️ <strong>Importante:</strong> Por segurança, troque sua senha no primeiro acesso.</p></div><a href="${clickTrackingUrl}" class="cta-button">🚀 Acessar Plataforma</a><p style="text-align:center;color:#666">Clique no botão acima para fazer seu login!</p><hr style="border:none;border-top:1px solid #eee;margin:30px 0"/><p style="text-align:center;color:#999;font-size:12px">© ArcanoApp - Todos os direitos reservados</p></div><img src="${trackingBaseUrl}?id=${trackingId}&action=open" width="1" height="1" style="display:none"/></body></html>`
+
+    const result = await fetch("https://api.sendpulse.com/smtp/emails", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${access_token}` },
+      body: JSON.stringify({
+        email: {
+          html: btoa(unescape(encodeURIComponent(welcomeHtml))),
+          text: `${planDisplayName} ativado! Email: ${email}, Senha: ${email}. Acesse: https://arcanoapp.voxvisual.com.br/`,
+          subject: `🎉 ${planDisplayName} ativado! Acesse sua conta`,
+          from: { name: 'ArcanoApp', email: 'contato@voxvisual.com.br' },
+          to: [{ email, name: name || "" }],
+        },
+      }),
+    }).then(r => r.json())
+
+    await supabase.from('welcome_email_logs').update({
+      status: result.result === true ? 'sent' : 'failed',
+      error_message: result.result !== true ? JSON.stringify(result) : null,
+    }).eq('id', logId)
+
+    console.log(`   ├─ [${requestId}] ${result.result === true ? '✅ Email planos2 enviado' : '❌ Falha email planos2'}`)
+  } catch (error) {
+    console.log(`   ├─ [${requestId}] ❌ Erro email planos2: ${error}`)
+  }
+}
+
+// ============================================================================
 // PROCESSAMENTO PLANOS V2
 // ============================================================================
 async function processPlanos2Webhook(
@@ -331,6 +468,18 @@ async function processPlanos2Webhook(
       greenn_contract_id: contractId ? String(contractId) : null,
       payload: {}
     }).eq('id', logId)
+
+    // Send welcome email
+    try {
+      await sendPlanos2WelcomeEmail(
+        supabase, email, clientName, planConfig.slug,
+        planConfig.credits_per_month, planConfig.daily_prompt_limit,
+        planConfig.has_image_generation, planConfig.has_video_generation,
+        planConfig.cost_multiplier, requestId
+      )
+    } catch (e) {
+      console.log(`   ├─ [${requestId}] ⚠️ Falha email planos2 (acesso já liberado)`)
+    }
 
     console.log(`\n✅ [${requestId}] Plano ${planConfig.slug} ativado: ${email}, expira: ${expiresAt}`)
   } catch (error) {

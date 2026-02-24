@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useDailyPromptLimit } from "@/hooks/useDailyPromptLimit";
+import { usePlanos2Access } from "@/hooks/usePlanos2Access";
 import { trackPromptClick } from "@/hooks/usePromptClickTracker";
 import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
 import CollectionModal from "@/components/CollectionModal";
@@ -57,12 +58,13 @@ const BibliotecaPrompts = () => {
     expiringStatus
   } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
+  const { subscription: planos2Sub } = usePlanos2Access(user?.id);
   const {
     copiesUsed,
     remainingCopies,
     hasReachedLimit,
     recordCopy
-  } = useDailyPromptLimit(user, planType);
+  } = useDailyPromptLimit(user, planType, planos2Sub?.daily_prompt_limit);
   const [contentType, setContentType] = useState<"exclusive" | "community">("exclusive");
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
@@ -178,7 +180,7 @@ const BibliotecaPrompts = () => {
     return null;
   };
 
-  const hasLimitPlan = planType === "arcano_basico" || planType === "arcano_pro";
+  const hasLimitPlan = planType === "arcano_basico" || planType === "arcano_pro" || (planos2Sub?.daily_prompt_limit != null && planos2Sub.daily_prompt_limit > 0);
 
   const copyToClipboard = async (promptItem: PromptItem) => {
     if (promptItem.isPremium && hasLimitPlan) {
