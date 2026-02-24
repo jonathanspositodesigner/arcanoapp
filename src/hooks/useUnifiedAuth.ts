@@ -369,6 +369,22 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
           email_verified: false,
         }, { onConflict: 'id' });
         
+        // Process referral if exists
+        const referralCode = localStorage.getItem('referral_code');
+        if (referralCode) {
+          try {
+            const { data: refResult } = await supabase.rpc('process_referral', {
+              p_referred_user_id: authData.user.id,
+              p_referral_code: referralCode,
+            });
+            console.log('[UnifiedAuth] Referral result:', refResult);
+            localStorage.removeItem('referral_code');
+          } catch (refErr) {
+            console.error('[UnifiedAuth] Referral processing error:', refErr);
+            localStorage.removeItem('referral_code');
+          }
+        }
+        
         // Send confirmation email via SendPulse
         try {
           const { data: confirmData, error: confirmError } = await supabase.functions.invoke('send-confirmation-email', {

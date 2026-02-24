@@ -2966,6 +2966,80 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_codes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          credits_given_referred: number
+          credits_given_referrer: number
+          id: string
+          referral_code: string
+          referred_id: string
+          referrer_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_given_referred?: number
+          credits_given_referrer?: number
+          id?: string
+          referral_code: string
+          referred_id: string
+          referrer_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_given_referred?: number
+          credits_given_referrer?: number
+          id?: string
+          referral_code?: string
+          referred_id?: string
+          referrer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_characters: {
         Row: {
           created_at: string | null
@@ -3948,6 +4022,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: number
       }
+      get_or_create_referral_code: {
+        Args: { p_user_id: string }
+        Returns: string
+      }
       get_prompt_click_counts: {
         Args: never
         Returns: {
@@ -4016,6 +4094,13 @@ export type Database = {
           p_table_name: string
         }
         Returns: boolean
+      }
+      process_referral: {
+        Args: { p_referral_code: string; p_referred_user_id: string }
+        Returns: {
+          error_message: string
+          success: boolean
+        }[]
       }
       refund_upscaler_credits: {
         Args: { _amount: number; _description?: string; _user_id: string }
