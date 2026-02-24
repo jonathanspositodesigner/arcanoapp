@@ -337,7 +337,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
             ) : (
               <div className="flex flex-col gap-3">
                 <Button 
-                  onClick={() => navigate('/planos')}
+                  onClick={() => navigate('/planos-2')}
                   className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90"
                 >
                   <Star className="h-4 w-4 mr-2" fill="currentColor" />
@@ -345,7 +345,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                 </Button>
                 {!isVideoUrl(selectedItem.imageUrl) && (
                   <Button 
-                    onClick={() => navigate('/planos')}
+                    onClick={() => navigate('/planos-2')}
                     className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white"
                   >
                     <Lock className="h-4 w-4 mr-2" />
@@ -440,7 +440,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                       <Button
                         size="sm"
                         className="w-full max-w-[140px] text-xs bg-gradient-to-r from-pink-500 to-purple-600 hover:opacity-90 text-white"
-                        onClick={(e) => { e.stopPropagation(); navigate('/planos'); }}
+                        onClick={(e) => { e.stopPropagation(); navigate('/planos-2'); }}
                       >
                         <Lock className="h-3.5 w-3.5 mr-1.5" />
                         Exclusivo Premium

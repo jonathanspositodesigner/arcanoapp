@@ -95,7 +95,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
 
           {/* Premium button for logged-in non-premium users */}
           {user && !isPremium && (
-            <Button onClick={() => handleNavAndClose("/planos")} className="w-full h-auto py-2 px-2.5 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white font-medium text-[11px] flex items-center justify-between">
+            <Button onClick={() => handleNavAndClose("/planos-2")} className="w-full h-auto py-2 px-2.5 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white font-medium text-[11px] flex items-center justify-between">
               <span className="flex items-center">
                 <Star className="h-3 w-3 mr-1.5" fill="currentColor" />
                 {t('sidebar.becomePremium')}
@@ -106,7 +106,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
           {/* Login button only for non-logged users */}
           {!user && (
             <>
-              <Button onClick={() => handleNavAndClose("/planos")} className="w-full h-auto py-2 px-2.5 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white font-medium text-[11px] flex items-center justify-between">
+              <Button onClick={() => handleNavAndClose("/planos-2")} className="w-full h-auto py-2 px-2.5 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white font-medium text-[11px] flex items-center justify-between">
                 <span className="flex items-center">
                   <Star className="h-3 w-3 mr-1.5" fill="currentColor" />
                   {t('sidebar.becomePremium')}

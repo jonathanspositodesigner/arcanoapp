@@ -480,7 +480,7 @@ const BibliotecaPrompts = () => {
                 </div>
               </div>
             )}
-            <Button onClick={() => navigate("/planos")} className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white py-6 text-lg">
+            <Button onClick={() => navigate("/planos-2")} className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white py-6 text-lg">
               <Star className="h-5 w-5 mr-2" fill="currentColor" />
               {t('premiumModal.becomePremium')}
             </Button>
@@ -596,7 +596,7 @@ const BibliotecaPrompts = () => {
             <p className="text-purple-300 mb-6">
               {t('limitModal.description', { limit: planType === 'arcano_basico' ? 10 : 24 })}
             </p>
-            <Button onClick={() => { setShowLimitModal(false); navigate("/planos"); }} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white py-6">
+            <Button onClick={() => { setShowLimitModal(false); navigate("/planos-2"); }} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white py-6">
               {t('limitModal.upgrade')}
             </Button>
           </div>

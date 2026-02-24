@@ -37,13 +37,13 @@ const ExpiredSubscriptionModal = ({ isOpen, onClose, planType }: ExpiredSubscrip
     if (checkoutUrl) {
       window.open(checkoutUrl, '_blank');
     } else {
-      navigate('/planos');
+      navigate('/planos-2');
     }
     onClose();
   };
 
   const handleViewPlans = () => {
-    navigate('/planos');
+    navigate('/planos-2');
     onClose();
   };
 
