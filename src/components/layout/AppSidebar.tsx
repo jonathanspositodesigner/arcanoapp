@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Zap, Sparkles, Video, Star, LogIn, Smartphone, Menu, Users, X, ChevronDown, BookOpen, Settings, LogOut, Coins, Wand2, Home, ImagePlus } from "lucide-react";
+import { ExternalLink, Zap, Sparkles, Video, Star, LogIn, Smartphone, Menu, Users, X, ChevronDown, BookOpen, Settings, LogOut, Coins, Wand2, Home, ImagePlus, Gift } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
+import ReferralModal from "@/components/ReferralModal";
 
 interface AppSidebarProps {
   user: any;
@@ -19,6 +20,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
   const { logout } = useAuth();
   const [aiSitesOpen, setAiSitesOpen] = useState(false);
   const [aiToolsOpen, setAiToolsOpen] = useState(true);
+  const [showReferralModal, setShowReferralModal] = useState(false);
 
   const externalLinks = [
     { name: t('sidebar.generateInChatGPT'), url: "https://chatgpt.com/", icon: Sparkles },
@@ -225,6 +227,17 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
               Grupo do WhatsApp
             </button>
           </a>
+
+          {/* Indique e Ganhe */}
+          {user && (
+            <button
+              onClick={() => setShowReferralModal(true)}
+              className="w-full flex items-center text-left text-[12px] font-medium text-yellow-300 hover:text-yellow-200 py-2 px-2.5 rounded-lg hover:bg-yellow-500/20 transition-colors"
+            >
+              <Gift className="h-3.5 w-3.5 mr-1.5" />
+              Indique e Ganhe
+            </button>
+          )}
         </div>
 
         {/* Logout button at the bottom */}
@@ -240,6 +253,15 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
           </div>
         )}
       </aside>
+
+      {/* Referral Modal */}
+      {user && (
+        <ReferralModal
+          open={showReferralModal}
+          onClose={() => setShowReferralModal(false)}
+          userId={user.id}
+        />
+      )}
     </>
   );
 };

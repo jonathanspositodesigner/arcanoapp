@@ -65,6 +65,19 @@ const Index = () => {
 
   const showNotificationButton = typeof window !== 'undefined' && 'Notification' in window && Notification.permission !== 'granted';
 
+  // Capture referral code from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const refCode = params.get('ref');
+    if (refCode) {
+      localStorage.setItem('referral_code', refCode);
+      // Clean URL without reload
+      const url = new URL(window.location.href);
+      url.searchParams.delete('ref');
+      window.history.replaceState({}, '', url.pathname + url.search);
+    }
+  }, []);
+
   // Check if user is already logged in
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
