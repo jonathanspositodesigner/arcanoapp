@@ -21,8 +21,6 @@ import CreativitySlider from '@/components/arcano-cloner/CreativitySlider';
 import CustomPromptToggle from '@/components/arcano-cloner/CustomPromptToggle';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
-import AIToolsAuthModal from '@/components/ai-tools/AIToolsAuthModal';
-import { useAIToolsAuthModal } from '@/hooks/useAIToolsAuthModal';
 import { JobDebugPanel, DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
@@ -111,7 +109,7 @@ const ArcanoClonerTool: React.FC = () => {
   const [showActiveJobModal, setShowActiveJobModal] = useState(false);
   const [activeToolName, setActiveToolName] = useState<string>('');
   const [activeJobId, setActiveJobId] = useState<string | undefined>();
-  const { showAuthModal, setShowAuthModal, handleAuthSuccess: hookAuthSuccess } = useAIToolsAuthModal({ user, refetchCredits });
+  
   const [activeStatus, setActiveStatus] = useState<string | undefined>();
 
   // Refine states
@@ -140,8 +138,6 @@ const ArcanoClonerTool: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
 
-  // Handle auth success from modal - claim free trial
-  const handleAuthSuccess = hookAuthSuccess;
 
   // Cleanup queued jobs when user leaves
   useQueueSessionCleanup(sessionIdRef.current, status);
@@ -1118,12 +1114,6 @@ const ArcanoClonerTool: React.FC = () => {
       {/* Notification prompt toast */}
       <NotificationPromptToast toolName="cloner" />
 
-      {/* Free Trial Auth Modal */}
-      <AIToolsAuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onAuthSuccess={handleAuthSuccess}
-      />
 
       {/* Landing Trial Expired Modal */}
       <LandingTrialExpiredModal userId={user?.id} balance={credits} />

@@ -20,7 +20,7 @@ import FlyerLibraryModal from '@/components/flyer-maker/FlyerLibraryModal';
 import CreativitySlider from '@/components/arcano-cloner/CreativitySlider';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
-import { useAIToolsAuthModal } from '@/hooks/useAIToolsAuthModal';
+
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
@@ -31,7 +31,7 @@ import { getAIErrorMessage } from '@/utils/errorMessages';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 import RefinePanel from '@/components/arcano-cloner/RefinePanel';
 import RefinementTimeline, { type RefinementVersion } from '@/components/arcano-cloner/RefinementTimeline';
-import AIToolsAuthModal from '@/components/ai-tools/AIToolsAuthModal';
+
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
 
@@ -100,7 +100,7 @@ const FlyerMakerTool: React.FC = () => {
   const [activeToolName, setActiveToolName] = useState<string>('');
   const [activeJobId, setActiveJobId] = useState<string | undefined>();
   const [activeStatus, setActiveStatus] = useState<string | undefined>();
-  const { showAuthModal, setShowAuthModal, handleAuthSuccess: hookAuthSuccess } = useAIToolsAuthModal({ user, refetchCredits });
+  
 
   // Refine
   const [refineMode, setRefineMode] = useState(false);
@@ -118,7 +118,7 @@ const FlyerMakerTool: React.FC = () => {
     sessionIdRef.current = crypto.randomUUID();
   }, []);
 
-  const handleAuthSuccess = hookAuthSuccess;
+  
 
   useQueueSessionCleanup(sessionIdRef.current, status);
 
@@ -773,7 +773,7 @@ const FlyerMakerTool: React.FC = () => {
         <FlyerLibraryModal isOpen={showPhotoLibrary} onClose={() => setShowPhotoLibrary(false)} onSelectPhoto={(url) => { handleReferenceImageChange(url); setShowPhotoLibrary(false); }} />
         <NoCreditsModal isOpen={showNoCreditsModal} onClose={() => setShowNoCreditsModal(false)} reason={noCreditsReason} />
         <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeToolName} activeStatus={activeStatus} />
-        <AIToolsAuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onAuthSuccess={handleAuthSuccess} />
+        
       </div>
     </AppLayout>
   );

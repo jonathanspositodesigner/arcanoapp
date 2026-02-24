@@ -7,8 +7,6 @@ import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useCredits } from '@/contexts/CreditsContext';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
-import AIToolsAuthModal from '@/components/ai-tools/AIToolsAuthModal';
-import { useAIToolsAuthModal } from '@/hooks/useAIToolsAuthModal';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import AppLayout from '@/components/layout/AppLayout';
 
@@ -33,7 +31,7 @@ const GerarImagemTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
-  const { showAuthModal, setShowAuthModal, handleAuthSuccess } = useAIToolsAuthModal({ user, refetchCredits });
+  
   const { getCreditCost } = useAIToolSettings();
 
   const [prompt, setPrompt] = useState('');
@@ -477,12 +475,6 @@ const GerarImagemTool = () => {
           </div>
         </div>
 
-        {/* Modals */}
-        <AIToolsAuthModal
-          isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-          onAuthSuccess={handleAuthSuccess}
-        />
         <NoCreditsModal
           isOpen={showNoCreditsModal}
           onClose={() => setShowNoCreditsModal(false)}
