@@ -14,6 +14,7 @@ import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { usePackAccess } from "@/hooks/usePackAccess";
 import { useLocale } from "@/contexts/LocaleContext";
 import { usePlanos2Access } from "@/hooks/usePlanos2Access";
+import { useCredits } from "@/contexts/CreditsContext";
 
 // Imagens de preview para os cards
 import cardArtesArcanas from "@/assets/card-artes-arcanas.webp";
@@ -57,6 +58,7 @@ const Index = () => {
   const { user, userPacks, isLoading: isPacksLoading } = usePackAccess();
   const { isLatam } = useLocale();
   const { isPlanos2User, planSlug: planos2Slug, hasImageGeneration, isLoading: isPlanos2Loading } = usePlanos2Access(user?.id);
+  const { breakdown: creditsBreakdown, isLoading: isCreditsLoading } = useCredits();
 
   // Verificar se usuário está logado
   const isLoggedIn = !!user;
@@ -90,7 +92,7 @@ const Index = () => {
   };
 
   // Aguarda TODOS carregarem antes de calcular qualquer acesso (evita flash de estado errado)
-  const isLoading = isPremiumLoading || isPacksLoading || isPlanos2Loading;
+  const isLoading = isPremiumLoading || isPacksLoading || isPlanos2Loading || (isLoggedIn && isCreditsLoading);
 
   const TOOL_PLAN_TYPES = ['arcano_pro'];
 
@@ -100,7 +102,8 @@ const Index = () => {
   // Verificar acessos do usuário — só calcula depois que tudo carregou
   const hasToolAccess = !isLoading && isLoggedIn && (
     userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug)) ||
-    (isPlanos2Paid && hasImageGeneration)
+    (isPlanos2Paid && hasImageGeneration) ||
+    creditsBreakdown.total > 0
   );
   const hasArtesAccess = !isLoading && isLoggedIn && userPacks.some(p => ARTES_SLUGS.includes(p.pack_slug));
   // hasPromptsAccess: premium SIM, mas NUNCA se planType for de ferramenta (arcano_pro, etc.)
