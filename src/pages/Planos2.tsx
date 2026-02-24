@@ -84,7 +84,7 @@ const Planos2 = () => {
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/bBw6Ql",
       credits: "1.800 créditos de IA",
       features: [
-        { text: t('planos.features.10PromptsDay'), included: true },
+        { text: '5 prompts premium por dia', included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -104,7 +104,7 @@ const Planos2 = () => {
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/kbgwmH",
       credits: "4.200 créditos de IA",
       features: [
-        { text: t('planos.features.24PromptsDay'), included: true },
+        { text: '10 prompts premium por dia', included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -125,7 +125,7 @@ const Planos2 = () => {
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
       credits: "10.800 créditos de IA",
       features: [
-        { text: t('planos.features.unlimitedPrompts'), included: true },
+        { text: '24 prompts premium por dia', included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -171,7 +171,7 @@ const Planos2 = () => {
       credits: "1.800 créditos de IA",
       images: 30,
       features: [
-        { text: t('planos.features.10PromptsDay'), included: true },
+        { text: '5 prompts premium por dia', included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -194,7 +194,7 @@ const Planos2 = () => {
       images: 70,
       savings: "R$72",
       features: [
-        { text: t('planos.features.24PromptsDay'), included: true },
+        { text: '10 prompts premium por dia', included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -218,7 +218,7 @@ const Planos2 = () => {
       images: 180,
       savings: "R$120",
       features: [
-        { text: t('planos.features.unlimitedPrompts'), included: true },
+        { text: '24 prompts premium por dia', included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
