@@ -54,7 +54,8 @@ const Planos = () => {
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
-      promo: false
+      promo: false,
+      bonusCredits: null
     }, {
       name: "Pro",
       price: "20,90",
@@ -74,11 +75,32 @@ const Planos = () => {
       ],
       popular: false,
       promo: false,
-      hasTrial: false
+      hasTrial: false,
+      bonusCredits: "4.200"
+    }, {
+      name: "Ultimate",
+      price: "59,90",
+      originalPrice: null,
+      perMonth: true,
+      paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
+      features: [
+        { text: t('planos.features.unlimitedPrompts'), included: true },
+        { text: t('planos.features.allPremiumContent'), included: true },
+        { text: t('planos.features.dailyUpdates'), included: true },
+        { text: t('planos.features.immediateRelease'), included: true },
+        { text: t('planos.features.whatsappSupport'), included: true },
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
+        { text: 'Geração de Vídeo com Veo 3', included: true },
+        { text: 'Fila prioritária nas gerações de IA', included: false }
+      ],
+      popular: false,
+      promo: false,
+      bonusCredits: "10.800"
     }, {
       name: "IA Unlimited",
-      price: "29,90",
-      originalPrice: null,
+      price: "149,90",
+      originalPrice: "249,90",
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
       features: [
@@ -94,7 +116,8 @@ const Planos = () => {
       ],
       popular: false,
       promo: false,
-      bestSeller: true
+      bestSeller: true,
+      bonusCredits: null
     }],
     anual: [{
       name: "Starter",
@@ -115,7 +138,9 @@ const Planos = () => {
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
-      promo: false
+      promo: false,
+      bonusCredits: null,
+      savingsPercent: null
     }, {
       name: "Pro",
       price: "18,90",
@@ -136,13 +161,37 @@ const Planos = () => {
       ],
       popular: false,
       promo: false,
-      hasTrial: false
+      hasTrial: false,
+      bonusCredits: "4.200",
+      savingsPercent: "10"
+    }, {
+      name: "Ultimate",
+      price: "49,90",
+      originalPrice: "59,90",
+      perMonth: true,
+      yearlyTotal: "598,80",
+      paymentUrl: "https://payfast.greenn.com.br/148937/offer/8zY6n5",
+      features: [
+        { text: t('planos.features.unlimitedPrompts'), included: true },
+        { text: t('planos.features.allPremiumContent'), included: true },
+        { text: t('planos.features.dailyUpdates'), included: true },
+        { text: t('planos.features.immediateRelease'), included: true },
+        { text: t('planos.features.whatsappSupport'), included: true },
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
+        { text: 'Geração de Vídeo com Veo 3', included: true },
+        { text: 'Fila prioritária nas gerações de IA', included: false }
+      ],
+      popular: false,
+      promo: true,
+      bonusCredits: "10.800",
+      savingsPercent: "17"
     }, {
       name: "IA Unlimited",
-      price: "24,90",
-      originalPrice: "29,90",
+      price: "119,90",
+      originalPrice: "149,90",
       perMonth: true,
-      yearlyTotal: "298,80",
+      yearlyTotal: "1.438,80",
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/8zY6n5",
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
@@ -157,7 +206,9 @@ const Planos = () => {
       ],
       popular: false,
       promo: true,
-      bestSeller: true
+      bestSeller: true,
+      bonusCredits: null,
+      savingsPercent: "20"
     }]
   };
 
@@ -179,6 +230,13 @@ const Planos = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 pb-16">
+        {/* Limited Time Promo Banner */}
+        <AnimatedSection animation="scale" className="bg-gradient-to-r from-red-600 to-orange-500 rounded-xl text-center max-w-5xl mx-auto py-3 px-4 mb-6" as="div">
+          <span className="text-white font-bold tracking-wide text-sm md:text-base flex items-center justify-center gap-2">
+            🔥 Promoção por tempo limitado! 🔥
+          </span>
+        </AnimatedSection>
+
         <AnimatedSection animation="fade-up" className="text-center mb-10" as="div">
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-6">
             {t('planos.title')}
@@ -202,24 +260,25 @@ const Planos = () => {
 
         {/* Discount Banner - Only show on annual */}
         {billingPeriod === "anual" && (
-          <AnimatedSection animation="scale" delay={100} className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-5xl mx-auto py-[13px] px-px my-[20px]" as="div">
+          <AnimatedSection animation="scale" delay={100} className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-6xl mx-auto py-[13px] px-px my-[20px]" as="div">
             <span className="text-white font-semibold tracking-wide">
-              {t('planos.upToDiscount', { percent: "33" })}
+              Economize até 20% no plano anual!
             </span>
           </AnimatedSection>
         )}
 
         {/* Plans Grid */}
         <StaggeredAnimation 
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-0 max-w-5xl mx-auto"
+          className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-0 max-w-6xl mx-auto"
           itemClassName="flex"
           staggerDelay={150}
           animation="fade-up"
         >
           {currentPlans.map((plan, index) => {
             const isBestSeller = (plan as any).bestSeller;
+            const savingsPercent = (plan as any).savingsPercent;
             return (
-            <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
+            <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === currentPlans.length - 1 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1">
                   {t('planos.bestSeller')}
@@ -250,6 +309,11 @@ const Planos = () => {
                   <p className="text-purple-400 text-sm mt-1">
                     R${(plan as any).yearlyTotal}{t('planos.perYear')}
                   </p>
+                )}
+                {billingPeriod === "anual" && savingsPercent && (
+                  <Badge className="mt-2 bg-green-500/20 text-green-400 border-green-500/30 text-xs">
+                    Economize {savingsPercent}%
+                  </Badge>
                 )}
               </div>
 
@@ -301,7 +365,7 @@ const Planos = () => {
                 ))}
               </ul>
 
-              {plan.name === "Pro" && (
+              {(plan as any).bonusCredits && (
                 <div className="mt-6 pt-4 border-t border-purple-500/20">
                   <p className="text-xs text-purple-400 mb-2 uppercase tracking-wide">
                     {t('planos.extraBenefits')}
@@ -309,10 +373,7 @@ const Planos = () => {
                   <div className="flex items-center gap-2 text-sm">
                     <Coins className="w-4 h-4 text-yellow-400" />
                     <span className="text-purple-200">
-                      {billingPeriod === "anual" 
-                        ? t('features.bonusCredits900Annual', { ns: 'plans' })
-                        : t('features.bonusCredits900', { ns: 'plans' })
-                      }
+                      +{(plan as any).bonusCredits} créditos de IA/mês
                     </span>
                   </div>
                 </div>
@@ -330,10 +391,7 @@ const Planos = () => {
                   <div className="flex items-center gap-2 text-sm">
                     <Coins className="w-4 h-4 text-yellow-400" />
                     <span className="text-purple-200">
-                      {billingPeriod === "anual" 
-                        ? t('features.bonusCredits1800Annual', { ns: 'plans' })
-                        : t('features.bonusCredits1800', { ns: 'plans' })
-                      }
+                      Créditos ilimitados de IA
                     </span>
                   </div>
                 </div>
