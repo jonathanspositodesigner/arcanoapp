@@ -307,6 +307,25 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
         return;
       }
       
+      // Process pending referral on login (retry from signup)
+      const pendingReferral = localStorage.getItem('referral_code');
+      if (pendingReferral && data.user) {
+        console.log('[UnifiedAuth] Found pending referral on login:', pendingReferral);
+        try {
+          const { data: refResult, error: refError } = await supabase.rpc('process_referral', {
+            p_referred_user_id: data.user.id,
+            p_referral_code: pendingReferral,
+          });
+          console.log('[UnifiedAuth] Login referral result:', refResult, 'error:', refError);
+          if (!refError) {
+            localStorage.removeItem('referral_code');
+            console.log('[UnifiedAuth] Referral processed on login successfully');
+          }
+        } catch (refErr) {
+          console.error('[UnifiedAuth] Referral on login error:', refErr);
+        }
+      }
+
       // Success!
       toast.success(t('success.loginSuccess'));
       config.onLoginSuccess?.();
@@ -371,17 +390,30 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
         
         // Process referral if exists
         const referralCode = localStorage.getItem('referral_code');
+        console.log('[UnifiedAuth] Signup referral check - code in localStorage:', referralCode);
         if (referralCode) {
           try {
-            const { data: refResult } = await supabase.rpc('process_referral', {
+            const { data: refResult, error: refError } = await supabase.rpc('process_referral', {
               p_referred_user_id: authData.user.id,
               p_referral_code: referralCode,
             });
-            console.log('[UnifiedAuth] Referral result:', refResult);
-            localStorage.removeItem('referral_code');
+            console.log('[UnifiedAuth] Referral result:', refResult, 'error:', refError);
+            if (refError) {
+              console.error('[UnifiedAuth] Referral RPC error (will retry on login):', refError);
+              // Keep referral_code in localStorage to retry on first login
+            } else {
+              const resultArr = refResult as any;
+              const success = Array.isArray(resultArr) ? resultArr[0]?.success : (resultArr as any)?.success;
+              if (success) {
+                console.log('[UnifiedAuth] Referral processed successfully on signup');
+                localStorage.removeItem('referral_code');
+              } else {
+                console.warn('[UnifiedAuth] Referral returned failure, keeping code for retry');
+              }
+            }
           } catch (refErr) {
-            console.error('[UnifiedAuth] Referral processing error:', refErr);
-            localStorage.removeItem('referral_code');
+            console.error('[UnifiedAuth] Referral processing exception (will retry on login):', refErr);
+            // Keep referral_code in localStorage to retry on first login
           }
         }
         
