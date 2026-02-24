@@ -100,7 +100,7 @@ const ReferralModal = ({ open, onClose, userId }: ReferralModalProps) => {
               <Coins className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
                 <p className="text-sm font-medium text-foreground">Você ganha também!</p>
-                <p className="text-xs text-muted-foreground">Receba <span className="font-bold text-green-500">150 créditos vitalícios</span> por cada indicação</p>
+                <p className="text-xs text-muted-foreground">Receba <span className="font-bold text-green-500">300 créditos vitalícios</span> por cada indicação</p>
               </div>
             </div>
           </div>
