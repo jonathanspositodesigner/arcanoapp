@@ -1,56 +1,50 @@
 
+Diagnóstico completo do problema (já conferido com dados reais):
 
-## Bloqueio de Emails Temporarios no Cadastro
+1) O link que você mandou (`.../functions/v1/confirm-email?token=...`) é o endpoint de confirmação de email no backend (normal esse formato).
+2) Esse token específico **já foi consumido**:
+   - `created_at: 2026-02-24 23:03:08+00`
+   - `used_at: 2026-02-24 23:03:16+00`
+3) No código atual de `confirm-email`, quando `tokenData.used_at` já existe, ele **não redireciona**; ele retorna HTML de sucesso com status 200.  
+   Resultado: o usuário fica vendo a URL do backend no navegador em vez de ser jogado para a home.
+4) Isso explica exatamente o comportamento que você viu: não é “erro de token novo”, é regra atual de token já usado.
 
-### O que sera feito
+Plano de correção (direto ao ponto):
 
-Criar uma protecao em duas camadas (cliente + servidor) para impedir cadastro com emails temporarios/descartaveis, com excecao do dominio `@tuamaeaquelaursa.com`.
+- Objetivo: garantir redirecionamento para a home também quando o token já foi usado (idempotente e sem travar usuário).
+- Arquivo alvo: `supabase/functions/confirm-email/index.ts`
 
-### Camada 1: Validacao no Cliente
-**Arquivo:** `src/utils/disposableEmailDomains.ts` (novo)
+Mudanças planejadas:
 
-- Criar um arquivo com uma lista de ~500 dominios de emails temporarios mais conhecidos (baseado na lista oficial do repositorio `disposable-email-domains/disposable-email-domains` no GitHub com 5000+ dominios)
-- Incluir dominios populares como: `tempmail.com`, `guerrillamail.com`, `yopmail.com`, `10minutemail.com`, `mailinator.com`, `throwaway.email`, `temp-mail.org`, etc.
-- Alem da lista fixa, incluir deteccao por padroes suspeitos (dominios contendo palavras como "tempmail", "throwaway", "disposable", "10minute", "fake", etc.)
-- Exportar funcao `isDisposableEmail(email: string): boolean` que verifica o dominio
+1. Unificar política de retorno:
+   - Caso `tokenData.used_at` -> responder com `302 Location: https://arcanoapp.voxvisual.com.br/`
+   - Em vez de renderizar HTML de sucesso no endpoint.
 
-**Arquivo:** `src/hooks/useUnifiedAuth.ts`
+2. Manter fluxo atual para primeira confirmação:
+   - primeira vez: marca `used_at`, atualiza `email_verified`, executa créditos free (se aplicável), e já retorna `302` (isso já existe e será mantido).
 
-- Na funcao `signup`, antes de chamar `supabase.auth.signUp`, validar o email com `isDisposableEmail()`
-- Se for email temporario, exibir toast de erro e bloquear o cadastro
-- O dominio `@tuamaeaquelaursa.com` sera excluido da verificacao (allowlist)
+3. Melhorar robustez de UX:
+   - opcional técnico recomendado: usar `303 See Other` para navegação web (evita ambiguidades de método em alguns clients), mantendo `Location` para home.
+   - manter página HTML apenas para erros reais (token inválido/expirado), ou também redirecionar com query (`/?email_confirm=invalid`) se você quiser UX 100% sem tela de backend.
 
-### Camada 2: Validacao no Servidor
-**Arquivo:** `supabase/functions/send-confirmation-email/index.ts`
+4. Alinhar função irmã para consistência:
+   - aplicar mesma regra no `confirm-email-free-trial` para branch de token já usado (hoje também retorna HTML 200 e fica na URL da função).
+   - Assim nenhum link de confirmação “para” no domínio do backend após clique repetido.
 
-- Adicionar a mesma verificacao de email temporario na Edge Function
-- Se o email for temporario, retornar erro 400 antes de enviar o email de confirmacao
-- Isso garante que mesmo se alguem burlar o frontend, o servidor bloqueia
+Validação pós-implementação (fim-a-fim):
 
-### Detalhes tecnicos
+1. Criar conta nova.
+2. Abrir link de confirmação pela primeira vez:
+   - deve confirmar e ir para home automaticamente.
+3. Clicar no mesmo link de novo:
+   - deve ir para home automaticamente (sem ficar na URL da função).
+4. Verificar logs:
+   - deve aparecer `Token already used` + resposta com redirect (3xx), não HTML 200 para esse caso.
+5. Verificar que segurança de referral continua:
+   - créditos de indicação só após email confirmado (já protegido no backend via `process_referral`).
 
-**Lista de dominios bloqueados** (amostra dos mais relevantes, total ~500):
-- Todos os dominios `*minutemail*`, `*tempmail*`, `*guerrilla*`, `*yopmail*`, `*mailinator*`
-- Dominios com extensoes suspeitas: `.tk`, `.ml`, `.cf`, `.ga`, `.gq` quando combinados com padroes de email temporario
-- Servicos populares: `temp-mail.org`, `throwaway.email`, `guerrillamail.com`, `sharklasers.com`, `grr.la`, `guerrillamailblock.com`, `pokemail.net`, `spam4.me`, `trashmail.com`, `trash-mail.com`, etc.
+Impacto esperado:
 
-**Allowlist** (dominios que NUNCA serao bloqueados):
-- `tuamaeaquelaursa.com`
-
-**Funcao de validacao:**
-```text
-isDisposableEmail(email)
-  1. Extrair dominio do email
-  2. Verificar se esta na allowlist -> se sim, retorna false (permitido)
-  3. Verificar se esta na lista de dominios bloqueados -> se sim, retorna true (bloqueado)
-  4. Verificar padroes suspeitos no dominio (regex) -> se match, retorna true
-  5. Retorna false (permitido)
-```
-
-**Arquivos a criar:**
-- `src/utils/disposableEmailDomains.ts` - Lista de dominios + funcao de validacao
-
-**Arquivos a alterar:**
-- `src/hooks/useUnifiedAuth.ts` - Adicionar validacao antes do signup
-- `supabase/functions/send-confirmation-email/index.ts` - Adicionar validacao server-side
-
+- Corrige a experiência “fica preso na URL da função”.
+- Não reabre brecha de crédito.
+- Mantém idempotência: clicar link duas vezes continua seguro.
