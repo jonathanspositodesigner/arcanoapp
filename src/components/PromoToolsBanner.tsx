@@ -19,7 +19,7 @@ const PromoToolsBanner = ({ onClose }: PromoToolsBannerProps) => {
   };
 
   const handleClick = () => {
-    navigate("/planos-creditos");
+    navigate("/planos-2");
   };
 
   return (
