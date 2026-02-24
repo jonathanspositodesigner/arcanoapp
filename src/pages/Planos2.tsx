@@ -83,6 +83,7 @@ const Planos2 = () => {
       perMonth: true,
       paymentUrl: "",
       credits: "300 créditos de IA",
+      images: 5,
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -103,6 +104,7 @@ const Planos2 = () => {
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/bBw6Ql",
       credits: "1.800 créditos de IA",
+      images: 30,
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -123,6 +125,7 @@ const Planos2 = () => {
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/kbgwmH",
       credits: "4.200 créditos de IA",
+      images: 70,
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -144,6 +147,7 @@ const Planos2 = () => {
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
       credits: "10.800 créditos de IA",
+      images: 180,
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -166,6 +170,7 @@ const Planos2 = () => {
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
       credits: "Créditos Ilimitados",
+      images: "Ilimitadas",
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -188,6 +193,7 @@ const Planos2 = () => {
       perMonth: true,
       paymentUrl: "",
       credits: "300 créditos de IA",
+      images: 5,
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -280,6 +286,7 @@ const Planos2 = () => {
       yearlyTotal: "1.438,80",
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Uqlls1",
       credits: "Créditos Ilimitados",
+      images: "Ilimitadas",
       savings: "R$360",
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
@@ -467,13 +474,13 @@ const Planos2 = () => {
               </div>
 
               {/* Badge de Créditos - fixed height */}
-              <div className="flex flex-col items-center mb-4 h-[36px]">
+              <div className="flex flex-col items-center mb-4 h-[44px]">
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
                   <Sparkles className="w-2.5 h-2.5" />
                   {(plan as any).credits}/mês
                 </span>
                 {(plan as any).images && (
-                  <span className="text-[9px] text-purple-400 mt-0.5">= {(plan as any).images} imagens/mês</span>
+                  <span className="text-[9px] text-purple-400 mt-0.5">≈ {typeof (plan as any).images === 'string' ? (plan as any).images : `${(plan as any).images} imagens/mês`}</span>
                 )}
               </div>
 
