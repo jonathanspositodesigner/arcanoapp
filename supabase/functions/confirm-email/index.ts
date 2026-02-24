@@ -105,11 +105,10 @@ serve(async (req) => {
 
     // Check if already used
     if (tokenData.used_at) {
-      console.log("[confirm-email] Token already used");
-      // Still show success since email was confirmed
-      return new Response(buildSuccessHtml(), {
-        status: 200,
-        headers: { "Content-Type": "text/html; charset=utf-8" },
+      console.log("[confirm-email] Token already used, redirecting to home");
+      return new Response(null, {
+        status: 302,
+        headers: { "Location": "https://arcanoapp.voxvisual.com.br/" },
       });
     }
 
