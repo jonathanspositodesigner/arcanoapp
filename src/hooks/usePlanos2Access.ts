@@ -8,6 +8,7 @@ interface Planos2Subscription {
   daily_prompt_limit: number | null;
   has_image_generation: boolean;
   has_video_generation: boolean;
+  cost_multiplier: number;
 }
 
 export const usePlanos2Access = (userId?: string) => {
@@ -24,7 +25,7 @@ export const usePlanos2Access = (userId?: string) => {
       try {
         const { data, error } = await supabase
           .from('planos2_subscriptions')
-          .select('plan_slug, is_active, credits_per_month, daily_prompt_limit, has_image_generation, has_video_generation')
+          .select('plan_slug, is_active, credits_per_month, daily_prompt_limit, has_image_generation, has_video_generation, cost_multiplier')
           .eq('user_id', userId)
           .maybeSingle();
 
@@ -48,5 +49,6 @@ export const usePlanos2Access = (userId?: string) => {
     hasVideoGeneration: subscription?.has_video_generation ?? true,
     isPlanos2User: !!subscription,
     planSlug: subscription?.plan_slug ?? null,
+    costMultiplier: subscription?.cost_multiplier ?? 1.0,
   };
 };
