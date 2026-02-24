@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown } from "lucide-react";
+import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -535,6 +535,98 @@ const Planos2 = () => {
           })}
         </StaggeredAnimation>
       </div>
+
+      {/* Credit Plans Section */}
+      <section className="mt-20 pb-20 px-4">
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 mb-4">
+            <Coins className="w-7 h-7 text-white" />
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+            Compre um pacote de créditos avulsos
+          </h2>
+          <p className="text-purple-300 max-w-md mx-auto">
+            Créditos <span className="text-green-400 font-semibold">vitalícios</span> que nunca expiram — use quando quiser!
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          {[
+            { credits: "+1.500", description: "~25 upscalers", price: "19,90", originalPrice: "39,90", savings: "", link: "https://payfast.greenn.com.br/9trhhb9", icon: Coins, color: "from-purple-500 to-fuchsia-500" },
+            { credits: "+4.200", description: "~70 upscalers", price: "29,90", originalPrice: "49,90", savings: "46", link: "https://payfast.greenn.com.br/y3u2u3d", popular: true, icon: Zap, color: "from-fuchsia-500 to-pink-500" },
+            { credits: "+14.000", description: "~233 upscalers", price: "79,90", originalPrice: "149,90", savings: "57", link: "https://payfast.greenn.com.br/vwfzrw2", bestValue: true, icon: Star, color: "from-yellow-500 to-orange-500" },
+          ].map((plan) => {
+            const Icon = plan.icon;
+            return (
+              <Card
+                key={plan.credits}
+                className={`relative p-6 bg-[#1A0A2E] border-purple-500/20 flex flex-col items-center text-center transition-all duration-300 hover:scale-[1.02] hover:border-purple-400/40 ${
+                  plan.bestValue ? 'ring-2 ring-yellow-500/50 border-yellow-500/30' : ''
+                } ${plan.popular ? 'ring-2 ring-fuchsia-500/50 border-fuchsia-500/30' : ''}`}
+              >
+                {plan.bestValue && (
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 px-3 py-1 text-xs">
+                    ⭐ MELHOR VALOR
+                  </Badge>
+                )}
+                {plan.popular && !plan.bestValue && (
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white border-0 px-3 py-1 text-xs">
+                    🔥 POPULAR
+                  </Badge>
+                )}
+
+                <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${plan.color} flex items-center justify-center mb-3 mt-2`}>
+                  <Icon className="w-6 h-6 text-white" />
+                </div>
+
+                <div className="mb-1">
+                  <span className="text-2xl sm:text-3xl font-bold text-white">{plan.credits}</span>
+                  <p className="text-purple-300 text-sm">créditos</p>
+                </div>
+
+                <p className="text-purple-400 text-sm mb-3">{plan.description}</p>
+
+                {plan.savings && (
+                  <Badge className="bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs mb-2 gap-1">
+                    <Tag className="w-3 h-3" />
+                    Economize {plan.savings}%
+                  </Badge>
+                )}
+
+                <Badge variant="outline" className="bg-green-500/10 border-green-500/30 text-green-400 text-xs mb-3">
+                  ♾️ Vitalício
+                </Badge>
+
+                <div className="flex-1 flex flex-col justify-end w-full">
+                  <div className="mb-4">
+                    {plan.originalPrice && (
+                      <span className="text-sm text-purple-500 line-through block mb-1">R$ {plan.originalPrice}</span>
+                    )}
+                    <div>
+                      <span className="text-sm text-purple-400">R$ </span>
+                      <span className="text-2xl font-bold text-white">{plan.price}</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={() => window.open(plan.link, "_blank")}
+                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5`}
+                  >
+                    Comprar Agora
+                  </Button>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+
+        <div className="mt-10 text-center">
+          <p className="text-purple-400 text-sm max-w-lg mx-auto">
+            💡 Os créditos vitalícios são consumidos <strong className="text-purple-300">após</strong> os créditos mensais da sua assinatura,
+            garantindo que você aproveite ao máximo seu plano.
+          </p>
+        </div>
+      </section>
 
       {/* Coming Soon Modal */}
       <Dialog open={showComingSoonModal} onOpenChange={setShowComingSoonModal}>
