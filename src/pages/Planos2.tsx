@@ -79,7 +79,7 @@ const Planos2 = () => {
     mensal: [{
       name: "Starter",
       price: "19,90",
-      originalPrice: null,
+      originalPrice: "29,90",
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148926/offer/bBw6Ql",
       credits: "1.800 créditos de IA",
@@ -99,7 +99,7 @@ const Planos2 = () => {
     }, {
       name: "Pro",
       price: "39,90",
-      originalPrice: null,
+      originalPrice: "49,90",
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/kbgwmH",
       credits: "4.200 créditos de IA",
@@ -120,7 +120,7 @@ const Planos2 = () => {
     }, {
       name: "Ultimate",
       price: "59,90",
-      originalPrice: null,
+      originalPrice: "79,90",
       perMonth: true,
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
       credits: "10.800 créditos de IA",
@@ -192,7 +192,7 @@ const Planos2 = () => {
       paymentUrl: "https://payfast.greenn.com.br/148936/offer/MgExub",
       credits: "4.200 créditos de IA",
       images: 70,
-      savings: "15%",
+      savings: "R$72",
       features: [
         { text: t('planos.features.24PromptsDay'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -216,7 +216,7 @@ const Planos2 = () => {
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Rt5HlW",
       credits: "10.800 créditos de IA",
       images: 180,
-      savings: "17%",
+      savings: "R$120",
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -240,7 +240,7 @@ const Planos2 = () => {
       yearlyTotal: "1.438,80",
       paymentUrl: "https://payfast.greenn.com.br/148937/offer/Uqlls1",
       credits: "Créditos Ilimitados",
-      savings: "20%",
+      savings: "R$360",
       features: [
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -277,7 +277,7 @@ const Planos2 = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 pb-16">
         {/* Limited Time Promo Banner */}
-        <div className="bg-gradient-to-r from-red-600 to-orange-500 rounded-xl text-center max-w-6xl mx-auto py-3 px-4 mb-6 animate-pulse">
+        <div className="bg-gradient-to-r from-purple-600 to-red-500 rounded-xl text-center max-w-6xl mx-auto py-3 px-4 mb-6 animate-pulse">
           <span className="text-white font-bold tracking-wide text-sm md:text-base flex items-center justify-center gap-2">
             🔥 Promoção por tempo limitado! 🔥
           </span>
