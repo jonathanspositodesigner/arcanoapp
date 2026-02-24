@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, MousePointerClick, UserPlus } from "lucide-react";
@@ -19,6 +19,18 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [signupSuccessEmail, setSignupSuccessEmail] = useState("");
   const signupInProgressRef = useRef(false);
+
+  // Capture ?ref= from URL into localStorage
+  useEffect(() => {
+    if (open) {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get('ref');
+      if (ref) {
+        localStorage.setItem('referral_code', ref);
+        console.log('[HomeAuthModal] Captured referral code from URL:', ref);
+      }
+    }
+  }, [open]);
 
   const auth = useUnifiedAuth({
     changePasswordRoute: '/change-password',
