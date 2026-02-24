@@ -32,7 +32,7 @@ const GerarImagemTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
-  const { isPlanos2User, hasImageGeneration, isLoading: isLoadingAccess } = usePlanos2Access(user?.id);
+  const { isPlanos2User, hasImageGeneration, costMultiplier, isLoading: isLoadingAccess } = usePlanos2Access(user?.id);
   
   const { getCreditCost } = useAIToolSettings();
 
@@ -51,8 +51,9 @@ const GerarImagemTool = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const isUnlimited = planType === 'arcano_unlimited';
-  const creditCostNormal = isUnlimited ? getCreditCost('gerar_imagem', 40) : 80;
-  const creditCostPro = isUnlimited ? getCreditCost('gerar_imagem_pro', 60) : 100;
+  const hasReducedCost = isUnlimited || (isPlanos2User && costMultiplier < 1);
+  const creditCostNormal = hasReducedCost ? getCreditCost('gerar_imagem', 40) : 80;
+  const creditCostPro = hasReducedCost ? getCreditCost('gerar_imagem_pro', 60) : 100;
   const currentCreditCost = model === 'pro' ? creditCostPro : creditCostNormal;
 
   const processFiles = useCallback((files: File[]) => {

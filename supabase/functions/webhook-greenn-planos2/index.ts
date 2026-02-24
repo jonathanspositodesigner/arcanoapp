@@ -21,6 +21,7 @@ const PLANOS2_PRODUCTS: Record<number, {
   daily_prompt_limit: number | null;
   has_image_generation: boolean;
   has_video_generation: boolean;
+  cost_multiplier: number;
 }> = {
   160732: {
     slug: 'starter',
@@ -28,8 +29,32 @@ const PLANOS2_PRODUCTS: Record<number, {
     daily_prompt_limit: 5,
     has_image_generation: false,
     has_video_generation: false,
+    cost_multiplier: 1.0,
   },
-  // Futuros planos serão adicionados aqui
+  160735: {
+    slug: 'pro',
+    credits_per_month: 4200,
+    daily_prompt_limit: 10,
+    has_image_generation: true,
+    has_video_generation: true,
+    cost_multiplier: 1.0,
+  },
+  160738: {
+    slug: 'ultimate',
+    credits_per_month: 10800,
+    daily_prompt_limit: 24,
+    has_image_generation: true,
+    has_video_generation: true,
+    cost_multiplier: 1.0,
+  },
+  160742: {
+    slug: 'unlimited',
+    credits_per_month: 99999,
+    daily_prompt_limit: null,
+    has_image_generation: true,
+    has_video_generation: true,
+    cost_multiplier: 0.5,
+  },
 }
 
 async function isEmailBlacklisted(supabase: any, email: string): Promise<boolean> {
@@ -211,8 +236,10 @@ serve(async (req) => {
         daily_prompt_limit: planConfig.daily_prompt_limit,
         has_image_generation: planConfig.has_image_generation,
         has_video_generation: planConfig.has_video_generation,
+        cost_multiplier: planConfig.cost_multiplier,
         greenn_product_id: Number(productId),
         greenn_contract_id: contractId ? String(contractId) : null,
+        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
 

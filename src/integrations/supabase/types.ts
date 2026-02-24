@@ -2365,6 +2365,7 @@ export type Database = {
       }
       planos2_subscriptions: {
         Row: {
+          cost_multiplier: number | null
           created_at: string
           credits_per_month: number
           daily_prompt_limit: number | null
@@ -2380,6 +2381,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cost_multiplier?: number | null
           created_at?: string
           credits_per_month?: number
           daily_prompt_limit?: number | null
@@ -2395,6 +2397,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cost_multiplier?: number | null
           created_at?: string
           credits_per_month?: number
           daily_prompt_limit?: number | null
@@ -3837,6 +3840,12 @@ export type Database = {
         Returns: {
           new_balance: number
           was_expired: boolean
+        }[]
+      }
+      expire_planos2_subscriptions: {
+        Args: never
+        Returns: {
+          users_expired: number
         }[]
       }
       get_ai_tools_cost_averages: {
