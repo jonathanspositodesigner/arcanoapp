@@ -2363,6 +2363,54 @@ export type Database = {
         }
         Relationships: []
       }
+      planos2_subscriptions: {
+        Row: {
+          created_at: string
+          credits_per_month: number
+          daily_prompt_limit: number | null
+          expires_at: string | null
+          greenn_contract_id: string | null
+          greenn_product_id: number | null
+          has_image_generation: boolean
+          has_video_generation: boolean
+          id: string
+          is_active: boolean
+          plan_slug: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credits_per_month?: number
+          daily_prompt_limit?: number | null
+          expires_at?: string | null
+          greenn_contract_id?: string | null
+          greenn_product_id?: number | null
+          has_image_generation?: boolean
+          has_video_generation?: boolean
+          id?: string
+          is_active?: boolean
+          plan_slug?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credits_per_month?: number
+          daily_prompt_limit?: number | null
+          expires_at?: string | null
+          greenn_contract_id?: string | null
+          greenn_product_id?: number | null
+          has_image_generation?: boolean
+          has_video_generation?: boolean
+          id?: string
+          is_active?: boolean
+          plan_slug?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pose_changer_jobs: {
         Row: {
           api_account: string
@@ -3982,6 +4030,12 @@ export type Database = {
           error_message: string
           new_balance: number
           success: boolean
+        }[]
+      }
+      reset_planos2_monthly_credits: {
+        Args: never
+        Returns: {
+          users_reset: number
         }[]
       }
       reset_upscaler_credits: {

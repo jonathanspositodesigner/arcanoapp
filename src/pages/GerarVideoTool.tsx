@@ -7,6 +7,7 @@ import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useCredits } from '@/contexts/CreditsContext';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
+import { usePlanos2Access } from '@/hooks/usePlanos2Access';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import AppLayout from '@/components/layout/AppLayout';
 import {
@@ -30,6 +31,7 @@ const GerarVideoTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
+  const { isPlanos2User, hasVideoGeneration, isLoading: isLoadingAccess } = usePlanos2Access(user?.id);
   
   const { getCreditCost } = useAIToolSettings();
 
@@ -260,6 +262,32 @@ const GerarVideoTool = () => {
   };
 
   const hasFrames = !!startFrame;
+
+  // Block access for planos2 users without video generation permission
+  if (isPlanos2User && !hasVideoGeneration && !isLoadingAccess) {
+    return (
+      <AppLayout>
+        <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center p-6">
+          <div className="max-w-md text-center space-y-4">
+            <div className="text-6xl">🔒</div>
+            <h1 className="text-xl font-bold text-white">Recurso não disponível no seu plano</h1>
+            <p className="text-purple-300 text-sm">
+              A geração de vídeos está disponível a partir do plano <strong className="text-fuchsia-400">Pro</strong>.
+            </p>
+            <p className="text-purple-400 text-xs">
+              Faça upgrade do seu plano para desbloquear esta ferramenta.
+            </p>
+            <button
+              onClick={goBack}
+              className="mt-4 px-6 py-2.5 rounded-full bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-colors"
+            >
+              Voltar
+            </button>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
