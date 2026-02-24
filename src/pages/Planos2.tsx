@@ -559,9 +559,9 @@ const Planos2 = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
           {[
-            { credits: "+1.500", description: "~25 upscalers", price: "19,90", originalPrice: "39,90", savings: "", link: "https://payfast.greenn.com.br/9trhhb9", icon: Coins, color: "from-purple-500 to-fuchsia-500" },
-            { credits: "+4.200", description: "~70 upscalers", price: "29,90", originalPrice: "49,90", savings: "46", link: "https://payfast.greenn.com.br/y3u2u3d", popular: true, icon: Zap, color: "from-fuchsia-500 to-pink-500" },
-            { credits: "+14.000", description: "~233 upscalers", price: "79,90", originalPrice: "149,90", savings: "57", link: "https://payfast.greenn.com.br/vwfzrw2", bestValue: true, icon: Star, color: "from-yellow-500 to-orange-500" },
+            { credits: "+1.500", description: "~25 imagens", price: "19,90", originalPrice: "39,90", savings: "", link: "https://payfast.greenn.com.br/9trhhb9", icon: Coins, color: "from-purple-500 to-fuchsia-500" },
+            { credits: "+4.200", description: "~70 imagens", price: "29,90", originalPrice: "49,90", savings: "46", link: "https://payfast.greenn.com.br/y3u2u3d", popular: true, icon: Zap, color: "from-fuchsia-500 to-pink-500" },
+            { credits: "+14.000", description: "~233 imagens", price: "79,90", originalPrice: "149,90", savings: "57", link: "https://payfast.greenn.com.br/vwfzrw2", bestValue: true, icon: Star, color: "from-yellow-500 to-orange-500" },
           ].map((plan) => {
             const Icon = plan.icon;
             return (
