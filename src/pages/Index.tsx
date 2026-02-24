@@ -13,6 +13,7 @@ import HomeAuthModal from "@/components/HomeAuthModal";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { usePackAccess } from "@/hooks/usePackAccess";
 import { useLocale } from "@/contexts/LocaleContext";
+import { usePlanos2Access } from "@/hooks/usePlanos2Access";
 
 // Imagens de preview para os cards
 import cardArtesArcanas from "@/assets/card-artes-arcanas.webp";
@@ -55,6 +56,7 @@ const Index = () => {
   const { isPremium, planType, isLoading: isPremiumLoading } = usePremiumStatus();
   const { user, userPacks, isLoading: isPacksLoading } = usePackAccess();
   const { isLatam } = useLocale();
+  const { isPlanos2User, planSlug: planos2Slug, hasImageGeneration, isLoading: isPlanos2Loading } = usePlanos2Access(user?.id);
 
   // Verificar se usuário está logado
   const isLoggedIn = !!user;
@@ -87,16 +89,26 @@ const Index = () => {
     }
   };
 
-  // Aguarda AMBOS carregarem antes de calcular qualquer acesso (evita flash de estado errado)
-  const isLoading = isPremiumLoading || isPacksLoading;
+  // Aguarda TODOS carregarem antes de calcular qualquer acesso (evita flash de estado errado)
+  const isLoading = isPremiumLoading || isPacksLoading || isPlanos2Loading;
 
   const TOOL_PLAN_TYPES = ['arcano_pro'];
 
+  // Verificar se é planos2 pago (não-free)
+  const isPlanos2Paid = isPlanos2User && planos2Slug !== 'free';
+
   // Verificar acessos do usuário — só calcula depois que tudo carregou
-  const hasToolAccess = !isLoading && isLoggedIn && userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug));
+  const hasToolAccess = !isLoading && isLoggedIn && (
+    userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug)) ||
+    (isPlanos2Paid && hasImageGeneration)
+  );
   const hasArtesAccess = !isLoading && isLoggedIn && userPacks.some(p => ARTES_SLUGS.includes(p.pack_slug));
   // hasPromptsAccess: premium SIM, mas NUNCA se planType for de ferramenta (arcano_pro, etc.)
-  const hasPromptsAccess = !isLoading && isLoggedIn && isPremium && !TOOL_PLAN_TYPES.includes(planType ?? '');
+  // OU planos2 pago (starter, pro, ultimate, unlimited)
+  const hasPromptsAccess = !isLoading && isLoggedIn && (
+    (isPremium && !TOOL_PLAN_TYPES.includes(planType ?? '')) ||
+    isPlanos2Paid
+  );
 
   // LATAM que comprou apenas upscaler
   const hasOnlyUpscaler = userPacks.some(p => p.pack_slug === 'upscaller-arcano') && 
