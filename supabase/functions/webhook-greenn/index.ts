@@ -24,6 +24,49 @@ const PRODUCT_ID_TO_PLAN: Record<number, 'arcano_basico' | 'arcano_pro' | 'arcan
   148937: 'arcano_unlimited'
 }
 
+// Mapeamento de produtos Planos v2 → configuração do plano
+const PLANOS2_PRODUCTS: Record<number, {
+  slug: string;
+  credits_per_month: number;
+  daily_prompt_limit: number | null;
+  has_image_generation: boolean;
+  has_video_generation: boolean;
+  cost_multiplier: number;
+}> = {
+  160732: {
+    slug: 'starter',
+    credits_per_month: 1800,
+    daily_prompt_limit: 5,
+    has_image_generation: false,
+    has_video_generation: false,
+    cost_multiplier: 1.0,
+  },
+  160735: {
+    slug: 'pro',
+    credits_per_month: 4200,
+    daily_prompt_limit: 10,
+    has_image_generation: true,
+    has_video_generation: true,
+    cost_multiplier: 1.0,
+  },
+  160738: {
+    slug: 'ultimate',
+    credits_per_month: 10800,
+    daily_prompt_limit: 24,
+    has_image_generation: true,
+    has_video_generation: true,
+    cost_multiplier: 1.0,
+  },
+  160742: {
+    slug: 'unlimited',
+    credits_per_month: 99999,
+    daily_prompt_limit: null,
+    has_image_generation: true,
+    has_video_generation: true,
+    cost_multiplier: 0.5,
+  },
+}
+
 const emailTexts = {
   pt: { greeting: 'Olá', accessData: '📋 Dados do seu primeiro acesso:', email: 'Email', password: 'Senha', securityWarning: 'Por segurança, você deverá trocar sua senha no primeiro acesso.', clickButton: 'Clique no botão acima para fazer seu primeiro login!', copyright: '© ArcanoApp', important: 'Importante' },
   es: { greeting: 'Hola', accessData: '📋 Datos de tu primer acceso:', email: 'Email', password: 'Contraseña', securityWarning: 'Por seguridad, deberás cambiar tu contraseña en el primer acceso.', clickButton: '¡Haz clic en el botón de arriba!', copyright: '© ArcanoApp', important: 'Importante' }
@@ -173,6 +216,133 @@ async function sendWelcomeEmail(supabase: any, email: string, name: string, plan
 }
 
 // ============================================================================
+// PROCESSAMENTO PLANOS V2
+// ============================================================================
+async function processPlanos2Webhook(
+  supabase: any, payload: any, logId: string, requestId: string,
+  email: string, clientName: string,
+  planConfig: typeof PLANOS2_PRODUCTS[number],
+  productId: number, contractId: string | null
+): Promise<void> {
+  try {
+    const offerName = payload.offer?.name || ''
+    const productPeriod = payload.product?.period || 30
+
+    // Calcular expiração: anual (365d) ou mensal (30d)
+    const isAnual = offerName.toLowerCase().includes('anual') || productPeriod >= 365
+    const daysToAdd = isAnual ? 365 : 30
+    const expiresAt = new Date(Date.now() + daysToAdd * 24 * 60 * 60 * 1000).toISOString()
+
+    console.log(`   ├─ [${requestId}] 📋 Planos2: ${planConfig.slug}, ${isAnual ? 'ANUAL' : 'MENSAL'}, expira em ${daysToAdd}d`)
+
+    // Idempotency check
+    if (contractId) {
+      const { data: existingLog } = await supabase
+        .from('webhook_logs')
+        .select('id')
+        .eq('greenn_contract_id', String(contractId))
+        .eq('result', 'success')
+        .neq('id', logId)
+        .maybeSingle()
+
+      if (existingLog) {
+        console.log(`   └─ [${requestId}] ⏭️ Contrato já processado: ${contractId}`)
+        await supabase.from('webhook_logs').update({ result: 'ignored', error_message: 'Contrato já processado', payload: {} }).eq('id', logId)
+        return
+      }
+    }
+
+    // Find or create user
+    let userId = await findUserByEmail(supabase, email, requestId)
+    
+    if (!userId) {
+      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+        email, password: email, email_confirm: true
+      })
+
+      if (createError) {
+        if (createError.message.includes('already been registered') || createError.message.includes('email_exists')) {
+          let page = 1
+          while (!userId && page <= 10) {
+            const { data: usersPage } = await supabase.auth.admin.listUsers({ page, perPage: 1000 })
+            const found = usersPage?.users?.find((u: any) => u.email?.toLowerCase() === email)
+            if (found) userId = found.id
+            if (!usersPage?.users?.length || usersPage.users.length < 1000) break
+            page++
+          }
+          if (!userId) {
+            await supabase.from('webhook_logs').update({ result: 'failed', error_message: 'User exists but not found' }).eq('id', logId)
+            return
+          }
+        } else {
+          throw createError
+        }
+      } else {
+        userId = newUser.user.id
+        console.log(`   ├─ ✅ Novo usuário: ${userId}`)
+      }
+    }
+
+    // Upsert profile
+    await supabase.from('profiles').upsert({
+      id: userId, name: clientName, email, email_verified: true, password_changed: false, updated_at: new Date().toISOString()
+    }, { onConflict: 'id' })
+
+    // Upsert planos2 subscription
+    const { error: subError } = await supabase
+      .from('planos2_subscriptions')
+      .upsert({
+        user_id: userId,
+        plan_slug: planConfig.slug,
+        is_active: true,
+        credits_per_month: planConfig.credits_per_month,
+        daily_prompt_limit: planConfig.daily_prompt_limit,
+        has_image_generation: planConfig.has_image_generation,
+        has_video_generation: planConfig.has_video_generation,
+        cost_multiplier: planConfig.cost_multiplier,
+        greenn_product_id: productId,
+        greenn_contract_id: contractId ? String(contractId) : null,
+        expires_at: expiresAt,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' })
+
+    if (subError) {
+      console.error(`   ├─ [${requestId}] ❌ Erro subscription:`, subError)
+    } else {
+      console.log(`   ├─ [${requestId}] ✅ Subscription: ${planConfig.slug}`)
+    }
+
+    // Reset credits (non-cumulative)
+    const { error: resetError } = await supabase.rpc('reset_upscaler_credits', {
+      _user_id: userId,
+      _amount: planConfig.credits_per_month,
+      _description: `Créditos ${isAnual ? 'anuais' : 'mensais'} - Plano ${planConfig.slug.charAt(0).toUpperCase() + planConfig.slug.slice(1)} (${planConfig.credits_per_month}/mês)`,
+    })
+
+    if (resetError) {
+      console.error(`   ├─ [${requestId}] ❌ Erro créditos:`, resetError)
+    } else {
+      console.log(`   ├─ [${requestId}] ✅ ${planConfig.credits_per_month} créditos concedidos`)
+    }
+
+    // Mark success + clear payload
+    await supabase.from('webhook_logs').update({ 
+      result: 'success',
+      greenn_contract_id: contractId ? String(contractId) : null,
+      payload: {}
+    }).eq('id', logId)
+
+    console.log(`\n✅ [${requestId}] Plano ${planConfig.slug} ativado: ${email}, expira: ${expiresAt}`)
+  } catch (error) {
+    console.error(`\n❌ [${requestId}] ERRO Planos2:`, error)
+    await supabase.from('webhook_logs').update({ 
+      result: 'failed', 
+      error_message: error instanceof Error ? error.message : 'Erro desconhecido' 
+    }).eq('id', logId)
+  }
+}
+
+// ============================================================================
 // PROCESSAMENTO EM BACKGROUND
 // ============================================================================
 async function processGreennWebhook(supabase: any, payload: any, logId: string, requestId: string): Promise<void> {
@@ -203,6 +373,13 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
       const { data: blacklisted } = await supabase.from('blacklisted_emails').select('id').eq('email', email).maybeSingle()
       if (blacklisted) {
         await supabase.from('webhook_logs').update({ result: 'blocked', error_message: 'Email blacklisted' }).eq('id', logId)
+        return
+      }
+
+      // === PLANOS V2: Redirecionar para fluxo separado ===
+      const planos2Config = PLANOS2_PRODUCTS[productId]
+      if (planos2Config) {
+        await processPlanos2Webhook(supabase, payload, logId, requestId, email, clientName, planos2Config, productId, contractId)
         return
       }
 
@@ -320,7 +497,31 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
       const userId = await findUserByEmail(supabase, email, requestId)
 
       if (userId) {
+        // Desativar premium legado
         await supabase.from('premium_users').update({ is_active: false }).eq('user_id', userId)
+        
+        // Verificar e resetar planos2 se necessário
+        const { data: planos2Sub } = await supabase
+          .from('planos2_subscriptions')
+          .select('plan_slug')
+          .eq('user_id', userId)
+          .maybeSingle()
+        
+        if (planos2Sub && planos2Sub.plan_slug !== 'free') {
+          await supabase.from('planos2_subscriptions').update({
+            plan_slug: 'free',
+            credits_per_month: 300,
+            daily_prompt_limit: null,
+            has_image_generation: false,
+            has_video_generation: false,
+            cost_multiplier: 1.0,
+            expires_at: null,
+            greenn_product_id: null,
+            greenn_contract_id: null,
+            updated_at: new Date().toISOString(),
+          }).eq('user_id', userId)
+          console.log(`   ├─ ✅ Planos2 resetado para Free`)
+        }
         
         // Zero out credits when subscription ends
         try {
