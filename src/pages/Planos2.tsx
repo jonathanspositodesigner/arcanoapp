@@ -178,8 +178,8 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Geração de Imagem com NanoBanana Pro', included: true, hasDiscount: true },
-        { text: 'Geração de Vídeo com Veo 3', included: true, hasDiscount: true },
+        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
+        { text: 'Geração de Vídeo com Veo 3', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: true }
       ],
       popular: false,
@@ -295,8 +295,8 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Geração de Imagem com NanoBanana Pro', included: true, hasDiscount: true },
-        { text: 'Geração de Vídeo com Veo 3', included: true, hasDiscount: true },
+        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
+        { text: 'Geração de Vídeo com Veo 3', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: true }
       ],
       popular: false,

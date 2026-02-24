@@ -102,7 +102,7 @@ const Index = () => {
   // Verificar acessos do usuário — só calcula depois que tudo carregou
   const hasToolAccess = !isLoading && isLoggedIn && (
     userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug)) ||
-    (isPlanos2Paid && hasImageGeneration) ||
+    isPlanos2Paid ||
     creditsBreakdown.total > 0
   );
   const hasArtesAccess = !isLoading && isLoggedIn && userPacks.some(p => ARTES_SLUGS.includes(p.pack_slug));
