@@ -235,7 +235,7 @@ const Planos2 = () => {
       originalPrice: "39,90",
       perMonth: true,
       yearlyTotal: "406,80",
-      paymentUrl: "https://payfast.greenn.com.br/h4np9xr/offer/PirUeX",
+      paymentUrl: "https://payfast.greenn.com.br/h4np9xr/offer/dfNG8X",
       credits: "4.200 créditos de IA",
       images: 70,
       savings: "R$72",
