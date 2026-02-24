@@ -53,7 +53,7 @@ const CREDITS_PRODUCT_MAPPING: Record<number, { amount: number; name: string }> 
   // Créditos PUROS
   156946: { amount: 1500, name: 'Pacote +1.500 Créditos' },
   156948: { amount: 4200, name: 'Pacote +4.200 Créditos' },
-  156952: { amount: 13000, name: 'Pacote +13.000 Créditos' },
+  156952: { amount: 14000, name: 'Pacote +14.000 Créditos' },
   // Upscaler Arcano - Planos
   156954: { amount: 1800, name: 'Upscaler Arcano - Plano Starter' },
   156957: { amount: 4200, name: 'Upscaler Arcano - Plano Pro' },

@@ -71,11 +71,11 @@ const creditPlans = [
     color: "from-fuchsia-500 to-pink-500"
   },
   { 
-    credits: "+13.000", 
-    description: "~216 upscalers", 
+    credits: "+14.000", 
+    description: "~233 upscalers", 
     price: "79,90",
     originalPrice: "149,90",
-    savings: "54",
+    savings: "57",
     link: "https://payfast.greenn.com.br/vwfzrw2", 
     bestValue: true,
     icon: Star,
