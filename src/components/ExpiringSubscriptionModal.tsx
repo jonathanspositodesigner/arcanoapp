@@ -32,7 +32,7 @@ const ExpiringSubscriptionModal = ({ isOpen, onClose, expiringStatus, planType }
 
   const plan = planType ? planInfo[planType] : null;
   const planName = plan?.name || "Premium";
-  const checkoutUrl = plan?.checkoutUrl || "/planos";
+  const checkoutUrl = plan?.checkoutUrl || "/planos-2";
 
   const handleRenew = () => {
     window.open(checkoutUrl, "_blank");

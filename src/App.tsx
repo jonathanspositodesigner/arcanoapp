@@ -220,7 +220,7 @@ const AppContent = () => {
           <Route path="/profile-settings" element={<ProfileSettings />} />
           <Route path="/credit-history" element={<CreditHistory />} />
           <Route path="/install-app" element={<InstallApp />} />
-          <Route path="/planos" element={<Planos />} />
+          <Route path="/planos" element={<Navigate to="/planos-2" replace />} />
           <Route path="/planos-2" element={<Planos2 />} />
           <Route path="/upgrade" element={<UpgradePlano />} />
           <Route path="/admin-install-stats" element={<AdminInstallStats />} />
