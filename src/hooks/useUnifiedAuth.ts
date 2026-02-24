@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { User } from "@supabase/supabase-js";
+import { isDisposableEmail } from "@/utils/disposableEmailDomains";
 
 export type AuthStep = 'email' | 'password' | 'signup' | 'waiting-link';
 
@@ -347,6 +348,11 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
     
     if (!email.trim()) {
       toast.error(t('errors.enterEmail'));
+      return;
+    }
+    
+    if (isDisposableEmail(email)) {
+      toast.error('Emails temporários não são permitidos. Use um email real.');
       return;
     }
     
