@@ -1,45 +1,72 @@
 
-## Plano: Remover tags "50% OFF" do Unlimited + Corrigir exibicao de Ferramentas de IA na Home
 
-### Problema 1: Tags "50% OFF" no NanoBanana Pro e Veo 3 do plano Unlimited
+## Sistema de Indique e Ganhe - Implementacao com dominio correto
 
-Na pagina `/planos-2`, os features "Geracao de Imagem com NanoBanana Pro" e "Geracao de Video com Veo 3" do plano IA Unlimited possuem `hasDiscount: true`, exibindo badges "50% OFF" desnecessarios. O desconto de 50% ja esta embutido no custo das ferramentas (cost_multiplier 0.5) e nao precisa de tag visual.
-
-**Correcao**: Remover `hasDiscount: true` dessas duas features no plano Unlimited, tanto na configuracao mensal (linhas 181-182) quanto na anual (linhas 298-299) do arquivo `Planos2.tsx`.
+O link de referral vai usar o dominio de producao: `https://arcanoapp.voxvisual.com.br/?ref=CODIGO`
 
 ---
 
-### Problema 2: Ferramentas de IA nao aparecem como "Suas Compras" na Home
+### Resumo simples
 
-A logica atual em `Index.tsx` (linha 103-107) verifica tres condicoes para `hasToolAccess`:
-1. Pacotes legados (TOOL_SLUGS)
-2. Planos2 pago com geracao de imagem
-3. Creditos > 0
-
-O problema e que a condicao `isPlanos2Paid && hasImageGeneration` depende do hook `usePlanos2Access`, que por padrao retorna `hasImageGeneration: true` quando NAO encontra subscription (fallback para legado). Porem o `isPlanos2User` retorna `false` se nao encontrar registro, entao `isPlanos2Paid` seria `false`.
-
-Para usuarios Unlimited que TEM registro na tabela, tudo deveria funcionar. Mas para tornar a logica mais robusta e garantir que QUALQUER usuario com creditos veja as ferramentas, vou simplificar a verificacao:
-
-**Correcao**: Garantir que `hasToolAccess` funcione de forma mais direta - se o usuario tem creditos OU e planos2 pago, as ferramentas aparecem. Tambem adicionar um log de debug temporario para diagnosticar se ha algum problema de timing.
+1. Cada usuario logado ganha um link unico: `https://arcanoapp.voxvisual.com.br/?ref=abc123`
+2. Quem se cadastra pelo link ganha **300 creditos vitalicios**
+3. Quem indicou ganha **150 creditos vitalicios**
+4. Botao "Indique e Ganhe" aparece no menu lateral, abaixo de "Grupo do WhatsApp"
+5. Modal explica como funciona + botao de copiar o link
 
 ---
 
 ### Detalhes tecnicos
 
-**Arquivos modificados:**
+#### 1. Migracao SQL (banco de dados)
 
-1. **`src/pages/Planos2.tsx`**
-   - Linha 181: Remover `hasDiscount: true` do feature "Geracao de Imagem com NanoBanana Pro" no plano Unlimited (mensal)
-   - Linha 182: Remover `hasDiscount: true` do feature "Geracao de Video com Veo 3" no plano Unlimited (mensal)
-   - Linha 298: Remover `hasDiscount: true` do feature "Geracao de Imagem com NanoBanana Pro" no plano Unlimited (anual)
-   - Linha 299: Remover `hasDiscount: true` do feature "Geracao de Video com Veo 3" no plano Unlimited (anual)
+**Tabela `referral_codes`**
+- `id` uuid PK
+- `user_id` uuid UNIQUE (referencia profiles)
+- `code` text UNIQUE (8 caracteres)
+- `created_at` timestamptz
 
-2. **`src/pages/Index.tsx`**
-   - Simplificar `hasToolAccess` para ser mais explicito: qualquer usuario planos2 pago (independente de `hasImageGeneration`) OU com creditos > 0 tem acesso
-   - A condicao `hasImageGeneration` deve controlar quais ferramentas especificas aparecem dentro da pagina de ferramentas, nao o acesso ao card na home
+**Tabela `referrals`**
+- `id` uuid PK
+- `referrer_id` uuid (quem indicou)
+- `referred_id` uuid UNIQUE (quem se cadastrou - so pode ser indicado 1 vez)
+- `referral_code` text
+- `credits_given_referrer` integer (150)
+- `credits_given_referred` integer (300)
+- `created_at` timestamptz
 
-### Resumo
+**RPC `get_or_create_referral_code(p_user_id uuid)`**
+- Retorna o codigo existente ou gera um novo (8 chars alfanumericos)
+- Seguranca: usuario so pode gerar/ver seu proprio codigo
 
-- 2 arquivos editados
-- 4 linhas com `hasDiscount: true` removidas no Planos2.tsx
-- Logica de `hasToolAccess` simplificada no Index.tsx
+**RPC `process_referral(p_referred_user_id uuid, p_referral_code text)`**
+- Valida que o codigo existe
+- Valida que o usuario nao ja foi referido
+- Valida que nao e auto-referral
+- Adiciona 300 creditos vitalicios ao novo usuario
+- Adiciona 150 creditos vitalicios ao indicador
+- Registra na tabela `referrals`
+- Usa advisory lock para evitar duplicatas
+
+**RLS**: usuarios so leem seus proprios registros
+
+#### 2. Frontend
+
+| Arquivo | Acao |
+|---------|------|
+| `src/components/ReferralModal.tsx` | NOVO - modal com explicacao + botao copiar link usando `https://arcanoapp.voxvisual.com.br/?ref=CODIGO` |
+| `src/components/layout/AppSidebar.tsx` | Adicionar botao "Indique e Ganhe" com icone Gift abaixo de "Grupo do WhatsApp" (so para logados) |
+| `src/hooks/useUnifiedAuth.ts` | Apos signup com sucesso, verificar localStorage por referral code e chamar `process_referral` |
+| `src/pages/Index.tsx` | Capturar `?ref=CODIGO` da URL e salvar no localStorage |
+| `src/components/HomeAuthModal.tsx` | Capturar `?ref=CODIGO` da URL e salvar no localStorage (para signup via modal) |
+
+#### 3. Dominio do link de referral
+
+O link sempre sera gerado com o dominio de producao oficial:
+
+```
+https://arcanoapp.voxvisual.com.br/?ref=abc123
+```
+
+Nunca usara `lovable.app` ou `window.location.origin`. O dominio e hardcoded como constante.
+
