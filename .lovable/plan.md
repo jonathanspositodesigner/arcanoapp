@@ -1,34 +1,31 @@
 
 
-## Renomear "Refinar" para "Fazer Alteracao" -- apenas no Flyer Maker
+## Adicionar seção de créditos avulsos na página /planos-2
 
-O Arcano Cloner continuara com os textos originais ("Refinar", "Refinando", etc.). Apenas o Flyer Maker tera os novos rotulos.
+Abaixo da grade de planos de assinatura, será adicionada uma nova seção com o titulo "Compre um pacote de créditos avulsos" contendo os 3 cards de pacotes de créditos vitalícios, no mesmo estilo visual da pagina atual de créditos.
 
-### Arquivo 1: `src/components/arcano-cloner/RefinePanel.tsx`
+### O que sera adicionado
 
-Adicionar 3 props **opcionais** com valores padrao que preservam o texto atual do Arcano Cloner:
+Uma nova seção logo abaixo dos cards de assinatura (antes do modal "Coming Soon") contendo:
 
-| Prop | Padrao (Arcano Cloner) | Valor no Flyer Maker |
-|------|----------------------|---------------------|
-| `title` | "Refinar Resultado" | "Fazer Alteracao" |
-| `buttonLabel` | "Refinar" | "Fazer Alteracao" |
-| `loadingLabel` | "Refinando..." | "Alterando..." |
+1. **Titulo e subtitulo** - "Compre um pacote de créditos avulsos" com a mensagem de creditos vitalicios
+2. **3 cards de creditos** com os valores atualizados:
+   - 1.500 creditos por R$ 19,90 (original R$ 39,90)
+   - 4.200 creditos por R$ 29,90 (original R$ 49,90) - badge "POPULAR"
+   - 14.000 creditos por R$ 79,90 (original R$ 149,90) - badge "MELHOR VALOR"
+3. **Badges de economia** - 46% e 57% nos pacotes maiores
+4. **Badge "Vitalicio"** em todos os cards
+5. **Botao "Comprar Agora"** com link para pagamento Greenn
+6. **Nota informativa** explicando que creditos vitalicios sao consumidos apos os mensais
 
-Usar essas props nos locais onde os textos estao hardcoded (linha 45 titulo, linha 109 loading, linha 114 botao).
+### Detalhes tecnicos
 
-### Arquivo 2: `src/pages/FlyerMakerTool.tsx`
+**Arquivo editado:** `src/pages/Planos2.tsx`
 
-| Local | Antes | Depois |
-|-------|-------|--------|
-| Botao no resultado (linha ~754) | "Refinar" | "Fazer Alteracao" |
-| RefinePanel props (linha ~677) | sem props de texto | `title="Fazer Alteracao"` `buttonLabel="Fazer Alteracao"` `loadingLabel="Alterando..."` |
-| Toast sucesso (linha ~533) | "Imagem refinada com sucesso!" | "Alteracao feita com sucesso!" |
-| Toast/msg erro (linha ~498) | "Erro ao refinar imagem..." | "Erro ao alterar imagem..." |
-| Toast erro catch (linha ~536) | "Erro ao refinar imagem" | "Erro ao alterar imagem" |
-| Label historico (linha ~516) | "Refinamento X" | "Alteracao X" |
-
-### Resultado
-
-- Arcano Cloner: zero mudancas, continua usando os defaults do RefinePanel
-- Flyer Maker: todos os textos visiveis ao usuario mudam de "Refinar/Refinando/Refinamento" para "Fazer Alteracao/Alterando/Alteracao"
+- Importar icones adicionais: `Coins`, `Zap`, `Star`, `Tag`
+- Adicionar array `creditPlans` com os 3 pacotes (mesmos dados e links do `PlanosCreditos.tsx`)
+- Inserir a seção de creditos entre o fechamento do `StaggeredAnimation` (linha 536) e o dialog "Coming Soon" (linha 539)
+- Estilo dos cards: fundo `bg-[#1A0A2E]`, bordas roxas, gradientes nos icones e botoes, consistente com o tema da pagina
+- Grid responsivo: 1 coluna mobile, 3 colunas desktop (`md:grid-cols-3`)
+- Largura maxima `max-w-4xl` centralizada
 
