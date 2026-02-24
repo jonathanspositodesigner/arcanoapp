@@ -38,6 +38,54 @@ async function getSendPulseToken(): Promise<string> {
   return data.access_token;
 }
 
+const ALLOWED_DOMAINS = new Set(['tuamaeaquelaursa.com']);
+
+const DISPOSABLE_DOMAIN_PATTERNS = [
+  /tempmail/i, /temp-mail/i, /throwaway/i, /disposable/i, /10minute/i, /10min/i,
+  /minutemail/i, /fakemail/i, /fakeinbox/i, /trashmail/i, /trash-mail/i,
+  /spammail/i, /guerrillamail/i, /mailinator/i, /yopmail/i, /wegwerf/i,
+  /temporarymail/i, /tempinbox/i, /burnermail/i, /nospam/i, /spamfree/i,
+  /mailtemp/i, /junkmail/i, /discard/i,
+];
+
+const DISPOSABLE_DOMAINS = new Set([
+  'tempmail.com','temp-mail.org','temp-mail.io','guerrillamail.com','guerrillamail.net',
+  'guerrillamail.org','guerrillamailblock.com','grr.la','sharklasers.com','pokemail.net',
+  'spam4.me','yopmail.com','yopmail.fr','yopmail.net','mailinator.com','mailinator.net',
+  'throwaway.email','throwaway.me','10minutemail.com','10minutemail.net','dispostable.com',
+  'mailnesia.com','maildrop.cc','mailcatch.com','mailnull.com','mailsac.com','mailslurp.com',
+  'mohmal.com','burnermail.io','trashmail.com','trashmail.org','trashmail.net','trashmail.me',
+  'trash-mail.com','fakeinbox.com','fakemail.net','getairmail.com','getnada.com',
+  'harakirimail.com','spambox.us','spamfree24.org','spamgourmet.com','crazymailing.com',
+  'emailondeck.com','emailfake.com','disposable.email','discardmail.com','dropmail.me',
+  'meltmail.com','mintemail.com','mytrashmail.com','receiveee.com','selfdestructingmail.com',
+  'tmail.ws','tmailinator.com','teleworm.us','rhyta.com','armyspy.com','dayrep.com',
+  'einrot.com','fleckens.hu','cuvox.de','gustr.com','jourrapide.com','superrito.com',
+  'nada.email','nada.ltd','inboxkitten.com','tempmailo.com','tempmailer.com',
+  'spambob.com','spambog.com','spamcannon.com','spamcero.com','spamcon.org',
+  'spamcowboy.com','spamday.com','spamex.com','spamhereplease.com','spamhole.com',
+  'spaml.com','spammotel.com','spamobox.com','spamoff.de','spamslicer.com',
+  'spamspot.com','spamstack.net','spamtrail.com','guerrillamail.de','guerrillamail.biz',
+  'mailinator2.com','mailinator.org','temp-mail.de','yopmail.gq',
+  'wegwerfemail.com','wegwerfemail.de','wegwerfmail.de','wegwerfmail.net',
+  'zehnminutenmail.de','ephemail.net','devnullmail.com','mailforspam.com',
+  'incognitomail.com','incognitomail.org','one-time.email','oneoffemail.com',
+  'thisisnotmyrealemail.com','willselfdestruct.com','emailspam.cf','emailspam.ga',
+  'emailspam.gq','emailspam.ml','emailspam.tk','mailjunk.cf','mailjunk.ga',
+  'mailjunk.gq','mailjunk.ml','mailjunk.tk','mailfree.ga','mailfree.gq','mailfree.ml',
+]);
+
+function isDisposableEmailServer(email: string): boolean {
+  const domain = email.split('@')[1]?.toLowerCase().trim();
+  if (!domain) return false;
+  if (ALLOWED_DOMAINS.has(domain)) return false;
+  if (DISPOSABLE_DOMAINS.has(domain)) return true;
+  for (const pattern of DISPOSABLE_DOMAIN_PATTERNS) {
+    if (pattern.test(domain)) return true;
+  }
+  return false;
+}
+
 function buildConfirmationEmailHtml(confirmLink: string): string {
   return `
 <!DOCTYPE html>
@@ -97,6 +145,15 @@ serve(async (req) => {
 
     const normalizedEmail = email.trim().toLowerCase();
     console.log(`[send-confirmation-email] Sending to: ${normalizedEmail}, user: ${user_id}`);
+
+    // Check disposable email
+    if (isDisposableEmailServer(normalizedEmail)) {
+      console.log(`[send-confirmation-email] Disposable email blocked: ${normalizedEmail}`);
+      return new Response(
+        JSON.stringify({ success: false, error: "Emails temporários não são permitidos" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
