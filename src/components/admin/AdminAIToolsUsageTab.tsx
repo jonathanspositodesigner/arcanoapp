@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,11 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { 
   RefreshCw, Coins, TrendingUp, Clock, Users, 
   CheckCircle, XCircle, Timer, ChevronLeft, ChevronRight,
-  Cpu, ArrowUpDown, Ban, Loader2, AlertCircle
+  Cpu, ArrowUpDown, Ban, Loader2, AlertCircle, ExternalLink, ImageOff, AlertTriangle
 } from "lucide-react";
 import {
   Tooltip,
@@ -90,6 +91,45 @@ const AdminAIToolsUsageTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [cancellingJobId, setCancellingJobId] = useState<string | null>(null);
   const [userTypeMap, setUserTypeMap] = useState<Record<string, UserClientType>>({});
+  
+  // Job output modal state
+  const [selectedJob, setSelectedJob] = useState<UsageRecord | null>(null);
+  const [jobOutputUrl, setJobOutputUrl] = useState<string | null>(null);
+  const [isLoadingOutput, setIsLoadingOutput] = useState(false);
+  const [isOutputExpired, setIsOutputExpired] = useState(false);
+  const [outputModalOpen, setOutputModalOpen] = useState(false);
+
+  const isVideoTool = (toolName: string) => toolName === "Video Upscaler" || toolName === "Gerar Vídeo";
+
+  const handleJobClick = useCallback(async (record: UsageRecord) => {
+    setSelectedJob(record);
+    setOutputModalOpen(true);
+    setIsOutputExpired(false);
+    setJobOutputUrl(null);
+
+    if (record.status !== "completed") {
+      setIsLoadingOutput(false);
+      return;
+    }
+
+    setIsLoadingOutput(true);
+    try {
+      const tableName = getTableName(record.tool_name);
+      const { data, error } = await supabase
+        .from(tableName as any)
+        .select('output_url')
+        .eq('id', record.id)
+        .single();
+
+      if (error) throw error;
+      setJobOutputUrl((data as any)?.output_url || null);
+    } catch (err) {
+      console.error("Error fetching output_url:", err);
+      setJobOutputUrl(null);
+    } finally {
+      setIsLoadingOutput(false);
+    }
+  }, []);
 
   const getDateRange = () => {
     const now = new Date();
@@ -524,7 +564,7 @@ const AdminAIToolsUsageTab = () => {
                   </TableRow>
                 ) : (
                   filteredRecords.map((record) => (
-                    <TableRow key={record.id}>
+                    <TableRow key={record.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleJobClick(record)}>
                       <TableCell className="whitespace-nowrap text-sm">
                         {formatDateTime(record.created_at)}
                       </TableCell>
@@ -564,7 +604,7 @@ const AdminAIToolsUsageTab = () => {
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => handleCancelJob(record)}
+                            onClick={(e) => { e.stopPropagation(); handleCancelJob(record); }}
                             disabled={cancellingJobId === record.id}
                             className="h-7 px-2 text-xs"
                           >
@@ -618,6 +658,71 @@ const AdminAIToolsUsageTab = () => {
           )}
         </CardContent>
       </Card>
+      {/* Job Output Modal */}
+      <Dialog open={outputModalOpen} onOpenChange={setOutputModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedJob && getToolBadge(selectedJob.tool_name)}
+              <span className="text-sm font-normal text-muted-foreground">
+                {selectedJob?.user_email}
+              </span>
+            </DialogTitle>
+            <DialogDescription>
+              {selectedJob && formatDateTime(selectedJob.created_at)}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-2">
+            {selectedJob && selectedJob.status !== "completed" ? (
+              <div className="flex flex-col items-center gap-3 py-8 text-muted-foreground">
+                <AlertTriangle className="h-10 w-10" />
+                <p>Este job não gerou resultado</p>
+                <Badge variant="outline">{selectedJob.status}</Badge>
+              </div>
+            ) : isLoadingOutput ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : !jobOutputUrl ? (
+              <div className="flex flex-col items-center gap-3 py-8 text-muted-foreground">
+                <ImageOff className="h-10 w-10" />
+                <p>Resultado não disponível</p>
+              </div>
+            ) : isOutputExpired ? (
+              <div className="flex flex-col items-center gap-3 py-8 text-muted-foreground">
+                <AlertTriangle className="h-10 w-10 text-yellow-500" />
+                <p className="text-yellow-500 font-medium">Resultado expirado (mais de 24h)</p>
+              </div>
+            ) : selectedJob && isVideoTool(selectedJob.tool_name) ? (
+              <video
+                src={jobOutputUrl}
+                controls
+                className="w-full rounded-md max-h-[500px]"
+                onError={() => setIsOutputExpired(true)}
+              />
+            ) : (
+              <img
+                src={jobOutputUrl}
+                alt="Resultado do job"
+                className="w-full rounded-md max-h-[500px] object-contain"
+                onError={() => setIsOutputExpired(true)}
+              />
+            )}
+          </div>
+
+          {jobOutputUrl && !isOutputExpired && (
+            <div className="flex justify-end">
+              <Button variant="outline" size="sm" asChild>
+                <a href={jobOutputUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Abrir em nova aba
+                </a>
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
