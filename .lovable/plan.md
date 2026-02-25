@@ -1,77 +1,51 @@
 
-# Adicionar Editar/Excluir nos Novos Assinantes (Planos 2)
+# Mostrar imagem/video resultado ao clicar no job no dashboard de Custos IA
 
 ## Resumo
-Adicionar botoes de editar e excluir na tabela de assinantes novos (Planos 2), com modais similares aos da aba "Assinantes Antigos", mas com os 4 planos pagos (Starter, Pro, Ultimate, IA Unlimited) no seletor de plano.
+Ao clicar em uma linha da tabela de jobs no dashboard de Custos IA, abrir um modal mostrando a imagem/video resultado daquele job. As URLs dos resultados ficam armazenadas nas tabelas de jobs (`output_url`) e expiram em 24h no servidor externo. Se a imagem estiver expirada, mostrar mensagem "Expirado".
 
 ## O que sera feito
 
-### 1. Migracoes SQL - Novas policies RLS
-Atualmente a tabela `planos2_subscriptions` so tem policy de SELECT para admins. Precisa de UPDATE e DELETE:
+### 1. Modificar `AdminAIToolsUsageTab.tsx`
 
-```sql
-CREATE POLICY "Admins can update subscriptions"
-ON planos2_subscriptions FOR UPDATE
-USING (has_role(auth.uid(), 'admin'));
+**Novo estado:**
+- `selectedJob`: o job clicado (com `id`, `tool_name`, `status`)
+- `jobOutputUrl`: a URL do resultado carregada do banco
+- `isLoadingOutput`: loading state
+- `outputError`: se deu erro ao carregar
+- `isOutputExpired`: se a imagem retornou erro 404/403 (expirada)
 
-CREATE POLICY "Admins can delete subscriptions"
-ON planos2_subscriptions FOR DELETE
-USING (has_role(auth.uid(), 'admin'));
+**Linha da tabela clicavel:**
+- Adicionar `cursor-pointer` e `onClick` em cada `TableRow`
+- Ao clicar, buscar o `output_url` diretamente na tabela especifica do job (ex: `upscaler_jobs`, `pose_changer_jobs`, etc.) usando o `id` e o mapeamento `getTableName(tool_name)`
+- So buscar se o status for `completed` -- jobs que falharam/estao na fila nao tem resultado
 
-CREATE POLICY "Admins can insert subscriptions"
-ON planos2_subscriptions FOR INSERT
-WITH CHECK (has_role(auth.uid(), 'admin'));
-```
+**Modal de resultado:**
+- Dialog/modal simples com:
+  - Header: nome da ferramenta + email do usuario + data
+  - Se `status != completed`: mostrar "Este job nao gerou resultado"
+  - Se `output_url` esta null: mostrar "Resultado nao disponivel"
+  - Se a URL retornar erro ao carregar a imagem (onError): mostrar "Resultado expirado (mais de 24h)"
+  - Se carregar com sucesso: mostrar a imagem/video
+  - Para ferramentas de video (`Video Upscaler`, `Gerar Video`): renderizar `<video>` ao inves de `<img>`
+  - Botao para abrir a URL em nova aba (se nao expirada)
 
-### 2. Modificar AdminPlanos2SubscribersTab.tsx
-Adicionar toda a funcionalidade de CRUD no componente:
+**Fetch da output_url:**
+- Query direta na tabela do job: `supabase.from(tableName).select('output_url').eq('id', jobId).single()`
+- Isso funciona porque o admin ja tem RLS policies de SELECT nessas tabelas (via `has_role(auth.uid(), 'admin')`)
 
-**Estado novo:**
-- Modais: isEditModalOpen, isDeleteModalOpen, isCreateModalOpen
-- selectedUser para o usuario sendo editado/deletado
-- Campos do formulario: formEmail, formName, formPhone, formPlanSlug, formIsActive, formExpiresInDays, formGreennProductId, formGreennContractId, formCostMultiplier, formCreditsPerMonth
-- isSubmitting, isResettingPassword
+### 2. Nenhuma migracao SQL necessaria
+- As tabelas de jobs ja tem `output_url`
+- O admin ja tem policies de SELECT nas tabelas de jobs
+- Nenhuma RPC precisa ser alterada
 
-**Coluna "Acoes" na tabela:**
-- Botao de WhatsApp (se tiver telefone)
-- Botao de Editar (abre modal)
-- Botao de Excluir (abre modal de confirmacao)
+### 3. Deteccao de expiracao
+- A imagem e carregada no `<img>` tag com `onError` handler
+- Se der erro (404/403 do CDN externo apos 24h), mostrar badge "Expirado" com icone
+- Se carregar com sucesso (`onLoad`), mostrar a imagem normalmente
 
-**Modal de Editar:**
-- Email (desabilitado)
-- Nome
-- Telefone/WhatsApp
-- Plano (dropdown com: Starter, Pro, Ultimate, IA Unlimited) -- sem Free, pois nao faz sentido atribuir manualmente
-- Expira em (dias a partir de hoje)
-- Toggle Ativo
-- Greenn Product ID (opcional)
-- Greenn Contract ID (opcional)
-- Botao "Redefinir Primeira Senha" (reutiliza a mesma logica existente)
-- Salvar: faz UPDATE em planos2_subscriptions + upsert no profiles
-
-**Modal de Excluir:**
-- Confirmacao com nome/email
-- DELETE na planos2_subscriptions
-
-**Botao "Novo Usuario":**
-- Formulario similar ao de editar
-- Busca ou cria usuario por email (via edge function existente ou direto)
-- INSERT na planos2_subscriptions
-
-**Opcoes de plano no seletor (novos planos apenas):**
-- starter = "Starter"
-- pro = "Pro"
-- ultimate = "Ultimate"
-- unlimited = "IA Unlimited"
-
-### 3. Creditos por plano (preenchimento automatico)
-Ao selecionar o plano no modal, os creditos mensais serao preenchidos automaticamente:
-- Starter: 600
-- Pro: 1500
-- Ultimate: 6000
-- Unlimited: 999999
-
-### 4. Detalhes tecnicos
-- O componente AdminPlanos2SubscribersTab.tsx sera significativamente expandido
-- Nenhum outro arquivo precisa ser modificado
-- A edge function `create-premium-user` existente sera reutilizada para criar usuarios (ou uma abordagem direta se necessario)
+### Detalhes tecnicos
+- Apenas o arquivo `src/components/admin/AdminAIToolsUsageTab.tsx` sera modificado
+- Usaremos o componente `Dialog` do shadcn/ui ja disponivel no projeto
+- A busca do `output_url` e feita sob demanda (ao clicar) para nao sobrecarregar a query principal
+- Nenhum custo adicional de edge functions -- e uma query direta ao banco
