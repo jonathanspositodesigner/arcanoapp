@@ -480,11 +480,17 @@ const AdminPremiumDashboard = () => {
     }
   };
 
+  const isEffectivelyActive = (u: PremiumUser) => {
+    if (!u.is_active) return false;
+    if (u.expires_at && new Date(u.expires_at) < new Date()) return false;
+    return true;
+  };
+
   const totalUsers = premiumUsers.length;
-  const activeUsers = premiumUsers.filter(u => u.is_active).length;
+  const activeUsers = premiumUsers.filter(u => isEffectivelyActive(u)).length;
   const expiringUsers = premiumUsers.filter(u => {
     const days = getDaysUntilExpiry(u.expires_at);
-    return days !== null && days <= 7 && days > 0 && u.is_active;
+    return days !== null && days <= 7 && days > 0 && isEffectivelyActive(u);
   });
 
   const planDistribution = Object.entries(
@@ -770,13 +776,21 @@ const AdminPremiumDashboard = () => {
                           {user.billing_period === 'monthly' ? 'Mensal' : user.billing_period === 'yearly' ? 'Anual' : user.billing_period || "-"}
                         </TableCell>
                         <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            user.is_active 
-                              ? "bg-green-500/20 text-green-500" 
-                              : "bg-red-500/20 text-red-500"
-                          }`}>
-                            {user.is_active ? "Ativo" : "Inativo"}
-                          </span>
+                          {(() => {
+                            const active = isEffectivelyActive(user);
+                            const isExpiredButFlagged = user.is_active && user.expires_at && new Date(user.expires_at) < new Date();
+                            return (
+                              <span className={`px-2 py-1 rounded-full text-xs ${
+                                active 
+                                  ? "bg-green-500/20 text-green-500" 
+                                  : isExpiredButFlagged
+                                    ? "bg-orange-500/20 text-orange-500"
+                                    : "bg-red-500/20 text-red-500"
+                              }`}>
+                                {active ? "Ativo" : isExpiredButFlagged ? "Vencido" : "Inativo"}
+                              </span>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
                           <span className={isExpiring ? "text-orange-500 font-medium" : ""}>
