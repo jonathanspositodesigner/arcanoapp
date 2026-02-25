@@ -53,6 +53,8 @@ interface UsageSummary {
   avg_processing_seconds: number;
 }
 
+type UserClientType = 'free' | 'bought_credits' | 'premium' | 'premium_credits';
+
 const ITEMS_PER_PAGE = 20;
 
 const DATE_FILTERS = [
@@ -87,6 +89,7 @@ const AdminAIToolsUsageTab = () => {
   const [toolFilter, setToolFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [cancellingJobId, setCancellingJobId] = useState<string | null>(null);
+  const [userTypeMap, setUserTypeMap] = useState<Record<string, UserClientType>>({});
 
   const getDateRange = () => {
     const now = new Date();
@@ -122,6 +125,38 @@ const AdminAIToolsUsageTab = () => {
 
       if (recordsError) throw recordsError;
       setUsageRecords(records || []);
+
+      // Fetch user types (subscription + credits) for all unique user_ids
+      const userIds = [...new Set((records || []).map((r: UsageRecord) => r.user_id).filter(Boolean))];
+      if (userIds.length > 0) {
+        const [subsRes, creditsRes] = await Promise.all([
+          supabase
+            .from('planos2_subscriptions')
+            .select('user_id')
+            .eq('is_active', true)
+            .neq('plan_slug', 'free')
+            .in('user_id', userIds),
+          supabase
+            .from('upscaler_credits')
+            .select('user_id, lifetime_balance')
+            .gt('lifetime_balance', 0)
+            .in('user_id', userIds),
+        ]);
+
+        const premiumSet = new Set((subsRes.data || []).map(s => s.user_id));
+        const lifetimeSet = new Set((creditsRes.data || []).map(c => c.user_id));
+
+        const typeMap: Record<string, UserClientType> = {};
+        for (const uid of userIds) {
+          const isPremium = premiumSet.has(uid);
+          const hasLifetime = lifetimeSet.has(uid);
+          if (isPremium && hasLifetime) typeMap[uid] = 'premium_credits';
+          else if (isPremium) typeMap[uid] = 'premium';
+          else if (hasLifetime) typeMap[uid] = 'bought_credits';
+          else typeMap[uid] = 'free';
+        }
+        setUserTypeMap(typeMap);
+      }
 
       // Fetch total count
       const { data: countData, error: countError } = await supabase.rpc('get_ai_tools_usage_count', {
@@ -232,6 +267,20 @@ const AdminAIToolsUsageTab = () => {
       "Flyer Maker": "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
     };
     return <Badge className={colors[toolName] || ""}>{toolName}</Badge>;
+  };
+
+  const getUserTypeBadge = (userId: string) => {
+    const type = userTypeMap[userId] || 'free';
+    switch (type) {
+      case 'free':
+        return <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">Free</Badge>;
+      case 'bought_credits':
+        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">Comprou Créditos</Badge>;
+      case 'premium':
+        return <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">Premium</Badge>;
+      case 'premium_credits':
+        return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Premium + Créditos</Badge>;
+    }
   };
 
   const getTableName = (toolName: string): string => {
@@ -447,8 +496,9 @@ const AdminAIToolsUsageTab = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="whitespace-nowrap">Data/Hora</TableHead>
-                  <TableHead className="whitespace-nowrap">Usuário</TableHead>
-                  <TableHead className="whitespace-nowrap">Ferramenta</TableHead>
+                   <TableHead className="whitespace-nowrap">Usuário</TableHead>
+                   <TableHead className="whitespace-nowrap">Tipo</TableHead>
+                   <TableHead className="whitespace-nowrap">Ferramenta</TableHead>
                   <TableHead className="whitespace-nowrap">Status</TableHead>
                   <TableHead className="whitespace-nowrap text-center">Fila?</TableHead>
                   <TableHead className="whitespace-nowrap text-right">Espera</TableHead>
@@ -462,13 +512,13 @@ const AdminAIToolsUsageTab = () => {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={11} className="text-center py-8">
+                    <TableCell colSpan={12} className="text-center py-8">
                       <RefreshCw className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
                 ) : filteredRecords.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
                       Nenhum registro encontrado
                     </TableCell>
                   </TableRow>
@@ -484,6 +534,7 @@ const AdminAIToolsUsageTab = () => {
                           <p className="text-xs text-muted-foreground truncate">{record.user_email}</p>
                         </div>
                       </TableCell>
+                      <TableCell>{getUserTypeBadge(record.user_id)}</TableCell>
                       <TableCell>{getToolBadge(record.tool_name)}</TableCell>
                       <TableCell>{getStatusBadge(record)}</TableCell>
                       <TableCell className="text-center">
