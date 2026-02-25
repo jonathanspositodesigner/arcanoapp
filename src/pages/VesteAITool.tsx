@@ -362,6 +362,8 @@ const VesteAITool: React.FC = () => {
           status: 'pending',
           person_file_name: personUrl.split('/').pop() || 'person.webp',
           clothing_file_name: clothingUrl.split('/').pop() || 'clothing.webp',
+          person_image_url: personUrl,
+          clothing_image_url: clothingUrl,
         })
         .select()
         .single();
