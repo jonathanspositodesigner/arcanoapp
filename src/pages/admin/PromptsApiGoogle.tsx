@@ -41,19 +41,19 @@ const PromptsApiGoogle = () => {
 
   const keyChangedAt = budgetConfig?.key_changed_at as string | undefined;
 
-  // Fetch image jobs stats (only after key_changed_at)
+  // Fetch image jobs stats (only after key_changed_at) - counts ALL statuses since API is charged regardless
   const { data: imageStats } = useQuery({
     queryKey: ["google-image-stats", keyChangedAt],
     enabled: !!budgetConfig,
     queryFn: async () => {
-      let allJobs: { model: string }[] = [];
+      let allJobs: { model: string; status: string }[] = [];
       let from = 0;
       const batchSize = 1000;
       while (true) {
         let query = supabase
           .from("image_generator_jobs")
-          .select("model")
-          .eq("status", "completed");
+          .select("model, status")
+          .in("status", ["completed", "failed", "processing"]);
         if (keyChangedAt) query = query.gte("created_at", keyChangedAt);
         const { data, error } = await query.range(from, from + batchSize - 1);
         if (error) throw error;
@@ -65,28 +65,35 @@ const PromptsApiGoogle = () => {
 
       const normalCount = allJobs.filter((j) => j.model === "normal").length;
       const proCount = allJobs.filter((j) => j.model === "pro").length;
+      const completedCount = allJobs.filter((j) => j.status === "completed").length;
+      const failedCount = allJobs.filter((j) => j.status === "failed").length;
+      const processingCount = allJobs.filter((j) => j.status === "processing").length;
       return {
         normalCount,
         proCount,
         normalCost: normalCount * IMAGE_COST_NORMAL,
         proCost: proCount * IMAGE_COST_PRO,
+        totalJobs: allJobs.length,
+        completedCount,
+        failedCount,
+        processingCount,
       };
     },
   });
 
-  // Fetch video jobs stats (only after key_changed_at)
+  // Fetch video jobs stats (only after key_changed_at) - counts ALL statuses since API is charged regardless
   const { data: videoStats } = useQuery({
     queryKey: ["google-video-stats", keyChangedAt],
     enabled: !!budgetConfig,
     queryFn: async () => {
-      let allJobs: { duration_seconds: number | null }[] = [];
+      let allJobs: { duration_seconds: number | null; status: string }[] = [];
       let from = 0;
       const batchSize = 1000;
       while (true) {
         let query = supabase
           .from("video_generator_jobs")
-          .select("duration_seconds")
-          .eq("status", "completed");
+          .select("duration_seconds, status")
+          .in("status", ["completed", "failed", "processing"]);
         if (keyChangedAt) query = query.gte("created_at", keyChangedAt);
         const { data, error } = await query.range(from, from + batchSize - 1);
         if (error) throw error;
@@ -97,10 +104,16 @@ const PromptsApiGoogle = () => {
       }
 
       const totalSeconds = allJobs.reduce((sum, j) => sum + (j.duration_seconds || 0), 0);
+      const completedCount = allJobs.filter((j) => j.status === "completed").length;
+      const failedCount = allJobs.filter((j) => j.status === "failed").length;
+      const processingCount = allJobs.filter((j) => j.status === "processing").length;
       return {
         videoCount: allJobs.length,
         totalSeconds,
         videoCost: totalSeconds * VIDEO_COST_PER_SECOND,
+        completedCount,
+        failedCount,
+        processingCount,
       };
     },
   });
@@ -211,6 +224,9 @@ const PromptsApiGoogle = () => {
                   <p className="text-xs text-muted-foreground">
                     R$ {(imageStats?.normalCost || 0).toFixed(2)} • R$ 0,20/img
                   </p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">
+                    Inclui todos os status (API cobra independente)
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -228,6 +244,9 @@ const PromptsApiGoogle = () => {
                   <p className="text-xs text-muted-foreground">
                     R$ {(imageStats?.proCost || 0).toFixed(2)} • R$ 0,69/img
                   </p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">
+                    ✅ {imageStats?.completedCount || 0} • ❌ {imageStats?.failedCount || 0} • ⏳ {imageStats?.processingCount || 0}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -244,6 +263,9 @@ const PromptsApiGoogle = () => {
                   <p className="text-2xl font-bold">{videoStats?.videoCount || 0}</p>
                   <p className="text-xs text-muted-foreground">
                     R$ {(videoStats?.videoCost || 0).toFixed(2)} • {videoStats?.totalSeconds || 0}s total • R$ 0,78/s
+                  </p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">
+                    ✅ {videoStats?.completedCount || 0} • ❌ {videoStats?.failedCount || 0} • ⏳ {videoStats?.processingCount || 0}
                   </p>
                 </div>
               </div>
