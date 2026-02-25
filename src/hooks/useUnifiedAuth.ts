@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { User } from "@supabase/supabase-js";
 import { isDisposableEmail } from "@/utils/disposableEmailDomains";
+import { getSignupDeviceFingerprint } from "@/lib/deviceFingerprint";
 
 export type AuthStep = 'email' | 'password' | 'signup' | 'waiting-link';
 
@@ -365,6 +366,19 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
     const normalizedEmail = email.trim().toLowerCase();
     
     try {
+      // Check device fingerprint limit
+      const deviceFingerprint = getSignupDeviceFingerprint();
+      const { data: alreadyUsed, error: deviceError } = await supabase
+        .rpc('check_device_signup_limit', { p_fingerprint: deviceFingerprint });
+      
+      if (deviceError) {
+        console.error('[UnifiedAuth] Device check error:', deviceError);
+      } else if (alreadyUsed) {
+        toast.error('Este dispositivo já possui uma conta cadastrada. Use sua conta existente.');
+        setState(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
+    
       const { data: authData, error } = await supabase.auth.signUp({
         email: normalizedEmail,
         password,
@@ -393,6 +407,17 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
           password_changed: true,
           email_verified: false,
         }, { onConflict: 'id' });
+        
+        // Register device fingerprint
+        try {
+          await supabase.rpc('register_device_signup', {
+            p_fingerprint: deviceFingerprint,
+            p_user_id: authData.user.id,
+          });
+          console.log('[UnifiedAuth] Device fingerprint registered');
+        } catch (fpErr) {
+          console.error('[UnifiedAuth] Failed to register device fingerprint:', fpErr);
+        }
         
         // Referral code stays in localStorage - will be processed on first login after email confirmation
         

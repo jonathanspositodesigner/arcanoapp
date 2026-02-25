@@ -1346,6 +1346,27 @@ export type Database = {
         }
         Relationships: []
       }
+      device_signups: {
+        Row: {
+          created_at: string
+          device_fingerprint: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_fingerprint: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_fingerprint?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_campaign_logs: {
         Row: {
           bounced_at: string | null
@@ -3839,6 +3860,10 @@ export type Database = {
           success: boolean
         }[]
       }
+      check_device_signup_limit: {
+        Args: { p_fingerprint: string }
+        Returns: boolean
+      }
       check_landing_trial_status: {
         Args: { _user_id: string }
         Returns: {
@@ -4112,6 +4137,10 @@ export type Database = {
           new_balance: number
           success: boolean
         }[]
+      }
+      register_device_signup: {
+        Args: { p_fingerprint: string; p_user_id: string }
+        Returns: undefined
       }
       remove_lifetime_credits: {
         Args: { _amount: number; _description?: string; _user_id: string }
