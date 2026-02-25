@@ -72,6 +72,7 @@ const AdminPlanos2SubscribersTab = () => {
   const [users, setUsers] = useState<Planos2User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [planFilter, setPlanFilter] = useState("all");
   const [periodFilter, setPeriodFilter] = useState("all");
   const [sortColumn, setSortColumn] = useState<SortColumn>('created_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -108,7 +109,6 @@ const AdminPlanos2SubscribersTab = () => {
       const { data, error } = await supabase
         .from("planos2_subscriptions")
         .select("*")
-        .neq("plan_slug", "free")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -416,6 +416,10 @@ const AdminPlanos2SubscribersTab = () => {
       );
     }
 
+    if (planFilter !== "all") {
+      filtered = filtered.filter(u => u.plan_slug === planFilter);
+    }
+
     if (periodFilter !== "all") {
       const now = new Date();
       const cutoff = new Date();
@@ -443,7 +447,7 @@ const AdminPlanos2SubscribersTab = () => {
     });
 
     return filtered;
-  }, [users, searchTerm, periodFilter, sortColumn, sortDirection]);
+  }, [users, searchTerm, planFilter, periodFilter, sortColumn, sortDirection]);
 
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
   const paginatedUsers = useMemo(() => {
@@ -451,7 +455,7 @@ const AdminPlanos2SubscribersTab = () => {
     return filteredUsers.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredUsers, currentPage]);
 
-  useEffect(() => { setCurrentPage(1); }, [searchTerm, periodFilter, sortColumn, sortDirection]);
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, planFilter, periodFilter, sortColumn, sortDirection]);
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
@@ -722,6 +726,19 @@ const AdminPlanos2SubscribersTab = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
         />
+        <Select value={planFilter} onValueChange={setPlanFilter}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Plano" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os planos</SelectItem>
+            <SelectItem value="free">Free</SelectItem>
+            <SelectItem value="starter">Starter</SelectItem>
+            <SelectItem value="pro">Pro</SelectItem>
+            <SelectItem value="ultimate">Ultimate</SelectItem>
+            <SelectItem value="unlimited">IA Unlimited</SelectItem>
+          </SelectContent>
+        </Select>
         <Select value={periodFilter} onValueChange={setPeriodFilter}>
           <SelectTrigger className="w-48">
             <SelectValue placeholder="Período" />
