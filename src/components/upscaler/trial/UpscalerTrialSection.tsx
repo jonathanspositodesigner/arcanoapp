@@ -237,6 +237,7 @@ export default function UpscalerTrialSection() {
           detail_denoise: detailDenoise ?? null,
           prompt: prompt ?? null,
           input_file_name: inputFileName,
+          input_url: imageUrl,
         } as any)
         .select('id')
         .single();
