@@ -92,10 +92,12 @@ const AdminPremiumDashboard = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [webhookStats, setWebhookStats] = useState({ total: 0, errors: 0, refunds: 0 });
+  const [renewalRate, setRenewalRate] = useState<{ rate: number; renewed: number; eligible: number } | null>(null);
 
   useEffect(() => {
     checkAdminAndFetch();
     fetchWebhookStats();
+    fetchRenewalRate();
   }, []);
 
   const checkAdminAndFetch = async () => {
@@ -426,6 +428,56 @@ const AdminPremiumDashboard = () => {
     window.open(`https://api.whatsapp.com/send/?phone=${formattedPhone}&text&type=phone_number&app_absent=0`, '_blank');
   };
 
+  const fetchRenewalRate = async () => {
+    try {
+      // Get all premium users subscribed 30+ days ago
+      const { data: eligibleUsers } = await supabase
+        .from("premium_users")
+        .select("user_id, subscribed_at")
+        .not("subscribed_at", "is", null)
+        .lt("subscribed_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+
+      if (!eligibleUsers || eligibleUsers.length === 0) {
+        setRenewalRate({ rate: 0, renewed: 0, eligible: 0 });
+        return;
+      }
+
+      // Get profiles for these users
+      const userIds = eligibleUsers.map(u => u.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, email")
+        .in("id", userIds);
+
+      // Get all successful payments from webhook_logs
+      const emails = profiles?.map(p => p.email).filter(Boolean) || [];
+      const { data: webhookPayments } = await supabase
+        .from("webhook_logs")
+        .select("email, received_at")
+        .eq("result", "success")
+        .eq("status", "paid")
+        .in("email", emails);
+
+      // Count users who had a payment 25+ days after subscription
+      let renewedCount = 0;
+      for (const user of eligibleUsers) {
+        const profile = profiles?.find(p => p.id === user.user_id);
+        if (!profile?.email) continue;
+        const subDate = new Date(user.subscribed_at!);
+        const cutoff = new Date(subDate.getTime() + 25 * 24 * 60 * 60 * 1000);
+        const hasRenewal = webhookPayments?.some(
+          w => w.email?.toLowerCase() === profile.email?.toLowerCase() && new Date(w.received_at!) > cutoff
+        );
+        if (hasRenewal) renewedCount++;
+      }
+
+      const rate = eligibleUsers.length > 0 ? Math.round((renewedCount / eligibleUsers.length) * 1000) / 10 : 0;
+      setRenewalRate({ rate, renewed: renewedCount, eligible: eligibleUsers.length });
+    } catch (error) {
+      console.error("Error fetching renewal rate:", error);
+    }
+  };
+
   const fetchWebhookStats = async () => {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     
@@ -568,7 +620,23 @@ const AdminPremiumDashboard = () => {
               </Button>
             </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <Card>
+            <CardContent className="p-4 flex items-center gap-4">
+              <RefreshCw className="h-8 w-8 text-emerald-500" />
+              <div>
+                <p className="text-sm text-muted-foreground">Taxa de Renovação</p>
+                <p className="text-2xl font-bold">
+                  {renewalRate ? `${renewalRate.rate}%` : "..."}
+                </p>
+                {renewalRate && (
+                  <p className="text-xs text-muted-foreground">
+                    {renewalRate.renewed}/{renewalRate.eligible} renovaram
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
           <Card>
             <CardContent className="p-4 flex items-center gap-4">
               <Users className="h-8 w-8 text-primary" />

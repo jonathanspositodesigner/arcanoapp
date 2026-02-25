@@ -96,6 +96,7 @@ const AdminPlanos2SubscribersTab = () => {
   const [formGreennContractId, setFormGreennContractId] = useState("");
   const [formCreditsPerMonth, setFormCreditsPerMonth] = useState(600);
   const [formCostMultiplier, setFormCostMultiplier] = useState(1);
+  const [renewalRate, setRenewalRate] = useState<{ rate: number; renewed: number; eligible: number } | null>(null);
 
   useEffect(() => {
     fetchPlanos2Users();
@@ -470,6 +471,21 @@ const AdminPlanos2SubscribersTab = () => {
   });
   const inactiveUsers = users.filter(u => !isEffectivelyActive(u)).length;
 
+  // Calculate renewal rate for planos2
+  useEffect(() => {
+    if (users.length === 0) return;
+    const paidUsers = users.filter(u => u.plan_slug !== 'free');
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const eligible = paidUsers.filter(u => new Date(u.created_at) < thirtyDaysAgo);
+    if (eligible.length === 0) {
+      setRenewalRate({ rate: 0, renewed: 0, eligible: 0 });
+      return;
+    }
+    const renewed = eligible.filter(u => isEffectivelyActive(u));
+    const rate = Math.round((renewed.length / eligible.length) * 1000) / 10;
+    setRenewalRate({ rate, renewed: renewed.length, eligible: eligible.length });
+  }, [users]);
+
   const planDistribution = Object.entries(
     users.reduce((acc, u) => {
       acc[u.plan_slug] = (acc[u.plan_slug] || 0) + 1;
@@ -600,7 +616,25 @@ const AdminPlanos2SubscribersTab = () => {
       </div>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <Card>
+          <CardContent className="p-4 flex items-center gap-4">
+            <RefreshCw className="h-8 w-8 text-emerald-500" />
+            <div>
+              <p className="text-sm text-muted-foreground">Taxa de Renovação</p>
+              <p className="text-2xl font-bold">
+                {renewalRate ? `${renewalRate.rate}%` : "..."}
+              </p>
+              {renewalRate && renewalRate.eligible > 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  {renewalRate.renewed}/{renewalRate.eligible} renovaram
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">Sem dados (30+ dias)</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-4">
             <Users className="h-8 w-8 text-primary" />
