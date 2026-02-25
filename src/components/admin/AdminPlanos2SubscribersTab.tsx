@@ -108,6 +108,7 @@ const AdminPlanos2SubscribersTab = () => {
       const { data, error } = await supabase
         .from("planos2_subscriptions")
         .select("*")
+        .neq("plan_slug", "free")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
