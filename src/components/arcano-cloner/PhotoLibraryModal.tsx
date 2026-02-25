@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { User, Loader2, ImageIcon, Upload, Search } from 'lucide-react';
+import { User, Loader2, ImageIcon, Upload, Search, Lock, Crown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import imageCompression from 'browser-image-compression';
 
 interface PhotoLibraryModalProps {
@@ -12,6 +15,7 @@ interface PhotoLibraryModalProps {
   onClose: () => void;
   onSelectPhoto: (imageUrl: string) => void;
   onUploadPhoto?: (dataUrl: string, file: File) => void;
+  isPremiumUser?: boolean;
 }
 
 type GenderFilter = 'masculino' | 'feminino';
@@ -22,6 +26,7 @@ interface PhotoItem {
   image_url: string;
   thumbnail_url?: string | null;
   gender?: string | null;
+  is_premium?: boolean;
 }
 
 const ITEMS_PER_PAGE = 20;
@@ -40,7 +45,9 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   onClose,
   onSelectPhoto,
   onUploadPhoto,
+  isPremiumUser = false,
 }) => {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState<GenderFilter>('masculino');
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -67,7 +74,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
       // Query photos from admin_prompts where category = 'Fotos' and gender matches filter
       let query = supabase
         .from('admin_prompts')
-        .select('id, title, image_url, thumbnail_url, gender, tags')
+        .select('id, title, image_url, thumbnail_url, gender, tags, is_premium')
         .eq('category', 'Fotos')
         .eq('gender', filter);
 
@@ -121,6 +128,10 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   };
 
   const handleSelectPhoto = (photo: PhotoItem) => {
+    if (photo.is_premium && !isPremiumUser) {
+      toast.error('Esta foto é exclusiva para usuários Premium');
+      return;
+    }
     onSelectPhoto(photo.image_url);
     onClose();
   };
@@ -273,32 +284,77 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
                   <button
                     key={photo.id}
                     onClick={() => handleSelectPhoto(photo)}
-                    className="group relative aspect-[3/4] rounded-lg sm:rounded-xl overflow-hidden border border-purple-500/30 hover:border-fuchsia-400 transition-all active:scale-95 sm:hover:scale-105"
+                    className={cn(
+                      "group relative aspect-[3/4] rounded-lg sm:rounded-xl overflow-hidden border transition-all active:scale-95 sm:hover:scale-105",
+                      photo.is_premium && !isPremiumUser
+                        ? "border-amber-500/40 cursor-not-allowed"
+                        : "border-purple-500/30 hover:border-fuchsia-400"
+                    )}
                   >
                     {/* Photo Image */}
                     <img
                       src={photo.thumbnail_url || photo.image_url}
                       alt={photo.title}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className={cn(
+                        "absolute inset-0 w-full h-full object-cover",
+                        photo.is_premium && !isPremiumUser && "brightness-50"
+                      )}
                       loading="lazy"
                     />
+
+                    {/* Premium badge for premium users */}
+                    {photo.is_premium && isPremiumUser && (
+                      <div className="absolute top-1.5 right-1.5 z-10">
+                        <Badge className="bg-amber-500/90 text-white text-[8px] px-1.5 py-0 border-0 gap-0.5">
+                          <Crown className="w-2.5 h-2.5" />
+                          Premium
+                        </Badge>
+                      </div>
+                    )}
+
+                    {/* Lock overlay for non-premium users */}
+                    {photo.is_premium && !isPremiumUser && (
+                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-1.5 bg-black/40">
+                        <Lock className="w-6 h-6 text-amber-400" />
+                        <Badge className="bg-amber-500/90 text-white text-[8px] px-1.5 py-0 border-0 gap-0.5">
+                          <Crown className="w-2.5 h-2.5" />
+                          Premium
+                        </Badge>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onClose();
+                            navigate('/planos-upscaler-creditos');
+                          }}
+                          className="mt-1 text-[9px] sm:text-[10px] font-semibold text-white bg-gradient-to-r from-amber-500 to-amber-600 px-2.5 py-1 rounded-full hover:from-amber-400 hover:to-amber-500 transition-all"
+                        >
+                          Torne-se Premium
+                        </button>
+                      </div>
+                    )}
                     
                     {/* Gradient overlay for readability */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {!(photo.is_premium && !isPremiumUser) && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    )}
 
                     {/* Title on hover - hidden on mobile for cleaner look */}
-                    <div className="hidden sm:block absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <p className="text-[10px] text-white font-medium text-center line-clamp-2">
-                        {photo.title}
-                      </p>
-                    </div>
+                    {!(photo.is_premium && !isPremiumUser) && (
+                      <div className="hidden sm:block absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p className="text-[10px] text-white font-medium text-center line-clamp-2">
+                          {photo.title}
+                        </p>
+                      </div>
+                    )}
 
                     {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-fuchsia-500/0 group-hover:bg-fuchsia-500/10 transition-colors flex items-center justify-center">
-                      <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-fuchsia-600 px-3 py-1 rounded-full transition-opacity">
-                        Selecionar
-                      </span>
-                    </div>
+                    {!(photo.is_premium && !isPremiumUser) && (
+                      <div className="absolute inset-0 bg-fuchsia-500/0 group-hover:bg-fuchsia-500/10 transition-colors flex items-center justify-center">
+                        <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-fuchsia-600 px-3 py-1 rounded-full transition-opacity">
+                          Selecionar
+                        </span>
+                      </div>
+                    )}
                   </button>
                 ))}
               </div>
