@@ -426,6 +426,7 @@ const BibliotecaPrompts = () => {
                           setPremiumModalItem(item);
                           setShowPremiumModal(true);
                         } else {
+                          trackPromptClick(String(item.id), item.title, !!item.isExclusive);
                           navigate('/arcano-cloner-tool', { state: { referenceImageUrl: item.imageUrl } });
                         }
                       }}
@@ -558,6 +559,7 @@ const BibliotecaPrompts = () => {
                         setPremiumModalItem(selectedPrompt);
                         setShowPremiumModal(true);
                       } else {
+                        trackPromptClick(String(selectedPrompt.id), selectedPrompt.title, !!selectedPrompt.isExclusive);
                         navigate('/arcano-cloner-tool', { state: { referenceImageUrl: selectedPrompt.imageUrl } });
                       }
                     }}
