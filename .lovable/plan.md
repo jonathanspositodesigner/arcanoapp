@@ -1,53 +1,52 @@
 
+# Corrigir "Antes e Depois" no Pose Changer e Veste AI
 
-# Corrigir Dashboard Premium - Mostrar Usuarios Free e Localizar Arcano Unlimited
+## Problema
+Mesma situacao do Upscaler que acabamos de corrigir: o insert dos jobs no banco salva apenas o **nome do arquivo** (`person_file_name`) mas nao salva a **URL publica** (`person_image_url`). O campo existe na tabela mas fica sempre NULL.
 
-## Problema Identificado
-
-Encontrei **2 problemas**:
-
-### 1. Usuarios Free filtrados (28 usuarios escondidos!)
-No arquivo `AdminPlanos2SubscribersTab.tsx`, linha 111, existe um filtro que **exclui todos os usuarios free**:
-```
-.neq("plan_slug", "free")
-```
-Isso esta escondendo 28 usuarios free da lista. Precisa remover esse filtro.
-
-### 2. Usuario "Arcano IA Unlimited" esta na aba errada
-O usuario que voce adicionou como "arcano_unlimited" foi cadastrado no sistema antigo (tabela `premium_users`), que aparece na aba **"Assinantes Antigos"**, nao na aba **"Assinantes"** (que mostra apenas `planos2_subscriptions`). O usuario existe no banco -- user_id `8bb43ae1`, cadastrado em 24/02 com plano `arcano_unlimited`.
+## Sobre o Storage 24h
+Sim, o `cleanup-ai-storage` remove arquivos com mais de 24h de TODAS as ferramentas de IA (upscaler, pose-changer, veste-ai, arcano-cloner, character-generator, flyer-maker, video-upscaler, image-generator, video-generator). Isso significa que as imagens "antes" precisam estar salvas como URL no banco, porque o arquivo no storage sera apagado.
 
 ## Solucao
 
-### Arquivo: `src/components/admin/AdminPlanos2SubscribersTab.tsx`
+### Arquivo 1: `src/pages/PoseChangerTool.tsx` (linha ~359)
 
-**Remover o filtro `.neq("plan_slug", "free")`** na funcao `fetchPlanos2Users` (linha 111), para que todos os usuarios aparecam, incluindo os free.
+Adicionar `person_image_url: personUrl` no insert do job:
 
-Antes:
 ```typescript
-const { data, error } = await supabase
-  .from("planos2_subscriptions")
-  .select("*")
-  .neq("plan_slug", "free")
-  .order("created_at", { ascending: false });
+const { data: job, error: jobError } = await supabase
+  .from('pose_changer_jobs')
+  .insert({
+    session_id: sessionIdRef.current,
+    user_id: user.id,
+    status: 'pending',
+    person_file_name: personUrl.split('/').pop() || 'person.webp',
+    reference_file_name: referenceUrl.split('/').pop() || 'reference.webp',
+    person_image_url: personUrl,       // NOVO - salva URL da pessoa
+    reference_image_url: referenceUrl, // NOVO - salva URL da referencia
+  })
 ```
 
-Depois:
+### Arquivo 2: `src/pages/VesteAITool.tsx` (linha ~359)
+
+Adicionar `person_image_url: personUrl` no insert do job:
+
 ```typescript
-const { data, error } = await supabase
-  .from("planos2_subscriptions")
-  .select("*")
-  .order("created_at", { ascending: false });
+const { data: job, error: jobError } = await supabase
+  .from('veste_ai_jobs')
+  .insert({
+    session_id: sessionIdRef.current,
+    user_id: user.id,
+    status: 'pending',
+    person_file_name: personUrl.split('/').pop() || 'person.webp',
+    clothing_file_name: clothingUrl.split('/').pop() || 'clothing.webp',
+    person_image_url: personUrl,     // NOVO - salva URL da pessoa
+    clothing_image_url: clothingUrl, // NOVO - salva URL da roupa
+  })
 ```
 
-### Adicionar filtro por plano na interface
+### Nenhuma alteracao no backend/banco
+As colunas `person_image_url`, `reference_image_url` e `clothing_image_url` ja existem nas tabelas. So precisam ser preenchidas no insert.
 
-Adicionar um select para filtrar por tipo de plano (Free, Starter, Pro, Ultimate, Unlimited, Todos) na barra de filtros, para que o admin possa facilmente ver so os pagantes ou so os free quando quiser.
-
-### Ajustar metricas
-
-As metricas no topo ja consideram corretamente que free nao e "ativo pagante" (linha 468: `u.plan_slug !== 'free'`), entao os cards de resumo continuarao mostrando numeros corretos mesmo com os free aparecendo na lista.
-
-### Nenhuma alteracao no backend
-
-Apenas remocao do filtro no frontend. Nenhuma migration necessaria.
-
+### Importante
+Assim como no Upscaler, essa correcao so vale para **novos jobs**. Jobs antigos continuarao sem a imagem "antes" porque o dado nunca foi salvo.
