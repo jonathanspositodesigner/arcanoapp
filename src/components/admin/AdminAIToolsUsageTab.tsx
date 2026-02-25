@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/tooltip";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { BeforeAfterSlider } from "@/components/upscaler/BeforeAfterSlider";
+import { FullscreenModal } from "@/components/upscaler/FullscreenModal";
 
 interface UsageRecord {
   id: string;
@@ -95,17 +97,43 @@ const AdminAIToolsUsageTab = () => {
   // Job output modal state
   const [selectedJob, setSelectedJob] = useState<UsageRecord | null>(null);
   const [jobOutputUrl, setJobOutputUrl] = useState<string | null>(null);
+  const [jobInputUrl, setJobInputUrl] = useState<string | null>(null);
   const [isLoadingOutput, setIsLoadingOutput] = useState(false);
   const [isOutputExpired, setIsOutputExpired] = useState(false);
   const [outputModalOpen, setOutputModalOpen] = useState(false);
+  const [showFullscreen, setShowFullscreen] = useState(false);
 
   const isVideoTool = (toolName: string) => toolName === "Video Upscaler" || toolName === "Gerar Vídeo";
+
+  const getInputColumn = (toolName: string): string | null => {
+    switch (toolName) {
+      case "Upscaler Arcano": return "input_url";
+      case "Arcano Cloner": return "user_image_url";
+      case "Pose Changer": return "person_image_url";
+      case "Veste AI": return "person_image_url";
+      case "Gerador Avatar": return "front_image_url";
+      case "Flyer Maker": return "reference_image_url";
+      default: return null; // Video tools, text-to-image, etc.
+    }
+  };
+
+  const preloadImage = (url: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = url;
+      setTimeout(() => resolve(false), 8000);
+    });
+  };
 
   const handleJobClick = useCallback(async (record: UsageRecord) => {
     setSelectedJob(record);
     setOutputModalOpen(true);
     setIsOutputExpired(false);
     setJobOutputUrl(null);
+    setJobInputUrl(null);
+    setShowFullscreen(false);
 
     if (record.status !== "completed") {
       setIsLoadingOutput(false);
@@ -115,17 +143,45 @@ const AdminAIToolsUsageTab = () => {
     setIsLoadingOutput(true);
     try {
       const tableName = getTableName(record.tool_name);
+      const inputCol = getInputColumn(record.tool_name);
+      const selectFields = inputCol ? `output_url, ${inputCol}` : 'output_url';
+
       const { data, error } = await supabase
         .from(tableName as any)
-        .select('output_url')
+        .select(selectFields)
         .eq('id', record.id)
         .maybeSingle();
 
       if (error) throw error;
-      setJobOutputUrl((data as any)?.output_url || null);
+      
+      const outputUrl = (data as any)?.output_url || null;
+      const inputUrl = inputCol ? (data as any)?.[inputCol] || null : null;
+
+      if (outputUrl) {
+        // Preload images to detect expiration
+        const checks: Promise<boolean>[] = [preloadImage(outputUrl)];
+        if (inputUrl && !isVideoTool(record.tool_name)) checks.push(preloadImage(inputUrl));
+        
+        const results = await Promise.all(checks);
+        const outputOk = results[0];
+        const inputOk = results.length > 1 ? results[1] : true;
+
+        if (!outputOk) {
+          setIsOutputExpired(true);
+          setJobOutputUrl(null);
+          setJobInputUrl(null);
+        } else {
+          setJobOutputUrl(outputUrl);
+          setJobInputUrl(inputOk ? inputUrl : null);
+        }
+      } else {
+        setJobOutputUrl(null);
+        setJobInputUrl(null);
+      }
     } catch (err) {
       console.error("Error fetching output_url:", err);
       setJobOutputUrl(null);
+      setJobInputUrl(null);
     } finally {
       setIsLoadingOutput(false);
     }
@@ -701,6 +757,15 @@ const AdminAIToolsUsageTab = () => {
                 className="w-full rounded-md max-h-[500px]"
                 onError={() => setIsOutputExpired(true)}
               />
+            ) : jobInputUrl && selectedJob && !isVideoTool(selectedJob.tool_name) ? (
+              <BeforeAfterSlider
+                beforeImage={jobInputUrl}
+                afterImage={jobOutputUrl}
+                size="large"
+                aspectRatio="4/3"
+                onZoomClick={() => setShowFullscreen(true)}
+                locale="pt"
+              />
             ) : (
               <img
                 src={jobOutputUrl}
@@ -723,6 +788,17 @@ const AdminAIToolsUsageTab = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Fullscreen Before/After Modal */}
+      {jobInputUrl && jobOutputUrl && (
+        <FullscreenModal
+          isOpen={showFullscreen}
+          onClose={() => setShowFullscreen(false)}
+          beforeImage={jobInputUrl}
+          afterImage={jobOutputUrl}
+          locale="pt"
+        />
+      )}
     </div>
   );
 };
