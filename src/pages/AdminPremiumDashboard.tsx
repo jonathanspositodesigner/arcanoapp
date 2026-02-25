@@ -430,14 +430,28 @@ const AdminPremiumDashboard = () => {
 
   const fetchRenewalRate = async () => {
     try {
-      // Get all premium users subscribed 30+ days ago
-      const { data: eligibleUsers } = await supabase
+      // Get ALL premium users (not just 30+ days)
+      const { data: allPremiumUsers } = await supabase
         .from("premium_users")
-        .select("user_id, subscribed_at")
-        .not("subscribed_at", "is", null)
-        .lt("subscribed_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+        .select("user_id, subscribed_at, is_active, expires_at");
 
-      if (!eligibleUsers || eligibleUsers.length === 0) {
+      if (!allPremiumUsers || allPremiumUsers.length === 0) {
+        setRenewalRate({ rate: 0, renewed: 0, eligible: 0 });
+        return;
+      }
+
+      // Eligible = inactive users (they had a chance to renew and didn't, or they did renew)
+      // Plus active users subscribed 30+ days ago (they already renewed at least once)
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const eligibleUsers = allPremiumUsers.filter(u => {
+        // Inactive users are always eligible (they had the chance to renew)
+        if (!u.is_active) return true;
+        // Active users only count if subscribed 30+ days ago
+        if (u.subscribed_at && new Date(u.subscribed_at) < thirtyDaysAgo) return true;
+        return false;
+      });
+
+      if (eligibleUsers.length === 0) {
         setRenewalRate({ rate: 0, renewed: 0, eligible: 0 });
         return;
       }
@@ -458,17 +472,23 @@ const AdminPremiumDashboard = () => {
         .eq("status", "paid")
         .in("email", emails);
 
-      // Count users who had a payment 25+ days after subscription
+      // Count users who had a payment 25+ days after subscription (or are still active)
       let renewedCount = 0;
       for (const user of eligibleUsers) {
         const profile = profiles?.find(p => p.id === user.user_id);
         if (!profile?.email) continue;
-        const subDate = new Date(user.subscribed_at!);
-        const cutoff = new Date(subDate.getTime() + 25 * 24 * 60 * 60 * 1000);
-        const hasRenewal = webhookPayments?.some(
-          w => w.email?.toLowerCase() === profile.email?.toLowerCase() && new Date(w.received_at!) > cutoff
-        );
-        if (hasRenewal) renewedCount++;
+        
+        if (user.subscribed_at) {
+          const subDate = new Date(user.subscribed_at);
+          const cutoff = new Date(subDate.getTime() + 25 * 24 * 60 * 60 * 1000);
+          const hasRenewal = webhookPayments?.some(
+            w => w.email?.toLowerCase() === profile.email?.toLowerCase() && new Date(w.received_at!) > cutoff
+          );
+          if (hasRenewal) renewedCount++;
+        } else {
+          // No subscribed_at: if still active, count as renewed
+          if (user.is_active) renewedCount++;
+        }
       }
 
       const rate = eligibleUsers.length > 0 ? Math.round((renewedCount / eligibleUsers.length) * 1000) / 10 : 0;
