@@ -42,6 +42,19 @@ export function getDeviceFingerprint(): string {
   return fp;
 }
 
+export function getSignupDeviceFingerprint(): string {
+  const storageKey = 'signup_device_fp';
+  const stored = localStorage.getItem(storageKey);
+  
+  if (stored) {
+    return stored;
+  }
+  
+  const fp = generateFingerprint();
+  localStorage.setItem(storageKey, fp);
+  return fp;
+}
+
 export function getDeviceName(): string {
   const ua = navigator.userAgent;
   
