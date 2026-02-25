@@ -1,69 +1,53 @@
 
 
-# Top Indicadores - Dashboard de Indicacoes
+# Corrigir Dashboard Premium - Mostrar Usuarios Free e Localizar Arcano Unlimited
 
-## Resumo
-Criar uma nova pagina "Top Indicadores" no admin do PromptClub que lista os usuarios que mais indicaram pessoas para a plataforma, com detalhes de creditos ganhos, creditos restantes, e ao clicar em um usuario, expandir a lista de pessoas que vieram pelo link dele. Paginacao de 20 por pagina em ambas as listas.
+## Problema Identificado
 
-## O que sera feito
+Encontrei **2 problemas**:
 
-### 1. Nova rota e pagina
-- Criar `src/pages/admin/PromptsTopIndicadores.tsx`
-- Registrar rota `/admin-prompts/top-indicadores` no `App.tsx`
-- Importar o componente com lazy loading seguindo o padrao existente
+### 1. Usuarios Free filtrados (28 usuarios escondidos!)
+No arquivo `AdminPlanos2SubscribersTab.tsx`, linha 111, existe um filtro que **exclui todos os usuarios free**:
+```
+.neq("plan_slug", "free")
+```
+Isso esta escondendo 28 usuarios free da lista. Precisa remover esse filtro.
 
-### 2. Menu lateral - novo item
-- Editar `src/components/AdminSidebarPlatform.tsx`
-- Adicionar item "TOP INDICADORES" no array `promptsExtraItems` com icone `Users` (lucide), path `/admin-prompts/top-indicadores`, descricao "Ranking de indicacoes"
-- Posicionar abaixo de DASHBOARD
+### 2. Usuario "Arcano IA Unlimited" esta na aba errada
+O usuario que voce adicionou como "arcano_unlimited" foi cadastrado no sistema antigo (tabela `premium_users`), que aparece na aba **"Assinantes Antigos"**, nao na aba **"Assinantes"** (que mostra apenas `planos2_subscriptions`). O usuario existe no banco -- user_id `8bb43ae1`, cadastrado em 24/02 com plano `arcano_unlimited`.
 
-### 3. Politicas RLS para admin
-- Criar migration com SELECT policies para admin nas tabelas `referral_codes` e `referrals`:
-  - `has_role(auth.uid(), 'admin')` permite SELECT em ambas
+## Solucao
 
-### 4. Pagina PromptsTopIndicadores
+### Arquivo: `src/components/admin/AdminPlanos2SubscribersTab.tsx`
 
-**Tabela principal (Top Indicadores):**
-- Colunas: Posicao (#), Usuario (nome + email), Creditos Ganhos (total de `credits_given_referrer`), Creditos Restantes (lifetime_balance da tabela `upscaler_credits`), Recrutados (contagem)
-- Ordenado por quantidade de recrutados (desc)
-- Paginacao: 20 por pagina
-- Busca via queries ao banco:
-  1. Query na tabela `referrals` agrupando por `referrer_id` com JOIN em `profiles` para nome/email
-  2. Para cada referrer, buscar `lifetime_balance` de `upscaler_credits`
+**Remover o filtro `.neq("plan_slug", "free")`** na funcao `fetchPlanos2Users` (linha 111), para que todos os usuarios aparecam, incluindo os free.
 
-**Detalhe ao clicar (lista de indicados):**
-- Ao clicar em uma linha, expande/abre um modal ou secao mostrando as pessoas que vieram pelo link desse indicador
-- Colunas: Nome, Email, Data da indicacao
-- Busca na tabela `referrals` WHERE `referrer_id` = usuario selecionado, com JOIN em `profiles` usando `referred_id`
-- Paginacao: 20 por pagina
-
-**Layout:**
-- Usa `AdminLayoutPlatform` com `platform="prompts"` (padrao existente)
-- Cards de resumo no topo: Total de indicadores ativos, Total de indicacoes, Total de creditos distribuidos
-
-### Detalhes tecnicos
-
-**Arquivos criados:**
-1. `src/pages/admin/PromptsTopIndicadores.tsx` - pagina completa
-
-**Arquivos modificados:**
-1. `src/components/AdminSidebarPlatform.tsx` - novo item no menu
-2. `src/App.tsx` - nova rota
-
-**Migration SQL:**
-```sql
-CREATE POLICY "Admins can read all referral_codes"
-  ON public.referral_codes FOR SELECT
-  USING (public.has_role(auth.uid(), 'admin'));
-
-CREATE POLICY "Admins can read all referrals"
-  ON public.referrals FOR SELECT
-  USING (public.has_role(auth.uid(), 'admin'));
+Antes:
+```typescript
+const { data, error } = await supabase
+  .from("planos2_subscriptions")
+  .select("*")
+  .neq("plan_slug", "free")
+  .order("created_at", { ascending: false });
 ```
 
-**Queries principais:**
-- Buscar top indicadores com contagem e soma de creditos (via `referrals` + `profiles`)
-- Buscar creditos restantes (via `upscaler_credits`)
-- Buscar lista de indicados de um usuario especifico (via `referrals` + `profiles`)
+Depois:
+```typescript
+const { data, error } = await supabase
+  .from("planos2_subscriptions")
+  .select("*")
+  .order("created_at", { ascending: false });
+```
 
-Toda a logica fica no frontend usando o Supabase client, sem necessidade de edge function.
+### Adicionar filtro por plano na interface
+
+Adicionar um select para filtrar por tipo de plano (Free, Starter, Pro, Ultimate, Unlimited, Todos) na barra de filtros, para que o admin possa facilmente ver so os pagantes ou so os free quando quiser.
+
+### Ajustar metricas
+
+As metricas no topo ja consideram corretamente que free nao e "ativo pagante" (linha 468: `u.plan_slug !== 'free'`), entao os cards de resumo continuarao mostrando numeros corretos mesmo com os free aparecendo na lista.
+
+### Nenhuma alteracao no backend
+
+Apenas remocao do filtro no frontend. Nenhuma migration necessaria.
+
