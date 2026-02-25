@@ -237,22 +237,36 @@ const AdminPlanos2SubscribersTab = () => {
 
       if (response.error) throw response.error;
 
-      // If edge function doesn't handle planos2, do it manually
-      if (response.data?.user_id) {
-        const userId = response.data.user_id;
+      const returnedUserId = response.data?.user_id ?? response.data?.userId ?? null;
+      let userId = returnedUserId;
+
+      // Fallback: busca por email caso a Edge Function retorne userId em formato inesperado
+      if (!userId) {
+        const { data: profileByEmail } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("email", formEmail.toLowerCase().trim())
+          .maybeSingle();
+
+        userId = profileByEmail?.id ?? null;
+      }
+
+      if (userId) {
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + formExpiresInDays);
 
         // Check if subscription already exists
-        const { data: existing } = await supabase
+        const { data: existing, error: existingError } = await supabase
           .from("planos2_subscriptions")
           .select("id")
           .eq("user_id", userId)
           .maybeSingle();
 
+        if (existingError) throw existingError;
+
         if (existing) {
           // Update existing
-          await supabase
+          const { error: updateError } = await supabase
             .from("planos2_subscriptions")
             .update({
               plan_slug: formPlanSlug,
@@ -264,9 +278,11 @@ const AdminPlanos2SubscribersTab = () => {
               greenn_contract_id: formGreennContractId || null,
             })
             .eq("user_id", userId);
+
+          if (updateError) throw updateError;
         } else {
           // Insert new
-          await supabase
+          const { error: insertError } = await supabase
             .from("planos2_subscriptions")
             .insert({
               user_id: userId,
@@ -278,7 +294,11 @@ const AdminPlanos2SubscribersTab = () => {
               greenn_product_id: formGreennProductId ? parseInt(formGreennProductId) : null,
               greenn_contract_id: formGreennContractId || null,
             });
+
+          if (insertError) throw insertError;
         }
+      } else {
+        throw new Error("Não foi possível localizar o usuário criado para vincular ao Planos 2.");
       }
 
       toast.success("Usuário criado com sucesso!");
