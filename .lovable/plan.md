@@ -1,59 +1,79 @@
 
 
-## Bloquear criacao de multiplas contas por dispositivo
+## Bloquear fotos premium na Biblioteca de Fotos das ferramentas de IA
 
-### Problema
-Usuarios podem criar varias contas no mesmo dispositivo para ganhar 300 creditos gratis repetidamente.
+### Resumo
+A `PhotoLibraryModal` (usada pelo Pose Changer, Arcano Cloner e Veste AI) mostra fotos da tabela `admin_prompts` (categoria "Fotos") mas ignora completamente o campo `is_premium`. Vamos adicionar controle de acesso para que:
 
-### Solucao
-
-Usar o sistema de device fingerprint que ja existe no projeto (`src/lib/deviceFingerprint.ts`) para rastrear dispositivos no momento do signup. Antes de criar a conta, verificamos se aquele dispositivo ja criou alguma conta antes.
+- **Todas as fotos aparecem** na biblioteca (premium e gratuitas)
+- **Fotos premium para usuarios premium**: exibem uma badge "Premium" discreta, mas podem ser selecionadas normalmente
+- **Fotos premium para usuarios gratuitos**: exibem um overlay com cadeado e botao "Torne-se Premium", bloqueando a selecao. Ao clicar, redireciona para a pagina de planos
 
 ### Mudancas
 
-#### 1. Nova tabela: `device_signups`
+#### 1. `src/components/arcano-cloner/PhotoLibraryModal.tsx`
 
-Registra qual fingerprint criou qual conta:
+- Adicionar `is_premium` ao select da query e a interface `PhotoItem`
+- Receber `isPremiumUser` como prop (booleano)
+- Para cada foto no grid:
+  - Se `photo.is_premium && !isPremiumUser`: overlay escuro com icone de cadeado + texto "Exclusivo Premium" + botao "Torne-se Premium" que navega para `/planos-upscaler-creditos`
+  - Se `photo.is_premium && isPremiumUser`: badge pequena "Premium" no canto superior direito (estilo dourado)
+  - Se `!photo.is_premium`: sem alteracao, funciona normalmente
+- Bloquear `handleSelectPhoto` para fotos premium quando usuario nao e premium
 
-```text
-device_signups
-- id (uuid, PK)
-- device_fingerprint (text, indexed)
-- user_id (uuid)
-- created_at (timestamptz)
+#### 2. Paginas que usam o PhotoLibraryModal (3 arquivos)
+
+Passar a prop `isPremiumUser` para o modal:
+
+- `src/pages/PoseChangerTool.tsx` - ja importa `usePremiumStatus`, extrair `isPremium`
+- `src/pages/ArcanoClonerTool.tsx` - ja importa `usePremiumStatus`, extrair `isPremium`
+- `src/pages/VesteAITool.tsx` - ja importa `usePremiumStatus`, extrair `isPremium`
+
+Em cada um, mudar de `const { user } = usePremiumStatus()` para `const { user, isPremium } = usePremiumStatus()` e passar `isPremiumUser={isPremium}` ao `PhotoLibraryModal`.
+
+### Detalhes tecnicos
+
+**Interface PhotoItem atualizada:**
+```typescript
+interface PhotoItem {
+  id: string;
+  title: string;
+  image_url: string;
+  thumbnail_url?: string | null;
+  gender?: string | null;
+  is_premium?: boolean;
+}
 ```
 
-#### 2. Nova funcao RPC: `check_device_signup_limit`
+**Query atualizada:**
+```typescript
+.select('id, title, image_url, thumbnail_url, gender, tags, is_premium')
+```
 
-- Recebe o fingerprint do dispositivo
-- Retorna se o dispositivo ja foi usado para criar conta
-- SECURITY DEFINER para bypassar RLS
+**Logica de bloqueio no grid:**
+```typescript
+const handleSelectPhoto = (photo: PhotoItem) => {
+  if (photo.is_premium && !isPremiumUser) {
+    toast.error('Esta foto e exclusiva para usuarios Premium');
+    return;
+  }
+  onSelectPhoto(photo.image_url);
+  onClose();
+};
+```
 
-#### 3. Alteracao no signup (`src/hooks/useUnifiedAuth.ts`)
+**Visual da foto premium bloqueada:**
+- Overlay semi-transparente escuro
+- Icone de cadeado centralizado
+- Badge "Premium" no topo
+- Ao clicar: toast + nao seleciona
 
-No inicio da funcao `signup`:
-- Pega o fingerprint do dispositivo usando `getDeviceFingerprint()` (ja existe)
-- Chama a RPC `check_device_signup_limit` para verificar se ja existe conta nesse dispositivo
-- Se ja existir, mostra toast de erro: "Este dispositivo ja possui uma conta cadastrada. Use sua conta existente."
-- Se nao existir, prossegue com o signup normalmente
-
-Apos o signup ser bem sucedido (depois de criar o profile):
-- Registra o fingerprint na tabela `device_signups`
-
-#### 4. Adaptacao do fingerprint
-
-O fingerprint atual usa a key `admin_device_fp` no localStorage (pois era so para admin 2FA). Vamos criar uma funcao separada `getSignupDeviceFingerprint()` que usa uma key diferente (`signup_device_fp`) para nao conflitar. A logica de geracao sera a mesma.
-
-### Limitacoes conhecidas
-
-- O fingerprint e armazenado no localStorage, entao limpar os dados do navegador permite bypass
-- Usar navegadores diferentes no mesmo dispositivo gera fingerprints diferentes
-- Nao e 100% a prova de fraude, mas cria uma barreira significativa para a maioria dos usuarios casuais
-- Para maior seguranca, o fingerprint tambem e baseado em screen resolution, timezone, user agent e idioma, o que dificulta o bypass mesmo limpando localStorage
+**Visual da foto premium liberada (usuario premium):**
+- Badge dourada "Premium" pequena no canto superior direito
+- Selecao funciona normalmente
 
 ### Arquivos afetados
-
-- Nova migration SQL (tabela + RPC)
-- `src/hooks/useUnifiedAuth.ts` (verificacao no signup)
-- `src/lib/deviceFingerprint.ts` (nova funcao para signup fingerprint)
-
+- `src/components/arcano-cloner/PhotoLibraryModal.tsx` (logica principal)
+- `src/pages/PoseChangerTool.tsx` (passar isPremium)
+- `src/pages/ArcanoClonerTool.tsx` (passar isPremium)
+- `src/pages/VesteAITool.tsx` (passar isPremium)
