@@ -46,6 +46,7 @@ const PromptsMarketing = lazy(() => import("./pages/admin/PromptsMarketing"));
 const PromptsCustosIA = lazy(() => import("./pages/admin/PromptsCustosIA"));
 const PromptsApiGoogle = lazy(() => import("./pages/admin/PromptsApiGoogle"));
 const PromptsRentabilidade = lazy(() => import("./pages/admin/PromptsRentabilidade"));
+const PromptsTopIndicadores = lazy(() => import("./pages/admin/PromptsTopIndicadores"));
 const AdminCommunityReview = lazy(() => import("./pages/AdminCommunityReview"));
 const AdminArtesReview = lazy(() => import("./pages/AdminArtesReview"));
 const AdminManageImages = lazy(() => import("./pages/AdminManageImages"));
@@ -205,6 +206,7 @@ const AppContent = () => {
           <Route path="/admin-prompts/debug-ia" element={<Navigate to="/admin-prompts/api-google" replace />} />
           <Route path="/admin-prompts/api-google" element={<PromptsApiGoogle />} />
           <Route path="/admin-prompts/rentabilidade" element={<PromptsRentabilidade />} />
+          <Route path="/admin-prompts/top-indicadores" element={<PromptsTopIndicadores />} />
           <Route path="/admin-upload" element={<AdminUpload />} />
           <Route path="/admin-upload-artes" element={<AdminUploadArtes />} />
           <Route path="/admin-upload-artes-musicos" element={<AdminUploadArtesMusicos />} />
