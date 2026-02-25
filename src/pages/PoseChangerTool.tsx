@@ -362,6 +362,8 @@ const PoseChangerTool: React.FC = () => {
           status: 'pending',
           person_file_name: personUrl.split('/').pop() || 'person.webp',
           reference_file_name: referenceUrl.split('/').pop() || 'reference.webp',
+          person_image_url: personUrl,
+          reference_image_url: referenceUrl,
         })
         .select()
         .single();
