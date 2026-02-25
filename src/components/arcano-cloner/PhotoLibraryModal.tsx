@@ -382,7 +382,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
               onClick={() => {
                 setShowPremiumModal(false);
                 onClose();
-                navigate('/planos-upscaler-creditos');
+                navigate('/planos-2');
               }}
               className="flex-1 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white border-0"
             >
