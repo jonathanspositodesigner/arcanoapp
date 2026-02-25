@@ -121,14 +121,15 @@ serve(async (req) => {
     } else {
       const toolName = isProModel ? "gerar_imagem_pro" : "gerar_imagem";
 
-      // Check if user is IA Unlimited
+      // Check if user is IA Unlimited (must also have valid expiration)
       const { data: premiumData } = await serviceClient
         .from("premium_users")
-        .select("plan_type")
+        .select("plan_type, expires_at")
         .eq("user_id", userId)
         .eq("is_active", true)
         .maybeSingle();
-      const isUnlimited = premiumData?.plan_type === "arcano_unlimited";
+      const isUnlimited = premiumData?.plan_type === "arcano_unlimited" 
+        && (!premiumData?.expires_at || new Date(premiumData.expires_at) > new Date());
 
       // Get credit cost from settings
       const { data: settingsData } = await serviceClient

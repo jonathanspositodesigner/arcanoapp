@@ -3944,6 +3944,12 @@ export type Database = {
           was_expired: boolean
         }[]
       }
+      expire_legacy_premium_users: {
+        Args: never
+        Returns: {
+          users_expired: number
+        }[]
+      }
       expire_planos2_subscriptions: {
         Args: never
         Returns: {

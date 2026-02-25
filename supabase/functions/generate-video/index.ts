@@ -56,14 +56,15 @@ serve(async (req) => {
     const duration = validDurations.includes(duration_seconds) ? duration_seconds : 8;
     const ratio = ["16:9", "9:16"].includes(aspect_ratio) ? aspect_ratio : "16:9";
 
-    // Check if user is IA Unlimited
+    // Check if user is IA Unlimited (must also have valid expiration)
     const { data: premiumData } = await serviceClient
       .from("premium_users")
-      .select("plan_type")
+      .select("plan_type, expires_at")
       .eq("user_id", userId)
       .eq("is_active", true)
       .maybeSingle();
-    const isUnlimited = premiumData?.plan_type === "arcano_unlimited";
+    const isUnlimited = premiumData?.plan_type === "arcano_unlimited"
+      && (!premiumData?.expires_at || new Date(premiumData.expires_at) > new Date());
 
     // Get credit cost
     const { data: settingsData } = await serviceClient
