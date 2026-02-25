@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Wrench, BarChart3, Megaphone, LogOut, Home, ArrowLeft, Sparkles, Music, FileText, Cpu, Key, TrendingUp } from "lucide-react";
+import { Wrench, BarChart3, Megaphone, LogOut, Home, ArrowLeft, Sparkles, Music, FileText, Cpu, Key, TrendingUp, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -81,7 +81,17 @@ const AdminSidebarPlatform = ({ platform, onLogout }: AdminSidebarPlatformProps)
     }
   ] : [];
 
-  const menuItems = [...baseMenuItems.slice(0, 2), ...promptsExtraItems, ...baseMenuItems.slice(2)];
+  // Top Indicadores item - after DASHBOARD
+  const topIndicadoresItem = platform === "prompts" ? [
+    {
+      label: "TOP INDICADORES",
+      path: `${config.basePath}/top-indicadores`,
+      icon: Users,
+      description: "Ranking de indicações"
+    }
+  ] : [];
+
+  const menuItems = [...baseMenuItems.slice(0, 2), ...promptsExtraItems, ...baseMenuItems.slice(2), ...topIndicadoresItem];
 
   return (
     <aside className="w-64 min-h-screen bg-card border-r border-border flex flex-col">
