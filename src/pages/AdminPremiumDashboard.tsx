@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/pagination";
 import AdminCreditsTab from "@/components/admin/AdminCreditsTab";
 import AdminAIToolsUsageTab from "@/components/admin/AdminAIToolsUsageTab";
+import AdminPlanos2SubscribersTab from "@/components/admin/AdminPlanos2SubscribersTab";
 
 interface PremiumUser {
   id: string;
@@ -533,10 +534,14 @@ const AdminPremiumDashboard = () => {
         </div>
 
         <Tabs defaultValue="assinantes" className="w-full">
-          <TabsList className="grid w-full max-w-2xl grid-cols-3">
+          <TabsList className="grid w-full max-w-3xl grid-cols-4">
             <TabsTrigger value="assinantes" className="flex items-center gap-2">
               <Crown className="h-4 w-4" />
               Assinantes
+            </TabsTrigger>
+            <TabsTrigger value="assinantes-antigos" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Assinantes Antigos
             </TabsTrigger>
             <TabsTrigger value="creditos" className="flex items-center gap-2">
               <Coins className="h-4 w-4" />
@@ -549,6 +554,10 @@ const AdminPremiumDashboard = () => {
           </TabsList>
 
           <TabsContent value="assinantes" className="space-y-6 mt-6">
+            <AdminPlanos2SubscribersTab />
+          </TabsContent>
+
+          <TabsContent value="assinantes-antigos" className="space-y-6 mt-6">
             <div className="flex justify-end gap-2">
               <Button variant="outline" size="icon" onClick={fetchPremiumUsers}>
                 <RefreshCw className="h-4 w-4" />
