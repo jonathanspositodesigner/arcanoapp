@@ -1,31 +1,26 @@
 
+# Corrigir: Assinantes dos novos planos não aparecem no admin
 
-# Adicionar coluna "Tipo de Cliente" na tabela de Custos IA
+## Problema
 
-## O que sera feito
+A tabela `planos2_subscriptions` tem RLS (Row Level Security) que só permite cada usuário ver **sua própria** assinatura. Não existe uma policy para admins verem todas as assinaturas. Por isso a aba "Assinantes" aparece vazia para o admin.
 
-Adicionar uma nova coluna **"Tipo"** na tabela de historico de uso da pagina Custos IA, mostrando para cada usuario uma badge com seu tipo de cliente.
+Os dados existem no banco (28 registros: 23 Free, 2 Starter, 1 Pro, 1 Ultimate, 1 Unlimited), mas o admin não consegue lê-los.
 
-### Logica de classificacao (4 tipos)
+## Solução
 
-| Tipo | Condicao | Badge |
-|------|----------|-------|
-| Free | Sem plano pago ativo E sem creditos vitalicios | Cinza |
-| Comprou Creditos | Sem plano pago ativo, MAS tem lifetime_balance > 0 | Amarelo/Dourado |
-| Premium | Tem plano pago ativo (starter/pro/ultimate/unlimited) E sem creditos vitalicios | Roxo |
-| Premium + Creditos | Tem plano pago ativo E tem creditos vitalicios > 0 | Verde/Gradiente |
+Adicionar uma policy RLS na tabela `planos2_subscriptions` permitindo que admins vejam todos os registros, seguindo o mesmo padrão já usado na tabela `profiles`:
 
-### Detalhes tecnicos
+```sql
+CREATE POLICY "Admins can view all subscriptions"
+ON planos2_subscriptions FOR SELECT
+USING (has_role(auth.uid(), 'admin'));
+```
 
-**Arquivo modificado:** `src/components/admin/AdminAIToolsUsageTab.tsx`
+Isso é tudo. O código do componente `AdminPlanos2SubscribersTab.tsx` já está correto -- o problema é puramente de permissão no banco.
 
-1. Apos carregar os registros de uso, extrair todos os `user_id` unicos
-2. Fazer 2 queries em paralelo:
-   - `planos2_subscriptions` filtrando `is_active = true` e `plan_slug != 'free'` para saber quem e premium
-   - `upscaler_credits` para saber quem tem `lifetime_balance > 0`
-3. Criar um mapa `user_id -> tipo` usando a logica acima
-4. Adicionar coluna "Tipo" na tabela entre "Usuario" e "Ferramenta"
-5. Renderizar badges coloridas para cada tipo
+## Detalhes técnicos
 
-Nenhuma alteracao no banco de dados e necessaria -- os dados ja existem nas tabelas `planos2_subscriptions` e `upscaler_credits`.
-
+- Uma migration SQL será executada para criar a policy
+- Nenhum arquivo de código precisa ser alterado
+- A correção é imediata: após aplicar a policy, o admin verá todos os 28 assinantes
