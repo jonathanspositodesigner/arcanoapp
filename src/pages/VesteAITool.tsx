@@ -39,7 +39,7 @@ const queueMessages = [
 
 const VesteAITool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
-  const { user } = usePremiumStatus();
+  const { user, isPremium } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
   
   const { getCreditCost } = useAIToolSettings();
@@ -716,6 +716,7 @@ const VesteAITool: React.FC = () => {
         onClose={() => setShowPhotoLibrary(false)}
         onSelectPhoto={handleSelectFromLibrary}
         onUploadPhoto={handleUploadFromModal}
+        isPremiumUser={isPremium}
       />
 
       {/* No Credits Modal */}

@@ -47,7 +47,7 @@ const queueMessages = [
 const ArcanoClonerTool: React.FC = () => {
   const location = useLocation();
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
-  const { user } = usePremiumStatus();
+  const { user, isPremium } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
   const { getCreditCost } = useAIToolSettings();
   const creditCost = getCreditCost('Arcano Cloner', 80);
@@ -1083,6 +1083,7 @@ const ArcanoClonerTool: React.FC = () => {
         onClose={() => setShowPhotoLibrary(false)}
         onSelectPhoto={handleSelectFromLibrary}
         onUploadPhoto={handleUploadFromModal}
+        isPremiumUser={isPremium}
       />
 
       {/* No Credits Modal */}
