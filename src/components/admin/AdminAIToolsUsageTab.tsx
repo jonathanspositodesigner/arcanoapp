@@ -119,7 +119,7 @@ const AdminAIToolsUsageTab = () => {
         .from(tableName as any)
         .select('output_url')
         .eq('id', record.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       setJobOutputUrl((data as any)?.output_url || null);
