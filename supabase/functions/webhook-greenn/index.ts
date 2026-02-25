@@ -440,6 +440,7 @@ async function processPlanos2Webhook(
         greenn_product_id: productId,
         greenn_contract_id: contractId ? String(contractId) : null,
         expires_at: expiresAt,
+        last_credit_reset_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
 
@@ -659,7 +660,7 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
         if (planos2Sub && planos2Sub.plan_slug !== 'free') {
           await supabase.from('planos2_subscriptions').update({
             plan_slug: 'free',
-            credits_per_month: 300,
+            credits_per_month: 100,
             daily_prompt_limit: null,
             has_image_generation: false,
             has_video_generation: false,
@@ -667,6 +668,7 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
             expires_at: null,
             greenn_product_id: null,
             greenn_contract_id: null,
+            last_credit_reset_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           }).eq('user_id', userId)
           console.log(`   ├─ ✅ Planos2 resetado para Free`)

@@ -160,7 +160,7 @@ serve(async (req) => {
             user_id: tokenData.user_id,
             plan_slug: "free",
             is_active: true,
-            credits_per_month: 300,
+            credits_per_month: 100,
             daily_prompt_limit: 0,
             has_image_generation: false,
             has_video_generation: false,
@@ -177,7 +177,7 @@ serve(async (req) => {
           await supabaseAdmin.rpc("reset_upscaler_credits", {
             _user_id: tokenData.user_id,
             _amount: 300,
-            _description: "Créditos mensais - Plano Free (300/mês)",
+            _description: "Créditos iniciais - Plano Free (300 de boas-vindas)",
           });
           console.log(`[confirm-email] Granted 300 free monthly credits to user: ${tokenData.user_id}`);
         } else {

@@ -2376,6 +2376,7 @@ export type Database = {
           has_video_generation: boolean
           id: string
           is_active: boolean
+          last_credit_reset_at: string | null
           plan_slug: string
           updated_at: string
           user_id: string
@@ -2392,6 +2393,7 @@ export type Database = {
           has_video_generation?: boolean
           id?: string
           is_active?: boolean
+          last_credit_reset_at?: string | null
           plan_slug?: string
           updated_at?: string
           user_id: string
@@ -2408,6 +2410,7 @@ export type Database = {
           has_video_generation?: boolean
           id?: string
           is_active?: boolean
+          last_credit_reset_at?: string | null
           plan_slug?: string
           updated_at?: string
           user_id?: string
@@ -4124,6 +4127,12 @@ export type Database = {
           error_message: string
           new_balance: number
           success: boolean
+        }[]
+      }
+      reset_individual_monthly_credits: {
+        Args: never
+        Returns: {
+          users_reset: number
         }[]
       }
       reset_planos2_monthly_credits: {
