@@ -68,7 +68,7 @@ export const ZoomableBeforeAfter = ({ beforeImage, afterImage, onFullscreenClick
     <div className="relative rounded-xl overflow-hidden border border-border">
       <TransformWrapper
         initialScale={1}
-        minScale={1}
+        minScale={0.5}
         maxScale={8}
         centerOnInit
         wheel={{ step: 0.3 }}
@@ -98,8 +98,8 @@ export const ZoomableBeforeAfter = ({ beforeImage, afterImage, onFullscreenClick
             <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
               <div
                 ref={containerRef}
-                className="relative w-full cursor-grab active:cursor-grabbing select-none"
-                style={{ aspectRatio: "4/3" }}
+                className="relative w-full cursor-grab active:cursor-grabbing select-none bg-black"
+                style={{ height: '60vh', maxHeight: '600px' }}
                 onMouseDown={handleSliderMouseDown}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
@@ -113,7 +113,7 @@ export const ZoomableBeforeAfter = ({ beforeImage, afterImage, onFullscreenClick
                   src={afterImage}
                   alt="Depois"
                   className="absolute inset-0 pointer-events-none"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+                  style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center' }}
                   timeout={10000}
                   compressOnFailure={true}
                   showDownloadOnFail={false}
@@ -126,7 +126,7 @@ export const ZoomableBeforeAfter = ({ beforeImage, afterImage, onFullscreenClick
                     src={beforeImage}
                     alt="Antes"
                     className="absolute inset-0 pointer-events-none"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'center' }}
                     timeout={10000}
                     compressOnFailure={true}
                     showDownloadOnFail={false}
