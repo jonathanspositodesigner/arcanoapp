@@ -1,44 +1,32 @@
 
-# Correcao: resetForm usa creditos errados (600 em vez de 1800)
 
-## Bug encontrado
+# Adicionar zoom direto no modal de visualizacao dos jobs
 
-No `resetForm()` (linha 195), o valor padrao de creditos esta hardcoded como `600`:
-```
-setFormCreditsPerMonth(600);
-```
+## Problema
 
-O plano padrao do formulario e "starter" (linha 190), que tem `1800` creditos. Isso significa que se o admin abrir o modal de criacao e nao mexer no dropdown de plano, o usuario sera criado com 600 creditos em vez de 1800.
+No modal de visualizacao dos jobs em `/admin-prompts/custos-ia`, o componente `BeforeAfterSlider` nao tem zoom. O zoom so existe no `FullscreenModal` (aberto pelo botao de lupa). O usuario quer zoom com scroll do mouse, pinch e clicar-arrastar diretamente no modal principal.
 
-## Cenario do bug
+## Solucao
 
-1. Admin clica em "Adicionar Assinante"
-2. O formulario abre com plano "Starter" selecionado e creditos = 600
-3. Admin preenche email, nome, e clica em salvar SEM trocar o plano
-4. Usuario e criado com 600 creditos em vez de 1800
+Substituir o `BeforeAfterSlider` no modal do admin por uma versao inline com `TransformWrapper` (react-zoom-pan-pinch), igual ao que ja existe no `FullscreenModal`. Isso elimina a necessidade de abrir o fullscreen separado para ter zoom.
 
-**Nota**: Se o admin trocar o plano no dropdown, o `handlePlanChange` corrige o valor. O bug so acontece quando o admin aceita o padrao "Starter" sem mexer.
+## Alteracoes
 
-## Correcao
+### Arquivo: `src/components/admin/AdminAIToolsUsageTab.tsx`
 
-**Arquivo**: `src/components/admin/AdminPlanos2SubscribersTab.tsx`, linha 195
+Na secao do Dialog (linhas 731-739), substituir o `BeforeAfterSlider` por um bloco inline que usa `TransformWrapper` + `TransformComponent` com o slider antes/depois dentro. O bloco tera:
 
-Trocar:
-```
-setFormCreditsPerMonth(600);
-```
-Por:
-```
-setFormCreditsPerMonth(1800);
-```
+- `TransformWrapper` com `wheel={{ step: 0.3 }}`, `maxScale={8}`, `doubleClick toggle`
+- Controles de zoom flutuantes (ZoomIn, ZoomOut, Reset) iguais ao FullscreenModal
+- Slider antes/depois com a mesma logica de arrastar apenas perto da linha divisoria
+- Suporte a mouse (scroll zoom, click-drag pan) e touch (pinch zoom)
 
-Isso alinha o valor padrao do formulario com o valor correto do plano Starter definido em `PAID_PLANS`.
+Isso replica exatamente o comportamento do `FullscreenModal`, mas embutido diretamente no Dialog, sem precisar abrir tela cheia.
 
-## Verificacao completa
+### Detalhes tecnicos
 
-Todos os outros pontos estao corretos:
-- PAID_PLANS: 1800 / 4200 / 10800 / 99999 (OK)
-- getPlanFeatures: flags e limites batem com webhook (OK)
-- handleCreate: usa getPlanFeatures + aloca creditos via RPC (OK)
-- handleEdit: usa getPlanFeatures + reseta creditos via RPC (OK)
-- handlePlanChange: auto-preenche creditos do PAID_PLANS (OK)
+1. Importar `TransformWrapper`, `TransformComponent` de `react-zoom-pan-pinch` e icones `ZoomIn`, `ZoomOut`, `Maximize2`
+2. Adicionar estados locais para o slider position e refs para controle de drag
+3. O slider drag so ativa quando o clique e proximo da linha divisoria (threshold de 8%), permitindo que cliques em outras areas ativem o pan do zoom
+4. Manter o botao de zoom/lupa que abre o `FullscreenModal` como opcao adicional para tela cheia
+
