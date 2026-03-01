@@ -48,7 +48,8 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
     try {
       let query = supabase
         .from('admin_artes')
-        .select('id, title, image_url, category');
+        .select('id, title, image_url, category')
+        .not('image_url', 'like', '%.mp4');
 
       if (debouncedSearch.trim()) {
         const s = debouncedSearch.toLowerCase().trim();
@@ -171,7 +172,6 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
                       alt={flyer.title} 
                       className="absolute inset-0 w-full h-full object-cover" 
                       loading="lazy"
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="hidden sm:block absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
