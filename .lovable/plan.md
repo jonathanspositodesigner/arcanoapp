@@ -1,52 +1,32 @@
 
-# Corrigir "Antes e Depois" no Pose Changer e Veste AI
 
-## Problema
-Mesma situacao do Upscaler que acabamos de corrigir: o insert dos jobs no banco salva apenas o **nome do arquivo** (`person_file_name`) mas nao salva a **URL publica** (`person_image_url`). O campo existe na tabela mas fica sempre NULL.
+# Corrigir Bugs no Cadastro Manual de Assinantes (Admin)
 
-## Sobre o Storage 24h
-Sim, o `cleanup-ai-storage` remove arquivos com mais de 24h de TODAS as ferramentas de IA (upscaler, pose-changer, veste-ai, arcano-cloner, character-generator, flyer-maker, video-upscaler, image-generator, video-generator). Isso significa que as imagens "antes" precisam estar salvas como URL no banco, porque o arquivo no storage sera apagado.
+## Problemas Encontrados
 
-## Solucao
+### Bug 1 (CRITICO): Slug "unlimited" nao bate com getPlanFeatures
+- A lista `PAID_PLANS` usa `slug: "unlimited"` para o plano IA Unlimited
+- Porem, a funcao `getPlanFeatures()` so trata os casos `'ia-unlimited'` e `'ultimate'`
+- Resultado: ao cadastrar um usuario no plano IA Unlimited pelo admin, o `getPlanFeatures("unlimited")` cai no `default`, retornando `has_image_generation: false, has_video_generation: false`
+- **Isso explica exatamente o bug que voce esta vendo** - o plano e criado mas a geracao de imagem fica bloqueada
 
-### Arquivo 1: `src/pages/PoseChangerTool.tsx` (linha ~359)
+### Bug 2: Editar usuario nao atualiza creditos
+- A funcao `handleEdit` atualiza a assinatura (plan_slug, flags, etc.) mas **nunca chama** `reset_upscaler_credits`
+- Se voce mudar um usuario de Starter (600 creditos) para Ultimate (6000 creditos), o saldo de creditos continua o mesmo de antes
 
-Adicionar `person_image_url: personUrl` no insert do job:
+## Correcoes
 
-```typescript
-const { data: job, error: jobError } = await supabase
-  .from('pose_changer_jobs')
-  .insert({
-    session_id: sessionIdRef.current,
-    user_id: user.id,
-    status: 'pending',
-    person_file_name: personUrl.split('/').pop() || 'person.webp',
-    reference_file_name: referenceUrl.split('/').pop() || 'reference.webp',
-    person_image_url: personUrl,       // NOVO - salva URL da pessoa
-    reference_image_url: referenceUrl, // NOVO - salva URL da referencia
-  })
-```
+### Correcao 1: Adicionar 'unlimited' ao getPlanFeatures
+No arquivo `src/components/admin/AdminPlanos2SubscribersTab.tsx`, linha 56:
 
-### Arquivo 2: `src/pages/VesteAITool.tsx` (linha ~359)
+Adicionar `case 'unlimited':` junto com `case 'ia-unlimited':` e `case 'ultimate':` para que todos os tres slugs retornem as permissoes corretas (imagem e video habilitados).
 
-Adicionar `person_image_url: personUrl` no insert do job:
+### Correcao 2: Alocar creditos ao editar usuario
+Na funcao `handleEdit` (linha 346), apos atualizar a assinatura com sucesso, chamar `reset_upscaler_credits` para sincronizar o saldo de creditos com o novo plano. Isso garante que ao trocar de plano, os creditos sejam atualizados imediatamente.
 
-```typescript
-const { data: job, error: jobError } = await supabase
-  .from('veste_ai_jobs')
-  .insert({
-    session_id: sessionIdRef.current,
-    user_id: user.id,
-    status: 'pending',
-    person_file_name: personUrl.split('/').pop() || 'person.webp',
-    clothing_file_name: clothingUrl.split('/').pop() || 'clothing.webp',
-    person_image_url: personUrl,     // NOVO - salva URL da pessoa
-    clothing_image_url: clothingUrl, // NOVO - salva URL da roupa
-  })
-```
+### Correcao 3: Fix retroativo no banco
+Executar UPDATE para corrigir os 2 usuarios com `plan_slug = 'unlimited'` que possam ter flags erradas (ja foram corrigidos manualmente antes, mas e bom garantir).
 
-### Nenhuma alteracao no backend/banco
-As colunas `person_image_url`, `reference_image_url` e `clothing_image_url` ja existem nas tabelas. So precisam ser preenchidas no insert.
+## Arquivos Modificados
+- `src/components/admin/AdminPlanos2SubscribersTab.tsx` (2 alteracoes)
 
-### Importante
-Assim como no Upscaler, essa correcao so vale para **novos jobs**. Jobs antigos continuarao sem a imagem "antes" porque o dado nunca foi salvo.
