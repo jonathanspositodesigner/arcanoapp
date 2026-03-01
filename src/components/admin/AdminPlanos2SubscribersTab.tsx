@@ -192,7 +192,7 @@ const AdminPlanos2SubscribersTab = () => {
     setFormExpiresInDays(30);
     setFormGreennProductId("");
     setFormGreennContractId("");
-    setFormCreditsPerMonth(600);
+    setFormCreditsPerMonth(1800);
     setFormCostMultiplier(1);
   };
 
