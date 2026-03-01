@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/tooltip";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { BeforeAfterSlider } from "@/components/upscaler/BeforeAfterSlider";
+import { ZoomableBeforeAfter } from "@/components/admin/ZoomableBeforeAfter";
 import { FullscreenModal } from "@/components/upscaler/FullscreenModal";
 
 interface UsageRecord {
@@ -729,13 +729,10 @@ const AdminAIToolsUsageTab = () => {
                 onError={() => setIsOutputExpired(true)}
               />
             ) : jobInputUrl && selectedJob && !isVideoTool(selectedJob.tool_name) ? (
-              <BeforeAfterSlider
+              <ZoomableBeforeAfter
                 beforeImage={jobInputUrl}
                 afterImage={jobOutputUrl}
-                size="large"
-                aspectRatio="4/3"
-                onZoomClick={() => setShowFullscreen(true)}
-                locale="pt"
+                onFullscreenClick={() => setShowFullscreen(true)}
               />
             ) : (
               <img
