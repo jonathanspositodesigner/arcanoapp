@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { X } from "lucide-react";
+import { X, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 interface FullscreenModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface FullscreenModalProps {
 
 /**
  * Fullscreen modal for zoomed before/after comparison
+ * Supports: scroll wheel zoom, pinch zoom, double-click zoom, pan (drag), slider
  */
 export const FullscreenModal = ({ 
   isOpen, 
@@ -24,9 +26,7 @@ export const FullscreenModal = ({
   const t = (key: string) => tOriginal(key, { lng: locale });
   const [sliderPosition, setSliderPosition] = useState(50);
   const containerRef = useRef<HTMLDivElement>(null);
-  const isDragging = useRef(false);
-  const touchStartRef = useRef({ x: 0, y: 0 });
-  const isHorizontalDrag = useRef(false);
+  const isDraggingSlider = useRef(false);
 
   const handleMove = (clientX: number) => {
     if (!containerRef.current) return;
@@ -36,46 +36,41 @@ export const FullscreenModal = ({
     setSliderPosition(percentage);
   };
 
-  const handleMouseDown = () => {
-    isDragging.current = true;
+  const handleSliderMouseDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    isDraggingSlider.current = true;
   };
 
   const handleMouseUp = () => {
-    isDragging.current = false;
+    isDraggingSlider.current = false;
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (isDragging.current) {
+    if (isDraggingSlider.current) {
       handleMove(e.clientX);
     }
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    // Only start slider drag if touching near the slider line
+    if (!containerRef.current) return;
     const touch = e.touches[0];
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
-    isHorizontalDrag.current = false;
-    isDragging.current = true;
+    const rect = containerRef.current.getBoundingClientRect();
+    const touchX = ((touch.clientX - rect.left) / rect.width) * 100;
+    if (Math.abs(touchX - sliderPosition) < 8) {
+      isDraggingSlider.current = true;
+    }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
-    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
-    
-    if (deltaX > deltaY && deltaX > 10) {
-      isHorizontalDrag.current = true;
+    if (isDraggingSlider.current) {
+      e.stopPropagation();
+      handleMove(e.touches[0].clientX);
     }
-    
-    if (isHorizontalDrag.current) {
-      e.preventDefault();
-    }
-    
-    handleMove(touch.clientX);
   };
 
   const handleTouchEnd = () => {
-    isDragging.current = false;
-    isHorizontalDrag.current = false;
+    isDraggingSlider.current = false;
   };
 
   useEffect(() => {
@@ -104,56 +99,91 @@ export const FullscreenModal = ({
       </button>
       
       <div 
-        ref={containerRef}
-        className="relative w-full max-w-4xl aspect-square md:aspect-[4/3] rounded-2xl overflow-hidden cursor-ew-resize select-none"
+        className="relative w-full max-w-5xl"
         onClick={(e) => e.stopPropagation()}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onMouseMove={handleMouseMove}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
       >
-        {/* After Image (background) */}
-        <img 
-          src={afterImage} 
-          alt={locale === 'es' ? "Después" : "Depois"}
-          className="absolute inset-0 w-full h-full object-contain bg-black"
-        />
-        
-        {/* Before Image (clipped) */}
-        <div 
-          className="absolute inset-0 overflow-hidden"
-          style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+        <TransformWrapper
+          initialScale={1}
+          minScale={1}
+          maxScale={8}
+          centerOnInit
+          wheel={{ step: 0.3 }}
+          panning={{ disabled: false }}
+          doubleClick={{ mode: "toggle", step: 3 }}
         >
-          <img 
-            src={beforeImage} 
-            alt={locale === 'es' ? "Antes" : "Antes"}
-            className="absolute inset-0 w-full h-full object-contain bg-black"
-          />
-        </div>
+          {({ zoomIn, zoomOut, resetTransform }) => (
+            <>
+              {/* Zoom controls */}
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 border border-white/10">
+                <button onClick={() => zoomOut()} className="p-1.5 text-white/70 hover:text-white transition-colors">
+                  <ZoomOut className="w-5 h-5" />
+                </button>
+                <button onClick={() => zoomIn()} className="p-1.5 text-white/70 hover:text-white transition-colors">
+                  <ZoomIn className="w-5 h-5" />
+                </button>
+                <div className="w-px h-5 bg-white/20 mx-1" />
+                <button onClick={() => resetTransform()} className="p-1.5 text-white/70 hover:text-white transition-colors">
+                  <Maximize2 className="w-4 h-4" />
+                </button>
+              </div>
 
-        {/* Slider line */}
-        <div 
-          className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
-          style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
-        >
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center">
-            <div className="flex gap-0.5">
-              <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
-              <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
-            </div>
-          </div>
-        </div>
+              <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
+                <div 
+                  ref={containerRef}
+                  className="relative w-full rounded-xl overflow-hidden cursor-ew-resize select-none"
+                  style={{ aspectRatio: '4/3' }}
+                  onMouseDown={handleSliderMouseDown}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  onMouseMove={handleMouseMove}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  {/* After Image (background) */}
+                  <img 
+                    src={afterImage} 
+                    alt={locale === 'es' ? "Después" : "Depois"}
+                    className="absolute inset-0 w-full h-full object-contain bg-black"
+                  />
+                  
+                  {/* Before Image (clipped) */}
+                  <div 
+                    className="absolute inset-0 overflow-hidden"
+                    style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+                  >
+                    <img 
+                      src={beforeImage} 
+                      alt={locale === 'es' ? "Antes" : "Antes"}
+                      className="absolute inset-0 w-full h-full object-contain bg-black"
+                    />
+                  </div>
 
-        {/* Labels */}
-        <div className="absolute top-4 left-4 bg-black/80 text-white text-base font-semibold px-5 py-2.5 rounded-full">
-          {t('tools:upscaler.beforeAfter.before')}
-        </div>
-        <div className="absolute top-4 right-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-base font-semibold px-5 py-2.5 rounded-full">
-          {t('tools:upscaler.beforeAfter.after')}
-        </div>
+                  {/* Slider line */}
+                  <div 
+                    className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
+                    style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
+                  >
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center">
+                      <div className="flex gap-0.5">
+                        <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
+                        <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Labels */}
+                  <div className="absolute top-4 left-4 bg-black/80 text-white text-base font-semibold px-5 py-2.5 rounded-full">
+                    {t('tools:upscaler.beforeAfter.before')}
+                  </div>
+                  <div className="absolute top-4 right-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-base font-semibold px-5 py-2.5 rounded-full">
+                    {t('tools:upscaler.beforeAfter.after')}
+                  </div>
+                </div>
+              </TransformComponent>
+            </>
+          )}
+        </TransformWrapper>
       </div>
     </div>
   );
