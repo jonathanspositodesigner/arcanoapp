@@ -1,27 +1,14 @@
 
 
-# Corrigir imagens cortadas no visualizador de jobs
+# Corrigir imagens cortadas no ZoomableBeforeAfter
 
 ## Problema
 
-O componente `ZoomableBeforeAfter` esta cortando as imagens porque:
-- Usa `object-fit: cover` que recorta a imagem para preencher o container
-- Forca `aspect-ratio: 4/3` independente da proporcao real da imagem
-- `minScale: 1` impede dar zoom out para ver a imagem inteira
+O componente `ResilientImage` tem uma prop `objectFit` que por padrao e `'cover'` (linha 47). O `style={{ objectFit: 'contain' }}` passado pelo `ZoomableBeforeAfter` e aplicado no wrapper `<div>`, nao no `<img>` interno. O `<img>` usa a prop `objectFit` que continua como `'cover'`, cortando a imagem.
 
 ## Solucao
 
-### Arquivo: `src/components/admin/ZoomableBeforeAfter.tsx`
+No `src/components/admin/ZoomableBeforeAfter.tsx`, passar a prop `objectFit="contain"` diretamente no `ResilientImage` (nas duas instancias - antes e depois). Remover `objectFit` do `style` inline pois e redundante.
 
-1. Trocar `object-fit: cover` por `object-fit: contain` nas duas imagens (antes e depois) - isso mostra a imagem inteira sem cortar
-2. Remover o `aspect-ratio: 4/3` fixo do container e usar uma altura fixa com `max-height` para o container caber no modal sem forcar proporcao
-3. Reduzir `minScale` para `0.5` para permitir dar zoom out e ver a imagem inteira quando necessario
-4. Adicionar `background: black` no container para as areas vazias ao redor da imagem (quando contain deixa espacos) ficarem com fundo escuro
-
-### Resultado esperado
-
-- Imagens aparecem inteiras sem corte, centralizadas no container
-- Usuario pode dar zoom out (ate 0.5x) e zoom in (ate 8x) com scroll do mouse
-- Fundo preto nas areas vazias para visual limpo
-- Slider antes/depois continua funcionando normalmente
+Isso faz com que o `<img>` interno use `contain` ao inves de `cover`, mostrando a imagem inteira sem corte.
 
