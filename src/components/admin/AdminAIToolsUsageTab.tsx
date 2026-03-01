@@ -117,16 +117,6 @@ const AdminAIToolsUsageTab = () => {
     }
   };
 
-  const preloadImage = (url: string): Promise<boolean> => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve(true);
-      img.onerror = () => resolve(false);
-      img.src = url;
-      setTimeout(() => resolve(false), 8000);
-    });
-  };
-
   const handleJobClick = useCallback(async (record: UsageRecord) => {
     setSelectedJob(record);
     setOutputModalOpen(true);
@@ -144,10 +134,7 @@ const AdminAIToolsUsageTab = () => {
     try {
       const tableName = getTableName(record.tool_name);
       const inputCol = getInputColumn(record.tool_name);
-      // Always fetch thumbnail_url as fallback for expired RunningHub URLs
-      const selectFields = inputCol 
-        ? `output_url, thumbnail_url, ${inputCol}` 
-        : 'output_url, thumbnail_url';
+      const selectFields = inputCol ? `output_url, ${inputCol}` : 'output_url';
 
       const { data, error } = await supabase
         .from(tableName as any)
@@ -158,61 +145,10 @@ const AdminAIToolsUsageTab = () => {
       if (error) throw error;
       
       const outputUrl = (data as any)?.output_url || null;
-      const thumbnailUrl = (data as any)?.thumbnail_url || null;
       const inputUrl = inputCol ? (data as any)?.[inputCol] || null : null;
 
-      if (outputUrl) {
-        // Preload images to detect expiration
-        const checks: Promise<boolean>[] = [preloadImage(outputUrl)];
-        if (inputUrl && !isVideoTool(record.tool_name)) checks.push(preloadImage(inputUrl));
-        
-        const results = await Promise.all(checks);
-        const outputOk = results[0];
-        const inputOk = results.length > 1 ? results[1] : true;
-
-        if (!outputOk) {
-          // Output expired - try thumbnail as fallback
-          if (thumbnailUrl) {
-            const thumbOk = await preloadImage(thumbnailUrl);
-            if (thumbOk) {
-              setJobOutputUrl(thumbnailUrl);
-              // Try input too for before/after
-              if (inputUrl && !isVideoTool(record.tool_name)) {
-                const inputStillOk = await preloadImage(inputUrl);
-                setJobInputUrl(inputStillOk ? inputUrl : null);
-              } else {
-                setJobInputUrl(null);
-              }
-              setIsOutputExpired(false);
-            } else {
-              setIsOutputExpired(true);
-              setJobOutputUrl(null);
-              setJobInputUrl(null);
-            }
-          } else {
-            setIsOutputExpired(true);
-            setJobOutputUrl(null);
-            setJobInputUrl(null);
-          }
-        } else {
-          setJobOutputUrl(outputUrl);
-          setJobInputUrl(inputOk ? inputUrl : null);
-        }
-      } else if (thumbnailUrl) {
-        // No output_url but has thumbnail
-        const thumbOk = await preloadImage(thumbnailUrl);
-        if (thumbOk) {
-          setJobOutputUrl(thumbnailUrl);
-          setJobInputUrl(null);
-          setIsOutputExpired(false);
-        } else {
-          setJobOutputUrl(null);
-          setJobInputUrl(null);
-        }
-      } else {
-        setJobOutputUrl(null);
-        setJobInputUrl(null);
-      }
+      setJobOutputUrl(outputUrl);
+      setJobInputUrl(inputUrl);
     } catch (err) {
       console.error("Error fetching output_url:", err);
       setJobOutputUrl(null);
