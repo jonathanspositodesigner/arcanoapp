@@ -37,8 +37,14 @@ export const FullscreenModal = ({
   };
 
   const handleSliderMouseDown = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    isDraggingSlider.current = true;
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const clickX = ((e.clientX - rect.left) / rect.width) * 100;
+    if (Math.abs(clickX - sliderPosition) < 8) {
+      e.stopPropagation();
+      e.preventDefault();
+      isDraggingSlider.current = true;
+    }
   };
 
   const handleMouseUp = () => {
@@ -47,6 +53,7 @@ export const FullscreenModal = ({
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (isDraggingSlider.current) {
+      e.stopPropagation();
       handleMove(e.clientX);
     }
   };
