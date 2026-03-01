@@ -65,7 +65,18 @@ export const ZoomableBeforeAfter = ({ beforeImage, afterImage, onFullscreenClick
   }, []);
 
   return (
-    <div className="relative rounded-xl overflow-hidden border border-border">
+    <div
+      ref={containerRef}
+      className="relative rounded-xl overflow-hidden border border-border"
+      style={{ height: '60vh', maxHeight: '600px' }}
+      onMouseDown={handleSliderMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      onMouseMove={handleMouseMove}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       <TransformWrapper
         initialScale={1}
         minScale={0.5}
@@ -95,19 +106,8 @@ export const ZoomableBeforeAfter = ({ beforeImage, afterImage, onFullscreenClick
               )}
             </div>
 
-            <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
-              <div
-                ref={containerRef}
-                className="relative w-full cursor-grab active:cursor-grabbing select-none bg-black"
-                style={{ height: '60vh', maxHeight: '600px' }}
-                onMouseDown={handleSliderMouseDown}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-                onMouseMove={handleMouseMove}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-              >
+            <TransformComponent wrapperClass="!w-full !h-full" contentClass="!w-full !h-full">
+              <div className="relative w-full h-full cursor-grab active:cursor-grabbing select-none bg-black">
                 {/* After image (background) */}
                 <ResilientImage
                   src={afterImage}
@@ -135,25 +135,25 @@ export const ZoomableBeforeAfter = ({ beforeImage, afterImage, onFullscreenClick
                     locale="pt"
                   />
                 </div>
-
-                {/* Slider line */}
-                <div className="absolute top-0 bottom-0 w-1 bg-white shadow-lg" style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}>
-                  <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center">
-                    <div className="flex gap-0.5">
-                      <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
-                      <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Labels */}
-                <div className="absolute top-3 left-3 bg-black/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full">Antes</div>
-                <div className="absolute bottom-3 right-3 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full">Depois</div>
               </div>
             </TransformComponent>
           </>
         )}
       </TransformWrapper>
+
+      {/* Slider line - outside TransformComponent so it doesn't scale with zoom */}
+      <div className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg pointer-events-none z-10" style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}>
+        <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center pointer-events-auto cursor-ew-resize">
+          <div className="flex gap-0.5">
+            <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+            <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+          </div>
+        </div>
+      </div>
+
+      {/* Labels */}
+      <div className="absolute top-3 left-3 z-10 bg-black/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full pointer-events-none">Antes</div>
+      <div className="absolute bottom-3 right-3 z-10 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full pointer-events-none">Depois</div>
     </div>
   );
 };
