@@ -394,8 +394,8 @@ const GerarImagemTool = () => {
               />
             </div>
 
-            {/* Controls + Generate button row */}
-            <div className="flex items-center gap-1.5">
+            {/* Controls row 1: Model + Aspect ratios */}
+            <div className="flex items-center gap-1.5 flex-wrap">
               {/* Model dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
