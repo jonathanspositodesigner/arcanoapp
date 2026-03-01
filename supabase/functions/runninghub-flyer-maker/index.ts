@@ -17,7 +17,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
  * - Node 7: Título (text)
  * - Node 9: Promoção de rodapé (text)
  * - Node 103: Endereço (text)
- * - Node 68: Tamanho/aspectRatio (aspectRatio)
+ * - Node 134: Tamanho/aspectRatio (aspectRatio)
  * - Node 111: Criatividade da IA (value 0-5)
  * 
  * Endpoints:
@@ -342,7 +342,8 @@ async function handleRun(req: Request) {
       waited_in_queue: false, status: 'running', started_at: new Date().toISOString(), position: 0, api_account: accountName || 'primary'
     }).eq('id', jobId);
 
-    const finalImageSize = imageSize === '9:16' ? '9:16' : '3:4';
+    const validAspectRatios = ['auto', '1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
+    const finalImageSize = validAspectRatios.includes(imageSize) ? imageSize : '4:3';
     const finalCreativity = String(Math.min(5, Math.max(0, Number(creativity) || 0)));
 
     // Only include artist nodes that have actual images - NO duplication
@@ -362,7 +363,7 @@ async function handleRun(req: Request) {
     nodeInfoList.push({ nodeId: "7", fieldName: "text", fieldValue: title || '' });
     nodeInfoList.push({ nodeId: "9", fieldName: "text", fieldValue: footerPromo || '' });
     nodeInfoList.push({ nodeId: "103", fieldName: "text", fieldValue: address || '' });
-    nodeInfoList.push({ nodeId: "68", fieldName: "aspectRatio", fieldValue: finalImageSize });
+    nodeInfoList.push({ nodeId: "134", fieldName: "aspectRatio", fieldValue: finalImageSize });
     nodeInfoList.push({ nodeId: "111", fieldName: "value", fieldValue: finalCreativity });
 
     const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
