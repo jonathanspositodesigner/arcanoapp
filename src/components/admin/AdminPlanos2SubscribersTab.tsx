@@ -45,14 +45,15 @@ type SortDirection = 'asc' | 'desc';
 
 const ITEMS_PER_PAGE = 20;
 
-/** Derive plan feature flags from plan_slug */
+/** Derive plan feature flags from plan_slug — must match webhook values exactly */
 function getPlanFeatures(planSlug: string) {
   switch (planSlug) {
     case 'starter':
       return { has_image_generation: false, has_video_generation: false, daily_prompt_limit: 5 };
     case 'pro':
-      return { has_image_generation: true, has_video_generation: false, daily_prompt_limit: null };
+      return { has_image_generation: true, has_video_generation: true, daily_prompt_limit: 10 };
     case 'ultimate':
+      return { has_image_generation: true, has_video_generation: true, daily_prompt_limit: 24 };
     case 'ia-unlimited':
     case 'unlimited':
       return { has_image_generation: true, has_video_generation: true, daily_prompt_limit: null };
@@ -78,10 +79,10 @@ const PLAN_COLORS: Record<string, string> = {
 };
 
 const PAID_PLANS = [
-  { slug: "starter", label: "Starter", credits: 600, costMultiplier: 1 },
-  { slug: "pro", label: "Pro", credits: 1500, costMultiplier: 1 },
-  { slug: "ultimate", label: "Ultimate", credits: 6000, costMultiplier: 1 },
-  { slug: "unlimited", label: "IA Unlimited", credits: 999999, costMultiplier: 0.5 },
+  { slug: "starter", label: "Starter", credits: 1800, costMultiplier: 1 },
+  { slug: "pro", label: "Pro", credits: 4200, costMultiplier: 1 },
+  { slug: "ultimate", label: "Ultimate", credits: 10800, costMultiplier: 1 },
+  { slug: "unlimited", label: "IA Unlimited", credits: 99999, costMultiplier: 0.5 },
 ];
 
 const AdminPlanos2SubscribersTab = () => {
