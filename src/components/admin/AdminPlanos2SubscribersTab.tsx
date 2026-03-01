@@ -45,6 +45,21 @@ type SortDirection = 'asc' | 'desc';
 
 const ITEMS_PER_PAGE = 20;
 
+/** Derive plan feature flags from plan_slug */
+function getPlanFeatures(planSlug: string) {
+  switch (planSlug) {
+    case 'starter':
+      return { has_image_generation: false, has_video_generation: false, daily_prompt_limit: 5 };
+    case 'pro':
+      return { has_image_generation: true, has_video_generation: false, daily_prompt_limit: null };
+    case 'ultimate':
+    case 'ia-unlimited':
+      return { has_image_generation: true, has_video_generation: true, daily_prompt_limit: null };
+    default: // free
+      return { has_image_generation: false, has_video_generation: false, daily_prompt_limit: null };
+  }
+}
+
 const PLAN_LABELS: Record<string, string> = {
   free: "Free",
   starter: "Starter",
@@ -276,6 +291,7 @@ const AdminPlanos2SubscribersTab = () => {
               expires_at: expiresAt.toISOString(),
               greenn_product_id: formGreennProductId ? parseInt(formGreennProductId) : null,
               greenn_contract_id: formGreennContractId || null,
+              ...getPlanFeatures(formPlanSlug),
             })
             .eq("user_id", userId);
 
@@ -293,6 +309,7 @@ const AdminPlanos2SubscribersTab = () => {
               expires_at: expiresAt.toISOString(),
               greenn_product_id: formGreennProductId ? parseInt(formGreennProductId) : null,
               greenn_contract_id: formGreennContractId || null,
+              ...getPlanFeatures(formPlanSlug),
             });
 
           if (insertError) throw insertError;
@@ -331,6 +348,7 @@ const AdminPlanos2SubscribersTab = () => {
           expires_at: expiresAt.toISOString(),
           greenn_product_id: formGreennProductId ? parseInt(formGreennProductId) : null,
           greenn_contract_id: formGreennContractId || null,
+          ...getPlanFeatures(formPlanSlug),
         })
         .eq("id", selectedUser.id);
 
