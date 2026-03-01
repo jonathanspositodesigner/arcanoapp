@@ -314,6 +314,19 @@ const AdminPlanos2SubscribersTab = () => {
 
           if (insertError) throw insertError;
         }
+
+        // Allocate monthly credits for the new subscriber
+        if (formCreditsPerMonth > 0) {
+          const { error: creditError } = await supabase.rpc('reset_upscaler_credits', {
+            _user_id: userId,
+            _amount: formCreditsPerMonth,
+            _description: `Créditos iniciais - Plano ${formPlanSlug} (admin)`,
+          });
+          if (creditError) {
+            console.error('Error allocating credits:', creditError);
+            toast.error('Assinatura criada, mas erro ao alocar créditos. Adicione manualmente.');
+          }
+        }
       } else {
         throw new Error("Não foi possível localizar o usuário criado para vincular ao Planos 2.");
       }
