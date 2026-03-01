@@ -1,32 +1,27 @@
 
 
-# Adicionar zoom direto no modal de visualizacao dos jobs
+# Corrigir imagens cortadas no visualizador de jobs
 
 ## Problema
 
-No modal de visualizacao dos jobs em `/admin-prompts/custos-ia`, o componente `BeforeAfterSlider` nao tem zoom. O zoom so existe no `FullscreenModal` (aberto pelo botao de lupa). O usuario quer zoom com scroll do mouse, pinch e clicar-arrastar diretamente no modal principal.
+O componente `ZoomableBeforeAfter` esta cortando as imagens porque:
+- Usa `object-fit: cover` que recorta a imagem para preencher o container
+- Forca `aspect-ratio: 4/3` independente da proporcao real da imagem
+- `minScale: 1` impede dar zoom out para ver a imagem inteira
 
 ## Solucao
 
-Substituir o `BeforeAfterSlider` no modal do admin por uma versao inline com `TransformWrapper` (react-zoom-pan-pinch), igual ao que ja existe no `FullscreenModal`. Isso elimina a necessidade de abrir o fullscreen separado para ter zoom.
+### Arquivo: `src/components/admin/ZoomableBeforeAfter.tsx`
 
-## Alteracoes
+1. Trocar `object-fit: cover` por `object-fit: contain` nas duas imagens (antes e depois) - isso mostra a imagem inteira sem cortar
+2. Remover o `aspect-ratio: 4/3` fixo do container e usar uma altura fixa com `max-height` para o container caber no modal sem forcar proporcao
+3. Reduzir `minScale` para `0.5` para permitir dar zoom out e ver a imagem inteira quando necessario
+4. Adicionar `background: black` no container para as areas vazias ao redor da imagem (quando contain deixa espacos) ficarem com fundo escuro
 
-### Arquivo: `src/components/admin/AdminAIToolsUsageTab.tsx`
+### Resultado esperado
 
-Na secao do Dialog (linhas 731-739), substituir o `BeforeAfterSlider` por um bloco inline que usa `TransformWrapper` + `TransformComponent` com o slider antes/depois dentro. O bloco tera:
-
-- `TransformWrapper` com `wheel={{ step: 0.3 }}`, `maxScale={8}`, `doubleClick toggle`
-- Controles de zoom flutuantes (ZoomIn, ZoomOut, Reset) iguais ao FullscreenModal
-- Slider antes/depois com a mesma logica de arrastar apenas perto da linha divisoria
-- Suporte a mouse (scroll zoom, click-drag pan) e touch (pinch zoom)
-
-Isso replica exatamente o comportamento do `FullscreenModal`, mas embutido diretamente no Dialog, sem precisar abrir tela cheia.
-
-### Detalhes tecnicos
-
-1. Importar `TransformWrapper`, `TransformComponent` de `react-zoom-pan-pinch` e icones `ZoomIn`, `ZoomOut`, `Maximize2`
-2. Adicionar estados locais para o slider position e refs para controle de drag
-3. O slider drag so ativa quando o clique e proximo da linha divisoria (threshold de 8%), permitindo que cliques em outras areas ativem o pan do zoom
-4. Manter o botao de zoom/lupa que abre o `FullscreenModal` como opcao adicional para tela cheia
+- Imagens aparecem inteiras sem corte, centralizadas no container
+- Usuario pode dar zoom out (ate 0.5x) e zoom in (ate 8x) com scroll do mouse
+- Fundo preto nas areas vazias para visual limpo
+- Slider antes/depois continua funcionando normalmente
 
