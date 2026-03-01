@@ -8,11 +8,11 @@ import { createClient } from "npm:@supabase/supabase-js@2";
  * Ferramenta de IA que clona poses e cenários.
  * Usa o workflow WebApp ID 2019877042115842050
  * 
- * Nodes do Workflow:
+ * Nodes do Workflow (v2 - atualizado):
  * - Node 58: Foto do usuário (image)
  * - Node 62: Foto de referência (image)  
- * - Node 69: Prompt fixo (text)
- * - Node 85: Aspect ratio (aspectRatio)
+ * - Node 133: Criatividade da IA (value)
+ * - Node 135: Instruções personalizadas (text)
  * 
  * Endpoints:
  * - /upload - Upload de imagem para RunningHub
@@ -36,9 +36,7 @@ const WEBAPP_ID_CLONER = '2019877042115842050';
 const RATE_LIMIT_UPLOAD = { maxRequests: 10, windowSeconds: 60 };
 const RATE_LIMIT_RUN = { maxRequests: 5, windowSeconds: 60 };
 
-// Fixed prompt for the workflow
-const FIXED_PROMPT = 'faça o homem da imagem 1 com a mesma pose, composição de cenário fundo e roupas da imagem 2. SEM RUÍDO NA FOTO';
-
+// Fixed prompt removed - workflow v2 no longer uses node 69
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 if (!RUNNINGHUB_API_KEY) {
@@ -408,9 +406,8 @@ async function handleRun(req: Request) {
     });
   }
 
-  // Validate aspect ratio
-  const validAspectRatios = ['1:1', '3:4', '9:16', '16:9'];
-  const finalAspectRatio = validAspectRatios.includes(aspectRatio) ? aspectRatio : '1:1';
+  // Aspect ratio no longer a workflow node in v2 - kept for DB tracking only
+  const finalAspectRatio = aspectRatio || '1:1';
 
   // Validate URLs are from Supabase storage
   const allowedDomains = ['supabase.co', 'supabase.in', SUPABASE_URL.replace('https://', '')];
@@ -715,16 +712,14 @@ async function handleRun(req: Request) {
       })
       .eq('id', jobId);
 
-    // Build node info list for Arcano Cloner API
-    // Node 58 = User photo, Node 62 = Reference photo, Node 69 = Prompt, Node 85 = Aspect Ratio
+    // Build node info list for Arcano Cloner API (v2 - 4 nodes only)
+    // Node 58 = User photo, Node 62 = Reference photo, Node 133 = Creativity, Node 135 = Custom prompt
     const finalCreativity = String(Math.min(100, Math.max(0, Number(creativity) || 0)));
     const finalCustomPrompt = customPrompt || '';
 
     const nodeInfoList = [
       { nodeId: "58", fieldName: "image", fieldValue: userFileName },
       { nodeId: "62", fieldName: "image", fieldValue: referenceFileName },
-      { nodeId: "69", fieldName: "text", fieldValue: FIXED_PROMPT },
-      { nodeId: "85", fieldName: "aspectRatio", fieldValue: finalAspectRatio },
       { nodeId: "133", fieldName: "value", fieldValue: finalCreativity },
       { nodeId: "135", fieldName: "text", fieldValue: finalCustomPrompt }
     ];
