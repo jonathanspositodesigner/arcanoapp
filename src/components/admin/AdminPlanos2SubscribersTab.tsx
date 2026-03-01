@@ -54,6 +54,7 @@ function getPlanFeatures(planSlug: string) {
       return { has_image_generation: true, has_video_generation: false, daily_prompt_limit: null };
     case 'ultimate':
     case 'ia-unlimited':
+    case 'unlimited':
       return { has_image_generation: true, has_video_generation: true, daily_prompt_limit: null };
     default: // free
       return { has_image_generation: false, has_video_generation: false, daily_prompt_limit: null };
@@ -366,6 +367,19 @@ const AdminPlanos2SubscribersTab = () => {
         .eq("id", selectedUser.id);
 
       if (subError) throw subError;
+
+      // Reset credits to match the new plan
+      if (formCreditsPerMonth > 0) {
+        const { error: creditError } = await supabase.rpc('reset_upscaler_credits', {
+          _user_id: selectedUser.user_id,
+          _amount: formCreditsPerMonth,
+          _description: `Créditos atualizados - Plano ${formPlanSlug} (admin edit)`,
+        });
+        if (creditError) {
+          console.error('Error resetting credits on edit:', creditError);
+          toast.error('Assinatura atualizada, mas erro ao sincronizar créditos.');
+        }
+      }
 
       const { error: profileError } = await supabase
         .from("profiles")
