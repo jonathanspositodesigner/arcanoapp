@@ -406,8 +406,9 @@ async function handleRun(req: Request) {
     });
   }
 
-  // Aspect ratio no longer a workflow node in v2 - kept for DB tracking only
-  const finalAspectRatio = aspectRatio || '1:1';
+  // Validate aspect ratio - must match workflow node 145 allowed values
+  const validAspectRatios = ['auto', '1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
+  const finalAspectRatio = validAspectRatios.includes(aspectRatio) ? aspectRatio : '4:3';
 
   // Validate URLs are from Supabase storage
   const allowedDomains = ['supabase.co', 'supabase.in', SUPABASE_URL.replace('https://', '')];
@@ -712,8 +713,8 @@ async function handleRun(req: Request) {
       })
       .eq('id', jobId);
 
-    // Build node info list for Arcano Cloner API (v2 - 4 nodes only)
-    // Node 58 = User photo, Node 62 = Reference photo, Node 133 = Creativity, Node 135 = Custom prompt
+    // Build node info list for Arcano Cloner API (v2 - 5 nodes)
+    // Node 58 = User photo, Node 62 = Reference photo, Node 133 = Creativity, Node 135 = Custom prompt, Node 145 = Aspect Ratio
     const finalCreativity = String(Math.min(100, Math.max(0, Number(creativity) || 0)));
     const finalCustomPrompt = customPrompt || '';
 
@@ -721,7 +722,8 @@ async function handleRun(req: Request) {
       { nodeId: "58", fieldName: "image", fieldValue: userFileName },
       { nodeId: "62", fieldName: "image", fieldValue: referenceFileName },
       { nodeId: "133", fieldName: "value", fieldValue: finalCreativity },
-      { nodeId: "135", fieldName: "text", fieldValue: finalCustomPrompt }
+      { nodeId: "135", fieldName: "text", fieldValue: finalCustomPrompt },
+      { nodeId: "145", fieldName: "aspectRatio", fieldValue: finalAspectRatio }
     ];
 
     const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
