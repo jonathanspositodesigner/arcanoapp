@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
-import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
+import { useCredits } from "@/contexts/CreditsContext";
 import { useTranslation } from "react-i18next";
 import { AnimatedCreditsDisplay } from "@/components/upscaler/AnimatedCreditsDisplay";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
@@ -38,7 +38,7 @@ const ToolsHeader = ({
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { user, logout } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading } = useUpscalerCredits(user?.id);
+  const { balance: credits, isLoading: creditsLoading } = useCredits();
   const [userProfile, setUserProfile] = useState<{ name?: string; phone?: string } | null>(null);
   const [showCreationsModal, setShowCreationsModal] = useState(false);
   
