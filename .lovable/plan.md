@@ -1,57 +1,39 @@
 
 
-# Plano: Substituir selects unbounded de arte_clicks e prompt_clicks por RPCs agregadas
+# Diagnóstico: diegobranddesigner@gmail.com — Compra não registrada
 
-## Resumo
+## O que descobri
 
-Existem 5 locais que fazem `select('arte_id')` ou `select('prompt_id')` sem limite nas tabelas de clicks, baixando TODAS as linhas e contando no client. A RPC `get_prompt_click_counts` ja existe e e usada em `useOptimizedPrompts.ts`. Preciso criar `get_arte_click_counts` equivalente e substituir todos os selects unbounded.
+1. **Profile existe**: `4a010f4e-91bf-4d52-b726-5c9a30c103c8`, criado em 2026-03-04 18:10
+2. **user_pack_purchases**: VAZIO — zero registros para esse user_id
+3. **webhook_logs**: ZERO entradas para esse email em QUALQUER plataforma (Greenn, Hotmart, créditos, artes)
+4. **Conclusão**: O webhook da Greenn simplesmente **nunca chegou** ao sistema para esse email
 
-## Mudancas
+## Por que o webhook não chegou
 
-### 1. Criar RPC `get_arte_click_counts` (migracao SQL)
+Possíveis causas (precisa verificar no painel da Greenn):
+- **Webhook não configurado** para o produto específico que esse cliente comprou
+- **Falha de rede** no momento do disparo (Greenn → sistema) sem retry
+- **Produto com ID diferente** não mapeado no sistema (se for um produto novo que não está nos IDs 156954/156957/156960)
+- **O comprador usou checkout de um produto diferente** que não tem webhook configurado
+
+## Plano de ação
+
+### 1. Inserir registro de compra manualmente (SQL INSERT via insert tool)
 
 ```sql
-CREATE OR REPLACE FUNCTION public.get_arte_click_counts()
-RETURNS TABLE(arte_id text, click_count bigint)
-LANGUAGE sql STABLE
-SET search_path TO 'public'
-AS $$
-  SELECT arte_id, COUNT(*)::bigint as click_count
-  FROM arte_clicks
-  GROUP BY arte_id;
-$$;
+INSERT INTO user_pack_purchases (user_id, pack_slug, access_type, is_active, purchased_at)
+VALUES ('4a010f4e-91bf-4d52-b726-5c9a30c103c8', 'upscaller-arcano', 'vitalicio', true, NOW());
 ```
 
-### 2. Substituir selects unbounded em 5 arquivos
+Depois disso, o usuário poderá ir em `/resgatar-creditos` e resgatar os 1.500 créditos normalmente.
 
-**`src/pages/BibliotecaArtes.tsx`** (linha ~211):
-- De: `supabase.from('arte_clicks').select('arte_id')`
-- Para: `supabase.rpc('get_arte_click_counts')`
-- Ajustar parsing: `data.forEach(d => clickCounts[d.arte_id] = d.click_count)`
+### 2. Investigar no painel da Greenn
 
-**`src/pages/AdminManageArtes.tsx`** (linha ~157):
-- Mesma substituicao por `rpc('get_arte_click_counts')`
+Verificar no painel da Greenn:
+- Qual **Product ID** exato essa compra usa
+- Se o webhook está configurado apontando para a URL correta do sistema
+- Se houve tentativa de disparo com erro
 
-**`src/pages/AdminManageArtesMusicos.tsx`** (linha ~138):
-- Mesma substituicao por `rpc('get_arte_click_counts')`
-
-**`src/pages/AdminManageImages.tsx`** (linha ~149-151):
-- De: `supabase.from('prompt_clicks').select('prompt_id')`
-- Para: `supabase.rpc('get_prompt_click_counts')`
-- Ajustar parsing para usar `d.click_count` direto
-
-**`src/pages/PartnerDashboard.tsx`** (linha ~119-122):
-- De: `supabase.from('prompt_clicks').select('prompt_id').in('prompt_id', promptIds)`
-- Para: `supabase.rpc('get_prompt_click_counts')` + filtrar no client pelos promptIds do partner
-
-## Impacto
-
-| Metrica | Antes | Depois |
-|---------|-------|--------|
-| arte_clicks payload | N linhas brutas | ~M linhas agregadas (1 por arte) |
-| prompt_clicks payload | N linhas brutas | ~M linhas agregadas (1 por prompt) |
-| Processamento | COUNT no browser | COUNT no banco (otimizado) |
-| Risco de hit no limite 1000 rows | Alto (dados crescem) | Zero (agregado) |
-
-Zero risco de quebra — mesmos dados, formato ligeiramente diferente no parsing.
+Isso está fora do alcance do código — precisa ser feito diretamente no painel da Greenn.
 
