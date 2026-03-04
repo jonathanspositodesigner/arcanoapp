@@ -145,14 +145,12 @@ const AdminManageImages = () => {
 
       setPrompts(allPrompts);
 
-      // Fetch click counts for all prompts from prompt_clicks table
-      const { data: clickData } = await supabase
-        .from('prompt_clicks')
-        .select('prompt_id');
+      // Fetch click counts for all prompts via aggregated RPC
+      const { data: clickData } = await supabase.rpc('get_prompt_click_counts');
 
       const counts: Record<string, number> = {};
-      (clickData || []).forEach(d => {
-        counts[d.prompt_id] = (counts[d.prompt_id] || 0) + 1;
+      (clickData || []).forEach((d: any) => {
+        counts[d.prompt_id] = Number(d.click_count);
       });
       setClickCounts(counts);
     } catch (error) {
