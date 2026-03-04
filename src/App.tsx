@@ -154,7 +154,17 @@ const LoadingSpinner = () => (
   </div>
 );
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+      staleTime: 5 * 60 * 1000, // 5 minutes - reduce refetches
+      gcTime: 10 * 60 * 1000, // 10 minutes cache
+      refetchOnWindowFocus: false, // prevent extra queries on tab switch
+    },
+  },
+});
 
 const AppContent = () => {
   // Log version to confirm deployment
