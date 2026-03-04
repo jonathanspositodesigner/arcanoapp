@@ -12,6 +12,7 @@ export const useUpscalerCredits = (userId: string | undefined) => {
   const [breakdown, setBreakdown] = useState<CreditsBreakdown>({ total: 0, monthly: 0, lifetime: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const trialCheckedRef = useRef(false);
 
   const fetchBalance = useCallback(async (attempt = 0) => {
     if (!userId) {
@@ -22,10 +23,13 @@ export const useUpscalerCredits = (userId: string | undefined) => {
     }
 
     try {
-      // First check if landing trial credits expired
-      const { data: expiryData } = await supabase.rpc('expire_landing_trial_credits', {
-        _user_id: userId
-      });
+      // Only check trial expiration once per session to save a connection
+      if (!trialCheckedRef.current) {
+        trialCheckedRef.current = true;
+        await supabase.rpc('expire_landing_trial_credits', {
+          _user_id: userId
+        });
+      }
 
       // Fetch breakdown
       const { data: breakdownData, error: breakdownError } = await supabase.rpc('get_upscaler_credits_breakdown', {
@@ -57,11 +61,10 @@ export const useUpscalerCredits = (userId: string | undefined) => {
       if (attempt < 2) {
         const delay = 1000 * Math.pow(2, attempt) + Math.random() * 500;
         setTimeout(() => fetchBalance(attempt + 1), delay);
-        return; // Don't set isLoading false yet
+        return;
       }
     } finally {
-      if (attempt >= 2 || !userId) setIsLoading(false);
-      else setIsLoading(false);
+      setIsLoading(false);
     }
   }, [userId]);
 

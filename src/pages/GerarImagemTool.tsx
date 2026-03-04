@@ -7,7 +7,7 @@ import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useCredits } from '@/contexts/CreditsContext';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
-import { usePlanos2Access } from '@/hooks/usePlanos2Access';
+import { useAuth } from '@/contexts/AuthContext';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import AppLayout from '@/components/layout/AppLayout';
 
@@ -32,7 +32,7 @@ const GerarImagemTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
-  const { isPlanos2User, hasImageGeneration, costMultiplier, isLoading: isLoadingAccess } = usePlanos2Access(user?.id);
+  const { isPlanos2User, hasImageGeneration, costMultiplier } = useAuth();
   
   const { getCreditCost } = useAIToolSettings();
 
@@ -223,7 +223,7 @@ const GerarImagemTool = () => {
   const modelLabel = model === 'pro' ? 'Nano Banana Pro' : 'Nano Banana';
 
   // Block access for planos2 users without image generation permission
-  if (isPlanos2User && !hasImageGeneration && !isLoadingAccess) {
+  if (isPlanos2User && !hasImageGeneration) {
     return (
       <AppLayout>
         <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center p-6">

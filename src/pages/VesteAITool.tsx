@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
-import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
+import { useCredits } from '@/contexts/CreditsContext';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { useAIJob } from '@/contexts/AIJobContext';
@@ -40,7 +40,7 @@ const queueMessages = [
 const VesteAITool: React.FC = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, isPremium } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
+  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useCredits();
   
   const { getCreditCost } = useAIToolSettings();
   const creditCost = getCreditCost('Veste AI', 60);

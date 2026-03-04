@@ -15,7 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
-import { useUpscalerCredits } from '@/hooks/useUpscalerCredits';
+import { useCredits } from '@/contexts/CreditsContext';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { useAIJob } from '@/contexts/AIJobContext';
@@ -64,7 +64,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const { t } = useTranslation('tools');
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useUpscalerCredits(user?.id);
+  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useCredits();
   
   const isMobile = useIsMobile();
   const { getCreditCost } = useAIToolSettings();

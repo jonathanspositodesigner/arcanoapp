@@ -8,9 +8,9 @@ import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useDailyPromptLimit } from "@/hooks/useDailyPromptLimit";
-import { usePlanos2Access } from "@/hooks/usePlanos2Access";
+import { useCredits } from "@/contexts/CreditsContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { trackPromptClick } from "@/hooks/usePromptClickTracker";
-import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
 import CollectionModal from "@/components/CollectionModal";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 import LazyVideo from "@/components/LazyVideo";
@@ -57,8 +57,8 @@ const BibliotecaPrompts = () => {
     expiredPlanType,
     expiringStatus
   } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useUpscalerCredits(user?.id);
-  const { subscription: planos2Sub } = usePlanos2Access(user?.id);
+  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits } = useCredits();
+  const { planos2Subscription: planos2Sub } = useAuth();
   const {
     copiesUsed,
     remainingCopies,
