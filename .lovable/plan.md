@@ -1,38 +1,24 @@
 
-
-# Forcar rebuild e prevenir problema recorrente
+# Forcar rebuild do app (tela branca)
 
 ## Diagnostico
 
-O problema e o mesmo de antes: o Vite perde o estado do build e para de servir os assets corretamente. Os logs estao vazios (sem console, sem network), o que confirma que o app nem chega a renderizar.
+O app esta com tela branca porque o servidor de desenvolvimento Vite nao esta servindo os arquivos corretamente. O `src/index.css` retorna 404, o que impede todo o app de renderizar. Isso e um problema transitorio de build - nao ha erro de codigo nos arquivos editados.
 
-## Solucao (2 partes)
+## Solucao
 
-### Parte 1: Forcar rebuild imediato
-Alterar o comentario no `src/main.tsx` para um timestamp novo, forcando recompilacao:
+Forcar um rebuild limpo adicionando um comentario inofensivo no arquivo de entrada `src/main.tsx`. Isso vai triggar o Vite a recompilar todos os modulos do zero.
 
-```typescript
-// rebuild 2026-03-04
-```
+### Arquivo: `src/main.tsx`
 
-### Parte 2: Prevenir crashes futuros
-Adicionar um handler global de erros nao tratados no `App.tsx` para que erros asincronos nao derrubem o app inteiro:
+Adicionar um comentario com timestamp no topo do arquivo:
 
 ```typescript
-// No AppContent, adicionar useEffect:
-useEffect(() => {
-  const handler = (event: PromiseRejectionEvent) => {
-    console.error("Unhandled rejection:", event.reason);
-    event.preventDefault();
-  };
-  window.addEventListener("unhandledrejection", handler);
-  return () => window.removeEventListener("unhandledrejection", handler);
-}, []);
+// rebuild 2026-03-02
 ```
 
-Isso garante que promessas rejeitadas nao tratadas (ex: chamadas ao banco, fetch de dados) nao causem crash silencioso do app.
+Isso nao altera nenhuma logica - apenas forca o sistema de build a reprocessar o projeto.
 
-### Arquivos modificados
-- `src/main.tsx` - novo timestamp de rebuild
-- `src/App.tsx` - handler global de erros
+## Por que isso acontece
 
+O Vite as vezes perde o estado interno do compilador apos multiplas edicoes rapidas. Um rebuild limpo resolve o problema na grande maioria dos casos.
