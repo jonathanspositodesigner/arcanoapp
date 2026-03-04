@@ -263,9 +263,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         // Defer async operations with setTimeout to avoid deadlocks
         if (currentSession?.user) {
           setTimeout(() => {
-            checkAllStatuses(currentSession.user.id).then(() => {
-              setIsLoading(false);
-            });
+            checkAllStatuses(currentSession.user.id)
+              .catch(err => console.error('[Auth] Status check failed:', err))
+              .finally(() => setIsLoading(false));
           }, 0);
         } else {
           resetAllStates();
@@ -274,18 +274,36 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     );
 
-    // THEN check for existing session (only once)
+    // THEN check for existing session (only once) with safety timeout
     if (!isInitialized.current) {
       isInitialized.current = true;
-      supabase.auth.getSession().then(async ({ data: { session: existingSession } }) => {
-        setSession(existingSession);
-        setUser(existingSession?.user ?? null);
-        
-        if (existingSession?.user) {
-          await checkAllStatuses(existingSession.user.id);
-        }
+      
+      const safetyTimeout = setTimeout(() => {
+        console.warn('[Auth] Safety timeout: forcing loading=false after 8s');
         setIsLoading(false);
-      });
+      }, 8000);
+
+      supabase.auth.getSession()
+        .then(async ({ data: { session: existingSession } }) => {
+          setSession(existingSession);
+          setUser(existingSession?.user ?? null);
+          
+          if (existingSession?.user) {
+            try {
+              await checkAllStatuses(existingSession.user.id);
+            } catch (err) {
+              console.error('[Auth] checkAllStatuses failed:', err);
+            }
+          }
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          console.error('[Auth] getSession failed:', err);
+          setIsLoading(false);
+        })
+        .finally(() => {
+          clearTimeout(safetyTimeout);
+        });
     }
 
     return () => subscription.unsubscribe();
