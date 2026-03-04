@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import React, { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useEffect } from "react";
 
 import { LocaleProvider } from "./contexts/LocaleContext";
 
@@ -165,7 +165,16 @@ const AppContent = () => {
   
   // Capture UTM parameters on app load
   useUtmTracker();
-  
+
+  // Global handler to prevent unhandled promise rejections from crashing the app
+  useEffect(() => {
+    const handler = (event: PromiseRejectionEvent) => {
+      console.error("[APP] Unhandled rejection:", event.reason);
+      event.preventDefault();
+    };
+    window.addEventListener("unhandledrejection", handler);
+    return () => window.removeEventListener("unhandledrejection", handler);
+  }, []);
 
   return (
     <TooltipProvider>
