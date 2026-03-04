@@ -188,21 +188,48 @@ const BibliotecaPrompts = () => {
         setShowLimitModal(true);
         return;
       }
+    }
+
+    // Copy to clipboard FIRST (must be synchronous with user gesture on mobile Safari)
+    let clipboardSuccess = false;
+    try {
+      await navigator.clipboard.writeText(promptItem.prompt);
+      clipboardSuccess = true;
+    } catch {
+      // Fallback for mobile browsers that block async clipboard
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = promptItem.prompt;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        textArea.style.top = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        clipboardSuccess = true;
+      } catch (fallbackError) {
+        console.error("Failed to copy:", fallbackError);
+        toast.error(t('toast.copyError'));
+        return;
+      }
+    }
+
+    // Record the copy for daily limit tracking AFTER clipboard succeeds
+    if (promptItem.isPremium && hasLimitPlan) {
       const recorded = await recordCopy(String(promptItem.id));
       if (!recorded) {
         setShowLimitModal(true);
         return;
       }
     }
-    try {
-      await navigator.clipboard.writeText(promptItem.prompt);
+
+    if (clipboardSuccess) {
       toast.success(t('toast.promptCopied', { title: promptItem.title }));
       const promptId = String(promptItem.id);
       setRevealedPrompts(prev => new Set(prev).add(promptId));
       await trackPromptClick(promptId, promptItem.title, !!promptItem.isExclusive);
-    } catch (error) {
-      console.error("Failed to copy:", error);
-      toast.error(t('toast.copyError'));
     }
   };
 
