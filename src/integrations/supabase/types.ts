@@ -4050,6 +4050,13 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_arte_click_counts: {
+        Args: never
+        Returns: {
+          arte_id: string
+          click_count: number
+        }[]
+      }
       get_daily_arte_copy_count: { Args: { _user_id: string }; Returns: number }
       get_daily_copy_count: { Args: { _user_id: string }; Returns: number }
       get_daily_musicos_download_count: {

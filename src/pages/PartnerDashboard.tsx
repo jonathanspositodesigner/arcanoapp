@@ -113,17 +113,16 @@ const PartnerDashboard = () => {
       console.error("Error fetching prompts:", promptsError);
       setPrompts([]);
     } else {
-      // Fetch click counts for each prompt from prompt_clicks table
+      // Fetch click counts via aggregated RPC
       const promptIds = (promptsData || []).map(p => p.id);
       if (promptIds.length > 0) {
-        const { data: clickData } = await supabase
-          .from('prompt_clicks')
-          .select('prompt_id')
-          .in('prompt_id', promptIds);
+        const { data: clickData } = await supabase.rpc('get_prompt_click_counts');
 
         const clickCounts: Record<string, number> = {};
-        (clickData || []).forEach(d => {
-          clickCounts[d.prompt_id] = (clickCounts[d.prompt_id] || 0) + 1;
+        (clickData || []).forEach((d: any) => {
+          if (promptIds.includes(d.prompt_id)) {
+            clickCounts[d.prompt_id] = Number(d.click_count);
+          }
         });
 
         const promptsWithClicks = (promptsData || []).map(p => ({

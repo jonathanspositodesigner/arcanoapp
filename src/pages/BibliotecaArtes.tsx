@@ -208,10 +208,10 @@ const BibliotecaArtes = () => {
       ascending: false
     }), supabase.from('partner_artes').select('*').eq('approved', true).order('created_at', {
       ascending: false
-    }), supabase.from('arte_clicks').select('arte_id')]);
+    }), supabase.rpc('get_arte_click_counts')]);
     const clickCounts: Record<string, number> = {};
-    (clicksResult.data || []).forEach(d => {
-      clickCounts[d.arte_id] = (clickCounts[d.arte_id] || 0) + 1;
+    (clicksResult.data || []).forEach((d: any) => {
+      clickCounts[d.arte_id] = Number(d.click_count);
     });
     const adminArtes: ArteItem[] = (adminResult.data || []).map(item => ({
       id: item.id,

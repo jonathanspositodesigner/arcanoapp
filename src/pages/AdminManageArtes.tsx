@@ -154,10 +154,10 @@ const AdminManageArtes = () => {
 
       setArtes(allArtes);
 
-      const { data: clickData } = await supabase.from('arte_clicks').select('arte_id');
+      const { data: clickData } = await supabase.rpc('get_arte_click_counts');
       const counts: Record<string, number> = {};
-      (clickData || []).forEach(d => {
-        counts[d.arte_id] = (counts[d.arte_id] || 0) + 1;
+      (clickData || []).forEach((d: any) => {
+        counts[d.arte_id] = Number(d.click_count);
       });
       setClickCounts(counts);
     } catch (error) {
