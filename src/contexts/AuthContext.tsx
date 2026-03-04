@@ -9,6 +9,16 @@ interface PackAccess {
   expires_at: string | null;
 }
 
+interface Planos2Subscription {
+  plan_slug: string;
+  is_active: boolean;
+  credits_per_month: number;
+  daily_prompt_limit: number | null;
+  has_image_generation: boolean;
+  has_video_generation: boolean;
+  cost_multiplier: number;
+}
+
 interface AuthContextType {
   // Auth state
   user: User | null;
@@ -36,6 +46,13 @@ interface AuthContextType {
   musicosPlanType: string | null;
   musicosBillingPeriod: string | null;
   musicosExpiresAt: string | null;
+
+  // Planos2 subscription
+  planos2Subscription: Planos2Subscription | null;
+  isPlanos2User: boolean;
+  hasImageGeneration: boolean;
+  hasVideoGeneration: boolean;
+  costMultiplier: number;
   
   // Actions
   logout: () => Promise<void>;
@@ -79,6 +96,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [musicosPlanType, setMusicosPlanType] = useState<string | null>(null);
   const [musicosBillingPeriod, setMusicosBillingPeriod] = useState<string | null>(null);
   const [musicosExpiresAt, setMusicosExpiresAt] = useState<string | null>(null);
+
+  // Planos2 subscription
+  const [planos2Subscription, setPlanos2Subscription] = useState<Planos2Subscription | null>(null);
   
   const isInitialized = useRef(false);
 
@@ -104,16 +124,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Check all premium statuses - serialized in 2 batches to reduce connection pressure
   const checkAllStatuses = async (userId: string) => {
     try {
-      // Batch 1: Critical auth queries (2 connections)
-      const [isPremiumResult, userPacksResult] = await retryQuery(() =>
+      // Batch 1: Critical auth queries + premium_users detail (3 connections)
+      const [isPremiumResult, userPacksResult, premiumDetailResult] = await retryQuery(() =>
         Promise.all([
           supabase.rpc('is_premium'),
           supabase.rpc('get_user_packs', { _user_id: userId }),
+          supabase
+            .from('premium_users')
+            .select('plan_type, expires_at, is_active')
+            .eq('user_id', userId)
+            .order('expires_at', { ascending: false })
+            .limit(2),
         ])
       );
 
-      // Batch 2: Secondary queries (2 connections) - after batch 1 releases
-      const [expiredPacksResult, musicosResult] = await retryQuery(() =>
+      // Batch 2: Secondary queries + planos2 (3 connections) - after batch 1 releases
+      const [expiredPacksResult, musicosResult, planos2Result] = await retryQuery(() =>
         Promise.all([
           supabase.rpc('get_user_expired_packs', { _user_id: userId }),
           supabase
@@ -122,7 +148,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             .eq('user_id', userId)
             .eq('is_active', true)
             .or('expires_at.is.null,expires_at.gt.now()')
-            .maybeSingle()
+            .maybeSingle(),
+          supabase
+            .from('planos2_subscriptions')
+            .select('plan_slug, is_active, credits_per_month, daily_prompt_limit, has_image_generation, has_video_generation, cost_multiplier')
+            .eq('user_id', userId)
+            .maybeSingle(),
         ])
       );
 
@@ -130,21 +161,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const premiumStatus = !isPremiumResult.error && isPremiumResult.data === true;
       setIsPremium(premiumStatus);
 
-      if (premiumStatus) {
-        // Get detailed plan info
-        const { data: premiumData, error: premiumError } = await supabase
-          .from('premium_users')
-          .select('plan_type, expires_at')
-          .eq('user_id', userId)
-          .eq('is_active', true)
-          .maybeSingle();
-
-        if (!premiumError && premiumData) {
-          setPlanType(premiumData.plan_type);
+      // Process premium detail from batch 1 result (no extra query needed)
+      if (premiumStatus && !premiumDetailResult.error && premiumDetailResult.data) {
+        const activeRecord = (premiumDetailResult.data as any[]).find((r: any) => r.is_active);
+        if (activeRecord) {
+          setPlanType(activeRecord.plan_type);
           
           // Check if subscription expires today or tomorrow
-          if (premiumData.expires_at) {
-            const expiresDate = new Date(premiumData.expires_at);
+          if (activeRecord.expires_at) {
+            const expiresDate = new Date(activeRecord.expires_at);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
@@ -164,32 +189,31 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           } else {
             setExpiringStatus(null);
           }
+          setHasExpiredSubscription(false);
+          setExpiredPlanType(null);
         } else {
           setPlanType(null);
           setExpiringStatus(null);
+          setHasExpiredSubscription(false);
+          setExpiredPlanType(null);
         }
-        setHasExpiredSubscription(false);
-        setExpiredPlanType(null);
-      } else {
+      } else if (!premiumStatus) {
         setPlanType(null);
         setExpiringStatus(null);
         
-        // Check for expired subscription
-        const { data: expiredData, error: expiredError } = await supabase
-          .from('premium_users')
-          .select('plan_type, expires_at')
-          .eq('user_id', userId)
-          .eq('is_active', false)
-          .order('expires_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (!expiredError && expiredData && expiredData.expires_at) {
-          const expiresAt = new Date(expiredData.expires_at);
-          const now = new Date();
-          if (expiresAt < now) {
-            setHasExpiredSubscription(true);
-            setExpiredPlanType(expiredData.plan_type);
+        // Check for expired subscription from same batch result
+        if (!premiumDetailResult.error && premiumDetailResult.data) {
+          const expiredRecord = (premiumDetailResult.data as any[]).find((r: any) => !r.is_active && r.expires_at);
+          if (expiredRecord) {
+            const expiresAt = new Date(expiredRecord.expires_at);
+            const now = new Date();
+            if (expiresAt < now) {
+              setHasExpiredSubscription(true);
+              setExpiredPlanType(expiredRecord.plan_type);
+            } else {
+              setHasExpiredSubscription(false);
+              setExpiredPlanType(null);
+            }
           } else {
             setHasExpiredSubscription(false);
             setExpiredPlanType(null);
@@ -231,6 +255,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setMusicosBillingPeriod(null);
         setMusicosExpiresAt(null);
       }
+
+      // Process planos2 subscription
+      if (!planos2Result.error && planos2Result.data) {
+        setPlanos2Subscription(planos2Result.data as Planos2Subscription);
+      } else {
+        setPlanos2Subscription(null);
+      }
     } catch (error) {
       console.error('Error checking statuses:', error);
       resetAllStates();
@@ -250,6 +281,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setMusicosPlanType(null);
     setMusicosBillingPeriod(null);
     setMusicosExpiresAt(null);
+    setPlanos2Subscription(null);
   };
 
   useEffect(() => {
@@ -359,6 +391,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     musicosPlanType,
     musicosBillingPeriod,
     musicosExpiresAt,
+    planos2Subscription,
+    isPlanos2User: !!planos2Subscription,
+    hasImageGeneration: planos2Subscription?.has_image_generation ?? true,
+    hasVideoGeneration: planos2Subscription?.has_video_generation ?? true,
+    costMultiplier: planos2Subscription?.cost_multiplier ?? 1.0,
     logout,
     refetch
   };

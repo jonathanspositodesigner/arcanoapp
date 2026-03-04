@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
-import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
+import { useCredits } from "@/contexts/CreditsContext";
 import { Sparkles, CheckCircle, Loader2, Play, ShoppingCart, UserCheck, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -31,7 +31,7 @@ const FerramentasIA = () => {
   // Redirect logic: ONLY users with Upscaler Arcano pack can access this page
   // UNLESS they have already claimed the promo credits (they should use the new app)
   const { user, hasAccessToPack, isLoading: isPremiumLoading } = usePremiumArtesStatus();
-  const { balance: credits, isLoading: creditsLoading } = useUpscalerCredits(user?.id);
+  const { balance: credits, isLoading: creditsLoading } = useCredits();
   const hasUpscalerArcano = hasAccessToPack('upscaller-arcano');
   const [hasClaimedPromo, setHasClaimedPromo] = useState<boolean | null>(null);
   

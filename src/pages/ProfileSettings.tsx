@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
+import { useCredits } from "@/contexts/CreditsContext";
 import { useTranslation } from "react-i18next";
 import { CreditsCard } from "@/components/upscaler/CreditsCard";
 import AppLayout from "@/components/layout/AppLayout";
@@ -21,7 +21,7 @@ const ProfileSettings = () => {
   const { t } = useTranslation('auth');
   const { user, isPremium, isLoading: premiumLoading } = usePremiumStatus();
   const { isSupported, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
-  const { balance: credits, isLoading: creditsLoading } = useUpscalerCredits(user?.id);
+  const { balance: credits, isLoading: creditsLoading } = useCredits();
   
   // FONTE ÚNICA DE VERDADE: Notification.permission
   const hasPermission = typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted';

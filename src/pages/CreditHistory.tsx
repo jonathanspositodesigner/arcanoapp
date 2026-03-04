@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
-import { useUpscalerCredits } from "@/hooks/useUpscalerCredits";
+import { useCredits } from "@/contexts/CreditsContext";
 import { Badge } from "@/components/ui/badge";
 import { AnimatedCreditsDisplay } from "@/components/upscaler/AnimatedCreditsDisplay";
 import AppLayout from "@/components/layout/AppLayout";
@@ -22,7 +22,7 @@ interface Transaction {
 const CreditHistory = () => {
   const navigate = useNavigate();
   const { user, isLoading: userLoading } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading } = useUpscalerCredits(user?.id);
+  const { balance: credits, isLoading: creditsLoading } = useCredits();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 

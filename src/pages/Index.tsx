@@ -13,7 +13,7 @@ import HomeAuthModal from "@/components/HomeAuthModal";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { usePackAccess } from "@/hooks/usePackAccess";
 import { useLocale } from "@/contexts/LocaleContext";
-import { usePlanos2Access } from "@/hooks/usePlanos2Access";
+import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/contexts/CreditsContext";
 
 // Imagens de preview para os cards
@@ -57,7 +57,8 @@ const Index = () => {
   const { isPremium, planType, isLoading: isPremiumLoading } = usePremiumStatus();
   const { user, userPacks, isLoading: isPacksLoading } = usePackAccess();
   const { isLatam } = useLocale();
-  const { isPlanos2User, planSlug: planos2Slug, hasImageGeneration, isLoading: isPlanos2Loading } = usePlanos2Access(user?.id);
+  const { isPlanos2User, hasImageGeneration, planos2Subscription } = useAuth();
+  const planos2Slug = planos2Subscription?.plan_slug ?? null;
   const { breakdown: creditsBreakdown, isLoading: isCreditsLoading } = useCredits();
 
   // Verificar se usuário está logado
@@ -105,7 +106,7 @@ const Index = () => {
   };
 
   // Aguarda TODOS carregarem antes de calcular qualquer acesso (evita flash de estado errado)
-  const isLoading = isPremiumLoading || isPacksLoading || isPlanos2Loading || (isLoggedIn && isCreditsLoading);
+  const isLoading = isPremiumLoading || isPacksLoading || (isLoggedIn && isCreditsLoading);
 
   const TOOL_PLAN_TYPES = ['arcano_pro'];
 
