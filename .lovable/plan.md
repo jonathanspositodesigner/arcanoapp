@@ -1,39 +1,23 @@
 
 
-# Diagnóstico: diegobranddesigner@gmail.com — Compra não registrada
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-## O que descobri
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-1. **Profile existe**: `4a010f4e-91bf-4d52-b726-5c9a30c103c8`, criado em 2026-03-04 18:10
-2. **user_pack_purchases**: VAZIO — zero registros para esse user_id
-3. **webhook_logs**: ZERO entradas para esse email em QUALQUER plataforma (Greenn, Hotmart, créditos, artes)
-4. **Conclusão**: O webhook da Greenn simplesmente **nunca chegou** ao sistema para esse email
+## Dados
 
-## Por que o webhook não chegou
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-Possíveis causas (precisa verificar no painel da Greenn):
-- **Webhook não configurado** para o produto específico que esse cliente comprou
-- **Falha de rede** no momento do disparo (Greenn → sistema) sem retry
-- **Produto com ID diferente** não mapeado no sistema (se for um produto novo que não está nos IDs 156954/156957/156960)
-- **O comprador usou checkout de um produto diferente** que não tem webhook configurado
+## Ações (via SQL migration)
 
-## Plano de ação
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-### 1. Inserir registro de compra manualmente (SQL INSERT via insert tool)
-
-```sql
-INSERT INTO user_pack_purchases (user_id, pack_slug, access_type, is_active, purchased_at)
-VALUES ('4a010f4e-91bf-4d52-b726-5c9a30c103c8', 'upscaller-arcano', 'vitalicio', true, NOW());
-```
-
-Depois disso, o usuário poderá ir em `/resgatar-creditos` e resgatar os 1.500 créditos normalmente.
-
-### 2. Investigar no painel da Greenn
-
-Verificar no painel da Greenn:
-- Qual **Product ID** exato essa compra usa
-- Se o webhook está configurado apontando para a URL correta do sistema
-- Se houve tentativa de disparo com erro
-
-Isso está fora do alcance do código — precisa ser feito diretamente no painel da Greenn.
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
