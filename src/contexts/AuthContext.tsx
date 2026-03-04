@@ -82,31 +82,49 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   
   const isInitialized = useRef(false);
 
-  // Check all premium statuses in parallel
+  // Retry helper with exponential backoff
+  const retryQuery = async <T,>(
+    fn: () => Promise<T>,
+    retries = 3,
+    baseDelay = 1000
+  ): Promise<T> => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await fn();
+      } catch (err) {
+        if (i === retries - 1) throw err;
+        const delay = baseDelay * Math.pow(2, i) + Math.random() * 500;
+        console.warn(`[Auth] Query failed, retrying in ${Math.round(delay)}ms...`, err);
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
+    throw new Error('Unreachable');
+  };
+
+  // Check all premium statuses - serialized in 2 batches to reduce connection pressure
   const checkAllStatuses = async (userId: string) => {
     try {
-      // Run all queries in parallel
-      const [
-        isPremiumResult,
-        userPacksResult,
-        expiredPacksResult,
-        musicosResult
-      ] = await Promise.all([
-        // 1. Check prompts premium status
-        supabase.rpc('is_premium'),
-        // 2. Get user packs
-        supabase.rpc('get_user_packs', { _user_id: userId }),
-        // 3. Get expired packs
-        supabase.rpc('get_user_expired_packs', { _user_id: userId }),
-        // 4. Check musicos premium status
-        supabase
-          .from('premium_musicos_users')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('is_active', true)
-          .or('expires_at.is.null,expires_at.gt.now()')
-          .maybeSingle()
-      ]);
+      // Batch 1: Critical auth queries (2 connections)
+      const [isPremiumResult, userPacksResult] = await retryQuery(() =>
+        Promise.all([
+          supabase.rpc('is_premium'),
+          supabase.rpc('get_user_packs', { _user_id: userId }),
+        ])
+      );
+
+      // Batch 2: Secondary queries (2 connections) - after batch 1 releases
+      const [expiredPacksResult, musicosResult] = await retryQuery(() =>
+        Promise.all([
+          supabase.rpc('get_user_expired_packs', { _user_id: userId }),
+          supabase
+            .from('premium_musicos_users')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('is_active', true)
+            .or('expires_at.is.null,expires_at.gt.now()')
+            .maybeSingle()
+        ])
+      );
 
       // Process prompts premium status
       const premiumStatus = !isPremiumResult.error && isPremiumResult.data === true;

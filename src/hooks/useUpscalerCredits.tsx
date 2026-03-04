@@ -13,7 +13,7 @@ export const useUpscalerCredits = (userId: string | undefined) => {
   const [isLoading, setIsLoading] = useState(true);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
-  const fetchBalance = useCallback(async () => {
+  const fetchBalance = useCallback(async (attempt = 0) => {
     if (!userId) {
       setBalance(0);
       setBreakdown({ total: 0, monthly: 0, lifetime: 0 });
@@ -53,8 +53,15 @@ export const useUpscalerCredits = (userId: string | undefined) => {
       }
     } catch (err) {
       console.error('Error fetching upscaler credits:', err);
+      // Retry with backoff (max 2 retries)
+      if (attempt < 2) {
+        const delay = 1000 * Math.pow(2, attempt) + Math.random() * 500;
+        setTimeout(() => fetchBalance(attempt + 1), delay);
+        return; // Don't set isLoading false yet
+      }
     } finally {
-      setIsLoading(false);
+      if (attempt >= 2 || !userId) setIsLoading(false);
+      else setIsLoading(false);
     }
   }, [userId]);
 
