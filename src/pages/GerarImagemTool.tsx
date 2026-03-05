@@ -294,13 +294,13 @@ const GerarImagemTool = () => {
             </div>
           )}
 
-          {resultBase64 ? (
+          {(resultUrl || resultBase64) ? (
             <div className="w-full max-w-2xl space-y-3">
               <div className="rounded-2xl overflow-hidden border border-purple-500/20 bg-black/30 shadow-2xl">
                 <TransformWrapper>
                   <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
                     <img
-                      src={`data:${resultMimeType};base64,${resultBase64}`}
+                      src={resultUrl || `data:${resultMimeType};base64,${resultBase64}`}
                       alt="Imagem gerada"
                       className="w-full h-auto"
                     />
@@ -463,7 +463,7 @@ const GerarImagemTool = () => {
                 );
               })}
 
-              {resultBase64 && (
+              {(resultUrl || resultBase64) && (
                 <>
                   <button
                     onClick={handleDownload}
