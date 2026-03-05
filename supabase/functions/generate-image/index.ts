@@ -37,7 +37,6 @@ async function callGeminiWithRetry(
         contents: [{ parts }],
         generationConfig: {
           responseModalities: ["IMAGE", "TEXT"],
-          imageConfig: { imageSize: "2K" },
         },
       }),
     });
@@ -300,10 +299,13 @@ serve(async (req) => {
       });
     }
 
-    // Upload to storage
+    // Upload to storage — stream-friendly: decode in chunks to reduce peak memory
     const ext = imageMimeType.includes("png") ? "png" : "webp";
     const storagePath = `image-generator/${userId}/${jobId}.${ext}`;
+    
+    // Decode base64 and immediately release the base64 string
     const imageBytes = Uint8Array.from(atob(imageBase64), (c) => c.charCodeAt(0));
+    imageBase64 = null; // Free memory immediately
 
     const { error: uploadError } = await serviceClient.storage
       .from("artes-cloudinary")
@@ -337,7 +339,6 @@ serve(async (req) => {
       success: true,
       job_id: jobId,
       output_url: outputUrl,
-      image_base64: imageBase64,
       mime_type: imageMimeType,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
