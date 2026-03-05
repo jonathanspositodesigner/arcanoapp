@@ -1,0 +1,1 @@
+UPDATE artes_packs SET display_order = 0 WHERE id = 'e358e01c-375d-4473-821a-e22eecefb8db';
