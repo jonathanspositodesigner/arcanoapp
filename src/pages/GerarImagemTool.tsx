@@ -193,7 +193,7 @@ const GerarImagemTool = () => {
       }
 
       setResultUrl(data.output_url);
-      setResultBase64(data.image_base64);
+      setResultBase64(null);
       setResultMimeType(data.mime_type || 'image/png');
       await refetchCredits();
       toast.success('Imagem gerada com sucesso!');
