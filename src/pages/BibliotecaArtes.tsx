@@ -787,6 +787,10 @@ const BibliotecaArtes = () => {
                   e.stopPropagation();
                   if (isPremium && pack.download_url) {
                     window.open(pack.download_url, '_blank');
+                  } else if (isPremium && !pack.download_url) {
+                    setSelectedPack(pack.name);
+                    setSelectedCategory("Todos");
+                    setCurrentPage(1);
                   } else {
                     navigate('/planos-artes');
                   }
@@ -883,10 +887,13 @@ const BibliotecaArtes = () => {
                           
                           {/* For bonus type: show action button instead of arte count */}
                           {isBonusType ? <Button size="sm" className={`mt-2 text-xs ${isPremium ? 'bg-green-500 hover:bg-green-600' : 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90'} text-white`} onClick={handleBonusAction}>
-                              {isPremium ? <>
+                              {isPremium ? (pack.download_url ? <>
                                   <Download className="h-3 w-3 mr-1" />
                                   {t('buttons.downloadBonus')}
-                                </> : <div className="flex flex-col items-center gap-1">
+                                </> : <>
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  Ver conteúdo
+                                </>) : <div className="flex flex-col items-center gap-1">
                                   <span className="text-[10px] text-white/80 text-center">{t('messages.unlockToPurchase')}</span>
                                   <span className="flex items-center">
                                     <Package className="h-3 w-3 mr-1" />
