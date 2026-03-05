@@ -1,23 +1,59 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+# Corrigir navegação do bônus "Movies para Telão"
 
 ## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+O pack "Movies para Telão" é do tipo `bonus` e **não tem `download_url`** (é `null`). Ele possui 17 vídeos com links do Canva já cadastrados.
 
-## Dados
+O problema está na função `handleBonusAction` (botão de ação do card). Quando o usuário é premium mas o `download_url` é null, a lógica atual redireciona para `/planos-artes` ao invés de abrir a visualização do pack:
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+```text
+handleBonusAction:
+  premium + download_url → abre link externo ✓
+  !premium → vai pra /planos-artes ✓
+  premium + SEM download_url → vai pra /planos-artes ✗ (ERRADO)
+```
 
-## Ações (via SQL migration)
+A ação do card principal (onClick) já trata corretamente este caso (abre o pack view), mas o botão sobreposto intercepta o clique com `stopPropagation`.
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+## Correção
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+### `src/pages/BibliotecaArtes.tsx`
+Alterar a função `handleBonusAction` (~linha 786-793) para que, quando premium sem `download_url`, abra a visualização do pack ao invés de redirecionar:
+
+```typescript
+const handleBonusAction = (e: React.MouseEvent) => {
+  e.stopPropagation();
+  if (isPremium && pack.download_url) {
+    window.open(pack.download_url, '_blank');
+  } else if (isPremium && !pack.download_url) {
+    // Sem download_url: abrir visualização do pack (ex: Movies para Telão)
+    setSelectedPack(pack.name);
+    setSelectedCategory("Todos");
+    setCurrentPage(1);
+  } else {
+    navigate('/planos-artes');
+  }
+};
+```
+
+Também alterar o texto do botão para mostrar "Ver conteúdo" ao invés de "Download" quando não há `download_url` (~linha 885-895):
+
+```typescript
+{isBonusType ? (
+  <Button size="sm" className={...} onClick={handleBonusAction}>
+    {isPremium ? (
+      pack.download_url ? (
+        <><Download className="h-3 w-3 mr-1" /> {t('buttons.downloadBonus')}</>
+      ) : (
+        <><Eye className="h-3 w-3 mr-1" /> Ver conteúdo</>
+      )
+    ) : (
+      // ... keep existing non-premium layout
+    )}
+  </Button>
+) : ...}
+```
+
+Isso é tudo. Os 17 vídeos já estão cadastrados com `canva_link` e `motion_type: canva`, então a grid de artes e o modal de detalhe com "Abrir no Canva" já funcionam automaticamente ao abrir o pack view.
 
