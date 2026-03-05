@@ -39,6 +39,16 @@ const GerarImagemTool = () => {
   const [prompt, setPrompt] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [model, setModel] = useState<'normal' | 'pro' | 'nano2'>('nano2');
+  const [aspectRatio, setAspectRatio] = useState<string>('1:1');
+  const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [resultUrl, setResultUrl] = useState<string | null>(null);
+  const [resultBase64, setResultBase64] = useState<string | null>(null);
+  const [resultMimeType, setResultMimeType] = useState<string>('image/png');
+  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
+  const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const isUnlimited = planType === 'arcano_unlimited';
   const hasReducedCost = isUnlimited || (isPlanos2User && costMultiplier < 1);
