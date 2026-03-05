@@ -106,22 +106,22 @@ serve(async (req) => {
 
     // Determine model and cost
     const isProModel = model === "pro";
+    const isNano2Model = model === "nano2";
     const proGeminiModel  = "gemini-3-pro-image-preview";
     const flashGeminiModel = "gemini-2.5-flash-image";
+    const nano2GeminiModel = "gemini-3.1-flash-image-preview";
 
     let creditCost: number;
     let toolDescription: string;
 
     if (source === "arcano_cloner_refine" || source === "flyer_maker_refine") {
-      // Refinamento: custo fixo de 30 créditos
       creditCost = 30;
       toolDescription = source === "flyer_maker_refine" 
         ? "Refinamento Flyer Maker" 
         : "Refinamento Arcano Cloner";
     } else {
-      const toolName = isProModel ? "gerar_imagem_pro" : "gerar_imagem";
+      const toolName = isNano2Model ? "gerar_imagem_nano2" : isProModel ? "gerar_imagem_pro" : "gerar_imagem";
 
-      // Check if user is IA Unlimited (must also have valid expiration)
       const { data: premiumData } = await serviceClient
         .from("premium_users")
         .select("plan_type, expires_at")
@@ -131,7 +131,6 @@ serve(async (req) => {
       const isUnlimited = premiumData?.plan_type === "arcano_unlimited" 
         && (!premiumData?.expires_at || new Date(premiumData.expires_at) > new Date());
 
-      // Get credit cost from settings
       const { data: settingsData } = await serviceClient
         .from("ai_tool_settings")
         .select("credit_cost")
@@ -139,12 +138,12 @@ serve(async (req) => {
         .single();
 
       if (isUnlimited) {
-        creditCost = settingsData?.credit_cost ?? (isProModel ? 60 : 40);
+        creditCost = settingsData?.credit_cost ?? (isNano2Model ? 100 : isProModel ? 60 : 40);
       } else {
-        creditCost = isProModel ? 100 : 80;
+        creditCost = isNano2Model ? 100 : isProModel ? 100 : 80;
       }
 
-      toolDescription = `Gerar Imagem (${isProModel ? "NanoBanana Pro" : "NanoBanana Normal"})`;
+      toolDescription = `Gerar Imagem (${isNano2Model ? "NanoBanana 2" : isProModel ? "NanoBanana Pro" : "NanoBanana Normal"})`;
     }
 
     // Flash fallback cost (cheaper)
@@ -170,7 +169,7 @@ serve(async (req) => {
       .insert({
         user_id: userId,
         prompt: prompt.trim(),
-        model: isProModel ? "pro" : "normal",
+        model: isNano2Model ? "nano2" : isProModel ? "pro" : "normal",
         aspect_ratio: aspect_ratio || "1:1",
         reference_images: reference_images || [],
         status: "processing",
@@ -209,24 +208,25 @@ serve(async (req) => {
     const finalPrompt = `${prompt.trim()}. Generate this image in ${arLabel}.`;
     parts.push({ text: finalPrompt });
 
-    console.log(`[generate-image] Job ${jobId} — model: ${isProModel ? "pro" : "normal"}, aspect_ratio: ${aspect_ratio}`);
+    const modelLogName = isNano2Model ? "nano2" : isProModel ? "pro" : "normal";
+    console.log(`[generate-image] Job ${jobId} — model: ${modelLogName}, aspect_ratio: ${aspect_ratio}`);
 
     // === Call selected model (2 attempts, no fallback) ===
-    const selectedGeminiModel = isProModel ? proGeminiModel : flashGeminiModel;
+    const selectedGeminiModel = isNano2Model ? nano2GeminiModel : isProModel ? proGeminiModel : flashGeminiModel;
     const effectiveCreditCost = creditCost;
 
-    console.log(`[generate-image] Trying ${isProModel ? "Pro" : "Normal"} model (up to 2 attempts)...`);
+    console.log(`[generate-image] Trying ${modelLogName} model (up to 2 attempts)...`);
     const geminiResponse = await callGeminiWithRetry(GEMINI_API_KEY, selectedGeminiModel, parts, 2);
 
     // Model failed after retries — refund and return error
     if (!geminiResponse.ok) {
       const errText = await geminiResponse.text();
-      console.error(`[generate-image] ${isProModel ? "Pro" : "Normal"} model failed after retries (${geminiResponse.status})`, errText);
+      console.error(`[generate-image] ${modelLogName} model failed after retries (${geminiResponse.status})`, errText);
 
       await serviceClient.rpc("refund_upscaler_credits", {
         _user_id: userId,
         _amount: creditCost,
-        _description: `Estorno: modelo ${isProModel ? "Pro" : "Normal"} falhou`,
+        _description: `Estorno: modelo ${modelLogName} falhou`,
       });
 
       await serviceClient.from("image_generator_jobs").update({
@@ -326,7 +326,7 @@ serve(async (req) => {
     await serviceClient.from("image_generator_jobs").update({
       status: "completed",
       output_url: outputUrl,
-      model: isProModel ? "pro" : "normal",
+      model: isNano2Model ? "nano2" : isProModel ? "pro" : "normal",
       user_credit_cost: effectiveCreditCost,
       completed_at: new Date().toISOString(),
     }).eq("id", jobId);
