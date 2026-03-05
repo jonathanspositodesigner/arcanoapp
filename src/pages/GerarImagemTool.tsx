@@ -38,23 +38,14 @@ const GerarImagemTool = () => {
 
   const [prompt, setPrompt] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
-  const [model, setModel] = useState<'normal' | 'pro'>('pro');
-  const [aspectRatio, setAspectRatio] = useState<string>('1:1');
-  const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [resultUrl, setResultUrl] = useState<string | null>(null);
-  const [resultBase64, setResultBase64] = useState<string | null>(null);
-  const [resultMimeType, setResultMimeType] = useState<string>('image/png');
-  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
-  const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [model, setModel] = useState<'normal' | 'pro' | 'nano2'>('nano2');
 
   const isUnlimited = planType === 'arcano_unlimited';
   const hasReducedCost = isUnlimited || (isPlanos2User && costMultiplier < 1);
   const creditCostNormal = hasReducedCost ? getCreditCost('gerar_imagem', 40) : 80;
   const creditCostPro = hasReducedCost ? getCreditCost('gerar_imagem_pro', 60) : 100;
-  const currentCreditCost = model === 'pro' ? creditCostPro : creditCostNormal;
+  const creditCostNano2 = hasReducedCost ? getCreditCost('gerar_imagem_nano2', 100) : 100;
+  const currentCreditCost = model === 'pro' ? creditCostPro : model === 'nano2' ? creditCostNano2 : creditCostNormal;
 
   const processFiles = useCallback((files: File[]) => {
     const remaining = 5 - referenceImages.length;
@@ -220,7 +211,7 @@ const GerarImagemTool = () => {
     setResultBase64(null);
   };
 
-  const modelLabel = model === 'pro' ? 'Nano Banana Pro' : 'Nano Banana';
+  const modelLabel = model === 'pro' ? 'Nano Banana Pro' : model === 'nano2' ? 'Nano Banana 2' : 'Nano Banana';
 
   // Block access for planos2 users without image generation permission
   if (isPlanos2User && !hasImageGeneration) {
@@ -417,6 +408,12 @@ const GerarImagemTool = () => {
                     className={`text-xs ${model === 'pro' ? 'text-amber-300 bg-amber-500/10' : 'text-purple-200'}`}
                   >
                     🍌 Nano Banana Pro — {creditCostPro} cr
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setModel('nano2')}
+                    className={`text-xs ${model === 'nano2' ? 'text-emerald-300 bg-emerald-500/10' : 'text-purple-200'}`}
+                  >
+                    🍌 Nano Banana 2 — {creditCostNano2} cr
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
