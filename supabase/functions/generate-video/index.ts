@@ -77,7 +77,7 @@ serve(async (req) => {
     if (isUnlimited) {
       creditCost = settingsData?.credit_cost ?? 700;
     } else {
-      creditCost = 1500;
+      creditCost = 750;
     }
 
     // Consume credits

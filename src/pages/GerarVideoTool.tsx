@@ -58,7 +58,7 @@ const GerarVideoTool = () => {
 
   const isUnlimited = planType === 'arcano_unlimited';
   const hasReducedCost = isUnlimited || (isPlanos2User && costMultiplier < 1);
-  const creditCost = hasReducedCost ? getCreditCost('gerar_video', 700) : 1500;
+  const creditCost = hasReducedCost ? getCreditCost('gerar_video', 700) : 750;
 
   const handleFrameSelect = (e: React.ChangeEvent<HTMLInputElement>, type: 'start' | 'end') => {
     const file = e.target.files?.[0];
