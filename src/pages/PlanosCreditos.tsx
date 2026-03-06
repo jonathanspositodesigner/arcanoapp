@@ -55,7 +55,7 @@ const creditPlans = [
     price: "19,90",
     originalPrice: "39,90",
     savings: "",
-    link: "https://payfast.greenn.com.br/9trhhb9",
+    link: "https://payfast.greenn.com.br/156946/offer/C5k6VZ",
     icon: Coins,
     color: "from-purple-500 to-fuchsia-500"
   },
@@ -65,7 +65,7 @@ const creditPlans = [
     price: "29,90",
     originalPrice: "49,90",
     savings: "46",
-    link: "https://payfast.greenn.com.br/y3u2u3d", 
+    link: "https://payfast.greenn.com.br/156948/offer/lwl67R", 
     popular: true,
     icon: Zap,
     color: "from-fuchsia-500 to-pink-500"
@@ -76,7 +76,7 @@ const creditPlans = [
     price: "79,90",
     originalPrice: "149,90",
     savings: "57",
-    link: "https://payfast.greenn.com.br/vwfzrw2", 
+    link: "https://payfast.greenn.com.br/156952/offer/oJmWhP", 
     bestValue: true,
     icon: Star,
     color: "from-yellow-500 to-orange-500"
