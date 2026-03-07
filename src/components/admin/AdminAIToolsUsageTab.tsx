@@ -56,7 +56,7 @@ interface UsageSummary {
   avg_processing_seconds: number;
 }
 
-type UserClientType = 'free' | 'bought_credits' | 'premium' | 'premium_credits';
+type UserClientType = 'free' | 'bought_credits' | 'redeemed_credits' | 'free_trial' | 'premium' | 'premium_credits';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -196,7 +196,7 @@ const AdminAIToolsUsageTab = () => {
       // Fetch user types (subscription + credits) for all unique user_ids
       const userIds = [...new Set((records || []).map((r: UsageRecord) => r.user_id).filter(Boolean))];
       if (userIds.length > 0) {
-        const [subsRes, creditsRes] = await Promise.all([
+        const [subsRes, creditsRes, promoRes, trialRes] = await Promise.all([
           supabase
             .from('planos2_subscriptions')
             .select('user_id')
@@ -208,18 +208,33 @@ const AdminAIToolsUsageTab = () => {
             .select('user_id, lifetime_balance')
             .gt('lifetime_balance', 0)
             .in('user_id', userIds),
+          supabase
+            .from('promo_claims')
+            .select('user_id')
+            .eq('promo_code', 'UPSCALER_1500')
+            .in('user_id', userIds),
+          supabase
+            .from('arcano_cloner_free_trials')
+            .select('user_id')
+            .in('user_id', userIds),
         ]);
 
         const premiumSet = new Set((subsRes.data || []).map(s => s.user_id));
         const lifetimeSet = new Set((creditsRes.data || []).map(c => c.user_id));
+        const promoSet = new Set((promoRes.data || []).map(p => p.user_id));
+        const trialSet = new Set((trialRes.data || []).map(t => t.user_id));
 
         const typeMap: Record<string, UserClientType> = {};
         for (const uid of userIds) {
           const isPremium = premiumSet.has(uid);
           const hasLifetime = lifetimeSet.has(uid);
+          const hasPromo = promoSet.has(uid);
+          const hasTrial = trialSet.has(uid);
           if (isPremium && hasLifetime) typeMap[uid] = 'premium_credits';
           else if (isPremium) typeMap[uid] = 'premium';
+          else if (hasPromo) typeMap[uid] = 'redeemed_credits';
           else if (hasLifetime) typeMap[uid] = 'bought_credits';
+          else if (hasTrial) typeMap[uid] = 'free_trial';
           else typeMap[uid] = 'free';
         }
         setUserTypeMap(typeMap);
@@ -343,6 +358,10 @@ const AdminAIToolsUsageTab = () => {
         return <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">Free</Badge>;
       case 'bought_credits':
         return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">Comprou Créditos</Badge>;
+      case 'redeemed_credits':
+        return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Resgate Créditos</Badge>;
+      case 'free_trial':
+        return <Badge className="bg-slate-500/20 text-slate-400 border-slate-500/30">Trial Gratuito</Badge>;
       case 'premium':
         return <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">Premium</Badge>;
       case 'premium_credits':
