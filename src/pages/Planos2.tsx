@@ -380,26 +380,7 @@ const Planos2 = () => {
             </TabsList>
           </Tabs>
 
-          {/* Countdown Timer below billing toggle */}
-          <div className="flex items-center justify-center gap-2 mt-4">
-            <span className="text-purple-300 text-sm">Essa oferta expira em</span>
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3 text-red-500" />
-              <div className="flex items-center gap-0.5">
-                <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[24px] text-center">
-                  <span className="text-red-400 font-mono font-bold text-xs">{countdown.hours}</span>
-                </div>
-                <span className="text-red-400 font-bold text-xs">:</span>
-                <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[24px] text-center">
-                  <span className="text-red-400 font-mono font-bold text-xs">{countdown.minutes}</span>
-                </div>
-                <span className="text-red-400 font-bold text-xs">:</span>
-                <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[24px] text-center">
-                  <span className="text-red-400 font-mono font-bold text-xs">{countdown.seconds}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+
         </AnimatedSection>
 
 
