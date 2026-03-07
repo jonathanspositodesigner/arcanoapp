@@ -327,7 +327,7 @@ const AppContent = () => {
           <Route path="/upscaler-selection" element={<UpscalerSelectionPage />} />
           <Route path="/pack-agendas" element={<PackAgendas />} />
           <Route path="/combo-artes-arcanas" element={<ComboArtesArcanas />} />
-          <Route path="/planos-creditos" element={<PlanosCreditos />} />
+          <Route path="/planos-creditos" element={<Navigate to="/planos-2" replace />} />
           <Route path="/ferramentas-ia-aplicativo" element={<FerramentasIAAplicativo />} />
            <Route path="/force-update" element={<ForceUpdate />} />
            <Route path="/resgatar-creditos" element={<ResgatarCreditos />} />
