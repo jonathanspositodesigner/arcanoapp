@@ -336,6 +336,8 @@ const Planos2 = () => {
             {t('planos.title')}
           </h1>
 
+          <StatsCards />
+
           {/* Billing Toggle */}
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
             <TabsList className="bg-[#1A0A2E] border border-purple-500/30">
