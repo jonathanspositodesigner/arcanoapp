@@ -325,11 +325,37 @@ const Planos2 = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 pb-16">
-        {/* Limited Time Promo Banner */}
-        <div className="bg-gradient-to-r from-purple-600 to-red-500 rounded-xl text-center max-w-6xl mx-auto py-3 px-4 mb-6 animate-pulse">
-          <span className="text-white font-bold tracking-wide text-sm md:text-base flex items-center justify-center gap-2">
-            🔥 Promoção por tempo limitado! 🔥
-          </span>
+        {/* Limited Time Promo Banner with Countdown */}
+        <div className="max-w-6xl mx-auto mb-6 rounded-xl overflow-hidden border border-red-500/30 bg-gradient-to-r from-red-950/80 via-purple-950/60 to-red-950/80">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3">
+            {/* Left: Promo text */}
+            <div className="flex items-center gap-2 animate-pulse">
+              <span className="text-lg">🔥</span>
+              <span className="text-white font-bold tracking-wide text-sm md:text-base">
+                Promoção por tempo limitado!
+              </span>
+              <span className="text-lg">🔥</span>
+            </div>
+
+            {/* Right: Countdown */}
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-red-400" />
+              <span className="text-red-300 text-xs sm:text-sm font-medium">Essa oferta expira em</span>
+              <div className="flex items-center gap-1">
+                <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
+                  <span className="text-white font-mono font-bold text-sm">{countdown.hours}</span>
+                </div>
+                <span className="text-red-400 font-bold text-sm">:</span>
+                <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
+                  <span className="text-white font-mono font-bold text-sm">{countdown.minutes}</span>
+                </div>
+                <span className="text-red-400 font-bold text-sm">:</span>
+                <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
+                  <span className="text-white font-mono font-bold text-sm">{countdown.seconds}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <AnimatedSection animation="fade-up" className="text-center mb-10" as="div">
@@ -354,26 +380,7 @@ const Planos2 = () => {
             </TabsList>
           </Tabs>
 
-          {/* Countdown Timer below billing toggle */}
-          <div className="flex items-center justify-center gap-2 mt-4">
-            <span className="text-purple-300 text-sm">Essa oferta expira em</span>
-            <div className="flex items-center gap-1">
-              <Clock className="w-3 h-3 text-red-500" />
-              <div className="flex items-center gap-0.5">
-                <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[24px] text-center">
-                  <span className="text-red-400 font-mono font-bold text-xs">{countdown.hours}</span>
-                </div>
-                <span className="text-red-400 font-bold text-xs">:</span>
-                <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[24px] text-center">
-                  <span className="text-red-400 font-mono font-bold text-xs">{countdown.minutes}</span>
-                </div>
-                <span className="text-red-400 font-bold text-xs">:</span>
-                <div className="bg-red-950/80 border border-red-500/30 rounded px-1.5 py-0.5 min-w-[24px] text-center">
-                  <span className="text-red-400 font-mono font-bold text-xs">{countdown.seconds}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+
         </AnimatedSection>
 
 
