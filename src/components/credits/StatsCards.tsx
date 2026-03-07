@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
-import { Image, Video } from "lucide-react";
+import { Image, Video, Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
+
+const socialProofImages = [
+  "/images/social-proof-1.webp",
+  "/images/social-proof-2.webp",
+  "/images/social-proof-3.webp",
+];
 
 export const StatsCards = () => {
   const [totalImages, setTotalImages] = useState(0);
@@ -23,27 +29,21 @@ export const StatsCards = () => {
   const animatedVideos = useAnimatedNumber(loaded ? 247 : 0, 1500);
   const animatedSatisfaction = useAnimatedNumber(loaded ? 100 : 0, 1500);
 
-  // Avatar colors matching the reference
-  const avatarColors = [
-    "bg-green-500",
-    "bg-emerald-400",
-    "bg-teal-500",
-    "bg-fuchsia-500",
-    "bg-orange-400",
-    "bg-blue-400",
-    "bg-pink-400",
-  ];
-
   return (
-    <div className="max-w-3xl mx-auto mb-8 px-2">
+    <div className="max-w-5xl mx-auto mb-8 px-2">
       <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center gap-4 sm:gap-0">
         {/* Left: Avatars + Text */}
         <div className="flex items-center gap-3 sm:flex-1 min-w-0">
           <div className="flex -space-x-2 shrink-0">
-            {avatarColors.map((color, i) => (
-              <div
+            {socialProofImages.map((src, i) => (
+              <img
                 key={i}
-                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${color} border-2 border-[#0d0b1a]`}
+                src={src}
+                alt=""
+                width="32"
+                height="32"
+                decoding="async"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-[#0d0b1a] object-cover"
               />
             ))}
           </div>
@@ -64,7 +64,7 @@ export const StatsCards = () => {
               <span className="text-purple-400 text-lg font-bold">+</span>
             </div>
             <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">
-              Imagem Gerada
+              Imagens Geradas
             </span>
           </div>
 
@@ -78,21 +78,18 @@ export const StatsCards = () => {
               <span className="text-purple-400 text-lg font-bold">+</span>
             </div>
             <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">
-              Vídeo Já Gerado
+              Vídeos Gerados
             </span>
           </div>
 
           {/* Satisfaction */}
           <div className="flex flex-col items-center gap-0.5">
-            <div className="flex items-center gap-0.5 mb-1">
-              <span className="text-purple-400 font-bold text-sm">θ</span>
-              <span className="text-purple-400 font-bold text-sm">%</span>
-            </div>
+            <Award className="w-5 h-5 text-yellow-500 mb-1" />
             <div className="flex items-center gap-0.5">
               <span className="text-white font-bold text-base sm:text-lg">
                 {animatedSatisfaction.displayValue}
               </span>
-              <span className="text-purple-400 text-lg font-bold">%</span>
+              <span className="text-yellow-500 text-lg font-bold">%</span>
             </div>
             <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">
               Satisfação
