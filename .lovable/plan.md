@@ -1,23 +1,20 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+# Ajustes no StatsCards
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+## Mudanças
 
-## Dados
+1. **Ícone de Satisfação**: Trocar o ícone `θ%` por `Award` (ou `Trophy`/`Crown`) do lucide-react — remete a pontuação premium
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+2. **Largura do retângulo**: Trocar `max-w-3xl` por `max-w-5xl` para ficar mais largo
 
-## Ações (via SQL migration)
+3. **Textos no plural**: "Imagem Gerada" → "Imagens Geradas", "Vídeo Já Gerado" → "Vídeos Gerados"
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+4. **Avatares**: Trocar as 7 bolinhas coloridas por apenas 3 imagens reais usando as mesmas miniaturas da página Planos Arcano Cloner:
+   - `/images/social-proof-1.webp`
+   - `/images/social-proof-2.webp`
+   - `/images/social-proof-3.webp`
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+## Arquivo editado
+- `src/components/credits/StatsCards.tsx`
 
