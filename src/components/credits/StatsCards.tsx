@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Image, Video, ThumbsUp } from "lucide-react";
+import { Image, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 
@@ -23,51 +23,83 @@ export const StatsCards = () => {
   const animatedVideos = useAnimatedNumber(loaded ? 247 : 0, 1500);
   const animatedSatisfaction = useAnimatedNumber(loaded ? 100 : 0, 1500);
 
-  const stats = [
-    {
-      icon: Image,
-      value: `+${animatedImages.displayValue.toLocaleString('pt-BR')}`,
-      label: "Imagens geradas",
-      color: "from-purple-500 to-fuchsia-500",
-      iconColor: "text-purple-400",
-    },
-    {
-      icon: Video,
-      value: `+${animatedVideos.displayValue.toLocaleString('pt-BR')}`,
-      label: "Vídeos gerados",
-      color: "from-fuchsia-500 to-pink-500",
-      iconColor: "text-fuchsia-400",
-    },
-    {
-      icon: ThumbsUp,
-      value: `${animatedSatisfaction.displayValue}%`,
-      label: "Satisfação",
-      color: "from-green-500 to-emerald-500",
-      iconColor: "text-green-400",
-    },
+  // Avatar colors matching the reference
+  const avatarColors = [
+    "bg-green-500",
+    "bg-emerald-400",
+    "bg-teal-500",
+    "bg-fuchsia-500",
+    "bg-orange-400",
+    "bg-blue-400",
+    "bg-pink-400",
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-2xl mx-auto mb-8">
-      {stats.map((stat) => {
-        const Icon = stat.icon;
-        return (
-          <div
-            key={stat.label}
-            className="relative rounded-xl border border-white/10 bg-white/[0.03] backdrop-blur-sm p-4 sm:p-6 flex flex-col items-center text-center transition-all duration-300 hover:border-white/20 hover:bg-white/[0.06]"
-          >
-            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br ${stat.color} flex items-center justify-center mb-3`}>
-              <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+    <div className="max-w-3xl mx-auto mb-8 px-2">
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center gap-4 sm:gap-0">
+        {/* Left: Avatars + Text */}
+        <div className="flex items-center gap-3 sm:flex-1 min-w-0">
+          <div className="flex -space-x-2 shrink-0">
+            {avatarColors.map((color, i) => (
+              <div
+                key={i}
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${color} border-2 border-[#0d0b1a]`}
+              />
+            ))}
+          </div>
+          <span className="text-white/80 text-xs sm:text-sm font-medium leading-tight">
+            Junte-se a mais de 5.000 criadores em todo o mundo.
+          </span>
+        </div>
+
+        {/* Right: Stats */}
+        <div className="flex items-center gap-6 sm:gap-8 shrink-0">
+          {/* Images */}
+          <div className="flex flex-col items-center gap-0.5">
+            <Image className="w-5 h-5 text-purple-400 mb-1" />
+            <div className="flex items-center gap-1">
+              <span className="text-white font-bold text-base sm:text-lg">
+                {animatedImages.displayValue.toLocaleString('pt-BR')}
+              </span>
+              <span className="text-purple-400 text-lg font-bold">+</span>
             </div>
-            <span className="text-xl sm:text-3xl font-bold text-white tracking-tight">
-              {stat.value}
-            </span>
-            <span className="text-xs sm:text-sm text-purple-300 mt-1">
-              {stat.label}
+            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">
+              Imagem Gerada
             </span>
           </div>
-        );
-      })}
+
+          {/* Videos */}
+          <div className="flex flex-col items-center gap-0.5">
+            <Video className="w-5 h-5 text-purple-400 mb-1" />
+            <div className="flex items-center gap-1">
+              <span className="text-white font-bold text-base sm:text-lg">
+                {animatedVideos.displayValue.toLocaleString('pt-BR')}
+              </span>
+              <span className="text-purple-400 text-lg font-bold">+</span>
+            </div>
+            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">
+              Vídeo Já Gerado
+            </span>
+          </div>
+
+          {/* Satisfaction */}
+          <div className="flex flex-col items-center gap-0.5">
+            <div className="flex items-center gap-0.5 mb-1">
+              <span className="text-purple-400 font-bold text-sm">θ</span>
+              <span className="text-purple-400 font-bold text-sm">%</span>
+            </div>
+            <div className="flex items-center gap-0.5">
+              <span className="text-white font-bold text-base sm:text-lg">
+                {animatedSatisfaction.displayValue}
+              </span>
+              <span className="text-purple-400 text-lg font-bold">%</span>
+            </div>
+            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">
+              Satisfação
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
