@@ -28,7 +28,7 @@ const faqItems = [
   },
   {
     question: "Como posso entrar em contato conosco?",
-    answer: "Você pode nos contatar pelo suporte via WhatsApp ou pelo e-mail de atendimento disponível na plataforma. Estamos sempre prontos para ajudar!"
+    answer: "Você pode nos contatar pelo WhatsApp (33) 98881-9891 ou pelo e-mail de atendimento disponível na plataforma. Estamos sempre prontos para ajudar!"
   },
   {
     question: "Como posso ganhar créditos através de promoções?",
