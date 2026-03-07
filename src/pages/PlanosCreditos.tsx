@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import AppLayout from "@/components/layout/AppLayout";
 import { CreditsFAQSection } from "@/components/credits/CreditsFAQSection";
+import { StatsCards } from "@/components/credits/StatsCards";
 
 const availableTools = [
   {
@@ -143,6 +144,14 @@ const PlanosCreditos = () => {
       {/* Content */}
       <div className="container mx-auto px-4 py-8 space-y-12">
         
+        {/* Stats Cards */}
+        <section className="text-center">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-6">
+            LIBERTE SUA CRIATIVIDADE
+          </h1>
+          <StatsCards />
+        </section>
+
         {/* AI Tools Section */}
         <section className="text-center">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 mb-4">

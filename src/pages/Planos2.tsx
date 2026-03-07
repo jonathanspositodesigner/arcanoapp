@@ -16,6 +16,7 @@ import {
 import { AnimatedSection, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { CreditsFAQSection } from "@/components/credits/CreditsFAQSection";
+import { StatsCards } from "@/components/credits/StatsCards";
 import { useLocale } from "@/contexts/LocaleContext";
 
 const Planos2 = () => {
@@ -335,6 +336,8 @@ const Planos2 = () => {
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-6">
             {t('planos.title')}
           </h1>
+
+          <StatsCards />
 
           {/* Billing Toggle */}
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
