@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { AnimatedSection, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
+import { CreditsFAQSection } from "@/components/credits/CreditsFAQSection";
 import { useLocale } from "@/contexts/LocaleContext";
 
 const Planos2 = () => {
@@ -634,6 +635,8 @@ const Planos2 = () => {
           </p>
         </div>
       </section>
+
+      <CreditsFAQSection />
 
       {/* Coming Soon Modal */}
       <Dialog open={showComingSoonModal} onOpenChange={setShowComingSoonModal}>

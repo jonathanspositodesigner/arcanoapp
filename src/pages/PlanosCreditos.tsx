@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import AppLayout from "@/components/layout/AppLayout";
+import { CreditsFAQSection } from "@/components/credits/CreditsFAQSection";
 
 const availableTools = [
   {
@@ -314,6 +315,8 @@ const PlanosCreditos = () => {
             </p>
           </div>
         </section>
+
+        <CreditsFAQSection />
       </div>
     </AppLayout>
   );
