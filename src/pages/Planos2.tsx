@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star } from "lucide-react";
+import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star, ShieldCheck, Headset } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -638,7 +638,34 @@ const Planos2 = () => {
           })}
         </div>
 
-        <div className="mt-10 text-center">
+        {/* Trust Badges */}
+        <div className="max-w-4xl mx-auto mt-10 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 sm:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="w-5 h-5 text-purple-400 shrink-0" />
+            <div>
+              <p className="text-white text-sm font-semibold leading-tight">Pagamento seguro</p>
+              <p className="text-white/50 text-xs">transmissão criptografada SSL</p>
+            </div>
+          </div>
+          <div className="hidden sm:block w-px h-8 bg-white/10" />
+          <div className="flex items-center gap-3">
+            <Zap className="w-5 h-5 text-purple-400 shrink-0" />
+            <div>
+              <p className="text-white text-sm font-semibold leading-tight">Pagamento instantâneo</p>
+              <p className="text-white/50 text-xs">Os pontos chegam instantaneamente.</p>
+            </div>
+          </div>
+          <div className="hidden sm:block w-px h-8 bg-white/10" />
+          <div className="flex items-center gap-3">
+            <Headset className="w-5 h-5 text-purple-400 shrink-0" />
+            <div>
+              <p className="text-white text-sm font-semibold leading-tight">Suporte 24 horas por dia, 7 dias por semana</p>
+              <p className="text-white/50 text-xs">Estamos à sua disposição a qualquer momento.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 text-center">
           <p className="text-purple-400 text-sm max-w-lg mx-auto">
             💡 Os créditos vitalícios são consumidos <strong className="text-purple-300">após</strong> os créditos mensais da sua assinatura,
             garantindo que você aproveite ao máximo seu plano.
