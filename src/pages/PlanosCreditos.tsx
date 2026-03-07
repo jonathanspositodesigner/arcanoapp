@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import AppLayout from "@/components/layout/AppLayout";
 import { CreditsFAQSection } from "@/components/credits/CreditsFAQSection";
+import { StatsCards } from "@/components/credits/StatsCards";
 
 const availableTools = [
   {
