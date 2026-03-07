@@ -1,23 +1,26 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+# Stats Card com Animação + Trocar Título
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+## O que será feito
 
-## Dados
+1. **Trocar o título** "ESCOLHA O MELHOR PLANO PARA VOCÊ" por "LIBERTE SUA CRIATIVIDADE" nos arquivos de tradução (PT e ES)
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+2. **Criar componente `StatsCards`** (`src/components/credits/StatsCards.tsx`) que:
+   - Busca o total de imagens geradas via RPC `get_ai_tools_cost_averages` (soma de `total_completed` de todas as ferramentas)
+   - Exibe 3 cards lado a lado no estilo do print:
+     - **+{total} Imagens geradas** (número real do banco)
+     - **+247 Vídeos gerados** (valor fixo)
+     - **100% Satisfação** (valor fixo)
+   - Usa o hook `useAnimatedNumber` existente para animar os números de 0 até o valor final
+   - Visual: cards com fundo glassmorphism escuro (`bg-white/[0.03]`, `border-white/10`), ícones coloridos, números grandes com gradiente
 
-## Ações (via SQL migration)
+3. **Inserir o componente** nas páginas `Planos2.tsx` e `PlanosCreditos.tsx`, logo abaixo do título "LIBERTE SUA CRIATIVIDADE" e acima do billing toggle
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+## Detalhes técnicos
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+- A query é pública (RPC sem auth), então funciona para visitantes não logados
+- O hook `useAnimatedNumber` já existe em `src/hooks/useAnimatedNumber.ts` com easing cubic
+- Os cards terão layout responsivo: 3 colunas em desktop, 1 coluna em mobile
+- Arquivo de tradução ES também será atualizado para "LIBERA TU CREATIVIDAD"
 
