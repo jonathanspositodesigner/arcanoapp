@@ -55,6 +55,8 @@ export function useSalesDashboard() {
   const [pageViews, setPageViews] = useState(0);
   const [adSpend, setAdSpend] = useState(0);
   const [metaClicks, setMetaClicks] = useState(0);
+  const [metaLandingPageViews, setMetaLandingPageViews] = useState(0);
+  const [metaInitiatedCheckouts, setMetaInitiatedCheckouts] = useState(0);
   const [abandonedCheckouts, setAbandonedCheckouts] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
 
