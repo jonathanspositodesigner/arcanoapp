@@ -74,7 +74,8 @@ serve(async (req) => {
         user_email: email,
         product_id: product.id,
         amount: product.price,
-        status: 'pending'
+        status: 'pending',
+        utm_data: utm_data || null
       })
       .select('id')
       .single()

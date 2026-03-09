@@ -261,10 +261,18 @@ const PlanosUpscalerArcano69v2 = () => {
     setEmailError('');
     setPurchaseLoading(true);
     try {
+      // Ler UTMs capturadas pelo useUtmTracker
+      let utmData: Record<string, string> | null = null;
+      try {
+        const raw = sessionStorage.getItem('captured_utms');
+        if (raw) utmData = JSON.parse(raw);
+      } catch { /* ignore */ }
+
       const response = await supabase.functions.invoke('create-mp-checkout', {
         body: {
           product_slug: 'upscaller-arcano-vitalicio',
-          user_email: userEmail.toLowerCase().trim()
+          user_email: userEmail.toLowerCase().trim(),
+          utm_data: utmData
         }
       });
 

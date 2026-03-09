@@ -394,6 +394,47 @@ serve(async (req) => {
       
       await sendPurchaseEmail(supabase, email, product.title, ctaLink, requestId)
 
+      // 6. Enviar webhook para UTMify (formato Greenn)
+      try {
+        const utmData = order.utm_data as Record<string, string> | null
+        const saleMetas: { meta_key: string; meta_value: string }[] = []
+        if (utmData) {
+          for (const [key, value] of Object.entries(utmData)) {
+            if (value) saleMetas.push({ meta_key: key, meta_value: String(value) })
+          }
+        }
+
+        const utmifyPayload = {
+          currentStatus: 'paid',
+          client: {
+            name: '',
+            email: email
+          },
+          product: {
+            name: product.title,
+            id: `mp_${product.slug}`
+          },
+          sale: {
+            id: order.id,
+            amount: Number(order.amount),
+            created_at: order.created_at
+          },
+          saleMetas
+        }
+
+        const utmifyResponse = await fetch(
+          'https://api.utmify.com.br/webhooks/greenn?id=677eeb043df9ee8a68e6995b',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(utmifyPayload)
+          }
+        )
+        console.log(`   ├─ 📊 UTMify webhook: ${utmifyResponse.status} (${saleMetas.length} metas)`)
+      } catch (utmErr: any) {
+        console.error(`   ├─ ⚠️ UTMify webhook falhou (não-bloqueante): ${utmErr.message}`)
+      }
+
       console.log(`\n✅ [${requestId}] PROCESSAMENTO CONCLUÍDO COM SUCESSO`)
     }
 
