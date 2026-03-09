@@ -193,18 +193,9 @@ const AdminHub = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex w-full">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-        <AdminHubSidebar 
-          activeView={activeView}
-          onViewChange={handleViewChange}
-          onLogout={handleLogout}
-        />
-      </div>
-
-      {/* Desktop Force Update Button - Fixed position */}
-      <div className="hidden md:flex fixed top-4 right-4 z-50">
+    <>
+      {/* Desktop Force Update Button - Fixed position, outside flex container */}
+      <div className="hidden md:flex fixed top-4 right-4 z-[9999]">
         <Button
           variant="destructive"
           onClick={handleForceUpdate}
@@ -216,42 +207,53 @@ const AdminHub = () => {
         </Button>
       </div>
 
-      {/* Mobile Menu */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border p-4 flex items-center justify-between">
-        <h1 className="text-lg font-bold text-foreground">Painel Admin</h1>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleForceUpdate}
-            disabled={isForcingUpdate}
-            className="gap-1"
-          >
-            <RefreshCw className={`h-4 w-4 ${isForcingUpdate ? 'animate-spin' : ''}`} />
-            {isForcingUpdate ? 'Enviando...' : 'Push Update'}
-          </Button>
-          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-64">
-              <AdminHubSidebar 
-                activeView={activeView}
-                onViewChange={handleViewChange}
-                onLogout={handleLogout}
-              />
-            </SheetContent>
-          </Sheet>
+      <div className="min-h-screen bg-background flex w-full">
+        {/* Desktop Sidebar */}
+        <div className="hidden md:block">
+          <AdminHubSidebar 
+            activeView={activeView}
+            onViewChange={handleViewChange}
+            onLogout={handleLogout}
+          />
         </div>
-      </div>
 
-      {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 mt-16 md:mt-0">
-        {renderContent()}
-      </main>
-    </div>
+        {/* Mobile Menu */}
+        <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b border-border p-4 flex items-center justify-between">
+          <h1 className="text-lg font-bold text-foreground">Painel Admin</h1>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleForceUpdate}
+              disabled={isForcingUpdate}
+              className="gap-1"
+            >
+              <RefreshCw className={`h-3 w-3 ${isForcingUpdate ? 'animate-spin' : ''}`} />
+              {isForcingUpdate ? '...' : 'Push'}
+            </Button>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-64">
+                <AdminHubSidebar 
+                  activeView={activeView}
+                  onViewChange={handleViewChange}
+                  onLogout={handleLogout}
+                />
+              </SheetContent>
+            </Sheet>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <main className="flex-1 p-4 md:p-8 mt-16 md:mt-0">
+          {renderContent()}
+        </main>
+      </div>
+    </>
   );
 };
 
