@@ -52,6 +52,16 @@ export default function SalesDashboard() {
           <h2 className="text-xl font-bold text-foreground">Dashboard de Vendas</h2>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={refetch}
+            disabled={isLoading}
+            className="bg-card border-border"
+            title="Atualizar dados"
+          >
+            <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+          </Button>
           <Select value={preset} onValueChange={(v) => setPreset(v as PeriodPreset)}>
             <SelectTrigger className="w-[180px] bg-card border-border text-card-foreground">
               <SelectValue />
