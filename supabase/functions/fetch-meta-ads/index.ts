@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
           since: sinceDate,
           until: untilDate,
         });
-        const url = `https://graph.facebook.com/v21.0/act_${trimmedId}/insights?fields=spend,impressions,clicks,cpm,cpc&time_range=${encodeURIComponent(timeRange)}&level=account&time_increment=1&limit=500`;
+        const url = `https://graph.facebook.com/v21.0/act_${trimmedId}/insights?fields=spend,impressions,clicks,cpm,cpc,actions&time_range=${encodeURIComponent(timeRange)}&level=account&time_increment=1&limit=500`;
 
         const res = await fetch(url, {
           headers: { Authorization: `Bearer ${accessToken}` },
