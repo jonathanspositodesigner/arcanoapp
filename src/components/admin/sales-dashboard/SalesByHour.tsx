@@ -1,5 +1,6 @@
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { DashboardOrder } from "./useSalesDashboard";
+import { Clock } from "lucide-react";
 
 interface Props {
   approved: DashboardOrder[];
@@ -15,8 +16,11 @@ export default function SalesByHour({ approved, isLoading }: Props) {
   });
 
   return (
-    <div className="rounded-xl border border-[hsl(220,40%,16%)] bg-[hsl(220,50%,6%)] p-5">
-      <h3 className="text-sm font-semibold text-foreground mb-4">Vendas por Horário</h3>
+    <div className="rounded-xl border border-border bg-card/60 p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <Clock className="h-4 w-4 text-primary" />
+        <h3 className="text-sm font-semibold text-foreground">Vendas por Horário</h3>
+      </div>
       {isLoading ? (
         <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">Carregando...</div>
       ) : (
@@ -24,17 +28,22 @@ export default function SalesByHour({ approved, isLoading }: Props) {
           <BarChart data={hours}>
             <XAxis
               dataKey="hour"
-              tick={{ fill: "#6b7280", fontSize: 10 }}
+              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
               axisLine={false}
               tickLine={false}
               interval={2}
             />
             <YAxis hide />
             <Tooltip
-              contentStyle={{ background: "#1a1a2e", border: "1px solid #2a2a4a", borderRadius: 8 }}
-              labelStyle={{ color: "#fff" }}
+              contentStyle={{
+                background: "hsl(var(--card))",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: 8,
+                color: "hsl(var(--foreground))",
+              }}
+              labelStyle={{ color: "hsl(var(--foreground))" }}
             />
-            <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       )}

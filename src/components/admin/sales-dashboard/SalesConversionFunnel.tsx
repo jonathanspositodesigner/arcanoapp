@@ -1,3 +1,5 @@
+import { Filter } from "lucide-react";
+
 interface Props {
   pageViews: number;
   totalOrders: number;
@@ -6,19 +8,29 @@ interface Props {
   isLoading: boolean;
 }
 
+const STEP_COLORS = [
+  { bar: "bg-blue-500", text: "text-blue-400" },
+  { bar: "bg-cyan-500", text: "text-cyan-400" },
+  { bar: "bg-amber-500", text: "text-amber-400" },
+  { bar: "bg-emerald-500", text: "text-emerald-400" },
+];
+
 export default function SalesConversionFunnel({ pageViews, totalOrders, pendingCount, approvedCount, isLoading }: Props) {
   const steps = [
-    { label: "Visitas", value: pageViews, color: "bg-blue-500" },
-    { label: "Checkouts Iniciados", value: totalOrders, color: "bg-cyan-500" },
-    { label: "Vendas Pendentes", value: pendingCount, color: "bg-amber-500" },
-    { label: "Vendas Aprovadas", value: approvedCount, color: "bg-emerald-500" },
+    { label: "Visitas", value: pageViews },
+    { label: "Checkouts Iniciados", value: totalOrders },
+    { label: "Vendas Pendentes", value: pendingCount },
+    { label: "Vendas Aprovadas", value: approvedCount },
   ];
 
   const max = Math.max(...steps.map((s) => s.value), 1);
 
   return (
-    <div className="rounded-xl border border-[hsl(220,40%,16%)] bg-[hsl(220,50%,6%)] p-5">
-      <h3 className="text-sm font-semibold text-foreground mb-4">Funil de Conversão</h3>
+    <div className="rounded-xl border border-border bg-card/60 p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <Filter className="h-4 w-4 text-primary" />
+        <h3 className="text-sm font-semibold text-foreground">Funil de Conversão</h3>
+      </div>
       {isLoading ? (
         <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">Carregando...</div>
       ) : (
@@ -37,13 +49,13 @@ export default function SalesConversionFunnel({ pageViews, totalOrders, pendingC
                     {convFromPrev && (
                       <span className="text-[10px] text-muted-foreground/60">{convFromPrev}%</span>
                     )}
-                    <span className="text-sm font-bold text-foreground">{step.value}</span>
+                    <span className={`text-sm font-bold ${STEP_COLORS[i].text}`}>{step.value}</span>
                   </div>
                 </div>
-                <div className="h-6 rounded-md bg-[hsl(220,30%,12%)] overflow-hidden">
+                <div className="h-7 rounded-lg bg-muted/30 overflow-hidden">
                   <div
-                    className={`h-full ${step.color} rounded-md transition-all duration-500`}
-                    style={{ width: `${Math.max(pct, 2)}%` }}
+                    className={`h-full ${STEP_COLORS[i].bar} rounded-lg transition-all duration-700 opacity-80`}
+                    style={{ width: `${Math.max(pct, 3)}%` }}
                   />
                 </div>
               </div>

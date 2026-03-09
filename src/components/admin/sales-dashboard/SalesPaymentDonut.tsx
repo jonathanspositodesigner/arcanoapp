@@ -1,5 +1,6 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { DashboardOrder } from "./useSalesDashboard";
+import { CreditCard } from "lucide-react";
 
 interface Props {
   approved: DashboardOrder[];
@@ -14,7 +15,7 @@ const PAYMENT_LABELS: Record<string, string> = {
   ticket: "Boleto",
 };
 
-const COLORS = ["#3b82f6", "#06b6d4", "#f59e0b", "#ec4899", "#8b5cf6"];
+const COLORS = ["hsl(142, 71%, 45%)", "hsl(199, 89%, 48%)", "hsl(45, 93%, 47%)", "hsl(330, 81%, 60%)", "hsl(263, 70%, 50%)"];
 
 function getLabel(method: string | null) {
   if (!method) return "N/A";
@@ -35,8 +36,11 @@ export default function SalesPaymentDonut({ approved, isLoading }: Props) {
   const total = approved.length;
 
   return (
-    <div className="rounded-xl border border-[hsl(220,40%,16%)] bg-[hsl(220,50%,6%)] p-5">
-      <h3 className="text-sm font-semibold text-foreground mb-4">Vendas por Pagamento</h3>
+    <div className="rounded-xl border border-border bg-card/60 p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <CreditCard className="h-4 w-4 text-primary" />
+        <h3 className="text-sm font-semibold text-foreground">Vendas por Pagamento</h3>
+      </div>
       {isLoading || data.length === 0 ? (
         <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
           {isLoading ? "Carregando..." : "Sem dados"}
@@ -53,15 +57,21 @@ export default function SalesPaymentDonut({ approved, isLoading }: Props) {
                   innerRadius={55}
                   outerRadius={80}
                   dataKey="value"
-                  stroke="none"
+                  stroke="hsl(var(--background))"
+                  strokeWidth={2}
                 >
                   {data.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{ background: "#1a1a2e", border: "1px solid #2a2a4a", borderRadius: 8 }}
-                  labelStyle={{ color: "#fff" }}
+                  contentStyle={{
+                    background: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: 8,
+                    color: "hsl(var(--foreground))",
+                  }}
+                  labelStyle={{ color: "hsl(var(--foreground))" }}
                 />
               </PieChart>
             </ResponsiveContainer>

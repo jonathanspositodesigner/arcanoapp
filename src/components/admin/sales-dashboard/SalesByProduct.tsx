@@ -1,9 +1,12 @@
 import { DashboardOrder } from "./useSalesDashboard";
+import { ShoppingBag } from "lucide-react";
 
 interface Props {
   approved: DashboardOrder[];
   isLoading: boolean;
 }
+
+const COLORS = ["hsl(142, 71%, 45%)", "hsl(199, 89%, 48%)", "hsl(45, 93%, 47%)", "hsl(330, 81%, 60%)", "hsl(263, 70%, 50%)", "hsl(174, 72%, 46%)"];
 
 export default function SalesByProduct({ approved, isLoading }: Props) {
   const grouped: Record<string, number> = {};
@@ -17,11 +20,13 @@ export default function SalesByProduct({ approved, isLoading }: Props) {
     .sort((a, b) => b.count - a.count);
 
   const total = approved.length || 1;
-  const COLORS = ["#3b82f6", "#06b6d4", "#f59e0b", "#ec4899", "#8b5cf6", "#10b981"];
 
   return (
-    <div className="rounded-xl border border-[hsl(220,40%,16%)] bg-[hsl(220,50%,6%)] p-5">
-      <h3 className="text-sm font-semibold text-foreground mb-4">Vendas por Produto</h3>
+    <div className="rounded-xl border border-border bg-card/60 p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <ShoppingBag className="h-4 w-4 text-primary" />
+        <h3 className="text-sm font-semibold text-foreground">Vendas por Produto</h3>
+      </div>
       {isLoading || data.length === 0 ? (
         <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
           {isLoading ? "Carregando..." : "Sem dados"}
@@ -33,14 +38,14 @@ export default function SalesByProduct({ approved, isLoading }: Props) {
             return (
               <div key={d.name} className="flex items-center gap-3">
                 <span
-                  className="w-3 h-3 rounded-full shrink-0"
-                  style={{ background: COLORS[i % COLORS.length] }}
+                  className="w-3 h-3 rounded-full shrink-0 ring-2 ring-offset-1 ring-offset-background"
+                  style={{ background: COLORS[i % COLORS.length], boxShadow: `0 0 8px ${COLORS[i % COLORS.length]}40` }}
                 />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-foreground truncate">{d.name}</p>
                 </div>
-                <span className="text-xs text-muted-foreground">{pct}%</span>
-                <span className="text-sm font-bold text-foreground w-8 text-right">{d.count}</span>
+                <span className="text-xs text-muted-foreground tabular-nums">{pct}%</span>
+                <span className="text-sm font-bold text-foreground w-8 text-right tabular-nums">{d.count}</span>
               </div>
             );
           })}
