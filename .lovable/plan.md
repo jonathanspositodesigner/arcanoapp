@@ -1,23 +1,24 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+# Corrigir: Separar página de teste MP da página de produção
 
 ## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+A página `/planos-upscaler-arcano-69` (PlanosUpscalerArcano69v2.tsx) é a que os anúncios apontam e foi alterada para usar Mercado Pago. Se publicar, quebra tudo.
 
-## Dados
+## Solução
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+### 1. Reverter PlanosUpscalerArcano69v2.tsx ao link original da Greenn
+- Remover todo o código do `handlePurchase` com Mercado Pago (linhas 247-283)
+- Restaurar o comportamento original com link da Greenn (checkout externo)
 
-## Ações (via SQL migration)
+### 2. Criar página duplicada para teste do MP
+- Criar `src/pages/PlanosUpscalerArcanoMP.tsx` — cópia do v2 mas com o checkout do Mercado Pago
+- Rota: `/planos-upscaler-arcano-mp` (só você vai saber o endereço)
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+### 3. Registrar rota no App.tsx
+- Adicionar import lazy + Route para `/planos-upscaler-arcano-mp`
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+## Resultado
+- `/planos-upscaler-arcano-69` → Greenn (produção, anúncios)
+- `/planos-upscaler-arcano-mp` → Mercado Pago (teste)
 
