@@ -51,13 +51,15 @@ export default function SalesDashboard() {
     try {
       // Sync fresh Meta Ads data
       await supabase.functions.invoke("fetch-meta-ads");
+      // Wait for all dashboard data to reload
+      await refetch();
+      toast.success("Dados atualizados!");
     } catch (e) {
-      console.error("Error syncing Meta Ads:", e);
+      console.error("Error refreshing:", e);
+      toast.error("Erro ao atualizar dados");
+    } finally {
+      setIsRefreshing(false);
     }
-    // Then re-fetch all dashboard data
-    refetch();
-    setIsRefreshing(false);
-    toast.success("Dados atualizados!");
   }, [refetch]);
 
   const loading = isLoading || isRefreshing;
