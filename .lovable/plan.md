@@ -1,23 +1,25 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+# Corrigir duplicatas de vendas Hotmart-ES no dashboard
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+## Problema raiz
 
-## Dados
+A Hotmart envia **dois webhooks** para cada venda:
+1. `PURCHASE_APPROVED` — no momento da compra (ex: 1 de março)
+2. `PURCHASE_COMPLETE` — dias depois (ex: 9 de março)
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+A função `get_unified_dashboard_orders` filtra por `received_at` dentro do período selecionado. Quando o dashboard mostra "hoje", ele pega os 8 webhooks `PURCHASE_COMPLETE` que chegaram hoje mas que são de compras feitas na semana passada. Como `greenn_contract_id` é NULL para entradas Hotmart, o `DISTINCT ON(COALESCE(greenn_contract_id, id::text))` não consegue deduplica-las — cada row tem um `id` único.
 
-## Ações (via SQL migration)
+**Resultado**: 12 vendas mostradas (4 reais de hoje + 8 PURCHASE_COMPLETE de compras antigas).
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+## Correção
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+Alterar a RPC `get_unified_dashboard_orders` para **excluir `PURCHASE_COMPLETE`** dos status válidos de webhook. Esse evento é apenas uma confirmação tardia de uma compra já contada como `PURCHASE_APPROVED`. Remover de ambas as listas de status no SQL.
+
+Statuses que ficam:
+- Paid: `paid`, `approved`, `PURCHASE_APPROVED`
+- Refunded: `refunded`, `chargeback`, `chargedback`, `PURCHASE_REFUNDED`, `PURCHASE_CHARGEBACK`
+- Pending: `waiting_payment`, `pending_payment`, `PURCHASE_DELAYED`
+
+**1 migration SQL** para atualizar a função.
 
