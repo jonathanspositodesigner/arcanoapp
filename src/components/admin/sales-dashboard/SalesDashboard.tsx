@@ -38,7 +38,7 @@ export default function SalesDashboard() {
     customEnd, setCustomEnd,
     orders, approved, pending, refunded,
     revenue, refundedTotal, pendingTotal,
-    pageViews, adSpend, isLoading,
+    pageViews, adSpend, metaClicks, abandonedCheckouts, isLoading,
   } = useSalesDashboard();
 
   return (
