@@ -11,8 +11,18 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const { action, since, until } = await req.json();
+    let action = "fetch";
+    let since: string | undefined;
+    let until: string | undefined;
+    
+    try {
+      const body = await req.json();
+      if (body.action) action = body.action;
+      if (body.since) since = body.since;
+      if (body.until) until = body.until;
+    } catch {
+      // No body or invalid JSON — default to "fetch"
+    }
 
     const appId = Deno.env.get("META_APP_ID")!;
     const appSecret = Deno.env.get("META_APP_SECRET")!;
