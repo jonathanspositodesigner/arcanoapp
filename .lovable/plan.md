@@ -1,21 +1,40 @@
 
 
-# Trocar token do Mercado Pago para produção
+# Gerenciar métodos de pagamento no checkout do Mercado Pago
 
-## Situação atual
-O secret `MERCADOPAGO_ACCESS_TOKEN` já existe configurado — mas com um token de **sandbox/teste** (por isso o checkout abre em `sandbox.mercadopago.com.br`).
+## Sobre o PIX desabilitado
+O botão "Criar Pix" estar desabilitado na tela do Mercado Pago é um problema **da sua conta MP**, não do código. Possíveis causas:
+- Sua conta MP não tem chave PIX cadastrada
+- Sua conta não completou a verificação de identidade
+- Conta ainda está em processo de aprovação para receber PIX
 
-## O que precisa ser feito
+**Para verificar**: Acesse mercadopago.com.br → Seu negócio → Configurações → PIX e veja se a chave está ativa.
 
-### 1. Atualizar o secret com o token de produção
-- Vou solicitar que você insira o **Access Token de produção** do Mercado Pago
-- Para encontrá-lo: acesse [mercadopago.com.br/developers](https://www.mercadopago.com.br/developers) → Suas integrações → Credenciais de produção → copie o **Access Token** (começa com `APP_USR-...`)
+## Remover boleto e controlar métodos de pagamento
+Os métodos de pagamento são controlados **no código**, dentro da Edge Function `create-mp-checkout`. Basta adicionar o campo `payment_methods` na preferência com os tipos que você quer excluir.
 
-### 2. Nenhuma mudança de código necessária
-- A Edge Function `create-mp-checkout` já usa `Deno.env.get('MERCADOPAGO_ACCESS_TOKEN')` — basta trocar o valor do secret e o checkout passa a ser de produção automaticamente
+### Editar `supabase/functions/create-mp-checkout/index.ts`
+Adicionar `payment_methods` ao `preferenceBody` (após `payer`):
 
-## Resultado
-- O checkout abrirá em `mercadopago.com.br` (sem "sandbox")
-- Pagamentos reais serão processados (PIX, cartão, boleto)
-- Você poderá testar com um pagamento real na página `/planos-upscaler-arcano-mp`
+```typescript
+payment_methods: {
+  excluded_payment_types: [
+    { id: "ticket" }  // Remove boleto
+  ],
+  installments: 12
+},
+```
+
+- `"ticket"` = boleto bancário
+- Se quiser remover outros: `"atm"` (lotérica), `"debit_card"` (débito)
+- PIX é do tipo `"bank_transfer"` — **não** excluir esse
+
+### Tipos de pagamento disponíveis no MP
+| ID | Método |
+|---|---|
+| `credit_card` | Cartão de crédito |
+| `debit_card` | Cartão de débito |
+| `bank_transfer` | PIX |
+| `ticket` | Boleto |
+| `atm` | Lotérica |
 
