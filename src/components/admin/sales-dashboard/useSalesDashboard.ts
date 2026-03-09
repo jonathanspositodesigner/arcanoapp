@@ -115,13 +115,13 @@ export function useSalesDashboard() {
         setMetaClicks(totalClicks);
 
         // Fetch page views for funnel
-        const { count } = await supabase
+        const { count: pvCount } = await supabase
           .from("page_views")
           .select("id", { count: "exact", head: true })
           .gte("viewed_at", start.toISOString())
           .lt("viewed_at", end.toISOString());
 
-        setPageViews(count || 0);
+        setPageViews(pvCount || 0);
 
         // Fetch abandoned checkouts (ICs)
         const { count: icCount } = await supabase
