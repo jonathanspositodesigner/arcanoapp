@@ -245,16 +245,22 @@ const PlanosUpscalerArcano69v2 = () => {
   };
 
   const [purchaseLoading, setPurchaseLoading] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [emailError, setEmailError] = useState('');
 
   const handlePurchase = async () => {
+    const userEmail = user?.email || emailInput.trim();
+    if (!userEmail) {
+      setEmailError('Digite seu email para continuar');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
+      setEmailError('Email inválido');
+      return;
+    }
+    setEmailError('');
     setPurchaseLoading(true);
     try {
-      const userEmail = user?.email || prompt('Digite seu email para continuar:');
-      if (!userEmail) {
-        setPurchaseLoading(false);
-        return;
-      }
-
       const response = await supabase.functions.invoke('create-mp-checkout', {
         body: {
           product_slug: 'upscaller-arcano-vitalicio',
