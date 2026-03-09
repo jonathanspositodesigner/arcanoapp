@@ -54,6 +54,8 @@ export function useSalesDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [pageViews, setPageViews] = useState(0);
   const [adSpend, setAdSpend] = useState(0);
+  const [metaClicks, setMetaClicks] = useState(0);
+  const [abandonedCheckouts, setAbandonedCheckouts] = useState(0);
 
   const { start, end } = useMemo(
     () => getDateRange(preset, customStart, customEnd),
