@@ -46,7 +46,7 @@ function getDateRange(preset: PeriodPreset, customStart?: Date, customEnd?: Date
 }
 
 export function useSalesDashboard() {
-  const [preset, setPreset] = useState<PeriodPreset>("30d");
+  const [preset, setPreset] = useState<PeriodPreset>("today");
   const [customStart, setCustomStart] = useState<Date | undefined>();
   const [customEnd, setCustomEnd] = useState<Date | undefined>();
   const [orders, setOrders] = useState<DashboardOrder[]>([]);
