@@ -1,23 +1,60 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+# Diagnóstico: Por que o UTMify não está registrando a venda
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+## O problema
 
-## Dados
+O UTMify está configurado como integração **Greenn**. Isso significa que ele espera receber um payload **exatamente** no formato que a Greenn envia. Nos testes anteriores, o payload estava incompleto — faltavam campos obrigatórios que o parser da Greenn no UTMify precisa para reconhecer como uma venda válida.
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+### Campos que estão faltando ou errados:
 
-## Ações (via SQL migration)
+1. **`event`**: a Greenn envia `"sale_status_updated"` — estávamos omitindo ou colocando errado
+2. **`contract.id`**: a Greenn sempre envia um ID de contrato — é por isso que o UTMify identifica a venda como única
+3. **`offer`**: precisa ter `name` e `id`
+4. **`product.id`**: a Greenn envia como **número** (ex: `89608`), nós mandamos string `"mp_upscaler..."`
+5. **`sale.amount`**: a Greenn envia em **centavos** (3990 = R$39,90), nós mandamos em reais (39.90)
+6. **`sale.currency`**: precisa ser `"BRL"`
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+Basicamente, o UTMify respondeu "SUCCESS" porque recebeu um POST válido, mas **descartou** o payload porque não conseguiu parsear como uma venda real da Greenn.
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+## Plano de correção
+
+### 1. Corrigir o payload no `webhook-mercadopago/index.ts`
+
+Montar o payload no formato **exato** da Greenn:
+
+```json
+{
+  "event": "sale_status_updated",
+  "currentStatus": "paid",
+  "contract": { "id": 123456 },
+  "client": { "name": "", "email": "comprador@email.com" },
+  "product": { "name": "Upscaler Arcano Vitalício", "id": 999001 },
+  "offer": { "name": "Upscaler Arcano Vitalício", "id": 999001 },
+  "sale": { 
+    "id": 123456, 
+    "amount": 3990, 
+    "currency": "BRL",
+    "created_at": "2026-03-09T..." 
+  },
+  "saleMetas": [
+    { "meta_key": "utm_source", "meta_value": "FB" },
+    { "meta_key": "xcod", "meta_value": "FBhQwK..." }
+  ]
+}
+```
+
+Para gerar IDs numéricos consistentes, vamos usar um hash do UUID da ordem para criar um número inteiro único (a Greenn usa IDs numéricos).
+
+### 2. Enviar teste real com valor R$ 39,90
+
+Criar uma edge function temporária que envia exatamente esse payload para o UTMify, com:
+- **Produto**: "Upscaler Arcano Vitalício"
+- **Valor**: 3990 (centavos)
+- **Email**: teste-lovable@voxvisual.com.br
+- **UTMs de teste**: utm_source=FB, utm_campaign=teste-mp
+
+### Arquivos editados
+- `supabase/functions/webhook-mercadopago/index.ts` (corrigir formato do payload UTMify)
+- Edge function temporária de teste (criar, executar, deletar)
 
