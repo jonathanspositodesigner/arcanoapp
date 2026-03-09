@@ -1,14 +1,24 @@
 
 
-# Atualizar Token do Meta Ads
+# Corrigir: Mostrar apenas vendas aprovadas nos componentes do dashboard
 
-## Passos
+## Problema
+`SalesByProduct` e `SalesBySource` recebem `orders` (que inclui pending, refunded, etc.) e usam isso para contar o "total". Isso infla os números com vendas não aprovadas. O funil de conversão usa `approved.length + pending.length` como "Vendas Inic.", o que também conta pendentes.
 
-1. **Atualizar o secret `META_ACCESS_TOKEN`** com o novo token fornecido
-2. **Executar a função `exchange-token`** para trocar esse token de curta duração por um de longa duração (~60 dias)
-3. **Atualizar o secret novamente** com o token de longa duração retornado
-4. **Testar a sincronização** chamando a função `fetch` para confirmar que os dados estão sendo puxados
+## Componentes afetados e correções
 
-## Observação
-Este token parece ser de curta duração (~1h). A função `exchange-token` já existente no sistema vai convertê-lo automaticamente para um de longa duração (60 dias). Para um token **permanente**, siga o passo a passo do System User que enviei anteriormente.
+1. **SalesByProduct** — Trocar para usar apenas `approved` em vez de `orders` para a contagem principal. Remover a prop `orders`.
+
+2. **SalesBySource** — Mesmo problema, mesma correção. Usar apenas `approved`.
+
+3. **SalesConversionFunnel** — `totalOrders` atualmente é `approved.length + pending.length`. Mudar para usar apenas `orders.length` como "Vendas Iniciadas" (total de tentativas) e manter `approved.length` como "Vendas Aprovadas". Isso faz sentido no funil: todas as tentativas → aprovadas.
+
+4. **SalesDashboard.tsx** — Atualizar as props passadas para esses componentes, removendo `orders` de `SalesByProduct` e `SalesBySource`.
+
+## Resumo das mudanças
+- `SalesByProduct`: mostrar apenas aprovadas (quantidade = `approved`)
+- `SalesBySource`: mostrar apenas aprovadas (quantidade = `approved`)  
+- `SalesConversionFunnel`: manter como está (já mostra vendas iniciadas vs aprovadas, faz sentido no funil)
+- `SalesByHour` e `SalesByWeekday`: já usam apenas `approved` — OK
+- 4 arquivos editados
 
