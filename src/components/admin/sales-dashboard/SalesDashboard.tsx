@@ -132,7 +132,7 @@ export default function SalesDashboard() {
           metaClicks={metaClicks}
           metaLandingPageViews={metaLandingPageViews}
           metaInitiatedCheckouts={metaInitiatedCheckouts}
-          totalOrders={orders.length}
+          totalOrders={approved.length + pending.length}
           approvedCount={approved.length}
           isLoading={isLoading}
         />
