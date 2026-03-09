@@ -643,7 +643,7 @@ const PlanosUpscalerArcano69v2 = () => {
                   </div>
 
                   <div className="px-0 md:px-2">
-                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
+                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} loading={purchaseLoading} />
                   </div>
 
                   {/* Badges de pagamento */}
