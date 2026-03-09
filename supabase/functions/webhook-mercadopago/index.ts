@@ -367,6 +367,13 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
+      // 5. Enviar email de compra via SendPulse
+      const ctaLink = product.pack_slug === 'upscaler-arcano' || product.type === 'credits'
+        ? 'https://arcanoapp.voxvisual.com.br/upscaler-arcano'
+        : 'https://arcanoapp.voxvisual.com.br/'
+      
+      await sendPurchaseEmail(supabase, email, product.title, ctaLink, requestId)
+
       console.log(`\n✅ [${requestId}] PROCESSAMENTO CONCLUÍDO COM SUCESSO`)
     }
 
