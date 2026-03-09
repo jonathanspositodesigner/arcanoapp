@@ -61,20 +61,27 @@ Deno.serve(async (req) => {
 
       const results: Record<string, unknown>[] = [];
 
+      console.log("Account IDs to process:", accountIds);
+
       for (const accountId of accountIds) {
+        const trimmedId = accountId.trim();
+        console.log(`Processing account: "${trimmedId}"`);
+        
         const timeRange = JSON.stringify({
           since: sinceDate,
           until: untilDate,
         });
-        const url = `https://graph.facebook.com/v21.0/act_${accountId}/insights?fields=spend,impressions,clicks,cpm,cpc&time_range=${encodeURIComponent(timeRange)}&level=account&time_increment=1&limit=500`;
+        const url = `https://graph.facebook.com/v21.0/act_${trimmedId}/insights?fields=spend,impressions,clicks,cpm,cpc&time_range=${encodeURIComponent(timeRange)}&level=account&time_increment=1&limit=500`;
 
         const res = await fetch(url, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
         const data = await res.json();
 
+        console.log(`Account ${trimmedId} response:`, JSON.stringify(data).substring(0, 500));
+
         if (data.error) {
-          results.push({ accountId, error: data.error });
+          results.push({ accountId: trimmedId, error: data.error });
           continue;
         }
 
