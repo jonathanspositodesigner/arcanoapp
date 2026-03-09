@@ -118,6 +118,16 @@ export function useSalesDashboard() {
         );
         setAdSpend(totalSpend);
         setMetaClicks(totalClicks);
+        const totalLandingPageViews = (spendData || []).reduce(
+          (sum, row) => sum + Number((row as any).landing_page_views || 0),
+          0
+        );
+        const totalInitiatedCheckouts = (spendData || []).reduce(
+          (sum, row) => sum + Number((row as any).initiated_checkouts || 0),
+          0
+        );
+        setMetaLandingPageViews(totalLandingPageViews);
+        setMetaInitiatedCheckouts(totalInitiatedCheckouts);
 
         // Fetch page views for funnel
         const { count: pvCount } = await supabase
