@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 // APP_VERSION removed - now using pwa_version from database
 import { toast } from "sonner";
 import AdminGoalsCard from "@/components/AdminGoalsCard";
+import SalesDashboard from "@/components/admin/sales-dashboard/SalesDashboard";
 import WelcomeEmailsMonitor from "@/components/WelcomeEmailsMonitor";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import AdminHubSidebar, { HubViewType } from "@/components/AdminHubSidebar";
@@ -166,6 +167,9 @@ const AdminHub = () => {
                 </Card>
               ))}
             </div>
+
+            {/* Sales Dashboard */}
+            <SalesDashboard />
 
             {/* Goals Section */}
             <AdminGoalsCard />

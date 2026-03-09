@@ -2004,6 +2004,9 @@ export type Database = {
           created_at: string | null
           id: string
           mp_payment_id: string | null
+          net_amount: number | null
+          paid_at: string | null
+          payment_method: string | null
           preference_id: string | null
           product_id: string | null
           status: string
@@ -2017,6 +2020,9 @@ export type Database = {
           created_at?: string | null
           id?: string
           mp_payment_id?: string | null
+          net_amount?: number | null
+          paid_at?: string | null
+          payment_method?: string | null
           preference_id?: string | null
           product_id?: string | null
           status?: string
@@ -2030,6 +2036,9 @@ export type Database = {
           created_at?: string | null
           id?: string
           mp_payment_id?: string | null
+          net_amount?: number | null
+          paid_at?: string | null
+          payment_method?: string | null
           preference_id?: string | null
           product_id?: string | null
           status?: string
@@ -4151,6 +4160,22 @@ export type Database = {
       get_daily_musicos_download_count: {
         Args: { _user_id: string }
         Returns: number
+      }
+      get_mp_dashboard_orders: {
+        Args: { _end: string; _start: string }
+        Returns: {
+          amount: number
+          created_at: string
+          id: string
+          net_amount: number
+          paid_at: string
+          payment_method: string
+          product_id: string
+          product_title: string
+          status: string
+          user_email: string
+          utm_data: Json
+        }[]
       }
       get_or_create_referral_code: {
         Args: { p_user_id: string }

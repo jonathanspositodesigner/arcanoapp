@@ -1,0 +1,85 @@
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { DashboardOrder } from "./useSalesDashboard";
+
+interface Props {
+  approved: DashboardOrder[];
+  isLoading: boolean;
+}
+
+const PAYMENT_LABELS: Record<string, string> = {
+  pix: "Pix",
+  credit_card: "Cartão de Crédito",
+  debit_card: "Cartão de Débito",
+  account_money: "Saldo MP",
+  ticket: "Boleto",
+};
+
+const COLORS = ["#3b82f6", "#06b6d4", "#f59e0b", "#ec4899", "#8b5cf6"];
+
+function getLabel(method: string | null) {
+  if (!method) return "N/A";
+  return PAYMENT_LABELS[method] || method;
+}
+
+export default function SalesPaymentDonut({ approved, isLoading }: Props) {
+  const grouped: Record<string, number> = {};
+  approved.forEach((o) => {
+    const label = getLabel(o.payment_method);
+    grouped[label] = (grouped[label] || 0) + 1;
+  });
+
+  const data = Object.entries(grouped)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+
+  const total = approved.length;
+
+  return (
+    <div className="rounded-xl border border-[hsl(220,40%,16%)] bg-[hsl(220,50%,6%)] p-5">
+      <h3 className="text-sm font-semibold text-foreground mb-4">Vendas por Pagamento</h3>
+      {isLoading || data.length === 0 ? (
+        <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
+          {isLoading ? "Carregando..." : "Sem dados"}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center">
+          <div className="relative w-48 h-48">
+            <ResponsiveContainer>
+              <PieChart>
+                <Pie
+                  data={data}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={80}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {data.map((_, i) => (
+                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{ background: "#1a1a2e", border: "1px solid #2a2a4a", borderRadius: 8 }}
+                  labelStyle={{ color: "#fff" }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-2xl font-bold text-foreground">{total}</span>
+              <span className="text-[10px] text-muted-foreground">vendas</span>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-3 mt-4 justify-center">
+            {data.map((d, i) => (
+              <div key={d.name} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span className="w-2.5 h-2.5 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
+                {d.name} ({((d.value / total) * 100).toFixed(0)}%)
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
