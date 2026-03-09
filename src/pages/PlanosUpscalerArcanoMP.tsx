@@ -245,16 +245,22 @@ const PlanosUpscalerArcano69v2 = () => {
   };
 
   const [purchaseLoading, setPurchaseLoading] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [emailError, setEmailError] = useState('');
 
   const handlePurchase = async () => {
+    const userEmail = user?.email || emailInput.trim();
+    if (!userEmail) {
+      setEmailError('Digite seu email para continuar');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
+      setEmailError('Email inválido');
+      return;
+    }
+    setEmailError('');
     setPurchaseLoading(true);
     try {
-      const userEmail = user?.email || prompt('Digite seu email para continuar:');
-      if (!userEmail) {
-        setPurchaseLoading(false);
-        return;
-      }
-
       const response = await supabase.functions.invoke('create-mp-checkout', {
         body: {
           product_slug: 'upscaller-arcano-vitalicio',
@@ -641,6 +647,19 @@ const PlanosUpscalerArcano69v2 = () => {
                       <span className="font-bold">Últimos dias de venda do Upscaler na versão vitalícia</span>
                     </div>
                   </div>
+
+                  {!user && (
+                    <div className="px-0 md:px-2 mb-4">
+                      <input
+                        type="email"
+                        placeholder="Digite seu email"
+                        value={emailInput}
+                        onChange={(e) => { setEmailInput(e.target.value); setEmailError(''); }}
+                        className="w-full max-w-md mx-auto block px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/40 text-center text-base focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
+                      />
+                      {emailError && <p className="text-red-400 text-xs mt-2">{emailError}</p>}
+                    </div>
+                  )}
 
                   <div className="px-0 md:px-2">
                     <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} loading={purchaseLoading} />
