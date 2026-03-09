@@ -1,0 +1,1 @@
+ALTER TABLE public.mp_orders ADD COLUMN utm_data JSONB DEFAULT NULL;

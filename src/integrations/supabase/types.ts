@@ -2010,6 +2010,7 @@ export type Database = {
           updated_at: string | null
           user_email: string
           user_id: string | null
+          utm_data: Json | null
         }
         Insert: {
           amount: number
@@ -2022,6 +2023,7 @@ export type Database = {
           updated_at?: string | null
           user_email: string
           user_id?: string | null
+          utm_data?: Json | null
         }
         Update: {
           amount?: number
@@ -2034,6 +2036,7 @@ export type Database = {
           updated_at?: string | null
           user_email?: string
           user_id?: string | null
+          utm_data?: Json | null
         }
         Relationships: [
           {
