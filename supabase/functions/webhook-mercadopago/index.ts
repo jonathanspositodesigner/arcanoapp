@@ -394,7 +394,7 @@ serve(async (req) => {
       
       await sendPurchaseEmail(supabase, email, product.title, ctaLink, requestId)
 
-      // 6. Enviar webhook para UTMify (formato Greenn)
+      // 6. Enviar webhook para UTMify (formato EXATO da Greenn)
       try {
         const utmData = order.utm_data as Record<string, string> | null
         const saleMetas: { meta_key: string; meta_value: string }[] = []
@@ -404,23 +404,43 @@ serve(async (req) => {
           }
         }
 
+        // Gerar IDs numéricos consistentes a partir do UUID da ordem
+        const hashCode = (s: string) => {
+          let h = 0
+          for (let i = 0; i < s.length; i++) {
+            h = ((h << 5) - h + s.charCodeAt(i)) | 0
+          }
+          return Math.abs(h)
+        }
+        const numericOrderId = hashCode(order.id)
+        const numericProductId = hashCode(product.id) + 900000
+
         const utmifyPayload = {
+          event: 'sale_status_updated',
           currentStatus: 'paid',
+          contract: { id: numericOrderId },
           client: {
             name: '',
             email: email
           },
           product: {
             name: product.title,
-            id: `mp_${product.slug}`
+            id: numericProductId
+          },
+          offer: {
+            name: product.title,
+            id: numericProductId
           },
           sale: {
-            id: order.id,
-            amount: Number(order.amount),
+            id: numericOrderId,
+            amount: Math.round(Number(order.amount) * 100),
+            currency: 'BRL',
             created_at: order.created_at
           },
           saleMetas
         }
+
+        console.log(`   ├─ 📊 UTMify payload: sale.id=${numericOrderId}, product.id=${numericProductId}, amount=${Math.round(Number(order.amount) * 100)}`)
 
         const utmifyResponse = await fetch(
           'https://api.utmify.com.br/webhooks/greenn?id=677eeb043df9ee8a68e6995b',
@@ -430,7 +450,8 @@ serve(async (req) => {
             body: JSON.stringify(utmifyPayload)
           }
         )
-        console.log(`   ├─ 📊 UTMify webhook: ${utmifyResponse.status} (${saleMetas.length} metas)`)
+        const utmifyBody = await utmifyResponse.text()
+        console.log(`   ├─ 📊 UTMify response: ${utmifyResponse.status} - ${utmifyBody} (${saleMetas.length} metas)`)
       } catch (utmErr: any) {
         console.error(`   ├─ ⚠️ UTMify webhook falhou (não-bloqueante): ${utmErr.message}`)
       }
