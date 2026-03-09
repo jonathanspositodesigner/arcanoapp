@@ -17,7 +17,18 @@ Deno.serve(async (req) => {
     const appId = Deno.env.get("META_APP_ID")!;
     const appSecret = Deno.env.get("META_APP_SECRET")!;
     const accessToken = Deno.env.get("META_ACCESS_TOKEN")!;
-    const accountIds = Deno.env.get("META_AD_ACCOUNT_IDS")!.split(",");
+    const accountIds: string[] = [];
+    const id1 = Deno.env.get("META_AD_ACCOUNT_ID_1");
+    const id2 = Deno.env.get("META_AD_ACCOUNT_ID_2");
+    const id3 = Deno.env.get("META_AD_ACCOUNT_ID_3");
+    if (id1) accountIds.push(id1.trim());
+    if (id2) accountIds.push(id2.trim());
+    if (id3) accountIds.push(id3.trim());
+    // Fallback para o formato antigo
+    if (accountIds.length === 0) {
+      const legacy = Deno.env.get("META_AD_ACCOUNT_IDS");
+      if (legacy) accountIds.push(...legacy.split(",").map(s => s.trim()));
+    }
 
     // Exchange short-lived token for long-lived
     if (action === "exchange-token") {
