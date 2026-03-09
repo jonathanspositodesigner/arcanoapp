@@ -82,14 +82,14 @@ Deno.serve(async (req) => {
           since: sinceDate,
           until: untilDate,
         });
-        const url = `https://graph.facebook.com/v21.0/act_${trimmedId}/insights?fields=spend,impressions,clicks,cpm,cpc&time_range=${encodeURIComponent(timeRange)}&level=account&time_increment=1&limit=500`;
+        const url = `https://graph.facebook.com/v21.0/act_${trimmedId}/insights?fields=spend,impressions,clicks,cpm,cpc,actions&time_range=${encodeURIComponent(timeRange)}&level=account&time_increment=1&limit=500`;
 
         const res = await fetch(url, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
         const data = await res.json();
 
-        console.log(`Account ${trimmedId} response:`, JSON.stringify(data).substring(0, 500));
+        console.log(`Account ${trimmedId} response: rows=${(data.data||[]).length}`);
 
         if (data.error) {
           results.push({ accountId: trimmedId, error: data.error });
@@ -111,6 +111,18 @@ Deno.serve(async (req) => {
 
         // Upsert into meta_ad_spend
         for (const row of rows) {
+          // Extract actions metrics
+          const actions = row.actions || [];
+          const getActionValue = (actionType: string) => {
+            const action = actions.find((a: any) => a.action_type === actionType);
+            return action ? parseInt(action.value || "0") : 0;
+          };
+
+          const landingPageViews = getActionValue("landing_page_view");
+          const initiatedCheckouts = getActionValue("offsite_conversion.fb_pixel_initiate_checkout") 
+            || getActionValue("initiate_checkout")
+            || getActionValue("omni_initiated_checkout");
+
           const { error: upsertError } = await supabase
             .from("meta_ad_spend")
             .upsert(
@@ -122,6 +134,8 @@ Deno.serve(async (req) => {
                 clicks: parseInt(row.clicks || "0"),
                 cpm: parseFloat(row.cpm || "0"),
                 cpc: parseFloat(row.cpc || "0"),
+                landing_page_views: landingPageViews,
+                initiated_checkouts: initiatedCheckouts,
               },
               { onConflict: "account_id,date" }
             );

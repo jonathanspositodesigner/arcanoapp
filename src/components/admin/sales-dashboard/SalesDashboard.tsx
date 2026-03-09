@@ -38,7 +38,7 @@ export default function SalesDashboard() {
     customEnd, setCustomEnd,
     orders, approved, pending, refunded,
     revenue, refundedTotal, pendingTotal,
-    pageViews, adSpend, metaClicks, abandonedCheckouts, isLoading, refetch,
+    pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch,
   } = useSalesDashboard();
 
   return (
@@ -130,8 +130,8 @@ export default function SalesDashboard() {
         <SalesPaymentDonut approved={approved} isLoading={isLoading} />
         <SalesConversionFunnel
           metaClicks={metaClicks}
-          pageViews={pageViews}
-          abandonedCheckouts={abandonedCheckouts}
+          metaLandingPageViews={metaLandingPageViews}
+          metaInitiatedCheckouts={metaInitiatedCheckouts}
           totalOrders={orders.length}
           approvedCount={approved.length}
           isLoading={isLoading}

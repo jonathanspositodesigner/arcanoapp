@@ -55,6 +55,8 @@ export function useSalesDashboard() {
   const [pageViews, setPageViews] = useState(0);
   const [adSpend, setAdSpend] = useState(0);
   const [metaClicks, setMetaClicks] = useState(0);
+  const [metaLandingPageViews, setMetaLandingPageViews] = useState(0);
+  const [metaInitiatedCheckouts, setMetaInitiatedCheckouts] = useState(0);
   const [abandonedCheckouts, setAbandonedCheckouts] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -102,7 +104,7 @@ export function useSalesDashboard() {
         const endDate = end.toISOString().split("T")[0];
         const { data: spendData } = await supabase
           .from("meta_ad_spend")
-          .select("spend, clicks")
+          .select("spend, clicks, landing_page_views, initiated_checkouts")
           .gte("date", startDate)
           .lte("date", endDate);
 
@@ -116,6 +118,16 @@ export function useSalesDashboard() {
         );
         setAdSpend(totalSpend);
         setMetaClicks(totalClicks);
+        const totalLandingPageViews = (spendData || []).reduce(
+          (sum, row) => sum + Number((row as any).landing_page_views || 0),
+          0
+        );
+        const totalInitiatedCheckouts = (spendData || []).reduce(
+          (sum, row) => sum + Number((row as any).initiated_checkouts || 0),
+          0
+        );
+        setMetaLandingPageViews(totalLandingPageViews);
+        setMetaInitiatedCheckouts(totalInitiatedCheckouts);
 
         // Fetch page views for funnel
         const { count: pvCount } = await supabase
@@ -167,6 +179,6 @@ export function useSalesDashboard() {
     customEnd, setCustomEnd,
     orders, approved, pending, refunded,
     revenue, refundedTotal, pendingTotal,
-    pageViews, adSpend, metaClicks, abandonedCheckouts, isLoading, refetch,
+    pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch,
   };
 }

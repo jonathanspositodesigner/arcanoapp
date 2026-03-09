@@ -2008,6 +2008,8 @@ export type Database = {
           date: string
           id: string
           impressions: number | null
+          initiated_checkouts: number | null
+          landing_page_views: number | null
           spend: number
         }
         Insert: {
@@ -2019,6 +2021,8 @@ export type Database = {
           date: string
           id?: string
           impressions?: number | null
+          initiated_checkouts?: number | null
+          landing_page_views?: number | null
           spend?: number
         }
         Update: {
@@ -2030,6 +2034,8 @@ export type Database = {
           date?: string
           id?: string
           impressions?: number | null
+          initiated_checkouts?: number | null
+          landing_page_views?: number | null
           spend?: number
         }
         Relationships: []
