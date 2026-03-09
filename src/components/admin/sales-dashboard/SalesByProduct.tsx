@@ -40,8 +40,7 @@ export default function SalesByProduct({ approved, isLoading }: Props) {
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-foreground truncate">{d.name}</p>
               </div>
-              <span className="text-xs text-emerald-400 tabular-nums">{d.paid} apr.</span>
-              <span className="text-sm font-bold text-foreground w-8 text-right tabular-nums">{d.total}</span>
+              <span className="text-sm font-bold text-foreground w-8 text-right tabular-nums">{d.count}</span>
             </div>
           ))}
         </div>

@@ -155,7 +155,7 @@ export default function SalesDashboard() {
           metaClicks={metaClicks}
           metaLandingPageViews={metaLandingPageViews}
           metaInitiatedCheckouts={metaInitiatedCheckouts}
-          totalOrders={approved.length + pending.length}
+          allOrdersCount={orders.length}
           approvedCount={approved.length}
           isLoading={isLoading}
         />
@@ -163,13 +163,13 @@ export default function SalesDashboard() {
 
       {/* Product + Hour */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <SalesByProduct orders={orders} approved={approved} isLoading={isLoading} />
+        <SalesByProduct approved={approved} isLoading={isLoading} />
         <SalesByHour approved={approved} isLoading={isLoading} />
       </div>
 
       {/* Source + Weekday */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <SalesBySource orders={orders} approved={approved} isLoading={isLoading} />
+        <SalesBySource approved={approved} isLoading={isLoading} />
         <SalesByWeekday approved={approved} isLoading={isLoading} />
       </div>
 
