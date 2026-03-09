@@ -38,10 +38,8 @@ export default function SalesDashboard() {
     customEnd, setCustomEnd,
     orders, approved, pending, refunded,
     revenue, refundedTotal, pendingTotal,
-    pageViews, isLoading,
+    pageViews, adSpend, isLoading,
   } = useSalesDashboard();
-
-  const adSpend = 0;
 
   return (
     <div className="space-y-5">

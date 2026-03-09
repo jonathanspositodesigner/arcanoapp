@@ -1,0 +1,142 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { action, since, until } = await req.json();
+
+    const appId = Deno.env.get("META_APP_ID")!;
+    const appSecret = Deno.env.get("META_APP_SECRET")!;
+    const accessToken = Deno.env.get("META_ACCESS_TOKEN")!;
+    const accountIds = Deno.env.get("META_AD_ACCOUNT_IDS")!.split(",");
+
+    // Exchange short-lived token for long-lived
+    if (action === "exchange-token") {
+      const url = `https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${appId}&client_secret=${appSecret}&fb_exchange_token=${accessToken}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.error) {
+        return new Response(JSON.stringify({ error: data.error }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(
+        JSON.stringify({
+          message:
+            "Token trocado com sucesso! Copie o novo token abaixo e atualize o secret META_ACCESS_TOKEN manualmente.",
+          access_token: data.access_token,
+          token_type: data.token_type,
+          expires_in_seconds: data.expires_in,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Fetch insights
+    if (action === "fetch") {
+      const today = new Date();
+      const sinceDate =
+        since ||
+        new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0];
+      const untilDate = until || today.toISOString().split("T")[0];
+
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      );
+
+      const results: Record<string, unknown>[] = [];
+
+      for (const accountId of accountIds) {
+        const timeRange = JSON.stringify({
+          since: sinceDate,
+          until: untilDate,
+        });
+        const url = `https://graph.facebook.com/v21.0/act_${accountId}/insights?fields=spend,impressions,clicks,cpm,cpc&time_range=${encodeURIComponent(timeRange)}&level=account&time_increment=1&limit=500`;
+
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          results.push({ accountId, error: data.error });
+          continue;
+        }
+
+        const rows = data.data || [];
+        let nextUrl = data.paging?.next;
+
+        // Handle pagination
+        while (nextUrl) {
+          const nextRes = await fetch(nextUrl, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+          const nextData = await nextRes.json();
+          if (nextData.data) rows.push(...nextData.data);
+          nextUrl = nextData.paging?.next;
+        }
+
+        // Upsert into meta_ad_spend
+        for (const row of rows) {
+          const { error: upsertError } = await supabase
+            .from("meta_ad_spend")
+            .upsert(
+              {
+                account_id: accountId,
+                date: row.date_start,
+                spend: parseFloat(row.spend || "0"),
+                impressions: parseInt(row.impressions || "0"),
+                clicks: parseInt(row.clicks || "0"),
+                cpm: parseFloat(row.cpm || "0"),
+                cpc: parseFloat(row.cpc || "0"),
+              },
+              { onConflict: "account_id,date" }
+            );
+
+          if (upsertError) {
+            console.error("Upsert error:", upsertError);
+          }
+        }
+
+        results.push({
+          accountId,
+          rowsProcessed: rows.length,
+          dateRange: { since: sinceDate, until: untilDate },
+        });
+      }
+
+      return new Response(JSON.stringify({ success: true, results }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(
+      JSON.stringify({ error: 'Invalid action. Use "fetch" or "exchange-token".' }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+  } catch (err) {
+    console.error("Error:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
