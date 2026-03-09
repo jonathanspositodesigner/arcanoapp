@@ -243,9 +243,42 @@ const PlanosUpscalerArcano69v2 = () => {
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
-  const handlePurchase = () => {
-    // Link fixo para o checkout
-    window.open(appendUtmToUrl("https://payfast.greenn.com.br/148481/offer/k0DUJ9?ch_id=135163"), "_blank");
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
+
+  const handlePurchase = async () => {
+    setPurchaseLoading(true);
+    try {
+      const userEmail = user?.email || prompt('Digite seu email para continuar:');
+      if (!userEmail) {
+        setPurchaseLoading(false);
+        return;
+      }
+
+      const response = await supabase.functions.invoke('create-mp-checkout', {
+        body: {
+          product_slug: 'upscaller-arcano-vitalicio',
+          user_email: userEmail.toLowerCase().trim()
+        }
+      });
+
+      if (response.error) {
+        console.error('Erro ao criar checkout:', response.error);
+        alert('Erro ao criar checkout. Tente novamente.');
+        setPurchaseLoading(false);
+        return;
+      }
+
+      const { checkout_url } = response.data;
+      if (checkout_url) {
+        window.location.href = checkout_url;
+      } else {
+        alert('Erro ao gerar link de pagamento.');
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+      alert('Erro ao processar. Tente novamente.');
+    }
+    setPurchaseLoading(false);
   };
 
   const hasAccess = hasAccessToPack(TOOL_SLUG);
