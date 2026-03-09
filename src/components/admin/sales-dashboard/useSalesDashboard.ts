@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { startOfDay, endOfDay, subDays, subMonths, startOfYear } from "date-fns";
 
@@ -56,6 +56,9 @@ export function useSalesDashboard() {
   const [adSpend, setAdSpend] = useState(0);
   const [metaClicks, setMetaClicks] = useState(0);
   const [abandonedCheckouts, setAbandonedCheckouts] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const refetch = useCallback(() => setRefreshKey((k) => k + 1), []);
 
   const { start, end } = useMemo(
     () => getDateRange(preset, customStart, customEnd),
@@ -139,7 +142,7 @@ export function useSalesDashboard() {
     };
 
     fetchData();
-  }, [start, end]);
+  }, [start, end, refreshKey]);
 
   const approved = useMemo(() => orders.filter((o) => o.status === "paid"), [orders]);
   const pending = useMemo(() => orders.filter((o) => o.status === "pending"), [orders]);
@@ -164,6 +167,6 @@ export function useSalesDashboard() {
     customEnd, setCustomEnd,
     orders, approved, pending, refunded,
     revenue, refundedTotal, pendingTotal,
-    pageViews, adSpend, metaClicks, abandonedCheckouts, isLoading,
+    pageViews, adSpend, metaClicks, abandonedCheckouts, isLoading, refetch,
   };
 }
