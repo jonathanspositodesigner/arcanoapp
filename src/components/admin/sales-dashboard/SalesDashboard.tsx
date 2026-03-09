@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, BarChart3 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -41,16 +41,21 @@ export default function SalesDashboard() {
     pageViews, isLoading,
   } = useSalesDashboard();
 
-  const adSpend = 0; // placeholder for future integration
+  const adSpend = 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Header + Filter */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <h2 className="text-xl font-bold text-foreground">Dashboard de Vendas</h2>
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <BarChart3 className="h-5 w-5 text-primary" />
+          </div>
+          <h2 className="text-xl font-bold text-foreground">Dashboard de Vendas</h2>
+        </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Select value={preset} onValueChange={(v) => setPreset(v as PeriodPreset)}>
-            <SelectTrigger className="w-[180px] bg-[hsl(220,50%,6%)] border-[hsl(220,40%,16%)]">
+            <SelectTrigger className="w-[180px] bg-card border-border text-card-foreground">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -64,7 +69,7 @@ export default function SalesDashboard() {
             <div className="flex items-center gap-1">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1 bg-[hsl(220,50%,6%)] border-[hsl(220,40%,16%)]">
+                  <Button variant="outline" size="sm" className="gap-1">
                     <CalendarIcon className="h-3.5 w-3.5" />
                     {customStart ? format(customStart, "dd/MM/yy") : "Início"}
                   </Button>
@@ -82,7 +87,7 @@ export default function SalesDashboard() {
               <span className="text-muted-foreground text-xs">—</span>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1 bg-[hsl(220,50%,6%)] border-[hsl(220,40%,16%)]">
+                  <Button variant="outline" size="sm" className="gap-1">
                     <CalendarIcon className="h-3.5 w-3.5" />
                     {customEnd ? format(customEnd, "dd/MM/yy") : "Fim"}
                   </Button>

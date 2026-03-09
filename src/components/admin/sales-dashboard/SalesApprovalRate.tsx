@@ -1,4 +1,5 @@
 import { DashboardOrder } from "./useSalesDashboard";
+import { CheckCircle } from "lucide-react";
 
 interface Props {
   orders: DashboardOrder[];
@@ -33,8 +34,11 @@ export default function SalesApprovalRate({ orders, isLoading }: Props) {
     .sort((a, b) => b.total - a.total);
 
   return (
-    <div className="rounded-xl border border-[hsl(220,40%,16%)] bg-[hsl(220,50%,6%)] p-5">
-      <h3 className="text-sm font-semibold text-foreground mb-4">Taxa de Aprovação</h3>
+    <div className="rounded-xl border border-border bg-card/60 p-5">
+      <div className="flex items-center gap-2 mb-4">
+        <CheckCircle className="h-4 w-4 text-primary" />
+        <h3 className="text-sm font-semibold text-foreground">Taxa de Aprovação</h3>
+      </div>
       {isLoading || data.length === 0 ? (
         <div className="flex items-center justify-center h-48 text-muted-foreground text-sm">
           {isLoading ? "Carregando..." : "Sem dados"}
@@ -44,12 +48,12 @@ export default function SalesApprovalRate({ orders, isLoading }: Props) {
           {data.map((d) => (
             <div key={d.label} className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">{d.label}</span>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground/60">
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-muted-foreground/60 tabular-nums">
                   {d.approved}/{d.total}
                 </span>
                 <span
-                  className={`text-sm font-bold ${
+                  className={`text-sm font-bold tabular-nums ${
                     d.rate >= 80 ? "text-emerald-400" : d.rate >= 50 ? "text-amber-400" : "text-rose-400"
                   }`}
                 >
