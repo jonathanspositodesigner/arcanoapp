@@ -45,36 +45,56 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background-color:#f3f0ff;font-family:'Segoe UI',Roboto,sans-serif;">
-<div style="max-width:600px;margin:0 auto;padding:40px 20px;">
-  <div style="background:linear-gradient(135deg,#1a0533 0%,#2d1b4e 50%,#1a0533 100%);border-radius:16px;overflow:hidden;border:1px solid rgba(212,175,55,0.3);">
-    <div style="text-align:center;padding:40px 30px 20px;">
-      <div style="width:70px;height:70px;margin:0 auto 16px;background:linear-gradient(135deg,#d4af37,#f4d03f);border-radius:50%;display:flex;align-items:center;justify-content:center;">
-        <span style="font-size:32px;">✨</span>
-      </div>
-      <h1 style="color:#d4af37;font-size:24px;margin:0 0 8px;">Compra Confirmada!</h1>
-      <p style="color:#c4b5fd;font-size:16px;margin:0;">Seu acesso ao <strong style="color:#f4d03f;">${productName}</strong> já está liberado</p>
+<body style="margin:0;padding:0;background-color:#0d0015;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+<div style="max-width:620px;margin:0 auto;padding:48px 16px;">
+
+  <!-- Header -->
+  <div style="background:linear-gradient(160deg,#1e0a3c 0%,#2a1252 40%,#1e0a3c 100%);border-radius:20px 20px 0 0;padding:50px 40px 36px;text-align:center;border:1px solid rgba(212,175,55,0.15);border-bottom:none;">
+    <div style="width:88px;height:88px;margin:0 auto 24px;background:linear-gradient(135deg,#d4af37 0%,#f5e27a 50%,#d4af37 100%);border-radius:50%;line-height:88px;text-align:center;box-shadow:0 8px 32px rgba(212,175,55,0.35);">
+      <span style="font-size:42px;line-height:88px;">✅</span>
     </div>
-    <div style="padding:20px 30px;">
-      <div style="background:rgba(255,255,255,0.08);border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid rgba(212,175,55,0.2);">
-        <p style="color:#e9d5ff;font-size:14px;margin:0 0 12px;">Suas credenciais de acesso:</p>
-        <table style="width:100%;border-collapse:collapse;">
-          <tr><td style="color:#a78bfa;padding:6px 0;font-size:13px;">Email:</td><td style="color:#f4d03f;padding:6px 0;font-size:13px;text-align:right;">${email}</td></tr>
-          <tr><td style="color:#a78bfa;padding:6px 0;font-size:13px;">Senha:</td><td style="color:#f4d03f;padding:6px 0;font-size:13px;text-align:right;">${email}</td></tr>
-        </table>
-        <p style="color:#f87171;font-size:11px;margin:12px 0 0;text-align:center;">⚠️ Recomendamos alterar sua senha no primeiro acesso</p>
-      </div>
-      <div style="text-align:center;padding:10px 0 30px;">
-        <a href="${ctaLink}" style="display:inline-block;background:linear-gradient(135deg,#d4af37,#f4d03f);color:#1a0533;text-decoration:none;padding:14px 40px;border-radius:8px;font-weight:bold;font-size:16px;">
-          Acessar Agora →
-        </a>
+    <h1 style="color:#ffffff;font-size:28px;font-weight:700;margin:0 0 12px;letter-spacing:-0.5px;">Compra Confirmada!</h1>
+    <p style="color:#c4b5fd;font-size:17px;margin:0;line-height:1.5;">Seu acesso ao <strong style="color:#f5e27a;">${productName}</strong> já está liberado.</p>
+  </div>
+
+  <!-- Body -->
+  <div style="background:linear-gradient(180deg,#2a1252 0%,#1e0a3c 100%);padding:0 40px 40px;border:1px solid rgba(212,175,55,0.15);border-top:none;border-bottom:none;">
+
+    <!-- Credentials Card -->
+    <div style="background:rgba(255,255,255,0.06);border-radius:14px;padding:28px;margin-bottom:32px;border:1px solid rgba(212,175,55,0.25);">
+      <p style="color:#d4af37;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 20px;text-align:center;">Suas credenciais de acesso</p>
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <td style="color:#a78bfa;padding:12px 16px;font-size:14px;border-bottom:1px solid rgba(255,255,255,0.06);">📧 Email</td>
+          <td style="color:#ffffff;padding:12px 16px;font-size:14px;text-align:right;font-weight:600;border-bottom:1px solid rgba(255,255,255,0.06);word-break:break-all;">${email}</td>
+        </tr>
+        <tr>
+          <td style="color:#a78bfa;padding:12px 16px;font-size:14px;">🔑 Senha</td>
+          <td style="color:#ffffff;padding:12px 16px;font-size:14px;text-align:right;font-weight:600;word-break:break-all;">${email}</td>
+        </tr>
+      </table>
+      <div style="margin-top:16px;padding:10px 16px;background:rgba(248,113,113,0.1);border-radius:8px;border:1px solid rgba(248,113,113,0.2);text-align:center;">
+        <p style="color:#fca5a5;font-size:12px;margin:0;">⚠️ Recomendamos alterar sua senha no primeiro acesso</p>
       </div>
     </div>
-    <div style="padding:20px 30px;border-top:1px solid rgba(212,175,55,0.2);text-align:center;">
-      <p style="color:#6b7280;font-size:11px;margin:0;">Vox Visual © ${new Date().getFullYear()}</p>
-      <p style="margin:6px 0 0;"><a href="${unsubscribeLink}" style="color:#6b7280;font-size:11px;text-decoration:underline;">Cancelar inscrição</a></p>
+
+    <!-- CTA Button -->
+    <div style="text-align:center;padding-bottom:8px;">
+      <a href="${ctaLink}" style="display:inline-block;background:linear-gradient(135deg,#d4af37 0%,#f5e27a 100%);color:#1a0533;text-decoration:none;padding:18px 52px;border-radius:12px;font-weight:700;font-size:17px;letter-spacing:0.3px;box-shadow:0 6px 24px rgba(212,175,55,0.4);">
+        Acessar Agora →
+      </a>
     </div>
   </div>
+
+  <!-- Footer -->
+  <div style="background:#150828;border-radius:0 0 20px 20px;padding:28px 40px;border:1px solid rgba(212,175,55,0.15);border-top:1px solid rgba(212,175,55,0.1);text-align:center;">
+    <p style="color:#9ca3af;font-size:12px;margin:0 0 10px;">
+      <a href="https://wa.me/5533988819891" style="color:#a78bfa;text-decoration:underline;font-size:12px;">Problemas com seu produto? Fale conosco</a>
+    </p>
+    <p style="color:#4b5563;font-size:11px;margin:0 0 8px;">Vox Visual © ${new Date().getFullYear()}</p>
+    <p style="margin:0;"><a href="${unsubscribeLink}" style="color:#4b5563;font-size:11px;text-decoration:underline;">Cancelar inscrição</a></p>
+  </div>
+
 </div>
 </body>
 </html>`
