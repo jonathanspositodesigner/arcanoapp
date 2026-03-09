@@ -393,6 +393,20 @@ serve(async (req) => {
         console.log(`   ├─ ✅ Acesso revogado: ${product.pack_slug}`)
       }
 
+      // Revogar créditos se produto for do tipo credits
+      if (order.user_id && product.type === 'credits' && product.credits_amount > 0) {
+        const { error: revokeError } = await supabase.rpc('remove_lifetime_credits', {
+          _user_id: order.user_id,
+          _amount: product.credits_amount,
+          _description: `Reembolso MP: ${product.title}`
+        })
+        if (revokeError) {
+          console.error(`   ├─ ❌ Erro ao revogar créditos:`, revokeError)
+        } else {
+          console.log(`   ├─ ✅ ${product.credits_amount} créditos revogados`)
+        }
+      }
+
       await supabase.from('mp_orders').update({
         status: 'refunded',
         updated_at: new Date().toISOString()
