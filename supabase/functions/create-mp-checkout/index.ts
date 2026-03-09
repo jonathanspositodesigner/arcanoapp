@@ -104,6 +104,12 @@ serve(async (req) => {
       payer: {
         email: email
       },
+      payment_methods: {
+        excluded_payment_types: [
+          { id: "ticket" }
+        ],
+        installments: 12
+      },
       back_urls: {
         success: 'https://arcanoapp.lovable.app/ferramentas-ia?mp_status=success',
         failure: 'https://arcanoapp.lovable.app/ferramentas-ia?mp_status=failure',

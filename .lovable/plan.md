@@ -1,40 +1,23 @@
 
 
-# Gerenciar métodos de pagamento no checkout do Mercado Pago
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-## Sobre o PIX desabilitado
-O botão "Criar Pix" estar desabilitado na tela do Mercado Pago é um problema **da sua conta MP**, não do código. Possíveis causas:
-- Sua conta MP não tem chave PIX cadastrada
-- Sua conta não completou a verificação de identidade
-- Conta ainda está em processo de aprovação para receber PIX
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-**Para verificar**: Acesse mercadopago.com.br → Seu negócio → Configurações → PIX e veja se a chave está ativa.
+## Dados
 
-## Remover boleto e controlar métodos de pagamento
-Os métodos de pagamento são controlados **no código**, dentro da Edge Function `create-mp-checkout`. Basta adicionar o campo `payment_methods` na preferência com os tipos que você quer excluir.
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-### Editar `supabase/functions/create-mp-checkout/index.ts`
-Adicionar `payment_methods` ao `preferenceBody` (após `payer`):
+## Ações (via SQL migration)
 
-```typescript
-payment_methods: {
-  excluded_payment_types: [
-    { id: "ticket" }  // Remove boleto
-  ],
-  installments: 12
-},
-```
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-- `"ticket"` = boleto bancário
-- Se quiser remover outros: `"atm"` (lotérica), `"debit_card"` (débito)
-- PIX é do tipo `"bank_transfer"` — **não** excluir esse
-
-### Tipos de pagamento disponíveis no MP
-| ID | Método |
-|---|---|
-| `credit_card` | Cartão de crédito |
-| `debit_card` | Cartão de débito |
-| `bank_transfer` | PIX |
-| `ticket` | Boleto |
-| `atm` | Lotérica |
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
