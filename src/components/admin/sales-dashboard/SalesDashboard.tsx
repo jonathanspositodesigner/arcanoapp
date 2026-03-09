@@ -1,0 +1,145 @@
+import { useSalesDashboard, PeriodPreset } from "./useSalesDashboard";
+import SalesDashboardKPIs from "./SalesDashboardKPIs";
+import SalesDashboardSecondaryKPIs from "./SalesDashboardSecondaryKPIs";
+import SalesPaymentDonut from "./SalesPaymentDonut";
+import SalesConversionFunnel from "./SalesConversionFunnel";
+import SalesByProduct from "./SalesByProduct";
+import SalesBySource from "./SalesBySource";
+import SalesByHour from "./SalesByHour";
+import SalesByWeekday from "./SalesByWeekday";
+import SalesApprovalRate from "./SalesApprovalRate";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+
+const PRESETS: { value: PeriodPreset; label: string }[] = [
+  { value: "today", label: "Hoje" },
+  { value: "yesterday", label: "Ontem" },
+  { value: "7d", label: "Últimos 7 dias" },
+  { value: "15d", label: "Últimos 15 dias" },
+  { value: "30d", label: "Últimos 30 dias" },
+  { value: "3m", label: "Últimos 3 meses" },
+  { value: "6m", label: "Últimos 6 meses" },
+  { value: "1y", label: "Último 1 ano" },
+  { value: "year", label: "Este ano" },
+  { value: "all", label: "Todo o período" },
+  { value: "custom", label: "Personalizado" },
+];
+
+export default function SalesDashboard() {
+  const {
+    preset, setPreset,
+    customStart, setCustomStart,
+    customEnd, setCustomEnd,
+    orders, approved, pending, refunded,
+    revenue, refundedTotal, pendingTotal,
+    pageViews, isLoading,
+  } = useSalesDashboard();
+
+  const adSpend = 0; // placeholder for future integration
+
+  return (
+    <div className="space-y-4">
+      {/* Header + Filter */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <h2 className="text-xl font-bold text-foreground">Dashboard de Vendas</h2>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Select value={preset} onValueChange={(v) => setPreset(v as PeriodPreset)}>
+            <SelectTrigger className="w-[180px] bg-[hsl(220,50%,6%)] border-[hsl(220,40%,16%)]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PRESETS.map((p) => (
+                <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {preset === "custom" && (
+            <div className="flex items-center gap-1">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1 bg-[hsl(220,50%,6%)] border-[hsl(220,40%,16%)]">
+                    <CalendarIcon className="h-3.5 w-3.5" />
+                    {customStart ? format(customStart, "dd/MM/yy") : "Início"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={customStart}
+                    onSelect={setCustomStart}
+                    locale={ptBR}
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+              <span className="text-muted-foreground text-xs">—</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1 bg-[hsl(220,50%,6%)] border-[hsl(220,40%,16%)]">
+                    <CalendarIcon className="h-3.5 w-3.5" />
+                    {customEnd ? format(customEnd, "dd/MM/yy") : "Fim"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={customEnd}
+                    onSelect={setCustomEnd}
+                    locale={ptBR}
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Primary KPIs */}
+      <SalesDashboardKPIs revenue={revenue} adSpend={adSpend} isLoading={isLoading} />
+
+      {/* Secondary KPIs */}
+      <SalesDashboardSecondaryKPIs
+        orders={orders} approved={approved} refunded={refunded} pending={pending}
+        revenue={revenue} refundedTotal={refundedTotal} pendingTotal={pendingTotal}
+        adSpend={adSpend} isLoading={isLoading}
+      />
+
+      {/* Donut + Funnel */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <SalesPaymentDonut approved={approved} isLoading={isLoading} />
+        <SalesConversionFunnel
+          pageViews={pageViews}
+          totalOrders={orders.length}
+          pendingCount={pending.length}
+          approvedCount={approved.length}
+          isLoading={isLoading}
+        />
+      </div>
+
+      {/* Product + Hour */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <SalesByProduct approved={approved} isLoading={isLoading} />
+        <SalesByHour approved={approved} isLoading={isLoading} />
+      </div>
+
+      {/* Source + Weekday */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <SalesBySource approved={approved} isLoading={isLoading} />
+        <SalesByWeekday approved={approved} isLoading={isLoading} />
+      </div>
+
+      {/* Approval Rate */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <SalesApprovalRate orders={orders} isLoading={isLoading} />
+      </div>
+    </div>
+  );
+}
