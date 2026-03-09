@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
         });
         const data = await res.json();
 
-        console.log(`Account ${trimmedId} response:`, JSON.stringify(data).substring(0, 500));
+        console.log(`Account ${trimmedId} full response:`, JSON.stringify(data).substring(0, 2000));
 
         if (data.error) {
           results.push({ accountId: trimmedId, error: data.error });
