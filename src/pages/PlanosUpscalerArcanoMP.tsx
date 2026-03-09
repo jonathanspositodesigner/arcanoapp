@@ -244,12 +244,42 @@ const PlanosUpscalerArcano69v2 = () => {
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
-  const handlePurchase = () => {
-    if (!tool) return;
-    const checkoutLink = (isPremium ? tool.checkout_link_membro_vitalicio : tool.checkout_link_vitalicio);
-    if (checkoutLink) {
-      window.open(checkoutLink, '_blank');
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
+
+  const handlePurchase = async () => {
+    setPurchaseLoading(true);
+    try {
+      const userEmail = user?.email || prompt('Digite seu email para continuar:');
+      if (!userEmail) {
+        setPurchaseLoading(false);
+        return;
+      }
+
+      const response = await supabase.functions.invoke('create-mp-checkout', {
+        body: {
+          product_slug: 'upscaller-arcano-vitalicio',
+          user_email: userEmail.toLowerCase().trim()
+        }
+      });
+
+      if (response.error) {
+        console.error('Erro ao criar checkout:', response.error);
+        alert('Erro ao criar checkout. Tente novamente.');
+        setPurchaseLoading(false);
+        return;
+      }
+
+      const { checkout_url } = response.data;
+      if (checkout_url) {
+        window.location.href = checkout_url;
+      } else {
+        alert('Erro ao gerar link de pagamento.');
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+      alert('Erro ao processar. Tente novamente.');
     }
+    setPurchaseLoading(false);
   };
 
   const hasAccess = hasAccessToPack(TOOL_SLUG);
@@ -613,7 +643,7 @@ const PlanosUpscalerArcano69v2 = () => {
                   </div>
 
                   <div className="px-0 md:px-2">
-                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
+                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} loading={purchaseLoading} />
                   </div>
 
                   {/* Badges de pagamento */}
