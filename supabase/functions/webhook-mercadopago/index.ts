@@ -65,7 +65,7 @@ serve(async (req) => {
     }
 
     // Buscar detalhes do pagamento na API do Mercado Pago
-    const paymentResponse = await fetch(`https://api.mercadopago.com.br/v1/payments/${paymentId}`, {
+    const paymentResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
       headers: { 'Authorization': `Bearer ${mpAccessToken}` }
     })
 
