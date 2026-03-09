@@ -29,6 +29,14 @@ const emailTexts = {
   es: { greeting: 'Hola', accessData: '📋 Datos de tu primer acceso:', email: 'Email', password: 'Contraseña', securityWarning: 'Por seguridad, deberás cambiar tu contraseña en el primer acceso.', clickButton: '¡Haz clic en el botón de arriba!', copyright: '© Biblioteca de Artes para Músicos', important: 'Importante' }
 }
 
+function extractUtmSource(payload: any): string | null {
+  const saleMetas = payload.saleMetas || []
+  for (const meta of saleMetas) {
+    if (meta.meta_key === 'utm_source') return meta.meta_value || null
+  }
+  return null
+}
+
 function extractLocale(payload: any): 'pt' | 'es' {
   const saleMetas = payload.saleMetas || []
   for (const meta of saleMetas) {
@@ -482,7 +490,8 @@ serve(async (req) => {
         result: 'received',
         amount: payload.sale?.amount || null,
         product_name: payload.product?.name || null,
-        payment_method: payload.sale?.payment_method || payload.payment?.method || null
+        payment_method: payload.sale?.payment_method || payload.payment?.method || null,
+        utm_source: extractUtmSource(payload)
       })
       .select('id')
       .single()
