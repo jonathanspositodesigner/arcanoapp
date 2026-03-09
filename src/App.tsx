@@ -118,6 +118,7 @@ const AdminPremiumMusicos = lazy(() => import("./pages/AdminPremiumMusicos"));
 const SucessoArtesMusicos = lazy(() => import("./pages/SucessoArtesMusicos"));
 const PlanosUpscalerArcano = lazy(() => import("./pages/PlanosUpscalerArcano"));
 const PlanosUpscalerArcano69 = lazy(() => import("./pages/PlanosUpscalerArcano69v2"));
+const PlanosUpscalerArcanoMP = lazy(() => import("./pages/PlanosUpscalerArcanoMP"));
 const PlanosUpscalerArcano69ES = lazy(() => import("./pages/PlanosUpscalerArcano69ES"));
 const PlanosUpscalerArcano590ES = lazy(() => import("./pages/PlanosUpscalerArcano590ES"));
 const PlanosForjaSelos3D = lazy(() => import("./pages/PlanosForjaSelos3D"));
