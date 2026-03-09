@@ -132,6 +132,6 @@ export function useSalesDashboard() {
     customEnd, setCustomEnd,
     orders, approved, pending, refunded,
     revenue, refundedTotal, pendingTotal,
-    pageViews, isLoading,
+    pageViews, adSpend, isLoading,
   };
 }
