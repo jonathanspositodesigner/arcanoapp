@@ -1,29 +1,23 @@
 
 
-# Melhorar email de compra + adicionar link WhatsApp
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-## Status do reembolso
-O acesso já foi cancelado automaticamente (`is_active: false` no `user_pack_purchases`). Funcionou corretamente.
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-## Melhorias no email
+## Dados
 
-### Arquivo a editar
-`supabase/functions/webhook-mercadopago/index.ts` — função `buildPurchaseEmailHtml`
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-### Mudanças no template HTML
-1. **Layout mais profissional e limpo**:
-   - Header com logo/ícone maior e mais impactante
-   - Espaçamento mais generoso entre seções
-   - Tipografia melhorada com hierarquia visual clara
-   - Cards de credenciais com melhor contraste e legibilidade
-   - Botão CTA maior e mais destacado com efeito hover
-   - Cores mais refinadas mantendo o tema roxo/dourado
+## Ações (via SQL migration)
 
-2. **Adicionar link de suporte WhatsApp no rodapé**:
-   - Texto pequeno: "Problemas com seu produto? Fale conosco"
-   - Link apontando para `https://wa.me/5533988819891`
-   - Posicionado entre o copyright e o link de cancelar inscrição
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-### Resultado
-Email mais bonito e profissional, com suporte acessível no rodapé.
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
