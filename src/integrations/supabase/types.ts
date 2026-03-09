@@ -3822,45 +3822,57 @@ export type Database = {
       }
       webhook_logs: {
         Row: {
+          amount: number | null
           email: string | null
           error_message: string | null
           from_app: boolean | null
           greenn_contract_id: string | null
           id: string
           mapping_type: string | null
+          net_amount: number | null
           payload: Json
+          payment_method: string | null
           platform: string | null
           product_id: number | null
+          product_name: string | null
           received_at: string | null
           result: string | null
           status: string | null
           utm_source: string | null
         }
         Insert: {
+          amount?: number | null
           email?: string | null
           error_message?: string | null
           from_app?: boolean | null
           greenn_contract_id?: string | null
           id?: string
           mapping_type?: string | null
+          net_amount?: number | null
           payload: Json
+          payment_method?: string | null
           platform?: string | null
           product_id?: number | null
+          product_name?: string | null
           received_at?: string | null
           result?: string | null
           status?: string | null
           utm_source?: string | null
         }
         Update: {
+          amount?: number | null
           email?: string | null
           error_message?: string | null
           from_app?: boolean | null
           greenn_contract_id?: string | null
           id?: string
           mapping_type?: string | null
+          net_amount?: number | null
           payload?: Json
+          payment_method?: string | null
           platform?: string | null
           product_id?: number | null
+          product_name?: string | null
           received_at?: string | null
           result?: string | null
           status?: string | null
