@@ -809,6 +809,8 @@ serve(async (req) => {
 
     // PASSO 3: Gravar em webhook_logs (durável - prova de recebimento)
     const hotmartAmount = payload.data?.purchase?.price?.value || payload.data?.purchase?.full_price?.value || null
+    // Extract UTM from Hotmart payload
+    const hotmartUtmSource = payload.data?.purchase?.tracking?.source || payload.data?.purchase?.tracking?.utm_source || null
     const { data: logEntry, error: logError } = await supabase
       .from('webhook_logs')
       .insert({
@@ -820,7 +822,8 @@ serve(async (req) => {
         result: 'received',
         amount: hotmartAmount,
         product_name: payload.data?.product?.name || null,
-        payment_method: payload.data?.purchase?.payment?.type || null
+        payment_method: payload.data?.purchase?.payment?.type || null,
+        utm_source: hotmartUtmSource
       })
       .select('id')
       .single()
