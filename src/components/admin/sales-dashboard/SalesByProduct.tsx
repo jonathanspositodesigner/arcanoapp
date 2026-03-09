@@ -2,30 +2,22 @@ import { DashboardOrder } from "./useSalesDashboard";
 import { ShoppingBag } from "lucide-react";
 
 interface Props {
-  orders: DashboardOrder[];
   approved: DashboardOrder[];
   isLoading: boolean;
 }
 
 const COLORS = ["hsl(142, 71%, 45%)", "hsl(199, 89%, 48%)", "hsl(45, 93%, 47%)", "hsl(330, 81%, 60%)", "hsl(263, 70%, 50%)", "hsl(174, 72%, 46%)"];
 
-export default function SalesByProduct({ orders, approved, isLoading }: Props) {
-  // Group ALL orders by product name
-  const grouped: Record<string, { total: number; paid: number }> = {};
-  orders.forEach((o) => {
-    const name = o.product_title || "Desconhecido";
-    if (!grouped[name]) grouped[name] = { total: 0, paid: 0 };
-    grouped[name].total += 1;
-  });
+export default function SalesByProduct({ approved, isLoading }: Props) {
+  const grouped: Record<string, number> = {};
   approved.forEach((o) => {
     const name = o.product_title || "Desconhecido";
-    if (!grouped[name]) grouped[name] = { total: 0, paid: 0 };
-    grouped[name].paid += 1;
+    grouped[name] = (grouped[name] || 0) + 1;
   });
 
   const data = Object.entries(grouped)
-    .map(([name, { total, paid }]) => ({ name, total, paid }))
-    .sort((a, b) => b.total - a.total);
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
 
   return (
     <div className="rounded-xl border border-border bg-card/60 p-5">

@@ -16,7 +16,7 @@ export default function SalesConversionFunnel({
     { label: "Cliques", value: metaClicks },
     { label: "Vis. Página", value: metaLandingPageViews },
     { label: "ICs", value: metaInitiatedCheckouts },
-    { label: "Vendas Inic.", value: totalOrders },
+    { label: "Vendas Inic.", value: allOrdersCount },
     { label: "Vendas Apr.", value: approvedCount },
   ];
 
