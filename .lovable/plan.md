@@ -1,93 +1,23 @@
 
 
-# Integração Mercado Pago — Upscaler Arcano (Sandbox)
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-## Resumo
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-Criar um sistema de checkout via Mercado Pago **apenas para o Upscaler Arcano vitalício** (produto 148481 da Greenn), usando credenciais de teste. O sistema Greenn permanece 100% intacto.
+## Dados
 
-## Arquitetura
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-```text
-Frontend (botão "Comprar")
-    │
-    ▼
-Edge Function: create-mp-checkout
-    │  ← recebe { product_slug, user_email }
-    │  ← cria ordem em mp_orders
-    │  ← chama API Mercado Pago (criar preferência)
-    │
-    ▼
-Retorna checkout_url (init_point) → redireciona usuário
-    │
-    ▼
-Mercado Pago processa pagamento
-    │
-    ▼
-Edge Function: webhook-mercadopago
-    │  ← recebe notificação { type: "payment", data: { id } }
-    │  ← busca pagamento via GET /v1/payments/{id}
-    │  ← encontra ordem via external_reference
-    │  ← cria/busca usuário (mesma lógica do Greenn)
-    │  ← insere user_pack_purchases (upscaller-arcano, vitalicio)
-    │  ← atualiza mp_orders.status = paid
-    │
-    ▼
-Usuário tem acesso ao Upscaler Arcano
-```
+## Ações (via SQL migration)
 
-## Etapas
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-### 1. Secret necessária
-- `MERCADOPAGO_ACCESS_TOKEN` — token de teste do Mercado Pago (você fornece)
-
-### 2. Tabelas novas (migration)
-
-**`mp_products`** — catálogo interno de produtos para MP
-- `id` (uuid), `slug` (text unique), `title`, `price` (numeric), `type` (text: pack/credits), `pack_slug` (text), `access_type` (text), `credits_amount` (int), `is_active` (boolean), `created_at`
-- Pré-populada com 1 registro: Upscaler Arcano Vitalício (R$ 39,90)
-
-**`mp_orders`** — ordens de compra
-- `id` (uuid = external_reference), `user_email`, `user_id` (uuid nullable), `product_id` (ref mp_products), `amount` (numeric), `status` (text: pending/paid/refunded), `preference_id`, `mp_payment_id` (text), `created_at`, `updated_at`
-- RLS: service role only (acessada apenas pelas Edge Functions)
-
-### 3. Edge Function: `create-mp-checkout`
-- Recebe `{ product_slug, user_email }` (sem JWT — público)
-- Busca produto em `mp_products`
-- Cria ordem em `mp_orders` com status `pending`
-- Chama `POST https://api.mercadopago.com.br/checkout/preferences` com items, external_reference (= order id), back_urls, payer.email
-- Retorna `{ checkout_url }` para o frontend
-
-### 4. Edge Function: `webhook-mercadopago`
-- Recebe POST do MP: `{ type: "payment", data: { id } }`
-- Busca pagamento via `GET https://api.mercadopago.com.br/v1/payments/{id}`
-- Lê `external_reference` → busca ordem em `mp_orders`
-- Se `status === "approved"` e ordem pendente:
-  - Cria/busca usuário (mesma lógica: `auth.admin.createUser`, fallback profile)
-  - Upsert profile
-  - Insere `user_pack_purchases` com `pack_slug = 'upscaller-arcano'`, `access_type = 'vitalicio'`
-  - Atualiza `mp_orders.status = 'paid'`
-- Se `status === "refunded"`: desativa acesso
-
-### 5. Frontend — Página `PlanosUpscalerArcano69v2.tsx`
-- Alterar `handlePurchase` para chamar `create-mp-checkout` em vez de abrir link Greenn
-- Ao receber `checkout_url`, redirecionar via `window.location.href`
-
-### 6. Config.toml
-```toml
-[functions.create-mp-checkout]
-verify_jwt = false
-
-[functions.webhook-mercadopago]
-verify_jwt = false
-```
-
-## O que NÃO muda
-- Nenhuma Edge Function da Greenn é alterada
-- Tabelas existentes (webhook_logs, user_pack_purchases, profiles, upscaler_credits) não são modificadas na estrutura
-- RPCs existentes são reutilizadas
-- Créditos avulsos continuam pela Greenn por enquanto
-
-## Próximo passo
-Preciso que você forneça o **MERCADOPAGO_ACCESS_TOKEN** (credencial de teste). Me avise quando estiver pronto para enviar.
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 

@@ -9,7 +9,7 @@ import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Pa
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
-import { appendUtmToUrl } from "@/lib/utmUtils";
+
 import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton, LazySocialProofWrapper } from "@/components/upscaler";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
@@ -156,13 +156,14 @@ const FullscreenModal = ({
 };
 
 // CTA Button Component - estilo pill
-const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
+const CTAButton = ({ onClick, isPremium, t, loading }: { onClick: () => void; isPremium: boolean; t: (key: string) => string; loading?: boolean }) => (
   <Button
     onClick={onClick}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40"
+    disabled={loading}
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40 disabled:opacity-70 disabled:cursor-wait"
   >
-    {t('tools:upscaler.cta')}
-    <ArrowRight className="h-5 w-5 ml-2" />
+    {loading ? 'Gerando checkout...' : t('tools:upscaler.cta')}
+    {!loading && <ArrowRight className="h-5 w-5 ml-2" />}
   </Button>
 );
 
@@ -243,9 +244,42 @@ const PlanosUpscalerArcano69v2 = () => {
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
-  const handlePurchase = () => {
-    // Link fixo para o checkout
-    window.open(appendUtmToUrl("https://payfast.greenn.com.br/148481/offer/k0DUJ9?ch_id=135163"), "_blank");
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
+
+  const handlePurchase = async () => {
+    setPurchaseLoading(true);
+    try {
+      const userEmail = user?.email || prompt('Digite seu email para continuar:');
+      if (!userEmail) {
+        setPurchaseLoading(false);
+        return;
+      }
+
+      const response = await supabase.functions.invoke('create-mp-checkout', {
+        body: {
+          product_slug: 'upscaller-arcano-vitalicio',
+          user_email: userEmail.toLowerCase().trim()
+        }
+      });
+
+      if (response.error) {
+        console.error('Erro ao criar checkout:', response.error);
+        alert('Erro ao criar checkout. Tente novamente.');
+        setPurchaseLoading(false);
+        return;
+      }
+
+      const { checkout_url } = response.data;
+      if (checkout_url) {
+        window.location.href = checkout_url;
+      } else {
+        alert('Erro ao gerar link de pagamento.');
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+      alert('Erro ao processar. Tente novamente.');
+    }
+    setPurchaseLoading(false);
   };
 
   const hasAccess = hasAccessToPack(TOOL_SLUG);
@@ -609,7 +643,7 @@ const PlanosUpscalerArcano69v2 = () => {
                   </div>
 
                   <div className="px-0 md:px-2">
-                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
+                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} loading={purchaseLoading} />
                   </div>
 
                   {/* Badges de pagamento */}

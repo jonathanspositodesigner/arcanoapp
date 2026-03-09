@@ -1998,6 +1998,92 @@ export type Database = {
         }
         Relationships: []
       }
+      mp_orders: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          mp_payment_id: string | null
+          preference_id: string | null
+          product_id: string | null
+          status: string
+          updated_at: string | null
+          user_email: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          mp_payment_id?: string | null
+          preference_id?: string | null
+          product_id?: string | null
+          status?: string
+          updated_at?: string | null
+          user_email: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          mp_payment_id?: string | null
+          preference_id?: string | null
+          product_id?: string | null
+          status?: string
+          updated_at?: string | null
+          user_email?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mp_orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "mp_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mp_products: {
+        Row: {
+          access_type: string | null
+          created_at: string | null
+          credits_amount: number | null
+          id: string
+          is_active: boolean | null
+          pack_slug: string | null
+          price: number
+          slug: string
+          title: string
+          type: string
+        }
+        Insert: {
+          access_type?: string | null
+          created_at?: string | null
+          credits_amount?: number | null
+          id?: string
+          is_active?: boolean | null
+          pack_slug?: string | null
+          price: number
+          slug: string
+          title: string
+          type?: string
+        }
+        Update: {
+          access_type?: string | null
+          created_at?: string | null
+          credits_amount?: number | null
+          id?: string
+          is_active?: boolean | null
+          pack_slug?: string | null
+          price?: number
+          slug?: string
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       page_views: {
         Row: {
           device_type: string
