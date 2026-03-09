@@ -4236,6 +4236,23 @@ export type Database = {
           prompt_id: string
         }[]
       }
+      get_unified_dashboard_orders: {
+        Args: { _end: string; _start: string }
+        Returns: {
+          amount: number
+          created_at: string
+          id: string
+          net_amount: number
+          paid_at: string
+          payment_method: string
+          product_id: string
+          product_title: string
+          source_platform: string
+          status: string
+          user_email: string
+          utm_data: Json
+        }[]
+      }
       get_upscaler_credits: { Args: { _user_id: string }; Returns: number }
       get_upscaler_credits_breakdown: {
         Args: { _user_id: string }
