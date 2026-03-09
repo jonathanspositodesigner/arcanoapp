@@ -4,7 +4,7 @@ interface Props {
   metaClicks: number;
   metaLandingPageViews: number;
   metaInitiatedCheckouts: number;
-  totalOrders: number;
+  allOrdersCount: number;
   approvedCount: number;
   isLoading: boolean;
 }
