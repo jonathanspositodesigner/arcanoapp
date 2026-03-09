@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
             .from("meta_ad_spend")
             .upsert(
               {
-                account_id: accountId,
+                account_id: trimmedId,
                 date: row.date_start,
                 spend: parseFloat(row.spend || "0"),
                 impressions: parseInt(row.impressions || "0"),
@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
         }
 
         results.push({
-          accountId,
+          accountId: trimmedId,
           rowsProcessed: rows.length,
           dateRange: { since: sinceDate, until: untilDate },
         });
