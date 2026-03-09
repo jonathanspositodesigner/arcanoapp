@@ -76,12 +76,12 @@ export default function SalesDashboard() {
           <Button
             variant="outline"
             size="icon"
-            onClick={refetch}
-            disabled={isLoading}
+            onClick={handleRefresh}
+            disabled={loading}
             className="bg-card border-border"
             title="Atualizar dados"
           >
-            <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
           </Button>
           <Select value={preset} onValueChange={(v) => setPreset(v as PeriodPreset)}>
             <SelectTrigger className="w-[180px] bg-card border-border text-card-foreground">
