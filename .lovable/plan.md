@@ -1,23 +1,21 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+# Trocar token do Mercado Pago para produção
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+## Situação atual
+O secret `MERCADOPAGO_ACCESS_TOKEN` já existe configurado — mas com um token de **sandbox/teste** (por isso o checkout abre em `sandbox.mercadopago.com.br`).
 
-## Dados
+## O que precisa ser feito
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+### 1. Atualizar o secret com o token de produção
+- Vou solicitar que você insira o **Access Token de produção** do Mercado Pago
+- Para encontrá-lo: acesse [mercadopago.com.br/developers](https://www.mercadopago.com.br/developers) → Suas integrações → Credenciais de produção → copie o **Access Token** (começa com `APP_USR-...`)
 
-## Ações (via SQL migration)
+### 2. Nenhuma mudança de código necessária
+- A Edge Function `create-mp-checkout` já usa `Deno.env.get('MERCADOPAGO_ACCESS_TOKEN')` — basta trocar o valor do secret e o checkout passa a ser de produção automaticamente
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
-
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+## Resultado
+- O checkout abrirá em `mercadopago.com.br` (sem "sandbox")
+- Pagamentos reais serão processados (PIX, cartão, boleto)
+- Você poderá testar com um pagamento real na página `/planos-upscaler-arcano-mp`
 
