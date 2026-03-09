@@ -146,7 +146,7 @@ export default function SalesDashboard() {
 
       {/* Source + Weekday */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <SalesBySource approved={approved} isLoading={isLoading} />
+        <SalesBySource orders={orders} approved={approved} isLoading={isLoading} />
         <SalesByWeekday approved={approved} isLoading={isLoading} />
       </div>
 
