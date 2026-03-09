@@ -2,20 +2,20 @@ import { Info } from "lucide-react";
 
 interface Props {
   metaClicks: number;
-  pageViews: number;
-  abandonedCheckouts: number;
+  metaLandingPageViews: number;
+  metaInitiatedCheckouts: number;
   totalOrders: number;
   approvedCount: number;
   isLoading: boolean;
 }
 
 export default function SalesConversionFunnel({
-  metaClicks, pageViews, abandonedCheckouts, totalOrders, approvedCount, isLoading
+  metaClicks, metaLandingPageViews, metaInitiatedCheckouts, totalOrders, approvedCount, isLoading
 }: Props) {
   const steps = [
     { label: "Cliques", value: metaClicks },
-    { label: "Vis. Página", value: pageViews },
-    { label: "ICs", value: abandonedCheckouts },
+    { label: "Vis. Página", value: metaLandingPageViews },
+    { label: "ICs", value: metaInitiatedCheckouts },
     { label: "Vendas Inic.", value: totalOrders },
     { label: "Vendas Apr.", value: approvedCount },
   ];
@@ -34,7 +34,7 @@ export default function SalesConversionFunnel({
         <div className="relative">
           {/* Labels */}
           <div className="flex justify-between mb-2">
-            {steps.map((step, i) => (
+            {steps.map((step) => (
               <div key={step.label} className="flex-1 text-center">
                 <span className="text-xs font-semibold text-muted-foreground">{step.label}</span>
               </div>
@@ -65,21 +65,17 @@ export default function SalesConversionFunnel({
                     return Math.max(pct * maxHeight, 4);
                   });
 
-                  // Build top path (left to right)
                   let topPath = `M 0 ${centerY - heights[0]}`;
                   for (let i = 1; i < steps.length; i++) {
                     const x = i * sectionWidth;
                     const prevH = heights[i - 1];
                     const currH = heights[i];
-                    // Curve from prev height to current
                     const cpX = x - sectionWidth * 0.3;
                     const cp2X = x + sectionWidth * 0.0;
                     topPath += ` C ${cpX} ${centerY - prevH}, ${cp2X} ${centerY - currH}, ${x} ${centerY - currH}`;
                   }
-                  // Extend to right edge
                   topPath += ` L 1000 ${centerY - heights[steps.length - 1]}`;
 
-                  // Build bottom path (right to left)
                   let bottomPath = `L 1000 ${centerY + heights[steps.length - 1]}`;
                   for (let i = steps.length - 2; i >= 0; i--) {
                     const x = (i + 1) * sectionWidth;
@@ -114,12 +110,12 @@ export default function SalesConversionFunnel({
 
             {/* Percentage overlays */}
             <div className="absolute inset-0 flex">
-              {steps.map((step, i) => {
+              {steps.map((step) => {
                 const pct = max > 0 ? ((step.value / max) * 100) : 0;
                 return (
                   <div key={step.label} className="flex-1 flex items-center justify-center">
                     <span className="text-sm font-bold text-white drop-shadow-lg">
-                      {pct >= 1 ? `${pct.toFixed(1)}%` : `${pct.toFixed(1)}%`}
+                      {pct.toFixed(1)}%
                     </span>
                   </div>
                 );

@@ -130,8 +130,8 @@ export default function SalesDashboard() {
         <SalesPaymentDonut approved={approved} isLoading={isLoading} />
         <SalesConversionFunnel
           metaClicks={metaClicks}
-          pageViews={pageViews}
-          abandonedCheckouts={abandonedCheckouts}
+          metaLandingPageViews={metaLandingPageViews}
+          metaInitiatedCheckouts={metaInitiatedCheckouts}
           totalOrders={orders.length}
           approvedCount={approved.length}
           isLoading={isLoading}
