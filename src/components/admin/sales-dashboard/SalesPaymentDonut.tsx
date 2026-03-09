@@ -8,11 +8,26 @@ interface Props {
 }
 
 const PAYMENT_LABELS: Record<string, string> = {
+  // Mercado Pago
   pix: "Pix",
   credit_card: "Cartão de Crédito",
   debit_card: "Cartão de Débito",
   account_money: "Saldo MP",
   ticket: "Boleto",
+  // Greenn
+  "Pix": "Pix",
+  "pix": "Pix",
+  "CreditCard": "Cartão de Crédito",
+  "credit": "Cartão de Crédito",
+  "Boleto": "Boleto",
+  "boleto": "Boleto",
+  "billet": "Boleto",
+  // Hotmart
+  "PIX": "Pix",
+  "CREDIT_CARD": "Cartão de Crédito",
+  "BILLET": "Boleto",
+  "PAYPAL": "PayPal",
+  "GOOGLE_PAY": "Google Pay",
 };
 
 const COLORS = ["hsl(142, 71%, 45%)", "hsl(199, 89%, 48%)", "hsl(45, 93%, 47%)", "hsl(330, 81%, 60%)", "hsl(263, 70%, 50%)"];
