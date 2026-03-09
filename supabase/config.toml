@@ -144,3 +144,9 @@ verify_jwt = false
 
 [functions.confirm-landing-trial]
 verify_jwt = false
+
+[functions.create-mp-checkout]
+verify_jwt = false
+
+[functions.webhook-mercadopago]
+verify_jwt = false
