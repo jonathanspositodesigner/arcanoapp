@@ -111,6 +111,18 @@ Deno.serve(async (req) => {
 
         // Upsert into meta_ad_spend
         for (const row of rows) {
+          // Extract actions metrics
+          const actions = row.actions || [];
+          const getActionValue = (actionType: string) => {
+            const action = actions.find((a: any) => a.action_type === actionType);
+            return action ? parseInt(action.value || "0") : 0;
+          };
+
+          const landingPageViews = getActionValue("landing_page_view");
+          const initiatedCheckouts = getActionValue("offsite_conversion.fb_pixel_initiate_checkout") 
+            || getActionValue("initiate_checkout")
+            || getActionValue("omni_initiated_checkout");
+
           const { error: upsertError } = await supabase
             .from("meta_ad_spend")
             .upsert(
@@ -122,6 +134,8 @@ Deno.serve(async (req) => {
                 clicks: parseInt(row.clicks || "0"),
                 cpm: parseFloat(row.cpm || "0"),
                 cpc: parseFloat(row.cpc || "0"),
+                landing_page_views: landingPageViews,
+                initiated_checkouts: initiatedCheckouts,
               },
               { onConflict: "account_id,date" }
             );
