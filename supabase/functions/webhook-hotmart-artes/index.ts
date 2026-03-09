@@ -819,7 +819,8 @@ serve(async (req) => {
         status: event,
         result: 'received',
         amount: hotmartAmount,
-        product_name: payload.data?.product?.name || null
+        product_name: payload.data?.product?.name || null,
+        payment_method: payload.data?.purchase?.payment?.type || null
       })
       .select('id')
       .single()

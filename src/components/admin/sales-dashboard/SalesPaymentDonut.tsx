@@ -8,17 +8,25 @@ interface Props {
 }
 
 const PAYMENT_LABELS: Record<string, string> = {
-  pix: "Pix",
   credit_card: "Cartão de Crédito",
   debit_card: "Cartão de Débito",
   account_money: "Saldo MP",
   ticket: "Boleto",
+  CreditCard: "Cartão de Crédito",
+  credit: "Cartão de Crédito",
+  billet: "Boleto",
+  CREDIT_CARD: "Cartão de Crédito",
+  BILLET: "Boleto",
+  PAYPAL: "PayPal",
+  GOOGLE_PAY: "Google Pay",
 };
 
 const COLORS = ["hsl(142, 71%, 45%)", "hsl(199, 89%, 48%)", "hsl(45, 93%, 47%)", "hsl(330, 81%, 60%)", "hsl(263, 70%, 50%)"];
 
 function getLabel(method: string | null) {
   if (!method) return "N/A";
+  if (method.toLowerCase() === "pix") return "Pix";
+  if (method.toLowerCase() === "boleto") return "Boleto";
   return PAYMENT_LABELS[method] || method;
 }
 
