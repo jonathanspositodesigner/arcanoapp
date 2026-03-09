@@ -44,6 +44,24 @@ export default function SalesDashboard() {
     pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch,
   } = useSalesDashboard();
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      // Sync fresh Meta Ads data
+      await supabase.functions.invoke("fetch-meta-ads");
+    } catch (e) {
+      console.error("Error syncing Meta Ads:", e);
+    }
+    // Then re-fetch all dashboard data
+    refetch();
+    setIsRefreshing(false);
+    toast.success("Dados atualizados!");
+  }, [refetch]);
+
+  const loading = isLoading || isRefreshing;
+
   return (
     <div className="space-y-5">
       {/* Header + Filter */}
