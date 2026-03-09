@@ -1,20 +1,23 @@
 
 
-# Corrigir webhook do Mercado Pago - Erro de DNS
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-## Problema identificado
-O webhook está recebendo as notificações do MP corretamente, mas ao consultar os detalhes do pagamento, está falhando com:
-```
-DNS error: failed to lookup address information: No address associated with hostname
-```
-URL errada: `https://api.mercadopago.com.br/v1/payments/...`
-URL correta: `https://api.mercadopago.com/v1/payments/...`
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-## Correção
-Editar `supabase/functions/webhook-mercadopago/index.ts`, linha 68:
-- De: `https://api.mercadopago.com.br/v1/payments/${paymentId}`
-- Para: `https://api.mercadopago.com/v1/payments/${paymentId}`
+## Dados
 
-## Após a correção
-O MP vai reenviar as notificações automaticamente (ele retenta por até 24h). Se não reenviar, você pode ir no painel do MP em Notificações e reenviar manualmente, ou eu posso fazer uma chamada manual para processar o pagamento `149598153214`.
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+
+## Ações (via SQL migration)
+
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
