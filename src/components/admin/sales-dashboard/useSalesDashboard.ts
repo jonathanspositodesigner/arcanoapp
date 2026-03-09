@@ -84,6 +84,21 @@ export function useSalesDashboard() {
           .or("page_path.ilike.%checkout%,page_path.ilike.%comprar%,page_path.ilike.%landing%,page_path.eq./");
 
         setPageViews(count || 0);
+
+        // Fetch ad spend from meta_ad_spend
+        const startDate = start.toISOString().split("T")[0];
+        const endDate = end.toISOString().split("T")[0];
+        const { data: spendData } = await supabase
+          .from("meta_ad_spend")
+          .select("spend")
+          .gte("date", startDate)
+          .lte("date", endDate);
+
+        const totalSpend = (spendData || []).reduce(
+          (sum, row) => sum + Number(row.spend || 0),
+          0
+        );
+        setAdSpend(totalSpend);
       } catch (err) {
         console.error("Dashboard fetch error:", err);
       } finally {
