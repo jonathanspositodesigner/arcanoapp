@@ -1998,6 +1998,42 @@ export type Database = {
         }
         Relationships: []
       }
+      meta_ad_spend: {
+        Row: {
+          account_id: string
+          clicks: number | null
+          cpc: number | null
+          cpm: number | null
+          created_at: string | null
+          date: string
+          id: string
+          impressions: number | null
+          spend: number
+        }
+        Insert: {
+          account_id: string
+          clicks?: number | null
+          cpc?: number | null
+          cpm?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          impressions?: number | null
+          spend?: number
+        }
+        Update: {
+          account_id?: string
+          clicks?: number | null
+          cpc?: number | null
+          cpm?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          impressions?: number | null
+          spend?: number
+        }
+        Relationships: []
+      }
       mp_orders: {
         Row: {
           amount: number
