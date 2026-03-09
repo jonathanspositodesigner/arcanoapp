@@ -60,102 +60,87 @@ export function useSalesDashboard() {
   const [abandonedCheckouts, setAbandonedCheckouts] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const refetch = useCallback(() => setRefreshKey((k) => k + 1), []);
-
   const { start, end } = useMemo(
     () => getDateRange(preset, customStart, customEnd),
     [preset, customStart, customEnd]
   );
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        // Try unified RPC first (includes all platforms)
-        const { data, error } = await supabase.rpc("get_unified_dashboard_orders" as any, {
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // Try unified RPC first (includes all platforms)
+      const { data, error } = await supabase.rpc("get_unified_dashboard_orders" as any, {
+        _start: start.toISOString(),
+        _end: end.toISOString(),
+      });
+
+      if (error) {
+        console.error("Unified Dashboard RPC error:", error);
+        // Fallback to MP-only
+        const { data: mpData } = await supabase.rpc("get_mp_dashboard_orders", {
           _start: start.toISOString(),
           _end: end.toISOString(),
         });
-
-        if (error) {
-          console.error("Unified Dashboard RPC error:", error);
-          // Fallback to MP-only
-          const { data: mpData } = await supabase.rpc("get_mp_dashboard_orders", {
-            _start: start.toISOString(),
-            _end: end.toISOString(),
-          });
-          setOrders((mpData as DashboardOrder[]) || []);
-        } else {
-          setOrders((data as DashboardOrder[]) || []);
-        }
-
-        // Fetch page views for funnel
-        const { count } = await supabase
-          .from("page_views")
-          .select("id", { count: "exact", head: true })
-          .gte("viewed_at", start.toISOString())
-          .lt("viewed_at", end.toISOString())
-          .or("page_path.ilike.%checkout%,page_path.ilike.%comprar%,page_path.ilike.%landing%,page_path.eq./");
-
-        setPageViews(count || 0);
-
-        // Fetch ad spend + clicks from meta_ad_spend
-        const startDate = start.toISOString().split("T")[0];
-        const endDate = end.toISOString().split("T")[0];
-        const { data: spendData } = await supabase
-          .from("meta_ad_spend")
-          .select("spend, clicks, landing_page_views, initiated_checkouts")
-          .gte("date", startDate)
-          .lte("date", endDate);
-
-        const totalSpend = (spendData || []).reduce(
-          (sum, row) => sum + Number(row.spend || 0),
-          0
-        );
-        const totalClicks = (spendData || []).reduce(
-          (sum, row) => sum + Number(row.clicks || 0),
-          0
-        );
-        setAdSpend(totalSpend);
-        setMetaClicks(totalClicks);
-        const totalLandingPageViews = (spendData || []).reduce(
-          (sum, row) => sum + Number((row as any).landing_page_views || 0),
-          0
-        );
-        const totalInitiatedCheckouts = (spendData || []).reduce(
-          (sum, row) => sum + Number((row as any).initiated_checkouts || 0),
-          0
-        );
-        setMetaLandingPageViews(totalLandingPageViews);
-        setMetaInitiatedCheckouts(totalInitiatedCheckouts);
-
-        // Fetch page views for funnel
-        const { count: pvCount } = await supabase
-          .from("page_views")
-          .select("id", { count: "exact", head: true })
-          .gte("viewed_at", start.toISOString())
-          .lt("viewed_at", end.toISOString());
-
-        setPageViews(pvCount || 0);
-
-        // Fetch abandoned checkouts (ICs)
-        const { count: icCount } = await supabase
-          .from("abandoned_checkouts")
-          .select("id", { count: "exact", head: true })
-          .gte("created_at", start.toISOString())
-          .lt("created_at", end.toISOString());
-
-        setAbandonedCheckouts(icCount || 0);
-      } catch (err) {
-        console.error("Dashboard fetch error:", err);
-      } finally {
-        setIsLoading(false);
+        setOrders((mpData as DashboardOrder[]) || []);
+      } else {
+        setOrders((data as DashboardOrder[]) || []);
       }
-    };
 
-    fetchData();
-  }, [start, end, refreshKey]);
+      // Fetch ad spend + clicks from meta_ad_spend
+      const startDate = start.toISOString().split("T")[0];
+      const endDate = end.toISOString().split("T")[0];
+      const { data: spendData } = await supabase
+        .from("meta_ad_spend")
+        .select("spend, clicks, landing_page_views, initiated_checkouts")
+        .gte("date", startDate)
+        .lte("date", endDate);
 
+      const totalSpend = (spendData || []).reduce(
+        (sum, row) => sum + Number(row.spend || 0),
+        0
+      );
+      const totalClicks = (spendData || []).reduce(
+        (sum, row) => sum + Number(row.clicks || 0),
+        0
+      );
+      setAdSpend(totalSpend);
+      setMetaClicks(totalClicks);
+      const totalLandingPageViews = (spendData || []).reduce(
+        (sum, row) => sum + Number((row as any).landing_page_views || 0),
+        0
+      );
+      const totalInitiatedCheckouts = (spendData || []).reduce(
+        (sum, row) => sum + Number((row as any).initiated_checkouts || 0),
+        0
+      );
+      setMetaLandingPageViews(totalLandingPageViews);
+      setMetaInitiatedCheckouts(totalInitiatedCheckouts);
+
+      // Fetch page views for funnel
+      const { count: pvCount } = await supabase
+        .from("page_views")
+        .select("id", { count: "exact", head: true })
+        .gte("viewed_at", start.toISOString())
+        .lt("viewed_at", end.toISOString());
+
+      setPageViews(pvCount || 0);
+
+      // Fetch abandoned checkouts (ICs)
+      const { count: icCount } = await supabase
+        .from("abandoned_checkouts")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", start.toISOString())
+        .lt("created_at", end.toISOString());
+
+      setAbandonedCheckouts(icCount || 0);
+    } catch (err) {
+      console.error("Dashboard fetch error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [start, end]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
   const approved = useMemo(() => orders.filter((o) => o.status === "paid"), [orders]);
   const pending = useMemo(() => orders.filter((o) => o.status === "pending"), [orders]);
   const refunded = useMemo(() => orders.filter((o) => o.status === "refunded"), [orders]);
@@ -179,6 +164,6 @@ export function useSalesDashboard() {
     customEnd, setCustomEnd,
     orders, approved, pending, refunded,
     revenue, refundedTotal, pendingTotal,
-    pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch,
+    pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch: fetchData,
   };
 }

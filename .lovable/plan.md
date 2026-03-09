@@ -1,54 +1,23 @@
 
 
+# Correção: Mover assinatura IA Unlimited para o perfil correto
+
 ## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-O `handleRefresh` chama `refetch()` que apenas incrementa `refreshKey` (dispara o `useEffect`), mas imediatamente depois executa `setIsRefreshing(false)` e mostra o toast **sem esperar** os dados novos carregarem. O `useEffect` roda de forma assíncrona em background — o botão para de girar e mostra "Dados atualizados!" antes dos dados terem sido recarregados de verdade.
+## Dados
 
-Além disso, o `supabase.functions.invoke("fetch-meta-ads")` pode estar retornando antes dos dados serem commitados no banco.
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-## Correção
+## Ações (via SQL migration)
 
-**Arquivo: `src/components/admin/sales-dashboard/useSalesDashboard.ts`**
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-Transformar o `refetch` de um simples incremento de `refreshKey` para uma função assíncrona que executa todo o `fetchData` e retorna uma Promise. Assim o `handleRefresh` pode fazer `await refetch()` e só depois mostrar o toast.
-
-```typescript
-// Expor fetchData como refetch retornando Promise
-const fetchData = useCallback(async () => {
-  setIsLoading(true);
-  try {
-    // ... toda a lógica de fetch atual ...
-  } finally {
-    setIsLoading(false);
-  }
-}, [start, end]);
-
-// useEffect chama fetchData na montagem e quando muda período
-useEffect(() => { fetchData(); }, [fetchData]);
-
-// retornar fetchData como refetch
-return { ..., refetch: fetchData };
-```
-
-**Arquivo: `src/components/admin/sales-dashboard/SalesDashboard.tsx`**
-
-Fazer `await refetch()` no handleRefresh para garantir que os dados só são marcados como atualizados após recarregar tudo:
-
-```typescript
-const handleRefresh = useCallback(async () => {
-  setIsRefreshing(true);
-  try {
-    await supabase.functions.invoke("fetch-meta-ads");
-    await refetch(); // ESPERA dados carregarem
-    toast.success("Dados atualizados!");
-  } catch (e) {
-    console.error("Error refreshing:", e);
-    toast.error("Erro ao atualizar dados");
-  } finally {
-    setIsRefreshing(false);
-  }
-}, [refetch]);
-```
-
-Isso garante que: Meta Ads sincroniza → dados recarregam do banco → toast aparece.
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
