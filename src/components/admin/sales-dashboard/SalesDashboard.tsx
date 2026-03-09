@@ -1,3 +1,4 @@
+import { useState, useCallback } from "react";
 import { useSalesDashboard, PeriodPreset } from "./useSalesDashboard";
 import SalesDashboardKPIs from "./SalesDashboardKPIs";
 import SalesDashboardSecondaryKPIs from "./SalesDashboardSecondaryKPIs";
@@ -16,6 +17,8 @@ import { CalendarIcon, BarChart3, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const PRESETS: { value: PeriodPreset; label: string }[] = [
   { value: "today", label: "Hoje" },
@@ -41,6 +44,24 @@ export default function SalesDashboard() {
     pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch,
   } = useSalesDashboard();
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      // Sync fresh Meta Ads data
+      await supabase.functions.invoke("fetch-meta-ads");
+    } catch (e) {
+      console.error("Error syncing Meta Ads:", e);
+    }
+    // Then re-fetch all dashboard data
+    refetch();
+    setIsRefreshing(false);
+    toast.success("Dados atualizados!");
+  }, [refetch]);
+
+  const loading = isLoading || isRefreshing;
+
   return (
     <div className="space-y-5">
       {/* Header + Filter */}
@@ -55,12 +76,12 @@ export default function SalesDashboard() {
           <Button
             variant="outline"
             size="icon"
-            onClick={refetch}
-            disabled={isLoading}
+            onClick={handleRefresh}
+            disabled={loading}
             className="bg-card border-border"
             title="Atualizar dados"
           >
-            <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
           </Button>
           <Select value={preset} onValueChange={(v) => setPreset(v as PeriodPreset)}>
             <SelectTrigger className="w-[180px] bg-card border-border text-card-foreground">
