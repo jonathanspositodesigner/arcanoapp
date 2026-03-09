@@ -749,7 +749,9 @@ serve(async (req) => {
       product_id: productId,
       payload,
       result: 'received',
-      greenn_contract_id: contractId ? String(contractId) : null
+      greenn_contract_id: contractId ? String(contractId) : null,
+      amount: payload.sale?.amount || null,
+      product_name: productName || null
     }).select('id').single()
 
     const logId = logData?.id

@@ -1254,7 +1254,9 @@ serve(async (req) => {
         utm_source: utmSource,
         from_app: fromApp,
         result: 'received',
-        greenn_contract_id: greennContractId ? String(greennContractId) : null
+        greenn_contract_id: greennContractId ? String(greennContractId) : null,
+        amount: payload.sale?.amount || null,
+        product_name: payload.product?.name || null
       })
       .select('id')
       .single()

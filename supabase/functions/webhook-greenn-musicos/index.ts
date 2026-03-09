@@ -479,7 +479,9 @@ serve(async (req) => {
         email,
         product_id: productId || null,
         status,
-        result: 'received'
+        result: 'received',
+        amount: payload.sale?.amount || null,
+        product_name: payload.product?.name || null
       })
       .select('id')
       .single()

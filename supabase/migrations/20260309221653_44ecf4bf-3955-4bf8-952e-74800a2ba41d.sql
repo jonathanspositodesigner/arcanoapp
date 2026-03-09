@@ -1,0 +1,4 @@
+ALTER TABLE webhook_logs ADD COLUMN IF NOT EXISTS amount numeric DEFAULT NULL;
+ALTER TABLE webhook_logs ADD COLUMN IF NOT EXISTS net_amount numeric DEFAULT NULL;
+ALTER TABLE webhook_logs ADD COLUMN IF NOT EXISTS payment_method text DEFAULT NULL;
+ALTER TABLE webhook_logs ADD COLUMN IF NOT EXISTS product_name text DEFAULT NULL;

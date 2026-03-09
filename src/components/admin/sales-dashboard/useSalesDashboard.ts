@@ -18,6 +18,7 @@ export interface DashboardOrder {
   product_title: string;
   product_id: string | null;
   utm_data: Record<string, string> | null;
+  source_platform?: string;
 }
 
 function getDateRange(preset: PeriodPreset, customStart?: Date, customEnd?: Date): { start: Date; end: Date } {
@@ -63,14 +64,20 @@ export function useSalesDashboard() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await supabase.rpc("get_mp_dashboard_orders", {
+        // Try unified RPC first (includes all platforms)
+        const { data, error } = await supabase.rpc("get_unified_dashboard_orders" as any, {
           _start: start.toISOString(),
           _end: end.toISOString(),
         });
 
         if (error) {
-          console.error("Dashboard RPC error:", error);
-          setOrders([]);
+          console.error("Unified Dashboard RPC error:", error);
+          // Fallback to MP-only
+          const { data: mpData } = await supabase.rpc("get_mp_dashboard_orders", {
+            _start: start.toISOString(),
+            _end: end.toISOString(),
+          });
+          setOrders((mpData as DashboardOrder[]) || []);
         } else {
           setOrders((data as DashboardOrder[]) || []);
         }
