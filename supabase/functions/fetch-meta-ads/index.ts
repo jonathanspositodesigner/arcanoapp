@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
     let action = "fetch";
     let since: string | undefined;
     let until: string | undefined;
-    
+
     try {
       const body = await req.json();
       if (body.action) action = body.action;
@@ -35,7 +35,6 @@ Deno.serve(async (req) => {
     if (id1) accountIds.push(id1.trim());
     if (id2) accountIds.push(id2.trim());
     if (id3) accountIds.push(id3.trim());
-    // Fallback para o formato antigo
     if (accountIds.length === 0) {
       const legacy = Deno.env.get("META_AD_ACCOUNT_IDS");
       if (legacy) accountIds.push(...legacy.split(",").map(s => s.trim()));
@@ -56,8 +55,7 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({
-          message:
-            "Token trocado com sucesso! Copie o novo token abaixo e atualize o secret META_ACCESS_TOKEN manualmente.",
+          message: "Token trocado com sucesso! Copie o novo token abaixo e atualize o secret META_ACCESS_TOKEN manualmente.",
           access_token: data.access_token,
           token_type: data.token_type,
           expires_in_seconds: data.expires_in,
@@ -69,11 +67,7 @@ Deno.serve(async (req) => {
     // Fetch insights
     if (action === "fetch") {
       const today = new Date();
-      const sinceDate =
-        since ||
-        new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split("T")[0];
+      const sinceDate = since || new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
       const untilDate = until || today.toISOString().split("T")[0];
 
       const supabase = createClient(
@@ -82,17 +76,13 @@ Deno.serve(async (req) => {
       );
 
       const results: Record<string, unknown>[] = [];
-
       console.log("Account IDs to process:", accountIds);
 
       for (const accountId of accountIds) {
         const trimmedId = accountId.trim();
         console.log(`Processing account: "${trimmedId}"`);
-        
-        const timeRange = JSON.stringify({
-          since: sinceDate,
-          until: untilDate,
-        });
+
+        const timeRange = JSON.stringify({ since: sinceDate, until: untilDate });
         const url = `https://graph.facebook.com/v21.0/act_${trimmedId}/insights?fields=spend,impressions,clicks,cpm,cpc,actions&time_range=${encodeURIComponent(timeRange)}&level=account&time_increment=1&limit=500`;
 
         const res = await fetch(url, {
@@ -100,7 +90,7 @@ Deno.serve(async (req) => {
         });
         const data = await res.json();
 
-        console.log(`Account ${trimmedId} response: rows=${(data.data||[]).length}`);
+        console.log(`Account ${trimmedId} response: rows=${(data.data || []).length}`);
 
         if (data.error) {
           results.push({ accountId: trimmedId, error: data.error });
@@ -110,7 +100,6 @@ Deno.serve(async (req) => {
         const rows = data.data || [];
         let nextUrl = data.paging?.next;
 
-        // Handle pagination
         while (nextUrl) {
           const nextRes = await fetch(nextUrl, {
             headers: { Authorization: `Bearer ${accessToken}` },
@@ -120,17 +109,15 @@ Deno.serve(async (req) => {
           nextUrl = nextData.paging?.next;
         }
 
-        // Upsert into meta_ad_spend
         for (const row of rows) {
-          // Extract actions metrics
           const actions = row.actions || [];
           const getActionValue = (actionType: string) => {
-            const action = actions.find((a: any) => a.action_type === actionType);
-            return action ? parseInt(action.value || "0") : 0;
+            const found = actions.find((a: any) => a.action_type === actionType);
+            return found ? parseInt(found.value || "0") : 0;
           };
 
           const landingPageViews = getActionValue("landing_page_view");
-          const initiatedCheckouts = getActionValue("offsite_conversion.fb_pixel_initiate_checkout") 
+          const initiatedCheckouts = getActionValue("offsite_conversion.fb_pixel_initiate_checkout")
             || getActionValue("initiate_checkout")
             || getActionValue("omni_initiated_checkout");
 
