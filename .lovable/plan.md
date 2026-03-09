@@ -1,24 +1,23 @@
 
 
-# Corrigir: Mostrar apenas vendas aprovadas nos componentes do dashboard
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
 ## Problema
-`SalesByProduct` e `SalesBySource` recebem `orders` (que inclui pending, refunded, etc.) e usam isso para contar o "total". Isso infla os números com vendas não aprovadas. O funil de conversão usa `approved.length + pending.length` como "Vendas Inic.", o que também conta pendentes.
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-## Componentes afetados e correções
+## Dados
 
-1. **SalesByProduct** — Trocar para usar apenas `approved` em vez de `orders` para a contagem principal. Remover a prop `orders`.
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-2. **SalesBySource** — Mesmo problema, mesma correção. Usar apenas `approved`.
+## Ações (via SQL migration)
 
-3. **SalesConversionFunnel** — `totalOrders` atualmente é `approved.length + pending.length`. Mudar para usar apenas `orders.length` como "Vendas Iniciadas" (total de tentativas) e manter `approved.length` como "Vendas Aprovadas". Isso faz sentido no funil: todas as tentativas → aprovadas.
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-4. **SalesDashboard.tsx** — Atualizar as props passadas para esses componentes, removendo `orders` de `SalesByProduct` e `SalesBySource`.
-
-## Resumo das mudanças
-- `SalesByProduct`: mostrar apenas aprovadas (quantidade = `approved`)
-- `SalesBySource`: mostrar apenas aprovadas (quantidade = `approved`)  
-- `SalesConversionFunnel`: manter como está (já mostra vendas iniciadas vs aprovadas, faz sentido no funil)
-- `SalesByHour` e `SalesByWeekday`: já usam apenas `approved` — OK
-- 4 arquivos editados
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 

@@ -2,7 +2,6 @@ import { DashboardOrder } from "./useSalesDashboard";
 import { Globe } from "lucide-react";
 
 interface Props {
-  orders: DashboardOrder[];
   approved: DashboardOrder[];
   isLoading: boolean;
 }
@@ -10,7 +9,6 @@ interface Props {
 function getSource(order: DashboardOrder): string {
   const utm = order.utm_data;
   if (utm?.utm_source) return utm.utm_source;
-  // Fallback to platform name
   if (order.source_platform) {
     const platformLabels: Record<string, string> = {
       'mercadopago': 'Mercado Pago',
@@ -28,22 +26,16 @@ function getSource(order: DashboardOrder): string {
 
 const COLORS = ["hsl(142, 71%, 45%)", "hsl(199, 89%, 48%)", "hsl(45, 93%, 47%)", "hsl(330, 81%, 60%)", "hsl(263, 70%, 50%)", "hsl(174, 72%, 46%)"];
 
-export default function SalesBySource({ orders, approved, isLoading }: Props) {
-  const grouped: Record<string, { total: number; paid: number }> = {};
-  orders.forEach((o) => {
-    const src = getSource(o);
-    if (!grouped[src]) grouped[src] = { total: 0, paid: 0 };
-    grouped[src].total += 1;
-  });
+export default function SalesBySource({ approved, isLoading }: Props) {
+  const grouped: Record<string, number> = {};
   approved.forEach((o) => {
     const src = getSource(o);
-    if (!grouped[src]) grouped[src] = { total: 0, paid: 0 };
-    grouped[src].paid += 1;
+    grouped[src] = (grouped[src] || 0) + 1;
   });
 
   const data = Object.entries(grouped)
-    .map(([name, { total, paid }]) => ({ name, total, paid }))
-    .sort((a, b) => b.total - a.total);
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count);
 
   return (
     <div className="rounded-xl border border-border bg-card/60 p-5">
@@ -66,8 +58,7 @@ export default function SalesBySource({ orders, approved, isLoading }: Props) {
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-foreground truncate">{d.name}</p>
               </div>
-              <span className="text-xs text-emerald-400 tabular-nums">{d.paid} apr.</span>
-              <span className="text-sm font-bold text-foreground w-8 text-right tabular-nums">{d.total}</span>
+              <span className="text-sm font-bold text-foreground w-8 text-right tabular-nums">{d.count}</span>
             </div>
           ))}
         </div>

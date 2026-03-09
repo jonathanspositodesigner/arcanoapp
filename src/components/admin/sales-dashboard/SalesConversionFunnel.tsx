@@ -4,19 +4,19 @@ interface Props {
   metaClicks: number;
   metaLandingPageViews: number;
   metaInitiatedCheckouts: number;
-  totalOrders: number;
+  allOrdersCount: number;
   approvedCount: number;
   isLoading: boolean;
 }
 
 export default function SalesConversionFunnel({
-  metaClicks, metaLandingPageViews, metaInitiatedCheckouts, totalOrders, approvedCount, isLoading
+  metaClicks, metaLandingPageViews, metaInitiatedCheckouts, allOrdersCount, approvedCount, isLoading
 }: Props) {
   const steps = [
     { label: "Cliques", value: metaClicks },
     { label: "Vis. Página", value: metaLandingPageViews },
     { label: "ICs", value: metaInitiatedCheckouts },
-    { label: "Vendas Inic.", value: totalOrders },
+    { label: "Vendas Inic.", value: allOrdersCount },
     { label: "Vendas Apr.", value: approvedCount },
   ];
 
