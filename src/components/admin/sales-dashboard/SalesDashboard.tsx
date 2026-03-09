@@ -140,7 +140,7 @@ export default function SalesDashboard() {
 
       {/* Product + Hour */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <SalesByProduct approved={approved} isLoading={isLoading} />
+        <SalesByProduct orders={orders} approved={approved} isLoading={isLoading} />
         <SalesByHour approved={approved} isLoading={isLoading} />
       </div>
 
