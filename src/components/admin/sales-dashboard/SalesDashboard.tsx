@@ -38,7 +38,7 @@ export default function SalesDashboard() {
     customEnd, setCustomEnd,
     orders, approved, pending, refunded,
     revenue, refundedTotal, pendingTotal,
-    pageViews, adSpend, isLoading,
+    pageViews, adSpend, metaClicks, abandonedCheckouts, isLoading,
   } = useSalesDashboard();
 
   return (
@@ -119,9 +119,10 @@ export default function SalesDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <SalesPaymentDonut approved={approved} isLoading={isLoading} />
         <SalesConversionFunnel
+          metaClicks={metaClicks}
           pageViews={pageViews}
+          abandonedCheckouts={abandonedCheckouts}
           totalOrders={orders.length}
-          pendingCount={pending.length}
           approvedCount={approved.length}
           isLoading={isLoading}
         />

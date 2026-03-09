@@ -54,6 +54,8 @@ export function useSalesDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [pageViews, setPageViews] = useState(0);
   const [adSpend, setAdSpend] = useState(0);
+  const [metaClicks, setMetaClicks] = useState(0);
+  const [abandonedCheckouts, setAbandonedCheckouts] = useState(0);
 
   const { start, end } = useMemo(
     () => getDateRange(preset, customStart, customEnd),
@@ -92,12 +94,12 @@ export function useSalesDashboard() {
 
         setPageViews(count || 0);
 
-        // Fetch ad spend from meta_ad_spend
+        // Fetch ad spend + clicks from meta_ad_spend
         const startDate = start.toISOString().split("T")[0];
         const endDate = end.toISOString().split("T")[0];
         const { data: spendData } = await supabase
           .from("meta_ad_spend")
-          .select("spend")
+          .select("spend, clicks")
           .gte("date", startDate)
           .lte("date", endDate);
 
@@ -105,7 +107,30 @@ export function useSalesDashboard() {
           (sum, row) => sum + Number(row.spend || 0),
           0
         );
+        const totalClicks = (spendData || []).reduce(
+          (sum, row) => sum + Number(row.clicks || 0),
+          0
+        );
         setAdSpend(totalSpend);
+        setMetaClicks(totalClicks);
+
+        // Fetch page views for funnel
+        const { count: pvCount } = await supabase
+          .from("page_views")
+          .select("id", { count: "exact", head: true })
+          .gte("viewed_at", start.toISOString())
+          .lt("viewed_at", end.toISOString());
+
+        setPageViews(pvCount || 0);
+
+        // Fetch abandoned checkouts (ICs)
+        const { count: icCount } = await supabase
+          .from("abandoned_checkouts")
+          .select("id", { count: "exact", head: true })
+          .gte("created_at", start.toISOString())
+          .lt("created_at", end.toISOString());
+
+        setAbandonedCheckouts(icCount || 0);
       } catch (err) {
         console.error("Dashboard fetch error:", err);
       } finally {
@@ -139,6 +164,6 @@ export function useSalesDashboard() {
     customEnd, setCustomEnd,
     orders, approved, pending, refunded,
     revenue, refundedTotal, pendingTotal,
-    pageViews, adSpend, isLoading,
+    pageViews, adSpend, metaClicks, abandonedCheckouts, isLoading,
   };
 }
