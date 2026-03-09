@@ -104,7 +104,7 @@ export function useSalesDashboard() {
         const endDate = end.toISOString().split("T")[0];
         const { data: spendData } = await supabase
           .from("meta_ad_spend")
-          .select("spend, clicks")
+          .select("spend, clicks, landing_page_views, initiated_checkouts")
           .gte("date", startDate)
           .lte("date", endDate);
 
