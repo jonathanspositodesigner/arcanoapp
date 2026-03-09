@@ -142,7 +142,7 @@ export function useSalesDashboard() {
     };
 
     fetchData();
-  }, [start, end]);
+  }, [start, end, refreshKey]);
 
   const approved = useMemo(() => orders.filter((o) => o.status === "paid"), [orders]);
   const pending = useMemo(() => orders.filter((o) => o.status === "pending"), [orders]);
