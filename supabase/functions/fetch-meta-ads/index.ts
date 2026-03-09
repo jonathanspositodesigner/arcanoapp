@@ -90,11 +90,18 @@ Deno.serve(async (req) => {
         });
         const data = await res.json();
 
-        console.log(`Account ${trimmedId} response: rows=${(data.data || []).length}`);
-
+        console.log(`Account ${trimmedId} HTTP status: ${res.status}`);
+        console.log(`Account ${trimmedId} response keys: ${JSON.stringify(Object.keys(data))}`);
+        console.log(`Account ${trimmedId} rows: ${(data.data || []).length}`);
+        
         if (data.error) {
+          console.error(`Account ${trimmedId} META API ERROR:`, JSON.stringify(data.error));
           results.push({ accountId: trimmedId, error: data.error });
           continue;
+        }
+        
+        if (!data.data || data.data.length === 0) {
+          console.warn(`Account ${trimmedId} returned EMPTY data. Full response: ${JSON.stringify(data).substring(0, 500)}`);
         }
 
         const rows = data.data || [];
