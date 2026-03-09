@@ -11,6 +11,150 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// ===== SendPulse OAuth2 =====
+let cachedToken: { token: string; expiresAt: number } | null = null
+
+async function getSendPulseToken(): Promise<string> {
+  if (cachedToken && cachedToken.expiresAt > Date.now() + 300000) {
+    return cachedToken.token
+  }
+  const response = await fetch("https://api.sendpulse.com/oauth/access_token", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      grant_type: "client_credentials",
+      client_id: Deno.env.get("SENDPULSE_CLIENT_ID"),
+      client_secret: Deno.env.get("SENDPULSE_CLIENT_SECRET"),
+    }),
+  })
+  if (!response.ok) throw new Error(`SendPulse token error: ${response.status}`)
+  const data = await response.json()
+  cachedToken = { token: data.access_token, expiresAt: Date.now() + 3300000 }
+  return data.access_token
+}
+
+function getUnsubscribeLink(email: string): string {
+  const baseUrl = Deno.env.get("SUPABASE_URL") ?? ""
+  return `${baseUrl}/functions/v1/email-unsubscribe?email=${encodeURIComponent(email)}`
+}
+
+function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: string): string {
+  const unsubscribeLink = getUnsubscribeLink(email)
+  const trackingBaseUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/welcome-email-tracking`
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#f3f0ff;font-family:'Segoe UI',Roboto,sans-serif;">
+<div style="max-width:600px;margin:0 auto;padding:40px 20px;">
+  <div style="background:linear-gradient(135deg,#1a0533 0%,#2d1b4e 50%,#1a0533 100%);border-radius:16px;overflow:hidden;border:1px solid rgba(212,175,55,0.3);">
+    <div style="text-align:center;padding:40px 30px 20px;">
+      <div style="width:70px;height:70px;margin:0 auto 16px;background:linear-gradient(135deg,#d4af37,#f4d03f);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+        <span style="font-size:32px;">✨</span>
+      </div>
+      <h1 style="color:#d4af37;font-size:24px;margin:0 0 8px;">Compra Confirmada!</h1>
+      <p style="color:#c4b5fd;font-size:16px;margin:0;">Seu acesso ao <strong style="color:#f4d03f;">${productName}</strong> já está liberado</p>
+    </div>
+    <div style="padding:20px 30px;">
+      <div style="background:rgba(255,255,255,0.08);border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid rgba(212,175,55,0.2);">
+        <p style="color:#e9d5ff;font-size:14px;margin:0 0 12px;">Suas credenciais de acesso:</p>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr><td style="color:#a78bfa;padding:6px 0;font-size:13px;">Email:</td><td style="color:#f4d03f;padding:6px 0;font-size:13px;text-align:right;">${email}</td></tr>
+          <tr><td style="color:#a78bfa;padding:6px 0;font-size:13px;">Senha:</td><td style="color:#f4d03f;padding:6px 0;font-size:13px;text-align:right;">${email}</td></tr>
+        </table>
+        <p style="color:#f87171;font-size:11px;margin:12px 0 0;text-align:center;">⚠️ Recomendamos alterar sua senha no primeiro acesso</p>
+      </div>
+      <div style="text-align:center;padding:10px 0 30px;">
+        <a href="${ctaLink}" style="display:inline-block;background:linear-gradient(135deg,#d4af37,#f4d03f);color:#1a0533;text-decoration:none;padding:14px 40px;border-radius:8px;font-weight:bold;font-size:16px;">
+          Acessar Agora →
+        </a>
+      </div>
+    </div>
+    <div style="padding:20px 30px;border-top:1px solid rgba(212,175,55,0.2);text-align:center;">
+      <p style="color:#6b7280;font-size:11px;margin:0;">Vox Visual © ${new Date().getFullYear()}</p>
+      <p style="margin:6px 0 0;"><a href="${unsubscribeLink}" style="color:#6b7280;font-size:11px;text-decoration:underline;">Cancelar inscrição</a></p>
+    </div>
+  </div>
+</div>
+</body>
+</html>`
+}
+
+async function sendPurchaseEmail(supabase: any, email: string, productName: string, ctaLink: string, requestId: string) {
+  try {
+    // Dedup check
+    const { data: existing } = await supabase
+      .from('welcome_email_logs')
+      .select('id')
+      .eq('email', email)
+      .eq('template_name', `mp_purchase_${productName}`)
+      .maybeSingle()
+
+    if (existing) {
+      console.log(`   ├─ ℹ️ Email já enviado para ${email} (${productName})`)
+      return
+    }
+
+    // Check blacklist
+    const { data: blacklisted } = await supabase
+      .from('blacklisted_emails')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (blacklisted) {
+      console.log(`   ├─ ⛔ Email blacklisted: ${email}`)
+      return
+    }
+
+    const trackingId = crypto.randomUUID()
+    const html = buildPurchaseEmailHtml(email, productName, ctaLink)
+    const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
+
+    const token = await getSendPulseToken()
+
+    const emailPayload = {
+      email: {
+        html: htmlBase64,
+        text: "",
+        subject: `✅ Compra confirmada - ${productName}`,
+        from: { name: "Vox Visual", email: "contato@voxvisual.com.br" },
+        to: [{ name: email, email }]
+      }
+    }
+
+    const response = await fetch("https://api.sendpulse.com/smtp/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(emailPayload)
+    })
+
+    const responseText = await response.text()
+    console.log(`   ├─ 📧 SendPulse response: ${response.status}`)
+
+    // Log
+    await supabase.from('welcome_email_logs').insert({
+      email,
+      template_name: `mp_purchase_${productName}`,
+      tracking_id: trackingId,
+      status: response.ok ? 'sent' : 'failed',
+      sent_at: response.ok ? new Date().toISOString() : null,
+      error_message: response.ok ? null : responseText,
+    })
+
+    if (response.ok) {
+      console.log(`   ├─ ✅ Email de compra enviado para ${email}`)
+    } else {
+      console.error(`   ├─ ❌ Falha no envio: ${responseText}`)
+    }
+  } catch (err: any) {
+    console.error(`   ├─ ❌ Erro ao enviar email: ${err.message}`)
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -223,6 +367,13 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
+      // 5. Enviar email de compra via SendPulse
+      const ctaLink = product.pack_slug === 'upscaler-arcano' || product.type === 'credits'
+        ? 'https://arcanoapp.voxvisual.com.br/upscaler-arcano'
+        : 'https://arcanoapp.voxvisual.com.br/'
+      
+      await sendPurchaseEmail(supabase, email, product.title, ctaLink, requestId)
+
       console.log(`\n✅ [${requestId}] PROCESSAMENTO CONCLUÍDO COM SUCESSO`)
     }
 
@@ -240,6 +391,20 @@ serve(async (req) => {
           .eq('pack_slug', product.pack_slug)
         
         console.log(`   ├─ ✅ Acesso revogado: ${product.pack_slug}`)
+      }
+
+      // Revogar créditos se produto for do tipo credits
+      if (order.user_id && product.type === 'credits' && product.credits_amount > 0) {
+        const { error: revokeError } = await supabase.rpc('remove_lifetime_credits', {
+          _user_id: order.user_id,
+          _amount: product.credits_amount,
+          _description: `Reembolso MP: ${product.title}`
+        })
+        if (revokeError) {
+          console.error(`   ├─ ❌ Erro ao revogar créditos:`, revokeError)
+        } else {
+          console.log(`   ├─ ✅ ${product.credits_amount} créditos revogados`)
+        }
       }
 
       await supabase.from('mp_orders').update({
