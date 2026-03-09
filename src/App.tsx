@@ -313,6 +313,7 @@ const AppContent = () => {
           <Route path="/aguardando-pagamento-musicos" element={<AguardandoPagamentoMusicos />} />
           <Route path="/planos-upscaler-arcano" element={<PlanosUpscalerArcano />} />
           <Route path="/planos-upscaler-arcano-69" element={<PlanosUpscalerArcano69 />} />
+          <Route path="/planos-upscaler-arcano-mp" element={<PlanosUpscalerArcanoMP />} />
           <Route path="/planos-upscaler-arcano-69-es" element={<PlanosUpscalerArcano69ES />} />
           <Route path="/planos-upscaler-arcano-590-es" element={<PlanosUpscalerArcano590ES />} />
           <Route path="/planos-forja-selos-3d" element={<PlanosForjaSelos3D />} />
