@@ -379,11 +379,14 @@ serve(async (req) => {
         }
       }
 
-      // 4. Atualizar ordem
+      // 4. Atualizar ordem (incluindo novos campos de analytics)
       await supabase.from('mp_orders').update({
         status: 'paid',
         user_id: userId,
         mp_payment_id: String(paymentId),
+        payment_method: payment.payment_method_id || null,
+        net_amount: payment.transaction_details?.net_received_amount ?? payment.transaction_amount,
+        paid_at: payment.date_approved || new Date().toISOString(),
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
