@@ -1,23 +1,35 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+# Reembolso automático + Email de compra no webhook do Mercado Pago
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+## Situação atual
 
-## Dados
+### Reembolso (já funciona ✅)
+O webhook já tem a lógica de reembolso implementada (linhas 232-249). Quando o MP envia status `refunded`, `cancelled` ou `charged_back`, o sistema:
+- Desativa o acesso no `user_pack_purchases` (`is_active = false`)
+- Atualiza a ordem para `refunded`
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+**Porém**, falta revogar créditos caso o produto seja do tipo `credits`. Atualmente só revoga acesso a packs. Vou adicionar essa parte.
 
-## Ações (via SQL migration)
+### Email de compra (não existe ❌)
+O webhook do Mercado Pago **não envia nenhum email** após pagamento aprovado. Os webhooks da Greenn têm essa lógica com SendPulse, mas o MP não. Precisa ser adicionado.
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+---
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+## Plano de implementação
+
+### 1. Adicionar envio de email no pagamento aprovado
+Após o bloco de processamento do pagamento (após atualizar a ordem para `paid`), adicionar lógica de envio de email via SendPulse com:
+- Template HTML roxo/dourado similar ao usado nos webhooks da Greenn
+- Credenciais de acesso (email e senha = email)
+- Botão CTA apontando para `https://arcanoapp.voxvisual.com.br/upscaler-arcano`
+- Nome do produto comprado
+- Tracking via `welcome_email_logs` (dedup + rastreamento)
+
+### 2. Completar lógica de reembolso para créditos
+No bloco de reembolso, adicionar revogação de créditos quando `product.type === 'credits'`:
+- Usar `revoke_credits_on_refund` RPC (mesmo padrão do webhook-greenn)
+
+### Arquivo editado
+- `supabase/functions/webhook-mercadopago/index.ts`
 
