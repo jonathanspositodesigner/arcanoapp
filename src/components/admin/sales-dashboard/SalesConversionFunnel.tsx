@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function SalesConversionFunnel({
-  metaClicks, metaLandingPageViews, metaInitiatedCheckouts, totalOrders, approvedCount, isLoading
+  metaClicks, metaLandingPageViews, metaInitiatedCheckouts, allOrdersCount, approvedCount, isLoading
 }: Props) {
   const steps = [
     { label: "Cliques", value: metaClicks },
