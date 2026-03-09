@@ -11,6 +11,7 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  try {
     let action = "fetch";
     let since: string | undefined;
     let until: string | undefined;

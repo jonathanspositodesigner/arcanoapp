@@ -50,7 +50,7 @@ export default function SalesDashboard() {
     setIsRefreshing(true);
     try {
       // Sync fresh Meta Ads data
-      await supabase.functions.invoke("fetch-meta-ads");
+      await supabase.functions.invoke("fetch-meta-ads", { body: { action: "fetch" } });
       // Wait for all dashboard data to reload
       await refetch();
       toast.success("Dados atualizados!");
