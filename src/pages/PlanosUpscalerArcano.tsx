@@ -711,7 +711,7 @@ const PlanosUpscalerArcano = () => {
                   <div className="space-y-3 w-full mb-6">
                     {[
                       { icon: Shield, text: "Dados criptografados (SSL)" },
-                      { icon: CreditCard, text: "Pagamento via Mercado Pago" },
+                      { icon: CreditCard, text: "Pagamento seguro" },
                       { icon: Check, text: "Reembolso garantido em 7 dias" },
                     ].map((item, i) => (
                       <div key={i} className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-3">
