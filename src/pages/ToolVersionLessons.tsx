@@ -588,13 +588,12 @@ const ToolVersionLessons = () => {
 
                 {/* Mark as Watched Button */}
                 <Button
-                  variant={watchedLessons.includes(selectedLesson + 1) ? "default" : "outline"}
                   size="sm"
                   onClick={() => toggleWatchedStatus(selectedLesson + 1)}
                   className={`w-full sm:w-auto ${
                     watchedLessons.includes(selectedLesson + 1) 
                       ? 'bg-green-600 hover:bg-green-700 text-white' 
-                      : 'border-purple-400/50 text-white hover:bg-green-600/10 hover:text-green-500 hover:border-green-600'
+                      : 'bg-purple-900/60 border border-purple-400/50 text-purple-200 hover:bg-green-600/20 hover:text-green-400 hover:border-green-500'
                   }`}
                 >
                   <Check className="h-4 w-4 mr-2" />
