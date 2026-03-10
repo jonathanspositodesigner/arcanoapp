@@ -1,25 +1,23 @@
 
 
+# Correção: Mover assinatura IA Unlimited para o perfil correto
+
 ## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-O email **kommybemmmkt@gmail.com** já existe — foi criado em **23 de janeiro de 2026**. Não é bug de cadastro.
+## Dados
 
-O problema real é que a **mensagem de erro aparece como chave i18n crua** (`auth.errors.emailAlreadyRegistered`) em vez da mensagem traduzida. Isso acontece no `HomeAuthModal.tsx` (modal de cadastro da Home).
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-### Causa raiz
+## Ações (via SQL migration)
 
-`HomeAuthModal.tsx` linha 52:
-```typescript
-t: (key: string) => t(`auth.${key}`) || t(key)
-```
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-O `useTranslation()` é chamado **sem namespace**, então `t('auth.errors.emailAlreadyRegistered')` busca a chave literal `auth.errors.emailAlreadyRegistered` no namespace default — que não existe. Deveria usar `useTranslation('auth')` e passar `t` diretamente, como já faz o `UserLoginArtes.tsx`.
-
-### Correção
-
-**`src/components/HomeAuthModal.tsx`**:
-- Mudar `useTranslation()` → `useTranslation('auth')`  
-- Mudar a linha do `t:` para: `t: (key: string) => t(key)`
-
-Isso corrige a exibição de todas as mensagens de erro/sucesso no modal da Home.
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 

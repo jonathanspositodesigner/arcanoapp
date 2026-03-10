@@ -15,7 +15,7 @@ interface HomeAuthModalProps {
 }
 
 const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEnd }: HomeAuthModalProps) => {
-  const { t } = useTranslation('index');
+  const { t } = useTranslation('auth');
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [signupSuccessEmail, setSignupSuccessEmail] = useState("");
   const signupInProgressRef = useRef(false);
@@ -49,7 +49,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
         onClose();
       }
     },
-    t: (key: string) => t(`auth.${key}`) || t(key),
+    t: (key: string) => t(key),
   });
 
 
@@ -66,19 +66,19 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                 </div>
               </div>
               <h2 className="text-xl font-bold text-foreground mb-2">
-                {t('auth.signupSuccessTitle')}
+                {t('signupSuccessTitle')}
               </h2>
               <p className="text-sm text-muted-foreground mb-2">
-                {t('auth.signupSuccessMessage')}
+                {t('signupSuccessMessage')}
               </p>
               <p className="text-sm font-medium text-foreground mb-4">
                 {signupSuccessEmail}
               </p>
               <p className="text-sm text-muted-foreground mb-2">
-                {t('auth.signupSuccessInstruction')}
+                {t('signupSuccessInstruction')}
               </p>
               <p className="text-xs text-muted-foreground mb-6">
-                {t('auth.signupSuccessSpam')}
+                {t('signupSuccessSpam')}
               </p>
               <Button 
                 variant="outline" 
@@ -88,7 +88,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                 }}
                 className="w-full"
               >
-                {t('auth.backToLogin')}
+                {t('backToLogin')}
               </Button>
             </div>
           ) : auth.state.step === 'signup' ? (
@@ -126,10 +126,10 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
             <>
               <div className="text-center mb-6">
                 <h2 className="text-xl font-bold text-foreground mb-1">
-                  {t('auth.welcomeTitle')}
+                  {t('welcomeTitle')}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {t('auth.welcomeSubtitle')}
+                  {t('welcomeSubtitle')}
                 </p>
               </div>
 
@@ -141,10 +141,10 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                   onSignupClick={() => {}}
                   isLoading={auth.state.isLoading}
                   labels={{
-                    email: t('auth.email'),
-                    emailPlaceholder: t('auth.emailPlaceholder'),
-                    continue: t('auth.continue') || 'Continuar',
-                    loading: t('auth.loading'),
+                    email: t('email'),
+                    emailPlaceholder: t('emailPlaceholder'),
+                    continue: t('continue') || 'Continuar',
+                    loading: t('loading'),
                     noAccountYet: '',
                     createAccount: '',
                   }}
@@ -159,12 +159,12 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                   forgotPasswordUrl={auth.getForgotPasswordUrl()}
                   isLoading={auth.state.isLoading}
                   labels={{
-                    password: t('auth.password'),
-                    passwordPlaceholder: t('auth.passwordPlaceholder'),
-                    signIn: t('auth.loginButton'),
-                    signingIn: t('auth.loading'),
-                    forgotPassword: t('auth.forgotPassword'),
-                    changeEmail: t('auth.changeEmail') || 'Trocar',
+                    password: t('password'),
+                    passwordPlaceholder: t('passwordPlaceholder'),
+                    signIn: t('loginButton'),
+                    signingIn: t('loading'),
+                    forgotPassword: t('forgotPassword'),
+                    changeEmail: t('changeEmail') || 'Trocar',
                   }}
                 />
               )}
@@ -191,7 +191,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                   className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
                 >
                   <MousePointerClick className="h-4 w-4" />
-                  <span>{t('auth.browseWithoutLogin')}</span>
+                  <span>{t('browseWithoutLogin')}</span>
                 </button>
               </div>
             </>
