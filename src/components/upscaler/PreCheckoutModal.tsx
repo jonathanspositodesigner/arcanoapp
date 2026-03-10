@@ -163,7 +163,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
       const response = await supabase.functions.invoke('pagarme-one-click', {
         body: {
-          product_slug: 'upscaller-arcano-vitalicio',
+          product_slug: productSlug,
           saved_card_id: selectedCardId,
           utm_data: utmData
         }
