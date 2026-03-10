@@ -424,7 +424,7 @@ const ToolVersionLessons = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => navigate(user ? '/minha-conta' : '/auth')}
-                className="border-purple-500/30 text-purple-300 hover:text-white hover:bg-purple-500/20"
+                className="border-purple-400/50 text-white hover:text-white hover:bg-purple-500/20"
               >
                 {user ? 'Minha Conta' : 'Login'}
               </Button>
