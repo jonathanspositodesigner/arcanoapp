@@ -15,7 +15,7 @@ interface HomeAuthModalProps {
 }
 
 const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEnd }: HomeAuthModalProps) => {
-  const { t } = useTranslation('index');
+  const { t } = useTranslation('auth');
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [signupSuccessEmail, setSignupSuccessEmail] = useState("");
   const signupInProgressRef = useRef(false);
