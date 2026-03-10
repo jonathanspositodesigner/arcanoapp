@@ -785,6 +785,15 @@ const Planos2 = () => {
           </Button>
         </DialogContent>
       </Dialog>
+
+      {/* PreCheckout Modal for credit purchases */}
+      <PreCheckoutModal
+        isOpen={showPreCheckout}
+        onClose={() => setShowPreCheckout(false)}
+        userEmail={userEmail}
+        userId={userId}
+        productSlug={selectedCreditSlug}
+      />
     </div>
   );
 };
