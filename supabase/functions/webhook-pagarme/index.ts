@@ -1,7 +1,7 @@
 /**
  * Edge Function: webhook-pagarme
- * Recebe notificações do Pagar.me (order.paid, order.payment_failed, charge.refunded).
- * Mesma lógica do webhook-asaas para criação de usuário e acesso.
+ * Recebe notificações do Pagar.me (order.paid, charge.paid, charge.refunded, order.canceled).
+ * Idempotência via webhook_logs. Mesma lógica dos outros webhooks.
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -180,19 +180,49 @@ serve(async (req) => {
     const body = await req.json()
 
     // Pagar.me webhook format: { id, type, data }
+    const eventId = body.id
     const eventType = body.type
     const eventData = body.data
 
     console.log(`\n🔔 [${requestId}] WEBHOOK PAGAR.ME`)
+    console.log(`   ├─ event_id: ${eventId}`)
     console.log(`   ├─ type: ${eventType}`)
     console.log(`   ├─ data.id: ${eventData?.id}`)
     console.log(`   ├─ data.status: ${eventData?.status}`)
 
-    // Extrair order_id do metadata
-    const orderId = eventData?.metadata?.order_id
+    // ===== IDEMPOTÊNCIA via webhook_logs =====
+    const idempotencyKey = eventId || `${eventType}_${eventData?.id}`
+    
+    const { data: existingLog } = await supabase
+      .from('webhook_logs')
+      .select('id')
+      .eq('platform', 'pagarme')
+      .eq('transaction_id', idempotencyKey)
+      .maybeSingle()
+
+    if (existingLog) {
+      console.log(`   ├─ ⏭️ Evento já processado (idempotência): ${idempotencyKey}`)
+      return new Response('OK', { status: 200, headers: corsHeaders })
+    }
+
+    // Extrair order_id do metadata — buscar em múltiplos caminhos
+    const orderId = 
+      eventData?.metadata?.order_id ||
+      eventData?.order?.metadata?.order_id ||
+      eventData?.charges?.[0]?.metadata?.order_id ||
+      null
 
     if (!orderId) {
       console.log(`   ├─ ⏭️ Sem order_id no metadata`)
+      // Logar mesmo sem order_id para auditoria
+      await supabase.from('webhook_logs').insert({
+        platform: 'pagarme',
+        event_type: eventType,
+        transaction_id: idempotencyKey,
+        status: eventData?.status || 'unknown',
+        email: null,
+        raw_payload: body,
+      })
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
 
@@ -205,6 +235,13 @@ serve(async (req) => {
 
     if (orderError || !order) {
       console.error(`   ├─ ❌ Ordem não encontrada: ${orderId}`, orderError)
+      await supabase.from('webhook_logs').insert({
+        platform: 'pagarme',
+        event_type: eventType,
+        transaction_id: idempotencyKey,
+        status: 'order_not_found',
+        raw_payload: body,
+      })
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
 
@@ -337,14 +374,27 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
-      // 6. Enviar email
+      // 6. Logar na webhook_logs
+      await supabase.from('webhook_logs').insert({
+        platform: 'pagarme',
+        event_type: eventType,
+        transaction_id: idempotencyKey,
+        status: 'paid',
+        email: email,
+        product_name: product.title,
+        amount: Number(order.amount),
+        payment_method: paymentMethod,
+        raw_payload: body,
+      })
+
+      // 7. Enviar email
       const ctaLink = product.pack_slug === 'upscaler-arcano' || product.type === 'credits'
         ? 'https://arcanoapp.voxvisual.com.br/upscaler-arcano'
         : 'https://arcanoapp.voxvisual.com.br/'
 
       await sendPurchaseEmail(supabase, email, product.title, ctaLink, requestId)
 
-      // 7. UTMify
+      // 8. UTMify
       try {
         const utmData = order.utm_data as Record<string, string> | null
         const saleMetas: { meta_key: string; meta_value: string }[] = []
@@ -433,11 +483,32 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
+      // Logar reembolso
+      await supabase.from('webhook_logs').insert({
+        platform: 'pagarme',
+        event_type: eventType,
+        transaction_id: idempotencyKey,
+        status: 'refunded',
+        email: order.user_email,
+        product_name: product.title,
+        amount: Number(order.amount),
+        raw_payload: body,
+      })
+
       console.log(`   ├─ ✅ Ordem marcada como refunded`)
     }
 
     else {
       console.log(`   ├─ ⏭️ Evento ignorado: ${eventType} (status atual: ${order.status})`)
+      // Logar eventos ignorados também
+      await supabase.from('webhook_logs').insert({
+        platform: 'pagarme',
+        event_type: eventType,
+        transaction_id: idempotencyKey,
+        status: eventData?.status || 'ignored',
+        email: order.user_email,
+        raw_payload: body,
+      })
     }
 
     return new Response('OK', { status: 200, headers: corsHeaders })
