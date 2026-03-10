@@ -1257,7 +1257,7 @@ serve(async (req) => {
         greenn_contract_id: greennContractId ? String(greennContractId) : null,
         amount: payload.sale?.amount || null,
         product_name: payload.product?.name || null,
-        payment_method: payload.sale?.method || payload.sale?.payment_method || payload.payment?.method || null
+        payment_method: payload.currentSale?.method || payload.sale?.method || payload.sale?.payment_method || payload.payment?.method || null
       })
       .select('id')
       .single()

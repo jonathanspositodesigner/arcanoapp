@@ -28,7 +28,7 @@ const PAYMENT_LABELS: Record<string, string> = {
 const COLORS = ["hsl(142, 71%, 45%)", "hsl(199, 89%, 48%)", "hsl(45, 93%, 47%)", "hsl(330, 81%, 60%)", "hsl(263, 70%, 50%)"];
 
 function getLabel(method: string | null) {
-  if (!method) return "N/A";
+  if (!method) return "Não identificado";
   if (method.toLowerCase() === "pix") return "Pix";
   if (method.toLowerCase() === "boleto") return "Boleto";
   return PAYMENT_LABELS[method] || method;
