@@ -671,7 +671,7 @@ const AdsManagementContent = () => {
                       <MetricsRow
                         key={a.id}
                         item={a}
-                        onStatusToggle={handleStatusToggleAd}
+                        onStatusToggle={handleStatusToggle}
                       />
                     ))
                   )}
