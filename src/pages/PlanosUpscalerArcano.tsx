@@ -245,12 +245,10 @@ const PlanosUpscalerArcano = () => {
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
+
   const handlePurchase = () => {
-    if (!tool) return;
-    const checkoutLink = (isPremium ? tool.checkout_link_membro_vitalicio : tool.checkout_link_vitalicio);
-    if (checkoutLink) {
-      window.open(appendUtmToUrl(checkoutLink), '_blank');
-    }
+    setCheckoutModalOpen(true);
   };
 
   // Countdown timer - 48 minutes
