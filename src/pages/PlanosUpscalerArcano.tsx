@@ -691,8 +691,21 @@ const PlanosUpscalerArcano = () => {
                     </div>
                   </div>
 
+                  {!user && (
+                    <div className="px-0 md:px-2 mb-4">
+                      <input
+                        type="email"
+                        placeholder="Digite seu email"
+                        value={emailInput}
+                        onChange={(e) => { setEmailInput(e.target.value); setEmailError(''); }}
+                        className="w-full max-w-md mx-auto block px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/40 text-center text-base focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
+                      />
+                      {emailError && <p className="text-red-400 text-xs mt-2">{emailError}</p>}
+                    </div>
+                  )}
+
                   <div className="px-0 md:px-2">
-                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
+                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} loading={purchaseLoading} />
                   </div>
 
                   {/* Badges de pagamento */}
