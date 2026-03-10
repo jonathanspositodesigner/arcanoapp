@@ -21,6 +21,11 @@ export interface SignupData {
   password: string;
   name?: string;
   phone?: string;
+  cpf?: string;
+  address_line?: string;
+  address_zip?: string;
+  address_city?: string;
+  address_state?: string;
 }
 
 export interface AuthConfig {
@@ -345,7 +350,7 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
    * SIGNUP: Create new account
    */
   const signup = useCallback(async (data: SignupData) => {
-    const { email, password, name, phone } = data;
+    const { email, password, name, phone, cpf, address_line, address_zip, address_city, address_state } = data;
     
     if (!email.trim()) {
       toast.error(t('errors.enterEmail'));
@@ -404,6 +409,12 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
           email: normalizedEmail,
           name: name?.trim() || null,
           phone: phone?.trim() || null,
+          cpf: cpf?.replace(/\D/g, '') || null,
+          address_line: address_line?.trim() || null,
+          address_zip: address_zip?.replace(/\D/g, '') || null,
+          address_city: address_city?.trim() || null,
+          address_state: address_state?.trim() || null,
+          address_country: 'BR',
           password_changed: true,
           email_verified: false,
         }, { onConflict: 'id' });
