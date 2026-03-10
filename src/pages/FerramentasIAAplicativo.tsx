@@ -373,6 +373,7 @@ const FerramentasIAAplicativo = () => {
         hasClaimedPromo={hasClaimed}
         isCheckingClaim={isCheckingClaim}
         onClaimAndAccess={handleClaimAndAccess}
+        hasLifetimePack={hasUpscalerPack}
       />
 
     </AppLayout>
