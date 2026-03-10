@@ -617,7 +617,7 @@ const ToolVersionLessons = () => {
                             ? handleToolButtonClick(button.url)
                             : handleRegularButtonClick(button.url)
                         }
-                        className="gap-2 border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white hover:border-purple-400"
+                        className="gap-2 border-purple-400/50 text-white hover:bg-purple-500/20 hover:text-white hover:border-purple-400"
                       >
                         <ExternalLink className="w-4 h-4" />
                         {button.text}
