@@ -2016,6 +2016,63 @@ export type Database = {
         }
         Relationships: []
       }
+      meta_ad_insights: {
+        Row: {
+          account_id: string
+          ad_id: string
+          ad_name: string
+          ad_status: string | null
+          adset_id: string
+          campaign_id: string
+          clicks: number | null
+          cpc: number | null
+          cpm: number | null
+          created_at: string | null
+          date: string
+          id: string
+          impressions: number | null
+          initiated_checkouts: number | null
+          landing_page_views: number | null
+          spend: number | null
+        }
+        Insert: {
+          account_id: string
+          ad_id: string
+          ad_name: string
+          ad_status?: string | null
+          adset_id: string
+          campaign_id: string
+          clicks?: number | null
+          cpc?: number | null
+          cpm?: number | null
+          created_at?: string | null
+          date: string
+          id?: string
+          impressions?: number | null
+          initiated_checkouts?: number | null
+          landing_page_views?: number | null
+          spend?: number | null
+        }
+        Update: {
+          account_id?: string
+          ad_id?: string
+          ad_name?: string
+          ad_status?: string | null
+          adset_id?: string
+          campaign_id?: string
+          clicks?: number | null
+          cpc?: number | null
+          cpm?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          impressions?: number | null
+          initiated_checkouts?: number | null
+          landing_page_views?: number | null
+          spend?: number | null
+        }
+        Relationships: []
+      }
       meta_ad_spend: {
         Row: {
           account_id: string
@@ -2055,6 +2112,66 @@ export type Database = {
           initiated_checkouts?: number | null
           landing_page_views?: number | null
           spend?: number
+        }
+        Relationships: []
+      }
+      meta_adset_insights: {
+        Row: {
+          account_id: string
+          adset_id: string
+          adset_name: string
+          adset_status: string | null
+          campaign_id: string
+          campaign_name: string
+          clicks: number | null
+          cpc: number | null
+          cpm: number | null
+          created_at: string | null
+          daily_budget: number | null
+          date: string
+          id: string
+          impressions: number | null
+          initiated_checkouts: number | null
+          landing_page_views: number | null
+          spend: number | null
+        }
+        Insert: {
+          account_id: string
+          adset_id: string
+          adset_name: string
+          adset_status?: string | null
+          campaign_id: string
+          campaign_name: string
+          clicks?: number | null
+          cpc?: number | null
+          cpm?: number | null
+          created_at?: string | null
+          daily_budget?: number | null
+          date: string
+          id?: string
+          impressions?: number | null
+          initiated_checkouts?: number | null
+          landing_page_views?: number | null
+          spend?: number | null
+        }
+        Update: {
+          account_id?: string
+          adset_id?: string
+          adset_name?: string
+          adset_status?: string | null
+          campaign_id?: string
+          campaign_name?: string
+          clicks?: number | null
+          cpc?: number | null
+          cpm?: number | null
+          created_at?: string | null
+          daily_budget?: number | null
+          date?: string
+          id?: string
+          impressions?: number | null
+          initiated_checkouts?: number | null
+          landing_page_views?: number | null
+          spend?: number | null
         }
         Relationships: []
       }
