@@ -1,23 +1,21 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Plano: Revogar acesso, deletar conta e adicionar à lista negra
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+**Usuário:** roger_newlife@hotmail.com (ID: `0272b42d-a674-453d-b2d6-410aa0ac82be`)
 
-## Dados
+**Estado atual:**
+- Tem acesso vitalício ao pack `upscaller-arcano` (ativo)
+- Tem créditos: nenhum registro em upscaler_credits
+- Não está na lista negra
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+### Ações a executar (via dados, não migrations):
 
-## Ações (via SQL migration)
+1. **Desativar acesso ao pack** — UPDATE `user_pack_purchases` SET `is_active = false` para o registro dele
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+2. **Adicionar à lista negra** — INSERT em `blacklisted_emails` com email `roger_newlife@hotmail.com` e motivo "Pagamento não confirmado - Mercado Pago pendente"
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+3. **Deletar conta** — Chamar a edge function `delete-auth-user-by-email` que já existe e faz a limpeza completa (profiles, premium_users, premium_artes_users, user_pack_purchases, user_roles + auth.users)
+
+Todas essas são operações de dados, não mudanças de schema. Usarei o insert tool para as duas primeiras e curl para a edge function.
 
