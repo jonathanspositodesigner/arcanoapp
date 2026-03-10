@@ -75,6 +75,18 @@ interface HotmartWebhookPayload {
       price?: {
         value?: number
         currency_code?: string
+        currency_value?: string
+      }
+      tracking?: {
+        source?: string
+        source_sck?: string
+        utm_source?: string
+        utm_medium?: string
+        utm_campaign?: string
+        utm_content?: string
+        utm_term?: string
+        external_reference?: string
+        [key: string]: string | undefined
       }
     }
     subscription?: {
