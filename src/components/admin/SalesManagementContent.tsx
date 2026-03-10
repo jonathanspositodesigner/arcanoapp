@@ -52,6 +52,7 @@ const SalesManagementContent = () => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [selectedSale, setSelectedSale] = useState<SaleRecord | null>(null);
+  const [rangePreset, setRangePreset] = useState<RangePreset>("30d");
   const [statusFilter, setStatusFilter] = useState("all");
   const [customStart, setCustomStart] = useState<Date | undefined>();
   const [customEnd, setCustomEnd] = useState<Date | undefined>();
