@@ -20,7 +20,7 @@ serve(async (req) => {
   }
 
   try {
-    const { product_slug, user_email, user_cpf, utm_data } = await req.json()
+    const { product_slug, user_email, user_cpf, user_name, billing_type, utm_data } = await req.json()
 
     if (!product_slug || !user_email) {
       return new Response(JSON.stringify({ error: 'product_slug e user_email são obrigatórios' }), {
@@ -86,20 +86,23 @@ serve(async (req) => {
     if (searchData.data && searchData.data.length > 0) {
       customerId = searchData.data[0].id
       console.log(`👤 Cliente existente no Asaas: ${customerId} | cpfCnpj atual: ${searchData.data[0].cpfCnpj || 'VAZIO'}`)
-      // Sempre atualizar CPF se fornecido
-      if (cpf) {
+      // Sempre atualizar CPF e nome se fornecidos
+      const updateBody: Record<string, unknown> = {}
+      if (cpf) updateBody.cpfCnpj = cpf
+      if (user_name) updateBody.name = user_name
+      if (Object.keys(updateBody).length > 0) {
         const updateRes = await fetch(`${ASAAS_API_URL}/customers/${customerId}`, {
           method: 'PUT',
           headers: asaasHeaders,
-          body: JSON.stringify({ cpfCnpj: cpf })
+          body: JSON.stringify(updateBody)
         })
         const updateText = await updateRes.text()
-        console.log(`📝 Update CPF resultado: ${updateRes.status} | ${updateText.substring(0, 200)}`)
+        console.log(`📝 Update cliente resultado: ${updateRes.status} | ${updateText.substring(0, 200)}`)
       }
     } else {
       // Criar novo cliente
       const customerBody: Record<string, unknown> = {
-        name: email.split('@')[0],
+        name: user_name || email.split('@')[0],
         email: email,
         notificationDisabled: false
       }
@@ -156,7 +159,7 @@ serve(async (req) => {
 
     const paymentBody = {
       customer: customerId,
-      billingType: 'UNDEFINED',
+      billingType: billing_type || 'UNDEFINED',
       value: Number(product.price),
       dueDate: dueDate.toISOString().split('T')[0],
       description: product.title,

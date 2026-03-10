@@ -11,6 +11,7 @@ import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 
 import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton, LazySocialProofWrapper } from "@/components/upscaler";
+import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
 
@@ -244,84 +245,7 @@ const PlanosUpscalerArcano69v2 = () => {
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
-  const [purchaseLoading, setPurchaseLoading] = useState(false);
-  const [emailInput, setEmailInput] = useState('');
-  const [cpfInput, setCpfInput] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [cpfError, setCpfError] = useState('');
-
-  const formatCpf = (value: string) => {
-    const digits = value.replace(/\D/g, '').slice(0, 11);
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
-    if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
-    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
-  };
-
-  const handlePurchase = async () => {
-    const userEmail = user?.email || emailInput.trim();
-    const cpfDigits = cpfInput.replace(/\D/g, '');
-    
-    let hasError = false;
-    if (!userEmail) {
-      setEmailError('Digite seu email para continuar');
-      hasError = true;
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
-      setEmailError('Email inválido');
-      hasError = true;
-    } else {
-      setEmailError('');
-    }
-    
-    if (!cpfDigits) {
-      setCpfError('Digite seu CPF para continuar');
-      hasError = true;
-    } else if (cpfDigits.length !== 11) {
-      setCpfError('CPF inválido (11 dígitos)');
-      hasError = true;
-    } else {
-      setCpfError('');
-    }
-    
-    if (hasError) return;
-    
-    setPurchaseLoading(true);
-    try {
-      // Ler UTMs capturadas pelo useUtmTracker
-      let utmData: Record<string, string> | null = null;
-      try {
-        const raw = sessionStorage.getItem('captured_utms');
-        if (raw) utmData = JSON.parse(raw);
-      } catch { /* ignore */ }
-
-      const response = await supabase.functions.invoke('create-asaas-checkout', {
-        body: {
-          product_slug: 'upscaller-arcano-vitalicio',
-          user_email: userEmail.toLowerCase().trim(),
-          user_cpf: cpfDigits,
-          utm_data: utmData
-        }
-      });
-
-      if (response.error) {
-        console.error('Erro ao criar checkout:', response.error);
-        alert('Erro ao criar checkout. Tente novamente.');
-        setPurchaseLoading(false);
-        return;
-      }
-
-      const { checkout_url } = response.data;
-      if (checkout_url) {
-        window.location.href = checkout_url;
-      } else {
-        alert('Erro ao gerar link de pagamento.');
-      }
-    } catch (error) {
-      console.error('Erro:', error);
-      alert('Erro ao processar. Tente novamente.');
-    }
-    setPurchaseLoading(false);
-  };
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
 
   const hasAccess = hasAccessToPack(TOOL_SLUG);
 
@@ -683,32 +607,8 @@ const PlanosUpscalerArcano69v2 = () => {
                     </div>
                   </div>
 
-                  {!user && (
-                    <div className="px-0 md:px-2 mb-3">
-                      <input
-                        type="email"
-                        placeholder="Digite seu email"
-                        value={emailInput}
-                        onChange={(e) => { setEmailInput(e.target.value); setEmailError(''); }}
-                        className="w-full max-w-md mx-auto block px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/40 text-center text-base focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
-                      />
-                      {emailError && <p className="text-red-400 text-xs mt-2 text-center">{emailError}</p>}
-                    </div>
-                  )}
-                  <div className="px-0 md:px-2 mb-4">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="Digite seu CPF"
-                      value={cpfInput}
-                      onChange={(e) => { setCpfInput(formatCpf(e.target.value)); setCpfError(''); }}
-                      className="w-full max-w-md mx-auto block px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/40 text-center text-base focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
-                    />
-                    {cpfError && <p className="text-red-400 text-xs mt-2 text-center">{cpfError}</p>}
-                  </div>
-
                   <div className="px-0 md:px-2">
-                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} loading={purchaseLoading} />
+                    <CTAButton onClick={() => setCheckoutModalOpen(true)} isPremium={isPremium} t={t} />
                   </div>
 
                   {/* Badges de pagamento */}
@@ -791,6 +691,13 @@ const PlanosUpscalerArcano69v2 = () => {
 
         </>
       )}
+
+      {/* Pre-checkout Modal */}
+      <PreCheckoutModal
+        isOpen={checkoutModalOpen}
+        onClose={() => setCheckoutModalOpen(false)}
+        userEmail={user?.email}
+      />
 
       {/* Modal Fullscreen */}
       {modalImages && (
