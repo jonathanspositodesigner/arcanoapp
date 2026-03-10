@@ -673,7 +673,7 @@ const PlanosUpscalerArcano = () => {
                     </div>
                   )}
 
-                  <h2 className="font-bebas text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6 tracking-wide">
+                  <h2 className="font-space-grotesk font-bold text-xl md:text-2xl lg:text-3xl text-white mb-4 md:mb-6">
                     {t('tools:upscaler.finalCTA.title')} <span className="text-fuchsia-400">{t('tools:upscaler.finalCTA.subtitle')}</span>
                   </h2>
 
