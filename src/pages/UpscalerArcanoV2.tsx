@@ -171,6 +171,32 @@ const UpscalerArcanoV2 = () => {
 
   return (
     <div className="min-h-screen bg-[#0D0221] flex flex-col">
+      {/* Header minimalista standalone */}
+      <header className="sticky top-0 z-50 bg-[#0D0221]/90 backdrop-blur-md border-b border-purple-500/20">
+        <div className="container mx-auto px-4 max-w-6xl flex items-center justify-between h-14">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="text-purple-300 hover:text-white hover:bg-purple-500/20 gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Voltar para Home</span>
+          </Button>
+          <h1 className="text-sm md:text-base font-bold text-white absolute left-1/2 -translate-x-1/2">
+            Upscaler Arcano v2.0
+          </h1>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(user ? '/minha-conta' : '/auth')}
+            className="border-purple-500/30 text-purple-300 hover:text-white hover:bg-purple-500/20"
+          >
+            {user ? 'Minha Conta' : 'Login'}
+          </Button>
+        </div>
+      </header>
+
       <div className="container mx-auto px-4 py-8 max-w-6xl flex-1">
         {/* Confetti Animation */}
         {showConfetti && (
@@ -181,24 +207,11 @@ const UpscalerArcanoV2 = () => {
           </div>
         )}
 
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={goBack}
-            className="shrink-0 text-purple-300 hover:text-white hover:bg-purple-500/20"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-lg md:text-3xl font-bold text-white">
-              Upscaler Arcano v2.0
-            </h1>
-            <p className="text-purple-300 text-sm md:text-base">
-              Nova versão com atualizações e melhorias
-            </p>
-          </div>
+        {/* Subtitle */}
+        <div className="mb-6">
+          <p className="text-purple-300 text-sm md:text-base">
+            Nova versão com atualizações e melhorias
+          </p>
         </div>
 
         {/* Master's Journey Progress Bar - Only show if there are lessons */}

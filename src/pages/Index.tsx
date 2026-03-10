@@ -168,12 +168,24 @@ const Index = () => {
   ];
 
   // Categorizar cards baseado nas compras do usuário (apenas se logado)
-  const purchasedCards = isLoggedIn ? cards.filter(card => {
-    if (card.id === 'ferramentas' && hasToolAccess) return true;
-    if (card.id === 'artes' && hasArtesAccess) return true;
-    if (card.id === 'prompts' && hasPromptsAccess) return true;
-    return false;
-  }) : [];
+  const purchasedCards = isLoggedIn ? [
+    ...cards.filter(card => {
+      if (card.id === 'ferramentas' && hasToolAccess) return true;
+      if (card.id === 'artes' && hasArtesAccess) return true;
+      if (card.id === 'prompts' && hasPromptsAccess) return true;
+      return false;
+    }),
+    // Card exclusivo do Upscaler Arcano Vitalício
+    ...(hasUpscalerPack ? [{
+      id: 'upscaler-vitalicio',
+      category: 'Ferramenta de IA',
+      title: 'Upscaler Arcano Vitalício',
+      description: 'Acesso vitalício ao Upscaler Arcano',
+      image: cardFerramentasIA,
+      route: '/ferramenta-ia-artes/upscaller-arcano/v2',
+      imagePosition: 'center center',
+    }] : []),
+  ] : [];
 
   const availableCards = isLoggedIn ? cards.filter(card => {
     if (card.id === 'ferramentas' && !hasToolAccess) return true;
