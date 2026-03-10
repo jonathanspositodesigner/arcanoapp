@@ -185,12 +185,15 @@ serve(async (req: Request) => {
       email: order.user_email,
       product_name: product?.title,
       amount: Number(order.amount),
-      raw_payload: { order_id, admin_user_id: userId, charge_id: chargeId },
+      raw_payload: { order_id, admin_user_id: userId, charge_id: chargeId, already_refunded: alreadyRefunded },
     })
 
-    console.log(`✅ [refund-pagarme] Reembolso concluído com sucesso`)
+    const msg = alreadyRefunded
+      ? 'Venda já estava reembolsada no Pagar.me. Status local atualizado e acesso revogado.'
+      : 'Reembolso realizado com sucesso'
+    console.log(`✅ [refund-pagarme] Reembolso concluído com sucesso (already_refunded: ${alreadyRefunded})`)
 
-    return new Response(JSON.stringify({ success: true, message: 'Reembolso realizado com sucesso' }), {
+    return new Response(JSON.stringify({ success: true, already_refunded: alreadyRefunded, message: msg }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
