@@ -156,3 +156,6 @@ verify_jwt = false
 
 [functions.webhook-pagarme]
 verify_jwt = false
+
+[functions.refund-pagarme]
+verify_jwt = false
