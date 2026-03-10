@@ -621,7 +621,7 @@ const AdsManagementContent = () => {
                         item={c}
                         clickable
                         onClick={() => handleCampaignClick(c)}
-                        onStatusToggle={handleStatusToggleCampaign}
+                        onStatusToggle={handleStatusToggle}
                       />
                     ))
                   )}
