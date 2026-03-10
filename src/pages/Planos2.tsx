@@ -18,6 +18,9 @@ import { appendUtmToUrl } from "@/lib/utmUtils";
 import { CreditsFAQSection } from "@/components/credits/CreditsFAQSection";
 import { StatsCards } from "@/components/credits/StatsCards";
 import { useLocale } from "@/contexts/LocaleContext";
+import { supabase } from "@/integrations/supabase/client";
+import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
+import { toast } from "sonner";
 
 const Planos2 = () => {
   const navigate = useNavigate();
