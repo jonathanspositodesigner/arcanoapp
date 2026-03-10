@@ -7,6 +7,7 @@ interface PreCheckoutModalProps {
   onClose: () => void;
   userEmail?: string | null;
   userId?: string | null;
+  productSlug?: string;
 }
 
 interface SavedCard {
