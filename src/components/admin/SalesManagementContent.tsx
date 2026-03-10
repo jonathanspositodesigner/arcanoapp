@@ -150,15 +150,21 @@ const SalesManagementContent = () => {
   }, [dateRange]);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return sales;
-    const q = search.toLowerCase();
-    return sales.filter(
-      (s) =>
-        s.user_email?.toLowerCase().includes(q) ||
-        s.name?.toLowerCase().includes(q) ||
-        s.product_title?.toLowerCase().includes(q)
-    );
-  }, [sales, search]);
+    let result = sales;
+    if (statusFilter !== "all") {
+      result = result.filter((s) => s.status === statusFilter);
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (s) =>
+          s.user_email?.toLowerCase().includes(q) ||
+          s.name?.toLowerCase().includes(q) ||
+          s.product_title?.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [sales, search, statusFilter]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
