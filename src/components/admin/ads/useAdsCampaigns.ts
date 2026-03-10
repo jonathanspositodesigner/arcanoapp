@@ -28,12 +28,16 @@ export interface CampaignWithSales extends CampaignInsight {
   roas: number;
 }
 
-interface SaleOrder {
+export interface SaleOrder {
   id: string;
   amount: number;
   status: string;
   utm_data: any;
   source_platform: string;
+  user_email: string;
+  product_title: string;
+  paid_at: string;
+  created_at: string;
 }
 
 function getDateRange(period: AdsPeriod, customStart?: Date, customEnd?: Date): { start: string; end: string } {
