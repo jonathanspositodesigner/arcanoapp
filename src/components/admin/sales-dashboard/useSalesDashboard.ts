@@ -141,7 +141,35 @@ export function useSalesDashboard() {
     }
   }, [start, end]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  // Auto-sync Meta ads + refetch dashboard on mount and on page re-focus/visibility
+  const syncAndFetch = useCallback(async () => {
+    try {
+      const pad = (n: number) => String(n).padStart(2, "0");
+      const since = `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`;
+      const until = `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}`;
+      // Fire Meta sync in background, don't block dashboard load
+      supabase.functions.invoke("fetch-meta-ads", {
+        body: { action: "fetch", since, until },
+      }).catch((e) => console.warn("Meta ads background sync error:", e));
+    } catch (e) {
+      console.warn("Meta ads sync error:", e);
+    }
+    await fetchData();
+  }, [fetchData, start, end]);
+
+  useEffect(() => { syncAndFetch(); }, [syncAndFetch]);
+
+  // Re-sync when user returns to the tab/page
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        syncAndFetch();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [syncAndFetch]);
+
   const approved = useMemo(() => orders.filter((o) => o.status === "paid"), [orders]);
   const pending = useMemo(() => orders.filter((o) => o.status === "pending"), [orders]);
   const refunded = useMemo(() => orders.filter((o) => o.status === "refunded"), [orders]);
