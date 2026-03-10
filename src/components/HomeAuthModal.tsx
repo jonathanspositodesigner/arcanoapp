@@ -66,19 +66,19 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                 </div>
               </div>
               <h2 className="text-xl font-bold text-foreground mb-2">
-                {t('signupSuccessTitle')}
+                {t('auth.signupSuccessTitle')}
               </h2>
               <p className="text-sm text-muted-foreground mb-2">
-                {t('signupSuccessMessage')}
+                {t('auth.signupSuccessMessage')}
               </p>
               <p className="text-sm font-medium text-foreground mb-4">
                 {signupSuccessEmail}
               </p>
               <p className="text-sm text-muted-foreground mb-2">
-                {t('signupSuccessInstruction')}
+                {t('auth.signupSuccessInstruction')}
               </p>
               <p className="text-xs text-muted-foreground mb-6">
-                {t('signupSuccessSpam')}
+                {t('auth.signupSuccessSpam')}
               </p>
               <Button 
                 variant="outline" 
@@ -88,7 +88,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                 }}
                 className="w-full"
               >
-                {t('backToLogin')}
+                {t('auth.backToLogin')}
               </Button>
             </div>
           ) : auth.state.step === 'signup' ? (
