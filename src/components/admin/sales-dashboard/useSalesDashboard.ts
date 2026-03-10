@@ -150,6 +150,17 @@ export function useSalesDashboard() {
     () => approved.reduce((sum, o) => sum + (o.net_amount ?? o.amount), 0),
     [approved]
   );
+
+  const platformFees = useMemo(
+    () => approved.reduce((sum, o) => {
+      const platform = (o.source_platform || '').toLowerCase();
+      if (platform === 'greenn') return sum + (o.amount * 0.0499 + 1.00);
+      if (platform === 'hotmart') return sum + (o.amount * 0.099 + 1.00);
+      // Mercado Pago: real fee from net_amount
+      return sum + (o.amount - (o.net_amount ?? o.amount));
+    }, 0),
+    [approved]
+  );
   const refundedTotal = useMemo(
     () => refunded.reduce((sum, o) => sum + o.amount, 0),
     [refunded]
@@ -165,6 +176,6 @@ export function useSalesDashboard() {
     customEnd, setCustomEnd,
     orders, approved, pending, refunded,
     revenue, refundedTotal, pendingTotal,
-    pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch: fetchData,
+    platformFees, pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch: fetchData,
   };
 }
