@@ -396,6 +396,9 @@ const AdsManagementContent = () => {
   const [sortColumn, setSortColumn] = useState<SortColumn | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
+  // Local status overrides for toggled items
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, string>>({});
+
   const {
     campaignsWithSales,
     accounts,
@@ -405,7 +408,6 @@ const AdsManagementContent = () => {
     untrackedSales,
     dateRange,
     sales,
-    setCampaignsWithSales,
   } = useAdsCampaigns(period, customStart, customEnd, accountFilter || undefined, searchQuery || undefined);
 
   const {
@@ -418,8 +420,6 @@ const AdsManagementContent = () => {
     fetchAdsets,
     fetchAds,
     navigateToLevel,
-    setAdsets,
-    setAds,
   } = useAdsHierarchy(dateRange, sales);
 
   const handleSort = useCallback((col: SortColumn) => {
