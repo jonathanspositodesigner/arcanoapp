@@ -688,7 +688,7 @@ const PlanosUpscalerArcano = () => {
                     Compra 100% Segura
                   </h3>
                   <p className="text-white/50 text-sm mb-6">
-                    Proteção total pelo Mercado Pago
+                    Proteção total na sua compra
                   </p>
 
                   {/* Badge Garantia 7 dias */}
