@@ -1,30 +1,23 @@
 
 
+# Correção: Mover assinatura IA Unlimited para o perfil correto
+
 ## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-A atribuição de vendas nos níveis de **conjuntos** e **anúncios** está usando os campos UTM errados:
+## Dados
 
-| Nível | Campo usado atualmente | Campo correto | Conteúdo real |
+| Perfil | Email | User ID | Situação |
 |---|---|---|---|
-| Conjuntos (adsets) | `utm_term` | **`utm_medium`** | `"AD08 - ORGANICO\|120239632965100183"` |
-| Anúncios (ads) | `utm_content` ✅ | `utm_content` | `"AD08 ORGANICO\|120239632965090183"` |
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-O `utm_term` contém o **placement** (ex: `Instagram_Feed`, `Instagram_Stories`), não o adset ID. O adset ID está em `utm_medium` (formato `"Nome|ID"`).
+## Ações (via SQL migration)
 
-O nível de anúncios (`utm_content`) já está correto.
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-## Solução
-
-### Arquivo: `src/components/admin/ads/useAdsHierarchy.ts`
-
-Mudar a chamada de `attributeSalesToItems` para adsets de:
-```ts
-attributeSalesToItems(aggregated, sales, "utm_term")
-```
-Para:
-```ts
-attributeSalesToItems(aggregated, sales, "utm_medium")
-```
-
-Isso é a **única mudança necessária**. O `extractIdFromUtm` já sabe extrair o ID do formato `"Nome|ID"`, então vai funcionar automaticamente com `utm_medium`.
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
