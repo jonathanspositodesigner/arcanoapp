@@ -12,6 +12,7 @@ function getSource(order: DashboardOrder): string {
   if (order.source_platform) {
     const platformLabels: Record<string, string> = {
       'mercadopago': 'Mercado Pago',
+      'pagarme': 'Pagar.me',
       'prompts': 'Greenn (Prompts)',
       'artes-eventos': 'Greenn (Artes)',
       'creditos': 'Greenn (Créditos)',
