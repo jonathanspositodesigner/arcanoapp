@@ -82,29 +82,68 @@ serve(async (req: Request) => {
 
     const basicAuth = btoa(`${pagarmeSecretKey}:`)
 
-    console.log(`   ├─ 💳 Chamando Pagar.me: POST /charges/${chargeId}/void`)
+    // First, check current charge status to detect already-refunded charges
+    let alreadyRefunded = false
 
-    const pagarmeResponse = await fetch(`https://api.pagar.me/core/v5/charges/${chargeId}/void`, {
-      method: 'POST',
+    console.log(`   ├─ 🔍 Verificando status da charge ${chargeId}`)
+    const checkResponse = await fetch(`https://api.pagar.me/core/v5/charges/${chargeId}`, {
       headers: {
         'Authorization': `Basic ${basicAuth}`,
-        'Content-Type': 'application/json',
       },
     })
 
-    const pagarmeBody = await pagarmeResponse.text()
-    console.log(`   ├─ Pagar.me response: ${pagarmeResponse.status} - ${pagarmeBody}`)
-
-    if (!pagarmeResponse.ok) {
-      let errorMsg = `Erro Pagar.me (${pagarmeResponse.status})`
-      try {
-        const parsed = JSON.parse(pagarmeBody)
-        errorMsg = parsed?.message || parsed?.errors?.[0]?.message || errorMsg
-      } catch {}
-      return new Response(JSON.stringify({ error: errorMsg }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    if (checkResponse.ok) {
+      const chargeData = await checkResponse.json()
+      const chargeStatus = chargeData?.status
+      console.log(`   ├─ Status atual da charge: ${chargeStatus}`)
+      if (['voided', 'refunded', 'canceled'].includes(chargeStatus)) {
+        alreadyRefunded = true
+        console.log(`   ├─ ⚠️ Charge já estornada no Pagar.me (${chargeStatus}). Prosseguindo com atualização local.`)
+      }
     }
 
-    console.log(`   ├─ ✅ Reembolso Pagar.me aceito`)
+    if (!alreadyRefunded) {
+      console.log(`   ├─ 💳 Chamando Pagar.me: POST /charges/${chargeId}/void`)
+
+      const pagarmeResponse = await fetch(`https://api.pagar.me/core/v5/charges/${chargeId}/void`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${basicAuth}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const pagarmeBody = await pagarmeResponse.text()
+      console.log(`   ├─ Pagar.me response: ${pagarmeResponse.status} - ${pagarmeBody}`)
+
+      if (!pagarmeResponse.ok) {
+        // Check if error indicates already refunded
+        let detectedAlreadyRefunded = false
+        try {
+          const parsed = JSON.parse(pagarmeBody)
+          const st = parsed?.status || parsed?.last_transaction?.status
+          if (['voided', 'refunded', 'canceled'].includes(st) ||
+              pagarmeBody.toLowerCase().includes('already') ||
+              pagarmeBody.toLowerCase().includes('voided')) {
+            detectedAlreadyRefunded = true
+          }
+        } catch {}
+
+        if (detectedAlreadyRefunded) {
+          alreadyRefunded = true
+          console.log(`   ├─ ⚠️ API retornou erro mas charge já estornada. Prosseguindo com atualização local.`)
+        } else {
+          let errorMsg = `Erro Pagar.me (${pagarmeResponse.status})`
+          try {
+            const parsed = JSON.parse(pagarmeBody)
+            errorMsg = parsed?.message || parsed?.errors?.[0]?.message || errorMsg
+          } catch {}
+          return new Response(JSON.stringify({ error: errorMsg }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
+      } else {
+        console.log(`   ├─ ✅ Reembolso Pagar.me aceito`)
+      }
+    }
 
     // Revoke access
     const product = order.mp_products
