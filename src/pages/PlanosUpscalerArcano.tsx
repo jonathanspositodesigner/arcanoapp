@@ -9,11 +9,11 @@ import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Pa
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
-import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton, LazySocialProofWrapper } from "@/components/upscaler";
 import { LazySection } from "@/components/combo-artes/LazySection";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
+import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 
 // Hero images - Desktop uses high-res, Mobile uses optimized 600x900 versions
 const upscalerHeroAntesDesktop = "/images/upscaler-hero-antes.webp";
@@ -245,12 +245,10 @@ const PlanosUpscalerArcano = () => {
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
+
   const handlePurchase = () => {
-    if (!tool) return;
-    const checkoutLink = (isPremium ? tool.checkout_link_membro_vitalicio : tool.checkout_link_vitalicio);
-    if (checkoutLink) {
-      window.open(appendUtmToUrl(checkoutLink), '_blank');
-    }
+    setCheckoutModalOpen(true);
   };
 
   // Countdown timer - 48 minutes
@@ -942,6 +940,14 @@ const PlanosUpscalerArcano = () => {
 
         </>
       )}
+
+      {/* Pre-checkout Modal */}
+      <PreCheckoutModal
+        isOpen={checkoutModalOpen}
+        onClose={() => setCheckoutModalOpen(false)}
+        userEmail={user?.email}
+        userId={user?.id}
+      />
 
       {/* Modal Fullscreen */}
       {modalImages && (

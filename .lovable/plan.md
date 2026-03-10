@@ -1,25 +1,23 @@
 
 
-## Plano: Adicionar checkout Pagar.me na página /planos-upscaler-arcano
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-### O que será feito
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-Substituir os links de checkout Greenn na página `/planos-upscaler-arcano` pelo mesmo `PreCheckoutModal` (Pagar.me) que já funciona na página `/planos-upscaler-arcano-mp`.
+## Dados
 
-### Alterações em `src/pages/PlanosUpscalerArcano.tsx`
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-1. **Importar o `PreCheckoutModal`**
-   - Adicionar `import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal"`
+## Ações (via SQL migration)
 
-2. **Adicionar estado do modal**
-   - Adicionar `const [checkoutModalOpen, setCheckoutModalOpen] = useState(false)`
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-3. **Substituir `handlePurchase`**
-   - Trocar a lógica de `window.open(appendUtmToUrl(checkoutLink))` por `setCheckoutModalOpen(true)` para abrir o modal do Pagar.me
-
-4. **Renderizar o modal**
-   - Adicionar `<PreCheckoutModal isOpen={checkoutModalOpen} onClose={() => setCheckoutModalOpen(false)} userEmail={user?.email} userId={user?.id} />` no JSX (mesmo padrão da página MP)
-
-5. **Limpar imports não utilizados**
-   - Remover `appendUtmToUrl` se não for mais usado em nenhum outro lugar do arquivo
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
