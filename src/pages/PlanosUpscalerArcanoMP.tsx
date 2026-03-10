@@ -260,15 +260,31 @@ const PlanosUpscalerArcano69v2 = () => {
 
   const handlePurchase = async () => {
     const userEmail = user?.email || emailInput.trim();
+    const cpfDigits = cpfInput.replace(/\D/g, '');
+    
+    let hasError = false;
     if (!userEmail) {
       setEmailError('Digite seu email para continuar');
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
+      hasError = true;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
       setEmailError('Email inválido');
-      return;
+      hasError = true;
+    } else {
+      setEmailError('');
     }
-    setEmailError('');
+    
+    if (!cpfDigits) {
+      setCpfError('Digite seu CPF para continuar');
+      hasError = true;
+    } else if (cpfDigits.length !== 11) {
+      setCpfError('CPF inválido (11 dígitos)');
+      hasError = true;
+    } else {
+      setCpfError('');
+    }
+    
+    if (hasError) return;
+    
     setPurchaseLoading(true);
     try {
       // Ler UTMs capturadas pelo useUtmTracker
@@ -282,6 +298,7 @@ const PlanosUpscalerArcano69v2 = () => {
         body: {
           product_slug: 'upscaller-arcano-vitalicio',
           user_email: userEmail.toLowerCase().trim(),
+          user_cpf: cpfDigits,
           utm_data: utmData
         }
       });
