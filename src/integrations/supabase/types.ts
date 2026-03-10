@@ -1602,6 +1602,24 @@ export type Database = {
         }
         Relationships: []
       }
+      exchange_rates: {
+        Row: {
+          currency: string
+          rate_to_brl: number
+          updated_at: string
+        }
+        Insert: {
+          currency: string
+          rate_to_brl: number
+          updated_at?: string
+        }
+        Update: {
+          currency?: string
+          rate_to_brl?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       flyer_maker_jobs: {
         Row: {
           address: string | null
@@ -4091,6 +4109,10 @@ export type Database = {
           success: boolean
         }[]
       }
+      convert_to_brl: {
+        Args: { _amount: number; _currency: string }
+        Returns: number
+      }
       delete_user_ai_creation: {
         Args: { p_creation_id: string }
         Returns: boolean
@@ -4332,6 +4354,12 @@ export type Database = {
         Returns: {
           error_message: string
           success: boolean
+        }[]
+      }
+      recalculate_webhook_amounts_brl: {
+        Args: never
+        Returns: {
+          updated_count: number
         }[]
       }
       refund_upscaler_credits: {

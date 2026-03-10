@@ -814,26 +814,39 @@ serve(async (req) => {
     // Extract UTM from Hotmart payload
     const hotmartUtmSource = payload.data?.purchase?.tracking?.source || payload.data?.purchase?.tracking?.utm_source || null
 
-    // Convert to BRL if foreign currency
+    // Convert to BRL if foreign currency using cached rates from DB
     let amountBrl = hotmartAmount
     if (hotmartAmount && hotmartCurrency && hotmartCurrency !== 'BRL') {
-      try {
-        const rateRes = await fetch(`https://open.er-api.com/v6/latest/${hotmartCurrency}`)
-        if (rateRes.ok) {
-          const rateData = await rateRes.json()
-          const brlRate = rateData?.rates?.BRL
-          if (brlRate) {
-            amountBrl = Math.round(hotmartAmount * brlRate * 100) / 100
-            console.log(`   💱 Conversão: ${hotmartAmount} ${hotmartCurrency} × ${brlRate} = R$ ${amountBrl}`)
+      // 1. Try cached rate from exchange_rates table
+      const { data: rateRow } = await supabase
+        .from('exchange_rates')
+        .select('rate_to_brl')
+        .eq('currency', hotmartCurrency)
+        .maybeSingle()
+      
+      if (rateRow?.rate_to_brl) {
+        amountBrl = Math.round(hotmartAmount * rateRow.rate_to_brl * 100) / 100
+        console.log(`   💱 Conversão (cache): ${hotmartAmount} ${hotmartCurrency} × ${rateRow.rate_to_brl} = R$ ${amountBrl}`)
+      } else {
+        // 2. Fallback: call API directly
+        try {
+          const rateRes = await fetch(`https://open.er-api.com/v6/latest/${hotmartCurrency}`)
+          if (rateRes.ok) {
+            const rateData = await rateRes.json()
+            const brlRate = rateData?.rates?.BRL
+            if (brlRate) {
+              amountBrl = Math.round(hotmartAmount * brlRate * 100) / 100
+              console.log(`   💱 Conversão (API): ${hotmartAmount} ${hotmartCurrency} × ${brlRate} = R$ ${amountBrl}`)
+            }
           }
-        }
-      } catch (e) {
-        // Fallback: taxas hardcoded
-        const fallbackRates: Record<string, number> = { USD: 5.70, COP: 0.00122, ARS: 0.0054, MXN: 0.28, PEN: 1.52 }
-        const rate = fallbackRates[hotmartCurrency]
-        if (rate) {
-          amountBrl = Math.round(hotmartAmount * rate * 100) / 100
-          console.log(`   💱 Conversão (fallback): ${hotmartAmount} ${hotmartCurrency} × ${rate} = R$ ${amountBrl}`)
+        } catch (e) {
+          // 3. Final fallback: hardcoded
+          const fallbackRates: Record<string, number> = { USD: 5.70, COP: 0.00122, ARS: 0.0054, MXN: 0.28, PEN: 1.52, CLP: 0.006, EUR: 6.20 }
+          const rate = fallbackRates[hotmartCurrency]
+          if (rate) {
+            amountBrl = Math.round(hotmartAmount * rate * 100) / 100
+            console.log(`   💱 Conversão (fallback): ${hotmartAmount} ${hotmartCurrency} × ${rate} = R$ ${amountBrl}`)
+          }
         }
       }
     }
