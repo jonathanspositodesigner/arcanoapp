@@ -133,7 +133,14 @@ const Planos2 = () => {
             user_name: profile.name,
             user_cpf: profile.cpf,
             billing_type: 'PIX',
-            utm_data: utmData
+            utm_data: utmData,
+            user_address: {
+              line_1: profile.address_line,
+              zip_code: profile.address_zip,
+              city: profile.address_city,
+              state: profile.address_state,
+              country: profile.address_country || 'BR'
+            }
           }
         });
 
