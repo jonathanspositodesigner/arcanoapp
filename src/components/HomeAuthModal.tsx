@@ -49,7 +49,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
         onClose();
       }
     },
-    t: (key: string) => t(`auth.${key}`) || t(key),
+    t: (key: string) => t(key),
   });
 
 
