@@ -253,6 +253,42 @@ const PlanosUpscalerArcano = () => {
     }
   };
 
+  // Countdown timer - 48 minutes
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const saved = localStorage.getItem('upscaler-countdown');
+    if (saved) {
+      const remaining = parseInt(saved, 10) - Date.now();
+      if (remaining > 0) return remaining;
+    }
+    const initial = 48 * 60 * 1000;
+    localStorage.setItem('upscaler-countdown', String(Date.now() + initial));
+    return initial;
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1000) {
+          const newTime = 48 * 60 * 1000;
+          localStorage.setItem('upscaler-countdown', String(Date.now() + newTime));
+          return newTime;
+        }
+        return prev - 1000;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+    const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+    const seconds = String(totalSeconds % 60).padStart(2, '0');
+    return { hours, minutes, seconds };
+  };
+
+  const countdown = formatTime(timeLeft);
+
   const hasAccess = hasAccessToPack(TOOL_SLUG);
 
   // Loading state removido do Hero para otimizar LCP
@@ -567,6 +603,33 @@ const PlanosUpscalerArcano = () => {
           {/* SEÇÃO DE PREÇO E CTA - Com Card + Garantia */}
           <LazySection rootMargin="100px">
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
+            {/* Banner promo com countdown */}
+            <div className="max-w-5xl mx-auto mb-6 rounded-xl overflow-hidden border border-red-500/30 bg-gradient-to-r from-red-950/80 via-purple-950/60 to-red-950/80">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3">
+                <div className="flex items-center gap-2 animate-pulse">
+                  <span className="text-lg">🔥</span>
+                  <span className="text-white font-bold tracking-wide text-sm md:text-base">Promoção por tempo limitado!</span>
+                  <span className="text-lg">🔥</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-red-400" />
+                  <span className="text-red-300 text-xs sm:text-sm font-medium">Essa oferta expira em</span>
+                  <div className="flex items-center gap-1">
+                    <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
+                      <span className="text-white font-mono font-bold text-sm">{countdown.hours}</span>
+                    </div>
+                    <span className="text-red-400 font-bold text-sm">:</span>
+                    <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
+                      <span className="text-white font-mono font-bold text-sm">{countdown.minutes}</span>
+                    </div>
+                    <span className="text-red-400 font-bold text-sm">:</span>
+                    <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
+                      <span className="text-white font-mono font-bold text-sm">{countdown.seconds}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Stats inline customizado para Upscaler - hidden on mobile, shown after cards on mobile */}
             <div className="max-w-5xl mx-auto mb-8 px-2 hidden md:block">
