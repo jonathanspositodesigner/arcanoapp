@@ -19,12 +19,12 @@ const cards = [
 
 export default function SalesDashboardKPIs({ revenue, adSpend, isLoading }: Props) {
   const profit = revenue - adSpend;
-  const roi = adSpend > 0 ? ((profit / adSpend) * 100) : 0;
+  const roi = adSpend > 0 ? (revenue / adSpend) : 0;
 
   const values: Record<string, string> = {
     revenue: formatCurrency(revenue),
     adSpend: adSpend > 0 ? formatCurrency(adSpend) : "—",
-    roi: adSpend > 0 ? `${roi.toFixed(1)}%` : "—",
+    roi: adSpend > 0 ? `${roi.toFixed(2)}x` : "—",
     profit: adSpend > 0 ? formatCurrency(profit) : "—",
   };
 

@@ -49,8 +49,16 @@ export default function SalesDashboard() {
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      // Sync fresh Meta Ads data
-      await supabase.functions.invoke("fetch-meta-ads", { body: { action: "fetch" } });
+      // Calculate the date range to sync only what's needed
+      const pad = (n: number) => String(n).padStart(2, "0");
+      const { start, end } = getDateRange(preset, customStart, customEnd);
+      const since = `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`;
+      const until = `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}`;
+      
+      // Sync only the visible period from Meta Ads
+      await supabase.functions.invoke("fetch-meta-ads", { 
+        body: { action: "fetch", since, until } 
+      });
       // Wait for all dashboard data to reload
       await refetch();
       toast.success("Dados atualizados!");
@@ -60,7 +68,7 @@ export default function SalesDashboard() {
     } finally {
       setIsRefreshing(false);
     }
-  }, [refetch]);
+  }, [refetch, preset, customStart, customEnd]);
 
   const loading = isLoading || isRefreshing;
 
