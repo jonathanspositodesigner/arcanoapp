@@ -171,7 +171,7 @@ const ExpandingGallery = ({ items, badgeText = "Feito com o Arcano Cloner" }: Ex
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent">
                   <div className="absolute bottom-6 left-6 right-6">
                     <span className="inline-block px-2.5 py-0.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-[10px] font-medium tracking-wide uppercase mb-1.5">
-                      Feito com o Arcano Cloner
+                      {badgeText}
                     </span>
                     {item.label && (
                       <h3 className="text-white font-semibold text-xl">
