@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AdminGoalsCard from "@/components/AdminGoalsCard";
 import SalesDashboard from "@/components/admin/sales-dashboard/SalesDashboard";
+import LatestSales from "@/components/admin/sales-dashboard/LatestSales";
 import WelcomeEmailsMonitor from "@/components/WelcomeEmailsMonitor";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import AdminHubSidebar, { HubViewType } from "@/components/AdminHubSidebar";
@@ -170,6 +171,9 @@ const AdminHub = () => {
 
             {/* Sales Dashboard */}
             <SalesDashboard />
+
+            {/* Latest Sales */}
+            <LatestSales />
 
             {/* Goals Section */}
             <AdminGoalsCard />
