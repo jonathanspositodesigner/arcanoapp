@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Mail, KeyRound, Save, Loader2 } from "lucide-react";
+import { Mail, KeyRound, Save, Loader2, RotateCcw } from "lucide-react";
 import type { SaleRecord } from "./SalesManagementContent";
 
 interface SaleDetailDialogProps {
@@ -31,6 +32,7 @@ const SaleDetailDialog = ({ sale, open, onClose }: SaleDetailDialogProps) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [isRefunding, setIsRefunding] = useState(false);
 
   // Reset fields when sale changes
   const handleOpenChange = (isOpen: boolean) => {
@@ -126,9 +128,30 @@ const SaleDetailDialog = ({ sale, open, onClose }: SaleDetailDialogProps) => {
     }
   };
 
+  const handleRefundPagarme = async () => {
+    if (!sale) return;
+    setIsRefunding(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("refund-pagarme", {
+        body: { order_id: sale.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success("Reembolso realizado com sucesso! O acesso foi revogado.");
+      onClose();
+    } catch (err: any) {
+      console.error("Error refunding:", err);
+      toast.error("Erro ao reembolsar: " + (err.message || "Erro desconhecido"));
+    } finally {
+      setIsRefunding(false);
+    }
+  };
+
   if (!sale) return null;
 
   const st = statusMap[sale.status] || { label: sale.status, variant: "outline" as const };
+  const isPagarme = sale.source_platform?.includes("asaas") || sale.source_platform?.includes("pagarme");
+  const canRefund = sale.status === "paid" && isPagarme;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -249,6 +272,48 @@ const SaleDetailDialog = ({ sale, open, onClose }: SaleDetailDialogProps) => {
               {isResettingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
               Enviar Reset de Senha
             </Button>
+
+            {canRefund && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    disabled={isRefunding}
+                    className="justify-start gap-2"
+                  >
+                    {isRefunding ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+                    Reembolsar via Pagar.me
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirmar Reembolso</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Tem certeza que deseja reembolsar <strong>{formatCurrency(sale.amount)}</strong> para <strong>{sale.user_email}</strong>?
+                      <br /><br />
+                      Esta ação irá:
+                      <ul className="list-disc list-inside mt-2 space-y-1">
+                        <li>Estornar o pagamento na Pagar.me</li>
+                        <li>Revogar o acesso do usuário ao produto</li>
+                        <li>Marcar a venda como reembolsada</li>
+                      </ul>
+                      <br />
+                      <strong>Esta ação não pode ser desfeita.</strong>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleRefundPagarme}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Confirmar Reembolso
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         </div>
       </DialogContent>
