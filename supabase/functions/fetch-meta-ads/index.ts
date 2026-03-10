@@ -360,13 +360,6 @@ Deno.serve(async (req) => {
 
     // Update status of a campaign, adset, or ad
     if (action === "update-status") {
-      let objectId: string | undefined;
-      let newStatus: string | undefined;
-      try {
-        const body = await req.clone().json();
-        objectId = body.object_id;
-        newStatus = body.new_status;
-      } catch {}
 
       if (!objectId || !newStatus || !["ACTIVE", "PAUSED"].includes(newStatus)) {
         return new Response(
