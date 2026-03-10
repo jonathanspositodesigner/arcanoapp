@@ -136,12 +136,12 @@ const AdsManagementContent = () => {
         )}
 
         {accounts.length > 1 && (
-          <Select value={accountFilter} onValueChange={setAccountFilter}>
+          <Select value={accountFilter || "all"} onValueChange={(v) => setAccountFilter(v === "all" ? "" : v)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Todas as contas" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas as contas</SelectItem>
+              <SelectItem value="all">Todas as contas</SelectItem>
               {accounts.map((a) => (
                 <SelectItem key={a} value={a}>Conta {a}</SelectItem>
               ))}
