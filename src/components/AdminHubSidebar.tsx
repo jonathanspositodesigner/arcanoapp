@@ -22,6 +22,12 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebar
       description: "Selecionar plataforma"
     },
     {
+      id: "sales" as const,
+      label: "VENDAS",
+      icon: Receipt,
+      description: "Listagem e gestão de vendas"
+    },
+    {
       id: "dashboard" as const,
       label: "MÉTRICAS ESSENCIAIS",
       icon: BarChart3,
@@ -38,12 +44,6 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebar
       label: "REMARKETING",
       icon: ShoppingCart,
       description: "Checkouts abandonados"
-    },
-    {
-      id: "sales" as const,
-      label: "VENDAS",
-      icon: Receipt,
-      description: "Listagem e gestão de vendas"
     },
     {
       id: "admins" as const,
