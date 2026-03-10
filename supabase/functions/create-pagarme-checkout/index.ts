@@ -5,7 +5,7 @@
  * Retorna: { checkout_url, order_id }
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -34,6 +34,13 @@ serve(async (req) => {
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return new Response(JSON.stringify({ error: 'Email inválido' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    if (!cpf || cpf.length !== 11) {
+      return new Response(JSON.stringify({ error: 'CPF inválido. Informe 11 dígitos.' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
@@ -69,7 +76,7 @@ serve(async (req) => {
       })
     }
 
-    // 2. Criar ordem interna (usando asaas_orders como tabela genérica)
+    // 2. Criar ordem interna
     const { data: order, error: orderError } = await supabase
       .from('asaas_orders')
       .insert({
@@ -93,11 +100,9 @@ serve(async (req) => {
 
     console.log(`📦 Ordem criada: ${order.id} | Produto: ${product.title} | Email: ${email}`)
 
-    // 3. Montar payload do checkout Pagar.me
-    // Pagar.me usa valores em centavos
+    // 3. Montar payload do checkout Pagar.me (valores em centavos)
     const amountInCents = Math.round(Number(product.price) * 100)
 
-    // Definir métodos aceitos baseado no billing_type
     let acceptedPaymentMethods: string[]
     if (billing_type === 'PIX') {
       acceptedPaymentMethods = ['pix']
@@ -107,7 +112,6 @@ serve(async (req) => {
       acceptedPaymentMethods = ['pix', 'credit_card']
     }
 
-    // Nome do cliente
     const customerName = user_name?.trim() || email.split('@')[0]
 
     const checkoutPayload: Record<string, unknown> = {
@@ -122,7 +126,7 @@ serve(async (req) => {
         name: customerName,
         email: email,
         type: 'individual',
-        document: cpf || '00000000000',
+        document: cpf,
         phones: {
           mobile_phone: {
             country_code: '55',
@@ -135,7 +139,7 @@ serve(async (req) => {
         {
           payment_method: 'checkout',
           checkout: {
-            expires_in: 259200, // 3 dias em segundos
+            expires_in: 259200,
             accepted_payment_methods: acceptedPaymentMethods,
             success_url: `https://arcanoapp.voxvisual.com.br/upscaler-arcano?payment=success`,
             customer_editable: false,
@@ -158,25 +162,22 @@ serve(async (req) => {
       }
     }
 
-    // Auth: Basic Auth com secret key como username (sk_xxx:)
     const authHeader = 'Basic ' + btoa(pagarmeSecretKey + ':')
-
-    const pagarmeHeaders = {
-      'Content-Type': 'application/json',
-      'Authorization': authHeader
-    }
 
     // 4. Criar pedido no Pagar.me
     const pagarmeResponse = await fetch(`${PAGARME_API_URL}/orders`, {
       method: 'POST',
-      headers: pagarmeHeaders,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authHeader
+      },
       body: JSON.stringify(checkoutPayload)
     })
 
     const pagarmeResponseText = await pagarmeResponse.text()
 
     if (!pagarmeResponse.ok) {
-      console.error('Erro Pagar.me:', pagarmeResponse.status, pagarmeResponseText.substring(0, 500))
+      console.error('Erro Pagar.me:', pagarmeResponse.status, pagarmeResponseText.substring(0, 800))
       return new Response(JSON.stringify({ error: 'Erro ao criar cobrança' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -194,12 +195,21 @@ serve(async (req) => {
       })
     }
 
-    // 5. Extrair URL do checkout
-    const checkoutPayment = pagarmeData.charges?.[0]?.last_transaction
-    const checkoutUrl = checkoutPayment?.payment_url || pagarmeData.checkouts?.[0]?.payment_url
+    // 5. Extrair URL do checkout - múltiplos fallbacks
+    console.log(`🔍 Resposta Pagar.me (structure): charges=${!!pagarmeData.charges}, checkouts=${!!pagarmeData.checkouts}`)
+    
+    const lastTransaction = pagarmeData.charges?.[0]?.last_transaction
+    const checkoutUrl = 
+      lastTransaction?.url ||
+      lastTransaction?.payment_url ||
+      lastTransaction?.checkout_url ||
+      pagarmeData.checkouts?.[0]?.payment_url ||
+      pagarmeData.checkouts?.[0]?.url ||
+      pagarmeData.charges?.[0]?.url ||
+      null
 
     if (!checkoutUrl) {
-      console.error('URL de checkout não encontrada na resposta:', JSON.stringify(pagarmeData).substring(0, 500))
+      console.error('URL de checkout não encontrada. Resposta completa:', JSON.stringify(pagarmeData).substring(0, 1500))
       return new Response(JSON.stringify({ error: 'Erro ao gerar link de pagamento' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -212,7 +222,7 @@ serve(async (req) => {
       .update({ asaas_payment_id: pagarmeData.id })
       .eq('id', order.id)
 
-    console.log(`✅ Checkout Pagar.me criado: ${pagarmeData.id} | URL: ${checkoutUrl.substring(0, 60)}...`)
+    console.log(`✅ Checkout Pagar.me criado: ${pagarmeData.id} | URL: ${checkoutUrl.substring(0, 80)}...`)
 
     return new Response(JSON.stringify({
       checkout_url: checkoutUrl,
