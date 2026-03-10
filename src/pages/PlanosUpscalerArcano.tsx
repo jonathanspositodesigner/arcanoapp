@@ -839,34 +839,8 @@ const PlanosUpscalerArcano = () => {
             {/* CTA abaixo da galeria */}
             <div className="max-w-md mx-auto mt-10">
               <div className="px-0 md:px-2">
-                <CTAButton onClick={() => {
-                  if (!user && !showEmailField) {
-                    setShowEmailField(true);
-                    return;
-                  }
-                  handlePurchase();
-                }} isPremium={isPremium} t={t} loading={purchaseLoading} />
+                <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
               </div>
-
-              {!user && showEmailField && (
-                <div className="animate-fade-in px-0 md:px-2 mt-4 flex flex-col items-center gap-3">
-                  <input
-                    type="email"
-                    placeholder="Digite seu email para continuar"
-                    value={emailInput}
-                    onChange={(e) => { setEmailInput(e.target.value); setEmailError(''); }}
-                    className="w-full max-w-md mx-auto block px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/40 text-center text-base focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
-                  />
-                  {emailError && <p className="text-red-400 text-xs mt-1">{emailError}</p>}
-                  <Button
-                    onClick={handlePurchase}
-                    disabled={purchaseLoading}
-                    className="w-full max-w-md py-5 text-base font-bold rounded-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-500/20 transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait"
-                  >
-                    {purchaseLoading ? 'Gerando checkout...' : 'Continuar →'}
-                  </Button>
-                </div>
-              )}
             </div>
           </AnimatedSection>
           </LazySection>
