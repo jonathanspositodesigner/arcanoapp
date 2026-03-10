@@ -28,6 +28,12 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebar
       description: "Listagem e gestão de vendas"
     },
     {
+      id: "ads" as const,
+      label: "ADS",
+      icon: Megaphone,
+      description: "Campanhas Meta e atribuição"
+    },
+    {
       id: "dashboard" as const,
       label: "MÉTRICAS ESSENCIAIS",
       icon: BarChart3,
