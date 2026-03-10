@@ -1264,6 +1264,7 @@ serve(async (req) => {
         product_id: productId || null,
         status,
         utm_source: utmSource,
+        utm_data: extractFullUtmData(payload),
         from_app: fromApp,
         result: 'received',
         greenn_contract_id: greennContractId ? String(greennContractId) : null,
