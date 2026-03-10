@@ -12,6 +12,7 @@ import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, 
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton, LazySocialProofWrapper } from "@/components/upscaler";
+import { StatsCards } from "@/components/credits/StatsCards";
 import { LazySection } from "@/components/combo-artes/LazySection";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
 
@@ -656,6 +657,8 @@ const PlanosUpscalerArcano = () => {
                 </div>
               </div>
             </div>
+
+            <StatsCards />
 
             <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6 items-stretch">
               {/* Card de preço */}
