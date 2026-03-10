@@ -639,10 +639,11 @@ const PlanosUpscalerArcano = () => {
           <LazySocialProofWrapper locale="pt" onZoomClick={openModal} isMobile={isMobile} />
           </LazySection>
 
-          {/* SEÇÃO DE PREÇO E CTA - Com Card */}
+          {/* SEÇÃO DE PREÇO E CTA - Com Card + Garantia */}
           <LazySection rootMargin="100px">
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
-            <div className="max-w-lg mx-auto">
+            <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6 items-start">
+              {/* Card de preço */}
               <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
                 <CardContent className="p-5 md:p-8 text-center">
                   {/* Badge de desconto */}
@@ -738,6 +739,64 @@ const PlanosUpscalerArcano = () => {
                       <Shield className="h-3 w-3" />
                       {t('tools:upscaler.finalCTA.secure')}
                     </span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Card de garantia Mercado Pago */}
+              <Card className="bg-gradient-to-br from-[#0a1a0f] to-[#0f1a15] border-2 border-emerald-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-emerald-500/10">
+                <CardContent className="p-5 md:p-8 text-center flex flex-col items-center">
+                  {/* Ícone de escudo grande */}
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-emerald-500/20 to-green-500/20 border-2 border-emerald-500/30 flex items-center justify-center mb-5">
+                    <Shield className="h-10 w-10 md:h-12 md:w-12 text-emerald-400" />
+                  </div>
+
+                  <h3 className="font-bebas text-2xl md:text-3xl text-white tracking-wide mb-2">
+                    Compra 100% Segura
+                  </h3>
+                  <p className="text-white/50 text-sm mb-6">
+                    Proteção total pelo Mercado Pago
+                  </p>
+
+                  {/* Badge Garantia 7 dias */}
+                  <div className="bg-gradient-to-r from-emerald-500/10 to-green-500/10 border border-emerald-500/30 rounded-2xl p-4 md:p-5 mb-6 w-full">
+                    <div className="flex items-center justify-center gap-3 mb-3">
+                      <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                        <Clock className="h-6 w-6 text-emerald-400" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-emerald-400 font-bold text-lg md:text-xl">7 Dias</p>
+                        <p className="text-white/60 text-xs">de garantia incondicional</p>
+                      </div>
+                    </div>
+                    <p className="text-white/50 text-xs leading-relaxed">
+                      Não gostou? Devolveremos 100% do seu dinheiro. Sem perguntas, sem burocracia.
+                    </p>
+                  </div>
+
+                  {/* Benefícios de segurança */}
+                  <div className="space-y-3 w-full mb-6">
+                    {[
+                      { icon: Shield, text: "Dados criptografados (SSL)" },
+                      { icon: CreditCard, text: "Pagamento via Mercado Pago" },
+                      { icon: Check, text: "Reembolso garantido em 7 dias" },
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-3">
+                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                          <item.icon className="h-4 w-4 text-emerald-400" />
+                        </div>
+                        <span className="text-white/80 text-sm text-left">{item.text}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Selos */}
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {["Dinheiro de volta", "Sem risco", "Reembolso garantido"].map((selo) => (
+                      <span key={selo} className="px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] md:text-xs font-medium uppercase tracking-wider">
+                        {selo}
+                      </span>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
