@@ -468,7 +468,7 @@ const PlanosUpscalerArcano = () => {
                     <img src="/images/social-proof-2.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                     <img src="/images/social-proof-3.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                   </div>
-                  <span className="text-white/80 text-xs font-medium">+5.000 profissionais já estão usando</span>
+                  <span className="text-white/80 text-xs font-medium">+3.200 profissionais já estão usando</span>
                 </div>
               </FadeIn>
 
