@@ -387,6 +387,10 @@ const PlanosUpscalerArcano = () => {
     {
       question: t('tools:upscaler.faq.q5'),
       answer: t('tools:upscaler.faq.a5')
+    },
+    {
+      question: "Como funciona a garantia de 7 dias?",
+      answer: "Você tem 7 dias após a compra para testar o Upscaler Arcano. Se por qualquer motivo não ficar satisfeito, basta solicitar o reembolso e devolvemos 100% do seu dinheiro — sem perguntas, sem burocracia. O pagamento é processado pelo Mercado Pago, garantindo total segurança na transação."
     }
   ];
 
