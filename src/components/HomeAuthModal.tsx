@@ -191,7 +191,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                   className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
                 >
                   <MousePointerClick className="h-4 w-4" />
-                  <span>{t('browseWithoutLogin')}</span>
+                  <span>{t('auth.browseWithoutLogin')}</span>
                 </button>
               </div>
             </>
