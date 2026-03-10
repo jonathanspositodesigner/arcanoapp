@@ -658,6 +658,8 @@ const PlanosUpscalerArcano = () => {
               </div>
             </div>
 
+            <StatsCards />
+
             <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6 items-stretch">
               {/* Card de preço */}
               <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
