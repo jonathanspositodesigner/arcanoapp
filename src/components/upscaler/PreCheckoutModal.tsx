@@ -31,11 +31,20 @@ const brandDisplay: Record<string, string> = {
   unknown: 'Cartão',
 };
 
+const formatCpf = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+};
+
 const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutModalProps) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [emailConfirm, setEmailConfirm] = useState('');
   const [phone, setPhone] = useState('');
+  const [cpf, setCpf] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'PIX' | 'CREDIT_CARD'>('PIX');
   const [loading, setLoading] = useState(false);
 
@@ -43,6 +52,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutMod
   const [emailError, setEmailError] = useState('');
   const [emailConfirmError, setEmailConfirmError] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [cpfError, setCpfError] = useState('');
 
   // One-click state
   const [savedCards, setSavedCards] = useState<SavedCard[]>([]);
