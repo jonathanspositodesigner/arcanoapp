@@ -809,8 +809,35 @@ serve(async (req) => {
 
     // PASSO 3: Gravar em webhook_logs (durável - prova de recebimento)
     const hotmartAmount = payload.data?.purchase?.price?.value || payload.data?.purchase?.full_price?.value || null
+    // Extract currency from Hotmart payload
+    const hotmartCurrency = payload.data?.purchase?.price?.currency_value || payload.data?.purchase?.full_price?.currency_code || 'BRL'
     // Extract UTM from Hotmart payload
     const hotmartUtmSource = payload.data?.purchase?.tracking?.source || payload.data?.purchase?.tracking?.utm_source || null
+
+    // Convert to BRL if foreign currency
+    let amountBrl = hotmartAmount
+    if (hotmartAmount && hotmartCurrency && hotmartCurrency !== 'BRL') {
+      try {
+        const rateRes = await fetch(`https://open.er-api.com/v6/latest/${hotmartCurrency}`)
+        if (rateRes.ok) {
+          const rateData = await rateRes.json()
+          const brlRate = rateData?.rates?.BRL
+          if (brlRate) {
+            amountBrl = Math.round(hotmartAmount * brlRate * 100) / 100
+            console.log(`   💱 Conversão: ${hotmartAmount} ${hotmartCurrency} × ${brlRate} = R$ ${amountBrl}`)
+          }
+        }
+      } catch (e) {
+        // Fallback: taxas hardcoded
+        const fallbackRates: Record<string, number> = { USD: 5.70, COP: 0.00122, ARS: 0.0054, MXN: 0.28, PEN: 1.52 }
+        const rate = fallbackRates[hotmartCurrency]
+        if (rate) {
+          amountBrl = Math.round(hotmartAmount * rate * 100) / 100
+          console.log(`   💱 Conversão (fallback): ${hotmartAmount} ${hotmartCurrency} × ${rate} = R$ ${amountBrl}`)
+        }
+      }
+    }
+
     const { data: logEntry, error: logError } = await supabase
       .from('webhook_logs')
       .insert({
@@ -821,6 +848,8 @@ serve(async (req) => {
         status: event,
         result: 'received',
         amount: hotmartAmount,
+        amount_brl: amountBrl,
+        currency: hotmartCurrency,
         product_name: payload.data?.product?.name || null,
         payment_method: payload.data?.purchase?.payment?.type || null,
         utm_source: hotmartUtmSource
