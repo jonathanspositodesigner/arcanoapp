@@ -334,15 +334,44 @@ serve(async (req) => {
         console.log(`   ├─ ✅ Novo usuário criado: ${userId}`)
       }
 
-      // 2. Upsert profile
+      // 2. Upsert profile com dados completos (nome, telefone, CPF, endereço)
+      // Buscar perfil existente para não sobrescrever dados já preenchidos
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
+        .eq('id', userId)
+        .maybeSingle()
+
+      // Fontes de dados: ordem local > payload Pagar.me > existente
+      const customer = eventData?.customer || eventData?.charges?.[0]?.customer || {}
+      const billingAddress = eventData?.charges?.[0]?.last_transaction?.billing_address || customer?.address || {}
+      const mobilePhone = customer?.phones?.mobile_phone
+
+      const profileName = existingProfile?.name || order.user_name || customer?.name || null
+      const profilePhone = existingProfile?.phone || order.user_phone || (mobilePhone ? `${mobilePhone.area_code}${mobilePhone.number}` : null)
+      const profileCpf = existingProfile?.cpf || order.user_cpf || customer?.document || null
+      const profileAddressLine = existingProfile?.address_line || billingAddress?.line_1 || null
+      const profileAddressZip = existingProfile?.address_zip || billingAddress?.zip_code || null
+      const profileAddressCity = existingProfile?.address_city || billingAddress?.city || null
+      const profileAddressState = existingProfile?.address_state || billingAddress?.state || null
+      const profileAddressCountry = existingProfile?.address_country || billingAddress?.country || 'BR'
+
       await supabase.from('profiles').upsert({
         id: userId,
         email,
+        name: profileName,
+        phone: profilePhone,
+        cpf: profileCpf,
+        address_line: profileAddressLine,
+        address_zip: profileAddressZip,
+        address_city: profileAddressCity,
+        address_state: profileAddressState,
+        address_country: profileAddressCountry,
         password_changed: false,
         email_verified: true,
         updated_at: new Date().toISOString()
       }, { onConflict: 'id' })
-      console.log(`   ├─ ✅ Profile atualizado`)
+      console.log(`   ├─ ✅ Profile atualizado (nome: ${profileName}, cpf: ${profileCpf ? '***' : 'N/A'}, endereço: ${profileAddressCity || 'N/A'})`)
 
       // 3. Processar produto
       if (product.type === 'pack' && product.pack_slug) {
