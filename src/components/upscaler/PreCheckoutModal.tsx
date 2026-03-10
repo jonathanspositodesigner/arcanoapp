@@ -7,6 +7,7 @@ interface PreCheckoutModalProps {
   onClose: () => void;
   userEmail?: string | null;
   userId?: string | null;
+  productSlug?: string;
 }
 
 interface SavedCard {
@@ -39,7 +40,7 @@ const formatCpf = (value: string) => {
   return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
 };
 
-const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutModalProps) => {
+const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'upscaller-arcano-vitalicio' }: PreCheckoutModalProps) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [emailConfirm, setEmailConfirm] = useState('');
@@ -162,7 +163,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutMod
 
       const response = await supabase.functions.invoke('pagarme-one-click', {
         body: {
-          product_slug: 'upscaller-arcano-vitalicio',
+          product_slug: productSlug,
           saved_card_id: selectedCardId,
           utm_data: utmData
         }
@@ -220,7 +221,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutMod
 
       const response = await supabase.functions.invoke('create-pagarme-checkout', {
         body: {
-          product_slug: 'upscaller-arcano-vitalicio',
+          product_slug: productSlug,
           user_email: email.trim().toLowerCase(),
           user_phone: phone.replace(/\D/g, ''),
           user_name: name.trim(),

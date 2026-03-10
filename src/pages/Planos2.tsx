@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star, ShieldCheck, Headset } from "lucide-react";
+import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star, ShieldCheck, Headset, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,6 +18,9 @@ import { appendUtmToUrl } from "@/lib/utmUtils";
 import { CreditsFAQSection } from "@/components/credits/CreditsFAQSection";
 import { StatsCards } from "@/components/credits/StatsCards";
 import { useLocale } from "@/contexts/LocaleContext";
+import { supabase } from "@/integrations/supabase/client";
+import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
+import { toast } from "sonner";
 
 const Planos2 = () => {
   const navigate = useNavigate();
@@ -26,6 +29,25 @@ const Planos2 = () => {
   const [billingPeriod, setBillingPeriod] = useState<"mensal" | "anual">("mensal");
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [expandedAiTools, setExpandedAiTools] = useState<Record<string, boolean>>({});
+  
+  // Credit purchase state
+  const [showPreCheckout, setShowPreCheckout] = useState(false);
+  const [selectedCreditSlug, setSelectedCreditSlug] = useState('creditos-1500');
+  const [pixLoading, setPixLoading] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Check auth and profile on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        setUserEmail(user.email || null);
+      }
+    };
+    checkAuth();
+  }, []);
 
   const aiToolsList = [
     "Arcano Cloner",
@@ -73,6 +95,68 @@ const Planos2 = () => {
       minutes: String(minutes).padStart(2, '0'),
       seconds: String(seconds).padStart(2, '0')
     };
+  };
+
+  const handleCreditPurchase = async (slug: string) => {
+    if (!userId) {
+      // Not logged in — open PreCheckoutModal
+      setSelectedCreditSlug(slug);
+      setShowPreCheckout(true);
+      return;
+    }
+
+    // Check if profile is complete for 1-click PIX
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name, phone, cpf')
+      .eq('id', userId)
+      .single();
+
+    if (profile?.name && profile?.phone && profile?.cpf) {
+      // 1-click PIX flow
+      setPixLoading(slug);
+      try {
+        let utmData: Record<string, string> | null = null;
+        try {
+          const raw = sessionStorage.getItem('captured_utms');
+          if (raw) utmData = JSON.parse(raw);
+        } catch { /* ignore */ }
+
+        const response = await supabase.functions.invoke('create-pagarme-checkout', {
+          body: {
+            product_slug: slug,
+            user_email: userEmail,
+            user_phone: profile.phone,
+            user_name: profile.name,
+            user_cpf: profile.cpf,
+            billing_type: 'PIX',
+            utm_data: utmData
+          }
+        });
+
+        if (response.error) {
+          console.error('Erro PIX 1-clique:', response.error);
+          toast.error('Erro ao gerar pagamento. Tente novamente.');
+          setPixLoading(null);
+          return;
+        }
+
+        const { checkout_url } = response.data;
+        if (checkout_url) {
+          window.location.href = checkout_url;
+        } else {
+          toast.error('Erro ao gerar link de pagamento.');
+        }
+      } catch (error) {
+        console.error('Erro PIX 1-clique:', error);
+        toast.error('Erro ao processar. Tente novamente.');
+      }
+      setPixLoading(null);
+    } else {
+      // Profile incomplete — open PreCheckoutModal
+      setSelectedCreditSlug(slug);
+      setShowPreCheckout(true);
+    }
   };
 
   const countdown = formatTime(timeLeft);
@@ -570,11 +654,12 @@ const Planos2 = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
           {[
-            { credits: "+1.500", description: "~25 imagens", price: "19,90", originalPrice: "39,90", savings: "", link: "https://payfast.greenn.com.br/156946/offer/C5k6VZ", icon: Coins, color: "from-purple-500 to-fuchsia-500" },
-            { credits: "+4.200", description: "~70 imagens", price: "29,90", originalPrice: "49,90", savings: "46", link: "https://payfast.greenn.com.br/156948/offer/lwl67R", popular: true, icon: Zap, color: "from-fuchsia-500 to-pink-500" },
-            { credits: "+14.000", description: "~233 imagens", price: "79,90", originalPrice: "149,90", savings: "57", link: "https://payfast.greenn.com.br/156952/offer/oJmWhP", bestValue: true, icon: Star, color: "from-yellow-500 to-orange-500" },
+            { credits: "+1.500", description: "~25 imagens", price: "19,90", originalPrice: "39,90", savings: "", slug: "creditos-1500", icon: Coins, color: "from-purple-500 to-fuchsia-500" },
+            { credits: "+4.200", description: "~70 imagens", price: "29,90", originalPrice: "49,90", savings: "46", slug: "creditos-4200", popular: true, icon: Zap, color: "from-fuchsia-500 to-pink-500" },
+            { credits: "+14.000", description: "~233 imagens", price: "79,90", originalPrice: "149,90", savings: "57", slug: "creditos-14000", bestValue: true, icon: Star, color: "from-yellow-500 to-orange-500" },
           ].map((plan) => {
             const Icon = plan.icon;
+            const isLoading = pixLoading === plan.slug;
             return (
               <Card
                 key={plan.credits}
@@ -627,10 +712,18 @@ const Planos2 = () => {
                   </div>
 
                   <Button
-                    onClick={() => window.open(plan.link, "_blank")}
-                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5`}
+                    onClick={() => handleCreditPurchase(plan.slug)}
+                    disabled={isLoading || !!pixLoading}
+                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5 disabled:opacity-70`}
                   >
-                    Comprar Agora
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Gerando PIX...
+                      </span>
+                    ) : (
+                      'Comprar Agora'
+                    )}
                   </Button>
                 </div>
               </Card>
@@ -692,6 +785,15 @@ const Planos2 = () => {
           </Button>
         </DialogContent>
       </Dialog>
+
+      {/* PreCheckout Modal for credit purchases */}
+      <PreCheckoutModal
+        isOpen={showPreCheckout}
+        onClose={() => setShowPreCheckout(false)}
+        userEmail={userEmail}
+        userId={userId}
+        productSlug={selectedCreditSlug}
+      />
     </div>
   );
 };
