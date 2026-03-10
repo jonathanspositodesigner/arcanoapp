@@ -809,13 +809,14 @@ const PlanosUpscalerArcano = () => {
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-5xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  {t('tools:upscaler.benefits.title')} <span className="text-fuchsia-400">{t('tools:upscaler.benefits.subtitle')}</span>?
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-3 tracking-wide">
+                  Melhorado com o <span className="text-fuchsia-400">Upscaler Arcano</span>
                 </h2>
+                <p className="text-white/50 text-base md:text-lg text-center mb-12">Veja o poder da nossa ferramenta</p>
               </AnimatedSection>
               
               <Suspense fallback={<div className="h-[400px] md:h-[600px] bg-white/5 rounded-xl animate-pulse" />}>
-                <ExpandingGallery items={[
+                <ExpandingGallery badgeText="Melhorado com o Upscaler Arcano" items={[
                   { imageUrl: "/images/gallery/gallery-1.webp", label: "Qualidade impressionante" },
                   { imageUrl: "/images/gallery/gallery-2.webp", label: "Detalhes nítidos" },
                   { imageUrl: "/images/gallery/gallery-3.webp", label: "Cores vibrantes" },
