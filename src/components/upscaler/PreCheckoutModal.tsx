@@ -31,11 +31,20 @@ const brandDisplay: Record<string, string> = {
   unknown: 'Cartão',
 };
 
+const formatCpf = (value: string) => {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+};
+
 const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutModalProps) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [emailConfirm, setEmailConfirm] = useState('');
   const [phone, setPhone] = useState('');
+  const [cpf, setCpf] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'PIX' | 'CREDIT_CARD'>('PIX');
   const [loading, setLoading] = useState(false);
 
@@ -43,6 +52,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutMod
   const [emailError, setEmailError] = useState('');
   const [emailConfirmError, setEmailConfirmError] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [cpfError, setCpfError] = useState('');
 
   // One-click state
   const [savedCards, setSavedCards] = useState<SavedCard[]>([]);
@@ -94,7 +104,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutMod
 
   const validate = () => {
     let valid = true;
-    setNameError(''); setEmailError(''); setEmailConfirmError(''); setPhoneError('');
+    setNameError(''); setEmailError(''); setEmailConfirmError(''); setPhoneError(''); setCpfError('');
 
     if (!name.trim() || name.trim().length < 3) {
       setNameError('Digite seu nome completo');
@@ -124,6 +134,15 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutMod
       valid = false;
     } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
       setPhoneError('Celular inválido (DDD + número)');
+      valid = false;
+    }
+
+    const cpfDigits = cpf.replace(/\D/g, '');
+    if (!cpfDigits) {
+      setCpfError('Digite seu CPF');
+      valid = false;
+    } else if (cpfDigits.length !== 11) {
+      setCpfError('CPF inválido');
       valid = false;
     }
 
@@ -205,6 +224,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutMod
           user_email: email.trim().toLowerCase(),
           user_phone: phone.replace(/\D/g, ''),
           user_name: name.trim(),
+          user_cpf: cpf.replace(/\D/g, ''),
           billing_type: paymentMethod,
           utm_data: utmData
         }
@@ -402,6 +422,20 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutMod
                   className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
                 />
                 {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
+              </div>
+
+              {/* CPF */}
+              <div>
+                <label className="text-white/70 text-sm mb-1.5 block">CPF</label>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="000.000.000-00"
+                  value={cpf}
+                  onChange={(e) => { setCpf(formatCpf(e.target.value)); setCpfError(''); }}
+                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
+                />
+                {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
               </div>
 
               {/* Payment Method */}
