@@ -1,27 +1,23 @@
 
 
-# Adicionar card de garantia + trocar seção "O que faz" por galeria sanfonada
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-## Mudanças no arquivo `src/pages/PlanosUpscalerArcano.tsx`
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-### 1. Card de garantia Mercado Pago ao lado do card de preço
+## Dados
 
-Transformar a seção de preço (linhas 641-745) de `max-w-lg mx-auto` com 1 card para um layout de **2 colunas** (`grid md:grid-cols-2 gap-6 max-w-4xl mx-auto`):
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-- **Coluna esquerda**: card de preço existente (sem alterações internas)
-- **Coluna direita**: novo card de garantia com:
-  - Ícone de escudo verde grande
-  - Título "Compra 100% Segura"
-  - Texto explicando a proteção do Mercado Pago (pagamento processado pelo Mercado Pago, dados criptografados, garantia de 7 dias)
-  - Imagem/badge de "Garantia 7 dias" (ícone estilizado com CSS, usando Shield + Clock)
-  - Selos: "Dinheiro de volta", "Sem risco", "Reembolso garantido"
-  - Visual: fundo escuro com borda verde/emerald, estilo coerente com a página
+## Ações (via SQL migration)
 
-### 2. Trocar seção "O que o Upscaler faz" (4 quadrados) pela galeria sanfonada
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-Substituir a seção "BENEFÍCIOS (O QUE FAZ)" (linhas 747-775) — que tem os 4 cards com features — pelo componente `ExpandingGallery` com os mesmos `galleryItems` da página do Arcano Cloner:
-
-- Import lazy do `ExpandingGallery`
-- Definir array `galleryItems` com as 6 imagens (`/images/gallery/gallery-1.webp` a `gallery-6.webp`)
-- Manter o título da seção mas renderizar `<ExpandingGallery items={galleryItems} />` em vez do grid de cards
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
