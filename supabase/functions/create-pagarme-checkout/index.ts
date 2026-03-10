@@ -141,41 +141,25 @@ serve(async (req) => {
       payments: [
         {
           payment_method: 'checkout',
-          checkout: (() => {
-            const checkoutConfig: Record<string, unknown> = {
-              expires_in: 259200,
-              accepted_payment_methods: acceptedPaymentMethods,
-              success_url: `https://arcanoapp.voxvisual.com.br/upscaler-arcano?payment=success`,
-              customer_editable: false,
-              skip_checkout_success_page: true,
-              credit_card: {
-                capture: true,
-                installments: [
-                  { number: 1, total: amountInCents },
-                  { number: 2, total: amountInCents },
-                  { number: 3, total: amountInCents }
-                ]
-              },
-              pix: {
-                expires_in: 259200
-              }
+          checkout: {
+            expires_in: 259200,
+            accepted_payment_methods: acceptedPaymentMethods,
+            success_url: `https://arcanoapp.voxvisual.com.br/upscaler-arcano?payment=success`,
+            customer_editable: false,
+            billing_address_editable: true,
+            skip_checkout_success_page: true,
+            credit_card: {
+              capture: true,
+              installments: [
+                { number: 1, total: amountInCents },
+                { number: 2, total: amountInCents },
+                { number: 3, total: amountInCents }
+              ]
+            },
+            pix: {
+              expires_in: 259200
             }
-
-            if (billing_type === 'PIX') {
-              checkoutConfig.billing_address_editable = false
-              checkoutConfig.billing_address = {
-                line_1: '1, Av Paulista, Bela Vista',
-                zip_code: '01310100',
-                city: 'São Paulo',
-                state: 'SP',
-                country: 'BR'
-              }
-            } else {
-              checkoutConfig.billing_address_editable = true
-            }
-
-            return checkoutConfig
-          })()
+          }
         }
       ],
       metadata: {
