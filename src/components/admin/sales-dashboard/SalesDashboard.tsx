@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
-import { useSalesDashboard, PeriodPreset } from "./useSalesDashboard";
-import { startOfDay, endOfDay, subDays, subMonths, startOfYear } from "date-fns";
+import { useSalesDashboard, PeriodPreset, getDateRange } from "./useSalesDashboard";
 import SalesDashboardKPIs from "./SalesDashboardKPIs";
 import SalesDashboardSecondaryKPIs from "./SalesDashboardSecondaryKPIs";
 import SalesPaymentDonut from "./SalesPaymentDonut";
