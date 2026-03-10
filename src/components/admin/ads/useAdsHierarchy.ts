@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SaleOrder } from "./useAdsCampaigns";
 
 export type AdsLevel = "campaigns" | "adsets" | "ads";
 
@@ -19,7 +20,6 @@ export interface AggregatedItem {
   avg_cpc: number;
   total_landing_page_views: number;
   total_initiated_checkouts: number;
-  // Sales attribution
   sales_count: number;
   revenue: number;
   cpa: number;
@@ -75,7 +75,6 @@ function aggregate(rows: any[], idField: string, nameField: string, statusField:
     }
   }
 
-  // Calculate averages
   for (const item of map.values()) {
     item.avg_cpm = item.total_impressions > 0 ? (item.total_spend / item.total_impressions) * 1000 : 0;
     item.avg_cpc = item.total_clicks > 0 ? item.total_spend / item.total_clicks : 0;
@@ -84,7 +83,51 @@ function aggregate(rows: any[], idField: string, nameField: string, statusField:
   return Array.from(map.values());
 }
 
-export function useAdsHierarchy(dateRange: { start: string; end: string }) {
+/**
+ * Extract an ID from a UTM field. Supports formats:
+ * - Pure ID: "123456789"
+ * - Name|ID: "Campaign Name|123456789"
+ * - {{template}} placeholders are ignored
+ */
+function extractIdFromUtm(utmValue: string | undefined | null): string {
+  if (!utmValue || typeof utmValue !== "string" || utmValue.includes("{{")) return "";
+  const parts = utmValue.split("|");
+  return parts[parts.length - 1].trim();
+}
+
+function attributeSalesToItems(items: AggregatedItem[], sales: SaleOrder[], utmField: string): AggregatedItem[] {
+  // Build map: item_id -> sales[]
+  const salesMap = new Map<string, SaleOrder[]>();
+
+  for (const sale of sales) {
+    const utmSource = sale.utm_data?.utm_source || sale.utm_data?.source || "";
+    const isFb = typeof utmSource === "string" && utmSource.toUpperCase().startsWith("FB");
+    if (!isFb) continue;
+
+    const rawValue = sale.utm_data?.[utmField] || "";
+    const resolvedId = extractIdFromUtm(rawValue);
+    if (!resolvedId) continue;
+
+    const existing = salesMap.get(resolvedId) || [];
+    existing.push(sale);
+    salesMap.set(resolvedId, existing);
+  }
+
+  return items.map((item) => {
+    const matchedSales = salesMap.get(item.id) || [];
+    const salesCount = matchedSales.length;
+    const revenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+    const spend = item.total_spend;
+    const profit = revenue - spend;
+    const cpa = salesCount > 0 ? spend / salesCount : 0;
+    const roi = spend > 0 ? revenue / spend : 0;
+    const roas = spend > 0 ? revenue / spend : 0;
+
+    return { ...item, sales_count: salesCount, revenue, cpa, profit, roi, roas };
+  });
+}
+
+export function useAdsHierarchy(dateRange: { start: string; end: string }, sales: SaleOrder[]) {
   const [adsets, setAdsets] = useState<AggregatedItem[]>([]);
   const [ads, setAds] = useState<AggregatedItem[]>([]);
   const [isLoadingAdsets, setIsLoadingAdsets] = useState(false);
@@ -101,7 +144,6 @@ export function useAdsHierarchy(dateRange: { start: string; end: string }) {
     setAds([]);
 
     try {
-      // First sync from Meta API
       await supabase.functions.invoke("fetch-meta-ads", {
         body: {
           action: "fetch-adsets",
@@ -111,7 +153,6 @@ export function useAdsHierarchy(dateRange: { start: string; end: string }) {
         },
       });
 
-      // Then fetch from DB
       let query = supabase
         .from("meta_adset_insights")
         .select("*")
@@ -128,7 +169,9 @@ export function useAdsHierarchy(dateRange: { start: string; end: string }) {
       if (error) throw error;
 
       const aggregated = aggregate(data || [], "adset_id", "adset_name", "adset_status");
-      setAdsets(aggregated.sort((a, b) => b.total_spend - a.total_spend));
+      // Attribute sales using utm_term (adset ID)
+      const withSales = attributeSalesToItems(aggregated, sales, "utm_term");
+      setAdsets(withSales.sort((a, b) => b.total_spend - a.total_spend));
       setCurrentLevel("adsets");
       setBreadcrumbs([
         { level: "campaigns", label: "Campanhas" },
@@ -140,14 +183,13 @@ export function useAdsHierarchy(dateRange: { start: string; end: string }) {
     } finally {
       setIsLoadingAdsets(false);
     }
-  }, [dateRange]);
+  }, [dateRange, sales]);
 
   const fetchAds = useCallback(async (adsetIds: string[], adsetName?: string) => {
     setIsLoadingAds(true);
     setSelectedAdsetIds(adsetIds);
 
     try {
-      // First sync from Meta API
       await supabase.functions.invoke("fetch-meta-ads", {
         body: {
           action: "fetch-ads",
@@ -158,7 +200,6 @@ export function useAdsHierarchy(dateRange: { start: string; end: string }) {
         },
       });
 
-      // Then fetch from DB
       let query = supabase
         .from("meta_ad_insights")
         .select("*")
@@ -175,7 +216,9 @@ export function useAdsHierarchy(dateRange: { start: string; end: string }) {
       if (error) throw error;
 
       const aggregated = aggregate(data || [], "ad_id", "ad_name", "ad_status");
-      setAds(aggregated.sort((a, b) => b.total_spend - a.total_spend));
+      // Attribute sales using utm_content (ad ID)
+      const withSales = attributeSalesToItems(aggregated, sales, "utm_content");
+      setAds(withSales.sort((a, b) => b.total_spend - a.total_spend));
       setCurrentLevel("ads");
       setBreadcrumbs(prev => [
         ...prev.slice(0, 2),
@@ -187,7 +230,7 @@ export function useAdsHierarchy(dateRange: { start: string; end: string }) {
     } finally {
       setIsLoadingAds(false);
     }
-  }, [dateRange, selectedCampaignIds]);
+  }, [dateRange, selectedCampaignIds, sales]);
 
   const navigateToLevel = useCallback((level: AdsLevel) => {
     if (level === "campaigns") {
