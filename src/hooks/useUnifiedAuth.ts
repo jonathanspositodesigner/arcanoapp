@@ -21,6 +21,11 @@ export interface SignupData {
   password: string;
   name?: string;
   phone?: string;
+  cpf?: string;
+  address_line?: string;
+  address_zip?: string;
+  address_city?: string;
+  address_state?: string;
 }
 
 export interface AuthConfig {
