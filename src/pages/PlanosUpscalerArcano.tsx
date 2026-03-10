@@ -158,14 +158,13 @@ const FullscreenModal = ({
 };
 
 // CTA Button Component - estilo pill
-const CTAButton = ({ onClick, isPremium, t, loading }: { onClick: () => void; isPremium: boolean; t: (key: string) => string; loading?: boolean }) => (
+const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
   <Button
     onClick={onClick}
-    disabled={loading}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40 disabled:opacity-70 disabled:cursor-wait"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40"
   >
-    {loading ? 'Gerando checkout...' : t('tools:upscaler.cta')}
-    {!loading && <ArrowRight className="h-5 w-5 ml-2" />}
+    {t('tools:upscaler.cta')}
+    <ArrowRight className="h-5 w-5 ml-2" />
   </Button>
 );
 
