@@ -206,48 +206,77 @@ serve(async (req) => {
     }
 
     // Extrair order_id do metadata — buscar em múltiplos caminhos
-    const orderId = 
+    let orderId: string | null = 
       eventData?.metadata?.order_id ||
       eventData?.order?.metadata?.order_id ||
       eventData?.charges?.[0]?.metadata?.order_id ||
       null
 
-    if (!orderId) {
-      console.log(`   ├─ ⏭️ Sem order_id no metadata`)
-      // Logar mesmo sem order_id para auditoria
+    let order: any = null
+    let product: any = null
+
+    // Tentativa 1: buscar por order_id do metadata
+    if (orderId) {
+      const { data, error } = await supabase
+        .from('asaas_orders')
+        .select('*, mp_products(*)')
+        .eq('id', orderId)
+        .single()
+      if (!error && data) {
+        order = data
+        product = data.mp_products
+      }
+    }
+
+    // Tentativa 2 (fallback): buscar por asaas_payment_id (charge ID salvo no pagamento)
+    if (!order && eventData?.id) {
+      console.log(`   ├─ 🔍 Fallback: buscando ordem por asaas_payment_id = ${eventData.id}`)
+      const { data, error } = await supabase
+        .from('asaas_orders')
+        .select('*, mp_products(*)')
+        .eq('asaas_payment_id', eventData.id)
+        .maybeSingle()
+      if (!error && data) {
+        order = data
+        product = data.mp_products
+        orderId = data.id
+        console.log(`   ├─ ✅ Ordem encontrada via fallback: ${orderId}`)
+      }
+    }
+
+    // Tentativa 3 (fallback): buscar por charge ID dentro de charges do order event
+    if (!order && eventData?.charges?.[0]?.id) {
+      const chargeId = eventData.charges[0].id
+      console.log(`   ├─ 🔍 Fallback 2: buscando por charge_id = ${chargeId}`)
+      const { data, error } = await supabase
+        .from('asaas_orders')
+        .select('*, mp_products(*)')
+        .eq('asaas_payment_id', chargeId)
+        .maybeSingle()
+      if (!error && data) {
+        order = data
+        product = data.mp_products
+        orderId = data.id
+        console.log(`   ├─ ✅ Ordem encontrada via fallback 2: ${orderId}`)
+      }
+    }
+
+    if (!order) {
+      console.log(`   ├─ ⏭️ Ordem não encontrada por nenhum método`)
       await supabase.from('webhook_logs').insert({
         platform: 'pagarme',
         event_type: eventType,
         transaction_id: idempotencyKey,
-        status: eventData?.status || 'unknown',
+        status: 'order_not_found',
         email: null,
         raw_payload: body,
       })
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
 
-    // Buscar ordem interna
-    const { data: order, error: orderError } = await supabase
-      .from('asaas_orders')
-      .select('*, mp_products(*)')
-      .eq('id', orderId)
-      .single()
-
-    if (orderError || !order) {
-      console.error(`   ├─ ❌ Ordem não encontrada: ${orderId}`, orderError)
-      await supabase.from('webhook_logs').insert({
-        platform: 'pagarme',
-        event_type: eventType,
-        transaction_id: idempotencyKey,
-        status: 'order_not_found',
-        raw_payload: body,
-      })
-      return new Response('OK', { status: 200, headers: corsHeaders })
-    }
-
-    const product = order.mp_products
     console.log(`   ├─ produto: ${product?.title}`)
     console.log(`   ├─ ordem status atual: ${order.status}`)
+    console.log(`   ├─ ordem id: ${orderId}`)
 
     // =============================================
     // PAGAMENTO CONFIRMADO
