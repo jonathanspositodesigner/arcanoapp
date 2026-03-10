@@ -2058,6 +2058,60 @@ export type Database = {
         }
         Relationships: []
       }
+      meta_campaign_insights: {
+        Row: {
+          account_id: string
+          campaign_id: string
+          campaign_name: string
+          campaign_status: string | null
+          clicks: number | null
+          cpc: number | null
+          cpm: number | null
+          created_at: string | null
+          daily_budget: number | null
+          date: string
+          id: string
+          impressions: number | null
+          initiated_checkouts: number | null
+          landing_page_views: number | null
+          spend: number | null
+        }
+        Insert: {
+          account_id: string
+          campaign_id: string
+          campaign_name: string
+          campaign_status?: string | null
+          clicks?: number | null
+          cpc?: number | null
+          cpm?: number | null
+          created_at?: string | null
+          daily_budget?: number | null
+          date: string
+          id?: string
+          impressions?: number | null
+          initiated_checkouts?: number | null
+          landing_page_views?: number | null
+          spend?: number | null
+        }
+        Update: {
+          account_id?: string
+          campaign_id?: string
+          campaign_name?: string
+          campaign_status?: string | null
+          clicks?: number | null
+          cpc?: number | null
+          cpm?: number | null
+          created_at?: string | null
+          daily_budget?: number | null
+          date?: string
+          id?: string
+          impressions?: number | null
+          initiated_checkouts?: number | null
+          landing_page_views?: number | null
+          spend?: number | null
+        }
+        Relationships: []
+      }
       mp_orders: {
         Row: {
           amount: number
