@@ -1,9 +1,9 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, ReactNode } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Play, ExternalLink, Lock, Unlock, AlertTriangle, ChevronRight, Check, CheckCircle2, Circle, Trophy } from "lucide-react";
+import { Play, ExternalLink, Lock, Unlock, AlertTriangle, ChevronRight, Check, CheckCircle2, Circle, Trophy, ArrowLeft } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   AlertDialog,
