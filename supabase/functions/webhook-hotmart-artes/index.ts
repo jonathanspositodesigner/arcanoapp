@@ -723,7 +723,7 @@ async function processHotmartWebhook(
     await supabase.from('webhook_logs').update({ 
       result: 'success', 
       error_message: null,
-      payload: {} // Limpar payload para sucesso (economiza espaço)
+      payload: { origin: payload?.data?.purchase?.origin || {} } // Manter origin para debug de UTMs
     }).eq('id', logId)
 
     // Enviar email de boas-vindas (em try/catch separado)
