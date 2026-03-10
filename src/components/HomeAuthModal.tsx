@@ -141,10 +141,10 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                   onSignupClick={() => {}}
                   isLoading={auth.state.isLoading}
                   labels={{
-                    email: t('auth.email'),
-                    emailPlaceholder: t('auth.emailPlaceholder'),
-                    continue: t('auth.continue') || 'Continuar',
-                    loading: t('auth.loading'),
+                    email: t('email'),
+                    emailPlaceholder: t('emailPlaceholder'),
+                    continue: t('continue') || 'Continuar',
+                    loading: t('loading'),
                     noAccountYet: '',
                     createAccount: '',
                   }}
