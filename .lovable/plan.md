@@ -1,49 +1,23 @@
 
 
-## Plano: Endereço falso só para PIX, real para cartão
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-### Lógica
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-No edge function `create-pagarme-checkout`, a variável `billing_type` já indica o método escolhido. Usamos isso para decidir:
+## Dados
 
-- **PIX**: Enviar `billing_address` pré-preenchido com endereço genérico + `billing_address_editable: false` → formulário de endereço não aparece
-- **Cartão de crédito**: **Não** enviar `billing_address` e manter `billing_address_editable: true` → checkout pede o endereço real (necessário para antifraude)
-- **Ambos** (quando não especificado): Não enviar billing_address, deixar o checkout pedir
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-### Alteração: `supabase/functions/create-pagarme-checkout/index.ts`
+## Ações (via SQL migration)
 
-No objeto `checkout` do payload, condicionar o `billing_address` ao método de pagamento:
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-```typescript
-const checkoutConfig: Record<string, unknown> = {
-  expires_in: 259200,
-  accepted_payment_methods: acceptedPaymentMethods,
-  success_url: `...`,
-  customer_editable: false,
-  skip_checkout_success_page: true,
-  credit_card: { ... },
-  pix: { expires_in: 259200 }
-}
-
-if (billing_type === 'PIX') {
-  // PIX não usa antifraude — endereço genérico para esconder o formulário
-  checkoutConfig.billing_address_editable = false
-  checkoutConfig.billing_address = {
-    line_1: '1, Av Paulista, Bela Vista',
-    zip_code: '01310100',
-    city: 'São Paulo',
-    state: 'SP',
-    country: 'BR'
-  }
-} else {
-  // Cartão precisa de endereço real para antifraude
-  checkoutConfig.billing_address_editable = true
-}
-```
-
-### Resultado
-- **PIX**: Checkout abre direto no QR code, sem pedir endereço
-- **Cartão**: Checkout pede endereço normalmente (seguro para antifraude)
-
-Apenas 1 arquivo alterado, nenhuma mudança no frontend ou banco.
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
