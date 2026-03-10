@@ -88,14 +88,17 @@ serve(async (req) => {
       console.log(`👤 Cliente existente no Asaas: ${customerId}`)
     } else {
       // Criar novo cliente
+      const customerBody: Record<string, unknown> = {
+        name: email.split('@')[0],
+        email: email,
+        notificationDisabled: false
+      }
+      if (cpf) customerBody.cpfCnpj = cpf
+
       const createCustomerResponse = await fetch(`${ASAAS_API_URL}/customers`, {
         method: 'POST',
         headers: asaasHeaders,
-        body: JSON.stringify({
-          name: email.split('@')[0],
-          email: email,
-          notificationDisabled: false
-        })
+        body: JSON.stringify(customerBody)
       })
 
       if (!createCustomerResponse.ok) {
