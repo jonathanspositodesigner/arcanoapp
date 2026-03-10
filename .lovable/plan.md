@@ -1,23 +1,34 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Plano: Corrigir identificação de plataforma real (Greenn vs Hotmart) para cálculo correto de taxas
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+### Problema
+O campo `source_platform` retornado pela RPC `get_unified_dashboard_orders` contém o nome do **produto/plataforma interna** ('artes-eventos', 'prompts', 'app', 'hotmart-es') em vez da **plataforma de pagamento** real ('greenn' ou 'hotmart'). O código de taxas verifica `platform === 'greenn'` ou `platform === 'hotmart'`, nunca encontra match, e calcula R$0 de taxas para todas as vendas de webhook.
 
-## Dados
+### Dados reais
+- Vendas **Greenn**: têm `greenn_contract_id` preenchido (plataformas: app, artes-eventos, prompts)
+- Vendas **Hotmart**: têm status no formato `PURCHASE_APPROVED` ou plataforma contendo 'hotmart' (ex: 'hotmart-es')
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+### Solução
+**Atualizar a RPC** `get_unified_dashboard_orders` para calcular `source_platform` corretamente:
 
-## Ações (via SQL migration)
+```sql
+-- No bloco de webhook_logs, trocar:
+--   wl.platform::text
+-- Por:
+CASE 
+  WHEN wl2.greenn_contract_id IS NOT NULL THEN 'greenn'
+  WHEN wl2.platform ILIKE '%hotmart%' OR wl2.status LIKE 'PURCHASE_%' THEN 'hotmart'
+  ELSE 'greenn'  -- fallback (maioria das vendas webhook são Greenn)
+END::text
+```
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+Isso faz com que o frontend receba 'greenn' ou 'hotmart' corretamente, e o cálculo de taxas existente (`amount * 0.0499 + 1.00` para Greenn, `amount * 0.099 + 1.00` para Hotmart) funcione sem nenhuma mudança no código frontend.
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+### Arquivo a alterar
+| Ação | Arquivo |
+|------|---------|
+| Migration SQL | Atualizar a function `get_unified_dashboard_orders` |
+
+Nenhuma mudança no frontend necessária — o código de taxas já está correto, só precisa receber os dados certos.
 
