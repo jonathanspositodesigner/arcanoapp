@@ -914,6 +914,40 @@ const PlanosUpscalerArcano = () => {
           </AnimatedSection>
           </LazySection>
 
+          {/* COMO FUNCIONA */}
+          <LazySection rootMargin="100px">
+          <AnimatedSection className="px-4 py-20">
+            <div className="max-w-4xl mx-auto">
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
+                  {t('tools:upscaler.howItWorks.title')} <span className="text-fuchsia-400">{t('tools:upscaler.howItWorks.subtitle')}</span>
+                </h2>
+              </AnimatedSection>
+              
+              <StaggeredAnimation className="flex flex-col md:flex-row md:justify-center gap-8 md:gap-12 max-w-3xl mx-auto" staggerDelay={200}>
+                {steps.map((step, index) => {
+                  const IconComponent = step.icon;
+                  return (
+                    <div key={index} className="text-center flex flex-col items-center relative">
+                      {index < steps.length - 1 && (
+                        <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-fuchsia-500/50 to-transparent" />
+                      )}
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-fuchsia-500/30">
+                        {index + 1}
+                      </div>
+                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/30 flex items-center justify-center mb-5">
+                        <IconComponent className="h-10 w-10 text-fuchsia-400" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
+                      <p className="text-white/60 max-w-[180px]">{step.description}</p>
+                    </div>
+                  );
+                })}
+              </StaggeredAnimation>
+            </div>
+          </AnimatedSection>
+          </LazySection>
+
           {/* GALERIA - O que o Upscaler faz */}
           <LazySection rootMargin="100px">
           <AnimatedSection className="px-4 py-20 bg-black/30">
