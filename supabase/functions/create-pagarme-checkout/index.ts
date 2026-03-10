@@ -149,7 +149,7 @@ serve(async (req) => {
             success_url: `https://arcanoapp.voxvisual.com.br/upscaler-arcano?payment=success`,
             customer_editable: false,
             billing_address_editable: billing_type === 'CREDIT_CARD',
-            skip_checkout_success_page: true,
+            skip_checkout_success_page: billing_type === 'CREDIT_CARD',
             ...(billing_type === 'PIX' ? {
               billing_address: {
                 line_1: '1, Av Paulista, Bela Vista',
