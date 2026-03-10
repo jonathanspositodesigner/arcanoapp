@@ -245,18 +245,55 @@ const PlanosUpscalerArcano = () => {
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
-  const handlePurchase = () => {
-    if (!tool) return;
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [emailError, setEmailError] = useState('');
 
-    const checkoutLink = isPremium && tool.checkout_link_membro_vitalicio
-      ? tool.checkout_link_membro_vitalicio
-      : tool.checkout_link_vitalicio;
-
-    if (checkoutLink) {
-      window.open(appendUtmToUrl(checkoutLink), "_blank");
-    } else {
-      window.open(appendUtmToUrl("https://voxvisual.com.br/linksbio/"), "_blank");
+  const handlePurchase = async () => {
+    const userEmail = user?.email || emailInput.trim();
+    if (!userEmail) {
+      setEmailError('Digite seu email para continuar');
+      return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
+      setEmailError('Email inválido');
+      return;
+    }
+    setEmailError('');
+    setPurchaseLoading(true);
+    try {
+      let utmData: Record<string, string> | null = null;
+      try {
+        const raw = sessionStorage.getItem('captured_utms');
+        if (raw) utmData = JSON.parse(raw);
+      } catch { /* ignore */ }
+
+      const response = await supabase.functions.invoke('create-mp-checkout', {
+        body: {
+          product_slug: 'upscaller-arcano-vitalicio',
+          user_email: userEmail.toLowerCase().trim(),
+          utm_data: utmData
+        }
+      });
+
+      if (response.error) {
+        console.error('Erro ao criar checkout:', response.error);
+        alert('Erro ao criar checkout. Tente novamente.');
+        setPurchaseLoading(false);
+        return;
+      }
+
+      const { checkout_url } = response.data;
+      if (checkout_url) {
+        window.location.href = checkout_url;
+      } else {
+        alert('Erro ao gerar link de pagamento.');
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+      alert('Erro ao processar. Tente novamente.');
+    }
+    setPurchaseLoading(false);
   };
 
   const hasAccess = hasAccessToPack(TOOL_SLUG);
