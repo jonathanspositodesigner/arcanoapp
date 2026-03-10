@@ -1,23 +1,27 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Plano: Configurar chave Pagar.me e integrar checkout
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+### Passo 1 — Salvar a Secret Key
+Ao implementar, vou acionar a ferramenta segura para você colar a chave da API do Pagar.me. Ela será salva como `PAGARME_SECRET_KEY` e ficará disponível nas backend functions.
 
-## Dados
+### Passo 2 — Criar edge function `create-pagarme-checkout`
+- Recebe: `product_slug`, `user_email`, `user_cpf`, `user_name`, `billing_type`, `utm_data`
+- Busca produto na tabela `mp_products`
+- Cria cliente no Pagar.me (`POST /customers`)
+- Cria pedido (`POST /orders`) com PIX ou Cartão
+- Para PIX: retorna QR code
+- Para Cartão: retorna boleto/link (checkout transparente requer tokenização no front — vou usar `billingType` adequado)
+- Salva ordem na tabela (reutilizar `mp_orders` ou criar `pagarme_orders`)
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+### Passo 3 — Criar edge function `webhook-pagarme`
+- Recebe notificações do Pagar.me quando pagamento é confirmado
+- Ativa acesso do usuário (mesma lógica dos outros webhooks)
 
-## Ações (via SQL migration)
+### Passo 4 — Atualizar PreCheckoutModal
+- Trocar chamada de `create-asaas-checkout` para `create-pagarme-checkout`
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
-
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+### Passo 5 — Remover integração Asaas
+- Deletar `create-asaas-checkout/index.ts` e `webhook-asaas/index.ts`
+- Limpar `config.toml`
 
