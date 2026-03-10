@@ -1,23 +1,36 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Plano: Adicionar card "Taxas de Plataformas" e ajustar Lucro/ROI
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+### Resumo
+- Faturamento Líquido **fica como está** (valor bruto)
+- Novo card "Taxas de Plataformas" mostrando total de taxas cobradas pelos gateways
+- ROI e Lucro passam a descontar as taxas de plataforma do faturamento
 
-## Dados
+### Cálculo das taxas (por venda aprovada)
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+| Plataforma | Taxa |
+|---|---|
+| Greenn | 4,99% + R$1,00 |
+| Hotmart | 9,9% + R$1,00 |
+| Mercado Pago | `amount - net_amount` (real) |
 
-## Ações (via SQL migration)
+### Mudanças
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+**1. `useSalesDashboard.ts`**
+- Calcular `platformFees` iterando `approved`:
+  - MP: `amount - (net_amount ?? amount)`
+  - Greenn: `amount * 0.0499 + 1.00`
+  - Hotmart: `amount * 0.099 + 1.00`
+- Retornar `platformFees` no hook
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+**2. `SalesDashboardKPIs.tsx`**
+- Receber `platformFees` como prop
+- Adicionar card "Taxas de Plataformas" (ícone `Receipt`, cor rosa/red) entre "Gastos com Anúncios" e "ROI"
+- Grid passa de 4 para 5 colunas (`lg:grid-cols-5`)
+- Lucro = `revenue - adSpend - platformFees`
+- ROI = `revenue / (adSpend + platformFees)` (custo total)
+
+**3. `SalesDashboard.tsx`**
+- Extrair `platformFees` do hook e passar para `SalesDashboardKPIs`
 
