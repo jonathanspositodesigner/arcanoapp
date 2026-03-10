@@ -155,7 +155,7 @@ export function useAdsCampaigns(
       if (salesError) throw salesError;
 
       const approvedSales = (salesData || []).filter(
-        (s: any) => s.status === "Paid" || s.status === "paid" || s.status === "approved"
+        (s: any) => s.status === "Paid" || s.status === "paid" || s.status === "approved" || s.paid_at
       );
       setSales(approvedSales);
     } catch (err: any) {
