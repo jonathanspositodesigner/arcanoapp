@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,10 +8,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { RefreshCw, Search, CalendarIcon, Megaphone, TrendingUp, TrendingDown, Info, ChevronRight, ArrowLeft, Loader2 } from "lucide-react";
+import { RefreshCw, Search, CalendarIcon, Megaphone, TrendingUp, TrendingDown, Info, ChevronRight, ArrowLeft, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Power } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { useAdsCampaigns, AdsPeriod, CampaignWithSales } from "./ads/useAdsCampaigns";
 import { useAdsHierarchy, AggregatedItem, AdsLevel } from "./ads/useAdsHierarchy";
 import { UntrackedSalesDialog } from "./ads/UntrackedSalesDialog";
@@ -24,6 +26,14 @@ const PERIOD_OPTIONS: { value: AdsPeriod; label: string }[] = [
   { value: "custom", label: "Personalizado" },
 ];
 
+type SortColumn = 
+  | "status" | "name" | "daily_budget" | "total_spend" | "sales_count"
+  | "cpa" | "revenue" | "profit" | "roi" | "roas"
+  | "cpi" | "total_initiated_checkouts" | "total_landing_page_views"
+  | "ctr" | "avg_cpc" | "total_clicks" | "avg_cpm" | "total_impressions";
+
+type SortDirection = "asc" | "desc";
+
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 }
@@ -32,81 +42,223 @@ function formatNumber(value: number) {
   return new Intl.NumberFormat("pt-BR").format(value);
 }
 
-function StatusBadge({ status }: { status: string }) {
+function getItemValues(item: AggregatedItem | CampaignWithSales) {
+  const isCampaign = "campaign_name" in item;
+  const c = item as CampaignWithSales;
+  const a = item as AggregatedItem;
+  const name = isCampaign ? c.campaign_name : a.name;
+  const status = isCampaign ? c.campaign_status : a.status;
+  const spend = isCampaign ? c.total_spend : a.total_spend;
+  const impressions = isCampaign ? c.total_impressions : a.total_impressions;
+  const clicks = isCampaign ? c.total_clicks : a.total_clicks;
+  const ic = isCampaign ? c.total_initiated_checkouts : a.total_initiated_checkouts;
+  const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
+  const cpi = ic > 0 ? spend / ic : 0;
+  return {
+    name, status,
+    daily_budget: isCampaign ? c.daily_budget : a.daily_budget,
+    total_spend: spend,
+    sales_count: isCampaign ? c.sales_count : a.sales_count,
+    cpa: isCampaign ? c.cpa : a.cpa,
+    revenue: isCampaign ? c.revenue : a.revenue,
+    profit: isCampaign ? c.profit : a.profit,
+    roi: isCampaign ? c.roi : a.roi,
+    roas: isCampaign ? c.roas : a.roas,
+    cpi, ctr,
+    total_initiated_checkouts: ic,
+    total_landing_page_views: isCampaign ? c.total_landing_page_views : a.total_landing_page_views,
+    avg_cpc: isCampaign ? c.avg_cpc : a.avg_cpc,
+    total_clicks: clicks,
+    avg_cpm: isCampaign ? c.avg_cpm : a.avg_cpm,
+    total_impressions: impressions,
+  };
+}
+
+function sortItems<T extends AggregatedItem | CampaignWithSales>(items: T[], column: SortColumn | null, direction: SortDirection): T[] {
+  if (!column) return items;
+  return [...items].sort((a, b) => {
+    const va = getItemValues(a);
+    const vb = getItemValues(b);
+    let cmp = 0;
+    if (column === "name" || column === "status") {
+      cmp = (va[column] || "").localeCompare(vb[column] || "");
+    } else {
+      cmp = (va[column] as number) - (vb[column] as number);
+    }
+    return direction === "asc" ? cmp : -cmp;
+  });
+}
+
+function StatusBadge({ 
+  status, 
+  objectId, 
+  onToggle 
+}: { 
+  status: string; 
+  objectId: string;
+  onToggle?: (objectId: string, newStatus: string) => void;
+}) {
+  const [isToggling, setIsToggling] = useState(false);
   const isActive = status === "ACTIVE";
   const isPaused = status === "PAUSED";
+  const canToggle = (isActive || isPaused) && onToggle;
+
+  const handleToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!canToggle || isToggling) return;
+    
+    const newStatus = isActive ? "PAUSED" : "ACTIVE";
+    setIsToggling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("fetch-meta-ads", {
+        body: { action: "update-status", object_id: objectId, new_status: newStatus },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(typeof data.error === "string" ? data.error : JSON.stringify(data.error));
+      onToggle!(objectId, newStatus);
+      toast.success(`Status alterado para ${newStatus === "ACTIVE" ? "Ativo" : "Pausado"}`);
+    } catch (err: any) {
+      console.error("Error toggling status:", err);
+      toast.error("Erro ao alterar status: " + (err.message || "Erro desconhecido"));
+    } finally {
+      setIsToggling(false);
+    }
+  };
+
   return (
     <Badge
       variant="outline"
+      onClick={handleToggle}
       className={cn(
-        "text-xs font-medium",
+        "text-xs font-medium transition-all",
         isActive && "border-green-500/50 bg-green-500/10 text-green-400",
         isPaused && "border-yellow-500/50 bg-yellow-500/10 text-yellow-400",
-        !isActive && !isPaused && "border-muted-foreground/30 text-muted-foreground"
+        !isActive && !isPaused && "border-muted-foreground/30 text-muted-foreground",
+        canToggle && "cursor-pointer hover:opacity-80",
+        isToggling && "opacity-50"
       )}
     >
-      {isActive ? "Ativo" : isPaused ? "Pausado" : status}
+      {isToggling ? (
+        <Loader2 className="h-3 w-3 animate-spin" />
+      ) : (
+        <>
+          {canToggle && <Power className="h-3 w-3 mr-1" />}
+          {isActive ? "Ativo" : isPaused ? "Pausado" : status}
+        </>
+      )}
     </Badge>
   );
 }
 
-function ColumnHeader({ label, tooltip }: { label: string; tooltip: string }) {
+function SortableHeader({ 
+  label, 
+  tooltip, 
+  column, 
+  currentSort, 
+  currentDirection, 
+  onSort, 
+  align = "right" 
+}: { 
+  label: string; 
+  tooltip?: string; 
+  column: SortColumn; 
+  currentSort: SortColumn | null; 
+  currentDirection: SortDirection; 
+  onSort: (col: SortColumn) => void;
+  align?: "left" | "right";
+}) {
+  const isActive = currentSort === column;
+  const SortIcon = isActive ? (currentDirection === "asc" ? ArrowUp : ArrowDown) : ArrowUpDown;
+
+  const content = (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1 cursor-pointer select-none hover:text-foreground transition-colors",
+        isActive && "text-foreground"
+      )}
+      onClick={() => onSort(column)}
+    >
+      {label}
+      <SortIcon className={cn("h-3 w-3", isActive ? "opacity-100" : "opacity-30")} />
+      {tooltip && <Info className="h-3 w-3 opacity-50" />}
+    </span>
+  );
+
+  if (!tooltip) return content;
+
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger asChild>
-          <span className="inline-flex items-center gap-1 cursor-help">
-            {label} <Info className="h-3 w-3 opacity-50" />
-          </span>
-        </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-[200px] text-xs">
-          {tooltip}
-        </TooltipContent>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
+        <TooltipContent side="top" className="max-w-[200px] text-xs">{tooltip}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   );
 }
 
-function MetricsTableHeader() {
+function MetricsTableHeader({ sortColumn, sortDirection, onSort }: { sortColumn: SortColumn | null; sortDirection: SortDirection; onSort: (col: SortColumn) => void }) {
+  const sp = { currentSort: sortColumn, currentDirection: sortDirection, onSort };
   return (
     <tr className="border-b border-border bg-muted/30">
-      <th className="text-left p-3 font-medium text-muted-foreground sticky left-0 bg-muted/30 z-10">Status</th>
-      <th className="text-left p-3 font-medium text-muted-foreground sticky left-[72px] bg-muted/30 z-10">Nome</th>
-      <th className="text-right p-3 font-medium text-muted-foreground">Orçamento</th>
-      <th className="text-right p-3 font-medium text-muted-foreground">Gastos</th>
-      <th className="text-right p-3 font-medium text-muted-foreground">Vendas</th>
-      <th className="text-right p-3 font-medium text-muted-foreground">
-        <ColumnHeader label="CPA" tooltip="Custo por aquisição (Gasto / Vendas)" />
+      <th className="text-left p-3 font-medium text-muted-foreground sticky left-0 bg-muted/30 z-10">
+        <SortableHeader label="Status" column="status" align="left" {...sp} />
       </th>
-      <th className="text-right p-3 font-medium text-muted-foreground">Faturamento</th>
-      <th className="text-right p-3 font-medium text-muted-foreground">Lucro</th>
-      <th className="text-right p-3 font-medium text-muted-foreground">ROI</th>
-      <th className="text-right p-3 font-medium text-muted-foreground">ROAS</th>
-      <th className="text-right p-3 font-medium text-muted-foreground">
-        <ColumnHeader label="CPI" tooltip="Custo por checkout iniciado" />
+      <th className="text-left p-3 font-medium text-muted-foreground sticky left-[72px] bg-muted/30 z-10">
+        <SortableHeader label="Nome" column="name" align="left" {...sp} />
       </th>
       <th className="text-right p-3 font-medium text-muted-foreground">
-        <ColumnHeader label="IC" tooltip="Checkouts iniciados" />
+        <SortableHeader label="Orçamento" column="daily_budget" {...sp} />
       </th>
       <th className="text-right p-3 font-medium text-muted-foreground">
-        <ColumnHeader label="Vis. de Pág." tooltip="Visualizações da página de destino" />
+        <SortableHeader label="Gastos" column="total_spend" {...sp} />
       </th>
       <th className="text-right p-3 font-medium text-muted-foreground">
-        <ColumnHeader label="CTR" tooltip="Taxa de cliques (Cliques / Impressões)" />
+        <SortableHeader label="Vendas" column="sales_count" {...sp} />
       </th>
       <th className="text-right p-3 font-medium text-muted-foreground">
-        <ColumnHeader label="CPC" tooltip="Custo por clique" />
+        <SortableHeader label="CPA" tooltip="Custo por aquisição (Gasto / Vendas)" column="cpa" {...sp} />
       </th>
-      <th className="text-right p-3 font-medium text-muted-foreground">Cliques</th>
       <th className="text-right p-3 font-medium text-muted-foreground">
-        <ColumnHeader label="CPM" tooltip="Custo por mil impressões" />
+        <SortableHeader label="Faturamento" column="revenue" {...sp} />
       </th>
-      <th className="text-right p-3 font-medium text-muted-foreground">Impressões</th>
+      <th className="text-right p-3 font-medium text-muted-foreground">
+        <SortableHeader label="Lucro" column="profit" {...sp} />
+      </th>
+      <th className="text-right p-3 font-medium text-muted-foreground">
+        <SortableHeader label="ROI" column="roi" {...sp} />
+      </th>
+      <th className="text-right p-3 font-medium text-muted-foreground">
+        <SortableHeader label="ROAS" column="roas" {...sp} />
+      </th>
+      <th className="text-right p-3 font-medium text-muted-foreground">
+        <SortableHeader label="CPI" tooltip="Custo por checkout iniciado" column="cpi" {...sp} />
+      </th>
+      <th className="text-right p-3 font-medium text-muted-foreground">
+        <SortableHeader label="IC" tooltip="Checkouts iniciados" column="total_initiated_checkouts" {...sp} />
+      </th>
+      <th className="text-right p-3 font-medium text-muted-foreground">
+        <SortableHeader label="Vis. de Pág." tooltip="Visualizações da página de destino" column="total_landing_page_views" {...sp} />
+      </th>
+      <th className="text-right p-3 font-medium text-muted-foreground">
+        <SortableHeader label="CTR" tooltip="Taxa de cliques (Cliques / Impressões)" column="ctr" {...sp} />
+      </th>
+      <th className="text-right p-3 font-medium text-muted-foreground">
+        <SortableHeader label="CPC" tooltip="Custo por clique" column="avg_cpc" {...sp} />
+      </th>
+      <th className="text-right p-3 font-medium text-muted-foreground">
+        <SortableHeader label="Cliques" column="total_clicks" {...sp} />
+      </th>
+      <th className="text-right p-3 font-medium text-muted-foreground">
+        <SortableHeader label="CPM" tooltip="Custo por mil impressões" column="avg_cpm" {...sp} />
+      </th>
+      <th className="text-right p-3 font-medium text-muted-foreground">
+        <SortableHeader label="Impressões" column="total_impressions" {...sp} />
+      </th>
     </tr>
   );
 }
 
-function MetricsRow({ item, onClick, clickable = false }: { item: AggregatedItem | CampaignWithSales; onClick?: () => void; clickable?: boolean }) {
+function MetricsRow({ item, onClick, clickable = false, onStatusToggle }: { item: AggregatedItem | CampaignWithSales; onClick?: () => void; clickable?: boolean; onStatusToggle?: (objectId: string, newStatus: string) => void }) {
   const isCampaign = "campaign_name" in item;
   const name = isCampaign ? (item as CampaignWithSales).campaign_name : (item as AggregatedItem).name;
   const status = isCampaign ? (item as CampaignWithSales).campaign_status : (item as AggregatedItem).status;
@@ -126,6 +278,7 @@ function MetricsRow({ item, onClick, clickable = false }: { item: AggregatedItem
   const avgCpc = isCampaign ? (item as CampaignWithSales).avg_cpc : (item as AggregatedItem).avg_cpc;
   const avgCpm = isCampaign ? (item as CampaignWithSales).avg_cpm : (item as AggregatedItem).avg_cpm;
 
+  const objectId = isCampaign ? (item as CampaignWithSales).campaign_id : (item as AggregatedItem).id;
   const ctr = impressions > 0 ? (clicks / impressions) * 100 : 0;
   const cpi = ic > 0 ? spend / ic : 0;
 
@@ -137,7 +290,9 @@ function MetricsRow({ item, onClick, clickable = false }: { item: AggregatedItem
       )}
       onClick={onClick}
     >
-      <td className="p-3 sticky left-0 bg-background z-10"><StatusBadge status={status} /></td>
+      <td className="p-3 sticky left-0 bg-background z-10">
+        <StatusBadge status={status} objectId={objectId} onToggle={onStatusToggle} />
+      </td>
       <td className="p-3 sticky left-[72px] bg-background z-10">
         <div className="flex items-center gap-2">
           <div className="flex-1 min-w-0">
@@ -238,6 +393,11 @@ const AdsManagementContent = () => {
   const [customEnd, setCustomEnd] = useState<Date>();
   const [accountFilter, setAccountFilter] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortColumn, setSortColumn] = useState<SortColumn | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+
+  // Local status overrides for toggled items
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, string>>({});
 
   const {
     campaignsWithSales,
@@ -261,6 +421,39 @@ const AdsManagementContent = () => {
     fetchAds,
     navigateToLevel,
   } = useAdsHierarchy(dateRange, sales);
+
+  const handleSort = useCallback((col: SortColumn) => {
+    if (sortColumn === col) {
+      setSortDirection(prev => prev === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(col);
+      setSortDirection("desc");
+    }
+  }, [sortColumn]);
+
+  // Apply status overrides to data
+  const campaignsWithOverrides = useMemo(() => campaignsWithSales.map(c => {
+    const override = statusOverrides[c.campaign_id];
+    return override ? { ...c, campaign_status: override } : c;
+  }), [campaignsWithSales, statusOverrides]);
+
+  const adsetsWithOverrides = useMemo(() => adsets.map(a => {
+    const override = statusOverrides[a.id];
+    return override ? { ...a, status: override } : a;
+  }), [adsets, statusOverrides]);
+
+  const adsWithOverrides = useMemo(() => ads.map(a => {
+    const override = statusOverrides[a.id];
+    return override ? { ...a, status: override } : a;
+  }), [ads, statusOverrides]);
+
+  const sortedCampaigns = useMemo(() => sortItems(campaignsWithOverrides, sortColumn, sortDirection), [campaignsWithOverrides, sortColumn, sortDirection]);
+  const sortedAdsets = useMemo(() => sortItems(adsetsWithOverrides, sortColumn, sortDirection), [adsetsWithOverrides, sortColumn, sortDirection]);
+  const sortedAds = useMemo(() => sortItems(adsWithOverrides, sortColumn, sortDirection), [adsWithOverrides, sortColumn, sortDirection]);
+
+  const handleStatusToggle = useCallback((objectId: string, newStatus: string) => {
+    setStatusOverrides(prev => ({ ...prev, [objectId]: newStatus }));
+  }, []);
 
   const handleCampaignClick = (c: CampaignWithSales) => {
     fetchAdsets([c.campaign_id], c.campaign_name);
@@ -411,7 +604,7 @@ const AdsManagementContent = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-sm whitespace-nowrap">
             <thead>
-              <MetricsTableHeader />
+              <MetricsTableHeader sortColumn={sortColumn} sortDirection={sortDirection} onSort={handleSort} />
             </thead>
             <tbody>
               {/* Campaigns Level */}
@@ -422,12 +615,13 @@ const AdsManagementContent = () => {
                   ) : campaignsWithSales.length === 0 ? (
                     <tr><td colSpan={18} className="text-center p-8 text-muted-foreground">Nenhuma campanha encontrada. Clique em "Atualizar" para sincronizar.</td></tr>
                   ) : (
-                    campaignsWithSales.map((c) => (
+                    sortedCampaigns.map((c) => (
                       <MetricsRow
                         key={c.campaign_id}
                         item={c}
                         clickable
                         onClick={() => handleCampaignClick(c)}
+                        onStatusToggle={handleStatusToggle}
                       />
                     ))
                   )}
@@ -447,12 +641,13 @@ const AdsManagementContent = () => {
                   ) : adsets.length === 0 ? (
                     <tr><td colSpan={18} className="text-center p-8 text-muted-foreground">Nenhum conjunto encontrado para esta campanha.</td></tr>
                   ) : (
-                    adsets.map((a) => (
+                    sortedAdsets.map((a) => (
                       <MetricsRow
                         key={a.id}
                         item={a}
                         clickable
                         onClick={() => handleAdsetClick(a)}
+                        onStatusToggle={handleStatusToggle}
                       />
                     ))
                   )}
@@ -472,10 +667,11 @@ const AdsManagementContent = () => {
                   ) : ads.length === 0 ? (
                     <tr><td colSpan={18} className="text-center p-8 text-muted-foreground">Nenhum anúncio encontrado para este conjunto.</td></tr>
                   ) : (
-                    ads.map((a) => (
+                    sortedAds.map((a) => (
                       <MetricsRow
                         key={a.id}
                         item={a}
+                        onStatusToggle={handleStatusToggle}
                       />
                     ))
                   )}

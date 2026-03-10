@@ -1,37 +1,23 @@
 
 
-## Plano: Ordenação por Colunas + Ativar/Desativar via API
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-### 1. Ordenação por Colunas (Sortable Headers)
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-**Arquivo:** `src/components/admin/AdsManagementContent.tsx`
+## Dados
 
-- Adicionar estado `sortColumn` e `sortDirection` (`asc` | `desc`)
-- Transformar `MetricsTableHeader` para receber props de sort e disparar clique nos headers
-- Cada `<th>` vira clicável com ícone de seta (▲/▼) indicando a direção atual
-- Antes de renderizar as rows (campaigns, adsets, ads), aplicar `sort()` baseado na coluna selecionada
-- Colunas ordenáveis: Status, Nome, Orçamento, Gastos, Vendas, CPA, Faturamento, Lucro, ROI, ROAS, CPI, IC, Vis. Pág., CTR, CPC, Cliques, CPM, Impressões
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-A lógica de sort será uma função utilitária que recebe o array + coluna + direção e retorna o array ordenado. Funciona para todos os 3 níveis (campaigns, adsets, ads) pois ambos os tipos têm os mesmos campos numéricos.
+## Ações (via SQL migration)
 
-### 2. Ativar/Desativar Campanhas, Conjuntos e Anúncios via Meta API
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-**Arquivo:** `supabase/functions/fetch-meta-ads/index.ts`
-- Adicionar nova action `"update-status"` que recebe `{ object_id, object_type, new_status }` 
-- Faz POST para `https://graph.facebook.com/v21.0/{object_id}` com `{ status: "ACTIVE" | "PAUSED" }`
-- O mesmo endpoint funciona para campaigns, adsets e ads na Graph API
-
-**Arquivo:** `src/components/admin/AdsManagementContent.tsx`
-- Transformar o `StatusBadge` em um botão toggle clicável
-- Ao clicar, abre um confirm dialog ou simplesmente alterna entre ACTIVE/PAUSED
-- Chama `supabase.functions.invoke("fetch-meta-ads", { body: { action: "update-status", object_id, new_status } })`
-- Atualiza o status localmente após sucesso
-- Mostrar loading spinner no badge durante a operação
-
-### Resumo das Mudanças
-
-| Arquivo | Mudança |
-|---|---|
-| `AdsManagementContent.tsx` | Headers clicáveis com sort + StatusBadge toggle |
-| `fetch-meta-ads/index.ts` | Nova action `update-status` para Meta Graph API |
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
