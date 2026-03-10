@@ -182,7 +182,7 @@ const Index = () => {
       category: 'Ferramenta de IA',
       title: 'Upscaler Arcano Vitalício',
       description: 'Acesso vitalício ao Upscaler Arcano',
-      image: cardFerramentasIA,
+      image: cardUpscalerVitalicio,
       route: '/ferramenta-ia-artes/upscaller-arcano/v2',
       imagePosition: 'center center',
     }] : []),
