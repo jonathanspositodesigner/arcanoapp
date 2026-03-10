@@ -268,7 +268,7 @@ const PlanosUpscalerArcano69v2 = () => {
         if (raw) utmData = JSON.parse(raw);
       } catch { /* ignore */ }
 
-      const response = await supabase.functions.invoke('create-mp-checkout', {
+      const response = await supabase.functions.invoke('create-asaas-checkout', {
         body: {
           product_slug: 'upscaller-arcano-vitalicio',
           user_email: userEmail.toLowerCase().trim(),

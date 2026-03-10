@@ -1,51 +1,23 @@
 
 
-## Integração Asaas - Checkout PIX + Cartão
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-### Passo 1: Salvar API Key como Secret
-Armazenar `ASAAS_API_KEY` de forma segura no backend.
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-### Passo 2: Criar tabela `asaas_orders`
-Mesma estrutura de `mp_orders`:
-- `id`, `user_email`, `product_id`, `amount`, `status`, `payment_id`, `payment_method`, `net_amount`, `paid_at`, `utm_data`, `user_id`, `created_at`, `updated_at`
-- Referencia `mp_products` (reutiliza o catálogo existente)
-- RLS: admin-only via `has_role`
+## Dados
 
-### Passo 3: Edge Function `create-asaas-checkout`
-- Recebe `{ product_slug, user_email, utm_data }`
-- Busca produto em `mp_products`
-- Cria/busca cliente no Asaas (`POST /v3/customers`)
-- Cria cobrança (`POST /v3/payments`) com `billingType: "UNDEFINED"` (PIX + Cartão na mesma tela)
-- Salva ordem em `asaas_orders`
-- Retorna `{ checkout_url: invoiceUrl, order_id }`
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-### Passo 4: Edge Function `webhook-asaas`
-- Recebe eventos do Asaas
-- `PAYMENT_CONFIRMED` / `PAYMENT_RECEIVED`: mesma lógica do `webhook-mercadopago` (criar usuário, conceder pack/créditos, enviar email, UTMify)
-- `PAYMENT_REFUNDED`: revogar acesso
-- Idempotência via `asaas_orders.payment_id`
+## Ações (via SQL migration)
 
-### Passo 5: Atualizar página `PlanosUpscalerArcanoMP.tsx`
-- Trocar a chamada de `create-mp-checkout` para `create-asaas-checkout` (ou adicionar como opção alternativa)
-- Manter o mesmo fluxo: email → checkout → redirect
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-### Passo 6: Atualizar dashboard de vendas
-- Incluir `asaas_orders` na função `get_unified_dashboard_orders` para que vendas Asaas apareçam no dashboard
-
-### Passo 7: config.toml
-- Adicionar `[functions.create-asaas-checkout]` e `[functions.webhook-asaas]` com `verify_jwt = false`
-
-### Ação manual necessária do usuário
-Configurar webhook no painel Asaas apontando para:
-`https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/webhook-asaas`
-Eventos: `PAYMENT_CONFIRMED`, `PAYMENT_RECEIVED`, `PAYMENT_REFUNDED`
-
-### Arquivos a criar/editar
-| Arquivo | Ação |
-|---|---|
-| `supabase/functions/create-asaas-checkout/index.ts` | Criar |
-| `supabase/functions/webhook-asaas/index.ts` | Criar |
-| `src/pages/PlanosUpscalerArcanoMP.tsx` | Editar (trocar/adicionar Asaas) |
-| `supabase/config.toml` | Adicionar 2 entries |
-| Migration SQL | Criar tabela `asaas_orders` + atualizar `get_unified_dashboard_orders` |
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
