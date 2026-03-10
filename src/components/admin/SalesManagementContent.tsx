@@ -33,7 +33,16 @@ const statusMap: Record<string, { label: string; variant: "default" | "secondary
   paid: { label: "Aprovada", variant: "default" },
   pending: { label: "Pendente", variant: "secondary" },
   refunded: { label: "Reembolsada", variant: "destructive" },
+  chargeback: { label: "Chargeback", variant: "destructive" },
 };
+
+const statusFilters = [
+  { id: "all", label: "Todas" },
+  { id: "paid", label: "Aprovadas" },
+  { id: "pending", label: "Pendentes" },
+  { id: "refunded", label: "Reembolsadas" },
+  { id: "chargeback", label: "Chargebacks" },
+];
 
 type RangePreset = "today" | "7d" | "30d" | "90d" | "custom";
 
@@ -44,6 +53,7 @@ const SalesManagementContent = () => {
   const [page, setPage] = useState(0);
   const [selectedSale, setSelectedSale] = useState<SaleRecord | null>(null);
   const [rangePreset, setRangePreset] = useState<RangePreset>("30d");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [customStart, setCustomStart] = useState<Date | undefined>();
   const [customEnd, setCustomEnd] = useState<Date | undefined>();
 
@@ -140,22 +150,28 @@ const SalesManagementContent = () => {
   }, [dateRange]);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return sales;
-    const q = search.toLowerCase();
-    return sales.filter(
-      (s) =>
-        s.user_email?.toLowerCase().includes(q) ||
-        s.name?.toLowerCase().includes(q) ||
-        s.product_title?.toLowerCase().includes(q)
-    );
-  }, [sales, search]);
+    let result = sales;
+    if (statusFilter !== "all") {
+      result = result.filter((s) => s.status === statusFilter);
+    }
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (s) =>
+          s.user_email?.toLowerCase().includes(q) ||
+          s.name?.toLowerCase().includes(q) ||
+          s.product_title?.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [sales, search, statusFilter]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   useEffect(() => {
     setPage(0);
-  }, [search, dateRange]);
+  }, [search, dateRange, statusFilter]);
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -199,6 +215,20 @@ const SalesManagementContent = () => {
                 onClick={() => setRangePreset(p.id)}
               >
                 {p.label}
+              </Button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {statusFilters.map((sf) => (
+              <Button
+                key={sf.id}
+                variant={statusFilter === sf.id ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setStatusFilter(sf.id)}
+                className="text-xs"
+              >
+                {sf.label}
               </Button>
             ))}
           </div>
