@@ -1,7 +1,7 @@
 /**
- * Edge Function: webhook-asaas
- * Recebe notificações do Asaas, valida o pagamento e libera acesso.
- * Mesma lógica do webhook-mercadopago para criação de usuário e acesso.
+ * Edge Function: webhook-pagarme
+ * Recebe notificações do Pagar.me (order.paid, order.payment_failed, charge.refunded).
+ * Mesma lógica do webhook-asaas para criação de usuário e acesso.
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -98,7 +98,7 @@ async function sendPurchaseEmail(supabase: any, email: string, productName: stri
       .from('welcome_email_logs')
       .select('id')
       .eq('email', email)
-      .eq('template_name', `asaas_purchase_${productName}`)
+      .eq('template_name', `pagarme_purchase_${productName}`)
       .maybeSingle()
 
     if (existing) {
@@ -147,7 +147,7 @@ async function sendPurchaseEmail(supabase: any, email: string, productName: stri
 
     await supabase.from('welcome_email_logs').insert({
       email,
-      template_name: `asaas_purchase_${productName}`,
+      template_name: `pagarme_purchase_${productName}`,
       tracking_id: trackingId,
       status: response.ok ? 'sent' : 'failed',
       sent_at: response.ok ? new Date().toISOString() : null,
@@ -179,18 +179,20 @@ serve(async (req) => {
 
     const body = await req.json()
 
-    // Asaas webhook format: { event, payment }
-    const event = body.event
-    const payment = body.payment
+    // Pagar.me webhook format: { id, type, data }
+    const eventType = body.type
+    const eventData = body.data
 
-    console.log(`\n🔔 [${requestId}] WEBHOOK ASAAS`)
-    console.log(`   ├─ event: ${event}`)
-    console.log(`   ├─ payment_id: ${payment?.id}`)
-    console.log(`   ├─ status: ${payment?.status}`)
-    console.log(`   ├─ externalReference: ${payment?.externalReference}`)
+    console.log(`\n🔔 [${requestId}] WEBHOOK PAGAR.ME`)
+    console.log(`   ├─ type: ${eventType}`)
+    console.log(`   ├─ data.id: ${eventData?.id}`)
+    console.log(`   ├─ data.status: ${eventData?.status}`)
 
-    if (!payment || !payment.externalReference) {
-      console.log(`   ├─ ⏭️ Sem payment ou externalReference`)
+    // Extrair order_id do metadata
+    const orderId = eventData?.metadata?.order_id
+
+    if (!orderId) {
+      console.log(`   ├─ ⏭️ Sem order_id no metadata`)
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
 
@@ -198,11 +200,11 @@ serve(async (req) => {
     const { data: order, error: orderError } = await supabase
       .from('asaas_orders')
       .select('*, mp_products(*)')
-      .eq('id', payment.externalReference)
+      .eq('id', orderId)
       .single()
 
     if (orderError || !order) {
-      console.error(`   ├─ ❌ Ordem não encontrada: ${payment.externalReference}`, orderError)
+      console.error(`   ├─ ❌ Ordem não encontrada: ${orderId}`, orderError)
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
 
@@ -213,8 +215,8 @@ serve(async (req) => {
     // =============================================
     // PAGAMENTO CONFIRMADO
     // =============================================
-    if ((event === 'PAYMENT_CONFIRMED' || event === 'PAYMENT_RECEIVED') && order.status === 'pending') {
-      console.log(`\n✅ [${requestId}] PAGAMENTO ASAAS CONFIRMADO - Processando...`)
+    if ((eventType === 'order.paid' || eventType === 'charge.paid') && order.status === 'pending') {
+      console.log(`\n✅ [${requestId}] PAGAMENTO PAGAR.ME CONFIRMADO - Processando...`)
 
       const email = order.user_email
 
@@ -294,7 +296,7 @@ serve(async (req) => {
             has_bonus_access: true,
             expires_at: null,
             product_name: product.title,
-            platform: 'asaas'
+            platform: 'pagarme'
           })
           console.log(`   ├─ ✅ Acesso concedido: ${product.pack_slug} (${product.access_type})`)
         } else {
@@ -306,7 +308,7 @@ serve(async (req) => {
         const { error: creditsError } = await supabase.rpc('add_lifetime_credits', {
           _user_id: userId,
           _amount: product.credits_amount,
-          _description: `Compra Asaas: ${product.title}`
+          _description: `Compra Pagar.me: ${product.title}`
         })
         if (creditsError) {
           console.error(`   ├─ ❌ Erro ao adicionar créditos:`, creditsError)
@@ -316,19 +318,22 @@ serve(async (req) => {
       }
 
       // 4. Determinar método de pagamento
-      let paymentMethod = payment.billingType || 'UNDEFINED'
-      if (paymentMethod === 'PIX') paymentMethod = 'pix'
-      else if (paymentMethod === 'CREDIT_CARD') paymentMethod = 'credit_card'
-      else if (paymentMethod === 'BOLETO') paymentMethod = 'boleto'
+      const charge = eventData?.charges?.[0] || eventData
+      const lastTransaction = charge?.last_transaction
+      let paymentMethod = lastTransaction?.transaction_type || 'unknown'
+      if (paymentMethod === 'pix') paymentMethod = 'pix'
+      else if (paymentMethod === 'credit_card') paymentMethod = 'credit_card'
+      else if (paymentMethod === 'boleto') paymentMethod = 'boleto'
 
       // 5. Atualizar ordem
+      const netAmount = charge?.amount ? charge.amount / 100 : Number(order.amount)
       await supabase.from('asaas_orders').update({
         status: 'paid',
         user_id: userId,
-        asaas_payment_id: payment.id,
+        asaas_payment_id: eventData?.id || charge?.id,
         payment_method: paymentMethod,
-        net_amount: payment.netValue ?? payment.value,
-        paid_at: payment.confirmedDate || payment.paymentDate || new Date().toISOString(),
+        net_amount: netAmount,
+        paid_at: charge?.paid_at || new Date().toISOString(),
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
@@ -375,7 +380,7 @@ serve(async (req) => {
           saleMetas
         }
 
-        console.log(`   ├─ 📊 UTMify payload: sale.id=${numericOrderId}, product.id=${numericProductId}, amount=${Math.round(Number(order.amount) * 100)}`)
+        console.log(`   ├─ 📊 UTMify payload: sale.id=${numericOrderId}, product.id=${numericProductId}`)
 
         const utmifyResponse = await fetch(
           'https://api.utmify.com.br/webhooks/greenn?id=677eeb043df9ee8a68e6995b',
@@ -386,19 +391,19 @@ serve(async (req) => {
           }
         )
         const utmifyBody = await utmifyResponse.text()
-        console.log(`   ├─ 📊 UTMify response: ${utmifyResponse.status} - ${utmifyBody} (${saleMetas.length} metas)`)
+        console.log(`   ├─ 📊 UTMify response: ${utmifyResponse.status} - ${utmifyBody}`)
       } catch (utmErr: any) {
-        console.error(`   ├─ ⚠️ UTMify webhook falhou (não-bloqueante): ${utmErr.message}`)
+        console.error(`   ├─ ⚠️ UTMify webhook falhou: ${utmErr.message}`)
       }
 
-      console.log(`\n✅ [${requestId}] PROCESSAMENTO ASAAS CONCLUÍDO COM SUCESSO`)
+      console.log(`\n✅ [${requestId}] PROCESSAMENTO PAGAR.ME CONCLUÍDO COM SUCESSO`)
     }
 
     // =============================================
     // REEMBOLSO
     // =============================================
-    else if ((event === 'PAYMENT_REFUNDED' || event === 'PAYMENT_REFUND_IN_PROGRESS') && order.status === 'paid') {
-      console.log(`\n🚫 [${requestId}] REEMBOLSO ASAAS - Revogando acesso...`)
+    else if ((eventType === 'charge.refunded' || eventType === 'order.canceled') && order.status === 'paid') {
+      console.log(`\n🚫 [${requestId}] REEMBOLSO PAGAR.ME - Revogando acesso...`)
 
       if (order.user_id && product.pack_slug) {
         await supabase
@@ -414,12 +419,12 @@ serve(async (req) => {
         const { error: revokeError } = await supabase.rpc('remove_lifetime_credits', {
           _user_id: order.user_id,
           _amount: product.credits_amount,
-          _description: `Reembolso Asaas: ${product.title}`
+          _description: `Reembolso Pagar.me: ${product.title}`
         })
         if (revokeError) {
           console.error(`   ├─ ❌ Erro ao revogar créditos:`, revokeError)
         } else {
-          console.log(`   ├─ ✅ ${product.credits_amount} créditos revogados`)
+          console.log(`   ├─ ✅ Créditos revogados: ${product.credits_amount}`)
         }
       }
 
@@ -427,16 +432,18 @@ serve(async (req) => {
         status: 'refunded',
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
+
+      console.log(`   ├─ ✅ Ordem marcada como refunded`)
     }
 
     else {
-      console.log(`   ├─ ℹ️ Evento ${event} / ordem ${order.status} - sem ação`)
+      console.log(`   ├─ ⏭️ Evento ignorado: ${eventType} (status atual: ${order.status})`)
     }
 
     return new Response('OK', { status: 200, headers: corsHeaders })
 
-  } catch (error) {
-    console.error(`\n❌ [${requestId}] ERRO:`, error)
+  } catch (error: any) {
+    console.error(`❌ [${requestId}] Erro geral:`, error.message)
     return new Response('OK', { status: 200, headers: corsHeaders })
   }
 })

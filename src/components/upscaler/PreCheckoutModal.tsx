@@ -94,7 +94,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail }: PreCheckoutModalProps)
         if (raw) utmData = JSON.parse(raw);
       } catch { /* ignore */ }
 
-      const response = await supabase.functions.invoke('create-asaas-checkout', {
+      const response = await supabase.functions.invoke('create-pagarme-checkout', {
         body: {
           product_slug: 'upscaller-arcano-vitalicio',
           user_email: email.trim().toLowerCase(),
