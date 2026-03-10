@@ -684,7 +684,7 @@ const PlanosUpscalerArcano = () => {
           <LazySection rootMargin="100px">
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
             {/* Banner promo com countdown */}
-            <div className="max-w-4xl mx-auto mb-6 rounded-xl overflow-hidden border border-red-500/30 bg-gradient-to-r from-red-950/80 via-purple-950/60 to-red-950/80">
+            <div className="max-w-5xl mx-auto mb-6 rounded-xl overflow-hidden border border-red-500/30 bg-gradient-to-r from-red-950/80 via-purple-950/60 to-red-950/80">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3">
                 <div className="flex items-center gap-2 animate-pulse">
                   <span className="text-lg">🔥</span>
@@ -753,7 +753,7 @@ const PlanosUpscalerArcano = () => {
               </div>
             </div>
 
-            <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6 items-stretch">
+            <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-6 items-stretch">
               {/* Card de preço */}
               <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
                 <CardContent className="p-5 md:p-8 text-center">
