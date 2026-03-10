@@ -1013,6 +1013,65 @@ export type Database = {
         }
         Relationships: []
       }
+      asaas_orders: {
+        Row: {
+          amount: number
+          asaas_customer_id: string | null
+          asaas_payment_id: string | null
+          created_at: string | null
+          id: string
+          net_amount: number | null
+          paid_at: string | null
+          payment_method: string | null
+          product_id: string | null
+          status: string
+          updated_at: string | null
+          user_email: string
+          user_id: string | null
+          utm_data: Json | null
+        }
+        Insert: {
+          amount: number
+          asaas_customer_id?: string | null
+          asaas_payment_id?: string | null
+          created_at?: string | null
+          id?: string
+          net_amount?: number | null
+          paid_at?: string | null
+          payment_method?: string | null
+          product_id?: string | null
+          status?: string
+          updated_at?: string | null
+          user_email: string
+          user_id?: string | null
+          utm_data?: Json | null
+        }
+        Update: {
+          amount?: number
+          asaas_customer_id?: string | null
+          asaas_payment_id?: string | null
+          created_at?: string | null
+          id?: string
+          net_amount?: number | null
+          paid_at?: string | null
+          payment_method?: string | null
+          product_id?: string | null
+          status?: string
+          updated_at?: string | null
+          user_email?: string
+          user_id?: string | null
+          utm_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asaas_orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "mp_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blacklisted_emails: {
         Row: {
           auto_blocked: boolean | null
