@@ -158,14 +158,13 @@ const FullscreenModal = ({
 };
 
 // CTA Button Component - estilo pill
-const CTAButton = ({ onClick, isPremium, t, loading }: { onClick: () => void; isPremium: boolean; t: (key: string) => string; loading?: boolean }) => (
+const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
   <Button
     onClick={onClick}
-    disabled={loading}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40 disabled:opacity-70 disabled:cursor-wait"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40"
   >
-    {loading ? 'Gerando checkout...' : t('tools:upscaler.cta')}
-    {!loading && <ArrowRight className="h-5 w-5 ml-2" />}
+    {t('tools:upscaler.cta')}
+    <ArrowRight className="h-5 w-5 ml-2" />
   </Button>
 );
 
@@ -246,92 +245,12 @@ const PlanosUpscalerArcano = () => {
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
-  const [purchaseLoading, setPurchaseLoading] = useState(false);
-  const [emailInput, setEmailInput] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [showEmailField, setShowEmailField] = useState(false);
-
-  // Countdown timer - 48 minutes
-  const [timeLeft, setTimeLeft] = useState(() => {
-    const saved = localStorage.getItem('upscaler-countdown');
-    if (saved) {
-      const remaining = parseInt(saved, 10) - Date.now();
-      if (remaining > 0) return remaining;
+  const handlePurchase = () => {
+    if (!tool) return;
+    const checkoutLink = (isPremium ? tool.checkout_link_membro_vitalicio : tool.checkout_link_vitalicio);
+    if (checkoutLink) {
+      window.open(appendUtmToUrl(checkoutLink), '_blank');
     }
-    const initial = 48 * 60 * 1000;
-    localStorage.setItem('upscaler-countdown', String(Date.now() + initial));
-    return initial;
-  });
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1000) {
-          const newTime = 48 * 60 * 1000;
-          localStorage.setItem('upscaler-countdown', String(Date.now() + newTime));
-          return newTime;
-        }
-        return prev - 1000;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const formatTime = (ms: number) => {
-    const totalSeconds = Math.floor(ms / 1000);
-    const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-    const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-    const seconds = String(totalSeconds % 60).padStart(2, '0');
-    return { hours, minutes, seconds };
-  };
-
-  const countdown = formatTime(timeLeft);
-
-  const handlePurchase = async () => {
-    const userEmail = user?.email || emailInput.trim();
-    if (!userEmail) {
-      setEmailError('Digite seu email para continuar');
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
-      setEmailError('Email inválido');
-      return;
-    }
-    setEmailError('');
-    setPurchaseLoading(true);
-    try {
-      let utmData: Record<string, string> | null = null;
-      try {
-        const raw = sessionStorage.getItem('captured_utms');
-        if (raw) utmData = JSON.parse(raw);
-      } catch { /* ignore */ }
-
-      const response = await supabase.functions.invoke('create-mp-checkout', {
-        body: {
-          product_slug: 'upscaller-arcano-vitalicio',
-          user_email: userEmail.toLowerCase().trim(),
-          utm_data: utmData
-        }
-      });
-
-      if (response.error) {
-        console.error('Erro ao criar checkout:', response.error);
-        alert('Erro ao criar checkout. Tente novamente.');
-        setPurchaseLoading(false);
-        return;
-      }
-
-      const { checkout_url } = response.data;
-      if (checkout_url) {
-        window.location.href = checkout_url;
-      } else {
-        alert('Erro ao gerar link de pagamento.');
-      }
-    } catch (error) {
-      console.error('Erro:', error);
-      alert('Erro ao processar. Tente novamente.');
-    }
-    setPurchaseLoading(false);
   };
 
   const hasAccess = hasAccessToPack(TOOL_SLUG);
@@ -426,7 +345,7 @@ const PlanosUpscalerArcano = () => {
     },
     {
       question: "Como funciona a garantia de 7 dias?",
-      answer: "Você tem 7 dias após a compra para testar o Upscaler Arcano. Se por qualquer motivo não ficar satisfeito, basta solicitar o reembolso e devolvemos 100% do seu dinheiro — sem perguntas, sem burocracia. O pagamento é processado pelo Mercado Pago, garantindo total segurança na transação."
+      answer: "Você tem 7 dias após a compra para testar o Upscaler Arcano. Se por qualquer motivo não ficar satisfeito, basta solicitar o reembolso e devolvemos 100% do seu dinheiro — sem perguntas, sem burocracia."
     }
   ];
 
@@ -648,33 +567,6 @@ const PlanosUpscalerArcano = () => {
           {/* SEÇÃO DE PREÇO E CTA - Com Card + Garantia */}
           <LazySection rootMargin="100px">
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
-            {/* Banner promo com countdown */}
-            <div className="max-w-5xl mx-auto mb-6 rounded-xl overflow-hidden border border-red-500/30 bg-gradient-to-r from-red-950/80 via-purple-950/60 to-red-950/80">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3">
-                <div className="flex items-center gap-2 animate-pulse">
-                  <span className="text-lg">🔥</span>
-                  <span className="text-white font-bold tracking-wide text-sm md:text-base">Promoção por tempo limitado!</span>
-                  <span className="text-lg">🔥</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-red-400" />
-                  <span className="text-red-300 text-xs sm:text-sm font-medium">Essa oferta expira em</span>
-                  <div className="flex items-center gap-1">
-                    <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
-                      <span className="text-white font-mono font-bold text-sm">{countdown.hours}</span>
-                    </div>
-                    <span className="text-red-400 font-bold text-sm">:</span>
-                    <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
-                      <span className="text-white font-mono font-bold text-sm">{countdown.minutes}</span>
-                    </div>
-                    <span className="text-red-400 font-bold text-sm">:</span>
-                    <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
-                      <span className="text-white font-mono font-bold text-sm">{countdown.seconds}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* Stats inline customizado para Upscaler - hidden on mobile, shown after cards on mobile */}
             <div className="max-w-5xl mx-auto mb-8 px-2 hidden md:block">
@@ -763,35 +655,8 @@ const PlanosUpscalerArcano = () => {
                   </div>
 
                   <div className="px-0 md:px-2">
-                    <CTAButton onClick={() => {
-                      if (!user && !showEmailField) {
-                        setShowEmailField(true);
-                        return;
-                      }
-                      handlePurchase();
-                    }} isPremium={isPremium} t={t} loading={purchaseLoading} />
+                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
                   </div>
-
-                  {!user && showEmailField && (
-                    <div className="animate-fade-in px-0 md:px-2 mt-4 flex flex-col items-center gap-3">
-                      <input
-                        type="email"
-                        placeholder="Digite seu email para continuar"
-                        value={emailInput}
-                        onChange={(e) => { setEmailInput(e.target.value); setEmailError(''); }}
-                        className="w-full max-w-md mx-auto block px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/40 text-center text-base focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
-                        autoFocus
-                      />
-                      {emailError && <p className="text-red-400 text-xs mt-1">{emailError}</p>}
-                      <Button
-                        onClick={handlePurchase}
-                        disabled={purchaseLoading}
-                        className="w-full max-w-md py-5 text-base font-bold rounded-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-500/20 transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait"
-                      >
-                        {purchaseLoading ? 'Gerando checkout...' : 'Continuar →'}
-                      </Button>
-                    </div>
-                  )}
 
                   {/* Badges de pagamento */}
                   <div className="flex flex-wrap justify-center gap-3 md:gap-4 mt-5 md:mt-6 text-white/50 text-xs">
@@ -811,7 +676,7 @@ const PlanosUpscalerArcano = () => {
                 </CardContent>
               </Card>
 
-              {/* Card de garantia Mercado Pago */}
+              {/* Card de garantia */}
               <Card className="bg-gradient-to-br from-[#0a1a0f] to-[#0f1a15] border-2 border-emerald-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-emerald-500/10">
                 <CardContent className="p-5 md:p-8 text-center flex flex-col items-center">
                   {/* Ícone de escudo grande */}
@@ -823,7 +688,7 @@ const PlanosUpscalerArcano = () => {
                     Compra 100% Segura
                   </h3>
                   <p className="text-white/50 text-sm mb-6">
-                    Proteção total pelo Mercado Pago
+                    Proteção total na sua compra
                   </p>
 
                   {/* Badge Garantia 7 dias */}
@@ -846,7 +711,7 @@ const PlanosUpscalerArcano = () => {
                   <div className="space-y-3 w-full mb-6">
                     {[
                       { icon: Shield, text: "Dados criptografados (SSL)" },
-                      { icon: CreditCard, text: "Pagamento via Mercado Pago" },
+                      { icon: CreditCard, text: "Pagamento seguro" },
                       { icon: Check, text: "Reembolso garantido em 7 dias" },
                     ].map((item, i) => (
                       <div key={i} className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-3">
@@ -974,34 +839,8 @@ const PlanosUpscalerArcano = () => {
             {/* CTA abaixo da galeria */}
             <div className="max-w-md mx-auto mt-10">
               <div className="px-0 md:px-2">
-                <CTAButton onClick={() => {
-                  if (!user && !showEmailField) {
-                    setShowEmailField(true);
-                    return;
-                  }
-                  handlePurchase();
-                }} isPremium={isPremium} t={t} loading={purchaseLoading} />
+                <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
               </div>
-
-              {!user && showEmailField && (
-                <div className="animate-fade-in px-0 md:px-2 mt-4 flex flex-col items-center gap-3">
-                  <input
-                    type="email"
-                    placeholder="Digite seu email para continuar"
-                    value={emailInput}
-                    onChange={(e) => { setEmailInput(e.target.value); setEmailError(''); }}
-                    className="w-full max-w-md mx-auto block px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/40 text-center text-base focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
-                  />
-                  {emailError && <p className="text-red-400 text-xs mt-1">{emailError}</p>}
-                  <Button
-                    onClick={handlePurchase}
-                    disabled={purchaseLoading}
-                    className="w-full max-w-md py-5 text-base font-bold rounded-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg shadow-green-500/20 transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait"
-                  >
-                    {purchaseLoading ? 'Gerando checkout...' : 'Continuar →'}
-                  </Button>
-                </div>
-              )}
             </div>
           </AnimatedSection>
           </LazySection>
