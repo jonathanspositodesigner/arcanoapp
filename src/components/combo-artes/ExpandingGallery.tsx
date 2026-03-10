@@ -8,6 +8,7 @@ interface GalleryItem {
 
 interface ExpandingGalleryProps {
   items: GalleryItem[];
+  badgeText?: string;
 }
 
 const ExpandingGallery = ({ items }: ExpandingGalleryProps) => {
