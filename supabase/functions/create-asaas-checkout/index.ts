@@ -156,7 +156,7 @@ serve(async (req) => {
 
     const paymentBody = {
       customer: customerId,
-      billingType: 'UNDEFINED',
+      billingType: billing_type || 'UNDEFINED',
       value: Number(product.price),
       dueDate: dueDate.toISOString().split('T')[0],
       description: product.title,
