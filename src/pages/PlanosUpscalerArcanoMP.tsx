@@ -692,6 +692,13 @@ const PlanosUpscalerArcano69v2 = () => {
         </>
       )}
 
+      {/* Pre-checkout Modal */}
+      <PreCheckoutModal
+        isOpen={checkoutModalOpen}
+        onClose={() => setCheckoutModalOpen(false)}
+        userEmail={user?.email}
+      />
+
       {/* Modal Fullscreen */}
       {modalImages && (
         <FullscreenModal
