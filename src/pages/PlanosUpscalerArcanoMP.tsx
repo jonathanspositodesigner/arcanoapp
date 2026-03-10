@@ -246,7 +246,17 @@ const PlanosUpscalerArcano69v2 = () => {
 
   const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [emailInput, setEmailInput] = useState('');
+  const [cpfInput, setCpfInput] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [cpfError, setCpfError] = useState('');
+
+  const formatCpf = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+    if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+  };
 
   const handlePurchase = async () => {
     const userEmail = user?.email || emailInput.trim();
