@@ -1,23 +1,26 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Plano: Remover CPF e adicionar celular + confirmação de email
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+### Alterações
 
-## Dados
+**1. `PreCheckoutModal.tsx` (Frontend)**
+- Remover campo CPF, estado `cpf`, `cpfError`, e a função `formatCpf`
+- Adicionar campo **Celular** com máscara `(00) 00000-0000` e validação de 10-11 dígitos
+- O campo **Confirmar email** já existe — manter como está (já funciona corretamente, só aparece para usuários não autenticados)
+- Atualizar `handleSubmit` para enviar `user_phone` em vez de `user_cpf`
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+**2. `create-pagarme-checkout/index.ts` (Edge Function)**
+- Remover validação de CPF obrigatório
+- Remover `document: cpf` do objeto `customer` (ou enviar apenas se fornecido)
+- Adicionar `user_phone` nos parâmetros recebidos
+- Usar o telefone real do usuário no campo `phones.mobile_phone` em vez do placeholder `000000000`
+- Parsear o telefone para extrair DDD (2 dígitos) e número (8-9 dígitos)
 
-## Ações (via SQL migration)
-
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
-
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+### Campos do formulário (resultado final)
+1. Nome completo (obrigatório)
+2. Email (obrigatório)
+3. Confirmar email (obrigatório, só para não-autenticados)
+4. Celular (obrigatório)
+5. Forma de pagamento (PIX / Cartão)
 
