@@ -179,7 +179,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutMod
 
       if (is_paid) {
         // Redirecionar para sucesso
-        window.location.href = 'https://arcanoapp.voxvisual.com.br/upscaler-arcano?payment=success';
+        window.location.href = 'https://arcanoapp.voxvisual.com.br/sucesso-upscaler-arcano';
       } else {
         // Pagamento pendente — webhook vai processar
         alert('Pagamento em processamento. Você receberá uma confirmação em instantes.');

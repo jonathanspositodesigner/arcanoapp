@@ -116,6 +116,7 @@ const AdminAbandonedCheckouts = lazy(() => import("./pages/AdminAbandonedCheckou
 const AdminLeads = lazy(() => import("./pages/AdminLeads"));
 const AdminPremiumMusicos = lazy(() => import("./pages/AdminPremiumMusicos"));
 const SucessoArtesMusicos = lazy(() => import("./pages/SucessoArtesMusicos"));
+const SucessoUpscalerArcano = lazy(() => import("./pages/SucessoUpscalerArcano"));
 const PlanosUpscalerArcano = lazy(() => import("./pages/PlanosUpscalerArcano"));
 const PlanosUpscalerArcano69 = lazy(() => import("./pages/PlanosUpscalerArcano69v2"));
 const PlanosUpscalerArcanoMP = lazy(() => import("./pages/PlanosUpscalerArcanoMP"));
@@ -310,6 +311,7 @@ const AppContent = () => {
           <Route path="/admin-leads" element={<AdminLeads />} />
           <Route path="/admin-premium-musicos" element={<AdminPremiumMusicos />} />
           <Route path="/sucesso-artes-musicos" element={<SucessoArtesMusicos />} />
+          <Route path="/sucesso-upscaler-arcano" element={<SucessoUpscalerArcano />} />
           <Route path="/aguardando-pagamento-musicos" element={<AguardandoPagamentoMusicos />} />
           <Route path="/planos-upscaler-arcano" element={<PlanosUpscalerArcano />} />
           <Route path="/planos-upscaler-arcano-69" element={<PlanosUpscalerArcano69 />} />
