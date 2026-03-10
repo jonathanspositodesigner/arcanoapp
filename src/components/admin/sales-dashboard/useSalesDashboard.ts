@@ -87,8 +87,9 @@ export function useSalesDashboard() {
       }
 
       // Fetch ad spend + clicks from meta_ad_spend
-      const startDate = start.toISOString().split("T")[0];
-      const endDate = end.toISOString().split("T")[0];
+      const pad = (n: number) => String(n).padStart(2, "0");
+      const startDate = `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`;
+      const endDate = `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}`;
       const { data: spendData } = await supabase
         .from("meta_ad_spend")
         .select("spend, clicks, landing_page_views, initiated_checkouts")
