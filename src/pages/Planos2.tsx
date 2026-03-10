@@ -97,6 +97,68 @@ const Planos2 = () => {
     };
   };
 
+  const handleCreditPurchase = async (slug: string) => {
+    if (!userId) {
+      // Not logged in — open PreCheckoutModal
+      setSelectedCreditSlug(slug);
+      setShowPreCheckout(true);
+      return;
+    }
+
+    // Check if profile is complete for 1-click PIX
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name, phone, cpf')
+      .eq('id', userId)
+      .single();
+
+    if (profile?.name && profile?.phone && profile?.cpf) {
+      // 1-click PIX flow
+      setPixLoading(slug);
+      try {
+        let utmData: Record<string, string> | null = null;
+        try {
+          const raw = sessionStorage.getItem('captured_utms');
+          if (raw) utmData = JSON.parse(raw);
+        } catch { /* ignore */ }
+
+        const response = await supabase.functions.invoke('create-pagarme-checkout', {
+          body: {
+            product_slug: slug,
+            user_email: userEmail,
+            user_phone: profile.phone,
+            user_name: profile.name,
+            user_cpf: profile.cpf,
+            billing_type: 'PIX',
+            utm_data: utmData
+          }
+        });
+
+        if (response.error) {
+          console.error('Erro PIX 1-clique:', response.error);
+          toast.error('Erro ao gerar pagamento. Tente novamente.');
+          setPixLoading(null);
+          return;
+        }
+
+        const { checkout_url } = response.data;
+        if (checkout_url) {
+          window.location.href = checkout_url;
+        } else {
+          toast.error('Erro ao gerar link de pagamento.');
+        }
+      } catch (error) {
+        console.error('Erro PIX 1-clique:', error);
+        toast.error('Erro ao processar. Tente novamente.');
+      }
+      setPixLoading(null);
+    } else {
+      // Profile incomplete — open PreCheckoutModal
+      setSelectedCreditSlug(slug);
+      setShowPreCheckout(true);
+    }
+  };
+
   const countdown = formatTime(timeLeft);
   
   const plans = {
