@@ -1,23 +1,71 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Problema: N/A em "Vendas por Pagamento"
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+**Causa raiz encontrada.** O payload da Greenn envia o método de pagamento em `sale.method` (ex: "PIX", "CREDIT_CARD"), mas **todas** as edge functions estão buscando em `sale.payment_method` (que não existe):
 
-## Dados
+```
+// Código atual (ERRADO):
+payment_method: payload.sale?.payment_method || payload.payment?.method || null
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+// Payload real da Greenn:
+{ sale: { method: "PIX", amount: 29.9, ... } }
+```
 
-## Ações (via SQL migration)
+Resultado: **2.011 de 2.014 vendas de webhook** têm `payment_method = NULL`, aparecendo como "N/A" no gráfico.
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+---
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+## Plano
+
+### 1. Corrigir extração do payment_method em 4 edge functions
+
+Alterar a linha de insert em cada webhook para buscar `payload.sale?.method` primeiro:
+
+**Arquivos:**
+- `supabase/functions/webhook-greenn-artes/index.ts`
+- `supabase/functions/webhook-greenn/index.ts`
+- `supabase/functions/webhook-greenn-musicos/index.ts`
+- `supabase/functions/webhook-greenn-creditos/index.ts`
+
+**Mudança (mesma em todos):**
+```typescript
+// ANTES
+payment_method: payload.sale?.payment_method || payload.payment?.method || null
+
+// DEPOIS
+payment_method: payload.sale?.method || payload.sale?.payment_method || payload.payment?.method || null
+```
+
+### 2. Backfill: atualizar registros antigos via migração SQL
+
+Executar uma migração que extrai `sale.method` do payload JSON salvo para preencher os registros antigos que têm `payment_method IS NULL`:
+
+```sql
+UPDATE webhook_logs
+SET payment_method = payload->'sale'->>'method'
+WHERE payment_method IS NULL
+  AND payload->'sale'->>'method' IS NOT NULL;
+```
+
+### 3. Melhorar mapeamento de labels no componente SalesPaymentDonut
+
+Adicionar os valores que a Greenn realmente envia ao `PAYMENT_LABELS`:
+
+```typescript
+const PAYMENT_LABELS: Record<string, string> = {
+  // ... existentes ...
+  PIX: "Pix",
+  CREDIT_CARD: "Cartão de Crédito",
+  NEQUI: "Nequi",
+};
+```
+
+---
+
+## Resultado esperado
+
+- Novas vendas terão `payment_method` preenchido corretamente
+- Vendas antigas serão retroativamente corrigidas via backfill
+- O gráfico "Vendas por Pagamento" não mostrará mais "N/A" em massa
 
