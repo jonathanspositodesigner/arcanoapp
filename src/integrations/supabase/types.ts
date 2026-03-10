@@ -3829,6 +3829,8 @@ export type Database = {
       webhook_logs: {
         Row: {
           amount: number | null
+          amount_brl: number | null
+          currency: string | null
           email: string | null
           error_message: string | null
           from_app: boolean | null
@@ -3848,6 +3850,8 @@ export type Database = {
         }
         Insert: {
           amount?: number | null
+          amount_brl?: number | null
+          currency?: string | null
           email?: string | null
           error_message?: string | null
           from_app?: boolean | null
@@ -3867,6 +3871,8 @@ export type Database = {
         }
         Update: {
           amount?: number | null
+          amount_brl?: number | null
+          currency?: string | null
           email?: string | null
           error_message?: string | null
           from_app?: boolean | null
