@@ -17,6 +17,7 @@ import PushNotificationsContent from "@/components/PushNotificationsContent";
 import PartnersManagementContent from "@/components/PartnersManagementContent";
 import AbandonedCheckoutsContent from "@/components/AbandonedCheckoutsContent";
 import AdminsManagementContent from "@/components/AdminsManagementContent";
+import SalesManagementContent from "@/components/admin/SalesManagementContent";
 
 const AdminHub = () => {
   const navigate = useNavigate();
