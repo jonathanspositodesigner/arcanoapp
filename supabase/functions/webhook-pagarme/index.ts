@@ -446,6 +446,34 @@ serve(async (req) => {
         console.error(`   ├─ ⚠️ UTMify webhook falhou: ${utmErr.message}`)
       }
 
+      // 9. Salvar cartão para one-click buy (se pagamento com cartão de crédito)
+      try {
+        const chargeData = eventData?.charges?.[0] || eventData
+        const transaction = chargeData?.last_transaction
+        if (userId && transaction?.transaction_type === 'credit_card' && transaction?.card) {
+          const card = transaction.card
+          const customerId = chargeData?.customer?.id || eventData?.customer?.id
+          const cardId = card.id
+          const lastFour = card.last_four_digits || card.last_four || '????'
+          const brand = card.brand || 'unknown'
+
+          if (customerId && cardId) {
+            await supabase.from('pagarme_saved_cards').upsert({
+              user_id: userId,
+              pagarme_customer_id: customerId,
+              pagarme_card_id: cardId,
+              card_last_four: lastFour,
+              card_brand: brand,
+              is_active: true,
+              updated_at: new Date().toISOString()
+            }, { onConflict: 'user_id,pagarme_card_id' })
+            console.log(`   ├─ 💳 Cartão salvo para one-click: ****${lastFour} (${brand})`)
+          }
+        }
+      } catch (cardSaveErr: any) {
+        console.error(`   ├─ ⚠️ Erro ao salvar cartão: ${cardSaveErr.message}`)
+      }
+
       console.log(`\n✅ [${requestId}] PROCESSAMENTO PAGAR.ME CONCLUÍDO COM SUCESSO`)
     }
 

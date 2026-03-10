@@ -1,86 +1,23 @@
 
 
-## One-Click Buy com Pagar.me — Plano de Implementação
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-### Como funciona na API Pagar.me v5
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-O Pagar.me v5 permite cobrar um cartão salvo usando `card_id` + `customer_id`. O fluxo:
+## Dados
 
-1. **Primeira compra**: Cliente paga via checkout hosted → Pagar.me cria um `customer` com `customer_id` e salva o cartão como `card_id`
-2. **Compras seguintes**: Usamos `POST /orders` direto com `customer_id` + `card_id` (sem redirecionar para checkout)
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-```text
-┌─────────────────────────────────────────────────┐
-│          FLUXO ONE-CLICK BUY                    │
-│                                                 │
-│  1ª Compra (checkout normal):                   │
-│  Frontend → Edge Function → Pagar.me Checkout   │
-│  Webhook → Salva customer_id + card_id no DB    │
-│                                                 │
-│  Compras seguintes (one-click):                 │
-│  Frontend → Edge Function → POST /orders        │
-│  (com customer_id + card_id, sem checkout)       │
-│  → Resposta imediata → Webhook confirma         │
-└─────────────────────────────────────────────────┘
-```
+## Ações (via SQL migration)
 
-### Alterações necessárias
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-**1. Nova tabela `pagarme_saved_cards`**
-- `id` (uuid, PK)
-- `user_id` (uuid, FK profiles)
-- `pagarme_customer_id` (text) — ID do customer no Pagar.me
-- `pagarme_card_id` (text) — ID do cartão salvo
-- `card_last_four` (text) — últimos 4 dígitos para exibir
-- `card_brand` (text) — bandeira (visa, mastercard, etc.)
-- `is_active` (boolean, default true)
-- `created_at` / `updated_at`
-- RLS: usuário só vê seus próprios cartões
-
-**2. Webhook `webhook-pagarme` — salvar dados do cartão**
-Quando `order.paid` com `transaction_type = credit_card`:
-- Extrair `customer.id` e `card.id` + `last_four_digits` + `brand` da resposta
-- Salvar na tabela `pagarme_saved_cards` (upsert por user_id + card_id)
-
-**3. Nova Edge Function `pagarme-one-click`**
-- Recebe: `product_slug`, `card_id` (do nosso DB, não do Pagar.me)
-- Valida que o usuário logado é dono do cartão
-- Busca `pagarme_customer_id` e `pagarme_card_id` da tabela
-- Cria pedido direto via `POST /orders` com `payment_method: credit_card` + `card_id`
-- Retorna sucesso/erro imediatamente (o webhook cuida do resto)
-
-**4. Frontend `PreCheckoutModal.tsx`**
-- Para usuários logados: consultar se tem cartão salvo na `pagarme_saved_cards`
-- Se tem cartão salvo, exibir opção "Comprar com 1 clique" mostrando `•••• 1234 (Visa)`
-- Botão de one-click faz chamada direta à `pagarme-one-click` sem abrir checkout
-- Manter opção "Usar outro cartão" que segue o fluxo normal de checkout
-- Se não tem cartão salvo, fluxo normal como está hoje
-
-### Experiência do usuário (logado com cartão salvo)
-
-```text
-┌──────────────────────────────────────┐
-│       Finalizar Compra               │
-│                                      │
-│  💳 Cartão salvo                     │
-│  ┌──────────────────────────────┐    │
-│  │ •••• 4242  Visa         ✓   │    │
-│  └──────────────────────────────┘    │
-│                                      │
-│  [  🔒 Comprar com 1 Clique    ]    │
-│                                      │
-│  ── ou ──                            │
-│                                      │
-│  Usar outro método de pagamento →    │
-│                                      │
-│  🔒 Pagamento 100% seguro           │
-└──────────────────────────────────────┘
-```
-
-### Segurança
-- O `card_id` e `customer_id` do Pagar.me ficam apenas no backend (nunca expostos ao frontend)
-- A tabela `pagarme_saved_cards` usa um `id` interno como referência
-- RLS garante que só o próprio usuário vê/usa seus cartões
-- A Edge Function valida ownership antes de cobrar
-- O usuário pode remover cartões salvos a qualquer momento
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 

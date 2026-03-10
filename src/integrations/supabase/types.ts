@@ -2386,6 +2386,50 @@ export type Database = {
         }
         Relationships: []
       }
+      pagarme_saved_cards: {
+        Row: {
+          card_brand: string
+          card_last_four: string
+          created_at: string
+          id: string
+          is_active: boolean
+          pagarme_card_id: string
+          pagarme_customer_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          card_brand?: string
+          card_last_four: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          pagarme_card_id: string
+          pagarme_customer_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          card_brand?: string
+          card_last_four?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          pagarme_card_id?: string
+          pagarme_customer_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pagarme_saved_cards_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       page_views: {
         Row: {
           device_type: string
