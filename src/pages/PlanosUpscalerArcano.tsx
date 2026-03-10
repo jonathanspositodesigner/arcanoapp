@@ -816,7 +816,7 @@ const PlanosUpscalerArcano = () => {
               </AnimatedSection>
               
               <Suspense fallback={<div className="h-[400px] md:h-[600px] bg-white/5 rounded-xl animate-pulse" />}>
-                <ExpandingGallery items={[
+                <ExpandingGallery badgeText="Melhorado com o Upscaler Arcano" items={[
                   { imageUrl: "/images/gallery/gallery-1.webp", label: "Qualidade impressionante" },
                   { imageUrl: "/images/gallery/gallery-2.webp", label: "Detalhes nítidos" },
                   { imageUrl: "/images/gallery/gallery-3.webp", label: "Cores vibrantes" },
