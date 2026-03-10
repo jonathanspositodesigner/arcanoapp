@@ -1,9 +1,9 @@
-import { Home, BarChart3, LogOut, ArrowLeft, Users, ShieldCheck, ShoppingCart, Mail } from "lucide-react";
+import { Home, BarChart3, LogOut, ArrowLeft, Users, ShieldCheck, ShoppingCart, Mail, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-export type HubViewType = "home" | "dashboard" | "email-marketing" | "push-notifications" | "partners" | "abandoned-checkouts" | "admins" | "emails";
+export type HubViewType = "home" | "dashboard" | "email-marketing" | "push-notifications" | "partners" | "abandoned-checkouts" | "admins" | "emails" | "sales";
 
 interface AdminHubSidebarProps {
   activeView: HubViewType;
@@ -38,6 +38,12 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebar
       label: "REMARKETING",
       icon: ShoppingCart,
       description: "Checkouts abandonados"
+    },
+    {
+      id: "sales" as const,
+      label: "VENDAS",
+      icon: Receipt,
+      description: "Listagem e gestão de vendas"
     },
     {
       id: "admins" as const,
