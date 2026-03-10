@@ -20,7 +20,7 @@ serve(async (req) => {
   }
 
   try {
-    const { product_slug, user_email, utm_data } = await req.json()
+    const { product_slug, user_email, user_cpf, utm_data } = await req.json()
 
     if (!product_slug || !user_email) {
       return new Response(JSON.stringify({ error: 'product_slug e user_email são obrigatórios' }), {
@@ -30,6 +30,7 @@ serve(async (req) => {
     }
 
     const email = user_email.toLowerCase().trim()
+    const cpf = user_cpf ? user_cpf.replace(/\D/g, '') : null
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return new Response(JSON.stringify({ error: 'Email inválido' }), {
