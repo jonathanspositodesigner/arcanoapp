@@ -521,7 +521,7 @@ const PlanosUpscalerArcano = () => {
                   </div>
                   <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
                     <Star className="h-3.5 w-3.5 text-fuchsia-400" />
-                    <span>+10.000 imagens melhoradas</span>
+                    <span>+5.000 imagens melhoradas</span>
                   </div>
                 </div>
               </FadeIn>
