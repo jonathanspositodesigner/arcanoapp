@@ -5,14 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MousePointerClick, MessageCircle, ZoomIn, X, User, Rocket, PenTool } from "lucide-react";
+import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MousePointerClick, MessageCircle, ZoomIn, X, User, Rocket, PenTool, Image as ImageIcon, Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton, LazySocialProofWrapper } from "@/components/upscaler";
-import { StatsCards } from "@/components/credits/StatsCards";
 import { LazySection } from "@/components/combo-artes/LazySection";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
 
@@ -658,7 +657,47 @@ const PlanosUpscalerArcano = () => {
               </div>
             </div>
 
-            <StatsCards />
+            {/* Stats inline customizado para Upscaler */}
+            <div className="max-w-5xl mx-auto mb-8 px-2">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center gap-4 sm:gap-0">
+                <div className="flex items-center gap-3 sm:flex-1 min-w-0">
+                  <div className="flex -space-x-2 shrink-0">
+                    {["/images/social-proof-1.webp", "/images/social-proof-2.webp", "/images/social-proof-3.webp"].map((src, i) => (
+                      <img key={i} src={src} alt="" width="32" height="32" decoding="async" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-[#0d0b1a] object-cover" />
+                    ))}
+                  </div>
+                  <span className="text-white/80 text-xs sm:text-sm font-medium leading-tight">
+                    Junte-se a mais de 3.000 criadores em todo o mundo.
+                  </span>
+                </div>
+                <div className="flex items-center gap-6 sm:gap-8 shrink-0">
+                  <div className="flex flex-col items-center gap-0.5">
+                    <ImageIcon className="w-5 h-5 text-purple-400 mb-1" />
+                    <div className="flex items-center gap-1">
+                      <span className="text-white font-bold text-base sm:text-lg">5.184</span>
+                      <span className="text-purple-400 text-lg font-bold">+</span>
+                    </div>
+                    <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">Upscalers de Imagens</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <User className="w-5 h-5 text-purple-400 mb-1" />
+                    <div className="flex items-center gap-1">
+                      <span className="text-white font-bold text-base sm:text-lg">3.248</span>
+                      <span className="text-purple-400 text-lg font-bold">+</span>
+                    </div>
+                    <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">Usuários Ativos</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-0.5">
+                    <Award className="w-5 h-5 text-yellow-500 mb-1" />
+                    <div className="flex items-center gap-0.5">
+                      <span className="text-white font-bold text-base sm:text-lg">100</span>
+                      <span className="text-yellow-500 text-lg font-bold">%</span>
+                    </div>
+                    <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">Satisfação</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6 items-stretch">
               {/* Card de preço */}
