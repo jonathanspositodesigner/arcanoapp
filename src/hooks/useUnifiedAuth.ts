@@ -350,7 +350,7 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
    * SIGNUP: Create new account
    */
   const signup = useCallback(async (data: SignupData) => {
-    const { email, password, name, phone } = data;
+    const { email, password, name, phone, cpf, address_line, address_zip, address_city, address_state } = data;
     
     if (!email.trim()) {
       toast.error(t('errors.enterEmail'));
