@@ -21,7 +21,7 @@ export interface DashboardOrder {
   source_platform?: string;
 }
 
-function getDateRange(preset: PeriodPreset, customStart?: Date, customEnd?: Date): { start: Date; end: Date } {
+export function getDateRange(preset: PeriodPreset, customStart?: Date, customEnd?: Date): { start: Date; end: Date } {
   const now = new Date();
   const todayStart = startOfDay(now);
   const todayEnd = endOfDay(now);
