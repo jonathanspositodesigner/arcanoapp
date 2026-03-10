@@ -676,7 +676,7 @@ const PlanosUpscalerArcano = () => {
                 </CardContent>
               </Card>
 
-              {/* Card de garantia Mercado Pago */}
+              {/* Card de garantia */}
               <Card className="bg-gradient-to-br from-[#0a1a0f] to-[#0f1a15] border-2 border-emerald-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-emerald-500/10">
                 <CardContent className="p-5 md:p-8 text-center flex flex-col items-center">
                   {/* Ícone de escudo grande */}
