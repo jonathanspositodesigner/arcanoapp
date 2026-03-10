@@ -172,6 +172,9 @@ const AdminHub = () => {
             {/* Sales Dashboard */}
             <SalesDashboard />
 
+            {/* Latest Sales */}
+            <LatestSales />
+
             {/* Goals Section */}
             <AdminGoalsCard />
           </div>
