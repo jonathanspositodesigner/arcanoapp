@@ -246,92 +246,12 @@ const PlanosUpscalerArcano = () => {
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
-  const [purchaseLoading, setPurchaseLoading] = useState(false);
-  const [emailInput, setEmailInput] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [showEmailField, setShowEmailField] = useState(false);
-
-  // Countdown timer - 48 minutes
-  const [timeLeft, setTimeLeft] = useState(() => {
-    const saved = localStorage.getItem('upscaler-countdown');
-    if (saved) {
-      const remaining = parseInt(saved, 10) - Date.now();
-      if (remaining > 0) return remaining;
+  const handlePurchase = () => {
+    if (!tool) return;
+    const checkoutLink = (isPremium ? tool.checkout_link_membro_vitalicio : tool.checkout_link_vitalicio);
+    if (checkoutLink) {
+      window.open(appendUtmToUrl(checkoutLink), '_blank');
     }
-    const initial = 48 * 60 * 1000;
-    localStorage.setItem('upscaler-countdown', String(Date.now() + initial));
-    return initial;
-  });
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1000) {
-          const newTime = 48 * 60 * 1000;
-          localStorage.setItem('upscaler-countdown', String(Date.now() + newTime));
-          return newTime;
-        }
-        return prev - 1000;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const formatTime = (ms: number) => {
-    const totalSeconds = Math.floor(ms / 1000);
-    const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-    const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-    const seconds = String(totalSeconds % 60).padStart(2, '0');
-    return { hours, minutes, seconds };
-  };
-
-  const countdown = formatTime(timeLeft);
-
-  const handlePurchase = async () => {
-    const userEmail = user?.email || emailInput.trim();
-    if (!userEmail) {
-      setEmailError('Digite seu email para continuar');
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
-      setEmailError('Email inválido');
-      return;
-    }
-    setEmailError('');
-    setPurchaseLoading(true);
-    try {
-      let utmData: Record<string, string> | null = null;
-      try {
-        const raw = sessionStorage.getItem('captured_utms');
-        if (raw) utmData = JSON.parse(raw);
-      } catch { /* ignore */ }
-
-      const response = await supabase.functions.invoke('create-mp-checkout', {
-        body: {
-          product_slug: 'upscaller-arcano-vitalicio',
-          user_email: userEmail.toLowerCase().trim(),
-          utm_data: utmData
-        }
-      });
-
-      if (response.error) {
-        console.error('Erro ao criar checkout:', response.error);
-        alert('Erro ao criar checkout. Tente novamente.');
-        setPurchaseLoading(false);
-        return;
-      }
-
-      const { checkout_url } = response.data;
-      if (checkout_url) {
-        window.location.href = checkout_url;
-      } else {
-        alert('Erro ao gerar link de pagamento.');
-      }
-    } catch (error) {
-      console.error('Erro:', error);
-      alert('Erro ao processar. Tente novamente.');
-    }
-    setPurchaseLoading(false);
   };
 
   const hasAccess = hasAccessToPack(TOOL_SLUG);
