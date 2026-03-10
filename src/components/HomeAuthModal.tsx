@@ -15,19 +15,17 @@ interface HomeAuthModalProps {
 }
 
 const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEnd }: HomeAuthModalProps) => {
-  const { t } = useTranslation('index');
+  const { t: tAuth } = useTranslation('auth');
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [signupSuccessEmail, setSignupSuccessEmail] = useState("");
   const signupInProgressRef = useRef(false);
 
-  // Capture ?ref= from URL into localStorage
   useEffect(() => {
     if (open) {
       const params = new URLSearchParams(window.location.search);
       const ref = params.get('ref');
       if (ref) {
         localStorage.setItem('referral_code', ref);
-        console.log('[HomeAuthModal] Captured referral code from URL:', ref);
       }
     }
   }, [open]);
@@ -49,14 +47,12 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
         onClose();
       }
     },
-    t: (key: string) => t(`auth.${key}`, key),
+    t: (key: string) => tAuth(key, key),
   });
-
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
-
         <div className="p-6 pt-8">
           {signupSuccess ? (
             <div className="text-center py-6">
@@ -66,70 +62,68 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                 </div>
               </div>
               <h2 className="text-xl font-bold text-foreground mb-2">
-                {t('auth.signupSuccessTitle')}
+                Verifique seu E-mail!
               </h2>
               <p className="text-sm text-muted-foreground mb-2">
-                {t('auth.signupSuccessMessage')}
+                Enviamos um link de confirmação para:
               </p>
               <p className="text-sm font-medium text-foreground mb-4">
                 {signupSuccessEmail}
               </p>
               <p className="text-sm text-muted-foreground mb-2">
-                {t('auth.signupSuccessInstruction')}
+                Clique no link do e-mail para ativar sua conta e fazer login.
               </p>
               <p className="text-xs text-muted-foreground mb-6">
-                {t('auth.signupSuccessSpam')}
+                Não encontrou? Verifique a pasta de spam.
               </p>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setSignupSuccess(false);
                   auth.goToLogin();
                 }}
                 className="w-full"
               >
-                {t('auth.backToLogin')}
+                Voltar para Login
               </Button>
             </div>
           ) : auth.state.step === 'signup' ? (
-            <>
-              <SignupForm
-                defaultEmail={auth.state.email}
-                onSubmit={async (data) => {
-                  signupInProgressRef.current = true;
-                  onSignupStart?.();
-                  await auth.signup(data);
-                }}
-                onBackToLogin={auth.goToLogin}
-                isLoading={auth.state.isLoading}
-                showPhoneField={true}
-                variant="default"
-                labels={{
-                  title: 'Criar Conta',
-                  email: 'E-mail',
-                  emailPlaceholder: 'seu@email.com',
-                  name: 'Nome (opcional)',
-                  namePlaceholder: 'Seu nome',
-                  phone: 'WhatsApp (opcional)',
-                  phonePlaceholder: '(00) 00000-0000',
-                  password: 'Senha',
-                  passwordPlaceholder: 'Mínimo 6 caracteres',
-                  confirmPassword: 'Confirmar Senha',
-                  confirmPasswordPlaceholder: 'Confirme sua senha',
-                  createAccount: 'Criar Conta',
-                  creatingAccount: 'Criando conta...',
-                  backToLogin: 'Voltar ao Login',
-                }}
-              />
-            </>
+            <SignupForm
+              defaultEmail={auth.state.email}
+              onSubmit={async (data) => {
+                signupInProgressRef.current = true;
+                onSignupStart?.();
+                await auth.signup(data);
+              }}
+              onBackToLogin={auth.goToLogin}
+              isLoading={auth.state.isLoading}
+              showPhoneField={true}
+              variant="default"
+              labels={{
+                title: 'Criar Conta',
+                email: 'E-mail',
+                emailPlaceholder: 'seu@email.com',
+                name: 'Nome (opcional)',
+                namePlaceholder: 'Seu nome',
+                phone: 'WhatsApp (opcional)',
+                phonePlaceholder: '(00) 00000-0000',
+                password: 'Senha',
+                passwordPlaceholder: 'Mínimo 6 caracteres',
+                confirmPassword: 'Confirmar Senha',
+                confirmPasswordPlaceholder: 'Confirme sua senha',
+                createAccount: 'Criar Conta',
+                creatingAccount: 'Criando conta...',
+                backToLogin: 'Voltar ao Login',
+              }}
+            />
           ) : (
             <>
               <div className="text-center mb-6">
                 <h2 className="text-xl font-bold text-foreground mb-1">
-                  {t('auth.welcomeTitle')}
+                  Bem-vindo ao Arcano!
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {t('auth.welcomeSubtitle')}
+                  Faça login ou crie sua conta
                 </p>
               </div>
 
@@ -141,10 +135,10 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                   onSignupClick={() => {}}
                   isLoading={auth.state.isLoading}
                   labels={{
-                    email: t('auth.email'),
-                    emailPlaceholder: t('auth.emailPlaceholder'),
-                    continue: t('auth.continue') || 'Continuar',
-                    loading: t('auth.loading'),
+                    email: 'E-mail',
+                    emailPlaceholder: 'seu@email.com',
+                    continue: 'Continuar',
+                    loading: 'Verificando...',
                     noAccountYet: '',
                     createAccount: '',
                   }}
@@ -159,12 +153,12 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                   forgotPasswordUrl={auth.getForgotPasswordUrl()}
                   isLoading={auth.state.isLoading}
                   labels={{
-                    password: t('auth.password'),
-                    passwordPlaceholder: t('auth.passwordPlaceholder'),
-                    signIn: t('auth.loginButton'),
-                    signingIn: t('auth.loading'),
-                    forgotPassword: t('auth.forgotPassword'),
-                    changeEmail: t('auth.changeEmail') || 'Trocar',
+                    password: 'Senha',
+                    passwordPlaceholder: 'Digite sua senha',
+                    signIn: 'Entrar',
+                    signingIn: 'Entrando...',
+                    forgotPassword: 'Esqueceu a senha?',
+                    changeEmail: 'Trocar',
                   }}
                 />
               )}
@@ -191,7 +185,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                   className="w-full flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
                 >
                   <MousePointerClick className="h-4 w-4" />
-                  <span>{t('auth.browseWithoutLogin')}</span>
+                  <span>Navegar sem login</span>
                 </button>
               </div>
             </>
