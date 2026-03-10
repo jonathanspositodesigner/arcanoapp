@@ -1,7 +1,7 @@
 /**
  * Edge Function: create-pagarme-checkout
  * Cria um pedido com checkout no Pagar.me e retorna a URL de pagamento.
- * Recebe: { product_slug, user_email, user_cpf, user_name, billing_type, utm_data }
+ * Recebe: { product_slug, user_email, user_phone, user_name, billing_type, utm_data }
  * Retorna: { checkout_url, order_id }
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
@@ -20,7 +20,7 @@ serve(async (req) => {
   }
 
   try {
-    const { product_slug, user_email, user_cpf, user_name, billing_type, utm_data } = await req.json()
+    const { product_slug, user_email, user_phone, user_name, billing_type, utm_data } = await req.json()
 
     if (!product_slug || !user_email) {
       return new Response(JSON.stringify({ error: 'product_slug e user_email são obrigatórios' }), {
@@ -30,7 +30,7 @@ serve(async (req) => {
     }
 
     const email = user_email.toLowerCase().trim()
-    const cpf = user_cpf ? user_cpf.replace(/\D/g, '') : null
+    const phoneDigits = user_phone ? user_phone.replace(/\D/g, '') : null
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return new Response(JSON.stringify({ error: 'Email inválido' }), {
@@ -39,12 +39,16 @@ serve(async (req) => {
       })
     }
 
-    if (!cpf || cpf.length !== 11) {
-      return new Response(JSON.stringify({ error: 'CPF inválido. Informe 11 dígitos.' }), {
+    if (!phoneDigits || phoneDigits.length < 10 || phoneDigits.length > 11) {
+      return new Response(JSON.stringify({ error: 'Celular inválido. Informe DDD + número.' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
+
+    // Parse phone: DDD (2 digits) + number (8-9 digits)
+    const areaCode = phoneDigits.slice(0, 2)
+    const phoneNumber = phoneDigits.slice(2)
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -126,12 +130,11 @@ serve(async (req) => {
         name: customerName,
         email: email,
         type: 'individual',
-        document: cpf,
         phones: {
           mobile_phone: {
             country_code: '55',
-            area_code: '11',
-            number: '000000000'
+            area_code: areaCode,
+            number: phoneNumber
           }
         }
       },

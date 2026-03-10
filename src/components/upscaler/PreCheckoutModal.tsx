@@ -8,26 +8,25 @@ interface PreCheckoutModalProps {
   userEmail?: string | null;
 }
 
-const formatCpf = (value: string) => {
+const formatPhone = (value: string) => {
   const digits = value.replace(/\D/g, '').slice(0, 11);
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
-  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
-  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 };
 
 const PreCheckoutModal = ({ isOpen, onClose, userEmail }: PreCheckoutModalProps) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [emailConfirm, setEmailConfirm] = useState('');
-  const [cpf, setCpf] = useState('');
+  const [phone, setPhone] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'PIX' | 'CREDIT_CARD'>('PIX');
   const [loading, setLoading] = useState(false);
 
   const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
   const [emailConfirmError, setEmailConfirmError] = useState('');
-  const [cpfError, setCpfError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
 
   useEffect(() => {
     if (userEmail) {
@@ -47,7 +46,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail }: PreCheckoutModalProps)
 
   const validate = () => {
     let valid = true;
-    setNameError(''); setEmailError(''); setEmailConfirmError(''); setCpfError('');
+    setNameError(''); setEmailError(''); setEmailConfirmError(''); setPhoneError('');
 
     if (!name.trim() || name.trim().length < 3) {
       setNameError('Digite seu nome completo');
@@ -71,12 +70,12 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail }: PreCheckoutModalProps)
       }
     }
 
-    const cpfDigits = cpf.replace(/\D/g, '');
-    if (!cpfDigits) {
-      setCpfError('Digite seu CPF');
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (!phoneDigits) {
+      setPhoneError('Digite seu celular');
       valid = false;
-    } else if (cpfDigits.length !== 11) {
-      setCpfError('CPF inválido (11 dígitos)');
+    } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+      setPhoneError('Celular inválido (DDD + número)');
       valid = false;
     }
 
@@ -98,7 +97,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail }: PreCheckoutModalProps)
         body: {
           product_slug: 'upscaller-arcano-vitalicio',
           user_email: email.trim().toLowerCase(),
-          user_cpf: cpf.replace(/\D/g, ''),
+          user_phone: phone.replace(/\D/g, ''),
           user_name: name.trim(),
           billing_type: paymentMethod,
           utm_data: utmData
@@ -188,18 +187,18 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail }: PreCheckoutModalProps)
             </div>
           )}
 
-          {/* CPF */}
+          {/* Celular */}
           <div>
-            <label className="text-white/70 text-sm mb-1.5 block">CPF</label>
+            <label className="text-white/70 text-sm mb-1.5 block">Celular (com DDD)</label>
             <input
-              type="text"
+              type="tel"
               inputMode="numeric"
-              placeholder="000.000.000-00"
-              value={cpf}
-              onChange={(e) => { setCpf(formatCpf(e.target.value)); setCpfError(''); }}
+              placeholder="(11) 99999-9999"
+              value={phone}
+              onChange={(e) => { setPhone(formatPhone(e.target.value)); setPhoneError(''); }}
               className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
             />
-            {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
+            {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
           </div>
 
           {/* Payment Method */}
