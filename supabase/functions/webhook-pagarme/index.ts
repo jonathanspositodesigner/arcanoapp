@@ -480,7 +480,7 @@ serve(async (req) => {
     // =============================================
     // REEMBOLSO
     // =============================================
-    else if ((eventType === 'charge.refunded' || eventType === 'order.canceled') && order.status === 'paid') {
+    else if ((eventType === 'charge.refunded' || eventType === 'order.canceled' || eventType === 'charge.chargedback' || eventType === 'charge.underpaid') && ['paid', 'pending'].includes(order.status)) {
       console.log(`\n🚫 [${requestId}] REEMBOLSO PAGAR.ME - Revogando acesso...`)
 
       if (order.user_id && product.pack_slug) {
