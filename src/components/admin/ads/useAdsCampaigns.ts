@@ -191,15 +191,44 @@ export function useAdsCampaigns(
     }
   }, [dateRange, fetchData]);
 
-  // Merge campaigns with sales attribution (proportional by spend)
+  // Merge campaigns with sales attribution via direct campaign_id matching
   const campaignsWithSales = useMemo((): CampaignWithSales[] => {
-    // 1. Identify FB sales: utm_source starts with 'FB' or 'fb'
-    const fbSales = sales.filter((s) => {
-      const utmSource = s.utm_data?.utm_source || s.utm_data?.source || "";
-      return typeof utmSource === "string" && utmSource.toUpperCase().startsWith("FB");
-    });
-    const totalFbSalesCount = fbSales.length;
-    const totalFbRevenue = fbSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+    // 1. Identify FB sales and build a map: campaign_id -> sales[]
+    const campaignSalesMap = new Map<string, SaleOrder[]>();
+    const unidentifiedFbSales: SaleOrder[] = [];
+
+    for (const sale of sales) {
+      const utmSource = sale.utm_data?.utm_source || sale.utm_data?.source || "";
+      const isFb = typeof utmSource === "string" && utmSource.toUpperCase().startsWith("FB");
+      if (!isFb) continue;
+
+      // Extract campaign_id from utm_campaign ("NAME|campaign_id") or utm_id
+      const utmCampaign = sale.utm_data?.utm_campaign || "";
+      const utmId = sale.utm_data?.utm_id || "";
+      
+      let resolvedCampaignId = "";
+      
+      // Try utm_id first (usually the pure campaign_id)
+      if (utmId && !utmId.includes("{{")) {
+        resolvedCampaignId = String(utmId).trim();
+      }
+      
+      // Try extracting from utm_campaign "NAME|ID" format
+      if (!resolvedCampaignId && utmCampaign && !utmCampaign.includes("{{")) {
+        const parts = String(utmCampaign).split("|");
+        if (parts.length > 1) {
+          resolvedCampaignId = parts[parts.length - 1].trim();
+        }
+      }
+
+      if (resolvedCampaignId) {
+        const existing = campaignSalesMap.get(resolvedCampaignId) || [];
+        existing.push(sale);
+        campaignSalesMap.set(resolvedCampaignId, existing);
+      } else {
+        unidentifiedFbSales.push(sale);
+      }
+    }
 
     // 2. Filter campaigns by account/search
     const filtered = campaigns.filter((c) => {
@@ -208,19 +237,16 @@ export function useAdsCampaigns(
       return true;
     });
 
-    // 3. Total spend across filtered campaigns for proportional distribution
-    const totalFilteredSpend = filtered.reduce((sum, c) => sum + c.total_spend, 0);
-
-    // 4. Distribute FB sales proportionally by spend
+    // 3. Direct attribution: each campaign gets only its matched sales
     return filtered
       .map((c) => {
-        const spendWeight = totalFilteredSpend > 0 ? c.total_spend / totalFilteredSpend : 0;
-        const salesCount = Math.round(totalFbSalesCount * spendWeight);
-        const revenue = totalFbRevenue * spendWeight;
+        const matchedSales = campaignSalesMap.get(c.campaign_id) || [];
+        const salesCount = matchedSales.length;
+        const revenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
         const spend = c.total_spend;
         const profit = revenue - spend;
         const cpa = salesCount > 0 ? spend / salesCount : 0;
-        const roi = spend > 0 ? (profit / spend) * 100 : 0;
+        const roi = spend > 0 ? revenue / spend : 0;
         const roas = spend > 0 ? revenue / spend : 0;
 
         return { ...c, sales_count: salesCount, revenue, cpa, profit, roi, roas };

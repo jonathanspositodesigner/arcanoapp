@@ -294,8 +294,8 @@ function CampaignRow({ campaign: c }: { campaign: CampaignWithSales }) {
           {formatCurrency(c.profit)}
         </span>
       </td>
-      <td className={cn("p-3 text-right", c.roi >= 0 ? "text-green-400" : "text-red-400")}>
-        {c.total_spend > 0 ? `${c.roi.toFixed(0)}%` : "—"}
+      <td className={cn("p-3 text-right", c.roi >= 1 ? "text-green-400" : "text-red-400")}>
+        {c.total_spend > 0 ? `${c.roi.toFixed(2)}x` : "—"}
       </td>
       <td className="p-3 text-right">{c.total_spend > 0 ? `${c.roas.toFixed(2)}x` : "—"}</td>
       {/* CPI */}
