@@ -804,32 +804,26 @@ const PlanosUpscalerArcano = () => {
           </AnimatedSection>
           </LazySection>
 
-          {/* BENEFÍCIOS (O QUE FAZ) */}
+          {/* GALERIA - O que o Upscaler faz */}
           <LazySection rootMargin="100px">
           <AnimatedSection className="px-4 py-20 bg-black/30">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
                   {t('tools:upscaler.benefits.title')} <span className="text-fuchsia-400">{t('tools:upscaler.benefits.subtitle')}</span>?
                 </h2>
               </AnimatedSection>
               
-              <StaggeredAnimation className="grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto" staggerDelay={100}>
-                {features.map((feature, index) => {
-                  const IconComponent = feature.icon;
-                  return (
-                    <div 
-                      key={index}
-                      className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-fuchsia-500/30 transition-all duration-300"
-                    >
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
-                        <IconComponent className="h-6 w-6 text-fuchsia-400" />
-                      </div>
-                      <span className="text-white/90 text-lg">{feature.text}</span>
-                    </div>
-                  );
-                })}
-              </StaggeredAnimation>
+              <Suspense fallback={<div className="h-[400px] md:h-[600px] bg-white/5 rounded-xl animate-pulse" />}>
+                <ExpandingGallery items={[
+                  { imageUrl: "/images/gallery/gallery-1.webp", label: "Qualidade impressionante" },
+                  { imageUrl: "/images/gallery/gallery-2.webp", label: "Detalhes nítidos" },
+                  { imageUrl: "/images/gallery/gallery-3.webp", label: "Cores vibrantes" },
+                  { imageUrl: "/images/gallery/gallery-4.webp", label: "Alta resolução" },
+                  { imageUrl: "/images/gallery/gallery-5.webp", label: "Resultado profissional" },
+                  { imageUrl: "/images/gallery/gallery-6.webp", label: "Transformação total" },
+                ]} />
+              </Suspense>
             </div>
           </AnimatedSection>
           </LazySection>
