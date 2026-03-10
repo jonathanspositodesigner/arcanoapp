@@ -224,6 +224,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutMod
           user_email: email.trim().toLowerCase(),
           user_phone: phone.replace(/\D/g, ''),
           user_name: name.trim(),
+          user_cpf: cpf.replace(/\D/g, ''),
           billing_type: paymentMethod,
           utm_data: utmData
         }
