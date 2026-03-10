@@ -824,7 +824,7 @@ const PlanosUpscalerArcano = () => {
                   { imageUrl: "/images/gallery/gallery-3.webp", label: "Cores vibrantes" },
                   { imageUrl: "/images/gallery/gallery-4.webp", label: "Alta resolução" },
                   { imageUrl: "/images/gallery/gallery-5.webp", label: "Resultado profissional" },
-                  { imageUrl: "/images/gallery/gallery-6.webp", label: "Transformação total" },
+                  { imageUrl: "/images/gallery/gallery-6.webp", label: "Detalhes e texturas realistas" },
                 ]} />
               </Suspense>
             </div>
