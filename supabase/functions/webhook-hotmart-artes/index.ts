@@ -823,8 +823,39 @@ serve(async (req) => {
     const hotmartAmount = payload.data?.purchase?.price?.value || payload.data?.purchase?.full_price?.value || null
     // Extract currency from Hotmart payload
     const hotmartCurrency = payload.data?.purchase?.price?.currency_value || payload.data?.purchase?.full_price?.currency_code || 'BRL'
-    // Extract UTM from Hotmart payload
-    const hotmartUtmSource = payload.data?.purchase?.tracking?.source || payload.data?.purchase?.tracking?.utm_source || null
+    // Extract full UTM data from Hotmart tracking
+    const tracking = payload.data?.purchase?.tracking || {}
+    const hotmartUtmSource = tracking.source || tracking.utm_source || null
+    
+    // Parse sck parameter: format is "source|campaign|content"
+    let parsedUtmData: Record<string, string> | null = null
+    const sck = tracking.source_sck || null
+    
+    if (sck && typeof sck === 'string' && sck.includes('|')) {
+      const [sckSource, sckCampaign, sckContent] = sck.split('|')
+      parsedUtmData = {}
+      if (sckSource) parsedUtmData.utm_source = sckSource
+      if (sckCampaign) parsedUtmData.utm_campaign = sckCampaign
+      if (sckContent) parsedUtmData.utm_content = sckContent
+    }
+    
+    // Also check for direct UTM params in tracking (Hotmart passes URL params here)
+    if (tracking.utm_source || tracking.utm_campaign || tracking.utm_medium) {
+      parsedUtmData = parsedUtmData || {}
+      if (tracking.utm_source) parsedUtmData.utm_source = tracking.utm_source
+      if (tracking.utm_medium) parsedUtmData.utm_medium = tracking.utm_medium
+      if (tracking.utm_campaign) parsedUtmData.utm_campaign = tracking.utm_campaign
+      if (tracking.utm_content) parsedUtmData.utm_content = tracking.utm_content
+      if (tracking.utm_term) parsedUtmData.utm_term = tracking.utm_term
+    }
+    
+    // Fallback: if we only have source from tracking.source
+    if (!parsedUtmData && hotmartUtmSource) {
+      parsedUtmData = { utm_source: hotmartUtmSource }
+    }
+    
+    console.log(`   ├─ Tracking data:`, JSON.stringify(tracking))
+    console.log(`   ├─ Parsed UTM:`, JSON.stringify(parsedUtmData))
 
     // Convert to BRL if foreign currency using cached rates from DB
     let amountBrl = hotmartAmount
@@ -877,7 +908,8 @@ serve(async (req) => {
         currency: hotmartCurrency,
         product_name: payload.data?.product?.name || null,
         payment_method: payload.data?.purchase?.payment?.type || null,
-        utm_source: hotmartUtmSource
+        utm_source: hotmartUtmSource,
+        utm_data: parsedUtmData
       })
       .select('id')
       .single()
