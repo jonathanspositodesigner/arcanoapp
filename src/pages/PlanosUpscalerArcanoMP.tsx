@@ -246,19 +246,45 @@ const PlanosUpscalerArcano69v2 = () => {
 
   const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [emailInput, setEmailInput] = useState('');
+  const [cpfInput, setCpfInput] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [cpfError, setCpfError] = useState('');
+
+  const formatCpf = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+    if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+  };
 
   const handlePurchase = async () => {
     const userEmail = user?.email || emailInput.trim();
+    const cpfDigits = cpfInput.replace(/\D/g, '');
+    
+    let hasError = false;
     if (!userEmail) {
       setEmailError('Digite seu email para continuar');
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
+      hasError = true;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
       setEmailError('Email inválido');
-      return;
+      hasError = true;
+    } else {
+      setEmailError('');
     }
-    setEmailError('');
+    
+    if (!cpfDigits) {
+      setCpfError('Digite seu CPF para continuar');
+      hasError = true;
+    } else if (cpfDigits.length !== 11) {
+      setCpfError('CPF inválido (11 dígitos)');
+      hasError = true;
+    } else {
+      setCpfError('');
+    }
+    
+    if (hasError) return;
+    
     setPurchaseLoading(true);
     try {
       // Ler UTMs capturadas pelo useUtmTracker
@@ -272,6 +298,7 @@ const PlanosUpscalerArcano69v2 = () => {
         body: {
           product_slug: 'upscaller-arcano-vitalicio',
           user_email: userEmail.toLowerCase().trim(),
+          user_cpf: cpfDigits,
           utm_data: utmData
         }
       });
@@ -657,7 +684,7 @@ const PlanosUpscalerArcano69v2 = () => {
                   </div>
 
                   {!user && (
-                    <div className="px-0 md:px-2 mb-4">
+                    <div className="px-0 md:px-2 mb-3">
                       <input
                         type="email"
                         placeholder="Digite seu email"
@@ -665,9 +692,20 @@ const PlanosUpscalerArcano69v2 = () => {
                         onChange={(e) => { setEmailInput(e.target.value); setEmailError(''); }}
                         className="w-full max-w-md mx-auto block px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/40 text-center text-base focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
                       />
-                      {emailError && <p className="text-red-400 text-xs mt-2">{emailError}</p>}
+                      {emailError && <p className="text-red-400 text-xs mt-2 text-center">{emailError}</p>}
                     </div>
                   )}
+                  <div className="px-0 md:px-2 mb-4">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="Digite seu CPF"
+                      value={cpfInput}
+                      onChange={(e) => { setCpfInput(formatCpf(e.target.value)); setCpfError(''); }}
+                      className="w-full max-w-md mx-auto block px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/40 text-center text-base focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
+                    />
+                    {cpfError && <p className="text-red-400 text-xs mt-2 text-center">{cpfError}</p>}
+                  </div>
 
                   <div className="px-0 md:px-2">
                     <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} loading={purchaseLoading} />

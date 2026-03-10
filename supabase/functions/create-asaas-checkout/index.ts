@@ -20,7 +20,7 @@ serve(async (req) => {
   }
 
   try {
-    const { product_slug, user_email, utm_data } = await req.json()
+    const { product_slug, user_email, user_cpf, utm_data } = await req.json()
 
     if (!product_slug || !user_email) {
       return new Response(JSON.stringify({ error: 'product_slug e user_email são obrigatórios' }), {
@@ -30,6 +30,7 @@ serve(async (req) => {
     }
 
     const email = user_email.toLowerCase().trim()
+    const cpf = user_cpf ? user_cpf.replace(/\D/g, '') : null
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return new Response(JSON.stringify({ error: 'Email inválido' }), {
@@ -85,16 +86,28 @@ serve(async (req) => {
     if (searchData.data && searchData.data.length > 0) {
       customerId = searchData.data[0].id
       console.log(`👤 Cliente existente no Asaas: ${customerId}`)
+      // Atualizar CPF se fornecido e cliente não tem
+      if (cpf && !searchData.data[0].cpfCnpj) {
+        await fetch(`${ASAAS_API_URL}/customers/${customerId}`, {
+          method: 'PUT',
+          headers: asaasHeaders,
+          body: JSON.stringify({ cpfCnpj: cpf })
+        })
+        console.log(`📝 CPF atualizado para cliente: ${customerId}`)
+      }
     } else {
       // Criar novo cliente
+      const customerBody: Record<string, unknown> = {
+        name: email.split('@')[0],
+        email: email,
+        notificationDisabled: false
+      }
+      if (cpf) customerBody.cpfCnpj = cpf
+
       const createCustomerResponse = await fetch(`${ASAAS_API_URL}/customers`, {
         method: 'POST',
         headers: asaasHeaders,
-        body: JSON.stringify({
-          name: email.split('@')[0],
-          email: email,
-          notificationDisabled: false
-        })
+        body: JSON.stringify(customerBody)
       })
 
       if (!createCustomerResponse.ok) {
