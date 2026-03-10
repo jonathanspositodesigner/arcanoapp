@@ -1,23 +1,46 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Plano: Converter vendas internacionais para BRL no dashboard
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+### Problema identificado
+Vendas da Hotmart LATAM (`hotmart-es`) chegam em moedas locais (ARS, COP, USD, etc.) mas são armazenadas e exibidas como se fossem BRL. Exemplos reais:
+- 31.349 COP (deveria ser ~R$ 38) aparece como R$ 31.349
+- 9.439 ARS (deveria ser ~R$ 52) aparece como R$ 9.439
+- 44 USD (deveria ser ~R$ 250) aparece como R$ 44
 
-## Dados
+### Solução em 3 partes
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+#### 1. Adicionar coluna `currency` e `amount_brl` na tabela `webhook_logs`
+- `currency TEXT` — moeda original (ARS, COP, USD, BRL, etc.)
+- `amount_brl NUMERIC` — valor convertido para BRL
 
-## Ações (via SQL migration)
+#### 2. Corrigir vendas existentes (migration de dados)
+- Para registros `hotmart-es` que ainda têm payload: extrair `currency_value` do payload e converter usando taxas fixas atuais
+- Para registros sem payload: inferir moeda pelo valor (31k+ = COP, 9k+ = ARS, <100 = USD)
+- Taxas aproximadas para correção histórica:
+  - USD → BRL: ~5.70
+  - COP → BRL: ~0.00122
+  - ARS → BRL: ~0.0054
+  - MXN → BRL: ~0.28
+- Registros de plataformas brasileiras (artes-eventos, prompts, app): `currency = 'BRL'`, `amount_brl = amount`
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+#### 3. Corrigir para vendas futuras
+- **webhook-hotmart-artes**: Capturar `currency_value` do payload e chamar API de câmbio para converter para BRL antes de gravar
+- **RPC `get_unified_dashboard_orders`**: Usar `COALESCE(amount_brl, amount)` para exibir sempre o valor em BRL
+- Fallback: se API de câmbio falhar, usar tabela de taxas hardcoded
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+### Detalhes técnicos
+
+**Migration SQL:**
+- ALTER TABLE webhook_logs ADD COLUMN currency TEXT DEFAULT 'BRL'
+- ALTER TABLE webhook_logs ADD COLUMN amount_brl NUMERIC
+- UPDATE existentes com conversão
+
+**Edge Function `webhook-hotmart-artes`:**
+- Extrair moeda: `payload.data.purchase.price.currency_value`
+- Se não for BRL, converter via API `open.er-api.com` (mesma já usada no frontend)
+- Gravar `currency` e `amount_brl` no insert do webhook_logs
+
+**RPC `get_unified_dashboard_orders`:**
+- Substituir `COALESCE(wl.amount, 0)` por `COALESCE(wl.amount_brl, wl.amount, 0)` no SELECT
 
