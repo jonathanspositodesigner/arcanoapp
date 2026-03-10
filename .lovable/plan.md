@@ -1,23 +1,46 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Diagnóstico: Reembolso Pagar.me não processado
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+### Problemas encontrados
 
-## Dados
+**1. Webhook de reembolso nunca chegou**
+Os logs da edge function `webhook-pagarme` mostram ZERO eventos de reembolso (`charge.refunded`, `order.canceled`). O webhook recebeu eventos de criação e pagamento normalmente, mas o evento de refund simplesmente nunca foi enviado pelo Pagar.me para o endpoint. Isso indica que no painel do Pagar.me, os webhooks de reembolso podem não estar configurados.
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+**2. Tabela `webhook_logs` com schema incompatível**
+O código do `webhook-pagarme` usa colunas `transaction_id` e `event_type` que **NÃO EXISTEM** na tabela `webhook_logs`. Resultado:
+- As inserções de log falham silenciosamente (sem trilha de auditoria)
+- A checagem de idempotência sempre retorna vazio (não bloqueia reprocessamento, mas também não registra nada)
+- Por isso não há nenhum registro na `webhook_logs` para `platform = 'pagarme'`
 
-## Ações (via SQL migration)
+**3. Estado atual da compra teste**
+- Ordem `4b9b1393` → status `paid` (nunca mudou para `refunded`)
+- `user_pack_purchases` → `is_active: true` para `upscaller-arcano` (acesso nunca revogado)
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+### Plano de correção
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+**1. Migração SQL: adicionar colunas faltantes na `webhook_logs`**
+- Adicionar `transaction_id TEXT`
+- Adicionar `event_type TEXT`
+- Isso corrige a compatibilidade do webhook-pagarme com a tabela e habilita a trilha de auditoria e idempotência
+
+**2. Atualizar `webhook-pagarme/index.ts` para cobrir mais event types**
+- Além de `charge.refunded` e `order.canceled`, adicionar `charge.chargedback` e `charge.underpaid`
+- Também tratar o cenário onde `order.status` já não é `paid` (para casos de reprocessamento)
+
+**3. Verificação obrigatória pelo usuário (ação manual)**
+- Você precisa verificar no painel do Pagar.me se o webhook está configurado para receber eventos de reembolso. O endpoint correto é: `https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/webhook-pagarme`
+- Os eventos necessários são: `charge.refunded`, `charge.chargedback`, `order.canceled`
+
+### Detalhes técnicos
+
+**Migração SQL:**
+```sql
+ALTER TABLE webhook_logs ADD COLUMN IF NOT EXISTS transaction_id TEXT;
+ALTER TABLE webhook_logs ADD COLUMN IF NOT EXISTS event_type TEXT;
+```
+
+**Webhook — trecho de refund atualizado:**
+- Remover a condição `&& order.status === 'paid'` da verificação de reembolso (para processar mesmo se o status já mudou por alguma razão)
+- Adicionar `charge.chargedback` na lista de eventos de reembolso
 
