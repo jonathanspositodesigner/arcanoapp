@@ -85,15 +85,16 @@ serve(async (req) => {
 
     if (searchData.data && searchData.data.length > 0) {
       customerId = searchData.data[0].id
-      console.log(`👤 Cliente existente no Asaas: ${customerId}`)
-      // Atualizar CPF se fornecido e cliente não tem
-      if (cpf && !searchData.data[0].cpfCnpj) {
-        await fetch(`${ASAAS_API_URL}/customers/${customerId}`, {
+      console.log(`👤 Cliente existente no Asaas: ${customerId} | cpfCnpj atual: ${searchData.data[0].cpfCnpj || 'VAZIO'}`)
+      // Sempre atualizar CPF se fornecido
+      if (cpf) {
+        const updateRes = await fetch(`${ASAAS_API_URL}/customers/${customerId}`, {
           method: 'PUT',
           headers: asaasHeaders,
           body: JSON.stringify({ cpfCnpj: cpf })
         })
-        console.log(`📝 CPF atualizado para cliente: ${customerId}`)
+        const updateText = await updateRes.text()
+        console.log(`📝 Update CPF resultado: ${updateRes.status} | ${updateText.substring(0, 200)}`)
       }
     } else {
       // Criar novo cliente
