@@ -157,13 +157,14 @@ const FullscreenModal = ({
 };
 
 // CTA Button Component - estilo pill
-const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
+const CTAButton = ({ onClick, isPremium, t, loading }: { onClick: () => void; isPremium: boolean; t: (key: string) => string; loading?: boolean }) => (
   <Button
     onClick={onClick}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40"
+    disabled={loading}
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40 disabled:opacity-70 disabled:cursor-wait"
   >
-    {t('tools:upscaler.cta')}
-    <ArrowRight className="h-5 w-5 ml-2" />
+    {loading ? 'Gerando checkout...' : t('tools:upscaler.cta')}
+    {!loading && <ArrowRight className="h-5 w-5 ml-2" />}
   </Button>
 );
 
@@ -244,18 +245,55 @@ const PlanosUpscalerArcano = () => {
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
-  const handlePurchase = () => {
-    if (!tool) return;
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [emailError, setEmailError] = useState('');
 
-    const checkoutLink = isPremium && tool.checkout_link_membro_vitalicio
-      ? tool.checkout_link_membro_vitalicio
-      : tool.checkout_link_vitalicio;
-
-    if (checkoutLink) {
-      window.open(appendUtmToUrl(checkoutLink), "_blank");
-    } else {
-      window.open(appendUtmToUrl("https://voxvisual.com.br/linksbio/"), "_blank");
+  const handlePurchase = async () => {
+    const userEmail = user?.email || emailInput.trim();
+    if (!userEmail) {
+      setEmailError('Digite seu email para continuar');
+      return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail)) {
+      setEmailError('Email inválido');
+      return;
+    }
+    setEmailError('');
+    setPurchaseLoading(true);
+    try {
+      let utmData: Record<string, string> | null = null;
+      try {
+        const raw = sessionStorage.getItem('captured_utms');
+        if (raw) utmData = JSON.parse(raw);
+      } catch { /* ignore */ }
+
+      const response = await supabase.functions.invoke('create-mp-checkout', {
+        body: {
+          product_slug: 'upscaller-arcano-vitalicio',
+          user_email: userEmail.toLowerCase().trim(),
+          utm_data: utmData
+        }
+      });
+
+      if (response.error) {
+        console.error('Erro ao criar checkout:', response.error);
+        alert('Erro ao criar checkout. Tente novamente.');
+        setPurchaseLoading(false);
+        return;
+      }
+
+      const { checkout_url } = response.data;
+      if (checkout_url) {
+        window.location.href = checkout_url;
+      } else {
+        alert('Erro ao gerar link de pagamento.');
+      }
+    } catch (error) {
+      console.error('Erro:', error);
+      alert('Erro ao processar. Tente novamente.');
+    }
+    setPurchaseLoading(false);
   };
 
   const hasAccess = hasAccessToPack(TOOL_SLUG);
@@ -653,8 +691,21 @@ const PlanosUpscalerArcano = () => {
                     </div>
                   </div>
 
+                  {!user && (
+                    <div className="px-0 md:px-2 mb-4">
+                      <input
+                        type="email"
+                        placeholder="Digite seu email"
+                        value={emailInput}
+                        onChange={(e) => { setEmailInput(e.target.value); setEmailError(''); }}
+                        className="w-full max-w-md mx-auto block px-5 py-3.5 rounded-full bg-white/10 border border-white/20 text-white placeholder-white/40 text-center text-base focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
+                      />
+                      {emailError && <p className="text-red-400 text-xs mt-2">{emailError}</p>}
+                    </div>
+                  )}
+
                   <div className="px-0 md:px-2">
-                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
+                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} loading={purchaseLoading} />
                   </div>
 
                   {/* Badges de pagamento */}
