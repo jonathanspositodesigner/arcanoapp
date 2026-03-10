@@ -752,7 +752,7 @@ serve(async (req) => {
       greenn_contract_id: contractId ? String(contractId) : null,
       amount: payload.sale?.amount || null,
       product_name: productName || null,
-      payment_method: payload.sale?.method || payload.sale?.payment_method || payload.payment?.method || null,
+      payment_method: payload.currentSale?.method || payload.sale?.method || payload.sale?.payment_method || payload.payment?.method || null,
       utm_source: extractUtmSource(payload)
     }).select('id').single()
 
