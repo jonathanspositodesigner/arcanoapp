@@ -824,7 +824,8 @@ serve(async (req) => {
         amount: payload.sale?.amount || null,
         product_name: payload.product?.name || null,
         payment_method: payload.currentSale?.method || payload.sale?.method || payload.sale?.payment_method || payload.payment?.method || null,
-        utm_source: extractUtmSource(payload)
+        utm_source: extractUtmSource(payload),
+        utm_data: extractFullUtmData(payload)
       })
       .select('id')
       .single()
