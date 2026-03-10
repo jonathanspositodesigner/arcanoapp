@@ -61,6 +61,8 @@ Deno.serve(async (req) => {
     let until: string | undefined;
     let campaignIds: string[] = [];
     let adsetIds: string[] = [];
+    let objectId: string | undefined;
+    let newStatus: string | undefined;
 
     try {
       const body = await req.json();
@@ -69,6 +71,8 @@ Deno.serve(async (req) => {
       if (body.until) until = body.until;
       if (body.campaign_ids) campaignIds = body.campaign_ids;
       if (body.adset_ids) adsetIds = body.adset_ids;
+      if (body.object_id) objectId = body.object_id;
+      if (body.new_status) newStatus = body.new_status;
     } catch {
       // No body or invalid JSON — default to "fetch"
     }
