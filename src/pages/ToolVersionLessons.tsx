@@ -408,11 +408,11 @@ const ToolVersionLessons = () => {
           {/* Header standalone */}
           <header className="sticky top-0 z-50 bg-[#0D0221]/90 backdrop-blur-md border-b border-purple-500/20">
             <div className="container mx-auto px-4 max-w-6xl flex items-center justify-between h-14">
-              <Button
+                <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/')}
-                className="text-purple-300 hover:text-white hover:bg-purple-500/20 gap-2"
+                className="text-white hover:text-white hover:bg-purple-500/20 gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
                 <span className="hidden sm:inline">Voltar para Home</span>
