@@ -33,7 +33,16 @@ const statusMap: Record<string, { label: string; variant: "default" | "secondary
   paid: { label: "Aprovada", variant: "default" },
   pending: { label: "Pendente", variant: "secondary" },
   refunded: { label: "Reembolsada", variant: "destructive" },
+  chargeback: { label: "Chargeback", variant: "destructive" },
 };
+
+const statusFilters = [
+  { id: "all", label: "Todas" },
+  { id: "paid", label: "Aprovadas" },
+  { id: "pending", label: "Pendentes" },
+  { id: "refunded", label: "Reembolsadas" },
+  { id: "chargeback", label: "Chargebacks" },
+];
 
 type RangePreset = "today" | "7d" | "30d" | "90d" | "custom";
 
