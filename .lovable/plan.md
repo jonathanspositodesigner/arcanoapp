@@ -1,29 +1,23 @@
 
 
-## Plano: Criar reembolso via API Pagar.me no sistema
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-### O que será feito
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-1. **Nova Edge Function `refund-pagarme`** — Recebe `order_id` de um admin autenticado, busca o `asaas_payment_id` (charge ID do Pagar.me), chama `POST /charges/{charge_id}/void` na API Pagar.me, revoga acesso e atualiza status da ordem para `refunded`.
+## Dados
 
-2. **Botão de reembolso no `SaleDetailDialog`** — Para vendas com status `paid` e plataforma `pagarme`/`asaas`, exibir botão "Reembolsar via Pagar.me" com confirmação. Ao confirmar, chama a edge function e atualiza a UI.
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-### Detalhes técnicos
+## Ações (via SQL migration)
 
-**Edge Function `refund-pagarme/index.ts`:**
-- Validação de admin via `getClaims()` + `has_role()`
-- Recebe `{ order_id }` no body
-- Busca a ordem na `asaas_orders` com join em `mp_products`
-- Chama `POST https://api.pagar.me/core/v5/charges/{asaas_payment_id}/void` com auth Basic
-- Se sucesso: atualiza `asaas_orders.status = 'refunded'`, revoga `user_pack_purchases` e/ou créditos (mesma lógica do webhook de refund)
-- Loga na `webhook_logs` como `event_type: 'manual_refund'`
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-**Config `supabase/config.toml`:**
-- Adicionar `[functions.refund-pagarme]` com `verify_jwt = false`
-
-**Frontend `SaleDetailDialog.tsx`:**
-- Adicionar botão "Reembolsar" visível apenas quando `sale.status === 'paid'` e plataforma é Pagar.me (`source_platform` contém `asaas` ou `pagarme`)
-- Dialog de confirmação antes de executar
-- Chama `supabase.functions.invoke('refund-pagarme', { body: { order_id: sale.id } })`
-- Exibe toast de sucesso/erro e fecha o dialog
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
