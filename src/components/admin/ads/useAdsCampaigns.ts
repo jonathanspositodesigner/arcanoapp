@@ -277,7 +277,7 @@ export function useAdsCampaigns(
       ...t,
       profit: t.revenue - t.spend,
       cpa: t.sales > 0 ? t.spend / t.sales : 0,
-      roi: t.spend > 0 ? ((t.revenue - t.spend) / t.spend) * 100 : 0,
+      roi: t.spend > 0 ? t.revenue / t.spend : 0,
       roas: t.spend > 0 ? t.revenue / t.spend : 0,
     };
   }, [campaignsWithSales]);
