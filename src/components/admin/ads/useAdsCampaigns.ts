@@ -187,27 +187,32 @@ export function useAdsCampaigns(
     }
   }, [dateRange, fetchData]);
 
-  // Merge campaigns with sales attribution
+  // Merge campaigns with sales attribution (proportional by spend)
   const campaignsWithSales = useMemo((): CampaignWithSales[] => {
-    return campaigns
-      .filter((c) => {
-        if (accountFilter && c.account_id !== accountFilter) return false;
-        if (searchQuery && !c.campaign_name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-        return true;
-      })
-      .map((c) => {
-        // Match sales by utm_campaign containing campaign name (partial match)
-        const matchedSales = sales.filter((s) => {
-          const utmCampaign = s.utm_data?.utm_campaign;
-          if (!utmCampaign) return false;
-          // Try exact match first, then partial
-          return utmCampaign === c.campaign_name || 
-                 utmCampaign.toLowerCase().includes(c.campaign_name.toLowerCase()) ||
-                 c.campaign_name.toLowerCase().includes(utmCampaign.toLowerCase());
-        });
+    // 1. Identify FB sales: utm_source starts with 'FB' or 'fb'
+    const fbSales = sales.filter((s) => {
+      const utmSource = s.utm_data?.utm_source || s.utm_data?.source || "";
+      return typeof utmSource === "string" && utmSource.toUpperCase().startsWith("FB");
+    });
+    const totalFbSalesCount = fbSales.length;
+    const totalFbRevenue = fbSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
 
-        const salesCount = matchedSales.length;
-        const revenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+    // 2. Filter campaigns by account/search
+    const filtered = campaigns.filter((c) => {
+      if (accountFilter && c.account_id !== accountFilter) return false;
+      if (searchQuery && !c.campaign_name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      return true;
+    });
+
+    // 3. Total spend across filtered campaigns for proportional distribution
+    const totalFilteredSpend = filtered.reduce((sum, c) => sum + c.total_spend, 0);
+
+    // 4. Distribute FB sales proportionally by spend
+    return filtered
+      .map((c) => {
+        const spendWeight = totalFilteredSpend > 0 ? c.total_spend / totalFilteredSpend : 0;
+        const salesCount = Math.round(totalFbSalesCount * spendWeight);
+        const revenue = totalFbRevenue * spendWeight;
         const spend = c.total_spend;
         const profit = revenue - spend;
         const cpa = salesCount > 0 ? spend / salesCount : 0;
@@ -219,8 +224,12 @@ export function useAdsCampaigns(
       .sort((a, b) => b.total_spend - a.total_spend);
   }, [campaigns, sales, accountFilter, searchQuery]);
 
+  // Untracked = sales that DON'T have FB utm_source (truly untrackable)
   const untrackedSales = useMemo(() => {
-    return sales.filter((s) => !s.utm_data?.utm_campaign);
+    return sales.filter((s) => {
+      const utmSource = s.utm_data?.utm_source || s.utm_data?.source || "";
+      return typeof utmSource !== "string" || !utmSource.toUpperCase().startsWith("FB");
+    });
   }, [sales]);
 
   const totals = useMemo(() => {
