@@ -88,7 +88,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                 }}
                 className="w-full"
               >
-                {t('auth.backToLogin')}
+                {t('backToLogin')}
               </Button>
             </div>
           ) : auth.state.step === 'signup' ? (
