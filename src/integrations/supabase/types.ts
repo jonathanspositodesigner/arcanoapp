@@ -3918,6 +3918,7 @@ export type Database = {
           received_at: string | null
           result: string | null
           status: string | null
+          utm_data: Json | null
           utm_source: string | null
         }
         Insert: {
@@ -3939,6 +3940,7 @@ export type Database = {
           received_at?: string | null
           result?: string | null
           status?: string | null
+          utm_data?: Json | null
           utm_source?: string | null
         }
         Update: {
@@ -3960,6 +3962,7 @@ export type Database = {
           received_at?: string | null
           result?: string | null
           status?: string | null
+          utm_data?: Json | null
           utm_source?: string | null
         }
         Relationships: []
