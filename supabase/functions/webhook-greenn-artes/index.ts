@@ -112,6 +112,18 @@ function extractUtmSource(payload: any): string | null {
   return null
 }
 
+function extractFullUtmData(payload: any): Record<string, string> | null {
+  const saleMetas = payload.saleMetas || []
+  const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_id', 'utm_content', 'utm_term', 'xcod', 'fbclid']
+  const utmData: Record<string, string> = {}
+  for (const meta of saleMetas) {
+    if (utmKeys.includes(meta.meta_key) && meta.meta_value) {
+      utmData[meta.meta_key] = meta.meta_value
+    }
+  }
+  return Object.keys(utmData).length > 0 ? utmData : null
+}
+
 function extractLocale(payload: any): 'pt' | 'es' {
   const saleMetas = payload.saleMetas || []
   for (const meta of saleMetas) {
