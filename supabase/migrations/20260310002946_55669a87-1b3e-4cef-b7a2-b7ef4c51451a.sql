@@ -1,0 +1,1 @@
+UPDATE mp_products SET price = 29.90 WHERE slug = 'upscaller-arcano-vitalicio';
