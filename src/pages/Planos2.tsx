@@ -29,6 +29,25 @@ const Planos2 = () => {
   const [billingPeriod, setBillingPeriod] = useState<"mensal" | "anual">("mensal");
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [expandedAiTools, setExpandedAiTools] = useState<Record<string, boolean>>({});
+  
+  // Credit purchase state
+  const [showPreCheckout, setShowPreCheckout] = useState(false);
+  const [selectedCreditSlug, setSelectedCreditSlug] = useState('creditos-1500');
+  const [pixLoading, setPixLoading] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  // Check auth and profile on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        setUserEmail(user.email || null);
+      }
+    };
+    checkAuth();
+  }, []);
 
   const aiToolsList = [
     "Arcano Cloner",
