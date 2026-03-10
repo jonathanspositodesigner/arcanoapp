@@ -219,6 +219,20 @@ const SalesManagementContent = () => {
             ))}
           </div>
 
+          <div className="flex flex-wrap gap-2">
+            {statusFilters.map((sf) => (
+              <Button
+                key={sf.id}
+                variant={statusFilter === sf.id ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setStatusFilter(sf.id)}
+                className="text-xs"
+              >
+                {sf.label}
+              </Button>
+            ))}
+          </div>
+
           {rangePreset === "custom" && (
             <div className="flex flex-wrap items-center gap-2">
               <Popover>
