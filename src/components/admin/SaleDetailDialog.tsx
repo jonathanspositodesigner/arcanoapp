@@ -137,7 +137,11 @@ const SaleDetailDialog = ({ sale, open, onClose }: SaleDetailDialogProps) => {
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success("Reembolso realizado com sucesso! O acesso foi revogado.");
+      if (data?.already_refunded) {
+        toast.success("Venda já estava reembolsada no Pagar.me. Status local atualizado e acesso revogado.");
+      } else {
+        toast.success("Reembolso realizado com sucesso! O acesso foi revogado.");
+      }
       onClose();
     } catch (err: any) {
       console.error("Error refunding:", err);
