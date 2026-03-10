@@ -221,7 +221,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
       const response = await supabase.functions.invoke('create-pagarme-checkout', {
         body: {
-          product_slug: 'upscaller-arcano-vitalicio',
+          product_slug: productSlug,
           user_email: email.trim().toLowerCase(),
           user_phone: phone.replace(/\D/g, ''),
           user_name: name.trim(),
