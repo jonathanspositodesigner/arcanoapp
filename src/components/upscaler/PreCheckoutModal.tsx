@@ -104,7 +104,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutMod
 
   const validate = () => {
     let valid = true;
-    setNameError(''); setEmailError(''); setEmailConfirmError(''); setPhoneError('');
+    setNameError(''); setEmailError(''); setEmailConfirmError(''); setPhoneError(''); setCpfError('');
 
     if (!name.trim() || name.trim().length < 3) {
       setNameError('Digite seu nome completo');
@@ -134,6 +134,15 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutMod
       valid = false;
     } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
       setPhoneError('Celular inválido (DDD + número)');
+      valid = false;
+    }
+
+    const cpfDigits = cpf.replace(/\D/g, '');
+    if (!cpfDigits) {
+      setCpfError('Digite seu CPF');
+      valid = false;
+    } else if (cpfDigits.length !== 11) {
+      setCpfError('CPF inválido');
       valid = false;
     }
 
