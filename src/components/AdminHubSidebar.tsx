@@ -40,6 +40,12 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebar
       description: "Checkouts abandonados"
     },
     {
+      id: "sales" as const,
+      label: "VENDAS",
+      icon: Receipt,
+      description: "Listagem e gestão de vendas"
+    },
+    {
       id: "admins" as const,
       label: "ADMINISTRADORES",
       icon: ShieldCheck,

@@ -188,6 +188,8 @@ const AdminHub = () => {
         return <PartnersManagementContent />;
       case "abandoned-checkouts":
         return <AbandonedCheckoutsContent />;
+      case "sales":
+        return <SalesManagementContent />;
       case "admins":
         return <AdminsManagementContent />;
       case "emails":
