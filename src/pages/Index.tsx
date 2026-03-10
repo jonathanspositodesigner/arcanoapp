@@ -114,11 +114,15 @@ const Index = () => {
   const isPlanos2Paid = isPlanos2User && planos2Slug !== 'free';
 
   // Verificar acessos do usuário — só calcula depois que tudo carregou
+  // upscaller-arcano sozinho NÃO dá acesso ao card Ferramentas de IA
+  const TOOL_ACCESS_SLUGS = TOOL_SLUGS.filter(s => s !== 'upscaller-arcano');
   const hasToolAccess = !isLoading && isLoggedIn && (
-    userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug)) ||
+    userPacks.some(p => TOOL_ACCESS_SLUGS.includes(p.pack_slug)) ||
     isPlanos2Paid ||
-    creditsBreakdown.total > 0
+    creditsBreakdown.lifetime > 0
   );
+  // Card separado do Upscaler Arcano Vitalício
+  const hasUpscalerPack = !isLoading && isLoggedIn && userPacks.some(p => p.pack_slug === 'upscaller-arcano');
   const hasArtesAccess = !isLoading && isLoggedIn && userPacks.some(p => ARTES_SLUGS.includes(p.pack_slug));
   // hasPromptsAccess: premium SIM, mas NUNCA se planType for de ferramenta (arcano_pro, etc.)
   // OU planos2 pago (starter, pro, ultimate, unlimited)
@@ -164,12 +168,24 @@ const Index = () => {
   ];
 
   // Categorizar cards baseado nas compras do usuário (apenas se logado)
-  const purchasedCards = isLoggedIn ? cards.filter(card => {
-    if (card.id === 'ferramentas' && hasToolAccess) return true;
-    if (card.id === 'artes' && hasArtesAccess) return true;
-    if (card.id === 'prompts' && hasPromptsAccess) return true;
-    return false;
-  }) : [];
+  const purchasedCards = isLoggedIn ? [
+    ...cards.filter(card => {
+      if (card.id === 'ferramentas' && hasToolAccess) return true;
+      if (card.id === 'artes' && hasArtesAccess) return true;
+      if (card.id === 'prompts' && hasPromptsAccess) return true;
+      return false;
+    }),
+    // Card exclusivo do Upscaler Arcano Vitalício
+    ...(hasUpscalerPack ? [{
+      id: 'upscaler-vitalicio',
+      category: 'Ferramenta de IA',
+      title: 'Upscaler Arcano Vitalício',
+      description: 'Acesso vitalício ao Upscaler Arcano',
+      image: cardFerramentasIA,
+      route: '/ferramenta-ia-artes/upscaller-arcano/v2',
+      imagePosition: 'center center',
+    }] : []),
+  ] : [];
 
   const availableCards = isLoggedIn ? cards.filter(card => {
     if (card.id === 'ferramentas' && !hasToolAccess) return true;

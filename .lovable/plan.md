@@ -1,47 +1,23 @@
 
 
-## Resumo do que entendi
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-Você quer 3 mudanças:
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-### 1. Novo card "Upscaler Arcano Vitalício" na Home
-- **Visível apenas** para quem comprou o Upscaler Arcano (pack_slug `upscaller-arcano` em `user_pack_purchases`)
-- Aparece na seção "Suas Compras" com visual verde (PurchasedCard)
-- Oculto para todos os outros usuários
-- Ao clicar, leva direto para `/ferramenta-ia-artes/upscaller-arcano/v2`
+## Dados
 
-### 2. Ferramentas de IA — mudar regra de acesso
-- Ter o pack `upscaller-arcano` **não** dá mais acesso ao card "Ferramentas de IA" na home
-- Acesso às ferramentas de IA só para quem:
-  - Tem créditos **comprados** (lifetime > 0), ou
-  - Tem plano Planos2 pago
-- Créditos mensais de conta free **não contam**
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-### 3. Página UpscalerArcanoV2 — layout standalone
-- Remover menu lateral (AppSidebar) e menu superior (AppTopBar) desta página
-- Manter apenas o conteúdo central (videoaulas)
-- Adicionar botão "Voltar para Home" e botão "Login/Minha Conta"
+## Ações (via SQL migration)
 
----
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-## Plano técnico
-
-### Arquivo: `src/pages/Index.tsx`
-
-**Card do Upscaler Vitalício:**
-- Detectar `hasUpscalerPack = userPacks.some(p => p.pack_slug === 'upscaller-arcano')`
-- Criar um card adicional com id `upscaler-vitalicio`, imagem do Upscaler, rota `/ferramenta-ia-artes/upscaller-arcano/v2`
-- Inserir no array `purchasedCards` quando `hasUpscalerPack` é true
-
-**Regra de acesso Ferramentas de IA:**
-- Alterar `hasToolAccess` para excluir `upscaller-arcano` dos TOOL_SLUGS que concedem acesso
-- Mudar a condição de créditos: usar `creditsBreakdown.lifetime > 0` em vez de `creditsBreakdown.total > 0` (ignora créditos mensais free)
-
-### Arquivo: `src/pages/UpscalerArcanoV2.tsx`
-
-- Remover o wrapper `AppLayout` (se usado) ou garantir que a página renderize sem sidebar/topbar
-- Adicionar header mínimo com:
-  - Botão "← Voltar para Home" (`navigate('/')`)
-  - Botão "Login" (se não logado) ou "Minha Conta" (se logado)
-- Manter todo o conteúdo central das videoaulas
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 

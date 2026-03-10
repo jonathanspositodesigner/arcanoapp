@@ -1,9 +1,9 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, ReactNode } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Play, ExternalLink, Lock, Unlock, AlertTriangle, ChevronRight, Check, CheckCircle2, Circle, Trophy } from "lucide-react";
+import { Play, ExternalLink, Lock, Unlock, AlertTriangle, ChevronRight, Check, CheckCircle2, Circle, Trophy, ArrowLeft } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   AlertDialog,
@@ -399,8 +399,46 @@ const ToolVersionLessons = () => {
 
   const currentLesson = lessons[selectedLesson];
 
+  const isStandalone = toolSlug === 'upscaller-arcano';
+
+  const Wrapper = ({ children }: { children: ReactNode }) => {
+    if (isStandalone) {
+      return (
+        <div className="min-h-screen bg-[#0D0221] flex flex-col">
+          {/* Header standalone */}
+          <header className="sticky top-0 z-50 bg-[#0D0221]/90 backdrop-blur-md border-b border-purple-500/20">
+            <div className="container mx-auto px-4 max-w-6xl flex items-center justify-between h-14">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/')}
+                className="text-purple-300 hover:text-white hover:bg-purple-500/20 gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">Voltar para Home</span>
+              </Button>
+              <h1 className="text-sm md:text-base font-bold text-white absolute left-1/2 -translate-x-1/2">
+                {toolName || 'Upscaler Arcano'}
+              </h1>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(user ? '/minha-conta' : '/auth')}
+                className="border-purple-500/30 text-purple-300 hover:text-white hover:bg-purple-500/20"
+              >
+                {user ? 'Minha Conta' : 'Login'}
+              </Button>
+            </div>
+          </header>
+          {children}
+        </div>
+      );
+    }
+    return <AppLayout>{children}</AppLayout>;
+  };
+
   return (
-    <AppLayout>
+    <Wrapper>
       <div className="container mx-auto px-4 py-8 max-w-6xl flex-1">
         {/* Confetti Animation */}
         {showConfetti && (
@@ -701,7 +739,7 @@ const ToolVersionLessons = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AppLayout>
+    </Wrapper>
   );
 };
 
