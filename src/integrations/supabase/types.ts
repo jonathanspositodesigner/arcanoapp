@@ -1026,8 +1026,11 @@ export type Database = {
           product_id: string | null
           status: string
           updated_at: string | null
+          user_cpf: string | null
           user_email: string
           user_id: string | null
+          user_name: string | null
+          user_phone: string | null
           utm_data: Json | null
         }
         Insert: {
@@ -1042,8 +1045,11 @@ export type Database = {
           product_id?: string | null
           status?: string
           updated_at?: string | null
+          user_cpf?: string | null
           user_email: string
           user_id?: string | null
+          user_name?: string | null
+          user_phone?: string | null
           utm_data?: Json | null
         }
         Update: {
@@ -1058,8 +1064,11 @@ export type Database = {
           product_id?: string | null
           status?: string
           updated_at?: string | null
+          user_cpf?: string | null
           user_email?: string
           user_id?: string | null
+          user_name?: string | null
+          user_phone?: string | null
           utm_data?: Json | null
         }
         Relationships: [
@@ -3085,8 +3094,14 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address_city: string | null
+          address_country: string | null
+          address_line: string | null
+          address_state: string | null
+          address_zip: string | null
           avatar_url: string | null
           bio: string | null
+          cpf: string | null
           created_at: string | null
           email: string | null
           email_verified: boolean
@@ -3100,8 +3115,14 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          address_city?: string | null
+          address_country?: string | null
+          address_line?: string | null
+          address_state?: string | null
+          address_zip?: string | null
           avatar_url?: string | null
           bio?: string | null
+          cpf?: string | null
           created_at?: string | null
           email?: string | null
           email_verified?: boolean
@@ -3115,8 +3136,14 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          address_city?: string | null
+          address_country?: string | null
+          address_line?: string | null
+          address_state?: string | null
+          address_zip?: string | null
           avatar_url?: string | null
           bio?: string | null
+          cpf?: string | null
           created_at?: string | null
           email?: string | null
           email_verified?: boolean

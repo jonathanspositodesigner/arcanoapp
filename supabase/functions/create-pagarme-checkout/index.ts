@@ -89,7 +89,10 @@ serve(async (req) => {
         amount: product.price,
         status: 'pending',
         asaas_customer_id: null,
-        utm_data: utm_data || null
+        utm_data: utm_data || null,
+        user_name: user_name?.trim() || null,
+        user_phone: phoneDigits || null,
+        user_cpf: user_cpf ? user_cpf.replace(/\D/g, '') : null
       })
       .select('id')
       .single()
