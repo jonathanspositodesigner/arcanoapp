@@ -251,6 +251,42 @@ const PlanosUpscalerArcano = () => {
   const [emailError, setEmailError] = useState('');
   const [showEmailField, setShowEmailField] = useState(false);
 
+  // Countdown timer - 48 minutes
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const saved = localStorage.getItem('upscaler-countdown');
+    if (saved) {
+      const remaining = parseInt(saved, 10) - Date.now();
+      if (remaining > 0) return remaining;
+    }
+    const initial = 48 * 60 * 1000;
+    localStorage.setItem('upscaler-countdown', String(Date.now() + initial));
+    return initial;
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1000) {
+          const newTime = 48 * 60 * 1000;
+          localStorage.setItem('upscaler-countdown', String(Date.now() + newTime));
+          return newTime;
+        }
+        return prev - 1000;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatTime = (ms: number) => {
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+    const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+    const seconds = String(totalSeconds % 60).padStart(2, '0');
+    return { hours, minutes, seconds };
+  };
+
+  const countdown = formatTime(timeLeft);
+
   const handlePurchase = async () => {
     const userEmail = user?.email || emailInput.trim();
     if (!userEmail) {
