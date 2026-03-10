@@ -65,9 +65,9 @@ export function useJobStatusSync({
   
   // Refs para controle de estado
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollingStartTimeRef = useRef<number | null>(null);
-  const absoluteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const absoluteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastKnownStatusRef = useRef<JobStatus | null>(null);
   const isCompletedRef = useRef(false);
   

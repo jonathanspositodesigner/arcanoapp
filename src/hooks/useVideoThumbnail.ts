@@ -24,7 +24,7 @@ export async function generateVideoThumbnail(
     video.playsInline = true;
     video.preload = 'metadata';
 
-    let timeoutId: NodeJS.Timeout | null = null;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
     let isResolved = false;
 
     const objectUrl = typeof resolvedSource === 'string' ? null : URL.createObjectURL(resolvedSource);

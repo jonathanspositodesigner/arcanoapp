@@ -52,7 +52,7 @@ export const ResilientImage = ({
   const [isFailed, setIsFailed] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
   const objectUrlRef = useRef<string | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Cleanup ObjectURLs on unmount

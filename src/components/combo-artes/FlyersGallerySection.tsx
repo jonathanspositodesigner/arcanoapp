@@ -147,7 +147,7 @@ const CategoryCarousel = ({
   useEffect(() => {
     if (!emblaApi) return;
     
-    let intervalId: NodeJS.Timeout;
+    let intervalId: ReturnType<typeof setInterval>;
     
     // Delay de 3 segundos antes de começar o auto-scroll
     const startDelay = setTimeout(() => {
