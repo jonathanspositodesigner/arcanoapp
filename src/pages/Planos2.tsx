@@ -654,11 +654,12 @@ const Planos2 = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
           {[
-            { credits: "+1.500", description: "~25 imagens", price: "19,90", originalPrice: "39,90", savings: "", link: "https://payfast.greenn.com.br/156946/offer/C5k6VZ", icon: Coins, color: "from-purple-500 to-fuchsia-500" },
-            { credits: "+4.200", description: "~70 imagens", price: "29,90", originalPrice: "49,90", savings: "46", link: "https://payfast.greenn.com.br/156948/offer/lwl67R", popular: true, icon: Zap, color: "from-fuchsia-500 to-pink-500" },
-            { credits: "+14.000", description: "~233 imagens", price: "79,90", originalPrice: "149,90", savings: "57", link: "https://payfast.greenn.com.br/156952/offer/oJmWhP", bestValue: true, icon: Star, color: "from-yellow-500 to-orange-500" },
+            { credits: "+1.500", description: "~25 imagens", price: "19,90", originalPrice: "39,90", savings: "", slug: "creditos-1500", icon: Coins, color: "from-purple-500 to-fuchsia-500" },
+            { credits: "+4.200", description: "~70 imagens", price: "29,90", originalPrice: "49,90", savings: "46", slug: "creditos-4200", popular: true, icon: Zap, color: "from-fuchsia-500 to-pink-500" },
+            { credits: "+14.000", description: "~233 imagens", price: "79,90", originalPrice: "149,90", savings: "57", slug: "creditos-14000", bestValue: true, icon: Star, color: "from-yellow-500 to-orange-500" },
           ].map((plan) => {
             const Icon = plan.icon;
+            const isLoading = pixLoading === plan.slug;
             return (
               <Card
                 key={plan.credits}
@@ -711,10 +712,18 @@ const Planos2 = () => {
                   </div>
 
                   <Button
-                    onClick={() => window.open(plan.link, "_blank")}
-                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5`}
+                    onClick={() => handleCreditPurchase(plan.slug)}
+                    disabled={isLoading || !!pixLoading}
+                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5 disabled:opacity-70`}
                   >
-                    Comprar Agora
+                    {isLoading ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Gerando PIX...
+                      </span>
+                    ) : (
+                      'Comprar Agora'
+                    )}
                   </Button>
                 </div>
               </Card>
