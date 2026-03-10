@@ -248,6 +248,7 @@ const PlanosUpscalerArcano = () => {
   const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [emailInput, setEmailInput] = useState('');
   const [emailError, setEmailError] = useState('');
+  const [showEmailField, setShowEmailField] = useState(false);
 
   const handlePurchase = async () => {
     const userEmail = user?.email || emailInput.trim();
