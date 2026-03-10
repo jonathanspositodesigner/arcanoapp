@@ -41,7 +41,7 @@ export default function SalesDashboard() {
     customEnd, setCustomEnd,
     orders, approved, pending, refunded,
     revenue, refundedTotal, pendingTotal,
-    pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch,
+    platformFees, pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch,
   } = useSalesDashboard();
 
   const [isRefreshing, setIsRefreshing] = useState(false);
