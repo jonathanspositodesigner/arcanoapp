@@ -11,7 +11,7 @@ interface ExpandingGalleryProps {
   badgeText?: string;
 }
 
-const ExpandingGallery = ({ items }: ExpandingGalleryProps) => {
+const ExpandingGallery = ({ items, badgeText = "Feito com o Arcano Cloner" }: ExpandingGalleryProps) => {
   const [activeIndex, setActiveIndex] = useState(3);
   const [mobileIndex, setMobileIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
