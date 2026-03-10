@@ -1,23 +1,58 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Plano: Salvar todos os dados do cliente (incluindo endereço) no perfil
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+### Problema
 
-## Dados
+O webhook do Pagar.me só salva `email` no perfil. Nome, telefone, CPF e endereço (coletados no checkout do Pagar.me) não são persistidos.
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+### Alterações
 
-## Ações (via SQL migration)
+**1. Migração SQL — Adicionar colunas ao `profiles` e `asaas_orders`**
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+```sql
+-- Profiles: adicionar CPF e campos de endereço
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS cpf TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS address_line TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS address_zip TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS address_city TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS address_state TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS address_country TEXT DEFAULT 'BR';
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+-- Orders: salvar dados coletados no pre-checkout para uso no webhook
+ALTER TABLE asaas_orders ADD COLUMN IF NOT EXISTS user_name TEXT;
+ALTER TABLE asaas_orders ADD COLUMN IF NOT EXISTS user_phone TEXT;
+ALTER TABLE asaas_orders ADD COLUMN IF NOT EXISTS user_cpf TEXT;
+```
+
+**2. Edge Function `create-pagarme-checkout/index.ts`**
+
+- Salvar `user_name`, `user_phone`, `user_cpf` na `asaas_orders` ao criar a ordem (insert já recebe esses valores, só falta persistir)
+
+**3. Edge Function `webhook-pagarme/index.ts`**
+
+No bloco de upsert do profile (linha ~338), incluir:
+- `name`: de `order.user_name` → fallback `eventData.customer.name`
+- `phone`: de `order.user_phone` → fallback `eventData.customer.phones.mobile_phone`
+- `cpf`: de `order.user_cpf` → fallback `eventData.customer.document`
+- `address_line`: de `eventData.customer.address.line_1` ou `charges[0].last_transaction.billing_address`
+- `address_zip`, `address_city`, `address_state`, `address_country`: mesma fonte
+
+Lógica: não sobrescrever campos que já têm valor no perfil (usar COALESCE no upsert ou buscar perfil antes e fazer merge).
+
+```text
+Fluxo:
+  PreCheckoutModal → coleta nome, email, telefone, CPF
+  create-pagarme-checkout → salva na asaas_orders + envia ao Pagar.me
+  Pagar.me checkout → coleta endereço (cartão) ou usa estático (PIX)
+  webhook-pagarme → lê order + payload Pagar.me → upsert completo no profiles
+```
+
+### Resumo de arquivos
+
+| Arquivo | Alteração |
+|---------|-----------|
+| Migração SQL | `cpf`, `address_line/zip/city/state/country` em `profiles` + `user_name/phone/cpf` em `asaas_orders` |
+| `create-pagarme-checkout/index.ts` | Salvar `user_name`, `user_phone`, `user_cpf` no insert da ordem |
+| `webhook-pagarme/index.ts` | Upsert do profile com nome, phone, cpf e endereço (dados da ordem + fallback do payload Pagar.me) |
 
