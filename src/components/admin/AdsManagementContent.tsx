@@ -431,21 +431,29 @@ const AdsManagementContent = () => {
     }
   }, [sortColumn]);
 
-  const sortedCampaigns = useMemo(() => sortItems(campaignsWithSales, sortColumn, sortDirection), [campaignsWithSales, sortColumn, sortDirection]);
-  const sortedAdsets = useMemo(() => sortItems(adsets, sortColumn, sortDirection), [adsets, sortColumn, sortDirection]);
-  const sortedAds = useMemo(() => sortItems(ads, sortColumn, sortDirection), [ads, sortColumn, sortDirection]);
+  // Apply status overrides to data
+  const campaignsWithOverrides = useMemo(() => campaignsWithSales.map(c => {
+    const override = statusOverrides[c.campaign_id];
+    return override ? { ...c, campaign_status: override } : c;
+  }), [campaignsWithSales, statusOverrides]);
 
-  const handleStatusToggleCampaign = useCallback((objectId: string, newStatus: string) => {
-    setCampaignsWithSales(prev => prev.map(c => c.campaign_id === objectId ? { ...c, campaign_status: newStatus } : c));
-  }, [setCampaignsWithSales]);
+  const adsetsWithOverrides = useMemo(() => adsets.map(a => {
+    const override = statusOverrides[a.id];
+    return override ? { ...a, status: override } : a;
+  }), [adsets, statusOverrides]);
 
-  const handleStatusToggleAdset = useCallback((objectId: string, newStatus: string) => {
-    setAdsets(prev => prev.map(a => a.id === objectId ? { ...a, status: newStatus } : a));
-  }, [setAdsets]);
+  const adsWithOverrides = useMemo(() => ads.map(a => {
+    const override = statusOverrides[a.id];
+    return override ? { ...a, status: override } : a;
+  }), [ads, statusOverrides]);
 
-  const handleStatusToggleAd = useCallback((objectId: string, newStatus: string) => {
-    setAds(prev => prev.map(a => a.id === objectId ? { ...a, status: newStatus } : a));
-  }, [setAds]);
+  const sortedCampaigns = useMemo(() => sortItems(campaignsWithOverrides, sortColumn, sortDirection), [campaignsWithOverrides, sortColumn, sortDirection]);
+  const sortedAdsets = useMemo(() => sortItems(adsetsWithOverrides, sortColumn, sortDirection), [adsetsWithOverrides, sortColumn, sortDirection]);
+  const sortedAds = useMemo(() => sortItems(adsWithOverrides, sortColumn, sortDirection), [adsWithOverrides, sortColumn, sortDirection]);
+
+  const handleStatusToggle = useCallback((objectId: string, newStatus: string) => {
+    setStatusOverrides(prev => ({ ...prev, [objectId]: newStatus }));
+  }, []);
 
   const handleCampaignClick = (c: CampaignWithSales) => {
     fetchAdsets([c.campaign_id], c.campaign_name);
