@@ -99,7 +99,7 @@ serve(async (req) => {
     } else {
       // Criar novo cliente
       const customerBody: Record<string, unknown> = {
-        name: email.split('@')[0],
+        name: user_name || email.split('@')[0],
         email: email,
         notificationDisabled: false
       }
