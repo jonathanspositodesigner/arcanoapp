@@ -354,8 +354,49 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Update status of a campaign, adset, or ad
+    if (action === "update-status") {
+      let objectId: string | undefined;
+      let newStatus: string | undefined;
+      try {
+        const body = await req.clone().json();
+        objectId = body.object_id;
+        newStatus = body.new_status;
+      } catch {}
+
+      if (!objectId || !newStatus || !["ACTIVE", "PAUSED"].includes(newStatus)) {
+        return new Response(
+          JSON.stringify({ error: "object_id and new_status (ACTIVE|PAUSED) are required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const url = `https://graph.facebook.com/v21.0/${objectId}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json();
+
+      if (data.error) {
+        return new Response(JSON.stringify({ error: data.error }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, object_id: objectId, new_status: newStatus }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     return new Response(
-      JSON.stringify({ error: 'Invalid action. Use "fetch", "fetch-campaigns", "fetch-adsets", "fetch-ads" or "exchange-token".' }),
+      JSON.stringify({ error: 'Invalid action.' }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
