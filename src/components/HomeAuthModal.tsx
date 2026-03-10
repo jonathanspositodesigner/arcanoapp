@@ -66,7 +66,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                 </div>
               </div>
               <h2 className="text-xl font-bold text-foreground mb-2">
-                {t('auth.signupSuccessTitle')}
+                {t('signupSuccessTitle')}
               </h2>
               <p className="text-sm text-muted-foreground mb-2">
                 {t('auth.signupSuccessMessage')}
