@@ -20,7 +20,7 @@ serve(async (req) => {
   }
 
   try {
-    const { product_slug, user_email, user_phone, user_name, user_cpf, billing_type, utm_data } = await req.json()
+    const { product_slug, user_email, user_phone, user_name, user_cpf, billing_type, utm_data, user_address } = await req.json()
 
     if (!product_slug || !user_email) {
       return new Response(JSON.stringify({ error: 'product_slug e user_email são obrigatórios' }), {
@@ -154,7 +154,13 @@ serve(async (req) => {
             billing_address_editable: billing_type === 'CREDIT_CARD',
             skip_checkout_success_page: billing_type === 'CREDIT_CARD',
             ...(billing_type === 'PIX' ? {
-              billing_address: {
+              billing_address: user_address?.line_1 ? {
+                line_1: user_address.line_1,
+                zip_code: user_address.zip_code || '01310100',
+                city: user_address.city || 'São Paulo',
+                state: user_address.state || 'SP',
+                country: user_address.country || 'BR'
+              } : {
                 line_1: '1, Av Paulista, Bela Vista',
                 zip_code: '01310100',
                 city: 'São Paulo',

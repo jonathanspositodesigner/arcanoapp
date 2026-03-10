@@ -105,14 +105,17 @@ const Planos2 = () => {
       return;
     }
 
-    // Check if profile is complete for 1-click PIX
+    // Check if profile is complete for 1-click PIX (all Pagar.me requirements)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('name, phone, cpf')
+      .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
       .eq('id', userId)
       .single();
 
-    if (profile?.name && profile?.phone && profile?.cpf) {
+    const isProfileComplete = profile?.name && profile?.phone && profile?.cpf 
+      && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
+
+    if (isProfileComplete) {
       // 1-click PIX flow
       setPixLoading(slug);
       try {
@@ -130,7 +133,14 @@ const Planos2 = () => {
             user_name: profile.name,
             user_cpf: profile.cpf,
             billing_type: 'PIX',
-            utm_data: utmData
+            utm_data: utmData,
+            user_address: {
+              line_1: profile.address_line,
+              zip_code: profile.address_zip,
+              city: profile.address_city,
+              state: profile.address_state,
+              country: profile.address_country || 'BR'
+            }
           }
         });
 
