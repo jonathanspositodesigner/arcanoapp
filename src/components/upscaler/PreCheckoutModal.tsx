@@ -424,6 +424,20 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId }: PreCheckoutMod
                 {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
               </div>
 
+              {/* CPF */}
+              <div>
+                <label className="text-white/70 text-sm mb-1.5 block">CPF</label>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="000.000.000-00"
+                  value={cpf}
+                  onChange={(e) => { setCpf(formatCpf(e.target.value)); setCpfError(''); }}
+                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
+                />
+                {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
+              </div>
+
               {/* Payment Method */}
               <div>
                 <label className="text-white/70 text-sm mb-2 block">Forma de pagamento</label>

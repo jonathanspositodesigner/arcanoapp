@@ -130,6 +130,8 @@ serve(async (req) => {
         name: customerName,
         email: email,
         type: 'individual',
+        document: user_cpf ? user_cpf.replace(/\D/g, '') : undefined,
+        document_type: user_cpf ? 'CPF' : undefined,
         phones: {
           mobile_phone: {
             country_code: '55',
@@ -146,8 +148,17 @@ serve(async (req) => {
             accepted_payment_methods: acceptedPaymentMethods,
             success_url: `https://arcanoapp.voxvisual.com.br/upscaler-arcano?payment=success`,
             customer_editable: false,
-            billing_address_editable: true,
+            billing_address_editable: billing_type === 'CREDIT_CARD',
             skip_checkout_success_page: true,
+            ...(billing_type === 'PIX' ? {
+              billing_address: {
+                line_1: '1, Av Paulista, Bela Vista',
+                zip_code: '01310100',
+                city: 'São Paulo',
+                state: 'SP',
+                country: 'BR'
+              }
+            } : {}),
             credit_card: {
               capture: true,
               installments: [
