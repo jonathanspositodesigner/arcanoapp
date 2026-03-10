@@ -20,6 +20,7 @@ import { useCredits } from "@/contexts/CreditsContext";
 import cardArtesArcanas from "@/assets/card-artes-arcanas.webp";
 import cardPromptsIA from "@/assets/card-prompts-ia.png";
 import cardFerramentasIA from "@/assets/card-ferramentas-ia.jpg";
+import cardUpscalerVitalicio from "@/assets/card-upscaler-vitalicio.jpeg";
 
 // Slugs de ferramentas de IA (não conta como acesso à biblioteca de prompts)
 const TOOL_SLUGS = [
