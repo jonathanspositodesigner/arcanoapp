@@ -1,23 +1,23 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Plano: Página de sucesso pós-pagamento + link WhatsApp
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+### Alterações
 
-## Dados
+**1. Nova página `src/pages/SucessoUpscalerArcano.tsx`**
+- Design similar ao `SucessoArtesMusicos` (confetti, card centralizado, gradiente)
+- Mensagem principal: "Seu pagamento está sendo processado"
+- Subtítulo: "Se você já pagou, seu acesso foi liberado! Coloque seu email de compra para acessar seu conteúdo."
+- Campo de email + botão "Acessar meu conteúdo"
+- Ao submeter: chama `check_profile_exists` → redireciona para login ou definição de senha conforme estado do perfil
+- Link menor no rodapé: "Problemas com seu pagamento? Fale conosco no WhatsApp" apontando para `https://wa.me/33988819891`
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+**2. Registrar rota em `src/App.tsx`**
+- Adicionar lazy import e rota `/sucesso-upscaler-arcano`
 
-## Ações (via SQL migration)
+**3. Atualizar `success_url` no edge function `create-pagarme-checkout/index.ts`**
+- Linha 149: mudar para `https://arcanoapp.voxvisual.com.br/sucesso-upscaler-arcano`
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
-
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+**4. Atualizar redirect no `PreCheckoutModal.tsx`**
+- Linha 182: mudar URL para `/sucesso-upscaler-arcano`
 
