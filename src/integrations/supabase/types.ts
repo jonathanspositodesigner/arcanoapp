@@ -4125,6 +4125,7 @@ export type Database = {
           currency: string | null
           email: string | null
           error_message: string | null
+          event_type: string | null
           from_app: boolean | null
           greenn_contract_id: string | null
           id: string
@@ -4138,6 +4139,7 @@ export type Database = {
           received_at: string | null
           result: string | null
           status: string | null
+          transaction_id: string | null
           utm_data: Json | null
           utm_source: string | null
         }
@@ -4147,6 +4149,7 @@ export type Database = {
           currency?: string | null
           email?: string | null
           error_message?: string | null
+          event_type?: string | null
           from_app?: boolean | null
           greenn_contract_id?: string | null
           id?: string
@@ -4160,6 +4163,7 @@ export type Database = {
           received_at?: string | null
           result?: string | null
           status?: string | null
+          transaction_id?: string | null
           utm_data?: Json | null
           utm_source?: string | null
         }
@@ -4169,6 +4173,7 @@ export type Database = {
           currency?: string | null
           email?: string | null
           error_message?: string | null
+          event_type?: string | null
           from_app?: boolean | null
           greenn_contract_id?: string | null
           id?: string
@@ -4182,6 +4187,7 @@ export type Database = {
           received_at?: string | null
           result?: string | null
           status?: string | null
+          transaction_id?: string | null
           utm_data?: Json | null
           utm_source?: string | null
         }
