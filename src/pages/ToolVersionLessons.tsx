@@ -421,10 +421,9 @@ const ToolVersionLessons = () => {
                 {toolName || 'Upscaler Arcano'}
               </h1>
               <Button
-                variant="outline"
                 size="sm"
                 onClick={() => navigate(user ? '/minha-conta' : '/auth')}
-                className="border-purple-400/50 text-white hover:text-white hover:bg-purple-500/20"
+                className="bg-purple-600 hover:bg-purple-700 text-white border-0"
               >
                 {user ? 'Minha Conta' : 'Login'}
               </Button>
