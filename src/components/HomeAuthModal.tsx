@@ -126,10 +126,10 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
             <>
               <div className="text-center mb-6">
                 <h2 className="text-xl font-bold text-foreground mb-1">
-                  {t('auth.welcomeTitle')}
+                  {t('welcomeTitle')}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {t('auth.welcomeSubtitle')}
+                  {t('welcomeSubtitle')}
                 </p>
               </div>
 
