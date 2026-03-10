@@ -642,6 +642,16 @@ const PlanosUpscalerArcano = () => {
           {/* SEÇÃO DE PREÇO E CTA - Com Card + Garantia */}
           <LazySection rootMargin="100px">
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
+            {/* Alerta de urgência - centralizado acima dos cards */}
+            <div className="max-w-4xl mx-auto mb-6">
+              <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/40 rounded-xl md:rounded-2xl p-2.5 md:p-3 mx-auto w-fit">
+                <div className="flex items-center justify-center gap-2 text-red-400 text-xs md:text-sm">
+                  <span>🔥</span>
+                  <span className="font-bold">Últimos dias de venda do Upscaler na versão vitalícia</span>
+                </div>
+              </div>
+            </div>
+
             <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6 items-stretch">
               {/* Card de preço */}
               <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
@@ -684,14 +694,6 @@ const PlanosUpscalerArcano = () => {
                         <span className="text-xs md:text-sm">{feature.text}</span>
                       </div>
                     ))}
-                  </div>
-
-                  {/* Alerta de urgência */}
-                  <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/40 rounded-xl md:rounded-2xl p-2.5 md:p-3 mb-5 md:mb-6">
-                    <div className="flex items-center justify-center gap-2 text-red-400 text-xs md:text-sm">
-                      <span>🔥</span>
-                      <span className="font-bold">Últimos dias de venda do Upscaler na versão vitalícia</span>
-                    </div>
                   </div>
 
                   <div className="px-0 md:px-2">
