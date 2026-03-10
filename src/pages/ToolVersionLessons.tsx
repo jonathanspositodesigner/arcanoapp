@@ -595,7 +595,7 @@ const ToolVersionLessons = () => {
                   className={`w-full sm:w-auto ${
                     watchedLessons.includes(selectedLesson + 1) 
                       ? 'bg-green-600 hover:bg-green-700 text-white' 
-                      : 'border-purple-500/30 text-purple-300 hover:bg-green-600/10 hover:text-green-500 hover:border-green-600'
+                      : 'border-purple-400/50 text-white hover:bg-green-600/10 hover:text-green-500 hover:border-green-600'
                   }`}
                 >
                   <Check className="h-4 w-4 mr-2" />
