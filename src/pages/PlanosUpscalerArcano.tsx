@@ -758,7 +758,7 @@ const PlanosUpscalerArcano = () => {
                     <Shield className="h-10 w-10 md:h-12 md:w-12 text-emerald-400" />
                   </div>
 
-                  <h3 className="font-bebas text-2xl md:text-3xl text-white tracking-wide mb-2">
+                  <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-white mb-2">
                     Compra 100% Segura
                   </h3>
                   <p className="text-white/50 text-sm mb-6">
