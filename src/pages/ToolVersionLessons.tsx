@@ -739,7 +739,7 @@ const ToolVersionLessons = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AppLayout>
+    </Wrapper>
   );
 };
 
