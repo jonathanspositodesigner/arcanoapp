@@ -75,7 +75,7 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                 {signupSuccessEmail}
               </p>
               <p className="text-sm text-muted-foreground mb-2">
-                {t('auth.signupSuccessInstruction')}
+                {t('signupSuccessInstruction')}
               </p>
               <p className="text-xs text-muted-foreground mb-6">
                 {t('auth.signupSuccessSpam')}
