@@ -673,7 +673,7 @@ const PlanosUpscalerArcano = () => {
                     </div>
                   )}
 
-                  <h2 className="font-bebas text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6 tracking-wide">
+                  <h2 className="font-space-grotesk font-bold text-xl md:text-2xl lg:text-3xl text-white mb-4 md:mb-6">
                     {t('tools:upscaler.finalCTA.title')} <span className="text-fuchsia-400">{t('tools:upscaler.finalCTA.subtitle')}</span>
                   </h2>
 
@@ -758,7 +758,7 @@ const PlanosUpscalerArcano = () => {
                     <Shield className="h-10 w-10 md:h-12 md:w-12 text-emerald-400" />
                   </div>
 
-                  <h3 className="font-bebas text-2xl md:text-3xl text-white tracking-wide mb-2">
+                  <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-white mb-2">
                     Compra 100% Segura
                   </h3>
                   <p className="text-white/50 text-sm mb-6">
