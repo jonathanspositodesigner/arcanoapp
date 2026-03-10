@@ -19,6 +19,10 @@ const PAYMENT_LABELS: Record<string, string> = {
   BILLET: "Boleto",
   PAYPAL: "PayPal",
   GOOGLE_PAY: "Google Pay",
+  PIX: "Pix",
+  NEQUI: "Nequi",
+  DEBIT_CARD: "Cartão de Débito",
+  BANK_TRANSFER: "Transferência",
 };
 
 const COLORS = ["hsl(142, 71%, 45%)", "hsl(199, 89%, 48%)", "hsl(45, 93%, 47%)", "hsl(330, 81%, 60%)", "hsl(263, 70%, 50%)"];
