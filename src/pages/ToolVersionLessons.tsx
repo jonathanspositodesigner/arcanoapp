@@ -408,11 +408,11 @@ const ToolVersionLessons = () => {
           {/* Header standalone */}
           <header className="sticky top-0 z-50 bg-[#0D0221]/90 backdrop-blur-md border-b border-purple-500/20">
             <div className="container mx-auto px-4 max-w-6xl flex items-center justify-between h-14">
-              <Button
+                <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/')}
-                className="text-purple-300 hover:text-white hover:bg-purple-500/20 gap-2"
+                className="text-white hover:text-white hover:bg-purple-500/20 gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
                 <span className="hidden sm:inline">Voltar para Home</span>
@@ -424,7 +424,7 @@ const ToolVersionLessons = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => navigate(user ? '/minha-conta' : '/auth')}
-                className="border-purple-500/30 text-purple-300 hover:text-white hover:bg-purple-500/20"
+                className="border-purple-400/50 text-white hover:text-white hover:bg-purple-500/20"
               >
                 {user ? 'Minha Conta' : 'Login'}
               </Button>
@@ -595,7 +595,7 @@ const ToolVersionLessons = () => {
                   className={`w-full sm:w-auto ${
                     watchedLessons.includes(selectedLesson + 1) 
                       ? 'bg-green-600 hover:bg-green-700 text-white' 
-                      : 'border-purple-500/30 text-purple-300 hover:bg-green-600/10 hover:text-green-500 hover:border-green-600'
+                      : 'border-purple-400/50 text-white hover:bg-green-600/10 hover:text-green-500 hover:border-green-600'
                   }`}
                 >
                   <Check className="h-4 w-4 mr-2" />
@@ -617,7 +617,7 @@ const ToolVersionLessons = () => {
                             ? handleToolButtonClick(button.url)
                             : handleRegularButtonClick(button.url)
                         }
-                        className="gap-2 border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white hover:border-purple-400"
+                        className="gap-2 border-purple-400/50 text-white hover:bg-purple-500/20 hover:text-white hover:border-purple-400"
                       >
                         <ExternalLink className="w-4 h-4" />
                         {button.text}
