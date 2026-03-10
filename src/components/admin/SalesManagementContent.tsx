@@ -89,22 +89,33 @@ const SalesManagementContent = () => {
           return;
         }
 
-        const sorted = ((data as SaleRecord[]) || []).sort((a, b) => {
+        const rawOrders = ((data as SaleRecord[]) || []).sort((a, b) => {
           const dateA = a.paid_at || a.created_at;
           const dateB = b.paid_at || b.created_at;
           return new Date(dateB).getTime() - new Date(dateA).getTime();
         });
 
-        // Enrich with profile names & whatsapp
+        // Deduplicate: if a "paid" order exists for same email+product, hide the "pending" one
+        const paidKeys = new Set(
+          rawOrders
+            .filter((o) => o.status === "paid")
+            .map((o) => `${o.user_email?.toLowerCase()}|${o.product_title?.toLowerCase()}|${o.amount}`)
+        );
+        const sorted = rawOrders.filter((o) => {
+          if (o.status !== "pending") return true;
+          const key = `${o.user_email?.toLowerCase()}|${o.product_title?.toLowerCase()}|${o.amount}`;
+          return !paidKeys.has(key);
+        });
+
+        // Enrich with profile names
         const emails = [...new Set(sorted.map((s) => s.user_email))];
         if (emails.length > 0) {
-          // Batch in chunks of 100 for the IN query
-          const allProfiles: { email: string; name: string | null; whatsapp: string | null }[] = [];
+          const allProfiles: { email: string; name: string | null }[] = [];
           for (let i = 0; i < emails.length; i += 100) {
             const chunk = emails.slice(i, i + 100);
             const { data: profiles } = await supabase
               .from("profiles")
-              .select("email, name, whatsapp")
+              .select("email, name")
               .in("email", chunk);
             if (profiles) allProfiles.push(...(profiles as any));
           }
@@ -113,7 +124,6 @@ const SalesManagementContent = () => {
             const profile = profileMap.get(s.user_email?.toLowerCase());
             if (profile) {
               s.name = profile.name || undefined;
-              s.whatsapp = profile.whatsapp || undefined;
             }
           });
         }
