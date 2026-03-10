@@ -711,8 +711,8 @@ const PlanosUpscalerArcano = () => {
               </div>
             </div>
 
-            {/* Stats inline customizado para Upscaler */}
-            <div className="max-w-5xl mx-auto mb-8 px-2">
+            {/* Stats inline customizado para Upscaler - hidden on mobile, shown after cards on mobile */}
+            <div className="max-w-5xl mx-auto mb-8 px-2 hidden md:block">
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center gap-4 sm:gap-0">
                 <div className="flex items-center gap-3 sm:flex-1 min-w-0">
                   <div className="flex -space-x-2 shrink-0">
