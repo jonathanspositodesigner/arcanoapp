@@ -612,10 +612,10 @@ const PlanosUpscalerArcano = () => {
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
                   {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">{t('tools:upscaler.targetAudience.titlePart2')}</span>
                 </h2>
-                <p className="text-white/50 text-base md:text-lg text-center mb-12">Não importa o seu nicho, o Upscaler Arcano é pra você!</p>
+                
               </AnimatedSection>
               
               <StaggeredAnimation className="grid md:grid-cols-3 gap-6" staggerDelay={150}>
