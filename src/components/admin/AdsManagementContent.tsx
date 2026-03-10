@@ -239,8 +239,8 @@ const AdsManagementContent = () => {
                   <td className={cn("p-3 text-right", totals.profit >= 0 ? "text-green-400" : "text-red-400")}>
                     {formatCurrency(totals.profit)}
                   </td>
-                  <td className={cn("p-3 text-right", totals.roi >= 0 ? "text-green-400" : "text-red-400")}>
-                    {totals.roi.toFixed(0)}%
+                  <td className={cn("p-3 text-right", totals.roi >= 1 ? "text-green-400" : "text-red-400")}>
+                    {totals.roi.toFixed(2)}x
                   </td>
                   <td className="p-3 text-right">{totals.roas.toFixed(2)}x</td>
                   {/* Extra columns totals */}
