@@ -609,13 +609,12 @@ const ToolVersionLessons = () => {
                     {currentLesson.buttons.map((button, index) => (
                       <Button
                         key={index}
-                        variant="outline"
                         onClick={() => 
                           isToolAccessButton(button.text) 
                             ? handleToolButtonClick(button.url)
                             : handleRegularButtonClick(button.url)
                         }
-                        className="gap-2 border-purple-400/50 text-white hover:bg-purple-500/20 hover:text-white hover:border-purple-400"
+                        className="gap-2 bg-purple-900/60 border border-purple-400/50 text-purple-200 hover:bg-purple-500/30 hover:text-white hover:border-purple-400"
                       >
                         <ExternalLink className="w-4 h-4" />
                         {button.text}
