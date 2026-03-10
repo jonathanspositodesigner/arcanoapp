@@ -1,23 +1,26 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+# Pré-checkout: email aparece ao clicar no botão de compra
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+## O que muda
 
-## Dados
+Atualmente o campo de email aparece **acima** do botão CTA e fica sempre visível para usuários não logados. A mudança é:
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+1. **Esconder o email por padrão** — adicionar um estado `showEmailField` (default `false`)
+2. **Primeiro clique no CTA** — se o usuário não está logado e `showEmailField` é `false`, setar `showEmailField = true` em vez de chamar `handlePurchase`. O campo de email aparece **abaixo** do botão com animação de slide/fade.
+3. **Campo de email + botão "Continuar"** — após o campo de email, um novo botão "Continuar" (estilo similar ao CTA) que efetivamente chama `handlePurchase`.
+4. **Animação** — o bloco do email entra com `animate-fade-in` (já existe no projeto).
+5. **Usuários logados** — comportamento não muda, o clique vai direto pro checkout.
 
-## Ações (via SQL migration)
+## Arquivos editados
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+**1 arquivo**: `src/pages/PlanosUpscalerArcano.tsx`
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+- Adicionar estado `showEmailField`
+- Mover o bloco `{!user && ...}` do email para **abaixo** do CTAButton
+- Envolver em condicional `showEmailField`
+- Adicionar classe `animate-fade-in` para animação de entrada
+- Modificar `CTAButton onClick`: se `!user && !showEmailField`, apenas mostrar o campo; senão, chamar `handlePurchase`
+- Adicionar botão "Continuar" abaixo do input de email
+- Remover o input de email de cima do botão
 
