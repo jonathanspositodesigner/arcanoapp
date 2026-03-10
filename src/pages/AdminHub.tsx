@@ -191,6 +191,8 @@ const AdminHub = () => {
         return <AbandonedCheckoutsContent />;
       case "sales":
         return <SalesManagementContent />;
+      case "ads":
+        return <AdsManagementContent />;
       case "admins":
         return <AdminsManagementContent />;
       case "emails":
