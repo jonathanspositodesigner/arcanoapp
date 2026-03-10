@@ -147,7 +147,7 @@ export default function SalesDashboard() {
       </div>
 
       {/* Primary KPIs */}
-      <SalesDashboardKPIs revenue={revenue} adSpend={adSpend} isLoading={isLoading} />
+      <SalesDashboardKPIs revenue={revenue} adSpend={adSpend} platformFees={platformFees} isLoading={isLoading} />
 
       {/* Secondary KPIs */}
       <SalesDashboardSecondaryKPIs

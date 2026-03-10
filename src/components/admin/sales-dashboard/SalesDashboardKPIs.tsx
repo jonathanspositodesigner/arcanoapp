@@ -1,8 +1,9 @@
-import { DollarSign, TrendingUp, BarChart3, Wallet } from "lucide-react";
+import { DollarSign, TrendingUp, BarChart3, Wallet, Receipt } from "lucide-react";
 
 interface Props {
   revenue: number;
   adSpend: number;
+  platformFees: number;
   isLoading: boolean;
 }
 
@@ -13,23 +14,26 @@ function formatCurrency(value: number) {
 const cards = [
   { key: "revenue", label: "Faturamento Líquido", icon: DollarSign, gradient: "from-emerald-500/20 to-emerald-500/5", iconBg: "bg-emerald-500/20", iconColor: "text-emerald-400", valueColor: "text-emerald-400" },
   { key: "adSpend", label: "Gastos com Anúncios", icon: Wallet, gradient: "from-orange-500/20 to-orange-500/5", iconBg: "bg-orange-500/20", iconColor: "text-orange-400", valueColor: "text-orange-400" },
+  { key: "platformFees", label: "Taxas de Plataformas", icon: Receipt, gradient: "from-rose-500/20 to-rose-500/5", iconBg: "bg-rose-500/20", iconColor: "text-rose-400", valueColor: "text-rose-400" },
   { key: "roi", label: "ROI", icon: TrendingUp, gradient: "from-blue-500/20 to-blue-500/5", iconBg: "bg-blue-500/20", iconColor: "text-blue-400", valueColor: "text-blue-400" },
   { key: "profit", label: "Lucro", icon: BarChart3, gradient: "from-violet-500/20 to-violet-500/5", iconBg: "bg-violet-500/20", iconColor: "text-violet-400", valueColor: "text-violet-400" },
 ];
 
-export default function SalesDashboardKPIs({ revenue, adSpend, isLoading }: Props) {
-  const profit = revenue - adSpend;
-  const roi = adSpend > 0 ? (revenue / adSpend) : 0;
+export default function SalesDashboardKPIs({ revenue, adSpend, platformFees, isLoading }: Props) {
+  const totalCosts = adSpend + platformFees;
+  const profit = revenue - totalCosts;
+  const roi = totalCosts > 0 ? (revenue / totalCosts) : 0;
 
   const values: Record<string, string> = {
     revenue: formatCurrency(revenue),
     adSpend: adSpend > 0 ? formatCurrency(adSpend) : "—",
-    roi: adSpend > 0 ? `${roi.toFixed(2)}x` : "—",
-    profit: adSpend > 0 ? formatCurrency(profit) : "—",
+    platformFees: platformFees > 0 ? formatCurrency(platformFees) : "—",
+    roi: totalCosts > 0 ? `${roi.toFixed(2)}x` : "—",
+    profit: totalCosts > 0 ? formatCurrency(profit) : "—",
   };
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
       {cards.map((c) => (
         <div
           key={c.key}
