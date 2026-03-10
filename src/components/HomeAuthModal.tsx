@@ -126,10 +126,10 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
             <>
               <div className="text-center mb-6">
                 <h2 className="text-xl font-bold text-foreground mb-1">
-                  {t('welcomeTitle')}
+                  {t('auth.welcomeTitle')}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {t('welcomeSubtitle')}
+                  {t('auth.welcomeSubtitle')}
                 </p>
               </div>
 
@@ -141,10 +141,10 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                   onSignupClick={() => {}}
                   isLoading={auth.state.isLoading}
                   labels={{
-                    email: t('email'),
-                    emailPlaceholder: t('emailPlaceholder'),
-                    continue: t('continue') || 'Continuar',
-                    loading: t('loading'),
+                    email: t('auth.email'),
+                    emailPlaceholder: t('auth.emailPlaceholder'),
+                    continue: t('auth.continue') || 'Continuar',
+                    loading: t('auth.loading'),
                     noAccountYet: '',
                     createAccount: '',
                   }}
@@ -159,12 +159,12 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                   forgotPasswordUrl={auth.getForgotPasswordUrl()}
                   isLoading={auth.state.isLoading}
                   labels={{
-                    password: t('password'),
-                    passwordPlaceholder: t('passwordPlaceholder'),
-                    signIn: t('loginButton'),
-                    signingIn: t('loading'),
-                    forgotPassword: t('forgotPassword'),
-                    changeEmail: t('changeEmail') || 'Trocar',
+                    password: t('auth.password'),
+                    passwordPlaceholder: t('auth.passwordPlaceholder'),
+                    signIn: t('auth.loginButton'),
+                    signingIn: t('auth.loading'),
+                    forgotPassword: t('auth.forgotPassword'),
+                    changeEmail: t('auth.changeEmail') || 'Trocar',
                   }}
                 />
               )}
