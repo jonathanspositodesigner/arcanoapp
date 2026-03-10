@@ -647,7 +647,7 @@ const AdsManagementContent = () => {
                         item={a}
                         clickable
                         onClick={() => handleAdsetClick(a)}
-                        onStatusToggle={handleStatusToggleAdset}
+                        onStatusToggle={handleStatusToggle}
                       />
                     ))
                   )}
