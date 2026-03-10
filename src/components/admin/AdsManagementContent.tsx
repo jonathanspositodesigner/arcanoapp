@@ -7,11 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RefreshCw, Search, CalendarIcon, Megaphone, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { RefreshCw, Search, CalendarIcon, Megaphone, TrendingUp, TrendingDown, Info } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useAdsCampaigns, AdsPeriod, CampaignWithSales } from "./ads/useAdsCampaigns";
+import { UntrackedSalesDialog } from "./ads/UntrackedSalesDialog";
 
 const PERIOD_OPTIONS: { value: AdsPeriod; label: string }[] = [
   { value: "today", label: "Hoje" },
@@ -23,6 +25,10 @@ const PERIOD_OPTIONS: { value: AdsPeriod; label: string }[] = [
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+}
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("pt-BR").format(value);
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -40,6 +46,23 @@ function StatusBadge({ status }: { status: string }) {
     >
       {isActive ? "Ativo" : isPaused ? "Pausado" : status}
     </Badge>
+  );
+}
+
+function ColumnHeader({ label, tooltip }: { label: string; tooltip: string }) {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="inline-flex items-center gap-1 cursor-help">
+            {label} <Info className="h-3 w-3 opacity-50" />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-[200px] text-xs">
+          {tooltip}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
@@ -61,7 +84,7 @@ const AdsManagementContent = () => {
   } = useAdsCampaigns(period, customStart, customEnd, accountFilter || undefined, searchQuery || undefined);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-[1600px] mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -149,37 +172,54 @@ const AdsManagementContent = () => {
           </Select>
         )}
 
-        {untrackedSales.length > 0 && (
-          <Badge variant="outline" className="border-yellow-500/50 bg-yellow-500/10 text-yellow-400 gap-1">
-            <AlertTriangle className="h-3 w-3" />
-            {untrackedSales.length} vendas sem UTM
-          </Badge>
-        )}
+        <UntrackedSalesDialog sales={untrackedSales} />
       </div>
 
       {/* Table */}
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full text-sm whitespace-nowrap">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="text-left p-3 font-medium text-muted-foreground">Status</th>
-                <th className="text-left p-3 font-medium text-muted-foreground">Campanha</th>
+                <th className="text-left p-3 font-medium text-muted-foreground sticky left-0 bg-muted/30 z-10">Status</th>
+                <th className="text-left p-3 font-medium text-muted-foreground sticky left-[72px] bg-muted/30 z-10">Campanha</th>
                 <th className="text-right p-3 font-medium text-muted-foreground">Orçamento</th>
                 <th className="text-right p-3 font-medium text-muted-foreground">Gastos</th>
                 <th className="text-right p-3 font-medium text-muted-foreground">Vendas</th>
-                <th className="text-right p-3 font-medium text-muted-foreground">CPA</th>
+                <th className="text-right p-3 font-medium text-muted-foreground">
+                  <ColumnHeader label="CPA" tooltip="Custo por aquisição (Gasto / Vendas)" />
+                </th>
                 <th className="text-right p-3 font-medium text-muted-foreground">Faturamento</th>
                 <th className="text-right p-3 font-medium text-muted-foreground">Lucro</th>
                 <th className="text-right p-3 font-medium text-muted-foreground">ROI</th>
                 <th className="text-right p-3 font-medium text-muted-foreground">ROAS</th>
+                <th className="text-right p-3 font-medium text-muted-foreground">
+                  <ColumnHeader label="CPI" tooltip="Custo por checkout iniciado" />
+                </th>
+                <th className="text-right p-3 font-medium text-muted-foreground">
+                  <ColumnHeader label="IC" tooltip="Checkouts iniciados" />
+                </th>
+                <th className="text-right p-3 font-medium text-muted-foreground">
+                  <ColumnHeader label="Vis. de Pág." tooltip="Visualizações da página de destino" />
+                </th>
+                <th className="text-right p-3 font-medium text-muted-foreground">
+                  <ColumnHeader label="CTR" tooltip="Taxa de cliques (Cliques / Impressões)" />
+                </th>
+                <th className="text-right p-3 font-medium text-muted-foreground">
+                  <ColumnHeader label="CPC" tooltip="Custo por clique" />
+                </th>
+                <th className="text-right p-3 font-medium text-muted-foreground">Cliques</th>
+                <th className="text-right p-3 font-medium text-muted-foreground">
+                  <ColumnHeader label="CPM" tooltip="Custo por mil impressões" />
+                </th>
+                <th className="text-right p-3 font-medium text-muted-foreground">Impressões</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={10} className="text-center p-8 text-muted-foreground">Carregando...</td></tr>
+                <tr><td colSpan={18} className="text-center p-8 text-muted-foreground">Carregando...</td></tr>
               ) : campaignsWithSales.length === 0 ? (
-                <tr><td colSpan={10} className="text-center p-8 text-muted-foreground">Nenhuma campanha encontrada. Clique em "Atualizar" para sincronizar.</td></tr>
+                <tr><td colSpan={18} className="text-center p-8 text-muted-foreground">Nenhuma campanha encontrada. Clique em "Atualizar" para sincronizar.</td></tr>
               ) : (
                 campaignsWithSales.map((c) => (
                   <CampaignRow key={c.campaign_id} campaign={c} />
@@ -189,7 +229,8 @@ const AdsManagementContent = () => {
             {!isLoading && campaignsWithSales.length > 0 && (
               <tfoot>
                 <tr className="border-t-2 border-border bg-muted/50 font-semibold">
-                  <td className="p-3" colSpan={2}>Total ({campaignsWithSales.length} campanhas)</td>
+                  <td className="p-3 sticky left-0 bg-muted/50 z-10" colSpan={1}></td>
+                  <td className="p-3 sticky left-[72px] bg-muted/50 z-10">Total ({campaignsWithSales.length})</td>
                   <td className="p-3 text-right">—</td>
                   <td className="p-3 text-right">{formatCurrency(totals.spend)}</td>
                   <td className="p-3 text-right">{totals.sales}</td>
@@ -202,6 +243,17 @@ const AdsManagementContent = () => {
                     {totals.roi.toFixed(0)}%
                   </td>
                   <td className="p-3 text-right">{totals.roas.toFixed(2)}x</td>
+                  {/* Extra columns totals */}
+                  <td className="p-3 text-right">—</td>
+                  <td className="p-3 text-right">{formatNumber(campaignsWithSales.reduce((s, c) => s + c.total_initiated_checkouts, 0))}</td>
+                  <td className="p-3 text-right">{formatNumber(campaignsWithSales.reduce((s, c) => s + c.total_landing_page_views, 0))}</td>
+                  <td className="p-3 text-right">
+                    {totals.impressions > 0 ? `${((totals.clicks / totals.impressions) * 100).toFixed(2)}%` : "—"}
+                  </td>
+                  <td className="p-3 text-right">{totals.clicks > 0 ? formatCurrency(totals.spend / totals.clicks) : "—"}</td>
+                  <td className="p-3 text-right">{formatNumber(totals.clicks)}</td>
+                  <td className="p-3 text-right">{totals.impressions > 0 ? formatCurrency((totals.spend / totals.impressions) * 1000) : "—"}</td>
+                  <td className="p-3 text-right">{formatNumber(totals.impressions)}</td>
                 </tr>
               </tfoot>
             )}
@@ -213,10 +265,13 @@ const AdsManagementContent = () => {
 };
 
 function CampaignRow({ campaign: c }: { campaign: CampaignWithSales }) {
+  const ctr = c.total_impressions > 0 ? (c.total_clicks / c.total_impressions) * 100 : 0;
+  const cpi = c.total_initiated_checkouts > 0 ? c.total_spend / c.total_initiated_checkouts : 0;
+
   return (
     <tr className="border-b border-border hover:bg-muted/20 transition-colors">
-      <td className="p-3"><StatusBadge status={c.campaign_status} /></td>
-      <td className="p-3">
+      <td className="p-3 sticky left-0 bg-background z-10"><StatusBadge status={c.campaign_status} /></td>
+      <td className="p-3 sticky left-[72px] bg-background z-10">
         <p className="font-medium text-foreground truncate max-w-[280px]" title={c.campaign_name}>{c.campaign_name}</p>
         <p className="text-xs text-muted-foreground">Conta: {c.account_id}</p>
       </td>
@@ -233,14 +288,32 @@ function CampaignRow({ campaign: c }: { campaign: CampaignWithSales }) {
       </td>
       <td className="p-3 text-right text-muted-foreground">{c.sales_count > 0 ? formatCurrency(c.cpa) : "—"}</td>
       <td className="p-3 text-right font-medium">{formatCurrency(c.revenue)}</td>
-      <td className={cn("p-3 text-right font-medium flex items-center justify-end gap-1", c.profit >= 0 ? "text-green-400" : "text-red-400")}>
-        {c.profit >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-        {formatCurrency(c.profit)}
+      <td className={cn("p-3 text-right font-medium", c.profit >= 0 ? "text-green-400" : "text-red-400")}>
+        <span className="inline-flex items-center gap-1">
+          {c.profit >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+          {formatCurrency(c.profit)}
+        </span>
       </td>
       <td className={cn("p-3 text-right", c.roi >= 0 ? "text-green-400" : "text-red-400")}>
         {c.total_spend > 0 ? `${c.roi.toFixed(0)}%` : "—"}
       </td>
       <td className="p-3 text-right">{c.total_spend > 0 ? `${c.roas.toFixed(2)}x` : "—"}</td>
+      {/* CPI */}
+      <td className="p-3 text-right text-muted-foreground">{cpi > 0 ? formatCurrency(cpi) : "N/A"}</td>
+      {/* IC */}
+      <td className="p-3 text-right">{formatNumber(c.total_initiated_checkouts)}</td>
+      {/* Vis. de Pág. */}
+      <td className="p-3 text-right">{formatNumber(c.total_landing_page_views)}</td>
+      {/* CTR */}
+      <td className="p-3 text-right">{c.total_impressions > 0 ? `${ctr.toFixed(2)}%` : "—"}</td>
+      {/* CPC */}
+      <td className="p-3 text-right text-muted-foreground">{c.avg_cpc > 0 ? formatCurrency(c.avg_cpc) : "—"}</td>
+      {/* Cliques */}
+      <td className="p-3 text-right">{formatNumber(c.total_clicks)}</td>
+      {/* CPM */}
+      <td className="p-3 text-right text-muted-foreground">{c.avg_cpm > 0 ? formatCurrency(c.avg_cpm) : "—"}</td>
+      {/* Impressões */}
+      <td className="p-3 text-right">{formatNumber(c.total_impressions)}</td>
     </tr>
   );
 }
