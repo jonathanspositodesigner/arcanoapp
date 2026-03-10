@@ -823,15 +823,42 @@ serve(async (req) => {
     const hotmartAmount = payload.data?.purchase?.price?.value || payload.data?.purchase?.full_price?.value || null
     // Extract currency from Hotmart payload
     const hotmartCurrency = payload.data?.purchase?.price?.currency_value || payload.data?.purchase?.full_price?.currency_code || 'BRL'
-    // Extract full UTM data from Hotmart tracking
+    // Extract full UTM data from Hotmart - CHECK BOTH tracking AND origin
     const tracking = payload.data?.purchase?.tracking || {}
+    const origin = payload.data?.purchase?.origin || {}
     const hotmartUtmSource = tracking.source || tracking.utm_source || null
     
-    // Parse sck parameter: format is "source|campaign|content"
+    // Parse UTM data from multiple sources
     let parsedUtmData: Record<string, string> | null = null
-    const sck = tracking.source_sck || null
     
-    if (sck && typeof sck === 'string' && sck.includes('|')) {
+    // SOURCE 1: origin.sck (format: "source|campaign|adsetId|adLabel|adId")
+    const originSck = origin.sck || null
+    if (originSck && typeof originSck === 'string' && originSck.includes('|')) {
+      const sckParts = originSck.split('|')
+      parsedUtmData = {}
+      if (sckParts[0]) parsedUtmData.utm_source = sckParts[0]
+      if (sckParts[1]) parsedUtmData.utm_campaign = sckParts[1]
+      if (sckParts[2]) parsedUtmData.utm_content = sckParts[2]
+      if (sckParts[3]) parsedUtmData.utm_term = sckParts[3]
+      if (sckParts[4]) parsedUtmData.utm_id = sckParts[4]
+      console.log(`   ├─ UTM from origin.sck:`, JSON.stringify(parsedUtmData))
+    }
+    
+    // SOURCE 2: origin.xcod (format: values joined by "hQwK21wXxR")
+    if (!parsedUtmData && origin.xcod && typeof origin.xcod === 'string' && origin.xcod.includes('hQwK21wXxR')) {
+      const xcodParts = origin.xcod.split('hQwK21wXxR')
+      parsedUtmData = {}
+      if (xcodParts[0]) parsedUtmData.utm_source = xcodParts[0]
+      if (xcodParts[1]) parsedUtmData.utm_campaign = xcodParts[1]
+      if (xcodParts[2]) parsedUtmData.utm_medium = xcodParts[2]
+      if (xcodParts[3]) parsedUtmData.utm_content = xcodParts[3]
+      if (xcodParts[4]) parsedUtmData.utm_term = xcodParts[4]
+      console.log(`   ├─ UTM from origin.xcod:`, JSON.stringify(parsedUtmData))
+    }
+    
+    // SOURCE 3: tracking.source_sck (legacy fallback)
+    const sck = tracking.source_sck || null
+    if (!parsedUtmData && sck && typeof sck === 'string' && sck.includes('|')) {
       const [sckSource, sckCampaign, sckContent] = sck.split('|')
       parsedUtmData = {}
       if (sckSource) parsedUtmData.utm_source = sckSource
@@ -839,9 +866,9 @@ serve(async (req) => {
       if (sckContent) parsedUtmData.utm_content = sckContent
     }
     
-    // Also check for direct UTM params in tracking (Hotmart passes URL params here)
-    if (tracking.utm_source || tracking.utm_campaign || tracking.utm_medium) {
-      parsedUtmData = parsedUtmData || {}
+    // SOURCE 4: direct UTM params in tracking
+    if (!parsedUtmData && (tracking.utm_source || tracking.utm_campaign || tracking.utm_medium)) {
+      parsedUtmData = {}
       if (tracking.utm_source) parsedUtmData.utm_source = tracking.utm_source
       if (tracking.utm_medium) parsedUtmData.utm_medium = tracking.utm_medium
       if (tracking.utm_campaign) parsedUtmData.utm_campaign = tracking.utm_campaign
@@ -849,11 +876,12 @@ serve(async (req) => {
       if (tracking.utm_term) parsedUtmData.utm_term = tracking.utm_term
     }
     
-    // Fallback: if we only have source from tracking.source
+    // SOURCE 5: fallback to tracking.source
     if (!parsedUtmData && hotmartUtmSource) {
       parsedUtmData = { utm_source: hotmartUtmSource }
     }
     
+    console.log(`   ├─ Origin data:`, JSON.stringify(origin))
     console.log(`   ├─ Tracking data:`, JSON.stringify(tracking))
     console.log(`   ├─ Parsed UTM:`, JSON.stringify(parsedUtmData))
 
