@@ -1,23 +1,50 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
-
 ## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-## Dados
+O `HomeAuthModal.tsx` mistura dois namespaces i18n:
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+- **`index`** namespace: tem `auth.signupSuccessTitle`, `auth.welcomeTitle`, etc. (keys simples)
+- **`auth`** namespace: tem `errors.emailAlreadyRegistered`, `success.*`, etc. (keys aninhadas)
 
-## Ações (via SQL migration)
+O hook `useUnifiedAuth` recebe `t: (key) => t('auth.${key}', key)` — quando o hook tenta resolver `errors.emailAlreadyRegistered`, vira-se `t('auth.errors.emailAlreadyRegistered')` no namespace `index`, que **não existe lá**. Resultado: chaves cruas aparecem na tela.
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+## Correção
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+**`src/components/HomeAuthModal.tsx`** — Remover toda    dependência de i18n e usar strings PT hardcoded.
+
+Este modal é usado apenas no contexto brasileiro. Simplificar eliminando   traduções:
+
+1. Remover `useTranslation` import e chamada    this
+2. Hardcode todas   as strings em português diretamente no JSX e nas labels/props
+3. Para o `t` passado ao `useUnifiedAuth`, usar `useTranslation('auth')` separadamente para que o hook resolva corretamente `errors.*` e `success.*`
+
+Resultado: o modal da Home não depende mais de resolução de namespace para textos visíveis, e o hook recebe o `t` correto do namespace `auth`.
+
+### Mudanças concretas
+
+```typescript
+// Antes:
+const { t } = useTranslation('index');
+// ...
+t: (key: string) => t(`auth.${key}`, key),
+
+// Depois:
+const { t: tAuth } = useTranslation('auth');
+// ...
+t: (key: string) => tAuth(key, key),
+```
+
+E no JSX, trocar todas as chamadas `t('auth.xxx')` por strings diretas:
+- `t('auth.signupSuccessTitle')` → `"Verifique seu E-mail!"`
+- `t('auth.signupSuccessMessage')` → `"Enviamos um link de confirmação para:"`
+- `t('auth.signupSuccessInstruction')` → `"Clique no link do e-mail para ativar sua conta e fazer login."`
+- `t('auth.signupSuccessSpam')` → `"Não encontrou? Verifique a pasta de spam."`
+- `t('auth.backToLogin')` → `"Voltar para Login"`
+- `t('auth.welcomeTitle')` → `"Bem-vindo ao Arcano!"` (do index.json)
+- `t('auth.welcomeSubtitle')` → `"Faça login ou crie sua conta"` (do index.json)
+- Labels do `LoginEmailStep` e `LoginPasswordStep` → strings diretas em PT
+- `t('auth.browseWithoutLogin')` → `"Navegar sem login"`
+
+**Arquivo alterado**: apenas `src/components/HomeAuthModal.tsx`
 
