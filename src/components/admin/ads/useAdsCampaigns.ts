@@ -291,5 +291,6 @@ export function useAdsCampaigns(
     untrackedSales,
     totals,
     dateRange,
+    sales,
   };
 }

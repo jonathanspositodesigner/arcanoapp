@@ -247,6 +247,7 @@ const AdsManagementContent = () => {
     refreshCampaigns,
     untrackedSales,
     dateRange,
+    sales,
   } = useAdsCampaigns(period, customStart, customEnd, accountFilter || undefined, searchQuery || undefined);
 
   const {
@@ -259,7 +260,7 @@ const AdsManagementContent = () => {
     fetchAdsets,
     fetchAds,
     navigateToLevel,
-  } = useAdsHierarchy(dateRange);
+  } = useAdsHierarchy(dateRange, sales);
 
   const handleCampaignClick = (c: CampaignWithSales) => {
     fetchAdsets([c.campaign_id], c.campaign_name);
