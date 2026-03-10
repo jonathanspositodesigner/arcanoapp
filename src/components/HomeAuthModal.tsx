@@ -159,12 +159,12 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
                   forgotPasswordUrl={auth.getForgotPasswordUrl()}
                   isLoading={auth.state.isLoading}
                   labels={{
-                    password: t('auth.password'),
-                    passwordPlaceholder: t('auth.passwordPlaceholder'),
-                    signIn: t('auth.loginButton'),
-                    signingIn: t('auth.loading'),
-                    forgotPassword: t('auth.forgotPassword'),
-                    changeEmail: t('auth.changeEmail') || 'Trocar',
+                    password: t('password'),
+                    passwordPlaceholder: t('passwordPlaceholder'),
+                    signIn: t('loginButton'),
+                    signingIn: t('loading'),
+                    forgotPassword: t('forgotPassword'),
+                    changeEmail: t('changeEmail') || 'Trocar',
                   }}
                 />
               )}
