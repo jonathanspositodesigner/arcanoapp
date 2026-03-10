@@ -114,11 +114,15 @@ const Index = () => {
   const isPlanos2Paid = isPlanos2User && planos2Slug !== 'free';
 
   // Verificar acessos do usuário — só calcula depois que tudo carregou
+  // upscaller-arcano sozinho NÃO dá acesso ao card Ferramentas de IA
+  const TOOL_ACCESS_SLUGS = TOOL_SLUGS.filter(s => s !== 'upscaller-arcano');
   const hasToolAccess = !isLoading && isLoggedIn && (
-    userPacks.some(p => TOOL_SLUGS.includes(p.pack_slug)) ||
+    userPacks.some(p => TOOL_ACCESS_SLUGS.includes(p.pack_slug)) ||
     isPlanos2Paid ||
-    creditsBreakdown.total > 0
+    creditsBreakdown.lifetime > 0
   );
+  // Card separado do Upscaler Arcano Vitalício
+  const hasUpscalerPack = !isLoading && isLoggedIn && userPacks.some(p => p.pack_slug === 'upscaller-arcano');
   const hasArtesAccess = !isLoading && isLoggedIn && userPacks.some(p => ARTES_SLUGS.includes(p.pack_slug));
   // hasPromptsAccess: premium SIM, mas NUNCA se planType for de ferramenta (arcano_pro, etc.)
   // OU planos2 pago (starter, pro, ultimate, unlimited)
