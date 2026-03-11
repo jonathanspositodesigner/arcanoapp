@@ -193,6 +193,8 @@ const Planos2 = () => {
       const { checkout_url } = response.data;
       if (checkout_url) {
         window.location.href = checkout_url;
+        // Don't close modal — let the page navigate away naturally
+        return;
       } else {
         toast.error('Erro ao gerar link de pagamento.');
       }
@@ -200,6 +202,7 @@ const Planos2 = () => {
       console.error('Erro checkout direto:', error);
       toast.error('Erro ao processar. Tente novamente.');
     }
+    // Only reaches here on error — reset everything
     endCheckout();
     setPixLoading(null);
     setShowPaymentMethodModal(false);

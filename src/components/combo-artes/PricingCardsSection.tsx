@@ -163,6 +163,7 @@ export const PricingCardsSection = () => {
       const { checkout_url } = response.data;
       if (checkout_url) {
         window.location.href = checkout_url;
+        return;
       } else {
         toast.error('Erro ao gerar link de pagamento.');
       }
