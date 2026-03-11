@@ -54,6 +54,9 @@ const RemoverFundoTool: React.FC = () => {
   const [pendingWidth, setPendingWidth] = useState(0);
   const [pendingHeight, setPendingHeight] = useState(0);
 
+  // Cached image dimensions from processFile
+  const [imageDims, setImageDims] = useState<{ width: number; height: number } | null>(null);
+
   // UI states
   const [status, setStatus] = useState<ProcessingStatus>('idle');
   const [progress, setProgress] = useState(0);
@@ -178,6 +181,7 @@ const RemoverFundoTool: React.FC = () => {
         setPendingHeight(h);
         setShowCompressionModal(true);
       } else {
+        setImageDims({ width: w, height: h });
         const reader = new FileReader();
         reader.onload = (ev) => {
           setInputImage(ev.target?.result as string);
@@ -191,7 +195,12 @@ const RemoverFundoTool: React.FC = () => {
     img.src = url;
   };
 
-  const handleCompressed = (compressedFile: File) => {
+  const handleCompressed = async (compressedFile: File) => {
+    // Update cached dims after compression
+    try {
+      const dims = await getImageDimensions(compressedFile);
+      setImageDims({ width: dims.width, height: dims.height });
+    } catch { /* dims will be recalculated if needed */ }
     const reader = new FileReader();
     reader.onload = (ev) => {
       setInputImage(ev.target?.result as string);
@@ -241,17 +250,30 @@ const RemoverFundoTool: React.FC = () => {
 
     try {
       setProgress(15);
-      // Only compress if image exceeds 2000px in any dimension
-      const dims = await getImageDimensions(inputFile);
+      // Use cached dimensions or fetch if not available
+      const dims = imageDims || await getImageDimensions(inputFile);
       const needsCompression = dims.width > MAX_AI_DIMENSION || dims.height > MAX_AI_DIMENSION;
       const fileToUpload = needsCompression ? await compressImage(inputFile) : inputFile;
-      const inputUrl = await uploadToStorage(fileToUpload, 'input');
 
-      setProgress(40);
-      const { data: job, error: jobError } = await supabase
-        .from('bg_remover_jobs' as any)
-        .insert({ session_id: sessionIdRef.current, user_id: user.id, status: 'pending', input_url: inputUrl, input_file_name: inputUrl.split('/').pop() || 'input.webp' })
-        .select().single();
+      // Convert to base64 and create job record in parallel
+      const fileToBase64 = (f: File | Blob): Promise<string> => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          resolve(result.split(',')[1]); // strip data:...;base64, prefix
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(f);
+      });
+
+      const [imageBase64, jobInsertResult] = await Promise.all([
+        fileToBase64(fileToUpload),
+        supabase.from('bg_remover_jobs' as any)
+          .insert({ session_id: sessionIdRef.current, user_id: user.id, status: 'pending', input_file_name: inputFile.name })
+          .select().single(),
+      ]);
+
+      const { data: job, error: jobError } = jobInsertResult;
       if (jobError || !job) throw new Error('Failed to create job');
       const jobRecord = job as any;
       setJobId(jobRecord.id);
@@ -259,7 +281,7 @@ const RemoverFundoTool: React.FC = () => {
       setProgress(50);
       setStatus('processing');
       const { data: runResult, error: runError } = await supabase.functions.invoke('runninghub-bg-remover/run', {
-        body: { jobId: jobRecord.id, inputImageUrl: inputUrl, userId: user.id, creditCost },
+        body: { jobId: jobRecord.id, imageBase64, fileName: inputFile.name, userId: user.id, creditCost },
       });
 
       if (runError) throw new Error(runError.message?.includes('non-2xx') ? 'Falha na comunicação com o servidor.' : runError.message);
@@ -295,6 +317,7 @@ const RemoverFundoTool: React.FC = () => {
   const handleReset = () => {
     endSubmit();
     setInputImage(null); setInputFile(null); setOutputImage(null);
+    setImageDims(null);
     setStatus('idle'); setProgress(0); setZoomLevel(1);
     setJobId(null); setQueuePosition(0);
     setCurrentStep(null); setFailedAtStep(null); setDebugErrorMessage(null);
