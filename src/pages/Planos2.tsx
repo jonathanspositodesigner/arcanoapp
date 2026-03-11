@@ -184,6 +184,8 @@ const Planos2 = () => {
         console.error('Erro checkout direto:', response.error);
         toast.error('Erro ao gerar pagamento. Tente novamente.');
         setPixLoading(null);
+        setShowPaymentMethodModal(false);
+        endCheckout();
         return;
       }
 
