@@ -48,7 +48,7 @@ export const HeroSectionPack4 = () => {
         <img
           src="/images/combo/hero-pack4.webp"
           alt="Pack Arcano Vol. 4"
-          className="max-w-3xl w-full object-contain"
+          className="max-w-[60%] w-full object-contain"
           width={768}
           height={432}
           fetchPriority="high"
