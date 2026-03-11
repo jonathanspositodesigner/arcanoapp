@@ -126,25 +126,19 @@ export const PricingCardsSection = () => {
         </p>
         
         {/* Pricing cards grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-6 items-stretch">
-          {plans.map((plan) => (
+        <div className="flex justify-center">
+          {plans.filter(plan => plan.id === "vitalicio").map((plan) => (
             <div
               key={plan.id}
-              className={`relative rounded-3xl p-6 md:p-8 flex flex-col h-full ${
-                plan.highlighted
-                  ? "bg-gradient-to-br from-[#EF672C]/20 to-[#EF672C]/5 border-2 border-[#EF672C]"
-                  : "bg-gradient-to-br from-white/5 to-white/0 border border-white/10"
-              }`}
+              className="relative rounded-3xl p-6 md:p-8 flex flex-col h-full w-full max-w-md bg-gradient-to-br from-[#EF672C]/20 to-[#EF672C]/5 border-2 border-[#EF672C]"
             >
               {/* Highlighted badge */}
-              {plan.highlighted && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-[#EF672C] text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
-                    <Star className="w-3 h-3 fill-white" />
-                    MAIS VENDIDO
-                  </span>
-                </div>
-              )}
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="bg-[#EF672C] text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
+                  <Star className="w-3 h-3 fill-white" />
+                  MAIS VENDIDO
+                </span>
+              </div>
               
               {/* Plan title */}
               <h3 className="text-xl font-bold text-white mb-2 text-center whitespace-pre-line">
@@ -173,14 +167,12 @@ export const PricingCardsSection = () => {
                 <span className="text-gray-500 text-sm">à vista</span>
               </div>
               
-              {/* Bonus badge - fixed height placeholder for cards without bonus (desktop only) */}
-              {plan.bonus ? (
+              {/* Bonus badge */}
+              {plan.bonus && (
                 <div className="bg-gradient-to-r from-yellow-600 via-yellow-500 to-amber-400 text-black text-sm font-bold px-4 py-2 rounded-lg mb-6 flex items-center justify-center gap-2">
                   <Gift className="w-4 h-4" />
                   {plan.bonus}
                 </div>
-              ) : (
-                <div className="hidden md:block h-[44px] mb-6" />
               )}
               
               {/* Features list */}
@@ -188,7 +180,7 @@ export const PricingCardsSection = () => {
                 {plan.features.map((feature, index) => (
                   <li key={index} className="flex items-center gap-3 text-gray-300">
                     <Check className="w-5 h-5 text-[#EF672C] flex-shrink-0" />
-                    <span className={`text-sm ${index === 0 || (plan.id === 'vitalicio' && index === 1) ? 'font-bold text-white' : ''}`}>{feature}</span>
+                    <span className={`text-sm ${index === 0 || index === 1 ? 'font-bold text-white' : ''}`}>{feature}</span>
                   </li>
                 ))}
               </ul>
@@ -196,11 +188,7 @@ export const PricingCardsSection = () => {
               {/* CTA button */}
               <button
                 onClick={() => handlePurchase(plan.checkoutUrl)}
-                className={`w-full font-bold text-lg py-4 rounded-xl transition-all duration-300 ${
-                  plan.highlighted
-                    ? "bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white shadow-lg shadow-orange-500/30 hover:scale-105"
-                    : "bg-white/10 text-white hover:bg-white/20"
-                }`}
+                className="w-full font-bold text-lg py-4 rounded-xl transition-all duration-300 bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white shadow-lg shadow-orange-500/30 hover:scale-105"
               >
                 {plan.buttonText}
               </button>
