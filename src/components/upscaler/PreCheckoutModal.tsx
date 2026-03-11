@@ -64,6 +64,8 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const [cpf, setCpf] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'PIX' | 'CREDIT_CARD'>('PIX');
   const [loading, setLoading] = useState(false);
+  const { isSubmitting: isFormSubmitting, startSubmit: startFormSubmit, endSubmit: endFormSubmit } = useProcessingButton();
+  const { isSubmitting: isOneClickSubmitting, startSubmit: startOneClick, endSubmit: endOneClick } = useProcessingButton();
 
   const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
