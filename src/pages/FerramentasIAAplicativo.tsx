@@ -51,6 +51,7 @@ const FerramentasIAAplicativo = () => {
     "ia-muda-roupa": t('ferramentas.descriptions.mudaRoupa'),
     "arcano-cloner": "Crie ensaios fotográficos ultra realistas com IA",
     "flyer-maker": "Crie flyers para eventos incríveis com IA",
+    "remover-fundo": "Remova o fundo de qualquer imagem com IA",
   };
 
   // Smart back navigation
