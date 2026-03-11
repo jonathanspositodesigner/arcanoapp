@@ -399,7 +399,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   placeholder="Seu nome completo"
                   value={name}
                   onChange={(e) => { setName(e.target.value); setNameError(''); }}
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
+                  className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                 />
                 {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
               </div>
@@ -413,7 +413,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   value={email}
                   onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
                   disabled={!!userEmail}
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                  className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed`}
                 />
                 {emailError && <p className="text-red-400 text-xs mt-1">{emailError}</p>}
               </div>
