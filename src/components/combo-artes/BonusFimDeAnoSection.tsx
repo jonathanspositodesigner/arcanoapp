@@ -1,15 +1,14 @@
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Gift } from "lucide-react";
 import { useCallback, useEffect } from "react";
-// URLs das artes de Carnaval
-const artesCarnaval = [
-  "https://voxvisual.com.br/wp-content/uploads/2026/01/AQUECIMENTO-DE-CARNAVAL-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2026/01/WE-LOVE-PAGODAO-ST.webp",
-  "https://voxvisual.com.br/wp-content/uploads/2025/01/Bloquinho-do-Leo.jpg",
-  "https://voxvisual.com.br/wp-content/uploads/2025/01/BLOCO-LOUCO.jpg",
-  "https://voxvisual.com.br/wp-content/uploads/2025/01/BLOCO-DO-KEVINHO.jpg",
-  "https://voxvisual.com.br/wp-content/uploads/2025/01/BAILE-DA-SANTINHA.jpg",
-  "https://voxvisual.com.br/wp-content/uploads/2025/01/AGENDA-DE-CARNAVAL-2.jpg",
+// URLs das artes de São João
+const artesSaoJoao = [
+  "/images/sao-joao/arraia-sao-joao.webp",
+  "/images/sao-joao/arraia-pizeiro.webp",
+  "/images/sao-joao/arraia-solidario.webp",
+  "/images/sao-joao/agenda-arraia-luka.webp",
+  "/images/sao-joao/arraia-da-allana.webp",
+  "/images/sao-joao/arraia-de-campos.webp",
 ];
 
 export const BonusFimDeAnoSection = () => {
@@ -101,7 +100,7 @@ export const BonusFimDeAnoSection = () => {
             
             <div ref={emblaRef}>
               <div className="flex md:-ml-4">
-                {artesCarnaval.map((arte, index) => (
+                {artesSaoJoao.map((arte, index) => (
                   <div
                     key={index}
                     className="flex-none shrink-0 basis-full md:basis-auto md:w-[280px] flex justify-center px-0 md:pl-4"
