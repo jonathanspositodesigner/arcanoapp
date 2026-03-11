@@ -154,6 +154,8 @@ export const PricingCardsSection = () => {
         console.error('Erro checkout direto:', response.error);
         toast.error('Erro ao gerar pagamento. Tente novamente.');
         setIsLoading(false);
+        setShowPaymentMethodModal(false);
+        endSubmit();
         return;
       }
 
