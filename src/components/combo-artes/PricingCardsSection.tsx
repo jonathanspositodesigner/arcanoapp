@@ -218,21 +218,6 @@ export const PricingCardsSection = () => {
           </div>
         </div>
 
-        {/* Urgency Countdown Section */}
-        <div className="mt-8 flex flex-col items-center gap-2">
-          <div className="flex items-center gap-2 text-white text-base md:text-lg font-medium">
-            <span className="animate-pulse">🚨</span>
-            <span>Últimas horas da promoção</span>
-            <span className="animate-pulse">🚨</span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
-            <Clock className="w-4 h-4" />
-            <span>Oferta expira em</span>
-            <span className="text-[#EF672C] font-semibold font-mono">
-              {formatTime(timeLeft)}
-            </span>
-          </div>
-        </div>
       </div>
     </section>
   );
