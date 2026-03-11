@@ -84,21 +84,8 @@ export const PricingCardsSection = () => {
         <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
           Selecione o seu plano e comece a criar artes profissionais hoje mesmo!
         </p>
-        {/* Urgency Countdown Section */}
-        <div className="mb-8 flex flex-col items-center gap-2">
-          <div className="flex items-center gap-2 text-white text-base md:text-lg font-medium">
-            <span className="animate-pulse">🚨</span>
-            <span>Últimas horas da promoção</span>
-            <span className="animate-pulse">🚨</span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-400 text-sm">
-            <Clock className="w-4 h-4" />
-            <span>Oferta expira em</span>
-            <span className="text-[#EF672C] font-semibold font-mono">
-              {formatTime(timeLeft)}
-            </span>
-          </div>
-        </div>
+
+
 
         {/* Two cards side by side */}
         <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6 max-w-4xl mx-auto items-stretch">
@@ -155,6 +142,22 @@ export const PricingCardsSection = () => {
             >
               {plan.buttonText}
             </button>
+
+            {/* Urgency Countdown */}
+            <div className="mt-4 flex flex-col items-center gap-1">
+              <div className="flex items-center gap-2 text-white text-sm font-medium">
+                <span className="animate-pulse">🚨</span>
+                <span>Últimas horas da promoção</span>
+                <span className="animate-pulse">🚨</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-400 text-xs">
+                <Clock className="w-3 h-3" />
+                <span>Oferta expira em</span>
+                <span className="text-[#EF672C] font-semibold font-mono">
+                  {formatTime(timeLeft)}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Guarantee Card */}
