@@ -170,6 +170,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
   const handleOneClickBuy = async () => {
     if (!selectedCardId) return;
+    if (!startOneClick()) return;
 
     setOneClickLoading(true);
     try {
