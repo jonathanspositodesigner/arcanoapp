@@ -31,6 +31,12 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
     }
   }, [open]);
 
+  useEffect(() => {
+    if (open && startAtSignup) {
+      auth.goToSignup();
+    }
+  }, [open, startAtSignup]);
+
   const auth = useUnifiedAuth({
     changePasswordRoute: '/change-password',
     loginRoute: '/',
