@@ -105,7 +105,7 @@ const PrevendaPack4 = () => {
         </div>
       </div>
       
-      <HeroSectionCombo />
+      <HeroSectionPack4 />
       <FeaturesSection />
       
       <div className="hidden md:flex justify-center pb-4 bg-black">
