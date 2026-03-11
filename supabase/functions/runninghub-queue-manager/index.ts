@@ -1183,6 +1183,13 @@ async function startJobOnRunningHub(
       ];
       break;
     }
+
+    case 'bg_remover_jobs':
+      webappId = WEBAPP_IDS.bg_remover_jobs;
+      nodeInfoList = [
+        { nodeId: "1", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
+      ];
+      break;
       
     default:
       console.error(`[QueueManager] Unknown table: ${table}`);

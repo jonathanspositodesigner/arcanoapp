@@ -87,6 +87,7 @@ const TOOL_NAMES: Record<string, ToolType> = {
   'Arcano Cloner': 'arcano_cloner',
   'Gerador Avatar': 'character_generator',
   'Flyer Maker': 'flyer_maker',
+  'Remover Fundo': 'bg_remover',
 };
 
 // ==================== CORE FUNCTIONS ====================

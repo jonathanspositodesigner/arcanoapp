@@ -382,6 +382,7 @@ const AdminAIToolsUsageTab = () => {
       case "Gerar Imagem": return "image_generator_jobs";
       case "Gerar Vídeo": return "video_generator_jobs";
       case "Flyer Maker": return "flyer_maker_jobs";
+      case "Remover Fundo": return "bg_remover_jobs";
       default: return "upscaler_jobs";
     }
   };
