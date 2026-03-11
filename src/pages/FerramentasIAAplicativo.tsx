@@ -104,7 +104,7 @@ const FerramentasIAAplicativo = () => {
           id: 'remover-fundo-static',
           name: 'Remover Fundo',
           slug: 'remover-fundo',
-          cover_url: null,
+          cover_url: removerFundoCover,
           price_vitalicio: null,
           checkout_link_vitalicio: null,
           checkout_link_membro_vitalicio: null,
