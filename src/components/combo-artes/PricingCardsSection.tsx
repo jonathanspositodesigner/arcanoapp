@@ -119,7 +119,6 @@ export const PricingCardsSection = () => {
     if (!pendingProfile) return;
     if (!startSubmit()) return;
 
-    setShowPaymentMethodModal(false);
     setIsLoading(true);
 
     try {
