@@ -147,6 +147,7 @@ const FlyerMakerTool = lazy(() => import("./pages/FlyerMakerTool"));
 const PlanosArcanoCloner = lazy(() => import("./pages/PlanosArcanoCloner"));
 const ObrigadoArcanoCloner = lazy(() => import("./pages/ObrigadoArcanoCloner"));
 const ArcanoClonerTeste = lazy(() => import("./pages/ArcanoClonerTeste"));
+const PrevendaPack4 = lazy(() => import("./pages/PrevendaPack4"));
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
 
@@ -345,6 +346,7 @@ const AppContent = () => {
             <Route path="/arcanocloner-teste" element={<ArcanoClonerTeste />} />
            <Route path="/obrigado-arcanocloner" element={<ObrigadoArcanoCloner />} />
           
+           <Route path="/prevenda-pack4" element={<PrevendaPack4 />} />
            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
            <Route path="*" element={<NotFound />} />
         </Routes>

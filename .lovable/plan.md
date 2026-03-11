@@ -1,24 +1,23 @@
 
 
-## Plano: Criar página `prevenda-pack4` como clone exato de `combo3em1`
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-### O que será feito
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-A página `combo3em1` já existe neste projeto como `ComboArtesArcanas.tsx`, usando os componentes de `src/components/combo-artes/`. O clone será uma cópia exata, apenas com rota e nome diferentes.
+## Dados
 
-### Alterações
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-**1. Criar `src/pages/PrevendaPack4.tsx`**
-- Cópia exata de `ComboArtesArcanas.tsx`
-- Reutiliza todos os mesmos componentes de `combo-artes/` (mesmas imagens, mesmas seções, mesmo layout)
-- Atualizar apenas o `content_name` do Meta Pixel para `"Prevenda Pack 4"` para tracking separado
+## Ações (via SQL migration)
 
-**2. Atualizar `src/App.tsx`**
-- Adicionar lazy import: `const PrevendaPack4 = lazy(() => import("./pages/PrevendaPack4"))`
-- Adicionar rota: `<Route path="/prevenda-pack4" element={<PrevendaPack4 />} />`
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-### Resultado
-- Página acessível em `/prevenda-pack4`
-- 100% idêntica visualmente à `/combo-artes-arcanas` (mesmos componentes, imagens, links)
-- Apenas nome interno e tracking diferenciados
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
