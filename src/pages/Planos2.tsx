@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star, ShieldCheck, Headset, Loader2, CreditCard, QrCode } from "lucide-react";

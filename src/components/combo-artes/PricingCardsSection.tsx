@@ -1,5 +1,6 @@
 import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock, QrCode } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
