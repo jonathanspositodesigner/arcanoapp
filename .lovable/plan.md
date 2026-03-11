@@ -1,23 +1,27 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Plano: Botão "Seu Plano Atual" + "Fazer Upgrade" baseado no plano ativo
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+### O que será feito
 
-## Dados
+No `Planos2.tsx`:
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+1. **Importar e usar `usePlanos2Access`** passando `userId` para obter o `planSlug` do plano ativo do usuário (ex: `free`, `starter`, `pro`, `ultimate`, `unlimited`)
 
-## Ações (via SQL migration)
+2. **Criar mapeamento de hierarquia** dos planos para comparar qual é maior:
+```text
+free=0, starter=1, pro=2, ultimate=3, unlimited=4
+```
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+3. **Alterar o botão de cada plano** com a seguinte lógica:
+   - **Plano do usuário** → texto "Seu Plano Atual", `disabled`, estilo diferenciado
+   - **Planos superiores** → texto "Fazer Upgrade", clicável (abre link de pagamento normalmente)
+   - **Planos inferiores** → texto "Assinar" normal mas pode ficar desativado ou manter comportamento atual
+   - **Free + logado** → "Você já tem uma conta" (disabled, como já está)
+   - **Free + deslogado** → "Criar conta grátis" (como já está)
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+4. **Mapeamento plan name → slug**: `"Free"→"free"`, `"Starter"→"starter"`, `"Pro"→"pro"`, `"Ultimate"→"ultimate"`, `"IA Unlimited"→"unlimited"`
+
+### Arquivo modificado
+- `src/pages/Planos2.tsx`
 
