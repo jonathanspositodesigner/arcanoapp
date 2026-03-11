@@ -287,7 +287,11 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
         {/* Title */}
         <h3 className="font-bebas text-2xl md:text-3xl text-white text-center mb-1 tracking-wide">
-          Finalizar <span className="text-fuchsia-400">Compra</span>
+          {titleText.includes(' ') ? (
+            <>{titleText.split(' ').slice(0, -1).join(' ')} <span className={accentText}>{titleText.split(' ').slice(-1)}</span></>
+          ) : (
+            <span className={accentText}>{titleText}</span>
+          )}
         </h3>
         <p className="text-white/50 text-sm text-center mb-6">
           {showOneClick ? 'Compre de forma rápida e segura' : 'Preencha seus dados para continuar'}
