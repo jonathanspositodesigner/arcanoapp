@@ -265,6 +265,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       const { checkout_url } = response.data;
       if (checkout_url) {
         window.location.href = checkout_url;
+        return;
       } else {
         alert('Erro ao gerar link de pagamento.');
       }
