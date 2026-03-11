@@ -63,6 +63,7 @@ const TABLE_MAP: Record<ToolType, string> = {
   arcano_cloner: 'arcano_cloner_jobs',
   character_generator: 'character_generator_jobs',
   flyer_maker: 'flyer_maker_jobs',
+  bg_remover: 'bg_remover_jobs',
 };
 
 // Edge function names mapping
