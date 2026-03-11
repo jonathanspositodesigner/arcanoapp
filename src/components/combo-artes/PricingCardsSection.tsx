@@ -73,11 +73,20 @@ const plans = [
 ];
 
 export const PricingCardsSection = () => {
-  const [timeLeft, setTimeLeft] = useState(3 * 60 * 60); // 3 hours in seconds
+  const [timeLeft, setTimeLeft] = useState(0);
 
   useEffect(() => {
+    const calculateTimeLeft = () => {
+      // 13/03/2026 12:00:00 Brasília (UTC-3) = 15:00 UTC
+      const deadline = new Date('2026-03-13T15:00:00Z').getTime();
+      const now = Date.now();
+      return Math.max(0, Math.floor((deadline - now) / 1000));
+    };
+
+    setTimeLeft(calculateTimeLeft());
+
     const timer = setInterval(() => {
-      setTimeLeft((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
+      setTimeLeft(calculateTimeLeft());
     }, 1000);
 
     return () => clearInterval(timer);
