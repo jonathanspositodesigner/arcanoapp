@@ -452,6 +452,21 @@ serve(async (req) => {
 
       await sendPurchaseEmail(supabase, email, product.title, ctaLink, requestId)
 
+      // 7.1 Notificar admin
+      try {
+        await sendAdminSaleNotification({
+          productName: product.title,
+          amount: Number(order.amount),
+          paymentMethod,
+          customerEmail: email,
+          customerName: profileName || '',
+          platform: 'Pagar.me',
+          requestId,
+        })
+      } catch (adminErr) {
+        console.error(`   ├─ ⚠️ Erro ao enviar email admin (não-crítico):`, adminErr)
+      }
+
       // 8. UTMify
       try {
         const utmData = order.utm_data as Record<string, string> | null

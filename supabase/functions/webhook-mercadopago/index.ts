@@ -403,6 +403,21 @@ serve(async (req) => {
       
       await sendPurchaseEmail(supabase, email, product.title, ctaLink, requestId)
 
+      // 5.1 Notificar admin
+      try {
+        await sendAdminSaleNotification({
+          productName: product.title,
+          amount: payment.transaction_amount,
+          paymentMethod: payment.payment_method_id || 'unknown',
+          customerEmail: email,
+          customerName: '',
+          platform: 'Mercado Pago',
+          requestId,
+        })
+      } catch (adminErr) {
+        console.error(`   ├─ ⚠️ Erro ao enviar email admin (não-crítico):`, adminErr)
+      }
+
       // 6. Enviar webhook para UTMify (formato EXATO da Greenn)
       try {
         const utmData = order.utm_data as Record<string, string> | null
