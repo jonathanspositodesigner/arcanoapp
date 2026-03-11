@@ -277,7 +277,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="relative w-full max-w-md bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border border-fuchsia-500/30 rounded-3xl p-6 md:p-8 shadow-2xl shadow-fuchsia-500/10 max-h-[90vh] overflow-y-auto"
+        className={`relative w-full max-w-md bg-gradient-to-br ${modalBg} border ${accentBorderLight} rounded-3xl p-6 md:p-8 shadow-2xl ${modalShadow} max-h-[90vh] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close */}
