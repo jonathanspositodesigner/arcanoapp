@@ -349,6 +349,7 @@ const AdminAIToolsUsageTab = () => {
       "Gerar Imagem": "bg-amber-500/20 text-amber-400 border-amber-500/30",
       "Gerar Vídeo": "bg-rose-500/20 text-rose-400 border-rose-500/30",
       "Flyer Maker": "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
+      "Remover Fundo": "bg-teal-500/20 text-teal-400 border-teal-500/30",
     };
     return <Badge className={colors[toolName] || ""}>{toolName}</Badge>;
   };

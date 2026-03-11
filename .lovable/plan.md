@@ -1,42 +1,23 @@
 
 
-## Auditoria — Remover Fundo: Problemas Encontrados
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-### Verificação ponto a ponto
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-| Item | Status | Detalhe |
-|------|--------|---------|
-| Custos IA — filtro | ✅ OK | "Remover Fundo" está em `TOOL_FILTERS` |
-| Custos IA — `getTableName` | ✅ OK | Retorna `bg_remover_jobs` |
-| Custos IA — `getInputColumn` | ✅ OK | Retorna `input_url` (antes/depois funciona) |
-| Custos IA — badge de cor | ❌ **FALTA** | `getToolBadge` não tem entrada para "Remover Fundo" — aparece sem cor |
-| Compressão >2000px | ✅ OK | `ImageCompressionModal` + `optimizeForAI` chamados corretamente |
-| Fila centralizada | ✅ OK | Queue manager, enqueue, e startJob com `bg_remover_jobs` |
-| Débito de créditos | ✅ OK | `consume_upscaler_credits` no edge function após upload |
-| Estorno em falha | ✅ OK | Refund em START_FAILED e START_EXCEPTION |
-| Cleanup stale jobs | ✅ OK | `cleanup_all_stale_ai_jobs` inclui bg_remover_jobs |
-| Cancel/watchdog | ✅ OK | `user_cancel_ai_job` e `mark_pending_job_as_failed` incluem bg_remover_jobs |
-| Arcano Cloner regressão | ✅ OK | `arcano_cloner_jobs` presente em ambas RPCs |
-| Download Safari | ✅ OK | Usa `useResilientDownload` com 5 fallbacks |
-| **Upload RLS** | ❌ **CRÍTICO** | **Não existe policy de INSERT** para o folder `bg-remover/` no bucket `artes-cloudinary`. Uploads vão falhar com erro de RLS. |
+## Dados
 
----
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-### O que precisa ser corrigido
+## Ações (via SQL migration)
 
-#### 1. Migration SQL — Policy de upload para `bg-remover/`
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-Criar policy igual às outras ferramentas (pose-changer, veste-ai, etc):
-- INSERT para authenticated onde `foldername[1] = 'bg-remover'` e `foldername[2] = auth.uid()`
-- UPDATE com mesma condição (para upsert funcionar)
-
-#### 2. Badge de cor no admin
-
-Adicionar `"Remover Fundo": "bg-teal-500/20 text-teal-400 border-teal-500/30"` no mapa de cores em `getToolBadge` dentro de `AdminAIToolsUsageTab.tsx`.
-
----
-
-### Resumo
-
-São apenas 2 correções: uma migration de RLS (crítica, sem ela o upload falha) e uma linha de cor no admin (cosmética mas necessária pra visualização).
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
