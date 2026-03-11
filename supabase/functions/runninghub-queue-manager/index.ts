@@ -58,9 +58,10 @@ const WEBAPP_IDS = {
   arcano_cloner_jobs: '2019877042115842050',
   character_generator_jobs: '2020943778751713282',
   flyer_maker_jobs: '2025656642724962305',
+  bg_remover_jobs: '2031815099811368962',
 };
 
-const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs'] as const;
+const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs', 'bg_remover_jobs'] as const;
 type JobTable = typeof JOB_TABLES[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
