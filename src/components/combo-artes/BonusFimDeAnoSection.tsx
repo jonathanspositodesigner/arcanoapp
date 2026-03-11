@@ -78,7 +78,7 @@ export const BonusFimDeAnoSection = () => {
             <span className="font-black" style={{ color: '#000000' }}> de São João</span>
           </h2>
           <p className="text-white/90 text-base md:text-lg px-4 drop-shadow-md">
-            +35 artes de Carnaval para você faturar mais no início do ano
+            +40 artes de São João para você faturar mais no meio do ano
           </p>
         </div>
         
