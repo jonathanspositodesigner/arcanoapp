@@ -47,7 +47,7 @@ const Planos2 = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [showSignupModal, setShowSignupModal] = useState(false);
   const { planSlug: activePlanSlug } = usePlanos2Access(userId || undefined);
-
+  const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
 
   // Check auth and profile on mount
   useEffect(() => {
