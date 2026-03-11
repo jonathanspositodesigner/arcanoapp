@@ -45,6 +45,8 @@ const Planos2 = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [showSignupModal, setShowSignupModal] = useState(false);
+  const { planSlug: activePlanSlug } = usePlanos2Access(userId || undefined);
+
 
   // Check auth and profile on mount
   useEffect(() => {
