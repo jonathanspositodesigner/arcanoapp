@@ -20,6 +20,7 @@ import { StatsCards } from "@/components/credits/StatsCards";
 import { useLocale } from "@/contexts/LocaleContext";
 import { supabase } from "@/integrations/supabase/client";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
+import HomeAuthModal from "@/components/HomeAuthModal";
 import { toast } from "sonner";
 
 const Planos2 = () => {
@@ -39,6 +40,7 @@ const Planos2 = () => {
   const [pendingProfile, setPendingProfile] = useState<any>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [showSignupModal, setShowSignupModal] = useState(false);
 
   // Check auth and profile on mount
   useEffect(() => {
@@ -554,14 +556,15 @@ const Planos2 = () => {
               <Button 
                 onClick={() => {
                   if (plan.name === "Free") {
-                    navigate('/login');
+                    if (!userId) setShowSignupModal(true);
                   } else {
                     window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank');
                   }
                 }}
+                disabled={plan.name === "Free" && !!userId}
                 className={`w-full mb-2 text-sm h-9 ${isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
               >
-                {plan.name === "Free" ? "Criar conta grátis" : (plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
+                {plan.name === "Free" ? (userId ? "Você já tem uma conta" : "Criar conta grátis") : (plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>
 
               {/* Savings Badge - fixed height container */}
@@ -856,6 +859,16 @@ const Planos2 = () => {
         userEmail={userEmail}
         userId={userId}
         productSlug={selectedCreditSlug}
+      />
+
+      {/* Signup Modal for Free plan */}
+      <HomeAuthModal
+        open={showSignupModal}
+        onClose={() => setShowSignupModal(false)}
+        onAuthSuccess={() => {
+          setShowSignupModal(false);
+          window.location.reload();
+        }}
       />
     </div>
   );
