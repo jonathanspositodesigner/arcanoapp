@@ -185,7 +185,9 @@ serve(async (req) => {
           checkout: {
             expires_in: 259200,
             accepted_payment_methods: acceptedPaymentMethods,
-            success_url: `https://arcanoapp.voxvisual.com.br/sucesso-upscaler-arcano`,
+            success_url: product.pack_slug === 'upscaler-arcano'
+              ? `https://arcanoapp.voxvisual.com.br/sucesso-upscaler-arcano`
+              : `https://arcanoapp.voxvisual.com.br/sucesso-compra`,
             customer_editable: false,
             billing_address_editable: billing_type === 'CREDIT_CARD',
             skip_checkout_success_page: billing_type === 'CREDIT_CARD',
