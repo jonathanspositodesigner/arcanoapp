@@ -75,6 +75,8 @@ export const PricingCardsSection = () => {
   };
 
   const handlePurchase = async () => {
+    if (!startSubmit()) return;
+    
     // Fire Meta Pixel
     if (typeof window !== "undefined" && (window as any).fbq) {
       (window as any).fbq("track", "InitiateCheckout", {
@@ -87,25 +89,30 @@ export const PricingCardsSection = () => {
 
     if (!userId) {
       setShowPreCheckout(true);
+      endSubmit();
       return;
     }
 
-    // Check if profile is complete
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
+        .eq('id', userId)
+        .single();
 
-    const isProfileComplete = profile?.name && profile?.phone && profile?.cpf
-      && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
+      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf
+        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
 
-    if (isProfileComplete) {
-      setPendingProfile(profile);
-      setShowPaymentMethodModal(true);
-    } else {
-      setShowPreCheckout(true);
+      if (isProfileComplete) {
+        setPendingProfile(profile);
+        setShowPaymentMethodModal(true);
+      } else {
+        setShowPreCheckout(true);
+      }
+    } catch {
+      // ignore
     }
+    endSubmit();
   };
 
   const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
