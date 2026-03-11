@@ -6,80 +6,78 @@ export const HeroSectionPack4 = () => {
   };
 
   return (
-    <section className="relative flex flex-col items-center justify-center pt-10 pb-8 md:pt-14 md:pb-12 px-4 overflow-hidden min-h-[90vh] md:min-h-[85vh]">
-      {/* Background - dark with warm glow */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1a0a00] via-[#0d0906] to-black" />
+    <section className="relative flex items-center justify-center h-screen max-h-[100dvh] px-4 overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 bg-[#0a0604]" />
       
-      {/* Warm orange glow */}
-      <div 
-        className="absolute top-[30%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-[#EF672C]/12 rounded-full blur-[140px] pointer-events-none" 
-        aria-hidden="true"
-      />
+      {/* Large warm glow behind the image */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vh] bg-[#EF672C]/8 rounded-full blur-[150px] pointer-events-none" aria-hidden="true" />
       
-      {/* Subtle golden particles effect */}
-      <div 
-        className="absolute top-[20%] right-[20%] w-[200px] h-[200px] bg-[#d4a052]/8 rounded-full blur-[80px] pointer-events-none" 
-        aria-hidden="true"
-      />
-      <div 
-        className="absolute bottom-[30%] left-[15%] w-[150px] h-[150px] bg-[#EF672C]/6 rounded-full blur-[60px] pointer-events-none" 
-        aria-hidden="true"
-      />
+      {/* Content - two columns on desktop, stacked on mobile */}
+      <div className="relative z-10 max-w-6xl w-full mx-auto flex flex-col md:flex-row items-center gap-4 md:gap-10">
+        
+        {/* Left: Text */}
+        <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left">
+          {/* Logo */}
+          <img
+            src="https://voxvisual.com.br/wp-content/uploads/2024/11/LOGO-CLLR-1.png"
+            alt="Artes Arcanas"
+            className="h-8 md:h-12 object-contain mb-4"
+            width={140}
+            height={48}
+          />
+          
+          {/* Badge */}
+          <div className="inline-flex items-center gap-1.5 bg-[#EF672C]/15 border border-[#EF672C]/40 rounded-full px-3 py-1 mb-3">
+            <Sparkles className="w-3.5 h-3.5 text-[#EF672C]" />
+            <span className="text-[#EF672C] font-semibold text-[11px] md:text-xs tracking-wider">Novo Lançamento</span>
+          </div>
 
-      {/* Content */}
-      <div className="relative z-10 max-w-5xl mx-auto text-center flex flex-col items-center">
-        {/* Logo */}
-        <img
-          src="https://voxvisual.com.br/wp-content/uploads/2024/11/LOGO-CLLR-1.png"
-          alt="Biblioteca de Artes Arcanas"
-          className="mb-6 h-12 md:h-16 object-contain"
-          width={180}
-          height={64}
-        />
+          {/* Title */}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-[1] mb-3">
+            <span className="text-white">Pack Arcano</span>
+            <br />
+            <span className="text-[#EF672C] drop-shadow-[0_0_40px_rgba(239,103,44,0.35)]">Vol. 4</span>
+          </h1>
 
-        {/* Badge - NOVO LANÇAMENTO */}
-        <div className="flex items-center gap-2 bg-gradient-to-r from-[#EF672C] to-[#d4541a] rounded-full px-5 py-1.5 mb-5 shadow-lg shadow-[#EF672C]/20 animate-pulse">
-          <Sparkles className="w-4 h-4 text-white" />
-          <span className="text-white font-black text-xs md:text-sm tracking-[0.2em] uppercase">Novo Lançamento</span>
-          <Sparkles className="w-4 h-4 text-white" />
+          {/* Subtitle */}
+          <p className="text-sm md:text-lg text-gray-400 mb-5 max-w-sm">
+            Artes inéditas editáveis no <span className="text-white font-semibold">Photoshop</span> e <span className="text-white font-semibold">Canva</span>
+          </p>
+
+          {/* CTA */}
+          <button
+            onClick={scrollToPricing}
+            className="group relative px-7 py-3 bg-gradient-to-r from-[#EF672C] to-[#d4541a] text-white font-bold text-sm md:text-base rounded-xl shadow-lg shadow-[#EF672C]/25 hover:shadow-[#EF672C]/50 transition-all duration-300 hover:scale-[1.03]"
+          >
+            Quero garantir o meu
+          </button>
+          
+          {/* Social proof mini */}
+          <div className="flex items-center gap-2 mt-4">
+            <img
+              src="https://voxvisual.com.br/wp-content/uploads/2024/12/AssetAlunosIC.webp"
+              alt="Membros"
+              className="w-10 h-10 object-contain"
+            />
+            <span className="text-gray-500 text-xs">
+              <span className="text-white font-semibold">+2.200</span> membros ativos
+            </span>
+          </div>
         </div>
 
-        {/* Main title */}
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-3 leading-[0.95] tracking-tight">
-          <span className="text-[#EF672C] drop-shadow-[0_0_30px_rgba(239,103,44,0.3)]">PACK ARCANO</span>
-          <br />
-          <span className="text-white">VOL.4</span>
-        </h1>
-
-        {/* Subtitle */}
-        <p className="text-base md:text-xl text-gray-300 mb-6 max-w-lg">
-          Artes Inéditas Editáveis <span className="text-[#EF672C] font-bold">PSD e CANVA</span>
-        </p>
-
-        {/* Hero Image - the two phones mockup */}
-        <div className="relative w-full max-w-2xl mx-auto mb-6">
+        {/* Right: Hero image */}
+        <div className="flex-1 flex justify-center items-center max-w-[55%] md:max-w-[50%]">
           <img
             src="/images/prevenda/hero-pack4.webp"
-            alt="Pack Arcano Vol.4 - Artes para flyers e eventos"
-            className="w-full h-auto object-contain drop-shadow-[0_20px_60px_rgba(239,103,44,0.15)]"
-            width={800}
-            height={800}
+            alt="Pack Arcano Vol.4"
+            className="w-full h-auto object-contain drop-shadow-[0_10px_50px_rgba(239,103,44,0.12)]"
+            width={600}
+            height={600}
             fetchPriority="high"
           />
         </div>
-
-        {/* CTA Button */}
-        <button
-          onClick={scrollToPricing}
-          className="group relative px-8 py-3.5 bg-gradient-to-r from-[#EF672C] to-[#d4541a] text-white font-black text-base md:text-lg rounded-full shadow-xl shadow-[#EF672C]/30 hover:shadow-[#EF672C]/50 transition-all duration-300 hover:scale-105 uppercase tracking-wider"
-        >
-          <span className="relative z-10">Quero Garantir o Meu</span>
-          <div className="absolute inset-0 bg-gradient-to-r from-[#ff7b3a] to-[#EF672C] rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
-        </button>
       </div>
-      
-      {/* Bottom fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent pointer-events-none" aria-hidden="true" />
     </section>
   );
 };
