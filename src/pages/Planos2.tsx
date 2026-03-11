@@ -563,9 +563,10 @@ const Planos2 = () => {
                 const targetSlug = PLAN_NAME_TO_SLUG[plan.name] || 'free';
                 const targetLevel = PLAN_HIERARCHY[targetSlug] ?? 0;
                 const userLevel = PLAN_HIERARCHY[activePlanSlug || (userId ? 'free' : '')] ?? -1;
-                const isCurrentPlan = userId && activePlanSlug && targetSlug === activePlanSlug;
+                const isCurrentPlan = userId && activePlanSlug && targetSlug === activePlanSlug && billingPeriod === "mensal";
                 const isUpgrade = userId && targetLevel > userLevel;
                 const isFree = plan.name === "Free";
+                const isAnnualUpgrade = userId && activePlanSlug && targetSlug === activePlanSlug && billingPeriod === "anual";
 
                 let buttonText: string;
                 let isDisabled = false;
@@ -575,6 +576,8 @@ const Planos2 = () => {
                   else { buttonText = "Criar conta grátis"; }
                 } else if (isCurrentPlan) {
                   buttonText = "Seu plano atual"; isDisabled = true;
+                } else if (isAnnualUpgrade) {
+                  buttonText = "Assinar anual";
                 } else if (isUpgrade) {
                   buttonText = "Fazer upgrade";
                 } else {
