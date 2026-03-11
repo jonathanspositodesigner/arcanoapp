@@ -384,7 +384,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
             {hasSavedCards && showFullForm && (
               <button
                 onClick={() => setShowFullForm(false)}
-                className="text-fuchsia-400 text-sm mb-4 hover:underline"
+                className={`${accentText} text-sm mb-4 hover:underline`}
               >
                 ← Voltar para compra rápida
               </button>
