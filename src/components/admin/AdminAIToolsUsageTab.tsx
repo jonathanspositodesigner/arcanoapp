@@ -114,7 +114,8 @@ const AdminAIToolsUsageTab = () => {
       case "Veste AI": return "person_image_url";
       case "Gerador Avatar": return "front_image_url";
       case "Flyer Maker": return "reference_image_url";
-      default: return null; // Video tools, text-to-image, etc.
+      case "Remover Fundo": return "input_url";
+      default: return null;
     }
   };
 
