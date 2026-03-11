@@ -325,7 +325,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   </div>
                   <div className="flex items-center gap-2">
                     {selectedCardId === card.id && (
-                      <span className="text-fuchsia-400 text-xs">✓</span>
+                      <span className={`${accentText} text-xs`}>✓</span>
                     )}
                     <button
                       onClick={(e) => { e.stopPropagation(); handleRemoveCard(card.id); }}
