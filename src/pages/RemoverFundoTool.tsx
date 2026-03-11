@@ -181,6 +181,7 @@ const RemoverFundoTool: React.FC = () => {
         setPendingHeight(h);
         setShowCompressionModal(true);
       } else {
+        setImageDims({ width: w, height: h });
         const reader = new FileReader();
         reader.onload = (ev) => {
           setInputImage(ev.target?.result as string);
