@@ -58,7 +58,7 @@ export const BonusFimDeAnoSection = () => {
               className="text-white font-bold text-sm md:text-lg px-5 md:px-6 py-2 md:py-2.5 rounded-full shadow-xl whitespace-nowrap"
               style={{ backgroundColor: '#000000' }}
             >
-              🎭 Bônus de Carnaval
+              🎁 Bônus de Lançamento
             </span>
             <div 
               className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center animate-pulse"
@@ -75,10 +75,10 @@ export const BonusFimDeAnoSection = () => {
             <span className="text-white drop-shadow-lg">também </span>
             <span className="font-black" style={{ color: '#000000' }}>nosso Pack</span>
             <br className="md:hidden" />
-            <span className="font-black" style={{ color: '#000000' }}> Especial de Carnaval</span>
+            <span className="font-black" style={{ color: '#000000' }}> de São João</span>
           </h2>
           <p className="text-white/90 text-base md:text-lg px-4 drop-shadow-md">
-            +35 artes de Carnaval para você faturar mais no início do ano
+            +40 artes de São João para você faturar mais no meio do ano
           </p>
         </div>
         
