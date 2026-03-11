@@ -38,6 +38,7 @@ export const PricingCardsSection = () => {
   const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
   const [pendingProfile, setPendingProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
 
   useEffect(() => {
     const checkAuth = async () => {
