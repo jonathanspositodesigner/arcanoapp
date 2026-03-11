@@ -146,9 +146,9 @@ const Planos2 = () => {
 
   const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
     if (!pendingSlug || !pendingProfile) return;
+    if (!startCheckout()) return;
     
     setShowPaymentMethodModal(false);
-    setPixLoading(pendingSlug);
     
     try {
       let utmData: Record<string, string> | null = null;
