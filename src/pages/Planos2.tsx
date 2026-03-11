@@ -40,6 +40,7 @@ const Planos2 = () => {
   const [pendingProfile, setPendingProfile] = useState<any>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [showSignupModal, setShowSignupModal] = useState(false);
 
   // Check auth and profile on mount
   useEffect(() => {
