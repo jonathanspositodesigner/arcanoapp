@@ -1,23 +1,62 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Plano: Email de Notificação de Venda para o Admin
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+### O que será feito
 
-## Dados
+Toda vez que uma compra for aprovada (em qualquer webhook: Pagar.me e Mercado Pago), enviar um email para `jonathandesigner1993@gmail.com` com parabéns e os dados da compra.
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+### Template do Email (modelo visual)
 
-## Ações (via SQL migration)
+```text
+┌──────────────────────────────────────────────┐
+│          🎉 NOVA VENDA APROVADA! 🎉          │
+│       background: gradiente roxo/dourado      │
+├──────────────────────────────────────────────┤
+│                                              │
+│   🏆 Parabéns! Mais uma venda no Arcano!    │
+│                                              │
+│  ┌────────────────────────────────────────┐  │
+│  │  📦 Produto:  Upscaler Arcano Pack     │  │
+│  │  💰 Valor:    R$ 19,90                 │  │
+│  │  💳 Método:   PIX                      │  │
+│  │  📧 Cliente:  cliente@email.com        │  │
+│  │  👤 Nome:     João da Silva            │  │
+│  │  📅 Data:     11/03/2026 às 14:30      │  │
+│  │  🏷️ Plataforma: Pagar.me              │  │
+│  └────────────────────────────────────────┘  │
+│                                              │
+│   "Continue assim! Cada venda é uma          │
+│    confirmação do seu trabalho incrível."     │
+│                                              │
+│            Vox Visual © 2026                 │
+└──────────────────────────────────────────────┘
+```
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+Estilo visual: mesmo padrão do email de compra do cliente (fundo escuro #0d0015, gradiente roxo, dourado, bordas arredondadas).
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+### Mudanças técnicas
+
+**1. `webhook-pagarme/index.ts`**
+- Criar função `sendAdminNotificationEmail(email, productName, amount, paymentMethod, customerEmail, customerName, platform, requestId)`
+- Gera HTML no mesmo estilo visual do `buildPurchaseEmailHtml` mas com dados da venda
+- Chamar logo após o `sendPurchaseEmail` (linha ~453), enviando via SendPulse para `jonathandesigner1993@gmail.com`
+
+**2. `webhook-mercadopago/index.ts`**
+- Mesma função `sendAdminNotificationEmail` duplicada (cada webhook é independente)
+- Chamar após o `sendPurchaseEmail` existente (linha ~404)
+
+### Dados incluídos no email
+- Produto comprado (nome)
+- Valor (R$)
+- Método de pagamento (PIX, cartão, boleto)
+- Email do cliente
+- Nome do cliente
+- Data/hora da compra
+- Plataforma (Pagar.me ou Mercado Pago)
+
+### Segurança
+- O email do admin é hardcoded na função (não configurável pelo cliente)
+- Usa o mesmo SendPulse já configurado
+- Não afeta nenhum fluxo existente — é um envio adicional após o email do cliente
 
