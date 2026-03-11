@@ -1,23 +1,52 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Plan: Integrar Checkout Pagar.me na Página do Pack 4
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+### Resumo
+Substituir o botão de checkout da Greenn pelo fluxo de checkout do Pagar.me, usando o produto `pack4lancamento` que concede acesso ao Pack Arcano Vol. 4, Pack de São João e todos os bônus.
 
-## Dados
+### 1. Criar produto na tabela `mp_products` (migração SQL)
+Inserir um novo produto com:
+- `slug`: `pack4lancamento`
+- `title`: `Pack Arcano 4 - Acesso Vitalício`
+- `price`: `37.00`
+- `type`: `pack`
+- `pack_slug`: `pack-arcano-vol-4`
+- `access_type`: `vitalicio`
+- `is_active`: `true`
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+### 2. Atualizar o webhook `webhook-pagarme` (Edge Function)
+Adicionar lógica especial para o slug `pack4lancamento`: além de conceder o `pack-arcano-vol-4`, também conceder automaticamente:
+- `pack-de-sao-joao` (vitalício, com bônus)
+- Setar `has_bonus_access = true` em ambos
 
-## Ações (via SQL migration)
+Isso será feito logo após o bloco existente de processamento de pack (linha ~483), adicionando um mapeamento de packs adicionais para produtos do tipo "bundle".
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+### 3. Atualizar `PricingCardsSection.tsx`
+- Remover o `checkoutUrl` da Greenn e a função `handlePurchase` que abre URL externa
+- Importar e usar o `PreCheckoutModal` com `productSlug="pack4lancamento"`
+- Implementar o mesmo fluxo de checkout do Planos2: verificar se o usuário está logado e com perfil completo → modal de método de pagamento (PIX/Cartão) → invocar `create-pagarme-checkout`; caso contrário, abrir o `PreCheckoutModal`
+- Adicionar o modal de seleção de método de pagamento (PIX/Cartão) inline
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+### 4. Tratar revogação (reembolso) no webhook
+Estender a lógica de reembolso para também revogar `pack-de-sao-joao` quando o produto for `pack4lancamento`.
+
+### Detalhes técnicos
+
+**Mapeamento de packs extras no webhook:**
+```typescript
+const BUNDLE_EXTRA_PACKS: Record<string, Array<{pack_slug: string, access_type: string}>> = {
+  'pack4lancamento': [
+    { pack_slug: 'pack-de-sao-joao', access_type: 'vitalicio' }
+  ]
+}
+```
+Após conceder o pack principal, iterar sobre os extras e inserir cada um.
+
+**Componente PricingCardsSection:** Seguir o padrão exato do `Planos2.tsx` para o fluxo de checkout, incluindo:
+- Hook `useAuth` para verificar login
+- Consulta ao perfil para verificar completude
+- Dialog de seleção PIX/Cartão
+- Invocação da edge function `create-pagarme-checkout`
+- Fallback para `PreCheckoutModal` quando perfil incompleto ou não logado
 
