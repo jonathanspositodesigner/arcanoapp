@@ -9,6 +9,16 @@ const galleryImages = [
   "/images/pack4/baile-serrao.webp",
   "/images/pack4/baile-funk.webp",
   "/images/pack4/baile-on-fire.webp",
+  "/images/pack4/bailinho-quarta.webp",
+  "/images/pack4/biritas-funk.webp",
+  "/images/pack4/bye-bye-ferias.webp",
+  "/images/pack4/clima-srtnjo.webp",
+  "/images/pack4/close-friends.webp",
+  "/images/pack4/contrate-don-juan.webp",
+  "/images/pack4/eletro-after-astral.webp",
+  "/images/pack4/eletrofunk.webp",
+  "/images/pack4/ensaio-verao.webp",
+  "/images/pack4/esquenta-bahianeira.webp",
 ];
 
 export const FlyersGallerySection = () => {
