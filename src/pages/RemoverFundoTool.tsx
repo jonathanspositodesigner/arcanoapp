@@ -195,7 +195,12 @@ const RemoverFundoTool: React.FC = () => {
     img.src = url;
   };
 
-  const handleCompressed = (compressedFile: File) => {
+  const handleCompressed = async (compressedFile: File) => {
+    // Update cached dims after compression
+    try {
+      const dims = await getImageDimensions(compressedFile);
+      setImageDims({ width: dims.width, height: dims.height });
+    } catch { /* dims will be recalculated if needed */ }
     const reader = new FileReader();
     reader.onload = (ev) => {
       setInputImage(ev.target?.result as string);
