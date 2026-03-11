@@ -349,7 +349,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
             {/* One-click buy button */}
             <button
               onClick={handleOneClickBuy}
-              disabled={oneClickLoading || !selectedCardId}
+              disabled={oneClickLoading || !selectedCardId || isOneClickSubmitting}
               className={`w-full mt-4 py-4 text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
             >
               {oneClickLoading ? (
