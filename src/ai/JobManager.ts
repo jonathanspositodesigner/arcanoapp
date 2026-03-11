@@ -21,7 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 // ==================== TYPES ====================
 
-export type ToolType = 'upscaler' | 'pose_changer' | 'veste_ai' | 'video_upscaler' | 'arcano_cloner' | 'character_generator' | 'flyer_maker';
+export type ToolType = 'upscaler' | 'pose_changer' | 'veste_ai' | 'video_upscaler' | 'arcano_cloner' | 'character_generator' | 'flyer_maker' | 'bg_remover';
 export type JobStatus = 'pending' | 'queued' | 'starting' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 export interface JobResult {
