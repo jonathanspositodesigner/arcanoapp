@@ -1,7 +1,7 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
-const galleryImages = [
+const allImages = [
   "/images/pack4/baile-tiktok.webp",
   "/images/pack4/after-domingo.webp",
   "/images/pack4/after-love.webp",
@@ -22,9 +22,6 @@ const galleryImages = [
   "/images/pack4/eletrofunk.webp",
   "/images/pack4/ensaio-verao.webp",
   "/images/pack4/esquenta-bahianeira.webp",
-];
-
-const extraImages = [
   "/images/pack4/mexicomigo.webp",
   "/images/pack4/exclusive-night.webp",
   "/images/pack4/feriadinho-domingo.webp",
@@ -35,22 +32,24 @@ const extraImages = [
   "/images/pack4/i-love-baile-funk.webp",
   "/images/pack4/life-party-fest.webp",
   "/images/pack4/live-sunset.webp",
+  "/images/pack4/trotao-universitario.webp",
+  "/images/pack4/noite-caliente.webp",
+  "/images/pack4/noite-do-fluxo.webp",
+  "/images/pack4/nuh-vokere.webp",
+  "/images/pack4/pagodinho-sunset.webp",
+  "/images/pack4/pagofunk.webp",
+  "/images/pack4/pre-venda-dynho.webp",
+  "/images/pack4/revoada-selva.webp",
+  "/images/pack4/sexta-universitaria.webp",
+  "/images/pack4/sunset-domingo.webp",
 ];
+
+const INITIAL_COUNT = 20;
 
 export const FlyersGallerySection = () => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const extraRef = useRef<HTMLDivElement>(null);
 
-  const handleToggle = () => {
-    if (!isExpanded) {
-      setIsExpanded(true);
-      setTimeout(() => {
-        extraRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 100);
-    } else {
-      setIsExpanded(false);
-    }
-  };
+  const visibleImages = isExpanded ? allImages : allImages.slice(0, INITIAL_COUNT);
 
   return (
     <section className="py-5 px-4 bg-gradient-to-b from-black to-[#0a0505]">
@@ -62,9 +61,9 @@ export const FlyersGallerySection = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {galleryImages.map((image, idx) => (
+          {visibleImages.map((image, idx) => (
             <img
-              key={idx}
+              key={image}
               src={image}
               alt={`Arte ${idx + 1}`}
               className="w-full h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
@@ -74,32 +73,15 @@ export const FlyersGallerySection = () => {
           ))}
         </div>
 
-        {/* Ver mais button */}
         <div className="flex justify-center mt-8">
           <button
-            onClick={handleToggle}
+            onClick={() => setIsExpanded(!isExpanded)}
             className="flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-primary-foreground font-semibold text-lg hover:bg-primary/90 transition-colors"
           >
             {isExpanded ? "Ver menos" : "Ver mais"}
             {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
           </button>
         </div>
-
-        {/* Extra images */}
-        {isExpanded && (
-          <div ref={extraRef} className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mt-8">
-            {extraImages.map((image, idx) => (
-              <img
-                key={idx}
-                src={image}
-                alt={`Arte ${galleryImages.length + idx + 1}`}
-                className="w-full h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
-                loading="lazy"
-                decoding="async"
-              />
-            ))}
-          </div>
-        )}
       </div>
     </section>
   );
