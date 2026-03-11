@@ -298,6 +298,74 @@ const ProfileSettings = () => {
             </div>
 
             <div>
+              <Label htmlFor="cpf" className="text-purple-200">CPF</Label>
+              <Input
+                id="cpf"
+                type="text"
+                value={cpf}
+                onChange={(e) => setCpf(e.target.value)}
+                placeholder="000.000.000-00"
+                className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+              />
+            </div>
+
+            <div className="border-t border-purple-500/20 pt-4 mt-4">
+              <h3 className="text-sm font-semibold text-purple-300 mb-3">📍 Endereço</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="addressLine" className="text-purple-200">Endereço</Label>
+                  <Input
+                    id="addressLine"
+                    type="text"
+                    value={addressLine}
+                    onChange={(e) => setAddressLine(e.target.value)}
+                    placeholder="Rua, número, complemento"
+                    className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="addressZip" className="text-purple-200">CEP</Label>
+                    <Input
+                      id="addressZip"
+                      type="text"
+                      value={addressZip}
+                      onChange={(e) => setAddressZip(e.target.value)}
+                      placeholder="00000-000"
+                      className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="addressCity" className="text-purple-200">Cidade</Label>
+                    <Input
+                      id="addressCity"
+                      type="text"
+                      value={addressCity}
+                      onChange={(e) => setAddressCity(e.target.value)}
+                      placeholder="Sua cidade"
+                      className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="addressState" className="text-purple-200">Estado</Label>
+                  <Input
+                    id="addressState"
+                    type="text"
+                    value={addressState}
+                    onChange={(e) => setAddressState(e.target.value)}
+                    placeholder="SP"
+                    maxLength={2}
+                    className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400 w-24"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
               <Label htmlFor="bio" className="text-purple-200">{t('profile.aboutYou')}</Label>
               <Textarea
                 id="bio"
