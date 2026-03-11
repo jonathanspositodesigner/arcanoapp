@@ -260,22 +260,7 @@ async function handleRun(req: Request) {
           return uploadData.data.fileName;
         })();
 
-    const queueCheckPromise = (async () => {
-      try {
-        const queueResponse = await fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
-        });
-        const queueData = await queueResponse.json();
-        return {
-          slotsAvailable: queueData.slotsAvailable || 0,
-          accountName: queueData.accountName || 'primary',
-          accountApiKey: queueData.accountApiKey || RUNNINGHUB_API_KEY,
-        };
-      } catch (queueError) {
-        console.error('[BgRemover] Queue check failed:', queueError);
-        return { slotsAvailable: 1, accountName: 'primary', accountApiKey: RUNNINGHUB_API_KEY };
-      }
-    })();
+    const queueCheckPromise = quickQueueCheck();
 
     // Run upload + queue check in parallel
     [inputFileName, queueResult] = await Promise.all([uploadPromise, queueCheckPromise]);
