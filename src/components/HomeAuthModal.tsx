@@ -12,6 +12,7 @@ interface HomeAuthModalProps {
   onAuthSuccess: () => void;
   onSignupStart?: () => void;
   onSignupEnd?: () => void;
+  startAtSignup?: boolean;
 }
 
 const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEnd }: HomeAuthModalProps) => {
