@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star, ShieldCheck, Headset, Loader2 } from "lucide-react";
+import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star, ShieldCheck, Headset, Loader2, CreditCard, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,6 +34,9 @@ const Planos2 = () => {
   const [showPreCheckout, setShowPreCheckout] = useState(false);
   const [selectedCreditSlug, setSelectedCreditSlug] = useState('creditos-1500');
   const [pixLoading, setPixLoading] = useState<string | null>(null);
+  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
+  const [pendingSlug, setPendingSlug] = useState<string | null>(null);
+  const [pendingProfile, setPendingProfile] = useState<any>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -105,7 +108,7 @@ const Planos2 = () => {
       return;
     }
 
-    // Check if profile is complete for 1-click PIX (all Pagar.me requirements)
+    // Check if profile is complete
     const { data: profile } = await supabase
       .from('profiles')
       .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
@@ -116,56 +119,71 @@ const Planos2 = () => {
       && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
 
     if (isProfileComplete) {
-      // Profile complete — open checkout with all payment options (no forced PIX)
-      setPixLoading(slug);
-      try {
-        let utmData: Record<string, string> | null = null;
-        try {
-          const raw = sessionStorage.getItem('captured_utms');
-          if (raw) utmData = JSON.parse(raw);
-        } catch { /* ignore */ }
-
-        const response = await supabase.functions.invoke('create-pagarme-checkout', {
-          body: {
-            product_slug: slug,
-            user_email: userEmail,
-            user_phone: profile.phone,
-            user_name: profile.name,
-            user_cpf: profile.cpf,
-            utm_data: utmData,
-            user_address: {
-              line_1: profile.address_line,
-              zip_code: profile.address_zip,
-              city: profile.address_city,
-              state: profile.address_state,
-              country: profile.address_country || 'BR'
-            }
-          }
-        });
-
-        if (response.error) {
-          console.error('Erro checkout direto:', response.error);
-          toast.error('Erro ao gerar pagamento. Tente novamente.');
-          setPixLoading(null);
-          return;
-        }
-
-        const { checkout_url } = response.data;
-        if (checkout_url) {
-          window.location.href = checkout_url;
-        } else {
-          toast.error('Erro ao gerar link de pagamento.');
-        }
-      } catch (error) {
-        console.error('Erro checkout direto:', error);
-        toast.error('Erro ao processar. Tente novamente.');
-      }
-      setPixLoading(null);
+      // Profile complete — show payment method modal
+      setPendingSlug(slug);
+      setPendingProfile(profile);
+      setShowPaymentMethodModal(true);
     } else {
       // Profile incomplete — open PreCheckoutModal
       setSelectedCreditSlug(slug);
       setShowPreCheckout(true);
     }
+  };
+
+  const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
+    if (!pendingSlug || !pendingProfile) return;
+    
+    setShowPaymentMethodModal(false);
+    setPixLoading(pendingSlug);
+    
+    try {
+      let utmData: Record<string, string> | null = null;
+      try {
+        const raw = sessionStorage.getItem('captured_utms');
+        if (raw) utmData = JSON.parse(raw);
+      } catch { /* ignore */ }
+
+      const body: any = {
+        product_slug: pendingSlug,
+        user_email: userEmail,
+        user_phone: pendingProfile.phone,
+        user_name: pendingProfile.name,
+        user_cpf: pendingProfile.cpf,
+        billing_type: method,
+        utm_data: utmData,
+      };
+
+      // PIX: send address pre-filled; Credit card: omit address for antifraude form
+      if (method === 'PIX') {
+        body.user_address = {
+          line_1: pendingProfile.address_line,
+          zip_code: pendingProfile.address_zip,
+          city: pendingProfile.address_city,
+          state: pendingProfile.address_state,
+          country: pendingProfile.address_country || 'BR'
+        };
+      }
+
+      const response = await supabase.functions.invoke('create-pagarme-checkout', { body });
+
+      if (response.error) {
+        console.error('Erro checkout direto:', response.error);
+        toast.error('Erro ao gerar pagamento. Tente novamente.');
+        setPixLoading(null);
+        return;
+      }
+
+      const { checkout_url } = response.data;
+      if (checkout_url) {
+        window.location.href = checkout_url;
+      } else {
+        toast.error('Erro ao gerar link de pagamento.');
+      }
+    } catch (error) {
+      console.error('Erro checkout direto:', error);
+      toast.error('Erro ao processar. Tente novamente.');
+    }
+    setPixLoading(null);
   };
 
   const countdown = formatTime(timeLeft);
@@ -728,7 +746,7 @@ const Planos2 = () => {
                     {isLoading ? (
                       <span className="flex items-center gap-2">
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Gerando PIX...
+                        Gerando pagamento...
                       </span>
                     ) : (
                       'Comprar Agora'
@@ -792,6 +810,42 @@ const Planos2 = () => {
           <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white">
             {t('planos.comingSoon.understood')}
           </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Payment Method Modal for complete profiles */}
+      <Dialog open={showPaymentMethodModal} onOpenChange={setShowPaymentMethodModal}>
+        <DialogContent className="sm:max-w-md bg-[#1A0A2E] border-purple-500/30">
+          <DialogHeader className="text-center">
+            <DialogTitle className="text-xl font-bold text-center text-white">
+              Escolha a forma de pagamento
+            </DialogTitle>
+            <DialogDescription className="text-center text-purple-300">
+              Selecione como deseja pagar
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <button
+              onClick={() => handlePaymentMethodSelected('PIX')}
+              className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-purple-500/30 bg-purple-900/20 hover:border-green-400/60 hover:bg-green-900/20 transition-all duration-200 group"
+            >
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <QrCode className="w-7 h-7 text-white" />
+              </div>
+              <span className="text-white font-semibold text-sm">PIX</span>
+              <span className="text-purple-400 text-[10px]">Aprovação instantânea</span>
+            </button>
+            <button
+              onClick={() => handlePaymentMethodSelected('CREDIT_CARD')}
+              className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-purple-500/30 bg-purple-900/20 hover:border-purple-400/60 hover:bg-purple-800/30 transition-all duration-200 group"
+            >
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <CreditCard className="w-7 h-7 text-white" />
+              </div>
+              <span className="text-white font-semibold text-sm">Cartão de Crédito</span>
+              <span className="text-purple-400 text-[10px]">Aprovação instantânea</span>
+            </button>
+          </div>
         </DialogContent>
       </Dialog>
 
