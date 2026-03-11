@@ -33,6 +33,89 @@ async function getSendPulseToken(): Promise<string> {
   return data.access_token
 }
 
+// ===== Admin Sale Notification =====
+const ADMIN_EMAIL = 'jonathandesigner1993@gmail.com'
+
+interface AdminSaleData {
+  productName: string
+  amount: number
+  paymentMethod: string
+  customerEmail: string
+  customerName: string
+  platform: string
+  requestId: string
+}
+
+function buildAdminSaleEmailHtml(data: AdminSaleData): string {
+  const now = new Date()
+  const dateStr = now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Sao_Paulo' })
+  const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' })
+  const amountStr = data.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+
+  const methodLabels: Record<string, string> = {
+    pix: 'PIX', credit_card: 'Cartão de Crédito', boleto: 'Boleto',
+    account_money: 'Saldo MP', debit_card: 'Cartão de Débito',
+  }
+  const methodLabel = methodLabels[data.paymentMethod] || data.paymentMethod
+
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#0d0015;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+<div style="max-width:620px;margin:0 auto;padding:48px 16px;">
+  <div style="background:linear-gradient(160deg,#1e0a3c 0%,#2a1252 40%,#1e0a3c 100%);border-radius:20px;padding:50px 40px;text-align:center;border:1px solid rgba(212,175,55,0.15);">
+    <div style="width:80px;height:80px;margin:0 auto 20px;background:linear-gradient(135deg,#d4af37 0%,#f5e27a 50%,#d4af37 100%);border-radius:50%;line-height:80px;font-size:36px;box-shadow:0 8px 32px rgba(212,175,55,0.35);">🎉</div>
+    <h1 style="color:#d4af37;font-size:26px;margin:0 0 8px;font-weight:800;letter-spacing:1px;">NOVA VENDA APROVADA!</h1>
+    <p style="color:#e8d5f5;font-size:16px;margin:0 0 32px;">🏆 Parabéns! Mais uma venda no Arcano!</p>
+    <div style="background:rgba(0,0,0,0.3);border-radius:14px;padding:28px 24px;text-align:left;border:1px solid rgba(212,175,55,0.1);">
+      <table style="width:100%;border-collapse:collapse;">
+        <tr><td style="padding:10px 0;color:#a78bfa;font-size:14px;">📦 Produto</td><td style="padding:10px 0;color:#fff;font-size:14px;font-weight:600;text-align:right;">${data.productName}</td></tr>
+        <tr><td style="padding:10px 0;color:#a78bfa;font-size:14px;border-top:1px solid rgba(255,255,255,0.05);">💰 Valor</td><td style="padding:10px 0;color:#4ade80;font-size:18px;font-weight:700;text-align:right;border-top:1px solid rgba(255,255,255,0.05);">${amountStr}</td></tr>
+        <tr><td style="padding:10px 0;color:#a78bfa;font-size:14px;border-top:1px solid rgba(255,255,255,0.05);">💳 Método</td><td style="padding:10px 0;color:#fff;font-size:14px;text-align:right;border-top:1px solid rgba(255,255,255,0.05);">${methodLabel}</td></tr>
+        <tr><td style="padding:10px 0;color:#a78bfa;font-size:14px;border-top:1px solid rgba(255,255,255,0.05);">📧 Cliente</td><td style="padding:10px 0;color:#fff;font-size:14px;text-align:right;border-top:1px solid rgba(255,255,255,0.05);">${data.customerEmail}</td></tr>
+        ${data.customerName ? `<tr><td style="padding:10px 0;color:#a78bfa;font-size:14px;border-top:1px solid rgba(255,255,255,0.05);">👤 Nome</td><td style="padding:10px 0;color:#fff;font-size:14px;text-align:right;border-top:1px solid rgba(255,255,255,0.05);">${data.customerName}</td></tr>` : ''}
+        <tr><td style="padding:10px 0;color:#a78bfa;font-size:14px;border-top:1px solid rgba(255,255,255,0.05);">📅 Data</td><td style="padding:10px 0;color:#fff;font-size:14px;text-align:right;border-top:1px solid rgba(255,255,255,0.05);">${dateStr} às ${timeStr}</td></tr>
+        <tr><td style="padding:10px 0;color:#a78bfa;font-size:14px;border-top:1px solid rgba(255,255,255,0.05);">🏷️ Plataforma</td><td style="padding:10px 0;color:#fff;font-size:14px;text-align:right;border-top:1px solid rgba(255,255,255,0.05);">${data.platform}</td></tr>
+      </table>
+    </div>
+    <p style="color:#c4b5fd;font-size:15px;margin:32px 0 0;font-style:italic;line-height:1.6;">"Continue assim! Cada venda é uma confirmação do seu trabalho incrível." 🚀</p>
+    <p style="color:rgba(255,255,255,0.3);font-size:11px;margin:32px 0 0;">Vox Visual © ${now.getFullYear()}</p>
+  </div>
+</div>
+</body>
+</html>`
+}
+
+async function sendAdminSaleNotification(data: AdminSaleData): Promise<void> {
+  console.log(`   ├─ 📧 Enviando notificação admin...`)
+  const token = await getSendPulseToken()
+  const html = buildAdminSaleEmailHtml(data)
+  const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
+
+  const emailPayload = {
+    email: {
+      html: htmlBase64,
+      text: "",
+      subject: `🎉 Nova venda: ${data.productName} — ${data.amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`,
+      from: { name: "Arcano Notificações", email: "contato@voxvisual.com.br" },
+      to: [{ name: "Jonathan", email: ADMIN_EMAIL }]
+    }
+  }
+
+  const response = await fetch("https://api.sendpulse.com/smtp/emails", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+    body: JSON.stringify(emailPayload)
+  })
+
+  if (!response.ok) {
+    const errText = await response.text()
+    console.error(`   ├─ ❌ Admin email error: ${errText}`)
+    throw new Error(`Admin email failed: ${response.status}`)
+  }
+  console.log(`   ├─ ✅ Admin notificado: ${ADMIN_EMAIL}`)
+}
+
 function getUnsubscribeLink(email: string): string {
   const baseUrl = Deno.env.get("SUPABASE_URL") ?? ""
   return `${baseUrl}/functions/v1/email-unsubscribe?email=${encodeURIComponent(email)}`
