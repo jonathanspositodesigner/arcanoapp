@@ -8,6 +8,8 @@ interface PreCheckoutModalProps {
   userEmail?: string | null;
   userId?: string | null;
   productSlug?: string;
+  modalTitle?: string;
+  colorScheme?: 'fuchsia' | 'orange';
 }
 
 interface SavedCard {
