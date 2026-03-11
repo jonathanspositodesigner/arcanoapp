@@ -11,6 +11,7 @@ const AI_FOLDERS = [
   "video-upscaler",
   "image-generator",
   "video-generator",
+  "bg-remover",
 ];
 
 const BUCKET = "artes-cloudinary";
