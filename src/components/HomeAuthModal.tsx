@@ -15,7 +15,7 @@ interface HomeAuthModalProps {
   startAtSignup?: boolean;
 }
 
-const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEnd }: HomeAuthModalProps) => {
+const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEnd, startAtSignup }: HomeAuthModalProps) => {
   const { t: tAuth } = useTranslation('auth');
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [signupSuccessEmail, setSignupSuccessEmail] = useState("");
