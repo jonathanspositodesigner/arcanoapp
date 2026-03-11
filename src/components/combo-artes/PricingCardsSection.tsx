@@ -49,13 +49,13 @@ const plans = [
   },
   {
     id: "vitalicio",
-    title: "Pack Arcano 1 ao 3\nACESSO VITALÍCIO",
-    subtitle: "O mais vendido! 🔥",
-    originalPrice: "141",
-    price: "59,90",
-    discount: "58% OFF",
+    title: "Pack Arcano 4\nACESSO VITALÍCIO",
+    subtitle: "Lançamento! 🔥",
+    originalPrice: "79,90",
+    price: "37,00",
+    discount: "54% OFF",
     features: [
-      "+210 Artes Editáveis",
+      "+40 Artes Inéditas",
       "Acesso Vitalício",
       "210 Motions Editáveis",
       "40 Selos 3D",
@@ -65,19 +65,28 @@ const plans = [
       "Suporte via WhatsApp",
       "Área de Membros",
     ],
-    bonus: "+35 ARTES DE CARNAVAL",
+    bonus: "+40 ARTES DE SÃO JOÃO",
     checkoutUrl: "https://payfast.greenn.com.br/135338/offer/0r2gUj?ch_id=23924&b_id_1=103023&b_offer_1=fMHdgE",
-    buttonText: "QUERO OS PACKS 1 AO 3",
+    buttonText: "QUERO ESSAS ARTES INÉDITAS",
     highlighted: true,
   },
 ];
 
 export const PricingCardsSection = () => {
-  const [timeLeft, setTimeLeft] = useState(3 * 60 * 60); // 3 hours in seconds
+  const [timeLeft, setTimeLeft] = useState(0);
 
   useEffect(() => {
+    const calculateTimeLeft = () => {
+      // 13/03/2026 12:00:00 Brasília (UTC-3) = 15:00 UTC
+      const deadline = new Date('2026-03-13T15:00:00Z').getTime();
+      const now = Date.now();
+      return Math.max(0, Math.floor((deadline - now) / 1000));
+    };
+
+    setTimeLeft(calculateTimeLeft());
+
     const timer = setInterval(() => {
-      setTimeLeft((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
+      setTimeLeft(calculateTimeLeft());
     }, 1000);
 
     return () => clearInterval(timer);
@@ -136,7 +145,7 @@ export const PricingCardsSection = () => {
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <span className="bg-[#EF672C] text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
                   <Star className="w-3 h-3 fill-white" />
-                  MAIS VENDIDO
+                  LANÇAMENTO
                 </span>
               </div>
               
