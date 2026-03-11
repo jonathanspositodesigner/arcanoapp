@@ -125,8 +125,13 @@ const ProfileSettings = () => {
         .update({
           name,
           phone,
+          cpf,
           bio,
           avatar_url: newAvatarUrl,
+          address_line: addressLine || null,
+          address_zip: addressZip || null,
+          address_city: addressCity || null,
+          address_state: addressState || null,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
