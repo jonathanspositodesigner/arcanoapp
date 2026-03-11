@@ -34,6 +34,9 @@ const Planos2 = () => {
   const [showPreCheckout, setShowPreCheckout] = useState(false);
   const [selectedCreditSlug, setSelectedCreditSlug] = useState('creditos-1500');
   const [pixLoading, setPixLoading] = useState<string | null>(null);
+  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
+  const [pendingSlug, setPendingSlug] = useState<string | null>(null);
+  const [pendingProfile, setPendingProfile] = useState<any>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
