@@ -8,21 +8,9 @@
  * 1. REALTIME (primário): Supabase Realtime para updates instantâneos
  * 2. POLLING SILENCIOSO (backup): Consulta direta ao banco a cada 5s após delay inicial
  * 3. VISIBILITY RECOVERY: Quando usuário volta à aba, verifica imediatamente
- * 
- * COMO USAR:
- * ```tsx
- * useJobStatusSync({
- *   jobId,
- *   toolType: 'upscaler',
- *   enabled: status === 'processing' || status === 'waiting',
- *   onStatusChange: (update) => {
- *     if (update.status === 'completed') setOutputImage(update.outputUrl);
- *   }
- * });
- * ```
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ToolType, JobStatus, JobUpdate, TABLE_MAP, queryJobStatus } from '@/ai/JobManager';
 
@@ -63,7 +51,14 @@ export function useJobStatusSync({
 }: UseJobStatusSyncOptions): UseJobStatusSyncResult {
   const tableName = TABLE_MAP[toolType];
   
-  // Refs para controle de estado
+  // === REFS ESTÁVEIS para callbacks (evitam re-render do useEffect) ===
+  const onStatusChangeRef = useRef(onStatusChange);
+  onStatusChangeRef.current = onStatusChange;
+  
+  const onGlobalStatusChangeRef = useRef(onGlobalStatusChange);
+  onGlobalStatusChangeRef.current = onGlobalStatusChange;
+  
+  // Refs para controle de estado interno
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollingStartTimeRef = useRef<number | null>(null);
@@ -71,123 +66,115 @@ export function useJobStatusSync({
   const lastKnownStatusRef = useRef<JobStatus | null>(null);
   const isCompletedRef = useRef(false);
   
-  // Função para processar update (usada por Realtime e Polling)
-  const processUpdate = useCallback((data: any, source: 'realtime' | 'polling' | 'visibility') => {
-    const status = data.status as JobStatus;
+  // Cleanup ref-based (para expor no return)
+  const cleanupRef = useRef(() => {});
+  
+  // Effect principal - configura sincronização tripla
+  // Dependências ESTÁVEIS: enabled, jobId, toolType, tableName
+  useEffect(() => {
+    // === Funções internas (capturam refs, não dependem de callbacks instáveis) ===
     
-    // Evitar processar o mesmo status múltiplas vezes
-    if (status === lastKnownStatusRef.current) {
-      console.log(`[JobSync] ${source}: Status unchanged (${status}), skipping`);
-      return;
-    }
-    
-    console.log(`[JobSync] ${source}: Status changed ${lastKnownStatusRef.current} -> ${status}`);
-    lastKnownStatusRef.current = status;
-    
-    // Notificar contexto global (para som de notificação)
-    if (onGlobalStatusChange) {
-      onGlobalStatusChange(status);
-    }
-    
-    // Construir objeto de update
-    const update: JobUpdate = {
-      status,
-      outputUrl: data.output_url,
-      errorMessage: data.error_message,
-      position: data.position,
+    const processUpdate = (data: any, source: 'realtime' | 'polling' | 'visibility') => {
+      const status = data.status as JobStatus;
+      
+      if (status === lastKnownStatusRef.current) {
+        console.log(`[JobSync] ${source}: Status unchanged (${status}), skipping`);
+        return;
+      }
+      
+      console.log(`[JobSync] ${source}: Status changed ${lastKnownStatusRef.current} -> ${status}`);
+      lastKnownStatusRef.current = status;
+      
+      // Notificar contexto global (para som de notificação)
+      onGlobalStatusChangeRef.current?.(status);
+      
+      const update: JobUpdate = {
+        status,
+        outputUrl: data.output_url,
+        errorMessage: data.error_message,
+        position: data.position,
+      };
+      
+      if (['completed', 'failed', 'cancelled'].includes(status)) {
+        isCompletedRef.current = true;
+        if (absoluteTimeoutRef.current) {
+          clearTimeout(absoluteTimeoutRef.current);
+          absoluteTimeoutRef.current = null;
+        }
+      }
+      
+      onStatusChangeRef.current(update);
     };
     
-    // Marcar como completo para parar polling
-    if (['completed', 'failed', 'cancelled'].includes(status)) {
-      isCompletedRef.current = true;
-      // Limpar timer absoluto - job terminou normalmente
+    const pollJobStatus = async () => {
+      if (!jobId || isCompletedRef.current) return;
+      
+      if (pollingStartTimeRef.current) {
+        const elapsed = Date.now() - pollingStartTimeRef.current;
+        if (elapsed >= POLLING_CONFIG.MAX_DURATION_MS) {
+          console.log('[JobSync] Polling timeout reached, stopping');
+          if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+          }
+          return;
+        }
+      }
+      
+      console.log(`[JobSync] Polling ${tableName} for job ${jobId}`);
+      
+      try {
+        const update = await queryJobStatus(toolType, jobId);
+        if (update) {
+          processUpdate({
+            status: update.status,
+            output_url: update.outputUrl,
+            error_message: update.errorMessage,
+            position: update.position,
+          }, 'polling');
+        }
+      } catch (error) {
+        console.error('[JobSync] Polling error:', error);
+      }
+    };
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && !isCompletedRef.current) {
+        console.log('[JobSync] Tab became visible, checking status');
+        pollJobStatus();
+      }
+    };
+    
+    const doCleanup = () => {
+      console.log('[JobSync] Cleaning up');
+      
+      if (realtimeChannelRef.current) {
+        supabase.removeChannel(realtimeChannelRef.current);
+        realtimeChannelRef.current = null;
+      }
+      
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+      
       if (absoluteTimeoutRef.current) {
         clearTimeout(absoluteTimeoutRef.current);
         absoluteTimeoutRef.current = null;
       }
-    }
+      
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      
+      pollingStartTimeRef.current = null;
+      lastKnownStatusRef.current = null;
+      isCompletedRef.current = false;
+    };
     
-    // Notificar componente
-    onStatusChange(update);
-  }, [onStatusChange, onGlobalStatusChange]);
-  
-  // Função de polling direto ao banco
-  const pollJobStatus = useCallback(async () => {
-    if (!jobId || isCompletedRef.current) return;
+    // Atualizar ref de cleanup para acesso externo
+    cleanupRef.current = doCleanup;
     
-    // Verificar se passou do timeout máximo
-    if (pollingStartTimeRef.current) {
-      const elapsed = Date.now() - pollingStartTimeRef.current;
-      if (elapsed >= POLLING_CONFIG.MAX_DURATION_MS) {
-        console.log('[JobSync] Polling timeout reached, stopping');
-        if (pollingIntervalRef.current) {
-          clearInterval(pollingIntervalRef.current);
-          pollingIntervalRef.current = null;
-        }
-        return;
-      }
-    }
-    
-    console.log(`[JobSync] Polling ${tableName} for job ${jobId}`);
-    
-    try {
-      const update = await queryJobStatus(toolType, jobId);
-      if (update) {
-        processUpdate({
-          status: update.status,
-          output_url: update.outputUrl,
-          error_message: update.errorMessage,
-          position: update.position,
-        }, 'polling');
-      }
-    } catch (error) {
-      console.error('[JobSync] Polling error:', error);
-    }
-  }, [jobId, toolType, tableName, processUpdate]);
-  
-  // Handler de visibilidade
-  const handleVisibilityChange = useCallback(() => {
-    if (document.visibilityState === 'visible' && enabled && jobId && !isCompletedRef.current) {
-      console.log('[JobSync] Tab became visible, checking status');
-      pollJobStatus();
-    }
-  }, [enabled, jobId, pollJobStatus]);
-  
-  // Cleanup function
-  const cleanup = useCallback(() => {
-    console.log('[JobSync] Cleaning up');
-    
-    // Remover canal Realtime
-    if (realtimeChannelRef.current) {
-      supabase.removeChannel(realtimeChannelRef.current);
-      realtimeChannelRef.current = null;
-    }
-    
-    // Parar polling
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-      pollingIntervalRef.current = null;
-    }
-    
-    // Parar timer absoluto
-    if (absoluteTimeoutRef.current) {
-      clearTimeout(absoluteTimeoutRef.current);
-      absoluteTimeoutRef.current = null;
-    }
-    
-    // Remover listener de visibilidade
-    document.removeEventListener('visibilitychange', handleVisibilityChange);
-    
-    // Reset refs
-    pollingStartTimeRef.current = null;
-    lastKnownStatusRef.current = null;
-    isCompletedRef.current = false;
-  }, [handleVisibilityChange]);
-  
-  // Effect principal - configura sincronização tripla
-  useEffect(() => {
     if (!enabled || !jobId) {
-      cleanup();
+      doCleanup();
       return;
     }
     
@@ -195,8 +182,7 @@ export function useJobStatusSync({
     isCompletedRef.current = false;
     lastKnownStatusRef.current = null;
     
-    // CLEANUP OPORTUNÍSTICO: ao montar, dispara limpeza server-side de jobs presos
-    // Isso garante que mesmo se o usuário fechou e reabriu a aba, jobs > 10 min são limpos
+    // CLEANUP OPORTUNÍSTICO: dispara limpeza server-side de jobs presos
     fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`,
       {
@@ -232,17 +218,14 @@ export function useJobStatusSync({
     realtimeChannelRef.current = channel;
     
     // 2. POLLING SILENCIOSO (backup)
-    // Inicia após delay inicial
     const pollingDelayTimeout = setTimeout(() => {
       if (isCompletedRef.current) return;
       
       pollingStartTimeRef.current = Date.now();
       console.log('[JobSync] Starting backup polling');
       
-      // Primeira verificação imediata
       pollJobStatus();
       
-      // Depois a cada intervalo
       pollingIntervalRef.current = setInterval(() => {
         if (isCompletedRef.current) {
           if (pollingIntervalRef.current) {
@@ -258,13 +241,12 @@ export function useJobStatusSync({
     // 3. VISIBILITY RECOVERY
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
-    // 4. TIMER ABSOLUTO DE 10 MINUTOS - garante que NENHUM job fica órfão
+    // 4. TIMER ABSOLUTO DE 10 MINUTOS
     absoluteTimeoutRef.current = setTimeout(async () => {
       if (isCompletedRef.current) return;
       
       console.log('[JobSync] ⚠️ ABSOLUTE TIMEOUT (10 min) reached! Forcing final check...');
       
-      // Última tentativa de buscar status real do banco
       try {
         const update = await queryJobStatus(toolType, jobId);
         if (update && ['completed', 'failed', 'cancelled'].includes(update.status)) {
@@ -281,16 +263,13 @@ export function useJobStatusSync({
         console.error('[JobSync] Final check error:', error);
       }
       
-      // Esperar 2s para dar chance ao Realtime
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       if (isCompletedRef.current) return;
       
-      // Job ainda ativo após 10 min = forçar falha NO SERVIDOR + estorno
       console.log('[JobSync] ❌ Job still active after 10 min, forcing server-side cancellation');
       isCompletedRef.current = true;
       
-      // 1. CANCELAR NO BANCO via Queue Manager /finish (garante estorno idempotente)
       try {
         const finishResponse = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-queue-manager/finish`,
@@ -310,30 +289,27 @@ export function useJobStatusSync({
         );
         console.log(`[JobSync] Server-side cancellation response: ${finishResponse.status}`);
       } catch (e) {
-        console.error('[JobSync] Failed to cancel job server-side (cleanup_all_stale_ai_jobs will catch it):', e);
+        console.error('[JobSync] Failed to cancel job server-side:', e);
       }
       
-      // 2. DEPOIS notificar a UI
-      if (onGlobalStatusChange) {
-        onGlobalStatusChange('failed');
-      }
+      onGlobalStatusChangeRef.current?.('failed');
       
-      onStatusChange({
+      onStatusChangeRef.current({
         status: 'failed',
         errorMessage: 'Tempo limite de processamento excedido (10 min). Seus créditos serão estornados automaticamente.',
       });
       
-      cleanup();
+      doCleanup();
     }, ABSOLUTE_TIMEOUT_MS);
     
-    // Cleanup
+    // Cleanup on unmount/deps change
     return () => {
       clearTimeout(pollingDelayTimeout);
-      cleanup();
+      doCleanup();
     };
-  }, [enabled, jobId, toolType, tableName, processUpdate, pollJobStatus, handleVisibilityChange, cleanup]);
+  }, [enabled, jobId, toolType, tableName]); // ← Apenas dependências ESTÁVEIS
   
-  return { cleanup };
+  return { cleanup: () => cleanupRef.current() };
 }
 
 export default useJobStatusSync;
