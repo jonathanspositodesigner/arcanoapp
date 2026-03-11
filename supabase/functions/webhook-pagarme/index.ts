@@ -680,6 +680,20 @@ serve(async (req) => {
           .eq('pack_slug', product.pack_slug)
 
         console.log(`   ├─ ✅ Acesso revogado: ${product.pack_slug}`)
+
+        // Bundle: revogar packs extras
+        const REFUND_BUNDLE_EXTRA_PACKS: Record<string, string[]> = {
+          'pack4lancamento': ['pack-de-sao-joao']
+        }
+        const extraSlugs = REFUND_BUNDLE_EXTRA_PACKS[product.slug] || []
+        for (const extraSlug of extraSlugs) {
+          await supabase
+            .from('user_pack_purchases')
+            .update({ is_active: false, updated_at: new Date().toISOString() })
+            .eq('user_id', order.user_id)
+            .eq('pack_slug', extraSlug)
+          console.log(`   ├─ ✅ Bundle: acesso extra revogado: ${extraSlug}`)
+        }
       }
 
       if (order.user_id && product.type === 'credits' && product.credits_amount > 0) {
