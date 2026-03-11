@@ -813,6 +813,42 @@ const Planos2 = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Payment Method Modal for complete profiles */}
+      <Dialog open={showPaymentMethodModal} onOpenChange={setShowPaymentMethodModal}>
+        <DialogContent className="sm:max-w-md bg-[#1A0A2E] border-purple-500/30">
+          <DialogHeader className="text-center">
+            <DialogTitle className="text-xl font-bold text-center text-white">
+              Escolha a forma de pagamento
+            </DialogTitle>
+            <DialogDescription className="text-center text-purple-300">
+              Selecione como deseja pagar
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <button
+              onClick={() => handlePaymentMethodSelected('PIX')}
+              className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-purple-500/30 bg-purple-900/20 hover:border-green-400/60 hover:bg-green-900/20 transition-all duration-200 group"
+            >
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <QrCode className="w-7 h-7 text-white" />
+              </div>
+              <span className="text-white font-semibold text-sm">PIX</span>
+              <span className="text-purple-400 text-[10px]">Aprovação instantânea</span>
+            </button>
+            <button
+              onClick={() => handlePaymentMethodSelected('CREDIT_CARD')}
+              className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-purple-500/30 bg-purple-900/20 hover:border-purple-400/60 hover:bg-purple-800/30 transition-all duration-200 group"
+            >
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <CreditCard className="w-7 h-7 text-white" />
+              </div>
+              <span className="text-white font-semibold text-sm">Cartão de Crédito</span>
+              <span className="text-purple-400 text-[10px]">Aprovação instantânea</span>
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* PreCheckout Modal for credit purchases */}
       <PreCheckoutModal
         isOpen={showPreCheckout}
