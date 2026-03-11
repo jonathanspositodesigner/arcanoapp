@@ -75,6 +75,8 @@ const ForjaSelos3D = lazy(() => import("./pages/ForjaSelos3D"));
 const MudarRoupa = lazy(() => import("./pages/MudarRoupa"));
 const MudarPose = lazy(() => import("./pages/MudarPose"));
 
+const SucessoCompra = lazy(() => import("./pages/SucessoCompra"));
+
 // Artes system pages
 const UserLoginArtes = lazy(() => import("./pages/UserLoginArtes"));
 const UserLoginArtesMusicos = lazy(() => import("./pages/UserLoginArtesMusicos"));
