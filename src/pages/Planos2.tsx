@@ -116,7 +116,7 @@ const Planos2 = () => {
       && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
 
     if (isProfileComplete) {
-      // 1-click PIX flow
+      // Profile complete — open checkout with all payment options (no forced PIX)
       setPixLoading(slug);
       try {
         let utmData: Record<string, string> | null = null;
@@ -132,7 +132,6 @@ const Planos2 = () => {
             user_phone: profile.phone,
             user_name: profile.name,
             user_cpf: profile.cpf,
-            billing_type: 'PIX',
             utm_data: utmData,
             user_address: {
               line_1: profile.address_line,
@@ -145,7 +144,7 @@ const Planos2 = () => {
         });
 
         if (response.error) {
-          console.error('Erro PIX 1-clique:', response.error);
+          console.error('Erro checkout direto:', response.error);
           toast.error('Erro ao gerar pagamento. Tente novamente.');
           setPixLoading(null);
           return;
@@ -158,7 +157,7 @@ const Planos2 = () => {
           toast.error('Erro ao gerar link de pagamento.');
         }
       } catch (error) {
-        console.error('Erro PIX 1-clique:', error);
+        console.error('Erro checkout direto:', error);
         toast.error('Erro ao processar. Tente novamente.');
       }
       setPixLoading(null);
