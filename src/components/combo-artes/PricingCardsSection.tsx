@@ -143,7 +143,7 @@ export const PricingCardsSection = () => {
           </div>
 
           {/* Guarantee Card */}
-          <div className="relative rounded-3xl p-6 md:p-8 flex flex-col bg-gradient-to-br from-[#EF672C]/20 to-[#EF672C]/5 border-2 border-[#EF672C]">
+          <div className="relative rounded-3xl p-6 md:p-8 flex flex-col bg-gradient-to-br from-gray-200 to-gray-300 border-2 border-gray-300">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <span className="bg-[#EF672C] text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
                 <ShieldCheck className="w-3 h-3" />
