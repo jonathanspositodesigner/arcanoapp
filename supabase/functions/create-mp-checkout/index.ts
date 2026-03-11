@@ -17,6 +17,14 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // 🚫 CHECKOUT MERCADO PAGO DESATIVADO - Bloqueia compras de páginas cacheadas
+  return new Response(JSON.stringify({ 
+    error: 'Checkout Mercado Pago desativado temporariamente' 
+  }), {
+    status: 403,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+  })
+
   try {
     const { product_slug, user_email, utm_data } = await req.json()
 
