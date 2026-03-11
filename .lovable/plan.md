@@ -1,30 +1,23 @@
 
 
-## Plano: Desativar checkout do Mercado Pago
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-### O que será feito
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-Modificar a Edge Function `create-mp-checkout` para retornar erro imediatamente, sem processar nenhum checkout. Isso bloqueia qualquer tentativa de compra via Mercado Pago (inclusive de páginas cacheadas), sem mexer em nada do Pagar.me.
+## Dados
 
-### Alteração
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-**Arquivo: `supabase/functions/create-mp-checkout/index.ts`**
+## Ações (via SQL migration)
 
-Adicionar um retorno imediato de erro 403 logo após o CORS check, antes de qualquer processamento:
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-```typescript
-// Logo após o OPTIONS check:
-return new Response(JSON.stringify({ 
-  error: 'Checkout Mercado Pago desativado temporariamente' 
-}), {
-  status: 403,
-  headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-})
-```
-
-Isso garante que:
-- Nenhum checkout MP é criado
-- Nenhuma ordem é inserida no banco
-- O webhook do MP (`webhook-mercadopago`) continua intacto para processar pagamentos já em andamento
-- Nada do Pagar.me é tocado
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
