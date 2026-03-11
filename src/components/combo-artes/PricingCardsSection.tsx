@@ -167,47 +167,39 @@ export const PricingCardsSection = () => {
               />
             </div>
 
-            <div className="flex-grow space-y-4 mb-8">
-              <p className="text-gray-300 text-sm leading-relaxed text-center">
-                Você tem <span className="font-bold text-white">7 dias de garantia incondicional</span>
+            <div className="flex-grow space-y-4">
+              <p className="text-gray-700 text-sm leading-relaxed text-center">
+                Você tem <span className="font-bold text-gray-900">7 dias de garantia incondicional</span>
               </p>
               
-              <p className="text-gray-400 text-sm leading-relaxed text-center">
+              <p className="text-gray-600 text-sm leading-relaxed text-center">
                 Garantimos sua segurança com a Greenn, uma plataforma de pagamento altamente segura.
               </p>
               
-              <p className="text-gray-400 text-sm leading-relaxed text-center">
-                Você também conta com <span className="font-semibold text-gray-300">7 dias de garantia para reembolso</span>
+              <p className="text-gray-600 text-sm leading-relaxed text-center">
+                Você também conta com <span className="font-semibold text-gray-700">7 dias de garantia para reembolso</span>
               </p>
 
               <div className="flex justify-center gap-6 pt-4">
                 <div className="flex flex-col items-center gap-1">
-                  <ShieldCheck className="w-6 h-6 text-[#EF672C]" />
-                  <p className="text-[10px] font-bold text-gray-300">Compra</p>
-                  <p className="text-[10px] text-gray-400">Segura</p>
+                  <ShieldCheck className="w-6 h-6 text-gray-600" />
+                  <p className="text-[10px] font-bold text-gray-700">Compra</p>
+                  <p className="text-[10px] text-gray-500">Segura</p>
                 </div>
                 
                 <div className="flex flex-col items-center gap-1">
-                  <Award className="w-6 h-6 text-[#EF672C]" />
-                  <p className="text-[10px] font-bold text-gray-300">Satisfação</p>
-                  <p className="text-[10px] text-gray-400">Garantida</p>
+                  <Award className="w-6 h-6 text-gray-600" />
+                  <p className="text-[10px] font-bold text-gray-700">Satisfação</p>
+                  <p className="text-[10px] text-gray-500">Garantida</p>
                 </div>
                 
                 <div className="flex flex-col items-center gap-1">
-                  <Lock className="w-6 h-6 text-[#EF672C]" />
-                  <p className="text-[10px] font-bold text-gray-300">Privacidade</p>
-                  <p className="text-[10px] text-gray-400">Protegida</p>
+                  <Lock className="w-6 h-6 text-gray-600" />
+                  <p className="text-[10px] font-bold text-gray-700">Privacidade</p>
+                  <p className="text-[10px] text-gray-500">Protegida</p>
                 </div>
               </div>
             </div>
-
-            <button
-              onClick={() => handlePurchase(plan.checkoutUrl)}
-              className="w-full font-bold text-lg py-4 rounded-xl transition-all duration-300 bg-green-500 hover:bg-green-600 text-white shadow-lg shadow-green-500/30 hover:scale-105 flex items-center justify-center gap-2"
-            >
-              <Lock className="w-5 h-5" />
-              COMPRAR COM SEGURANÇA
-            </button>
           </div>
         </div>
 
