@@ -492,7 +492,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     <CreditCard className="h-6 w-6" />
                     <span className="text-sm font-medium">Cartão</span>
                     {paymentMethod === 'CREDIT_CARD' && (
-                      <span className="text-[10px] text-fuchsia-300">Até 3x sem juros</span>
+                      <span className={`text-[10px] ${accentTextLight}`}>Até 3x sem juros</span>
                     )}
                   </button>
                 </div>
