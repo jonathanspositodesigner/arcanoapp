@@ -15,7 +15,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { JobDebugPanel, DownloadProgressOverlay, NotificationPromptToast, ImageCompressionModal } from '@/components/ai-tools';
-import { optimizeForAI, MAX_AI_DIMENSION } from '@/hooks/useImageOptimizer';
+import { optimizeForAI, getImageDimensions, MAX_AI_DIMENSION } from '@/hooks/useImageOptimizer';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
