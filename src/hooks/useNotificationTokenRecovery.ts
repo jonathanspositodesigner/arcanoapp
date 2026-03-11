@@ -12,9 +12,22 @@ interface JobRecoveryResult {
   clothingImageUrl?: string | null;
 }
 
+type SupportedToolTable = 'upscaler_jobs' | 'pose_changer_jobs' | 'veste_ai_jobs' | 'video_upscaler_jobs' | 'arcano_cloner_jobs' | 'flyer_maker_jobs' | 'bg_remover_jobs';
+
+// Central map: table -> select columns (avoids forgetting new tools)
+const TABLE_SELECT_MAP: Record<SupportedToolTable, string> = {
+  upscaler_jobs: 'id, status, input_url, output_url, user_id',
+  pose_changer_jobs: 'id, status, person_image_url, reference_image_url, output_url, user_id',
+  veste_ai_jobs: 'id, status, person_image_url, clothing_image_url, output_url, user_id',
+  video_upscaler_jobs: 'id, status, input_url, output_url, user_id',
+  arcano_cloner_jobs: 'id, status, user_image_url, reference_image_url, output_url, user_id',
+  flyer_maker_jobs: 'id, status, reference_image_url, output_url, user_id',
+  bg_remover_jobs: 'id, status, input_url, output_url, user_id',
+};
+
 interface UseNotificationTokenRecoveryProps {
   userId: string | null | undefined;
-  toolTable: 'upscaler_jobs' | 'pose_changer_jobs' | 'veste_ai_jobs' | 'video_upscaler_jobs' | 'arcano_cloner_jobs' | 'flyer_maker_jobs' | 'bg_remover_jobs';
+  toolTable: SupportedToolTable;
   onRecovery: (result: JobRecoveryResult) => void;
 }
 
