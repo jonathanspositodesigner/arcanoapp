@@ -12,9 +12,22 @@ interface JobRecoveryResult {
   clothingImageUrl?: string | null;
 }
 
+type SupportedToolTable = 'upscaler_jobs' | 'pose_changer_jobs' | 'veste_ai_jobs' | 'video_upscaler_jobs' | 'arcano_cloner_jobs' | 'flyer_maker_jobs' | 'bg_remover_jobs';
+
+// Central map: table -> select columns (avoids forgetting new tools)
+const TABLE_SELECT_MAP: Record<SupportedToolTable, string> = {
+  upscaler_jobs: 'id, status, input_url, output_url, user_id',
+  pose_changer_jobs: 'id, status, person_image_url, reference_image_url, output_url, user_id',
+  veste_ai_jobs: 'id, status, person_image_url, clothing_image_url, output_url, user_id',
+  video_upscaler_jobs: 'id, status, input_url, output_url, user_id',
+  arcano_cloner_jobs: 'id, status, user_image_url, reference_image_url, output_url, user_id',
+  flyer_maker_jobs: 'id, status, reference_image_url, output_url, user_id',
+  bg_remover_jobs: 'id, status, input_url, output_url, user_id',
+};
+
 interface UseNotificationTokenRecoveryProps {
   userId: string | null | undefined;
-  toolTable: 'upscaler_jobs' | 'pose_changer_jobs' | 'veste_ai_jobs' | 'video_upscaler_jobs' | 'arcano_cloner_jobs' | 'flyer_maker_jobs' | 'bg_remover_jobs';
+  toolTable: SupportedToolTable;
   onRecovery: (result: JobRecoveryResult) => void;
 }
 
@@ -79,45 +92,14 @@ export function useNotificationTokenRecovery({
           return;
         }
 
-        // Buscar dados do job baseado na tabela
-        let job: any = null;
-        
-        if (toolTable === 'upscaler_jobs') {
-          const { data: upscalerJob } = await supabase
-            .from('upscaler_jobs')
-            .select('id, status, input_url, output_url, user_id')
-            .eq('id', jobId)
-            .maybeSingle();
-          job = upscalerJob;
-        } else if (toolTable === 'pose_changer_jobs') {
-          const { data: poseJob } = await supabase
-            .from('pose_changer_jobs')
-            .select('id, status, person_image_url, reference_image_url, output_url, user_id')
-            .eq('id', jobId)
-            .maybeSingle();
-          job = poseJob;
-        } else if (toolTable === 'veste_ai_jobs') {
-          const { data: vesteJob } = await supabase
-            .from('veste_ai_jobs')
-            .select('id, status, person_image_url, clothing_image_url, output_url, user_id')
-            .eq('id', jobId)
-            .maybeSingle();
-          job = vesteJob;
-        } else if (toolTable === 'video_upscaler_jobs') {
-          const { data: videoJob } = await supabase
-            .from('video_upscaler_jobs')
-            .select('id, status, input_url, output_url, user_id')
-            .eq('id', jobId)
-            .maybeSingle();
-          job = videoJob;
-        } else if (toolTable === 'arcano_cloner_jobs') {
-          const { data: clonerJob } = await supabase
-            .from('arcano_cloner_jobs')
-            .select('id, status, user_image_url, reference_image_url, output_url, user_id')
-            .eq('id', jobId)
-            .maybeSingle();
-          job = clonerJob;
-        }
+        // Buscar dados do job usando mapa centralizado
+        const selectColumns = TABLE_SELECT_MAP[toolTable];
+        const { data: jobRaw } = await supabase
+          .from(toolTable as any)
+          .select(selectColumns)
+          .eq('id', jobId)
+          .maybeSingle();
+        const job = jobRaw as any;
 
         if (!job) {
           console.log('[TokenRecovery] Job not found:', jobId);
