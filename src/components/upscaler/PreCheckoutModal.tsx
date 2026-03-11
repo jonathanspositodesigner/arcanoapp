@@ -427,7 +427,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     placeholder="Digite novamente seu email"
                     value={emailConfirm}
                     onChange={(e) => { setEmailConfirm(e.target.value); setEmailConfirmError(''); }}
-                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
+                    className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                   />
                   {emailConfirmError && <p className="text-red-400 text-xs mt-1">{emailConfirmError}</p>}
                 </div>
@@ -442,7 +442,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   placeholder="(11) 99999-9999"
                   value={phone}
                   onChange={(e) => { setPhone(formatPhone(e.target.value)); setPhoneError(''); }}
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
+                  className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                 />
                 {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
               </div>
