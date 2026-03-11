@@ -94,11 +94,12 @@ export function useNotificationTokenRecovery({
 
         // Buscar dados do job usando mapa centralizado
         const selectColumns = TABLE_SELECT_MAP[toolTable];
-        const { data: job } = await supabase
+        const { data: jobRaw } = await supabase
           .from(toolTable as any)
           .select(selectColumns)
           .eq('id', jobId)
           .maybeSingle();
+        const job = jobRaw as any;
 
         if (!job) {
           console.log('[TokenRecovery] Job not found:', jobId);
