@@ -308,7 +308,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   onClick={() => setSelectedCardId(card.id)}
                   className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                     selectedCardId === card.id
-                      ? 'border-fuchsia-500 bg-fuchsia-500/10'
+                      ? `${accentBorder} ${accentBg}`
                       : 'border-white/15 bg-white/5 hover:border-white/30'
                   }`}
                 >
