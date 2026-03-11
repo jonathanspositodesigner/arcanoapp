@@ -80,6 +80,7 @@ const TOOL_FILTERS = [
   { value: "Gerar Imagem", label: "Gerar Imagem" },
   { value: "Gerar Vídeo", label: "Gerar Vídeo" },
   { value: "Flyer Maker", label: "Flyer Maker" },
+  { value: "Remover Fundo", label: "Remover Fundo" },
 ];
 
 const AdminAIToolsUsageTab = () => {
