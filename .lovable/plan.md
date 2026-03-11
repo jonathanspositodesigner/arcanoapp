@@ -1,27 +1,23 @@
 
 
-## Plano: Customizar cores e título do modal PreCheckout na página Pack 4
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-### Problema
-O `PreCheckoutModal` usa cores fuchsia/roxo (identidade visual do Upscaler), mas na página de pré-venda do Pack 4 a identidade visual é laranja (#EF672C). O título também precisa mudar de "Finalizar Compra" para "Já é quase seu!".
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-### Abordagem
-Adicionar props opcionais ao `PreCheckoutModal` para permitir customização de cores e título sem afetar os outros usos do componente.
+## Dados
 
-### Mudanças
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-**1. `src/components/upscaler/PreCheckoutModal.tsx`**
-- Adicionar props `modalTitle?: string` e `colorScheme?: 'fuchsia' | 'orange'`
-- Quando `colorScheme === 'orange'`, trocar todas as referências de cor:
-  - `fuchsia-500` → `[#EF672C]`
-  - `fuchsia-400` → `[#EF672C]`
-  - `purple-600` → `[#f65928]`
-  - `from-[#1a0f25] to-[#150a1a]` → `from-[#1a0a0a] to-[#150a05]`
-  - Border: `fuchsia-500/30` → `[#EF672C]/30`
-- Trocar o título "Finalizar Compra" pelo valor de `modalTitle` (default: `Finalizar Compra`)
-- O span colorido no título usará a cor do scheme
+## Ações (via SQL migration)
 
-**2. `src/components/combo-artes/PricingCardsSection.tsx`**
-- Passar `modalTitle="Já é quase seu!"` e `colorScheme="orange"` ao `PreCheckoutModal`
-- Passar as mesmas props ao modal de método de pagamento (já está com cores corretas nesse componente)
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 

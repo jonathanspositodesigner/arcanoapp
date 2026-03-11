@@ -8,6 +8,8 @@ interface PreCheckoutModalProps {
   userEmail?: string | null;
   userId?: string | null;
   productSlug?: string;
+  modalTitle?: string;
+  colorScheme?: 'fuchsia' | 'orange';
 }
 
 interface SavedCard {
@@ -40,7 +42,20 @@ const formatCpf = (value: string) => {
   return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
 };
 
-const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'upscaller-arcano-vitalicio' }: PreCheckoutModalProps) => {
+const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'upscaller-arcano-vitalicio', modalTitle, colorScheme = 'fuchsia' }: PreCheckoutModalProps) => {
+  const isOrange = colorScheme === 'orange';
+  const accentBorder = isOrange ? 'border-[#EF672C]' : 'border-fuchsia-500';
+  const accentBorderLight = isOrange ? 'border-[#EF672C]/30' : 'border-fuchsia-500/30';
+  const accentBg = isOrange ? 'bg-[#EF672C]/10' : 'bg-fuchsia-500/10';
+  const accentText = isOrange ? 'text-[#EF672C]' : 'text-fuchsia-400';
+  const accentTextLight = isOrange ? 'text-[#EF672C]/80' : 'text-fuchsia-300';
+  const btnGradient = isOrange ? 'from-[#EF672C] to-[#f65928]' : 'from-fuchsia-500 to-purple-600';
+  const btnGradientHover = isOrange ? 'hover:from-[#d55a24] hover:to-[#e04e1f]' : 'hover:from-fuchsia-600 hover:to-purple-700';
+  const btnShadow = isOrange ? 'shadow-[#EF672C]/25' : 'shadow-fuchsia-500/25';
+  const modalBg = isOrange ? 'from-[#1a0a0a] to-[#150a05]' : 'from-[#1a0f25] to-[#150a1a]';
+  const modalShadow = isOrange ? 'shadow-[#EF672C]/10' : 'shadow-fuchsia-500/10';
+  const focusBorder = isOrange ? 'focus:border-[#EF672C]/50 focus:ring-[#EF672C]/20' : 'focus:border-fuchsia-500/50 focus:ring-fuchsia-500/20';
+  const titleText = modalTitle || 'Finalizar Compra';
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [emailConfirm, setEmailConfirm] = useState('');
@@ -262,7 +277,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="relative w-full max-w-md bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border border-fuchsia-500/30 rounded-3xl p-6 md:p-8 shadow-2xl shadow-fuchsia-500/10 max-h-[90vh] overflow-y-auto"
+        className={`relative w-full max-w-md bg-gradient-to-br ${modalBg} border ${accentBorderLight} rounded-3xl p-6 md:p-8 shadow-2xl ${modalShadow} max-h-[90vh] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close */}
@@ -272,7 +287,11 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
         {/* Title */}
         <h3 className="font-bebas text-2xl md:text-3xl text-white text-center mb-1 tracking-wide">
-          Finalizar <span className="text-fuchsia-400">Compra</span>
+          {titleText.includes(' ') ? (
+            <>{titleText.split(' ').slice(0, -1).join(' ')} <span className={accentText}>{titleText.split(' ').slice(-1)}</span></>
+          ) : (
+            <span className={accentText}>{titleText}</span>
+          )}
         </h3>
         <p className="text-white/50 text-sm text-center mb-6">
           {showOneClick ? 'Compre de forma rápida e segura' : 'Preencha seus dados para continuar'}
@@ -289,12 +308,12 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   onClick={() => setSelectedCardId(card.id)}
                   className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                     selectedCardId === card.id
-                      ? 'border-fuchsia-500 bg-fuchsia-500/10'
+                      ? `${accentBorder} ${accentBg}`
                       : 'border-white/15 bg-white/5 hover:border-white/30'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <CreditCard className="h-5 w-5 text-fuchsia-400" />
+                    <CreditCard className={`h-5 w-5 ${accentText}`} />
                     <div>
                       <span className="text-white text-sm font-medium">
                         •••• {card.card_last_four}
@@ -306,7 +325,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   </div>
                   <div className="flex items-center gap-2">
                     {selectedCardId === card.id && (
-                      <span className="text-fuchsia-400 text-xs">✓</span>
+                      <span className={`${accentText} text-xs`}>✓</span>
                     )}
                     <button
                       onClick={(e) => { e.stopPropagation(); handleRemoveCard(card.id); }}
@@ -324,7 +343,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
             <button
               onClick={handleOneClickBuy}
               disabled={oneClickLoading || !selectedCardId}
-              className="w-full mt-4 py-4 text-base font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-xl shadow-fuchsia-500/25 transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2"
+              className={`w-full mt-4 py-4 text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
             >
               {oneClickLoading ? (
                 'Processando...'
@@ -365,7 +384,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
             {hasSavedCards && showFullForm && (
               <button
                 onClick={() => setShowFullForm(false)}
-                className="text-fuchsia-400 text-sm mb-4 hover:underline"
+                className={`${accentText} text-sm mb-4 hover:underline`}
               >
                 ← Voltar para compra rápida
               </button>
@@ -380,7 +399,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   placeholder="Seu nome completo"
                   value={name}
                   onChange={(e) => { setName(e.target.value); setNameError(''); }}
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
+                  className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                 />
                 {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
               </div>
@@ -394,7 +413,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   value={email}
                   onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
                   disabled={!!userEmail}
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                  className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed`}
                 />
                 {emailError && <p className="text-red-400 text-xs mt-1">{emailError}</p>}
               </div>
@@ -408,7 +427,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     placeholder="Digite novamente seu email"
                     value={emailConfirm}
                     onChange={(e) => { setEmailConfirm(e.target.value); setEmailConfirmError(''); }}
-                    className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
+                    className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                   />
                   {emailConfirmError && <p className="text-red-400 text-xs mt-1">{emailConfirmError}</p>}
                 </div>
@@ -423,7 +442,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   placeholder="(11) 99999-9999"
                   value={phone}
                   onChange={(e) => { setPhone(formatPhone(e.target.value)); setPhoneError(''); }}
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
+                  className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                 />
                 {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
               </div>
@@ -437,7 +456,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   placeholder="000.000.000-00"
                   value={cpf}
                   onChange={(e) => { setCpf(formatCpf(e.target.value)); setCpfError(''); }}
-                  className="w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:border-fuchsia-500/50 focus:ring-2 focus:ring-fuchsia-500/20 transition-all"
+                  className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                 />
                 {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
               </div>
@@ -451,14 +470,14 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     onClick={() => setPaymentMethod('PIX')}
                     className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
                       paymentMethod === 'PIX'
-                        ? 'border-fuchsia-500 bg-fuchsia-500/10 text-white'
+                        ? `${accentBorder} ${accentBg} text-white`
                         : 'border-white/15 bg-white/5 text-white/60 hover:border-white/30'
                     }`}
                   >
                     <QrCode className="h-6 w-6" />
                     <span className="text-sm font-medium">PIX</span>
                     {paymentMethod === 'PIX' && (
-                      <span className="text-[10px] text-fuchsia-300">Aprovação instantânea</span>
+                      <span className={`text-[10px] ${accentTextLight}`}>Aprovação instantânea</span>
                     )}
                   </button>
                   <button
@@ -466,14 +485,14 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     onClick={() => setPaymentMethod('CREDIT_CARD')}
                     className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
                       paymentMethod === 'CREDIT_CARD'
-                        ? 'border-fuchsia-500 bg-fuchsia-500/10 text-white'
+                        ? `${accentBorder} ${accentBg} text-white`
                         : 'border-white/15 bg-white/5 text-white/60 hover:border-white/30'
                     }`}
                   >
                     <CreditCard className="h-6 w-6" />
                     <span className="text-sm font-medium">Cartão</span>
                     {paymentMethod === 'CREDIT_CARD' && (
-                      <span className="text-[10px] text-fuchsia-300">Até 3x sem juros</span>
+                      <span className={`text-[10px] ${accentTextLight}`}>Até 3x sem juros</span>
                     )}
                   </button>
                 </div>
@@ -484,7 +503,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full mt-6 py-4 text-base font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-xl shadow-fuchsia-500/25 transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2"
+              className={`w-full mt-6 py-4 text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
             >
               {loading ? 'Gerando checkout...' : 'Finalizar e Pagar'}
               {!loading && <ArrowRight className="h-5 w-5" />}
