@@ -86,7 +86,7 @@ export const PricingCardsSection = () => {
         </p>
         
         {/* Two cards side by side */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6 max-w-4xl mx-auto items-stretch">
           {/* Pricing Card */}
           <div className="relative rounded-3xl p-6 md:p-8 flex flex-col bg-gradient-to-br from-[#EF672C]/20 to-[#EF672C]/5 border-2 border-[#EF672C]">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
