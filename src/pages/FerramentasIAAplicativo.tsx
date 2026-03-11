@@ -146,6 +146,9 @@ const FerramentasIAAplicativo = () => {
     if (slug === "flyer-maker") {
       return "/flyer-maker";
     }
+    if (slug === "remover-fundo") {
+      return "/remover-fundo";
+    }
     return `/ferramenta-ia-artes/${slug}`;
   };
 
