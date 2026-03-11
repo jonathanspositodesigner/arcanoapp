@@ -144,6 +144,7 @@ const TesteGratis = lazy(() => import("./pages/TesteGratis"));
 const GerarImagemTool = lazy(() => import("./pages/GerarImagemTool"));
 const GerarVideoTool = lazy(() => import("./pages/GerarVideoTool"));
 const FlyerMakerTool = lazy(() => import("./pages/FlyerMakerTool"));
+const RemoverFundoTool = lazy(() => import("./pages/RemoverFundoTool"));
 const PlanosArcanoCloner = lazy(() => import("./pages/PlanosArcanoCloner"));
 const ObrigadoArcanoCloner = lazy(() => import("./pages/ObrigadoArcanoCloner"));
 const ArcanoClonerTeste = lazy(() => import("./pages/ArcanoClonerTeste"));
