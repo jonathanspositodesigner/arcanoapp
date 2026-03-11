@@ -54,6 +54,9 @@ const RemoverFundoTool: React.FC = () => {
   const [pendingWidth, setPendingWidth] = useState(0);
   const [pendingHeight, setPendingHeight] = useState(0);
 
+  // Cached image dimensions from processFile
+  const [imageDims, setImageDims] = useState<{ width: number; height: number } | null>(null);
+
   // UI states
   const [status, setStatus] = useState<ProcessingStatus>('idle');
   const [progress, setProgress] = useState(0);
