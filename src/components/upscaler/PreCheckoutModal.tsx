@@ -313,7 +313,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <CreditCard className="h-5 w-5 text-fuchsia-400" />
+                    <CreditCard className={`h-5 w-5 ${accentText}`} />
                     <div>
                       <span className="text-white text-sm font-medium">
                         •••• {card.card_last_four}
