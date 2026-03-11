@@ -76,7 +76,7 @@ export const FlyersGallerySection = () => {
         <div className="flex justify-center mt-8">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-2 px-8 py-3 rounded-full bg-primary text-primary-foreground font-semibold text-lg hover:bg-primary/90 transition-colors"
+            className="flex items-center gap-2 px-8 py-3 rounded-full bg-[#EF672C] text-white font-semibold text-lg hover:bg-[#d55a24] transition-colors"
           >
             {isExpanded ? "Ver menos" : "Ver mais"}
             {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
