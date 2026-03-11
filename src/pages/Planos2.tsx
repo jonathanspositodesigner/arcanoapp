@@ -869,6 +869,7 @@ const Planos2 = () => {
           setShowSignupModal(false);
           window.location.reload();
         }}
+        startAtSignup
       />
     </div>
   );

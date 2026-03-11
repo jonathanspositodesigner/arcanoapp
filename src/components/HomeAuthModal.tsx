@@ -12,9 +12,10 @@ interface HomeAuthModalProps {
   onAuthSuccess: () => void;
   onSignupStart?: () => void;
   onSignupEnd?: () => void;
+  startAtSignup?: boolean;
 }
 
-const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEnd }: HomeAuthModalProps) => {
+const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEnd, startAtSignup }: HomeAuthModalProps) => {
   const { t: tAuth } = useTranslation('auth');
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [signupSuccessEmail, setSignupSuccessEmail] = useState("");
@@ -29,6 +30,12 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
       }
     }
   }, [open]);
+
+  useEffect(() => {
+    if (open && startAtSignup) {
+      auth.goToSignup();
+    }
+  }, [open, startAtSignup]);
 
   const auth = useUnifiedAuth({
     changePasswordRoute: '/change-password',
