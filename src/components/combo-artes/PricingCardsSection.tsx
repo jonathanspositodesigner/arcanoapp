@@ -169,6 +169,7 @@ export const PricingCardsSection = () => {
       toast.error('Erro ao processar. Tente novamente.');
     }
     setIsLoading(false);
+    endSubmit();
   };
 
   return (
