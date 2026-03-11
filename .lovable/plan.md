@@ -1,23 +1,80 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Otimizações de velocidade para Remover Fundo
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+### Fluxo atual e gargalos
 
-## Dados
+```text
+CLIENTE (bloqueante):
+  [0.5s] getImageDimensions ← REDUNDANTE (já feito no processFile)
+  [2-3s] uploadToStorage (Supabase) ← GARGALO PRINCIPAL
+  [0.5s] insert job record
+  [0.5s] invoke edge function
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+EDGE FUNCTION (bloqueante):
+  [1-2s] download imagem do Supabase ← REDUNDANTE (acabou de subir)
+  [2-3s] upload para RunningHub
+  [0.5s] consume credits
+  [1s]   check queue (síncrono)
+  [1s]   start AI app
 
-## Ações (via SQL migration)
+RUNNINGHUB: [5s]
+WEBHOOK → REALTIME: [2s]
+```
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+### 4 otimizações sem quebrar nada
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+#### 1. Cachear dimensões do `processFile` (ganho: ~0.5s)
+As dimensões já são calculadas em `processFile` (linhas 169-192) mas não são salvas. No `handleProcess` (linha 245), `getImageDimensions` carrega a imagem de novo. Solução: guardar width/height em state quando a imagem é selecionada e reusar no `handleProcess`.
+
+**Arquivo**: `src/pages/RemoverFundoTool.tsx`
+
+#### 2. Enviar base64 direto para a edge function (ganho: ~3-5s)
+Maior otimização. Em vez de: Client → Storage → Edge → Download → RunningHub, fazer: Client converte para base64 → Edge recebe → Upload direto para RunningHub. O upload para Storage (para histórico na página de custos) é feito em background pela edge function após iniciar o job.
+
+**Arquivos**: `src/pages/RemoverFundoTool.tsx` + `supabase/functions/runninghub-bg-remover/index.ts`
+
+Mudanças no client:
+- Converter `fileToUpload` para base64
+- Enviar `imageBase64` + `fileName` no body do `/run` em vez de `inputImageUrl`
+- Não chamar `uploadToStorage` no caminho crítico
+
+Mudanças na edge function `handleRun`:
+- Aceitar `imageBase64` + `fileName` como alternativa a `inputImageUrl`
+- Se base64 fornecido: fazer upload direto para RunningHub (já existe lógica no `handleUpload`)
+- Remover validação de URL obrigatória quando base64 está presente
+- Fazer upload para Supabase Storage em background (para manter `input_url` no registro do job)
+
+#### 3. Queue check em paralelo com upload RunningHub (ganho: ~1s)
+Na edge function, o queue check (linhas 222-234) e o upload para RunningHub são sequenciais. Podem rodar em `Promise.all` pois são independentes.
+
+**Arquivo**: `supabase/functions/runninghub-bg-remover/index.ts`
+
+#### 4. Criar job record em paralelo com conversão base64 (ganho: ~0.3s)
+No client, o job record pode ser inserido sem `input_url` (preenchido depois pela edge function em background), permitindo que a conversão base64 e o insert rodem em paralelo.
+
+**Arquivo**: `src/pages/RemoverFundoTool.tsx`
+
+### Resultado esperado
+
+```text
+ANTES:  ~23 segundos
+DEPOIS: ~12-14 segundos
+
+Detalhamento da economia:
+  Dimensões cacheadas:              -0.5s
+  Elimina storage upload (cliente): -2.5s
+  Elimina download storage (edge):  -1.5s  
+  Queue check em paralelo:          -1.0s
+  Job insert em paralelo:           -0.3s
+  Total economia:                   ~5-6s
+```
+
+### O que NÃO muda
+- Upload para Storage continua existindo (feito em background pela edge function para manter histórico)
+- Rate limiting inalterado
+- Consumo de créditos inalterado
+- Webhook/realtime inalterado
+- Validação de imagem inalterada
+- Todas as outras ferramentas de IA inalteradas
 
