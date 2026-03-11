@@ -233,6 +233,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
   const handleSubmit = async () => {
     if (!validate()) return;
+    if (!startFormSubmit()) return;
 
     setLoading(true);
     try {
