@@ -110,32 +110,37 @@ const Planos2 = () => {
   };
 
   const handleCreditPurchase = async (slug: string) => {
+    if (!startCheckout()) return;
+    
     if (!userId) {
-      // Not logged in — open PreCheckoutModal
       setSelectedCreditSlug(slug);
       setShowPreCheckout(true);
+      endCheckout();
       return;
     }
 
-    // Check if profile is complete
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
+        .eq('id', userId)
+        .single();
 
-    const isProfileComplete = profile?.name && profile?.phone && profile?.cpf 
-      && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
+      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf 
+        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
 
-    if (isProfileComplete) {
-      // Profile complete — show payment method modal
-      setPendingSlug(slug);
-      setPendingProfile(profile);
-      setShowPaymentMethodModal(true);
-    } else {
-      // Profile incomplete — open PreCheckoutModal
-      setSelectedCreditSlug(slug);
-      setShowPreCheckout(true);
+      if (isProfileComplete) {
+        setPendingSlug(slug);
+        setPendingProfile(profile);
+        setShowPaymentMethodModal(true);
+        endCheckout();
+      } else {
+        setSelectedCreditSlug(slug);
+        setShowPreCheckout(true);
+        endCheckout();
+      }
+    } catch {
+      endCheckout();
     }
   };
 
