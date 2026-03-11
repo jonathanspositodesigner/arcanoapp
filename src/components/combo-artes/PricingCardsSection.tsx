@@ -117,6 +117,7 @@ export const PricingCardsSection = () => {
 
   const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
     if (!pendingProfile) return;
+    if (!startSubmit()) return;
 
     setShowPaymentMethodModal(false);
     setIsLoading(true);
