@@ -197,6 +197,7 @@ const Planos2 = () => {
       console.error('Erro checkout direto:', error);
       toast.error('Erro ao processar. Tente novamente.');
     }
+    endCheckout();
     setPixLoading(null);
   };
 
