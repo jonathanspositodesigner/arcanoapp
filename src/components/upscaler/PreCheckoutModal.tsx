@@ -470,7 +470,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     onClick={() => setPaymentMethod('PIX')}
                     className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
                       paymentMethod === 'PIX'
-                        ? 'border-fuchsia-500 bg-fuchsia-500/10 text-white'
+                        ? `${accentBorder} ${accentBg} text-white`
                         : 'border-white/15 bg-white/5 text-white/60 hover:border-white/30'
                     }`}
                   >
