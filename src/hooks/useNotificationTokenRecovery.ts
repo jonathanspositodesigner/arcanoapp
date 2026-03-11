@@ -92,45 +92,13 @@ export function useNotificationTokenRecovery({
           return;
         }
 
-        // Buscar dados do job baseado na tabela
-        let job: any = null;
-        
-        if (toolTable === 'upscaler_jobs') {
-          const { data: upscalerJob } = await supabase
-            .from('upscaler_jobs')
-            .select('id, status, input_url, output_url, user_id')
-            .eq('id', jobId)
-            .maybeSingle();
-          job = upscalerJob;
-        } else if (toolTable === 'pose_changer_jobs') {
-          const { data: poseJob } = await supabase
-            .from('pose_changer_jobs')
-            .select('id, status, person_image_url, reference_image_url, output_url, user_id')
-            .eq('id', jobId)
-            .maybeSingle();
-          job = poseJob;
-        } else if (toolTable === 'veste_ai_jobs') {
-          const { data: vesteJob } = await supabase
-            .from('veste_ai_jobs')
-            .select('id, status, person_image_url, clothing_image_url, output_url, user_id')
-            .eq('id', jobId)
-            .maybeSingle();
-          job = vesteJob;
-        } else if (toolTable === 'video_upscaler_jobs') {
-          const { data: videoJob } = await supabase
-            .from('video_upscaler_jobs')
-            .select('id, status, input_url, output_url, user_id')
-            .eq('id', jobId)
-            .maybeSingle();
-          job = videoJob;
-        } else if (toolTable === 'arcano_cloner_jobs') {
-          const { data: clonerJob } = await supabase
-            .from('arcano_cloner_jobs')
-            .select('id, status, user_image_url, reference_image_url, output_url, user_id')
-            .eq('id', jobId)
-            .maybeSingle();
-          job = clonerJob;
-        }
+        // Buscar dados do job usando mapa centralizado
+        const selectColumns = TABLE_SELECT_MAP[toolTable];
+        const { data: job } = await supabase
+          .from(toolTable as any)
+          .select(selectColumns)
+          .eq('id', jobId)
+          .maybeSingle();
 
         if (!job) {
           console.log('[TokenRecovery] Job not found:', jobId);
