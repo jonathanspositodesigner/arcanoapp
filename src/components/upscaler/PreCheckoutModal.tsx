@@ -390,30 +390,30 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
               </button>
             )}
 
-            <div className="space-y-4">
+            <div className="space-y-2.5 md:space-y-4">
               {/* Nome */}
               <div>
-                <label className="text-white/70 text-sm mb-1.5 block">Nome completo</label>
+                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Nome completo</label>
                 <input
                   type="text"
                   placeholder="Seu nome completo"
                   value={name}
                   onChange={(e) => { setName(e.target.value); setNameError(''); }}
-                  className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                 />
                 {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
               </div>
 
               {/* Email */}
               <div>
-                <label className="text-white/70 text-sm mb-1.5 block">Email</label>
+                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Email</label>
                 <input
                   type="email"
                   placeholder="seu@email.com"
                   value={email}
                   onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
                   disabled={!!userEmail}
-                  className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed`}
+                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed`}
                 />
                 {emailError && <p className="text-red-400 text-xs mt-1">{emailError}</p>}
               </div>
@@ -421,13 +421,13 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
               {/* Email Confirm */}
               {!userEmail && (
                 <div>
-                  <label className="text-white/70 text-sm mb-1.5 block">Confirme seu email</label>
+                  <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Confirme seu email</label>
                   <input
                     type="email"
                     placeholder="Digite novamente seu email"
                     value={emailConfirm}
                     onChange={(e) => { setEmailConfirm(e.target.value); setEmailConfirmError(''); }}
-                    className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                   />
                   {emailConfirmError && <p className="text-red-400 text-xs mt-1">{emailConfirmError}</p>}
                 </div>
@@ -435,47 +435,47 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
               {/* Celular */}
               <div>
-                <label className="text-white/70 text-sm mb-1.5 block">Celular (com DDD)</label>
+                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Celular (com DDD)</label>
                 <input
                   type="tel"
                   inputMode="numeric"
                   placeholder="(11) 99999-9999"
                   value={phone}
                   onChange={(e) => { setPhone(formatPhone(e.target.value)); setPhoneError(''); }}
-                  className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                 />
                 {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
               </div>
 
               {/* CPF */}
               <div>
-                <label className="text-white/70 text-sm mb-1.5 block">CPF</label>
+                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">CPF</label>
                 <input
                   type="tel"
                   inputMode="numeric"
                   placeholder="000.000.000-00"
                   value={cpf}
                   onChange={(e) => { setCpf(formatCpf(e.target.value)); setCpfError(''); }}
-                  className={`w-full px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                 />
                 {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
               </div>
 
               {/* Payment Method */}
               <div>
-                <label className="text-white/70 text-sm mb-2 block">Forma de pagamento</label>
-                <div className="grid grid-cols-2 gap-3">
+                <label className="text-white/70 text-xs md:text-sm mb-1.5 md:mb-2 block">Forma de pagamento</label>
+                <div className="grid grid-cols-2 gap-2 md:gap-3">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('PIX')}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
+                    className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 ${
                       paymentMethod === 'PIX'
                         ? `${accentBorder} ${accentBg} text-white`
                         : 'border-white/15 bg-white/5 text-white/60 hover:border-white/30'
                     }`}
                   >
-                    <QrCode className="h-6 w-6" />
-                    <span className="text-sm font-medium">PIX</span>
+                    <QrCode className="h-5 w-5 md:h-6 md:w-6" />
+                    <span className="text-xs md:text-sm font-medium">PIX</span>
                     {paymentMethod === 'PIX' && (
                       <span className={`text-[10px] ${accentTextLight}`}>Aprovação instantânea</span>
                     )}
@@ -483,14 +483,14 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   <button
                     type="button"
                     onClick={() => setPaymentMethod('CREDIT_CARD')}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
+                    className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 ${
                       paymentMethod === 'CREDIT_CARD'
                         ? `${accentBorder} ${accentBg} text-white`
                         : 'border-white/15 bg-white/5 text-white/60 hover:border-white/30'
                     }`}
                   >
-                    <CreditCard className="h-6 w-6" />
-                    <span className="text-sm font-medium">Cartão</span>
+                    <CreditCard className="h-5 w-5 md:h-6 md:w-6" />
+                    <span className="text-xs md:text-sm font-medium">Cartão</span>
                     {paymentMethod === 'CREDIT_CARD' && (
                       <span className={`text-[10px] ${accentTextLight}`}>Até 3x sem juros</span>
                     )}
@@ -503,7 +503,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className={`w-full mt-6 py-4 text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
+              className={`w-full mt-4 md:mt-6 py-3 md:py-4 text-sm md:text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
             >
               {loading ? 'Gerando checkout...' : 'Finalizar e Pagar'}
               {!loading && <ArrowRight className="h-5 w-5" />}
