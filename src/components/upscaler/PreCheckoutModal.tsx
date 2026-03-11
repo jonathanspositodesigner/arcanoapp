@@ -213,6 +213,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       alert('Erro ao processar. Tente outro método de pagamento.');
     }
     setOneClickLoading(false);
+    endOneClick();
   };
 
   const handleRemoveCard = async (cardId: string) => {
