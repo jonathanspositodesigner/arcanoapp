@@ -76,6 +76,7 @@ const TOOL_CONFIG: Record<JobTable, { name: string; url: string; emoji: string }
   arcano_cloner_jobs: { name: 'Arcano Cloner', url: '/arcano-cloner-tool', emoji: '👤' },
   character_generator_jobs: { name: 'Gerador Personagem', url: '/gerador-personagem', emoji: '🧑‍🎨' },
   flyer_maker_jobs: { name: 'Flyer Maker', url: '/flyer-maker', emoji: '🎭' },
+  bg_remover_jobs: { name: 'Remover Fundo', url: '/remover-fundo', emoji: '🖼️' },
 };
 
 /**
