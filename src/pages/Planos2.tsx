@@ -148,7 +148,7 @@ const Planos2 = () => {
     if (!pendingSlug || !pendingProfile) return;
     if (!startCheckout()) return;
     
-    setShowPaymentMethodModal(false);
+    setPixLoading(pendingSlug);
     
     try {
       let utmData: Record<string, string> | null = null;
