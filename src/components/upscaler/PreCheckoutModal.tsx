@@ -509,7 +509,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
             {/* Submit */}
             <button
               onClick={handleSubmit}
-              disabled={loading}
+              disabled={loading || isFormSubmitting}
               className={`w-full mt-4 md:mt-6 py-3 md:py-4 text-sm md:text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
             >
               {loading ? 'Gerando checkout...' : 'Finalizar e Pagar'}
