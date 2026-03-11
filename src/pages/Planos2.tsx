@@ -20,6 +20,7 @@ import { StatsCards } from "@/components/credits/StatsCards";
 import { useLocale } from "@/contexts/LocaleContext";
 import { supabase } from "@/integrations/supabase/client";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
+import HomeAuthModal from "@/components/HomeAuthModal";
 import { toast } from "sonner";
 
 const Planos2 = () => {
