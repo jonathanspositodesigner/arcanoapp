@@ -275,14 +275,14 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const showOneClick = hasSavedCards && !showFullForm;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-4 bg-black/80 backdrop-blur-sm" onClick={onClose}>
       <div
-        className={`relative w-full max-w-md bg-gradient-to-br ${modalBg} border ${accentBorderLight} rounded-3xl p-6 md:p-8 shadow-2xl ${modalShadow} max-h-[90vh] overflow-y-auto`}
+        className={`relative w-full max-w-md bg-gradient-to-br ${modalBg} border ${accentBorderLight} rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-2xl ${modalShadow} max-h-[95vh] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close */}
-        <button onClick={onClose} className="absolute top-4 right-4 p-2 text-white/50 hover:text-white transition-colors">
-          <X className="h-5 w-5" />
+        <button onClick={onClose} className="absolute top-3 right-3 md:top-4 md:right-4 p-1.5 md:p-2 text-white/50 hover:text-white transition-colors z-10">
+          <X className="h-4 w-4 md:h-5 md:w-5" />
         </button>
 
         {/* Title */}
