@@ -350,11 +350,11 @@ serve(async (req) => {
       const profileName = existingProfile?.name || order.user_name || customer?.name || null
       const profilePhone = existingProfile?.phone || order.user_phone || (mobilePhone ? `${mobilePhone.area_code}${mobilePhone.number}` : null)
       const profileCpf = existingProfile?.cpf || order.user_cpf || customer?.document || null
-      const profileAddressLine = existingProfile?.address_line || billingAddress?.line_1 || null
-      const profileAddressZip = existingProfile?.address_zip || billingAddress?.zip_code || null
-      const profileAddressCity = existingProfile?.address_city || billingAddress?.city || null
-      const profileAddressState = existingProfile?.address_state || billingAddress?.state || null
-      const profileAddressCountry = existingProfile?.address_country || billingAddress?.country || 'BR'
+      const profileAddressLine = existingProfile?.address_line || order.user_address_line || billingAddress?.line_1 || null
+      const profileAddressZip = existingProfile?.address_zip || order.user_address_zip || billingAddress?.zip_code || null
+      const profileAddressCity = existingProfile?.address_city || order.user_address_city || billingAddress?.city || null
+      const profileAddressState = existingProfile?.address_state || order.user_address_state || billingAddress?.state || null
+      const profileAddressCountry = existingProfile?.address_country || order.user_address_country || billingAddress?.country || 'BR'
 
       await supabase.from('profiles').upsert({
         id: userId,

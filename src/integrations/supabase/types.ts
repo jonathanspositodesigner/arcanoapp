@@ -1026,6 +1026,11 @@ export type Database = {
           product_id: string | null
           status: string
           updated_at: string | null
+          user_address_city: string | null
+          user_address_country: string | null
+          user_address_line: string | null
+          user_address_state: string | null
+          user_address_zip: string | null
           user_cpf: string | null
           user_email: string
           user_id: string | null
@@ -1045,6 +1050,11 @@ export type Database = {
           product_id?: string | null
           status?: string
           updated_at?: string | null
+          user_address_city?: string | null
+          user_address_country?: string | null
+          user_address_line?: string | null
+          user_address_state?: string | null
+          user_address_zip?: string | null
           user_cpf?: string | null
           user_email: string
           user_id?: string | null
@@ -1064,6 +1074,11 @@ export type Database = {
           product_id?: string | null
           status?: string
           updated_at?: string | null
+          user_address_city?: string | null
+          user_address_country?: string | null
+          user_address_line?: string | null
+          user_address_state?: string | null
+          user_address_zip?: string | null
           user_cpf?: string | null
           user_email?: string
           user_id?: string | null
