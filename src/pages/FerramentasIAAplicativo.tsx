@@ -98,9 +98,19 @@ const FerramentasIAAplicativo = () => {
           checkout_link_vitalicio: null,
           checkout_link_membro_vitalicio: null,
         };
+
+        const removerFundoTool: ToolData = {
+          id: 'remover-fundo-static',
+          name: 'Remover Fundo',
+          slug: 'remover-fundo',
+          cover_url: null,
+          price_vitalicio: null,
+          checkout_link_vitalicio: null,
+          checkout_link_membro_vitalicio: null,
+        };
         
         // Combine database tools with static tools
-        const allTools = [...data, arcanoClonerTool, flyerMakerTool];
+        const allTools = [...data, arcanoClonerTool, flyerMakerTool, removerFundoTool];
         
         // Sort by preferred order
         const sorted = allTools.sort((a, b) => {
