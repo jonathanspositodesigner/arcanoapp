@@ -242,7 +242,7 @@ export const PricingCardsSection = () => {
             
             <button
               onClick={handlePurchase}
-              disabled={isLoading}
+              disabled={isLoading || isSubmitting}
               className="w-full font-bold text-lg py-4 rounded-xl transition-all duration-300 bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white shadow-lg shadow-orange-500/30 hover:scale-105 disabled:opacity-70 disabled:hover:scale-100"
             >
               {isLoading ? 'Processando...' : plan.buttonText}
