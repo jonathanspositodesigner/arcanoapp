@@ -746,7 +746,7 @@ const Planos2 = () => {
                     {isLoading ? (
                       <span className="flex items-center gap-2">
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Gerando PIX...
+                        Gerando pagamento...
                       </span>
                     ) : (
                       'Comprar Agora'
