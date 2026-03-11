@@ -151,10 +151,10 @@ export const PricingCardsSection = () => {
               </span>
             </div>
 
-            <h3 className="text-xl font-bold text-white mb-2 text-center">
+            <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">
               Qual a minha garantia?
             </h3>
-            <p className="text-gray-400 text-sm text-center mb-6">
+            <p className="text-gray-600 text-sm text-center mb-6">
               Sua compra 100% segura
             </p>
 
