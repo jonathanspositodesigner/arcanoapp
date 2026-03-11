@@ -81,6 +81,8 @@ serve(async (req) => {
     }
 
     // 2. Criar ordem interna
+    const cleanCpf = user_cpf ? user_cpf.replace(/\D/g, '') : null
+
     const { data: order, error: orderError } = await supabase
       .from('asaas_orders')
       .insert({
@@ -92,7 +94,12 @@ serve(async (req) => {
         utm_data: utm_data || null,
         user_name: user_name?.trim() || null,
         user_phone: phoneDigits || null,
-        user_cpf: user_cpf ? user_cpf.replace(/\D/g, '') : null
+        user_cpf: cleanCpf,
+        user_address_line: user_address?.line_1 || null,
+        user_address_zip: user_address?.zip_code || null,
+        user_address_city: user_address?.city || null,
+        user_address_state: user_address?.state || null,
+        user_address_country: user_address?.country || 'BR'
       })
       .select('id')
       .single()
@@ -106,6 +113,35 @@ serve(async (req) => {
     }
 
     console.log(`📦 Ordem criada: ${order.id} | Produto: ${product.title} | Email: ${email}`)
+
+    // Salvar dados no perfil imediatamente (pré-checkout)
+    const trimmedName = user_name?.trim() || null
+    if (trimmedName || cleanCpf || phoneDigits || user_address?.line_1) {
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id, name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
+        .eq('email', email)
+        .maybeSingle()
+
+      if (existingProfile) {
+        const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
+        if (!existingProfile.name && trimmedName) updates.name = trimmedName
+        if (!existingProfile.cpf && cleanCpf) updates.cpf = cleanCpf
+        if (!existingProfile.phone && phoneDigits) updates.phone = phoneDigits
+        if (!existingProfile.address_line && user_address?.line_1) {
+          updates.address_line = user_address.line_1
+          updates.address_zip = user_address.zip_code || null
+          updates.address_city = user_address.city || null
+          updates.address_state = user_address.state || null
+          updates.address_country = user_address.country || 'BR'
+        }
+
+        if (Object.keys(updates).length > 1) {
+          await supabase.from('profiles').update(updates).eq('id', existingProfile.id)
+          console.log(`👤 Perfil atualizado (pré-checkout): ${email}`)
+        }
+      }
+    }
 
     // 3. Montar payload do checkout Pagar.me (valores em centavos)
     const amountInCents = Math.round(Number(product.price) * 100)
