@@ -831,17 +831,52 @@ serve(async (req) => {
     // Parse UTM data from multiple sources
     let parsedUtmData: Record<string, string> | null = null
     
-    // SOURCE 1: origin.sck (format: "source|campaign|adsetId|adLabel|adId")
+    // SOURCE 1: origin.sck (format: "source|campaign|content" OR xcod-encoded with hQwK21wXxR)
     const originSck = origin.sck || null
-    if (originSck && typeof originSck === 'string' && originSck.includes('|')) {
-      const sckParts = originSck.split('|')
-      parsedUtmData = {}
-      if (sckParts[0]) parsedUtmData.utm_source = sckParts[0]
-      if (sckParts[1]) parsedUtmData.utm_campaign = sckParts[1]
-      if (sckParts[2]) parsedUtmData.utm_content = sckParts[2]
-      if (sckParts[3]) parsedUtmData.utm_term = sckParts[3]
-      if (sckParts[4]) parsedUtmData.utm_id = sckParts[4]
-      console.log(`   ├─ UTM from origin.sck:`, JSON.stringify(parsedUtmData))
+    if (originSck && typeof originSck === 'string') {
+      // Check if sck contains xcod delimiter (Hotmart encodes sck with hQwK21wXxR)
+      if (originSck.includes('hQwK21wXxR')) {
+        // xcod-encoded sck: split by delimiter first, then extract name|id pairs
+        const xcodParts = originSck.split('hQwK21wXxR')
+        parsedUtmData = {}
+        // [0] = utm_source (e.g. "FB")
+        if (xcodParts[0]) parsedUtmData.utm_source = xcodParts[0].replace(/\|/g, '').trim()
+        // [1] = campaign segment: may contain "campaign_name" or be followed by campaign_id
+        // [2] = adset segment: may contain "label|adset_id" 
+        // [3] = ad segment: may contain "ad_name|ad_id"
+        // [4] = placement
+        // Extract all numeric IDs and names from segments
+        const allSegments = xcodParts.slice(1) // everything after source
+        const allParts: string[] = []
+        for (const seg of allSegments) {
+          if (seg.includes('|')) {
+            allParts.push(...seg.split('|').map(s => s.trim()).filter(Boolean))
+          } else if (seg.trim()) {
+            allParts.push(seg.trim())
+          }
+        }
+        // Separate names from numeric IDs
+        const numericIds = allParts.filter(p => /^\d{10,}$/.test(p))
+        const names = allParts.filter(p => !/^\d{10,}$/.test(p))
+        
+        if (names[0]) parsedUtmData.utm_campaign = names[0] // campaign name
+        if (numericIds[0]) parsedUtmData.utm_content = numericIds[0] // campaign_id
+        if (numericIds[1]) parsedUtmData.utm_id = numericIds[1] // adset_id
+        if (names[1]) parsedUtmData.utm_term = names[1] // ad label/name
+        if (numericIds[2]) parsedUtmData.utm_medium = numericIds[2] // ad_id
+        
+        console.log(`   ├─ UTM from origin.sck (xcod-encoded):`, JSON.stringify(parsedUtmData))
+      } else if (originSck.includes('|')) {
+        // Standard pipe-delimited sck: "source|campaign|content"
+        const sckParts = originSck.split('|')
+        parsedUtmData = {}
+        if (sckParts[0]) parsedUtmData.utm_source = sckParts[0]
+        if (sckParts[1]) parsedUtmData.utm_campaign = sckParts[1]
+        if (sckParts[2]) parsedUtmData.utm_content = sckParts[2]
+        if (sckParts[3]) parsedUtmData.utm_term = sckParts[3]
+        if (sckParts[4]) parsedUtmData.utm_id = sckParts[4]
+        console.log(`   ├─ UTM from origin.sck:`, JSON.stringify(parsedUtmData))
+      }
     }
     
     // SOURCE 2: origin.xcod (format: values joined by "hQwK21wXxR")

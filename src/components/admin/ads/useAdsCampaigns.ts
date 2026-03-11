@@ -202,18 +202,24 @@ export function useAdsCampaigns(
       const isFb = typeof utmSource === "string" && utmSource.toUpperCase().startsWith("FB");
       if (!isFb) continue;
 
-      // Extract campaign_id from utm_campaign ("NAME|campaign_id") or utm_id
+      // Extract campaign_id: utm_content has {{campaign.id}}, utm_id has {{adset.id}}
       const utmCampaign = sale.utm_data?.utm_campaign || "";
+      const utmContent = sale.utm_data?.utm_content || "";
       const utmId = sale.utm_data?.utm_id || "";
       
       let resolvedCampaignId = "";
       
-      // Try utm_id first (usually the pure campaign_id)
-      if (utmId && !utmId.includes("{{")) {
+      // Try utm_content first (contains campaign_id per user's Meta template)
+      if (utmContent && !utmContent.includes("{{")) {
+        resolvedCampaignId = String(utmContent).trim();
+      }
+      
+      // Fallback: utm_id (legacy compatibility)
+      if (!resolvedCampaignId && utmId && !utmId.includes("{{")) {
         resolvedCampaignId = String(utmId).trim();
       }
       
-      // Try extracting from utm_campaign "NAME|ID" format
+      // Fallback: extract from utm_campaign "NAME|ID" format
       if (!resolvedCampaignId && utmCampaign && !utmCampaign.includes("{{")) {
         const parts = String(utmCampaign).split("|");
         if (parts.length > 1) {

@@ -388,7 +388,7 @@ function TotalsRow({ items, label }: { items: Array<{ total_spend: number; sales
 }
 
 const AdsManagementContent = () => {
-  const [period, setPeriod] = useState<AdsPeriod>("7d");
+  const [period, setPeriod] = useState<AdsPeriod>("today");
   const [customStart, setCustomStart] = useState<Date>();
   const [customEnd, setCustomEnd] = useState<Date>();
   const [accountFilter, setAccountFilter] = useState<string>("");
