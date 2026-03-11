@@ -142,6 +142,22 @@ export const PricingCardsSection = () => {
             >
               {plan.buttonText}
             </button>
+
+            {/* Urgency Countdown */}
+            <div className="mt-4 flex flex-col items-center gap-1">
+              <div className="flex items-center gap-2 text-white text-sm font-medium">
+                <span className="animate-pulse">🚨</span>
+                <span>Últimas horas da promoção</span>
+                <span className="animate-pulse">🚨</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-400 text-xs">
+                <Clock className="w-3 h-3" />
+                <span>Oferta expira em</span>
+                <span className="text-[#EF672C] font-semibold font-mono">
+                  {formatTime(timeLeft)}
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Guarantee Card */}
