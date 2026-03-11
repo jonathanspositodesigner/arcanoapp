@@ -8,6 +8,7 @@ import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { usePromoClaimStatus } from "@/hooks/usePromoClaimStatus";
 import { Sparkles, Loader2, Play, Users } from "lucide-react";
 import arcanoClonerCover from "@/assets/arcano-cloner-cover.webp";
+import removerFundoCover from "@/assets/removedor-fundo-capa.png";
 import flyerMakerCover from "@/assets/flyer-maker-preview.webp";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -103,7 +104,7 @@ const FerramentasIAAplicativo = () => {
           id: 'remover-fundo-static',
           name: 'Remover Fundo',
           slug: 'remover-fundo',
-          cover_url: null,
+          cover_url: removerFundoCover,
           price_vitalicio: null,
           checkout_link_vitalicio: null,
           checkout_link_membro_vitalicio: null,
