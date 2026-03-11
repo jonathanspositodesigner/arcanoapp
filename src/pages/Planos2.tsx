@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star, ShieldCheck, Headset, Loader2, CreditCard, QrCode } from "lucide-react";
@@ -46,7 +47,7 @@ const Planos2 = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [showSignupModal, setShowSignupModal] = useState(false);
   const { planSlug: activePlanSlug } = usePlanos2Access(userId || undefined);
-
+  const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
 
   // Check auth and profile on mount
   useEffect(() => {
@@ -109,40 +110,45 @@ const Planos2 = () => {
   };
 
   const handleCreditPurchase = async (slug: string) => {
+    if (!startCheckout()) return;
+    
     if (!userId) {
-      // Not logged in — open PreCheckoutModal
       setSelectedCreditSlug(slug);
       setShowPreCheckout(true);
+      endCheckout();
       return;
     }
 
-    // Check if profile is complete
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
+        .eq('id', userId)
+        .single();
 
-    const isProfileComplete = profile?.name && profile?.phone && profile?.cpf 
-      && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
+      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf 
+        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
 
-    if (isProfileComplete) {
-      // Profile complete — show payment method modal
-      setPendingSlug(slug);
-      setPendingProfile(profile);
-      setShowPaymentMethodModal(true);
-    } else {
-      // Profile incomplete — open PreCheckoutModal
-      setSelectedCreditSlug(slug);
-      setShowPreCheckout(true);
+      if (isProfileComplete) {
+        setPendingSlug(slug);
+        setPendingProfile(profile);
+        setShowPaymentMethodModal(true);
+        endCheckout();
+      } else {
+        setSelectedCreditSlug(slug);
+        setShowPreCheckout(true);
+        endCheckout();
+      }
+    } catch {
+      endCheckout();
     }
   };
 
   const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
     if (!pendingSlug || !pendingProfile) return;
+    if (!startCheckout()) return;
     
     setShowPaymentMethodModal(false);
-    setPixLoading(pendingSlug);
     
     try {
       let utmData: Record<string, string> | null = null;
@@ -191,6 +197,7 @@ const Planos2 = () => {
       console.error('Erro checkout direto:', error);
       toast.error('Erro ao processar. Tente novamente.');
     }
+    endCheckout();
     setPixLoading(null);
   };
 
@@ -777,7 +784,7 @@ const Planos2 = () => {
 
                   <Button
                     onClick={() => handleCreditPurchase(plan.slug)}
-                    disabled={isLoading || !!pixLoading}
+                    disabled={isLoading || !!pixLoading || isCheckoutSubmitting}
                     className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5 disabled:opacity-70`}
                   >
                     {isLoading ? (

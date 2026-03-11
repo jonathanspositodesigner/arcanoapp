@@ -1,5 +1,6 @@
 import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock, QrCode } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
@@ -37,6 +38,7 @@ export const PricingCardsSection = () => {
   const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
   const [pendingProfile, setPendingProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -73,6 +75,8 @@ export const PricingCardsSection = () => {
   };
 
   const handlePurchase = async () => {
+    if (!startSubmit()) return;
+    
     // Fire Meta Pixel
     if (typeof window !== "undefined" && (window as any).fbq) {
       (window as any).fbq("track", "InitiateCheckout", {
@@ -85,29 +89,35 @@ export const PricingCardsSection = () => {
 
     if (!userId) {
       setShowPreCheckout(true);
+      endSubmit();
       return;
     }
 
-    // Check if profile is complete
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
+        .eq('id', userId)
+        .single();
 
-    const isProfileComplete = profile?.name && profile?.phone && profile?.cpf
-      && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
+      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf
+        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
 
-    if (isProfileComplete) {
-      setPendingProfile(profile);
-      setShowPaymentMethodModal(true);
-    } else {
-      setShowPreCheckout(true);
+      if (isProfileComplete) {
+        setPendingProfile(profile);
+        setShowPaymentMethodModal(true);
+      } else {
+        setShowPreCheckout(true);
+      }
+    } catch {
+      // ignore
     }
+    endSubmit();
   };
 
   const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
     if (!pendingProfile) return;
+    if (!startSubmit()) return;
 
     setShowPaymentMethodModal(false);
     setIsLoading(true);
@@ -159,6 +169,7 @@ export const PricingCardsSection = () => {
       toast.error('Erro ao processar. Tente novamente.');
     }
     setIsLoading(false);
+    endSubmit();
   };
 
   return (
@@ -231,7 +242,7 @@ export const PricingCardsSection = () => {
             
             <button
               onClick={handlePurchase}
-              disabled={isLoading}
+              disabled={isLoading || isSubmitting}
               className="w-full font-bold text-lg py-4 rounded-xl transition-all duration-300 bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white shadow-lg shadow-orange-500/30 hover:scale-105 disabled:opacity-70 disabled:hover:scale-100"
             >
               {isLoading ? 'Processando...' : plan.buttonText}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { X, CreditCard, QrCode, ArrowRight, Shield, Zap, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -63,6 +64,8 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const [cpf, setCpf] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'PIX' | 'CREDIT_CARD'>('PIX');
   const [loading, setLoading] = useState(false);
+  const { isSubmitting: isFormSubmitting, startSubmit: startFormSubmit, endSubmit: endFormSubmit } = useProcessingButton();
+  const { isSubmitting: isOneClickSubmitting, startSubmit: startOneClick, endSubmit: endOneClick } = useProcessingButton();
 
   const [nameError, setNameError] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -167,6 +170,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
   const handleOneClickBuy = async () => {
     if (!selectedCardId) return;
+    if (!startOneClick()) return;
 
     setOneClickLoading(true);
     try {
@@ -209,6 +213,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       alert('Erro ao processar. Tente outro método de pagamento.');
     }
     setOneClickLoading(false);
+    endOneClick();
   };
 
   const handleRemoveCard = async (cardId: string) => {
@@ -228,6 +233,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
   const handleSubmit = async () => {
     if (!validate()) return;
+    if (!startFormSubmit()) return;
 
     setLoading(true);
     try {
@@ -267,6 +273,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       alert('Erro ao processar. Tente novamente.');
     }
     setLoading(false);
+    endFormSubmit();
   };
 
   if (!isOpen) return null;
@@ -342,7 +349,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
             {/* One-click buy button */}
             <button
               onClick={handleOneClickBuy}
-              disabled={oneClickLoading || !selectedCardId}
+              disabled={oneClickLoading || !selectedCardId || isOneClickSubmitting}
               className={`w-full mt-4 py-4 text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
             >
               {oneClickLoading ? (
@@ -502,7 +509,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
             {/* Submit */}
             <button
               onClick={handleSubmit}
-              disabled={loading}
+              disabled={loading || isFormSubmitting}
               className={`w-full mt-4 md:mt-6 py-3 md:py-4 text-sm md:text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
             >
               {loading ? 'Gerando checkout...' : 'Finalizar e Pagar'}
