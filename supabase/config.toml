@@ -159,3 +159,6 @@ verify_jwt = false
 
 [functions.refund-pagarme]
 verify_jwt = false
+
+[functions.runninghub-bg-remover]
+verify_jwt = false

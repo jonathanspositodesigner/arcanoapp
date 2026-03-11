@@ -80,6 +80,7 @@ const TOOL_FILTERS = [
   { value: "Gerar Imagem", label: "Gerar Imagem" },
   { value: "Gerar Vídeo", label: "Gerar Vídeo" },
   { value: "Flyer Maker", label: "Flyer Maker" },
+  { value: "Remover Fundo", label: "Remover Fundo" },
 ];
 
 const AdminAIToolsUsageTab = () => {
@@ -113,7 +114,8 @@ const AdminAIToolsUsageTab = () => {
       case "Veste AI": return "person_image_url";
       case "Gerador Avatar": return "front_image_url";
       case "Flyer Maker": return "reference_image_url";
-      default: return null; // Video tools, text-to-image, etc.
+      case "Remover Fundo": return "input_url";
+      default: return null;
     }
   };
 
@@ -380,6 +382,7 @@ const AdminAIToolsUsageTab = () => {
       case "Gerar Imagem": return "image_generator_jobs";
       case "Gerar Vídeo": return "video_generator_jobs";
       case "Flyer Maker": return "flyer_maker_jobs";
+      case "Remover Fundo": return "bg_remover_jobs";
       default: return "upscaler_jobs";
     }
   };

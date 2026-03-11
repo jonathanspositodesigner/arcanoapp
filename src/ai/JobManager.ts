@@ -21,7 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 // ==================== TYPES ====================
 
-export type ToolType = 'upscaler' | 'pose_changer' | 'veste_ai' | 'video_upscaler' | 'arcano_cloner' | 'character_generator' | 'flyer_maker';
+export type ToolType = 'upscaler' | 'pose_changer' | 'veste_ai' | 'video_upscaler' | 'arcano_cloner' | 'character_generator' | 'flyer_maker' | 'bg_remover';
 export type JobStatus = 'pending' | 'queued' | 'starting' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 export interface JobResult {
@@ -63,6 +63,7 @@ const TABLE_MAP: Record<ToolType, string> = {
   arcano_cloner: 'arcano_cloner_jobs',
   character_generator: 'character_generator_jobs',
   flyer_maker: 'flyer_maker_jobs',
+  bg_remover: 'bg_remover_jobs',
 };
 
 // Edge function names mapping
@@ -74,6 +75,7 @@ const EDGE_FUNCTION_MAP: Record<ToolType, string> = {
   arcano_cloner: 'runninghub-arcano-cloner/run',
   character_generator: 'runninghub-character-generator/run',
   flyer_maker: 'runninghub-flyer-maker/run',
+  bg_remover: 'runninghub-bg-remover/run',
 };
 
 // Tool names for display
@@ -85,6 +87,7 @@ const TOOL_NAMES: Record<string, ToolType> = {
   'Arcano Cloner': 'arcano_cloner',
   'Gerador Avatar': 'character_generator',
   'Flyer Maker': 'flyer_maker',
+  'Remover Fundo': 'bg_remover',
 };
 
 // ==================== CORE FUNCTIONS ====================

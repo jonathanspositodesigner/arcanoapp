@@ -58,9 +58,10 @@ const WEBAPP_IDS = {
   arcano_cloner_jobs: '2019877042115842050',
   character_generator_jobs: '2020943778751713282',
   flyer_maker_jobs: '2025656642724962305',
+  bg_remover_jobs: '2031815099811368962',
 };
 
-const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs'] as const;
+const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs', 'bg_remover_jobs'] as const;
 type JobTable = typeof JOB_TABLES[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -75,6 +76,7 @@ const TOOL_CONFIG: Record<JobTable, { name: string; url: string; emoji: string }
   arcano_cloner_jobs: { name: 'Arcano Cloner', url: '/arcano-cloner-tool', emoji: '👤' },
   character_generator_jobs: { name: 'Gerador Personagem', url: '/gerador-personagem', emoji: '🧑‍🎨' },
   flyer_maker_jobs: { name: 'Flyer Maker', url: '/flyer-maker', emoji: '🎭' },
+  bg_remover_jobs: { name: 'Remover Fundo', url: '/remover-fundo', emoji: '🖼️' },
 };
 
 /**
@@ -560,6 +562,7 @@ async function handleCheckUserActive(req: Request): Promise<Response> {
       'arcano_cloner_jobs': 'Arcano Cloner',
       'character_generator_jobs': 'Gerador Personagem',
       'flyer_maker_jobs': 'Flyer Maker',
+      'bg_remover_jobs': 'Remover Fundo',
     };
     
     // Verificar em TODAS as tabelas - incluir STARTING e PENDING recente (< 35s)
@@ -1180,6 +1183,13 @@ async function startJobOnRunningHub(
       ];
       break;
     }
+
+    case 'bg_remover_jobs':
+      webappId = WEBAPP_IDS.bg_remover_jobs;
+      nodeInfoList = [
+        { nodeId: "1", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
+      ];
+      break;
       
     default:
       console.error(`[QueueManager] Unknown table: ${table}`);

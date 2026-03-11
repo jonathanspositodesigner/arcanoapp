@@ -144,6 +144,7 @@ const TesteGratis = lazy(() => import("./pages/TesteGratis"));
 const GerarImagemTool = lazy(() => import("./pages/GerarImagemTool"));
 const GerarVideoTool = lazy(() => import("./pages/GerarVideoTool"));
 const FlyerMakerTool = lazy(() => import("./pages/FlyerMakerTool"));
+const RemoverFundoTool = lazy(() => import("./pages/RemoverFundoTool"));
 const PlanosArcanoCloner = lazy(() => import("./pages/PlanosArcanoCloner"));
 const ObrigadoArcanoCloner = lazy(() => import("./pages/ObrigadoArcanoCloner"));
 const ArcanoClonerTeste = lazy(() => import("./pages/ArcanoClonerTeste"));
@@ -330,6 +331,7 @@ const AppContent = () => {
           <Route path="/video-upscaler-tool" element={<VideoUpscalerTool />} />
           <Route path="/arcano-cloner-tool" element={<ArcanoClonerTool />} />
           <Route path="/flyer-maker" element={<FlyerMakerTool />} />
+          <Route path="/remover-fundo" element={<RemoverFundoTool />} />
           <Route path="/gerador-avatar" element={<GeradorPersonagemTool />} />
           <Route path="/gerador-personagem" element={<Navigate to="/gerador-avatar" replace />} />
           <Route path="/upscaler-selection" element={<UpscalerSelectionPage />} />

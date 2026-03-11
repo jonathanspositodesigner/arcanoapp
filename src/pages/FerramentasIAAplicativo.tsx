@@ -51,6 +51,7 @@ const FerramentasIAAplicativo = () => {
     "ia-muda-roupa": t('ferramentas.descriptions.mudaRoupa'),
     "arcano-cloner": "Crie ensaios fotográficos ultra realistas com IA",
     "flyer-maker": "Crie flyers para eventos incríveis com IA",
+    "remover-fundo": "Remova o fundo de qualquer imagem com IA",
   };
 
   // Smart back navigation
@@ -65,7 +66,7 @@ const FerramentasIAAplicativo = () => {
   const [loading, setLoading] = useState(true);
 
   // Preferred order for tools
-  const preferredOrder = ["arcano-cloner", "upscaller-arcano", "upscaller-arcano-video", "ia-muda-pose", "ia-muda-roupa", "forja-selos-3d-ilimitada", "flyer-maker"];
+  const preferredOrder = ["arcano-cloner", "upscaller-arcano", "upscaller-arcano-video", "ia-muda-pose", "ia-muda-roupa", "remover-fundo", "forja-selos-3d-ilimitada", "flyer-maker"];
 
   useEffect(() => {
     const fetchTools = async () => {
@@ -97,9 +98,19 @@ const FerramentasIAAplicativo = () => {
           checkout_link_vitalicio: null,
           checkout_link_membro_vitalicio: null,
         };
+
+        const removerFundoTool: ToolData = {
+          id: 'remover-fundo-static',
+          name: 'Remover Fundo',
+          slug: 'remover-fundo',
+          cover_url: null,
+          price_vitalicio: null,
+          checkout_link_vitalicio: null,
+          checkout_link_membro_vitalicio: null,
+        };
         
         // Combine database tools with static tools
-        const allTools = [...data, arcanoClonerTool, flyerMakerTool];
+        const allTools = [...data, arcanoClonerTool, flyerMakerTool, removerFundoTool];
         
         // Sort by preferred order
         const sorted = allTools.sort((a, b) => {
@@ -135,6 +146,9 @@ const FerramentasIAAplicativo = () => {
     if (slug === "flyer-maker") {
       return "/flyer-maker";
     }
+    if (slug === "remover-fundo") {
+      return "/remover-fundo";
+    }
     return `/ferramenta-ia-artes/${slug}`;
   };
 
@@ -146,6 +160,7 @@ const FerramentasIAAplicativo = () => {
     "ia-muda-roupa": "Veste AI",
     "arcano-cloner": "Arcano Cloner",
     "flyer-maker": "Flyer Maker",
+    "remover-fundo": "Remover Fundo",
   };
 
   const getPurchaseRoute = (tool: ToolData) => {
@@ -176,6 +191,7 @@ const FerramentasIAAplicativo = () => {
     }
     if (slug === "arcano-cloner") return true;
     if (slug === "flyer-maker") return true;
+    if (slug === "remover-fundo") return true;
     if (bonusTools.includes(slug)) {
       return isPremium;
     }

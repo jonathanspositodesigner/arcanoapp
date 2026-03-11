@@ -1096,6 +1096,96 @@ export type Database = {
           },
         ]
       }
+      bg_remover_jobs: {
+        Row: {
+          api_account: string
+          completed_at: string | null
+          created_at: string | null
+          credits_charged: boolean | null
+          credits_refunded: boolean | null
+          current_step: string | null
+          error_message: string | null
+          failed_at_step: string | null
+          id: string
+          input_file_name: string | null
+          input_url: string | null
+          job_payload: Json | null
+          output_url: string | null
+          position: number | null
+          queue_wait_seconds: number | null
+          raw_api_response: Json | null
+          raw_webhook_payload: Json | null
+          rh_cost: number | null
+          session_id: string
+          started_at: string | null
+          status: string
+          step_history: Json | null
+          task_id: string | null
+          thumbnail_url: string | null
+          user_credit_cost: number | null
+          user_id: string | null
+          waited_in_queue: boolean | null
+        }
+        Insert: {
+          api_account?: string
+          completed_at?: string | null
+          created_at?: string | null
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
+          current_step?: string | null
+          error_message?: string | null
+          failed_at_step?: string | null
+          id?: string
+          input_file_name?: string | null
+          input_url?: string | null
+          job_payload?: Json | null
+          output_url?: string | null
+          position?: number | null
+          queue_wait_seconds?: number | null
+          raw_api_response?: Json | null
+          raw_webhook_payload?: Json | null
+          rh_cost?: number | null
+          session_id: string
+          started_at?: string | null
+          status?: string
+          step_history?: Json | null
+          task_id?: string | null
+          thumbnail_url?: string | null
+          user_credit_cost?: number | null
+          user_id?: string | null
+          waited_in_queue?: boolean | null
+        }
+        Update: {
+          api_account?: string
+          completed_at?: string | null
+          created_at?: string | null
+          credits_charged?: boolean | null
+          credits_refunded?: boolean | null
+          current_step?: string | null
+          error_message?: string | null
+          failed_at_step?: string | null
+          id?: string
+          input_file_name?: string | null
+          input_url?: string | null
+          job_payload?: Json | null
+          output_url?: string | null
+          position?: number | null
+          queue_wait_seconds?: number | null
+          raw_api_response?: Json | null
+          raw_webhook_payload?: Json | null
+          rh_cost?: number | null
+          session_id?: string
+          started_at?: string | null
+          status?: string
+          step_history?: Json | null
+          task_id?: string | null
+          thumbnail_url?: string | null
+          user_credit_cost?: number | null
+          user_id?: string | null
+          waited_in_queue?: boolean | null
+        }
+        Relationships: []
+      }
       blacklisted_emails: {
         Row: {
           auto_blocked: boolean | null
@@ -4465,7 +4555,7 @@ export type Database = {
         Args: never
         Returns: {
           avg_rh_cost: number
-          avg_user_credit: number
+          avg_user_credits: number
           tool_name: string
           total_completed: number
           total_rh_cost: number
