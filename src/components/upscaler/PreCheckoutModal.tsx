@@ -273,6 +273,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       alert('Erro ao processar. Tente novamente.');
     }
     setLoading(false);
+    endFormSubmit();
   };
 
   if (!isOpen) return null;
