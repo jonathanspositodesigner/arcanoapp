@@ -1,23 +1,35 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Plano: Modal de Escolha de Pagamento + Correções
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+### Problemas identificados
 
-## Dados
+1. O texto do botão mostra "Gerando PIX..." quando deveria ser "Gerando pagamento..."
+2. Quando o perfil está completo, o checkout vai direto sem dar opção de escolher PIX ou Cartão
+3. O endereço não está sendo enviado corretamente porque `billing_type` não é passado, e a lógica do backend depende dele para montar o `billing_address`
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+### O que será feito
 
-## Ações (via SQL migration)
+**1. Novo modal de escolha de pagamento** (em `Planos2.tsx`)
+- Quando perfil completo, ao clicar "Comprar Agora", abre um modal com duas opções: PIX e Cartão de Crédito
+- Cada opção terá visual premium (ícones, gradientes)
+- Ao escolher, envia a requisição com `billing_type: 'PIX'` ou `billing_type: 'CREDIT_CARD'`
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+**2. Lógica por método:**
+- **PIX**: envia `billing_type: 'PIX'` + `user_address` completo (endereço pré-preenchido no checkout)
+- **Cartão**: envia `billing_type: 'CREDIT_CARD'` sem `user_address` (formulário de endereço editável no checkout para antifraude)
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+**3. Texto do loading:**
+- Trocar "Gerando PIX..." por "Gerando pagamento..."
+
+### Mudanças técnicas
+
+**Arquivo: `src/pages/Planos2.tsx`**
+- Adicionar estado `showPaymentMethodModal` e `pendingSlug`
+- Criar modal com Dialog mostrando PIX e Cartão como opções
+- Ao selecionar método, chamar `create-pagarme-checkout` com `billing_type` correto
+- PIX: inclui `user_address`; Cartão: não inclui `user_address`
+- Trocar texto "Gerando PIX..." por "Gerando pagamento..."
+
+**Backend (`create-pagarme-checkout`)**: Nenhuma mudança necessária -- a lógica de `billing_type` já existe e funciona corretamente. O problema era que o frontend não estava enviando o `billing_type`.
 
