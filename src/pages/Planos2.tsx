@@ -201,6 +201,7 @@ const Planos2 = () => {
     }
     endCheckout();
     setPixLoading(null);
+    setShowPaymentMethodModal(false);
   };
 
   const countdown = formatTime(timeLeft);
