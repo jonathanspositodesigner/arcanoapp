@@ -559,19 +559,44 @@ const Planos2 = () => {
                 )}
               </div>
 
-              <Button 
-                onClick={() => {
-                  if (plan.name === "Free") {
-                    if (!userId) setShowSignupModal(true);
-                  } else {
-                    window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank');
-                  }
-                }}
-                disabled={plan.name === "Free" && !!userId}
-                className={`w-full mb-2 text-sm h-9 ${isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
-              >
-                {plan.name === "Free" ? (userId ? "Você já tem uma conta" : "Criar conta grátis") : (plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
-              </Button>
+              {(() => {
+                const targetSlug = PLAN_NAME_TO_SLUG[plan.name] || 'free';
+                const targetLevel = PLAN_HIERARCHY[targetSlug] ?? 0;
+                const userLevel = PLAN_HIERARCHY[activePlanSlug || (userId ? 'free' : '')] ?? -1;
+                const isCurrentPlan = userId && activePlanSlug && targetSlug === activePlanSlug;
+                const isUpgrade = userId && targetLevel > userLevel;
+                const isFree = plan.name === "Free";
+
+                let buttonText: string;
+                let isDisabled = false;
+
+                if (isFree) {
+                  if (userId) { buttonText = "Você já tem uma conta"; isDisabled = true; }
+                  else { buttonText = "Criar conta grátis"; }
+                } else if (isCurrentPlan) {
+                  buttonText = "Seu plano atual"; isDisabled = true;
+                } else if (isUpgrade) {
+                  buttonText = "Fazer upgrade";
+                } else {
+                  buttonText = (plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe');
+                }
+
+                return (
+                  <Button 
+                    onClick={() => {
+                      if (isFree) {
+                        if (!userId) setShowSignupModal(true);
+                      } else {
+                        window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank');
+                      }
+                    }}
+                    disabled={isDisabled}
+                    className={`w-full mb-2 text-sm h-9 ${isCurrentPlan ? "bg-purple-500/20 border border-purple-500/40 text-purple-300 cursor-not-allowed" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
+                  >
+                    {buttonText}
+                  </Button>
+                );
+              })()}
 
               {/* Savings Badge - fixed height container */}
               <div className="h-[28px] mb-2 flex items-center justify-center">
