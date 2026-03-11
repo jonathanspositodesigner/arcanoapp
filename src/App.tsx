@@ -346,6 +346,7 @@ const AppContent = () => {
             <Route path="/arcanocloner-teste" element={<ArcanoClonerTeste />} />
            <Route path="/obrigado-arcanocloner" element={<ObrigadoArcanoCloner />} />
           
+           <Route path="/prevenda-pack4" element={<PrevendaPack4 />} />
            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
            <Route path="*" element={<NotFound />} />
         </Routes>
