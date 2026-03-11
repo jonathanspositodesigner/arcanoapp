@@ -314,6 +314,7 @@ const AppContent = () => {
           <Route path="/admin-premium-musicos" element={<AdminPremiumMusicos />} />
           <Route path="/sucesso-artes-musicos" element={<SucessoArtesMusicos />} />
           <Route path="/sucesso-upscaler-arcano" element={<SucessoUpscalerArcano />} />
+          <Route path="/sucesso-compra" element={<SucessoCompra />} />
           <Route path="/aguardando-pagamento-musicos" element={<AguardandoPagamentoMusicos />} />
           <Route path="/planos-upscaler-arcano" element={<PlanosUpscalerArcano />} />
           <Route path="/planos-upscaler-arcano-69" element={<PlanosUpscalerArcano69 />} />
