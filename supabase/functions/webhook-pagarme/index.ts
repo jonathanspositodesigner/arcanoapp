@@ -480,6 +480,39 @@ serve(async (req) => {
         } else {
           console.log(`   ├─ ℹ️ Acesso já existente: ${product.pack_slug}`)
         }
+
+        // Bundle: conceder packs extras para produtos do tipo bundle
+        const BUNDLE_EXTRA_PACKS: Record<string, Array<{pack_slug: string, access_type: string}>> = {
+          'pack4lancamento': [
+            { pack_slug: 'pack-de-sao-joao', access_type: 'vitalicio' }
+          ]
+        }
+
+        const extraPacks = BUNDLE_EXTRA_PACKS[product.slug] || []
+        for (const extra of extraPacks) {
+          const { data: existingExtra } = await supabase
+            .from('user_pack_purchases')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('pack_slug', extra.pack_slug)
+            .eq('is_active', true)
+            .maybeSingle()
+
+          if (!existingExtra) {
+            await supabase.from('user_pack_purchases').insert({
+              user_id: userId,
+              pack_slug: extra.pack_slug,
+              access_type: extra.access_type,
+              has_bonus_access: true,
+              expires_at: null,
+              product_name: `Bundle: ${product.title} → ${extra.pack_slug}`,
+              platform: 'pagarme'
+            })
+            console.log(`   ├─ ✅ Bundle: acesso extra concedido: ${extra.pack_slug}`)
+          } else {
+            console.log(`   ├─ ℹ️ Bundle: acesso extra já existente: ${extra.pack_slug}`)
+          }
+        }
       }
 
       if (product.type === 'credits' && product.credits_amount > 0) {
@@ -647,6 +680,20 @@ serve(async (req) => {
           .eq('pack_slug', product.pack_slug)
 
         console.log(`   ├─ ✅ Acesso revogado: ${product.pack_slug}`)
+
+        // Bundle: revogar packs extras
+        const REFUND_BUNDLE_EXTRA_PACKS: Record<string, string[]> = {
+          'pack4lancamento': ['pack-de-sao-joao']
+        }
+        const extraSlugs = REFUND_BUNDLE_EXTRA_PACKS[product.slug] || []
+        for (const extraSlug of extraSlugs) {
+          await supabase
+            .from('user_pack_purchases')
+            .update({ is_active: false, updated_at: new Date().toISOString() })
+            .eq('user_id', order.user_id)
+            .eq('pack_slug', extraSlug)
+          console.log(`   ├─ ✅ Bundle: acesso extra revogado: ${extraSlug}`)
+        }
       }
 
       if (order.user_id && product.type === 'credits' && product.credits_amount > 0) {

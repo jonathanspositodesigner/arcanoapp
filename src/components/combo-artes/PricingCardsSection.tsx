@@ -1,6 +1,11 @@
-import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock } from "lucide-react";
-import { appendUtmToUrl } from "@/lib/utmUtils";
+import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock, QrCode } from "lucide-react";
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+
+const PRODUCT_SLUG = "pack4lancamento";
 
 const plan = {
   id: "vitalicio",
@@ -21,12 +26,28 @@ const plan = {
     "Área de Membros",
   ],
   bonus: "+40 ARTES DE SÃO JOÃO",
-  checkoutUrl: "https://payfast.greenn.com.br/135338/offer/0r2gUj?ch_id=23924&b_id_1=103023&b_offer_1=fMHdgE",
   buttonText: "QUERO ESSAS ARTES INÉDITAS",
 };
 
 export const PricingCardsSection = () => {
   const [timeLeft, setTimeLeft] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [showPreCheckout, setShowPreCheckout] = useState(false);
+  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
+  const [pendingProfile, setPendingProfile] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        setUserEmail(user.email || null);
+      }
+    };
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -51,19 +72,93 @@ export const PricingCardsSection = () => {
     return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handlePurchase = (checkoutUrl: string) => {
-    const urlWithUtm = appendUtmToUrl(checkoutUrl);
-    
+  const handlePurchase = async () => {
+    // Fire Meta Pixel
     if (typeof window !== "undefined" && (window as any).fbq) {
       (window as any).fbq("track", "InitiateCheckout", {
-        content_name: "Combo Artes Arcanas",
+        content_name: "Prevenda Pack 4",
         content_category: "Digital Product",
         content_type: "product",
         currency: "BRL",
       });
     }
-    
-    window.open(urlWithUtm, "_blank");
+
+    if (!userId) {
+      setShowPreCheckout(true);
+      return;
+    }
+
+    // Check if profile is complete
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
+      .eq('id', userId)
+      .single();
+
+    const isProfileComplete = profile?.name && profile?.phone && profile?.cpf
+      && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
+
+    if (isProfileComplete) {
+      setPendingProfile(profile);
+      setShowPaymentMethodModal(true);
+    } else {
+      setShowPreCheckout(true);
+    }
+  };
+
+  const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
+    if (!pendingProfile) return;
+
+    setShowPaymentMethodModal(false);
+    setIsLoading(true);
+
+    try {
+      let utmData: Record<string, string> | null = null;
+      try {
+        const raw = sessionStorage.getItem('captured_utms');
+        if (raw) utmData = JSON.parse(raw);
+      } catch { /* ignore */ }
+
+      const body: any = {
+        product_slug: PRODUCT_SLUG,
+        user_email: userEmail,
+        user_phone: pendingProfile.phone,
+        user_name: pendingProfile.name,
+        user_cpf: pendingProfile.cpf,
+        billing_type: method,
+        utm_data: utmData,
+      };
+
+      if (method === 'PIX') {
+        body.user_address = {
+          line_1: pendingProfile.address_line,
+          zip_code: pendingProfile.address_zip,
+          city: pendingProfile.address_city,
+          state: pendingProfile.address_state,
+          country: pendingProfile.address_country || 'BR'
+        };
+      }
+
+      const response = await supabase.functions.invoke('create-pagarme-checkout', { body });
+
+      if (response.error) {
+        console.error('Erro checkout direto:', response.error);
+        toast.error('Erro ao gerar pagamento. Tente novamente.');
+        setIsLoading(false);
+        return;
+      }
+
+      const { checkout_url } = response.data;
+      if (checkout_url) {
+        window.location.href = checkout_url;
+      } else {
+        toast.error('Erro ao gerar link de pagamento.');
+      }
+    } catch (error) {
+      console.error('Erro checkout direto:', error);
+      toast.error('Erro ao processar. Tente novamente.');
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -84,8 +179,6 @@ export const PricingCardsSection = () => {
         <p className="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
           Selecione o seu plano e comece a criar artes profissionais hoje mesmo!
         </p>
-
-
 
         {/* Two cards side by side */}
         <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6 max-w-4xl mx-auto items-stretch">
@@ -137,10 +230,11 @@ export const PricingCardsSection = () => {
             </ul>
             
             <button
-              onClick={() => handlePurchase(plan.checkoutUrl)}
-              className="w-full font-bold text-lg py-4 rounded-xl transition-all duration-300 bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white shadow-lg shadow-orange-500/30 hover:scale-105"
+              onClick={handlePurchase}
+              disabled={isLoading}
+              className="w-full font-bold text-lg py-4 rounded-xl transition-all duration-300 bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white shadow-lg shadow-orange-500/30 hover:scale-105 disabled:opacity-70 disabled:hover:scale-100"
             >
-              {plan.buttonText}
+              {isLoading ? 'Processando...' : plan.buttonText}
             </button>
 
             {/* Urgency Countdown */}
@@ -191,7 +285,7 @@ export const PricingCardsSection = () => {
               </p>
               
               <p className="text-gray-600 text-sm leading-relaxed text-center">
-                Garantimos sua segurança com a Greenn, uma plataforma de pagamento altamente segura.
+                Garantimos sua segurança com uma plataforma de pagamento altamente segura.
               </p>
               
               <p className="text-gray-600 text-sm leading-relaxed text-center">
@@ -220,8 +314,52 @@ export const PricingCardsSection = () => {
             </div>
           </div>
         </div>
-
       </div>
+
+      {/* Payment Method Modal */}
+      <Dialog open={showPaymentMethodModal} onOpenChange={setShowPaymentMethodModal}>
+        <DialogContent className="sm:max-w-md bg-[#1a0a0a] border-[#EF672C]/30">
+          <DialogHeader className="text-center">
+            <DialogTitle className="text-xl font-bold text-center text-white">
+              Escolha a forma de pagamento
+            </DialogTitle>
+            <DialogDescription className="text-center text-orange-300/70">
+              Selecione como deseja pagar
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <button
+              onClick={() => handlePaymentMethodSelected('PIX')}
+              className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-[#EF672C]/30 bg-[#EF672C]/10 hover:border-green-400/60 hover:bg-green-900/20 transition-all duration-200 group"
+            >
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <QrCode className="w-7 h-7 text-white" />
+              </div>
+              <span className="text-white font-semibold text-sm">PIX</span>
+              <span className="text-orange-300/50 text-[10px]">Aprovação instantânea</span>
+            </button>
+            <button
+              onClick={() => handlePaymentMethodSelected('CREDIT_CARD')}
+              className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-[#EF672C]/30 bg-[#EF672C]/10 hover:border-[#EF672C]/60 hover:bg-[#EF672C]/20 transition-all duration-200 group"
+            >
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#EF672C] to-[#f65928] flex items-center justify-center group-hover:scale-110 transition-transform">
+                <CreditCard className="w-7 h-7 text-white" />
+              </div>
+              <span className="text-white font-semibold text-sm">Cartão de Crédito</span>
+              <span className="text-orange-300/50 text-[10px]">Aprovação instantânea</span>
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* PreCheckout Modal */}
+      <PreCheckoutModal
+        isOpen={showPreCheckout}
+        onClose={() => setShowPreCheckout(false)}
+        userEmail={userEmail}
+        userId={userId}
+        productSlug={PRODUCT_SLUG}
+      />
     </section>
   );
 };
