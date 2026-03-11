@@ -91,6 +91,42 @@ async function checkRateLimit(ip: string, endpoint: string, maxRequests: number,
   } catch { return { allowed: true, resetAt: '' }; }
 }
 
+/** Upload base64 image bytes to RunningHub and return the fileName */
+async function uploadBase64ToRunningHub(imageBase64: string, fileName: string): Promise<string> {
+  const binaryString = atob(imageBase64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+  const ext = (fileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
+  const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : ext === 'webp' ? 'image/webp' : 'image/png';
+  const formData = new FormData();
+  formData.append('apiKey', RUNNINGHUB_API_KEY);
+  formData.append('fileType', 'image');
+  formData.append('file', new Blob([bytes], { type: mimeType }), fileName || 'upload.png');
+  const response = await fetchWithRetry('https://www.runninghub.ai/task/openapi/upload', { method: 'POST', body: formData }, 'Upload to RunningHub');
+  const data = await safeParseResponse(response, 'Upload response');
+  if (data.code !== 0) throw new Error(data.msg || 'Upload failed');
+  return data.data.fileName;
+}
+
+/** Background: save base64 image to Supabase Storage for history/costs page */
+async function saveToStorageBackground(imageBase64: string, userId: string, jobId: string, originalFileName: string): Promise<void> {
+  try {
+    const binaryString = atob(imageBase64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+    const ext = (originalFileName || 'input.png').split('.').pop()?.toLowerCase() || 'png';
+    const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : ext === 'webp' ? 'image/webp' : 'image/png';
+    const filePath = `bg-remover/${userId}/input-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('artes-cloudinary').upload(filePath, bytes, { contentType: mimeType, upsert: true });
+    if (error) { console.error('[BgRemover] Background storage upload error:', error); return; }
+    const { data: urlData } = supabase.storage.from('artes-cloudinary').getPublicUrl(filePath);
+    await supabase.from('bg_remover_jobs').update({ input_url: urlData.publicUrl }).eq('id', jobId);
+    console.log(`[BgRemover] Background storage saved for job ${jobId}`);
+  } catch (e) {
+    console.error('[BgRemover] Background storage error:', e);
+  }
+}
+
 // ========== MAIN ==========
 
 serve(async (req) => {
@@ -131,21 +167,8 @@ async function handleUpload(req: Request) {
     return new Response(JSON.stringify({ error: 'imageBase64 is required', code: 'MISSING_IMAGE' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
   try {
-    const binaryString = atob(imageBase64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
-    const ext = (fileName || 'image.png').split('.').pop()?.toLowerCase() || 'png';
-    const mimeType = ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : ext === 'webp' ? 'image/webp' : 'image/png';
-    const formData = new FormData();
-    formData.append('apiKey', RUNNINGHUB_API_KEY);
-    formData.append('fileType', 'image');
-    formData.append('file', new Blob([bytes], { type: mimeType }), fileName || 'upload.png');
-    const response = await fetchWithRetry('https://www.runninghub.ai/task/openapi/upload', { method: 'POST', body: formData }, 'Upload to RunningHub');
-    const data = await safeParseResponse(response, 'Upload response');
-    if (data.code !== 0) {
-      return new Response(JSON.stringify({ error: data.msg || 'Upload failed', code: data.code }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    }
-    return new Response(JSON.stringify({ success: true, fileName: data.data.fileName }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    const rhFileName = await uploadBase64ToRunningHub(imageBase64, fileName);
+    return new Response(JSON.stringify({ success: true, fileName: rhFileName }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Unknown upload error';
     console.error('[BgRemover] Upload error:', error);
@@ -157,46 +180,82 @@ async function handleRun(req: Request) {
   if (!RUNNINGHUB_API_KEY) {
     return new Response(JSON.stringify({ error: 'API key not configured', code: 'MISSING_API_KEY' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
-  const { jobId, inputImageUrl, userId, creditCost } = await req.json();
+  const body = await req.json();
+  const { jobId, userId, creditCost, imageBase64, fileName, inputImageUrl } = body;
 
   // Validation
   if (!jobId || typeof jobId !== 'string') return new Response(JSON.stringify({ error: 'Valid jobId is required', code: 'INVALID_JOB_ID' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-  if (!inputImageUrl) return new Response(JSON.stringify({ error: 'inputImageUrl is required', code: 'MISSING_PARAMS' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  if (!imageBase64 && !inputImageUrl) return new Response(JSON.stringify({ error: 'imageBase64 or inputImageUrl is required', code: 'MISSING_PARAMS' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) return new Response(JSON.stringify({ error: 'Invalid credit cost', code: 'INVALID_CREDIT_COST' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   if (!userId || !uuidRegex.test(userId)) return new Response(JSON.stringify({ error: 'Valid userId is required', code: 'INVALID_USER_ID' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
-  // Validate URL from Supabase storage
-  const allowedDomains = ['supabase.co', 'supabase.in', SUPABASE_URL.replace('https://', '')];
-  try {
-    const urlObj = new URL(inputImageUrl);
-    if (!allowedDomains.some(d => urlObj.hostname.endsWith(d))) {
-      return new Response(JSON.stringify({ error: 'Image URL must be from storage', code: 'INVALID_IMAGE_SOURCE' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-    }
-  } catch { return new Response(JSON.stringify({ error: 'Invalid image URL', code: 'INVALID_IMAGE_URL' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }); }
+  // If using URL, validate it's from Supabase storage
+  if (inputImageUrl && !imageBase64) {
+    const allowedDomains = ['supabase.co', 'supabase.in', SUPABASE_URL.replace('https://', '')];
+    try {
+      const urlObj = new URL(inputImageUrl);
+      if (!allowedDomains.some(d => urlObj.hostname.endsWith(d))) {
+        return new Response(JSON.stringify({ error: 'Image URL must be from storage', code: 'INVALID_IMAGE_SOURCE' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+    } catch { return new Response(JSON.stringify({ error: 'Invalid image URL', code: 'INVALID_IMAGE_URL' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }); }
+  }
 
-  // Download and upload to RunningHub
+  // Upload image to RunningHub + check queue in PARALLEL
   let inputFileName: string;
+  let queueResult: { slotsAvailable: number; accountName: string | null; accountApiKey: string | null };
+  
   try {
-    console.log('[BgRemover] Downloading image from storage...');
-    const imgResponse = await fetch(inputImageUrl);
-    if (!imgResponse.ok) throw new Error(`Failed to download image (${imgResponse.status})`);
-    const imgBlob = await imgResponse.blob();
-    const imgName = inputImageUrl.split('/').pop() || 'input.png';
-    const formData = new FormData();
-    formData.append('apiKey', RUNNINGHUB_API_KEY);
-    formData.append('fileType', 'image');
-    formData.append('file', imgBlob, imgName);
-    const uploadResponse = await fetchWithRetry('https://www.runninghub.ai/task/openapi/upload', { method: 'POST', body: formData }, 'Image upload');
-    const uploadData = await safeParseResponse(uploadResponse, 'Image upload');
-    if (uploadData.code !== 0) throw new Error('Image upload failed: ' + (uploadData.msg || 'Unknown'));
-    inputFileName = uploadData.data.fileName;
+    const uploadPromise = imageBase64
+      ? uploadBase64ToRunningHub(imageBase64, fileName || 'input.png')
+      : (async () => {
+          console.log('[BgRemover] Downloading image from storage...');
+          const imgResponse = await fetch(inputImageUrl);
+          if (!imgResponse.ok) throw new Error(`Failed to download image (${imgResponse.status})`);
+          const imgBlob = await imgResponse.blob();
+          const imgName = inputImageUrl.split('/').pop() || 'input.png';
+          const formData = new FormData();
+          formData.append('apiKey', RUNNINGHUB_API_KEY);
+          formData.append('fileType', 'image');
+          formData.append('file', imgBlob, imgName);
+          const uploadResponse = await fetchWithRetry('https://www.runninghub.ai/task/openapi/upload', { method: 'POST', body: formData }, 'Image upload');
+          const uploadData = await safeParseResponse(uploadResponse, 'Image upload');
+          if (uploadData.code !== 0) throw new Error('Image upload failed: ' + (uploadData.msg || 'Unknown'));
+          return uploadData.data.fileName;
+        })();
+
+    const queueCheckPromise = (async () => {
+      try {
+        const queueResponse = await fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+        });
+        const queueData = await queueResponse.json();
+        return {
+          slotsAvailable: queueData.slotsAvailable || 0,
+          accountName: queueData.accountName || 'primary',
+          accountApiKey: queueData.accountApiKey || RUNNINGHUB_API_KEY,
+        };
+      } catch (queueError) {
+        console.error('[BgRemover] Queue check failed:', queueError);
+        return { slotsAvailable: 1, accountName: 'primary', accountApiKey: RUNNINGHUB_API_KEY };
+      }
+    })();
+
+    // Run upload + queue check in parallel
+    [inputFileName, queueResult] = await Promise.all([uploadPromise, queueCheckPromise]);
     console.log('[BgRemover] Image uploaded:', inputFileName);
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : 'Image transfer failed';
     console.error('[BgRemover] Image transfer error:', error);
     await supabase.from('bg_remover_jobs').update({ status: 'failed', error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
     return new Response(JSON.stringify({ error: errorMsg, code: 'IMAGE_TRANSFER_ERROR' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  }
+
+  // Background: save to Supabase Storage for history (non-blocking)
+  if (imageBase64) {
+    // Fire-and-forget: await before response since Deno doesn't support waitUntil
+    // We do this AFTER upload to RunningHub but BEFORE starting the AI app
+    saveToStorageBackground(imageBase64, userId, jobId, fileName || 'input.png').catch(e => console.error('[BgRemover] Storage bg error:', e));
   }
 
   // Consume credits
@@ -215,23 +274,7 @@ async function handleRun(req: Request) {
   await supabase.from('bg_remover_jobs').update({ credits_charged: true, user_credit_cost: creditCost, input_file_name: inputFileName }).eq('id', jobId);
 
   try {
-    // Check queue availability
-    let slotsAvailable = 0;
-    let accountName: string | null = null;
-    let accountApiKey: string | null = null;
-    try {
-      const queueResponse = await fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
-      });
-      const queueData = await queueResponse.json();
-      slotsAvailable = queueData.slotsAvailable || 0;
-      accountName = queueData.accountName || 'primary';
-      accountApiKey = queueData.accountApiKey || RUNNINGHUB_API_KEY;
-    } catch (queueError) {
-      console.error('[BgRemover] Queue check failed:', queueError);
-      accountName = 'primary';
-      accountApiKey = RUNNINGHUB_API_KEY;
-    }
+    const { slotsAvailable, accountName, accountApiKey } = queueResult;
 
     if (slotsAvailable <= 0) {
       // Enqueue

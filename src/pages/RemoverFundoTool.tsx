@@ -317,6 +317,7 @@ const RemoverFundoTool: React.FC = () => {
   const handleReset = () => {
     endSubmit();
     setInputImage(null); setInputFile(null); setOutputImage(null);
+    setImageDims(null);
     setStatus('idle'); setProgress(0); setZoomLevel(1);
     setJobId(null); setQueuePosition(0);
     setCurrentStep(null); setFailedAtStep(null); setDebugErrorMessage(null);
