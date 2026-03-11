@@ -1,25 +1,23 @@
 
 
-## Diagnóstico e Correções para o Remover Fundo
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-### Problema 1: Compressão ativa para imagens pequenas
-Em `RemoverFundoTool.tsx` linha 244, `compressImage` (que chama `optimizeForAI`) é executado **sempre**, independente do tamanho da imagem. O modal de compressão (`ImageCompressionModal`) só aparece para imagens > 2000px, mas a compressão no `handleProcess` roda em todas — inclusive imagens de 500x500.
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-**Correção**: Verificar as dimensões da imagem antes de chamar `optimizeForAI`. Se ambas as dimensões forem ≤ 2000px, pular a compressão e usar o arquivo original.
+## Dados
 
-**Arquivo**: `src/pages/RemoverFundoTool.tsx` — alterar `handleProcess` para verificar dimensões via `getImageDimensions` antes de comprimir.
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-### Problema 2: Cleanup de 24h não inclui bg-remover
-O array `AI_FOLDERS` em `cleanup-ai-storage/index.ts` **não contém** `"bg-remover"`. Isso significa que os arquivos de input do Remover Fundo nunca são deletados e vão acumular indefinidamente no storage.
+## Ações (via SQL migration)
 
-**Correção**: Adicionar `"bg-remover"` ao array `AI_FOLDERS`.
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-**Arquivo**: `supabase/functions/cleanup-ai-storage/index.ts` — adicionar `"bg-remover"` na lista.
-
-### Resumo das mudanças
-
-| Arquivo | Mudança |
-|---------|---------|
-| `src/pages/RemoverFundoTool.tsx` | Só comprimir se imagem > 2000px |
-| `supabase/functions/cleanup-ai-storage/index.ts` | Adicionar `bg-remover` ao cleanup |
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 

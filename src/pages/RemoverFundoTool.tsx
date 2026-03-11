@@ -15,7 +15,7 @@ import AppLayout from '@/components/layout/AppLayout';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { JobDebugPanel, DownloadProgressOverlay, NotificationPromptToast, ImageCompressionModal } from '@/components/ai-tools';
-import { optimizeForAI, MAX_AI_DIMENSION } from '@/hooks/useImageOptimizer';
+import { optimizeForAI, getImageDimensions, MAX_AI_DIMENSION } from '@/hooks/useImageOptimizer';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
@@ -241,8 +241,11 @@ const RemoverFundoTool: React.FC = () => {
 
     try {
       setProgress(15);
-      const compressed = await compressImage(inputFile);
-      const inputUrl = await uploadToStorage(compressed, 'input');
+      // Only compress if image exceeds 2000px in any dimension
+      const dims = await getImageDimensions(inputFile);
+      const needsCompression = dims.width > MAX_AI_DIMENSION || dims.height > MAX_AI_DIMENSION;
+      const fileToUpload = needsCompression ? await compressImage(inputFile) : inputFile;
+      const inputUrl = await uploadToStorage(fileToUpload, 'input');
 
       setProgress(40);
       const { data: job, error: jobError } = await supabase
