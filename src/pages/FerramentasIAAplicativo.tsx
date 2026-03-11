@@ -160,6 +160,7 @@ const FerramentasIAAplicativo = () => {
     "ia-muda-roupa": "Veste AI",
     "arcano-cloner": "Arcano Cloner",
     "flyer-maker": "Flyer Maker",
+    "remover-fundo": "Remover Fundo",
   };
 
   const getPurchaseRoute = (tool: ToolData) => {
