@@ -136,7 +136,7 @@ export const PricingCardsSection = () => {
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <span className="bg-[#EF672C] text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
                   <Star className="w-3 h-3 fill-white" />
-                  MAIS VENDIDO
+                  LANÇAMENTO
                 </span>
               </div>
               
