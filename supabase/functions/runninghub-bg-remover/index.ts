@@ -127,6 +127,42 @@ async function saveToStorageBackground(imageBase64: string, userId: string, jobI
   }
 }
 
+// ========== QUICK QUEUE CHECK (inline, no external call) ==========
+
+const JOB_TABLES = [
+  'upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs',
+  'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs', 'bg_remover_jobs',
+] as const;
+
+const MAX_CONCURRENT_JOBS = 3;
+
+async function quickQueueCheck(): Promise<{ slotsAvailable: number; accountName: string; accountApiKey: string }> {
+  try {
+    // Count running/starting AND queued jobs across ALL tables in parallel (16 queries, 2 batches of 8)
+    const [runningCounts, queuedCounts] = await Promise.all([
+      Promise.all(JOB_TABLES.map(table =>
+        supabase.from(table).select('*', { count: 'exact', head: true }).in('status', ['running', 'starting'])
+      )),
+      Promise.all(JOB_TABLES.map(table =>
+        supabase.from(table).select('*', { count: 'exact', head: true }).eq('status', 'queued')
+      )),
+    ]);
+
+    const globalRunning = runningCounts.reduce((sum, r) => sum + (r.count || 0), 0);
+    const totalQueued = queuedCounts.reduce((sum, r) => sum + (r.count || 0), 0);
+
+    console.log(`[BgRemover] QuickQueueCheck: running=${globalRunning}, queued=${totalQueued}`);
+
+    const mustQueue = globalRunning >= MAX_CONCURRENT_JOBS || totalQueued > 0;
+    const slotsAvailable = mustQueue ? 0 : Math.max(0, MAX_CONCURRENT_JOBS - globalRunning);
+
+    return { slotsAvailable, accountName: 'primary', accountApiKey: RUNNINGHUB_API_KEY };
+  } catch (error) {
+    console.error('[BgRemover] QuickQueueCheck error, defaulting to allow:', error);
+    return { slotsAvailable: 1, accountName: 'primary', accountApiKey: RUNNINGHUB_API_KEY };
+  }
+}
+
 // ========== MAIN ==========
 
 serve(async (req) => {
@@ -224,22 +260,7 @@ async function handleRun(req: Request) {
           return uploadData.data.fileName;
         })();
 
-    const queueCheckPromise = (async () => {
-      try {
-        const queueResponse = await fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
-        });
-        const queueData = await queueResponse.json();
-        return {
-          slotsAvailable: queueData.slotsAvailable || 0,
-          accountName: queueData.accountName || 'primary',
-          accountApiKey: queueData.accountApiKey || RUNNINGHUB_API_KEY,
-        };
-      } catch (queueError) {
-        console.error('[BgRemover] Queue check failed:', queueError);
-        return { slotsAvailable: 1, accountName: 'primary', accountApiKey: RUNNINGHUB_API_KEY };
-      }
-    })();
+    const queueCheckPromise = quickQueueCheck();
 
     // Run upload + queue check in parallel
     [inputFileName, queueResult] = await Promise.all([uploadPromise, queueCheckPromise]);
