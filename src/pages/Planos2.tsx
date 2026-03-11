@@ -860,6 +860,16 @@ const Planos2 = () => {
         userId={userId}
         productSlug={selectedCreditSlug}
       />
+
+      {/* Signup Modal for Free plan */}
+      <HomeAuthModal
+        open={showSignupModal}
+        onClose={() => setShowSignupModal(false)}
+        onAuthSuccess={() => {
+          setShowSignupModal(false);
+          window.location.reload();
+        }}
+      />
     </div>
   );
 };
