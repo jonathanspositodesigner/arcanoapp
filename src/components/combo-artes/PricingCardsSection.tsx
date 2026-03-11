@@ -359,6 +359,8 @@ export const PricingCardsSection = () => {
         userEmail={userEmail}
         userId={userId}
         productSlug={PRODUCT_SLUG}
+        modalTitle="Já é quase seu!"
+        colorScheme="orange"
       />
     </section>
   );
