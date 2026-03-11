@@ -562,6 +562,7 @@ async function handleCheckUserActive(req: Request): Promise<Response> {
       'arcano_cloner_jobs': 'Arcano Cloner',
       'character_generator_jobs': 'Gerador Personagem',
       'flyer_maker_jobs': 'Flyer Maker',
+      'bg_remover_jobs': 'Remover Fundo',
     };
     
     // Verificar em TODAS as tabelas - incluir STARTING e PENDING recente (< 35s)
