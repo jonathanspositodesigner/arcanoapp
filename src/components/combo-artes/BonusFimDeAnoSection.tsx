@@ -100,7 +100,7 @@ export const BonusFimDeAnoSection = () => {
             
             <div ref={emblaRef}>
               <div className="flex md:-ml-4">
-                {artesCarnaval.map((arte, index) => (
+                {artesSaoJoao.map((arte, index) => (
                   <div
                     key={index}
                     className="flex-none shrink-0 basis-full md:basis-auto md:w-[280px] flex justify-center px-0 md:pl-4"
