@@ -330,40 +330,13 @@ export const PricingCardsSection = () => {
       </div>
 
       {/* Payment Method Modal */}
-      <Dialog open={showPaymentMethodModal} onOpenChange={setShowPaymentMethodModal}>
-        <DialogContent className="sm:max-w-md bg-[#1a0a0a] border-[#EF672C]/30">
-          <DialogHeader className="text-center">
-            <DialogTitle className="text-xl font-bold text-center text-white">
-              Escolha a forma de pagamento
-            </DialogTitle>
-            <DialogDescription className="text-center text-orange-300/70">
-              Selecione como deseja pagar
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <button
-              onClick={() => handlePaymentMethodSelected('PIX')}
-              className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-[#EF672C]/30 bg-[#EF672C]/10 hover:border-green-400/60 hover:bg-green-900/20 transition-all duration-200 group"
-            >
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <QrCode className="w-7 h-7 text-white" />
-              </div>
-              <span className="text-white font-semibold text-sm">PIX</span>
-              <span className="text-orange-300/50 text-[10px]">Aprovação instantânea</span>
-            </button>
-            <button
-              onClick={() => handlePaymentMethodSelected('CREDIT_CARD')}
-              className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-[#EF672C]/30 bg-[#EF672C]/10 hover:border-[#EF672C]/60 hover:bg-[#EF672C]/20 transition-all duration-200 group"
-            >
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#EF672C] to-[#f65928] flex items-center justify-center group-hover:scale-110 transition-transform">
-                <CreditCard className="w-7 h-7 text-white" />
-              </div>
-              <span className="text-white font-semibold text-sm">Cartão de Crédito</span>
-              <span className="text-orange-300/50 text-[10px]">Aprovação instantânea</span>
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <PaymentMethodModal
+        open={showPaymentMethodModal}
+        onOpenChange={setShowPaymentMethodModal}
+        onSelect={handlePaymentMethodSelected}
+        isProcessing={isSubmitting}
+        colorScheme="orange"
+      />
 
       {/* PreCheckout Modal */}
       <PreCheckoutModal
