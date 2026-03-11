@@ -61,15 +61,20 @@ const ProfileSettings = () => {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('name, phone, bio, avatar_url')
+        .select('name, phone, cpf, bio, avatar_url, address_line, address_zip, address_city, address_state')
         .eq('id', user.id)
         .single();
 
       if (data) {
         setName(data.name || "");
         setPhone(data.phone || "");
+        setCpf(data.cpf || "");
         setBio(data.bio || "");
         setAvatarUrl(data.avatar_url || "");
+        setAddressLine(data.address_line || "");
+        setAddressZip(data.address_zip || "");
+        setAddressCity(data.address_city || "");
+        setAddressState(data.address_state || "");
       }
     };
 
