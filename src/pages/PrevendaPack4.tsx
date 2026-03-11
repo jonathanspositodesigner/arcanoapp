@@ -1,5 +1,5 @@
 import { useEffect, useState, lazy, Suspense } from "react";
-import { HeroSectionPack4 } from "@/components/prevenda-pack4/HeroSectionPack4";
+import { HeroSectionCombo } from "@/components/combo-artes/HeroSectionCombo";
 import { FeaturesSection } from "@/components/combo-artes/FeaturesSection";
 import { LazySection } from "@/components/combo-artes/LazySection";
 
@@ -105,7 +105,7 @@ const PrevendaPack4 = () => {
         </div>
       </div>
       
-      <HeroSectionPack4 />
+      <HeroSectionCombo />
       <FeaturesSection />
       
       <div className="hidden md:flex justify-center pb-4 bg-black">
