@@ -29,7 +29,12 @@ const ProfileSettings = () => {
   const [showDisableModal, setShowDisableModal] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [cpf, setCpf] = useState("");
   const [bio, setBio] = useState("");
+  const [addressLine, setAddressLine] = useState("");
+  const [addressZip, setAddressZip] = useState("");
+  const [addressCity, setAddressCity] = useState("");
+  const [addressState, setAddressState] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
