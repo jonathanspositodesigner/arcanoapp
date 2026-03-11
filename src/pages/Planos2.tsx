@@ -21,7 +21,11 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { supabase } from "@/integrations/supabase/client";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 import HomeAuthModal from "@/components/HomeAuthModal";
+import { usePlanos2Access } from "@/hooks/usePlanos2Access";
 import { toast } from "sonner";
+
+const PLAN_HIERARCHY: Record<string, number> = { free: 0, starter: 1, pro: 2, ultimate: 3, unlimited: 4 };
+const PLAN_NAME_TO_SLUG: Record<string, string> = { "Free": "free", "Starter": "starter", "Pro": "pro", "Ultimate": "ultimate", "IA Unlimited": "unlimited" };
 
 const Planos2 = () => {
   const navigate = useNavigate();
