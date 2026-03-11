@@ -784,7 +784,7 @@ const Planos2 = () => {
 
                   <Button
                     onClick={() => handleCreditPurchase(plan.slug)}
-                    disabled={isLoading || !!pixLoading}
+                    disabled={isLoading || !!pixLoading || isCheckoutSubmitting}
                     className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5 disabled:opacity-70`}
                   >
                     {isLoading ? (
