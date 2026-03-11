@@ -1,23 +1,24 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Plan: Add "Ver mais" expandable button to the gallery
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+### What will be done
 
-## Dados
+Add a collapsible section below the current 20 images in `FlyersGallerySection.tsx`. The 10 new uploaded images will be hidden by default and revealed when clicking a "Ver mais" button. When expanded, the page scrolls down to show the new images, and the button text changes to "Ver menos".
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+### Technical approach
 
-## Ações (via SQL migration)
+1. **Copy 10 new images** to `public/images/pack4/` with clean filenames:
+   - `mexicomigo.webp`, `exclusive-night.webp`, `feriadinho-domingo.webp`, `festa-do-branco.webp`, `fogo-parquinho.webp`, `forro-piseiro.webp`, `forrozinho-delas.webp`, `i-love-baile-funk.webp`, `life-party-fest.webp`, `live-sunset.webp`
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+2. **Update `FlyersGallerySection.tsx`**:
+   - Add `useState` for expanded/collapsed toggle
+   - Split images into two arrays: `galleryImages` (current 20) and `extraImages` (new 10)
+   - Render `extraImages` in a conditionally visible grid below the main one
+   - Add a styled "Ver mais" / "Ver menos" button between the grids
+   - Use `useRef` + `scrollIntoView` to scroll down when expanded
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+### Files changed
+- `src/components/combo-artes/FlyersGallerySection.tsx` (edit)
+- 10 new image files in `public/images/pack4/` (create)
 
