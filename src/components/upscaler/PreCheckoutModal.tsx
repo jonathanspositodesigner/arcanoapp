@@ -477,7 +477,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     <QrCode className="h-6 w-6" />
                     <span className="text-sm font-medium">PIX</span>
                     {paymentMethod === 'PIX' && (
-                      <span className="text-[10px] text-fuchsia-300">Aprovação instantânea</span>
+                      <span className={`text-[10px] ${accentTextLight}`}>Aprovação instantânea</span>
                     )}
                   </button>
                   <button
