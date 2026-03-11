@@ -75,6 +75,7 @@ const EDGE_FUNCTION_MAP: Record<ToolType, string> = {
   arcano_cloner: 'runninghub-arcano-cloner/run',
   character_generator: 'runninghub-character-generator/run',
   flyer_maker: 'runninghub-flyer-maker/run',
+  bg_remover: 'runninghub-bg-remover/run',
 };
 
 // Tool names for display
