@@ -143,7 +143,9 @@ const CreditHistory = () => {
                     )}
                     <div>
                       <p className="text-sm text-white">
-                        {tx.description || (tx.transaction_type === 'consumption' ? 'Uso do Upscaler' : 'Recarga de créditos')}
+                        {(tx.description?.includes('Pagar.me') || tx.description?.includes('Pagarme'))
+                          ? tx.description.replace(/Compra\s+Pagar\.?me/i, 'Compra de créditos avulsos').replace(/Pagarme/i, 'créditos avulsos')
+                          : tx.description || (tx.transaction_type === 'consumption' ? 'Uso do Upscaler' : 'Recarga de créditos')}
                       </p>
                       <p className="text-xs text-purple-400">
                         {formatDate(tx.created_at)}
