@@ -1,42 +1,71 @@
 
-# Migração Planos Mensais/Anuais: Greenn → Pagar.me (CONCLUÍDA v2 - Recorrência Real)
 
-## Resumo
-Migração dos 8 planos de assinatura (4 planos × 2 períodos) da Greenn para o Pagar.me com **recorrência real via cartão de crédito** e PIX como pagamento avulso.
+# Rastrear Vendas Pagar.me no Facebook via Conversions API (Server-Side)
 
-## Decisão Arquitetural
-- **Cartão de Crédito**: Recorrência real via `POST /subscriptions` do Pagar.me. Tokenização do cartão no front-end via API pública (`pk_XXXX`). Cobrança automática a cada ciclo.
-- **PIX**: Checkout avulso (sem recorrência) — plano ativa por 30/365 dias. pg_cron expira planos vencidos.
-- **Reembolso**: Cancela subscription no Pagar.me (`DELETE /subscriptions/{id}`) + revoga plano → free + zera créditos.
+## O Problema
 
-## O que foi feito
+Quando o usuário clica em "Comprar", ele é **redirecionado para o checkout externo do Pagar.me** (domínio diferente). Nesse momento, o Facebook Pixel do seu site **para de funcionar** porque:
+- O Pixel só rastreia eventos no **seu domínio** (arcanoapp.lovable.app)
+- Na página do Pagar.me, seu Pixel não existe
+- O Facebook nunca recebe o evento "Purchase" → não atribui a venda à campanha
 
-### 1. Banco de Dados
-- Colunas `plan_slug` e `billing_period` em `mp_products`
-- Coluna `pagarme_subscription_id` em `asaas_orders` e `planos2_subscriptions`
-- 8 produtos inseridos: `plano-{starter,pro,ultimate,unlimited}-{mensal,anual}`
+## A Solução: Meta Conversions API (CAPI)
 
-### 2. CreditCardForm.tsx (NOVO)
-- Formulário seguro com campos: Número, Nome, Validade, CVV
-- Tokenização direta via `POST https://api.pagar.me/core/v5/tokens?appId=pk_XXX`
-- Retorna `card_token` para o fluxo de subscription
+Em vez de depender do Pixel no navegador, vamos enviar os eventos **direto do servidor** para o Facebook usando a Conversions API. Isso funciona mesmo quando o usuário está em outro site.
 
-### 3. create-pagarme-subscription (NOVO)
-- Edge function que cria subscription recorrente via `POST /subscriptions`
-- Suporta `interval: month` ou `year` baseado no `billing_period` do produto
-- Salva `pagarme_subscription_id` na ordem
+Você já tem os secrets necessários configurados: `META_ACCESS_TOKEN` e `META_APP_ID`.
 
-### 4. webhook-pagarme (ATUALIZADO)
-- Busca ordens por `pagarme_subscription_id` (fallback 4)
-- Trata `subscription.canceled`: revoga plano → free, zera créditos
-- Trata renovação (`charge.paid` em ordem já `paid`): renova plano + reseta créditos
-- Salva `pagarme_subscription_id` no `planos2_subscriptions`
+### Fluxo atualizado:
 
-### 5. refund-pagarme (ATUALIZADO)
-- Cancela subscription no Pagar.me via `DELETE /subscriptions/{id}` antes de revogar
-- Revoga plano → free + zera créditos
+```text
+Usuário clica "Comprar"
+       │
+       ▼
+[Front-end] ── fbq('InitiateCheckout') ── já funciona ✅
+       │
+       ▼
+[create-pagarme-checkout] ── CAPI: InitiateCheckout ── NOVO 🆕
+       │
+       ▼
+Usuário vai pro Pagar.me (Pixel perde rastreio ❌)
+       │
+       ▼
+Pagar.me confirma pagamento
+       │
+       ▼
+[webhook-pagarme] ── CAPI: Purchase ── NOVO 🆕
+```
 
-### 6. Planos2.tsx (ATUALIZADO)
-- Cartão: abre CreditCardForm → tokeniza → create-pagarme-subscription → recorrência real
-- PIX: mantém checkout avulso via create-pagarme-checkout → 30/365 dias sem recorrência
-- Flag `isSubscriptionFlow` diferencia fluxos de assinatura vs créditos avulsos
+## Mudanças Técnicas
+
+### 1. Nova Edge Function: `meta-capi-event`
+Função reutilizável que envia eventos para a Meta Conversions API:
+- Recebe: `event_name`, `email`, `value`, `currency`, `utm_data`, `fbp`, `fbc`, `event_id`
+- Faz hash do email (SHA-256, exigido pela API)
+- Envia para `https://graph.facebook.com/v21.0/{PIXEL_ID}/events`
+- Usa o Pixel ID principal: `1162356848586894`
+- Suporte a `event_id` para **deduplicação** com o Pixel do navegador (evita contar 2x)
+
+### 2. Atualizar `create-pagarme-checkout`
+- Após criar o checkout com sucesso, chamar `meta-capi-event` com evento `InitiateCheckout`
+- Passar email, valor do produto, e UTMs da ordem
+- Gerar `event_id` único e retorná-lo ao front-end
+
+### 3. Atualizar `webhook-pagarme`
+- Após confirmar pagamento (order.paid), chamar `meta-capi-event` com evento `Purchase`
+- Passar email, valor, UTMs armazenados na ordem
+- Isso garante que **toda venda confirmada** aparece no Facebook, independente do Pixel
+
+### 4. Atualizar Front-end (PreCheckoutModal e páginas de planos)
+- Capturar cookies `_fbp` e `_fbc` do navegador e enviar junto no body do checkout
+- Passar `event_id` no `fbq('track', 'InitiateCheckout')` para deduplicação
+- Isso permite que o Facebook "case" o evento do Pixel com o evento server-side
+
+### 5. Atualizar `index.html`
+- Incluir parâmetro `external_id` no Pixel init para melhorar o match rate
+
+## Resultado Esperado
+- **InitiateCheckout**: rastreado tanto pelo Pixel (browser) quanto pela CAPI (servidor) com deduplicação
+- **Purchase**: rastreado **exclusivamente pela CAPI** (já que o Pixel não existe no checkout do Pagar.me), atribuído à campanha correta via UTMs e cookies fbp/fbc
+- Vendas aparecerão no Gerenciador de Anúncios vinculadas à campanha/conjunto/anúncio correto
+
