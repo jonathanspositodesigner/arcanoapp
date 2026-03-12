@@ -55,13 +55,17 @@ serve(async (req: Request) => {
       return new Response(JSON.stringify({ error: 'Senha de confirmação é obrigatória' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    // Verify admin password
+    // Verify admin password using anonClient (NOT service role client to avoid corrupting its state)
     const { data: adminUser } = await supabase.auth.admin.getUserById(userId)
     if (!adminUser?.user?.email) {
       return new Response(JSON.stringify({ error: 'Admin user not found' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const verifyClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!
+    )
+    const { error: signInError } = await verifyClient.auth.signInWithPassword({
       email: adminUser.user.email,
       password: admin_password,
     })
@@ -182,6 +186,8 @@ serve(async (req: Request) => {
 
     // Revoke access
     const product = order.mp_products
+    console.log(`   ├─ 📦 Produto: ${JSON.stringify({ type: product?.type, credits_amount: product?.credits_amount, pack_slug: product?.pack_slug, title: product?.title })}`)
+    console.log(`   ├─ 👤 user_id da ordem: ${order.user_id}`)
 
     if (order.user_id && product?.pack_slug) {
       await supabase
@@ -206,7 +212,8 @@ serve(async (req: Request) => {
     }
 
     if (order.user_id && product?.type === 'credits' && product?.credits_amount > 0) {
-      const { error: revokeError } = await supabase.rpc('remove_lifetime_credits', {
+      console.log(`   ├─ 🔄 Revogando ${product.credits_amount} créditos lifetime do usuário ${order.user_id}...`)
+      const { data: revokeData, error: revokeError } = await supabase.rpc('remove_lifetime_credits', {
         _user_id: order.user_id,
         _amount: product.credits_amount,
         _description: `Reembolso manual Pagar.me: ${product.title}`
@@ -214,8 +221,10 @@ serve(async (req: Request) => {
       if (revokeError) {
         console.error(`   ├─ ❌ Erro ao revogar créditos:`, revokeError)
       } else {
-        console.log(`   ├─ ✅ Créditos revogados: ${product.credits_amount}`)
+        console.log(`   ├─ ✅ Créditos revogados: ${product.credits_amount}`, revokeData)
       }
+    } else {
+      console.log(`   ├─ ⚠️ Sem créditos para revogar (user_id: ${!!order.user_id}, type: ${product?.type}, credits_amount: ${product?.credits_amount})`)
     }
 
     // Update order status
