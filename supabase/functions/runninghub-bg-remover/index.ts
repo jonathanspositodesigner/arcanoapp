@@ -217,14 +217,26 @@ async function handleRun(req: Request) {
     return new Response(JSON.stringify({ error: 'API key not configured', code: 'MISSING_API_KEY' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
   const body = await req.json();
-  const { jobId, userId, creditCost, imageBase64, fileName, inputImageUrl } = body;
+  const { jobId, creditCost, imageBase64, fileName, inputImageUrl } = body;
+
+  // ========== JWT AUTH VERIFICATION ==========
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return new Response(JSON.stringify({ error: 'Unauthorized', code: 'AUTH_REQUIRED' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  }
+  const anonClient = createClient(SUPABASE_URL, Deno.env.get('SUPABASE_ANON_KEY')!);
+  const jwtToken = authHeader.replace('Bearer ', '');
+  const { data: { user: authUser }, error: authError } = await anonClient.auth.getUser(jwtToken);
+  if (authError || !authUser) {
+    return new Response(JSON.stringify({ error: 'Unauthorized', code: 'INVALID_TOKEN' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+  }
+  const userId = authUser.id;
+  console.log(`[BgRemover] JWT verified - userId: ${userId}`);
 
   // Validation
   if (!jobId || typeof jobId !== 'string') return new Response(JSON.stringify({ error: 'Valid jobId is required', code: 'INVALID_JOB_ID' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   if (!imageBase64 && !inputImageUrl) return new Response(JSON.stringify({ error: 'imageBase64 or inputImageUrl is required', code: 'MISSING_PARAMS' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) return new Response(JSON.stringify({ error: 'Invalid credit cost', code: 'INVALID_CREDIT_COST' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  if (!userId || !uuidRegex.test(userId)) return new Response(JSON.stringify({ error: 'Valid userId is required', code: 'INVALID_USER_ID' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
   // If using URL, validate it's from Supabase storage
   if (inputImageUrl && !imageBase64) {

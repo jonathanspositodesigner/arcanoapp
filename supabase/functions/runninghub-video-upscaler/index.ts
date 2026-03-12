@@ -193,9 +193,33 @@ serve(async (req) => {
 
     // Route: /run - Start video upscaling
     if (path === "run" && req.method === "POST") {
-      const { jobId, videoUrl, userId, creditCost } = await req.json();
+      const body = await req.json();
+      const { jobId, videoUrl, creditCost } = body;
 
-      if (!jobId || !videoUrl || !userId) {
+      // ========== JWT AUTH VERIFICATION ==========
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader?.startsWith('Bearer ')) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Unauthorized', code: 'AUTH_REQUIRED' }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const anonClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      );
+      const jwtToken = authHeader.replace('Bearer ', '');
+      const { data: { user: authUser }, error: authError } = await anonClient.auth.getUser(jwtToken);
+      if (authError || !authUser) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Unauthorized', code: 'INVALID_TOKEN' }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const userId = authUser.id;
+      console.log(`[VideoUpscaler] JWT verified - userId: ${userId}`);
+
+      if (!jobId || !videoUrl) {
         return new Response(
           JSON.stringify({ success: false, error: "Missing required parameters" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }

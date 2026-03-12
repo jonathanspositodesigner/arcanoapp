@@ -395,7 +395,27 @@ async function handleRun(req: Request) {
   // Trial mode: use a fixed UUID for trial users, skip credit checks
   const TRIAL_USER_ID = '00000000-0000-0000-0000-000000000000';
   const isTrialMode = trial_mode === true;
-  const effectiveUserId = isTrialMode ? TRIAL_USER_ID : userId;
+  let effectiveUserId = isTrialMode ? TRIAL_USER_ID : userId;
+
+  // ========== JWT AUTH VERIFICATION (skip for trial mode) ==========
+  if (!isTrialMode) {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized', code: 'AUTH_REQUIRED' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const anonClient = createClient(SUPABASE_URL, Deno.env.get('SUPABASE_ANON_KEY')!);
+    const jwtToken = authHeader.replace('Bearer ', '');
+    const { data: { user: authUser }, error: authError } = await anonClient.auth.getUser(jwtToken);
+    if (authError || !authUser) {
+      return new Response(JSON.stringify({ error: 'Unauthorized', code: 'INVALID_TOKEN' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    effectiveUserId = authUser.id;
+    console.log(`[RunningHub] JWT verified - userId from token: ${effectiveUserId}`);
+  }
   
   // ========== INPUT VALIDATION ==========
   if (!jobId || typeof jobId !== 'string' || jobId.length > 100) {
@@ -615,7 +635,7 @@ async function handleRun(req: Request) {
       })
       .eq('id', jobId);
   } else {
-    console.log(`[RunningHub] Consuming ${creditCost} credits for user ${userId}`);
+    console.log(`[RunningHub] Consuming ${creditCost} credits for user ${effectiveUserId}`);
     const { data: creditResult, error: creditError } = await supabase.rpc(
       'consume_upscaler_credits', 
       {
@@ -928,7 +948,7 @@ async function handleRun(req: Request) {
     // Refund credits since RunningHub never started processing
     try {
       await supabase.rpc('refund_upscaler_credits', {
-        _user_id: userId,
+        _user_id: effectiveUserId,
         _amount: creditCost,
         _description: `START_FAILED_REFUNDED: ${startErrorMsg.slice(0, 100)}`
       });
@@ -975,7 +995,7 @@ async function handleRun(req: Request) {
     
     try {
       await supabase.rpc('refund_upscaler_credits', {
-        _user_id: userId,
+        _user_id: effectiveUserId,
         _amount: creditCost,
         _description: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}`
       });
