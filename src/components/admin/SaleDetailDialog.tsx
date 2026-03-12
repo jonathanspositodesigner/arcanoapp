@@ -131,11 +131,14 @@ const SaleDetailDialog = ({ sale, open, onClose }: SaleDetailDialogProps) => {
   };
 
   const handleRefundPagarme = async () => {
-    if (!sale) return;
+    if (!sale || !refundPassword) {
+      toast.error("Digite sua senha para confirmar o reembolso");
+      return;
+    }
     setIsRefunding(true);
     try {
       const { data, error } = await supabase.functions.invoke("refund-pagarme", {
-        body: { order_id: sale.id },
+        body: { order_id: sale.id, admin_password: refundPassword },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -144,6 +147,8 @@ const SaleDetailDialog = ({ sale, open, onClose }: SaleDetailDialogProps) => {
       } else {
         toast.success("Reembolso realizado com sucesso! O acesso foi revogado.");
       }
+      setShowRefundPasswordDialog(false);
+      setRefundPassword("");
       onClose();
     } catch (err: any) {
       console.error("Error refunding:", err);
