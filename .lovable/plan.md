@@ -1,23 +1,29 @@
 
+# Migração Planos Mensais/Anuais: Greenn → Pagar.me (CONCLUÍDA)
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Resumo
+Migração dos 8 planos de assinatura (4 planos × 2 períodos) da Greenn para o checkout Pagar.me, reutilizando a infraestrutura existente (`create-pagarme-checkout` + `webhook-pagarme`).
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+## Decisão Arquitetural
+- **Sem edge function nova**: Pagar.me não suporta checkout hosted para subscriptions (requer tokenização de cartão). Solução: usar o mesmo checkout de pagamento avulso existente e ativar o plano por 30/365 dias.
+- **PIX + Cartão suportados**: mesmo fluxo dos créditos avulsos.
+- **Sem auto-renovação**: o plano expira após o período. O pg_cron existente (`expire_planos2_subscriptions`) já cuida de expirar planos.
 
-## Dados
+## O que foi feito
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+### 1. Banco de Dados
+- Colunas `plan_slug` e `billing_period` adicionadas a `mp_products`
+- Coluna `pagarme_subscription_id` adicionada a `asaas_orders` e `planos2_subscriptions`
+- 8 produtos inseridos: `plano-{starter,pro,ultimate,unlimited}-{mensal,anual}`
 
-## Ações (via SQL migration)
+### 2. webhook-pagarme
+- Novo bloco `product.type === 'subscription'`: ativa plano via `planos2_subscriptions` upsert + `reset_upscaler_credits`
+- Reembolso: revoga para `free`, zera créditos mensais
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+### 3. refund-pagarme
+- Novo bloco: quando produto é subscription, reseta `planos2_subscriptions` → free e zera créditos
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
-
+### 4. Planos2.tsx (Frontend)
+- Removidos todos os links Greenn (`paymentUrl`)
+- Novo handler `handleSubscriptionPurchase` que usa o mesmo fluxo de checkout Pagar.me (PreCheckoutModal / PaymentMethodModal)
+- Botão agora chama checkout interno em vez de `window.open(greennUrl)`
