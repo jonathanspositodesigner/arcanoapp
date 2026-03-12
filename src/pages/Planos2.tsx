@@ -48,6 +48,9 @@ const Planos2 = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [showSignupModal, setShowSignupModal] = useState(false);
+  const [showCardForm, setShowCardForm] = useState(false);
+  const [pendingPlanName, setPendingPlanName] = useState<string>("");
+  const [isSubscriptionFlow, setIsSubscriptionFlow] = useState(false);
   const { planSlug: activePlanSlug } = usePlanos2Access(userId || undefined);
   const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
 
