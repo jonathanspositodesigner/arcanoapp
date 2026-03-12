@@ -484,7 +484,11 @@ serve(async (req) => {
     // =============================================
     // Atomic lock: update pending→processing to prevent race condition
     // (Pagar.me sends order.paid + charge.paid simultaneously)
+    // For subscription renewals (charge.paid from subscription where order is already paid),
+    // we skip the lock and process the renewal directly.
     let lockedOrder = null
+    let isSubscriptionRenewal = false
+
     if ((eventType === 'order.paid' || eventType === 'charge.paid') && order.status === 'pending') {
       const { data: locked, error: lockError } = await supabase
         .from('asaas_orders')
@@ -511,6 +515,11 @@ serve(async (req) => {
         })
         return new Response('OK', { status: 200, headers: corsHeaders })
       }
+    } else if (eventType === 'charge.paid' && order.status === 'paid' && isSubscriptionEvent && product?.type === 'subscription') {
+      // This is a subscription RENEWAL — order was already paid on the first cycle
+      console.log(`   ├─ 🔄 Subscription renewal detected (order already paid, new charge.paid)`)
+      lockedOrder = { id: order.id }
+      isSubscriptionRenewal = true
     }
 
     if (lockedOrder) {
