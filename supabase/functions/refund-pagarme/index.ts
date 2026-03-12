@@ -232,6 +232,39 @@ serve(async (req: Request) => {
       console.log(`   ├─ ⚠️ Sem créditos para revogar (user_id: ${!!order.user_id}, type: ${product?.type}, credits_amount: ${product?.credits_amount})`)
     }
 
+    // === SUBSCRIPTION PLAN REVOCATION ===
+    if (order.user_id && product?.type === 'subscription') {
+      console.log(`   ├─ 📋 Revogando plano de assinatura...`)
+
+      // Reset to free plan
+      await supabase.from('planos2_subscriptions').upsert({
+        user_id: order.user_id,
+        plan_slug: 'free',
+        is_active: true,
+        credits_per_month: 100,
+        daily_prompt_limit: 5,
+        has_image_generation: false,
+        has_video_generation: false,
+        cost_multiplier: 1.0,
+        expires_at: null,
+        pagarme_subscription_id: null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' })
+
+      // Zero out monthly credits
+      const { error: zeroError } = await supabase.rpc('reset_upscaler_credits', {
+        _user_id: order.user_id,
+        _amount: 0,
+        _description: `Reembolso manual Pagar.me: plano revogado → free`
+      })
+      if (zeroError) {
+        console.error(`   ├─ ❌ Erro ao zerar créditos:`, zeroError)
+        return new Response(JSON.stringify({ error: `Falha ao zerar créditos: ${zeroError.message}` }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+
+      console.log(`   ├─ ✅ Plano revogado → free, créditos mensais zerados`)
+    }
+
     // Update order status
     await supabase.from('asaas_orders').update({
       status: 'refunded',

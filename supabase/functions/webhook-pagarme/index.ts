@@ -885,6 +885,38 @@ serve(async (req) => {
           }
         }
 
+        // === SUBSCRIPTION PLAN REVOCATION ===
+        if (order.user_id && product.type === 'subscription') {
+          console.log(`   ├─ 📋 Revogando plano de assinatura...`)
+
+          // Reset to free plan
+          await supabase.from('planos2_subscriptions').upsert({
+            user_id: order.user_id,
+            plan_slug: 'free',
+            is_active: true,
+            credits_per_month: 100,
+            daily_prompt_limit: 5,
+            has_image_generation: false,
+            has_video_generation: false,
+            cost_multiplier: 1.0,
+            expires_at: null,
+            pagarme_subscription_id: null,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' })
+
+          // Zero out monthly credits
+          const { error: zeroError } = await supabase.rpc('reset_upscaler_credits', {
+            _user_id: order.user_id,
+            _amount: 0,
+            _description: `Reembolso Pagar.me: plano revogado → free`
+          })
+          if (zeroError) {
+            console.error(`   ├─ ❌ Erro ao zerar créditos:`, zeroError)
+          }
+
+          console.log(`   ├─ ✅ Plano revogado → free, créditos mensais zerados`)
+        }
+
         await supabase.from('asaas_orders').update({
           status: 'refunded',
           updated_at: new Date().toISOString()

@@ -638,10 +638,10 @@ const Planos2 = () => {
                       if (isFree) {
                         if (!userId) setShowSignupModal(true);
                       } else {
-                        window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank');
+                        handleSubscriptionPurchase(plan.name);
                       }
                     }}
-                    disabled={isDisabled}
+                    disabled={isDisabled || isCheckoutSubmitting}
                     className={`w-full mb-2 text-sm h-9 ${isCurrentPlan ? "bg-purple-500/20 border border-purple-500/40 text-purple-300 cursor-not-allowed" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
                   >
                     {buttonText}
