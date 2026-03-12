@@ -51,7 +51,9 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    const { product_slug, saved_card_id, utm_data } = await req.json()
+    const { product_slug, saved_card_id, utm_data, fbp, fbc } = await req.json()
+    const clientUserAgent = req.headers.get('user-agent') || null
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null
 
     if (!product_slug || !saved_card_id) {
       return new Response(JSON.stringify({ error: 'product_slug e saved_card_id são obrigatórios' }), {
