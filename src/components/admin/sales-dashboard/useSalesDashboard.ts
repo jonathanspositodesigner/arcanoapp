@@ -184,8 +184,7 @@ export function useSalesDashboard() {
       const platform = (o.source_platform || '').toLowerCase();
       if (platform === 'greenn') return sum + (o.amount * 0.0499 + 1.00);
       if (platform === 'hotmart') return sum + (o.amount * 0.099 + 1.00);
-      if (platform === 'pagarme') return sum + (o.amount * 0.0399 + 0.50);
-      // Mercado Pago: real fee from net_amount
+      // Pagar.me e Mercado Pago: taxa real via net_amount
       return sum + (o.amount - (o.net_amount ?? o.amount));
     }, 0),
     [approved]

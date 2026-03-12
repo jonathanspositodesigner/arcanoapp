@@ -766,8 +766,19 @@ serve(async (req) => {
       else if (paymentMethod === 'credit_card') paymentMethod = 'credit_card'
       else if (paymentMethod === 'boleto') paymentMethod = 'boleto'
 
-      // 5. Atualizar ordem
-      const netAmount = charge?.amount ? charge.amount / 100 : Number(order.amount)
+      // 5. Calcular net_amount real com taxas reais do Pagar.me
+      const grossAmount = Number(order.amount)
+      let netAmount: number
+      if (paymentMethod === 'pix') {
+        netAmount = grossAmount - (grossAmount * 0.0119 + 0.55)
+      } else if (paymentMethod === 'credit_card') {
+        netAmount = grossAmount - (grossAmount * 0.0439 + 0.99)
+      } else if (paymentMethod === 'boleto') {
+        netAmount = grossAmount - 4.04
+      } else {
+        netAmount = grossAmount - (grossAmount * 0.0439 + 0.99) // fallback: taxa de cartão
+      }
+      netAmount = Math.round(netAmount * 100) / 100
       await supabase.from('asaas_orders').update({
         status: 'paid',
         user_id: userId,
