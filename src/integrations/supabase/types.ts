@@ -1021,6 +1021,7 @@ export type Database = {
           created_at: string | null
           id: string
           net_amount: number | null
+          pagarme_subscription_id: string | null
           paid_at: string | null
           payment_method: string | null
           product_id: string | null
@@ -1045,6 +1046,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           net_amount?: number | null
+          pagarme_subscription_id?: string | null
           paid_at?: string | null
           payment_method?: string | null
           product_id?: string | null
@@ -1069,6 +1071,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           net_amount?: number | null
+          pagarme_subscription_id?: string | null
           paid_at?: string | null
           payment_method?: string | null
           product_id?: string | null
@@ -2464,11 +2467,13 @@ export type Database = {
       mp_products: {
         Row: {
           access_type: string | null
+          billing_period: string | null
           created_at: string | null
           credits_amount: number | null
           id: string
           is_active: boolean | null
           pack_slug: string | null
+          plan_slug: string | null
           price: number
           slug: string
           title: string
@@ -2476,11 +2481,13 @@ export type Database = {
         }
         Insert: {
           access_type?: string | null
+          billing_period?: string | null
           created_at?: string | null
           credits_amount?: number | null
           id?: string
           is_active?: boolean | null
           pack_slug?: string | null
+          plan_slug?: string | null
           price: number
           slug: string
           title: string
@@ -2488,11 +2495,13 @@ export type Database = {
         }
         Update: {
           access_type?: string | null
+          billing_period?: string | null
           created_at?: string | null
           credits_amount?: number | null
           id?: string
           is_active?: boolean | null
           pack_slug?: string | null
+          plan_slug?: string | null
           price?: number
           slug?: string
           title?: string
@@ -2944,6 +2953,7 @@ export type Database = {
           id: string
           is_active: boolean
           last_credit_reset_at: string | null
+          pagarme_subscription_id: string | null
           plan_slug: string
           updated_at: string
           user_id: string
@@ -2961,6 +2971,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_credit_reset_at?: string | null
+          pagarme_subscription_id?: string | null
           plan_slug?: string
           updated_at?: string
           user_id: string
@@ -2978,6 +2989,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_credit_reset_at?: string | null
+          pagarme_subscription_id?: string | null
           plan_slug?: string
           updated_at?: string
           user_id?: string
