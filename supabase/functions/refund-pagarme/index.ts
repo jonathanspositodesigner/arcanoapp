@@ -103,10 +103,10 @@ serve(async (req: Request) => {
     }
 
     if (!alreadyRefunded) {
-      console.log(`   ├─ 💳 Chamando Pagar.me: POST /charges/${chargeId}/void`)
+      console.log(`   ├─ 💳 Chamando Pagar.me: DELETE /charges/${chargeId}`)
 
-      const pagarmeResponse = await fetch(`https://api.pagar.me/core/v5/charges/${chargeId}/void`, {
-        method: 'POST',
+      const pagarmeResponse = await fetch(`https://api.pagar.me/core/v5/charges/${chargeId}`, {
+        method: 'DELETE',
         headers: {
           'Authorization': `Basic ${basicAuth}`,
           'Content-Type': 'application/json',
