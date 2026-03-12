@@ -311,9 +311,37 @@ serve(async (req) => {
 
     console.log(`✅ Checkout Pagar.me criado: ${pagarmeData.id} | URL: ${checkoutUrl.substring(0, 80)}...`)
 
+    // 7. Enviar InitiateCheckout para Meta CAPI (fire-and-forget, não bloqueia checkout)
+    const capiEventId = crypto.randomUUID()
+    try {
+      const capiResponse = await fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify({
+          event_name: 'InitiateCheckout',
+          email,
+          value: Number(product.price),
+          currency: 'BRL',
+          utm_data: utm_data || null,
+          fbp: null,
+          fbc: null,
+          event_id: capiEventId,
+          event_source_url: 'https://arcanoapp.voxvisual.com.br',
+          client_ip_address: clientIp !== 'unknown' ? clientIp : null,
+        }),
+      })
+      console.log(`📊 Meta CAPI InitiateCheckout: ${capiResponse.status}`)
+    } catch (capiErr: any) {
+      console.warn(`⚠️ Meta CAPI InitiateCheckout falhou (não-crítico): ${capiErr.message}`)
+    }
+
     return new Response(JSON.stringify({
       checkout_url: checkoutUrl,
-      order_id: order.id
+      order_id: order.id,
+      event_id: capiEventId,
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
