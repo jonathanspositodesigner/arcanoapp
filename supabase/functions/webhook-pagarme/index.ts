@@ -269,12 +269,42 @@ serve(async (req) => {
   const requestId = crypto.randomUUID().slice(0, 8)
 
   try {
+    // ===== HMAC-SHA256 Signature Verification =====
+    const pagarmeSecretKey = Deno.env.get('PAGARME_SECRET_KEY')
+    const signature = req.headers.get('x-hub-signature')
+    const rawBody = await req.text()
+
+    if (pagarmeSecretKey && signature) {
+      const key = await crypto.subtle.importKey(
+        'raw',
+        new TextEncoder().encode(pagarmeSecretKey),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      )
+      const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(rawBody))
+      const expected = 'sha256=' + Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('')
+      
+      if (signature !== expected) {
+        console.error(`🚫 [${requestId}] ASSINATURA INVÁLIDA - possível ataque`)
+        console.error(`   ├─ Recebido: ${signature.slice(0, 20)}...`)
+        console.error(`   └─ Esperado: ${expected.slice(0, 20)}...`)
+        return new Response(JSON.stringify({ error: 'Invalid signature' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+      console.log(`✅ [${requestId}] Assinatura HMAC válida`)
+    } else if (!signature) {
+      console.warn(`⚠️ [${requestId}] Webhook sem header x-hub-signature - permitido temporariamente`)
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    const body = await req.json()
+    const body = JSON.parse(rawBody)
 
     // Pagar.me webhook format: { id, type, data }
     const eventId = body.id
