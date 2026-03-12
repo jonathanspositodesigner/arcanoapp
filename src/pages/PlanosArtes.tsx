@@ -292,15 +292,10 @@ const PlanosArtes = () => {
   const isPagarmePackSlug = selectedPack ? PAGARME_PACK_SLUGS[selectedPack.slug] : null;
   const isPagarmeRenewalSlug = selectedPack ? PAGARME_RENEWAL_SLUGS[selectedPack.slug] : null;
 
-  const handlePagarmeCheckout = async (accessType: string) => {
-    if (!selectedPack || !isPagarmePackSlug) return;
-    const productSlug = isPagarmePackSlug[accessType];
-    if (!productSlug) return;
-
+  const handlePagarmeCheckoutWithSlug = async (productSlug: string) => {
     if (!startCheckout()) return;
 
     if (!userId) {
-      // Not logged in — open PreCheckout to collect data
       setPendingSlug(productSlug);
       setShowPreCheckout(true);
       endCheckout();
@@ -330,6 +325,13 @@ const PlanosArtes = () => {
     } catch {
       endCheckout();
     }
+  };
+
+  const handlePagarmeCheckout = async (accessType: string) => {
+    if (!selectedPack || !isPagarmePackSlug) return;
+    const productSlug = isPagarmePackSlug[accessType];
+    if (!productSlug) return;
+    handlePagarmeCheckoutWithSlug(productSlug);
   };
 
   const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
