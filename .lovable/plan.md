@@ -1,42 +1,37 @@
 
-# Migração Planos Mensais/Anuais: Greenn → Pagar.me (CONCLUÍDA v2 - Recorrência Real)
 
-## Resumo
-Migração dos 8 planos de assinatura (4 planos × 2 períodos) da Greenn para o Pagar.me com **recorrência real via cartão de crédito** e PIX como pagamento avulso.
+# Otimizar velocidade do checkout Pagar.me
 
-## Decisão Arquitetural
-- **Cartão de Crédito**: Recorrência real via `POST /subscriptions` do Pagar.me. Tokenização do cartão no front-end via API pública (`pk_XXXX`). Cobrança automática a cada ciclo.
-- **PIX**: Checkout avulso (sem recorrência) — plano ativa por 30/365 dias. pg_cron expira planos vencidos.
-- **Reembolso**: Cancela subscription no Pagar.me (`DELETE /subscriptions/{id}`) + revoga plano → free + zera créditos.
+## Problema encontrado
 
-## O que foi feito
+Analisei a edge function `create-pagarme-checkout` e encontrei **3 gargalos** que fazem o checkout demorar:
 
-### 1. Banco de Dados
-- Colunas `plan_slug` e `billing_period` em `mp_products`
-- Coluna `pagarme_subscription_id` em `asaas_orders` e `planos2_subscriptions`
-- 8 produtos inseridos: `plano-{starter,pro,ultimate,unlimited}-{mensal,anual}`
+1. **Meta CAPI está bloqueando a resposta** — O comentário diz "fire-and-forget" mas o código usa `await`, ou seja, espera a resposta do Facebook ANTES de retornar a URL do checkout. Isso adiciona 1-3 segundos.
 
-### 2. CreditCardForm.tsx (NOVO)
-- Formulário seguro com campos: Número, Nome, Validade, CVV
-- Tokenização direta via `POST https://api.pagar.me/core/v5/tokens?appId=pk_XXX`
-- Retorna `card_token` para o fluxo de subscription
+2. **Operações sequenciais que poderiam ser paralelas** — A atualização do perfil, a busca de produto e o rate limit rodam um após o outro. Algumas podem rodar ao mesmo tempo.
 
-### 3. create-pagarme-subscription (NOVO)
-- Edge function que cria subscription recorrente via `POST /subscriptions`
-- Suporta `interval: month` ou `year` baseado no `billing_period` do produto
-- Salva `pagarme_subscription_id` na ordem
+3. **Atualizações do banco após criar o checkout também bloqueiam** — O update do `asaas_payment_id` e do `fbc/fbp` rodam antes de retornar a URL.
 
-### 4. webhook-pagarme (ATUALIZADO)
-- Busca ordens por `pagarme_subscription_id` (fallback 4)
-- Trata `subscription.canceled`: revoga plano → free, zera créditos
-- Trata renovação (`charge.paid` em ordem já `paid`): renova plano + reseta créditos
-- Salva `pagarme_subscription_id` no `planos2_subscriptions`
+## O que vou fazer (sem mudar nenhuma lógica)
 
-### 5. refund-pagarme (ATUALIZADO)
-- Cancela subscription no Pagar.me via `DELETE /subscriptions/{id}` antes de revogar
-- Revoga plano → free + zera créditos
+### 1. Meta CAPI → Fire-and-forget real
+Remover o `await` da chamada Meta CAPI. O checkout retorna imediatamente sem esperar o Facebook responder. O evento continua sendo enviado normalmente.
 
-### 6. Planos2.tsx (ATUALIZADO)
-- Cartão: abre CreditCardForm → tokeniza → create-pagarme-subscription → recorrência real
-- PIX: mantém checkout avulso via create-pagarme-checkout → 30/365 dias sem recorrência
-- Flag `isSubscriptionFlow` diferencia fluxos de assinatura vs créditos avulsos
+### 2. Paralelizar rate limit + busca de produto
+Hoje rodam em sequência. Vou rodar os dois ao mesmo tempo com `Promise.all`.
+
+### 3. Mover atualizações pós-checkout para depois do return
+As atualizações de `asaas_payment_id` e `fbc/fbp` na tabela de ordens vão rodar **depois** de retornar a URL ao usuário, usando `waitUntil` ou simplesmente não aguardando o resultado.
+
+### 4. Perfil: atualizar sem bloquear
+A atualização do perfil (nome, CPF, etc.) não precisa bloquear o checkout.
+
+## Resultado esperado
+O checkout deve ficar **1-4 segundos mais rápido**, dependendo da latência do Facebook e do banco.
+
+## Risco
+**Zero** — Nenhuma lógica de pagamento, validação ou verificação é alterada. Apenas a ordem em que as operações acontecem muda, e chamadas não-críticas deixam de bloquear a resposta.
+
+## Arquivo modificado
+- `supabase/functions/create-pagarme-checkout/index.ts`
+
