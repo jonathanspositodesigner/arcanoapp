@@ -18,7 +18,7 @@ import { AnimatedSection, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAn
 
 import { CreditsFAQSection } from "@/components/credits/CreditsFAQSection";
 import { StatsCards } from "@/components/credits/StatsCards";
-import { useLocale } from "@/contexts/LocaleContext";
+
 import { supabase } from "@/integrations/supabase/client";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 import HomeAuthModal from "@/components/HomeAuthModal";
