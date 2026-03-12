@@ -4,12 +4,25 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Star, ArrowLeft, Gift, Clock, Percent, Bell } from "lucide-react";
+import { Check, Star, ArrowLeft, Gift, Clock, Percent, Bell, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 import { AnimatedSection, StaggeredAnimation, FadeIn, AnimatedGrid } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useLocale } from "@/contexts/LocaleContext";
+import { useProcessingButton } from "@/hooks/useProcessingButton";
+import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
+import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
+import { toast } from "sonner";
+
+// Packs que usam checkout Pagar.me em vez de links Greenn
+const PAGARME_PACK_SLUGS: Record<string, Record<string, string>> = {
+  'pack-arcano-vol-4': {
+    '6_meses': 'pack4-6meses',
+    '1_ano': 'pack4-1ano',
+    'vitalicio': 'pack4-vitalicio',
+  },
+};
 
 interface Pack {
   id: string;
@@ -18,35 +31,27 @@ interface Pack {
   type: string;
   cover_url: string | null;
   is_visible: boolean;
-  // Prices BRL (in cents)
   price_6_meses: number | null;
   price_1_ano: number | null;
   price_vitalicio: number | null;
-  // Prices USD (in cents)
   price_6_meses_usd: number | null;
   price_1_ano_usd: number | null;
   price_vitalicio_usd: number | null;
-  // Enabled toggles
   enabled_6_meses: boolean;
   enabled_1_ano: boolean;
   enabled_vitalicio: boolean;
-  // Normal checkout links (BR)
   checkout_link_6_meses: string | null;
   checkout_link_1_ano: string | null;
   checkout_link_vitalicio: string | null;
-  // LATAM checkout links
   checkout_link_latam_6_meses: string | null;
   checkout_link_latam_1_ano: string | null;
   checkout_link_latam_vitalicio: string | null;
-  // Renewal checkout links (30% OFF)
   checkout_link_renovacao_6_meses: string | null;
   checkout_link_renovacao_1_ano: string | null;
   checkout_link_renovacao_vitalicio: string | null;
-  // LATAM Renewal checkout links
   checkout_link_latam_renovacao_6_meses: string | null;
   checkout_link_latam_renovacao_1_ano: string | null;
   checkout_link_latam_renovacao_vitalicio: string | null;
-  // Notification discount
   notification_discount_enabled: boolean;
   notification_discount_percent: number | null;
   checkout_link_notif_6_meses: string | null;
@@ -70,6 +75,27 @@ const PlanosArtes = () => {
   
   const { isActive: isPromoActive, loading: promoLoading } = useYearEndPromo();
 
+  // Pagar.me checkout state
+  const [showPreCheckout, setShowPreCheckout] = useState(false);
+  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
+  const [pendingSlug, setPendingSlug] = useState<string | null>(null);
+  const [pendingProfile, setPendingProfile] = useState<any>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
+
+  // Check auth on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        setUserEmail(user.email || null);
+      }
+    };
+    checkAuth();
+  }, []);
+
   // Redirect to promo page if year-end promo is active
   useEffect(() => {
     if (!promoLoading && isPromoActive) {
@@ -80,8 +106,7 @@ const PlanosArtes = () => {
     }
   }, [promoLoading, isPromoActive, packSlug, isRenewal, navigate]);
 
-  // Discount configuration for renewals
-  const RENEWAL_DISCOUNT = 0.30; // 30% discount
+  const RENEWAL_DISCOUNT = 0.30;
 
   useEffect(() => {
     fetchPacks();
@@ -98,14 +123,11 @@ const PlanosArtes = () => {
   }, [packSlug, packs]);
 
   const checkNotificationEligibility = async () => {
-    // Check localStorage first for quick response
     const localEligible = localStorage.getItem('push_discount_eligible') === 'true';
     if (localEligible) {
       setIsNotificationEligible(true);
       return;
     }
-
-    // Verify with database using stored endpoint
     const storedEndpoint = localStorage.getItem('push_notification_endpoint');
     if (storedEndpoint) {
       const { data } = await supabase
@@ -113,7 +135,6 @@ const PlanosArtes = () => {
         .select('discount_eligible')
         .eq('endpoint', storedEndpoint)
         .maybeSingle();
-
       if (data?.discount_eligible) {
         setIsNotificationEligible(true);
         localStorage.setItem('push_discount_eligible', 'true');
@@ -146,19 +167,15 @@ const PlanosArtes = () => {
     setLoading(false);
   };
 
-  // Check if user is eligible for notification discount on this pack
   const hasNotificationDiscount = selectedPack?.notification_discount_enabled && isNotificationEligible && !isRenewal;
   const notificationDiscountPercent = selectedPack?.notification_discount_percent || 20;
 
-  // Separate packs and courses
   const packItems = packs.filter(p => p.type === "pack");
   const cursoItems = packs.filter(p => p.type === "curso");
 
   const getPrice = (type: string): number => {
     if (!selectedPack) return 0;
-    
     if (isLatam) {
-      // Use USD prices for LATAM
       switch (type) {
         case "6_meses": return selectedPack.price_6_meses_usd || selectedPack.price_6_meses || 2700;
         case "1_ano": return selectedPack.price_1_ano_usd || selectedPack.price_1_ano || 3700;
@@ -166,8 +183,6 @@ const PlanosArtes = () => {
         default: return 0;
       }
     }
-    
-    // Use BRL prices for Brazil
     switch (type) {
       case "6_meses": return selectedPack.price_6_meses || 2700;
       case "1_ano": return selectedPack.price_1_ano || 3700;
@@ -179,28 +194,22 @@ const PlanosArtes = () => {
   const calculatePrice = (type: string) => {
     const original = getPrice(type);
     if (isRenewal) {
-      const discounted = original * (1 - RENEWAL_DISCOUNT);
-      return discounted / 100;
+      return (original * (1 - RENEWAL_DISCOUNT)) / 100;
     }
     if (hasNotificationDiscount) {
-      const discounted = original * (1 - notificationDiscountPercent / 100);
-      return discounted / 100;
+      return (original * (1 - notificationDiscountPercent / 100)) / 100;
     }
     return original / 100;
   };
 
   const formatPrice = (value: number) => {
-    if (isLatam) {
-      return `$${value.toFixed(2)}`;
-    }
+    if (isLatam) return `$${value.toFixed(2)}`;
     return `R$ ${value.toFixed(2).replace('.', ',')}`;
   };
 
   const formatOriginalPrice = (type: string) => {
     const cents = getPrice(type);
-    if (isLatam) {
-      return `$${(cents / 100).toFixed(2)}`;
-    }
+    if (isLatam) return `$${(cents / 100).toFixed(2)}`;
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
@@ -259,19 +268,121 @@ const PlanosArtes = () => {
         highlighted: true
       }
     ];
-
-    // Filter only enabled options
     return allOptions.filter(opt => isEnabled(opt.type));
+  };
+
+  // Check if this pack uses Pagar.me checkout
+  const isPagarmePackSlug = selectedPack ? PAGARME_PACK_SLUGS[selectedPack.slug] : null;
+
+  const handlePagarmeCheckout = async (accessType: string) => {
+    if (!selectedPack || !isPagarmePackSlug) return;
+    const productSlug = isPagarmePackSlug[accessType];
+    if (!productSlug) return;
+
+    if (!startCheckout()) return;
+
+    if (!userId) {
+      // Not logged in — open PreCheckout to collect data
+      setPendingSlug(productSlug);
+      setShowPreCheckout(true);
+      endCheckout();
+      return;
+    }
+
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
+        .eq('id', userId)
+        .single();
+
+      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf
+        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
+
+      if (isProfileComplete) {
+        setPendingSlug(productSlug);
+        setPendingProfile(profile);
+        setShowPaymentMethodModal(true);
+        endCheckout();
+      } else {
+        setPendingSlug(productSlug);
+        setShowPreCheckout(true);
+        endCheckout();
+      }
+    } catch {
+      endCheckout();
+    }
+  };
+
+  const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
+    if (!pendingSlug || !pendingProfile) return;
+    if (!startCheckout()) return;
+
+    try {
+      let utmData: Record<string, string> | null = null;
+      try {
+        const raw = sessionStorage.getItem('captured_utms');
+        if (raw) utmData = JSON.parse(raw);
+      } catch { /* ignore */ }
+
+      const body: any = {
+        product_slug: pendingSlug,
+        user_email: userEmail,
+        user_phone: pendingProfile.phone,
+        user_name: pendingProfile.name,
+        user_cpf: pendingProfile.cpf,
+        billing_type: method,
+        utm_data: utmData,
+      };
+
+      if (method === 'PIX') {
+        body.user_address = {
+          line_1: pendingProfile.address_line,
+          zip_code: pendingProfile.address_zip,
+          city: pendingProfile.address_city,
+          state: pendingProfile.address_state,
+          country: pendingProfile.address_country || 'BR'
+        };
+      }
+
+      const response = await supabase.functions.invoke('create-pagarme-checkout', { body });
+
+      if (response.error) {
+        console.error('Erro checkout direto:', response.error);
+        toast.error('Erro ao gerar pagamento. Tente novamente.');
+        setShowPaymentMethodModal(false);
+        endCheckout();
+        return;
+      }
+
+      const { checkout_url } = response.data;
+      if (checkout_url) {
+        window.location.href = checkout_url;
+        return; // Keep modal open during redirect
+      } else {
+        toast.error('Erro ao gerar link de pagamento.');
+      }
+    } catch (error) {
+      console.error('Erro checkout direto:', error);
+      toast.error('Erro ao processar. Tente novamente.');
+    }
+    endCheckout();
+    setShowPaymentMethodModal(false);
   };
 
   const handleSelectOption = (accessType: string) => {
     if (!selectedPack) return;
+
+    // If this pack uses Pagar.me, route through that flow
+    if (isPagarmePackSlug) {
+      handlePagarmeCheckout(accessType);
+      return;
+    }
     
     let checkoutLinkBR: string | null = null;
     let checkoutLinkLatam: string | null = null;
     
     if (isRenewal) {
-      // Use renewal links (30% OFF)
       switch (accessType) {
         case "6_meses":
           checkoutLinkBR = selectedPack.checkout_link_renovacao_6_meses;
@@ -287,7 +398,6 @@ const PlanosArtes = () => {
           break;
       }
     } else if (hasNotificationDiscount) {
-      // Use notification discount links (20% OFF) - only BR for now
       switch (accessType) {
         case "6_meses":
           checkoutLinkBR = selectedPack.checkout_link_notif_6_meses;
@@ -300,7 +410,6 @@ const PlanosArtes = () => {
           break;
       }
     } else {
-      // Use normal links
       switch (accessType) {
         case "6_meses":
           checkoutLinkBR = selectedPack.checkout_link_6_meses;
@@ -317,13 +426,11 @@ const PlanosArtes = () => {
       }
     }
     
-    // Get the appropriate checkout link based on locale
     const checkoutLink = getCheckoutLink(checkoutLinkBR, checkoutLinkLatam);
     
     if (checkoutLink) {
       window.open(appendUtmToUrl(checkoutLink, locale), "_blank");
     } else {
-      // Fallback se não houver link configurado
       window.open(appendUtmToUrl("https://voxvisual.com.br/linksbio/", locale), "_blank");
     }
   };
@@ -388,9 +495,7 @@ const PlanosArtes = () => {
         </AnimatedSection>
 
         {!selectedPack && !isRenewal ? (
-          // Show pack selection only for normal pricing (not renewal)
           <div className="space-y-8">
-            {/* Packs de Artes */}
             {packItems.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold text-white mb-4">{t('packsOfArts')}</h2>
@@ -427,7 +532,6 @@ const PlanosArtes = () => {
               </div>
             )}
 
-            {/* Cursos */}
             {cursoItems.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold text-white mb-4">{t('courses')}</h2>
@@ -465,9 +569,7 @@ const PlanosArtes = () => {
             )}
           </div>
         ) : (
-          // Show access options for selected pack (or renewal pack)
           <>
-            {/* Hide "Escolher outro pack" button for renewals */}
             {!isRenewal && (
               <div className="flex justify-center mb-6">
                 <Button
@@ -551,9 +653,15 @@ const PlanosArtes = () => {
                                 : "bg-[#2d4a5e]/50 hover:bg-[#2d4a5e] text-white"
                         }`}
                         onClick={() => handleSelectOption(option.type)}
+                        disabled={isCheckoutSubmitting}
                       >
-                        {hasNotificationDiscount && <Bell className="h-4 w-4 mr-2" />}
-                        {!hasNotificationDiscount && <Star className="h-4 w-4 mr-2" />}
+                        {isCheckoutSubmitting ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : hasNotificationDiscount ? (
+                          <Bell className="h-4 w-4 mr-2" />
+                        ) : (
+                          <Star className="h-4 w-4 mr-2" />
+                        )}
                         {isRenewal 
                           ? t('buttons.renewNow', { ns: 'library' }) 
                           : hasNotificationDiscount 
@@ -578,6 +686,21 @@ const PlanosArtes = () => {
           </Button>
         </div>
       </div>
+
+      {/* PreCheckout Modal for Pagar.me packs */}
+      <PreCheckoutModal
+        isOpen={showPreCheckout}
+        onClose={() => setShowPreCheckout(false)}
+        productSlug={pendingSlug || 'pack4-vitalicio'}
+      />
+
+      {/* Payment Method Modal */}
+      <PaymentMethodModal
+        open={showPaymentMethodModal}
+        onOpenChange={setShowPaymentMethodModal}
+        onSelect={handlePaymentMethodSelected}
+        isProcessing={isCheckoutSubmitting}
+      />
     </div>
   );
 };

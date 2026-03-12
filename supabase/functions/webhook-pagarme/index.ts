@@ -467,12 +467,22 @@ serve(async (req) => {
           .maybeSingle()
 
         if (!existingPurchase) {
+          // Calcular expires_at e has_bonus_access baseado no access_type
+          const accessType = product.access_type || 'vitalicio'
+          let expiresAt: string | null = null
+          if (accessType === '6_meses') {
+            expiresAt = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString()
+          } else if (accessType === '1_ano') {
+            expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+          }
+          const hasBonusAccess = accessType !== '6_meses' // 1 ano e vitalício têm bônus
+
           await supabase.from('user_pack_purchases').insert({
             user_id: userId,
             pack_slug: product.pack_slug,
-            access_type: product.access_type || 'vitalicio',
-            has_bonus_access: true,
-            expires_at: null,
+            access_type: accessType,
+            has_bonus_access: hasBonusAccess,
+            expires_at: expiresAt,
             product_name: product.title,
             platform: 'pagarme'
           })
