@@ -317,6 +317,28 @@ serve(async (req) => {
 
     // 7. Enviar InitiateCheckout para Meta CAPI (fire-and-forget, não bloqueia checkout)
     const capiEventId = crypto.randomUUID()
+
+    // Generate fbc from fbclid if not provided by frontend (critical for in-app browsers)
+    let effectiveFbc = fbc || null
+    let effectiveFbp = fbp || null
+    const fbclid = utm_data?.fbclid || null
+    if (!effectiveFbc && fbclid) {
+      effectiveFbc = `fb.1.${Date.now()}.${fbclid}`
+      console.log(`🔗 fbc gerado a partir do fbclid: ${effectiveFbc.substring(0, 30)}...`)
+    }
+    if (!effectiveFbp && fbclid) {
+      effectiveFbp = `fb.1.${Date.now()}.${Math.floor(Math.random() * 2147483647)}`
+      console.log(`🔗 fbp fallback gerado: ${effectiveFbp}`)
+    }
+
+    // Also update the order with the effective fbc/fbp
+    if ((effectiveFbc && !fbc) || (effectiveFbp && !fbp)) {
+      await supabase.from('asaas_orders').update({
+        meta_fbc: effectiveFbc,
+        meta_fbp: effectiveFbp,
+      }).eq('id', order.id)
+    }
+
     try {
       const capiResponse = await fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {
         method: 'POST',
@@ -330,8 +352,8 @@ serve(async (req) => {
           value: Number(product.price),
           currency: 'BRL',
           utm_data: utm_data || null,
-          fbp: fbp || null,
-          fbc: fbc || null,
+          fbp: effectiveFbp,
+          fbc: effectiveFbc,
           event_id: capiEventId,
           event_source_url: 'https://arcanoapp.voxvisual.com.br',
           client_ip_address: clientIp !== 'unknown' ? clientIp : null,
