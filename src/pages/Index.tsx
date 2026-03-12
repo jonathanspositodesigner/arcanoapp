@@ -51,6 +51,52 @@ interface CardData {
 
 const Index = () => {
   const navigate = useNavigate();
+  const [isReloading, setIsReloading] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Auto-reload sem cache — 1x por sessão
+  useEffect(() => {
+    const FLAG = "home_cache_cleared";
+    const hasCleared = sessionStorage.getItem(FLAG);
+
+    if (!hasCleared) {
+      setIsReloading(true);
+      sessionStorage.setItem(FLAG, "1");
+      (async () => {
+        try {
+          if ("caches" in window) {
+            const names = await caches.keys();
+            await Promise.all(names.map(n => caches.delete(n)));
+          }
+          if ("serviceWorker" in navigator) {
+            const reg = await navigator.serviceWorker.getRegistration();
+            if (reg) await reg.update();
+          }
+        } catch (e) {
+          console.warn("[Home] cache clear error:", e);
+        }
+        window.location.reload();
+      })();
+      return;
+    }
+    // Segunda carga: remove flag para próxima sessão
+    sessionStorage.removeItem(FLAG);
+  }, []);
+
+  const handleManualUpdate = async () => {
+    setIsUpdating(true);
+    toast.info("Atualizando app...");
+    try {
+      if ("caches" in window) {
+        const names = await caches.keys();
+        await Promise.all(names.map(n => caches.delete(n)));
+      }
+      await forcePwaUpdate();
+    } catch {
+      window.location.replace(`/?v=${Date.now()}`);
+    }
+  };
+
   const { t } = useTranslation('index');
   const isAppInstalled = useIsAppInstalled();
   const { subscribe } = usePushNotifications();
