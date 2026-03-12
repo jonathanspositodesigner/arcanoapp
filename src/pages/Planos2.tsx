@@ -32,7 +32,7 @@ const PLAN_NAME_TO_SLUG: Record<string, string> = { "Free": "free", "Starter": "
 const Planos2 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('prompts');
-  const { locale } = useLocale();
+  
   const [billingPeriod, setBillingPeriod] = useState<"mensal" | "anual">("mensal");
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [expandedAiTools, setExpandedAiTools] = useState<Record<string, boolean>>({});
