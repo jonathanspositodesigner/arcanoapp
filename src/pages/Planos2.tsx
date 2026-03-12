@@ -137,6 +137,7 @@ const Planos2 = () => {
       if (isProfileComplete) {
         setPendingSlug(slug);
         setPendingProfile(profile);
+        setIsSubscriptionFlow(false);
         setShowPaymentMethodModal(true);
         endCheckout();
       } else {
