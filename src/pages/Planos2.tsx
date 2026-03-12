@@ -982,6 +982,15 @@ const Planos2 = () => {
         colorScheme="purple"
       />
 
+      {/* Credit Card Form for subscription with real recurrence */}
+      <CreditCardForm
+        open={showCardForm}
+        onOpenChange={setShowCardForm}
+        onTokenGenerated={handleCardTokenGenerated}
+        isProcessing={isCheckoutSubmitting}
+        planName={pendingPlanName}
+      />
+
       {/* PreCheckout Modal for credit purchases */}
       <PreCheckoutModal
         isOpen={showPreCheckout}
