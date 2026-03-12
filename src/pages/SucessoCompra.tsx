@@ -3,11 +3,11 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { CheckCircle, Sparkles, ArrowRight, MessageCircle, Lock, Eye, EyeOff } from "lucide-react";
+import { CheckCircle, Sparkles, ArrowRight, MessageCircle, Lock, Eye, EyeOff, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type Step = "email" | "password";
+type Step = "email" | "password" | "not_found";
 
 const SucessoCompra = () => {
   const navigate = useNavigate();
@@ -37,6 +37,7 @@ const SucessoCompra = () => {
 
     setIsLoading(true);
     try {
+      // 1. Check if profile already exists
       const { data, error } = await supabase.rpc("check_profile_exists", {
         check_email: trimmed,
       });
@@ -46,12 +47,29 @@ const SucessoCompra = () => {
       const exists = data?.[0]?.exists_in_db || false;
 
       if (exists) {
-        // User already has account → go straight to home
         toast.success("Conta encontrada! Redirecionando...");
         navigate("/");
-      } else {
-        // No account yet → show password creation form
+        return;
+      }
+
+      // 2. No profile → check if a purchase exists
+      const { data: purchaseData, error: purchaseError } = await supabase.functions.invoke(
+        "check-purchase-exists",
+        { body: { email: trimmed, order_id: orderId } }
+      );
+
+      if (purchaseError) {
+        console.error("Purchase check error:", purchaseError);
+        toast.error("Erro ao verificar compra. Tente novamente.");
+        return;
+      }
+
+      if (purchaseData?.exists) {
+        // Purchase found → show password creation
         setStep("password");
+      } else {
+        // No purchase → show not found
+        setStep("not_found");
       }
     } catch (err) {
       console.error(err);
@@ -157,119 +175,170 @@ const SucessoCompra = () => {
 
       <Card className="w-full max-w-lg relative z-10 border-primary/20 shadow-2xl">
         <CardContent className="pt-8 pb-8 px-6 text-center">
-          <div className="relative mb-6">
-            <div className="w-20 h-20 mx-auto bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
-              <CheckCircle className="w-10 h-10 text-white" />
-            </div>
-            <Sparkles className="absolute -top-2 -right-2 w-6 h-6 text-yellow-500 animate-pulse" />
-            <Sparkles
-              className="absolute -bottom-1 -left-2 w-5 h-5 text-primary animate-pulse"
-              style={{ animationDelay: "0.5s" }}
-            />
-          </div>
-
-          {step === "email" ? (
+          {step === "not_found" ? (
             <>
+              <div className="relative mb-6">
+                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center shadow-lg shadow-amber-500/30">
+                  <AlertTriangle className="w-10 h-10 text-white" />
+                </div>
+              </div>
+
               <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-                Seu pagamento está sendo processado
+                Nenhuma compra encontrada
               </h1>
-              <p className="text-muted-foreground mb-6">
-                Se você já pagou, seu acesso foi liberado! Coloque seu{" "}
-                <span className="text-primary font-semibold">email de compra</span>{" "}
-                para acessar seu conteúdo.
+              <p className="text-muted-foreground mb-2">
+                Não encontramos nenhuma compra associada ao email{" "}
+                <span className="text-primary font-semibold">{email}</span>.
+              </p>
+              <p className="text-muted-foreground text-sm mb-6">
+                Verifique se digitou o email correto ou entre em contato com o suporte.
               </p>
 
-              <form onSubmit={handleEmailSubmit} className="space-y-4 mb-6">
-                <Input
-                  type="email"
-                  placeholder="Digite seu email de compra"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="text-center"
-                  required
-                />
+              <div className="space-y-3 mb-4">
+                <p className="text-sm font-medium text-foreground">Problemas com o pagamento?</p>
                 <Button
-                  type="submit"
-                  className="w-full gap-2"
+                  asChild
+                  className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white"
                   size="lg"
-                  disabled={isLoading}
                 >
-                  {isLoading ? "Verificando..." : "Acessar meu conteúdo"}
-                  {!isLoading && <ArrowRight className="w-4 h-4" />}
-                </Button>
-              </form>
-            </>
-          ) : (
-            <>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-                Crie sua senha
-              </h1>
-              <p className="text-muted-foreground mb-1">
-                Defina uma senha para acessar sua conta com o email:
-              </p>
-              <p className="text-primary font-semibold mb-6 text-sm">{email}</p>
-
-              <form onSubmit={handlePasswordSubmit} className="space-y-4 mb-6">
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Crie sua senha (mín. 6 caracteres)"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10"
-                    required
-                    minLength={6}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  <a
+                    href="https://wa.me/+5533988819891"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Confirme sua senha"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10"
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full gap-2"
-                  size="lg"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Criando conta..." : "Criar conta e acessar"}
-                  {!isLoading && <ArrowRight className="w-4 h-4" />}
+                    <MessageCircle className="w-4 h-4" />
+                    Falar com o suporte
+                  </a>
                 </Button>
                 <button
                   type="button"
-                  onClick={() => { setStep("email"); setPassword(""); setConfirmPassword(""); }}
+                  onClick={() => {
+                    setStep("email");
+                    setEmail("");
+                  }}
                   className="text-xs text-muted-foreground hover:text-primary transition-colors"
                 >
-                  ← Voltar e trocar email
+                  ← Tentar outro email
                 </button>
-              </form>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="relative mb-6">
+                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                  <CheckCircle className="w-10 h-10 text-white" />
+                </div>
+                <Sparkles className="absolute -top-2 -right-2 w-6 h-6 text-yellow-500 animate-pulse" />
+                <Sparkles
+                  className="absolute -bottom-1 -left-2 w-5 h-5 text-primary animate-pulse"
+                  style={{ animationDelay: "0.5s" }}
+                />
+              </div>
+
+              {step === "email" ? (
+                <>
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+                    Seu pagamento está sendo processado
+                  </h1>
+                  <p className="text-muted-foreground mb-6">
+                    Se você já pagou, seu acesso foi liberado! Coloque seu{" "}
+                    <span className="text-primary font-semibold">email de compra</span>{" "}
+                    para acessar seu conteúdo.
+                  </p>
+
+                  <form onSubmit={handleEmailSubmit} className="space-y-4 mb-6">
+                    <Input
+                      type="email"
+                      placeholder="Digite seu email de compra"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="text-center"
+                      required
+                    />
+                    <Button
+                      type="submit"
+                      className="w-full gap-2"
+                      size="lg"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Verificando..." : "Acessar meu conteúdo"}
+                      {!isLoading && <ArrowRight className="w-4 h-4" />}
+                    </Button>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+                    Crie sua senha
+                  </h1>
+                  <p className="text-muted-foreground mb-1">
+                    Defina uma senha para acessar sua conta com o email:
+                  </p>
+                  <p className="text-primary font-semibold mb-6 text-sm">{email}</p>
+
+                  <form onSubmit={handlePasswordSubmit} className="space-y-4 mb-6">
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Crie sua senha (mín. 6 caracteres)"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-10 pr-10"
+                        required
+                        minLength={6}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Confirme sua senha"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="pl-10"
+                        required
+                        minLength={6}
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full gap-2"
+                      size="lg"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Criando conta..." : "Criar conta e acessar"}
+                      {!isLoading && <ArrowRight className="w-4 h-4" />}
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => { setStep("email"); setPassword(""); setConfirmPassword(""); }}
+                      className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      ← Voltar e trocar email
+                    </button>
+                  </form>
+                </>
+              )}
+
+              <a
+                href="https://wa.me/+5533988819891"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                Problemas com seu pagamento? Fale conosco no WhatsApp
+              </a>
             </>
           )}
-
-          <a
-            href="https://wa.me/33988819891"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            Problemas com seu pagamento? Fale conosco no WhatsApp
-          </a>
         </CardContent>
       </Card>
     </div>
