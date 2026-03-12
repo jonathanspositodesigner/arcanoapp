@@ -22,6 +22,7 @@ Deno.serve(async (req) => {
     }
 
     const trimmedEmail = email.trim().toLowerCase();
+    const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(order_id);
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -35,14 +36,33 @@ Deno.serve(async (req) => {
       .eq("user_email", trimmedEmail);
 
     if (order_id) {
-      query = supabaseAdmin
+      if (isUUID) {
+        query = supabaseAdmin
+          .from("asaas_orders")
+          .select("id")
+          .eq("user_email", trimmedEmail)
+          .or(`asaas_payment_id.eq.${order_id},id.eq.${order_id}`);
+      } else {
+        query = supabaseAdmin
+          .from("asaas_orders")
+          .select("id")
+          .eq("user_email", trimmedEmail)
+          .eq("asaas_payment_id", order_id);
+      }
+    }
+
+    let { data, error } = await query.limit(1);
+
+    // Fallback: if order_id filter returned nothing, try just by email
+    if (!error && (!data || data.length === 0) && order_id) {
+      const fallback = await supabaseAdmin
         .from("asaas_orders")
         .select("id")
         .eq("user_email", trimmedEmail)
-        .or(`asaas_payment_id.eq.${order_id},id.eq.${order_id}`);
+        .limit(1);
+      data = fallback.data;
+      error = fallback.error;
     }
-
-    const { data, error } = await query.limit(1);
 
     if (error) {
       console.error("Check purchase error:", error);
