@@ -635,7 +635,7 @@ async function handleRun(req: Request) {
       })
       .eq('id', jobId);
   } else {
-    console.log(`[RunningHub] Consuming ${creditCost} credits for user ${userId}`);
+    console.log(`[RunningHub] Consuming ${creditCost} credits for user ${effectiveUserId}`);
     const { data: creditResult, error: creditError } = await supabase.rpc(
       'consume_upscaler_credits', 
       {
