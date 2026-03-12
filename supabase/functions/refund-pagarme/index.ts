@@ -1,6 +1,7 @@
 /**
  * Edge Function: refund-pagarme
  * Admin-only: efetua reembolso via API Pagar.me e revoga acesso do usuário.
+ * Requires admin password confirmation for security.
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -16,7 +17,6 @@ serve(async (req: Request) => {
   }
 
   try {
-    // Auth: validate admin
     const authHeader = req.headers.get('Authorization')
     if (!authHeader?.startsWith('Bearer ')) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -47,12 +47,30 @@ serve(async (req: Request) => {
       return new Response(JSON.stringify({ error: 'Admin access required' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    const { order_id } = await req.json()
+    const { order_id, admin_password } = await req.json()
     if (!order_id) {
       return new Response(JSON.stringify({ error: 'order_id is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
+    if (!admin_password) {
+      return new Response(JSON.stringify({ error: 'Senha de confirmação é obrigatória' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
 
-    console.log(`🔄 [refund-pagarme] Admin ${userId} solicitou reembolso da ordem ${order_id}`)
+    // Verify admin password
+    const { data: adminUser } = await supabase.auth.admin.getUserById(userId)
+    if (!adminUser?.user?.email) {
+      return new Response(JSON.stringify({ error: 'Admin user not found' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: adminUser.user.email,
+      password: admin_password,
+    })
+    if (signInError) {
+      console.log(`❌ [refund-pagarme] Senha incorreta para admin ${userId}`)
+      return new Response(JSON.stringify({ error: 'Senha incorreta. Reembolso negado.' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    console.log(`🔄 [refund-pagarme] Admin ${userId} solicitou reembolso da ordem ${order_id} (senha verificada)`)
 
     // Fetch order
     const { data: order, error: orderError } = await supabase
@@ -69,12 +87,11 @@ serve(async (req: Request) => {
       return new Response(JSON.stringify({ error: 'Ordem já foi reembolsada' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    const chargeId = order.asaas_payment_id
-    if (!chargeId) {
-      return new Response(JSON.stringify({ error: 'Charge ID não encontrado nesta ordem' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    const paymentId = order.asaas_payment_id
+    if (!paymentId) {
+      return new Response(JSON.stringify({ error: 'Payment ID não encontrado nesta ordem' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    // Call Pagar.me API to void/refund the charge
     const pagarmeSecretKey = Deno.env.get('PAGARME_SECRET_KEY')
     if (!pagarmeSecretKey) {
       return new Response(JSON.stringify({ error: 'PAGARME_SECRET_KEY não configurada' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -82,14 +99,34 @@ serve(async (req: Request) => {
 
     const basicAuth = btoa(`${pagarmeSecretKey}:`)
 
-    // First, check current charge status to detect already-refunded charges
-    let alreadyRefunded = false
+    // Resolve charge ID - if payment_id is an order (or_), fetch charges from it
+    let chargeId = paymentId
+    if (paymentId.startsWith('or_')) {
+      console.log(`   ├─ 🔍 Payment ID é um order (${paymentId}), buscando charges...`)
+      const orderResponse = await fetch(`https://api.pagar.me/core/v5/orders/${paymentId}`, {
+        headers: { 'Authorization': `Basic ${basicAuth}` },
+      })
+      if (orderResponse.ok) {
+        const orderData = await orderResponse.json()
+        const charges = orderData?.charges
+        if (charges && charges.length > 0) {
+          chargeId = charges[0].id
+          console.log(`   ├─ ✅ Charge encontrada: ${chargeId} (status: ${charges[0].status})`)
+        } else {
+          return new Response(JSON.stringify({ error: 'Nenhuma charge encontrada nesta ordem Pagar.me' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
+      } else {
+        const errBody = await orderResponse.text()
+        console.error(`   ├─ ❌ Erro ao buscar order Pagar.me: ${orderResponse.status} - ${errBody}`)
+        return new Response(JSON.stringify({ error: `Erro ao buscar ordem no Pagar.me (${orderResponse.status})` }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+    }
 
+    // Check current charge status
+    let alreadyRefunded = false
     console.log(`   ├─ 🔍 Verificando status da charge ${chargeId}`)
     const checkResponse = await fetch(`https://api.pagar.me/core/v5/charges/${chargeId}`, {
-      headers: {
-        'Authorization': `Basic ${basicAuth}`,
-      },
+      headers: { 'Authorization': `Basic ${basicAuth}` },
     })
 
     if (checkResponse.ok) {
@@ -104,7 +141,6 @@ serve(async (req: Request) => {
 
     if (!alreadyRefunded) {
       console.log(`   ├─ 💳 Chamando Pagar.me: DELETE /charges/${chargeId}`)
-
       const pagarmeResponse = await fetch(`https://api.pagar.me/core/v5/charges/${chargeId}`, {
         method: 'DELETE',
         headers: {
@@ -117,7 +153,6 @@ serve(async (req: Request) => {
       console.log(`   ├─ Pagar.me response: ${pagarmeResponse.status} - ${pagarmeBody}`)
 
       if (!pagarmeResponse.ok) {
-        // Check if error indicates already refunded
         let detectedAlreadyRefunded = false
         try {
           const parsed = JSON.parse(pagarmeBody)
@@ -156,7 +191,6 @@ serve(async (req: Request) => {
         .eq('pack_slug', product.pack_slug)
       console.log(`   ├─ ✅ Acesso revogado: ${product.pack_slug}`)
 
-      // Bundle: revogar packs extras (mesma lógica do webhook)
       const REFUND_BUNDLE_EXTRA_PACKS: Record<string, string[]> = {
         'pack4lancamento': ['pack-de-sao-joao']
       }
