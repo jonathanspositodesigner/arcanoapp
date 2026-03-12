@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { Check, Smartphone, Bell, ExternalLink, Clock } from "lucide-react";
+import { Check, Smartphone, Bell, ExternalLink, Clock, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import { FadeIn, StaggeredAnimation } from "@/hooks/useScrollAnimation";
@@ -15,6 +15,7 @@ import { usePackAccess } from "@/hooks/usePackAccess";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/contexts/CreditsContext";
+import { forcePwaUpdate } from "@/utils/forcePwaUpdate";
 
 // Imagens de preview para os cards
 import cardArtesArcanas from "@/assets/card-artes-arcanas.webp";
