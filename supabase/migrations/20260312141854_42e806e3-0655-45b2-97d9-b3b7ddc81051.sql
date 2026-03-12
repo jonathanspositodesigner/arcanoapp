@@ -1,0 +1,1 @@
+UPDATE profiles SET password_changed = true WHERE email = 'jonathan@admin.com';

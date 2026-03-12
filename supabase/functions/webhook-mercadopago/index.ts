@@ -418,14 +418,13 @@ serve(async (req) => {
         console.log(`   ├─ ✅ Novo usuário criado: ${userId}`)
       }
 
-      // 2. Upsert profile
-      await supabase.from('profiles').upsert({
-        id: userId,
-        email,
-        password_changed: false,
-        email_verified: true,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'id' })
+      // 2. Upsert profile — check if profile exists to avoid resetting password_changed
+      const { data: existingProfileMp } = await supabase.from('profiles').select('id').eq('id', userId).maybeSingle()
+      const profileDataMp: Record<string, unknown> = {
+        id: userId, email, email_verified: true, updated_at: new Date().toISOString()
+      }
+      if (!existingProfileMp) { profileDataMp.password_changed = false }
+      await supabase.from('profiles').upsert(profileDataMp, { onConflict: 'id' })
       console.log(`   ├─ ✅ Profile atualizado`)
 
       // 3. Processar de acordo com o tipo do produto

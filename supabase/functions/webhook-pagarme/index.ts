@@ -439,7 +439,7 @@ serve(async (req) => {
       const profileAddressState = existingProfile?.address_state || order.user_address_state || billingAddress?.state || null
       const profileAddressCountry = existingProfile?.address_country || order.user_address_country || billingAddress?.country || 'BR'
 
-      await supabase.from('profiles').upsert({
+      const profileData: Record<string, unknown> = {
         id: userId,
         email,
         name: profileName,
@@ -450,10 +450,14 @@ serve(async (req) => {
         address_city: profileAddressCity,
         address_state: profileAddressState,
         address_country: profileAddressCountry,
-        password_changed: false,
         email_verified: true,
         updated_at: new Date().toISOString()
-      }, { onConflict: 'id' })
+      }
+      // Only set password_changed=false for NEW profiles to avoid resetting existing users
+      if (!existingProfile) {
+        profileData.password_changed = false
+      }
+      await supabase.from('profiles').upsert(profileData, { onConflict: 'id' })
       console.log(`   ├─ ✅ Profile atualizado (nome: ${profileName}, cpf: ${profileCpf ? '***' : 'N/A'}, endereço: ${profileAddressCity || 'N/A'})`)
 
       // 3. Processar produto
