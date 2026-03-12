@@ -15,7 +15,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { AnimatedSection, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
-import { appendUtmToUrl } from "@/lib/utmUtils";
+
 import { CreditsFAQSection } from "@/components/credits/CreditsFAQSection";
 import { StatsCards } from "@/components/credits/StatsCards";
 import { useLocale } from "@/contexts/LocaleContext";
