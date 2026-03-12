@@ -247,6 +247,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         if (raw) utmData = JSON.parse(raw);
       } catch { /* ignore */ }
 
+      const { fbp, fbc } = getMetaCookies();
       const response = await supabase.functions.invoke('create-pagarme-checkout', {
         body: {
           product_slug: productSlug,
@@ -255,7 +256,9 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
           user_name: name.trim(),
           user_cpf: cpf.replace(/\D/g, ''),
           billing_type: paymentMethod,
-          utm_data: utmData
+          utm_data: utmData,
+          fbp,
+          fbc,
         }
       });
 

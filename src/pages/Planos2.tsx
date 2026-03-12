@@ -204,7 +204,11 @@ const Planos2 = () => {
         return;
       }
 
-      const { checkout_url } = response.data;
+      const { checkout_url, event_id } = response.data;
+      // Fire InitiateCheckout with event_id for deduplication with server-side CAPI
+      if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
+        (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
+      }
       if (checkout_url) {
         window.location.href = checkout_url;
         // Don't close modal — let the page navigate away naturally
