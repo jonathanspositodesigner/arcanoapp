@@ -1,5 +1,6 @@
 import { useState, useEffect, ReactNode } from "react";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { useMetaPixelAdvancedMatching } from "@/hooks/useMetaPixelAdvancedMatching";
 import { supabase } from "@/integrations/supabase/client";
 import AppSidebar from "./AppSidebar";
 import AppTopBar from "./AppTopBar";
