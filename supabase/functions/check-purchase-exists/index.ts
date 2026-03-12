@@ -33,7 +33,8 @@ Deno.serve(async (req) => {
     let query = supabaseAdmin
       .from("asaas_orders")
       .select("id")
-      .eq("user_email", trimmedEmail);
+      .eq("user_email", trimmedEmail)
+      .eq("status", "paid");
 
     if (order_id) {
       if (isUUID) {
@@ -41,12 +42,14 @@ Deno.serve(async (req) => {
           .from("asaas_orders")
           .select("id")
           .eq("user_email", trimmedEmail)
+          .eq("status", "paid")
           .or(`asaas_payment_id.eq.${order_id},id.eq.${order_id}`);
       } else {
         query = supabaseAdmin
           .from("asaas_orders")
           .select("id")
           .eq("user_email", trimmedEmail)
+          .eq("status", "paid")
           .eq("asaas_payment_id", order_id);
       }
     }
@@ -59,6 +62,7 @@ Deno.serve(async (req) => {
         .from("asaas_orders")
         .select("id")
         .eq("user_email", trimmedEmail)
+        .eq("status", "paid")
         .limit(1);
       data = fallback.data;
       error = fallback.error;
