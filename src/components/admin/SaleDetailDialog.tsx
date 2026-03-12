@@ -285,45 +285,62 @@ const SaleDetailDialog = ({ sale, open, onClose }: SaleDetailDialogProps) => {
             </Button>
 
             {canRefund && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    disabled={isRefunding}
-                    className="justify-start gap-2"
-                  >
-                    {isRefunding ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
-                    Reembolsar via Pagar.me
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Confirmar Reembolso</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Tem certeza que deseja reembolsar <strong>{formatCurrency(sale.amount)}</strong> para <strong>{sale.user_email}</strong>?
-                      <br /><br />
-                      Esta ação irá:
-                      <ul className="list-disc list-inside mt-2 space-y-1">
-                        <li>Estornar o pagamento na Pagar.me</li>
-                        <li>Revogar o acesso do usuário ao produto</li>
-                        <li>Marcar a venda como reembolsada</li>
-                      </ul>
-                      <br />
-                      <strong>Esta ação não pode ser desfeita.</strong>
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleRefundPagarme}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Confirmar Reembolso
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  disabled={isRefunding}
+                  className="justify-start gap-2"
+                  onClick={() => { setRefundPassword(""); setShowRefundPasswordDialog(true); }}
+                >
+                  {isRefunding ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+                  Reembolsar via Pagar.me
+                </Button>
+
+                <AlertDialog open={showRefundPasswordDialog} onOpenChange={(v) => { if (!v) { setShowRefundPasswordDialog(false); setRefundPassword(""); } }}>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Confirmar Reembolso</AlertDialogTitle>
+                      <AlertDialogDescription asChild>
+                        <div>
+                          <p>Tem certeza que deseja reembolsar <strong>{formatCurrency(sale.amount)}</strong> para <strong>{sale.user_email}</strong>?</p>
+                          <ul className="list-disc list-inside mt-2 space-y-1">
+                            <li>Estornar o pagamento na Pagar.me</li>
+                            <li>Revogar o acesso do usuário ao produto</li>
+                            <li>Marcar a venda como reembolsada</li>
+                          </ul>
+                          <p className="mt-3"><strong>Esta ação não pode ser desfeita.</strong></p>
+                          <div className="mt-4">
+                            <Label htmlFor="refund-password" className="text-sm font-medium text-foreground">
+                              Digite sua senha de admin para confirmar:
+                            </Label>
+                            <Input
+                              id="refund-password"
+                              type="password"
+                              value={refundPassword}
+                              onChange={(e) => setRefundPassword(e.target.value)}
+                              placeholder="Sua senha"
+                              className="mt-1.5"
+                              onKeyDown={(e) => { if (e.key === 'Enter' && refundPassword) handleRefundPagarme(); }}
+                            />
+                          </div>
+                        </div>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <Button
+                        variant="destructive"
+                        onClick={handleRefundPagarme}
+                        disabled={isRefunding || !refundPassword}
+                      >
+                        {isRefunding ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                        Confirmar Reembolso
+                      </Button>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
             )}
           </div>
         </div>
