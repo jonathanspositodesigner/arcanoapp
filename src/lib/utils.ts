@@ -15,6 +15,8 @@ export function cn(...inputs: ClassValue[]) {
 export function toPackSlug(packName: string | null | undefined): string {
   if (!packName) return '';
   return packName
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // remove accents
     .toLowerCase()
     .replace(/\s+/g, '-')     // spaces to hyphens
     .replace(/\./g, '-')      // periods to hyphens
