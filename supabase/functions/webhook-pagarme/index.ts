@@ -617,6 +617,58 @@ serve(async (req) => {
         }
       }
 
+      // === SUBSCRIPTION PLAN ACTIVATION ===
+      if (product.type === 'subscription' && product.plan_slug) {
+        console.log(`   ├─ 📋 Ativando plano: ${product.plan_slug} (${product.billing_period})`)
+
+        const PLAN_CONFIG: Record<string, {
+          credits_per_month: number;
+          daily_prompt_limit: number | null;
+          has_image_generation: boolean;
+          has_video_generation: boolean;
+          cost_multiplier: number;
+        }> = {
+          'starter': { credits_per_month: 1800, daily_prompt_limit: 5, has_image_generation: false, has_video_generation: false, cost_multiplier: 1.0 },
+          'pro': { credits_per_month: 4200, daily_prompt_limit: 10, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
+          'ultimate': { credits_per_month: 10800, daily_prompt_limit: 24, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
+          'unlimited': { credits_per_month: 99999, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 0.5 },
+        }
+
+        const config = PLAN_CONFIG[product.plan_slug]
+        if (config) {
+          const periodDays = product.billing_period === 'anual' ? 365 : 30
+          const expiresAt = new Date(Date.now() + periodDays * 24 * 60 * 60 * 1000).toISOString()
+
+          // Upsert subscription
+          await supabase.from('planos2_subscriptions').upsert({
+            user_id: userId,
+            plan_slug: product.plan_slug,
+            is_active: true,
+            credits_per_month: config.credits_per_month,
+            daily_prompt_limit: config.daily_prompt_limit,
+            has_image_generation: config.has_image_generation,
+            has_video_generation: config.has_video_generation,
+            cost_multiplier: config.cost_multiplier,
+            expires_at: expiresAt,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' })
+
+          // Reset monthly credits to the plan amount
+          const { error: resetError } = await supabase.rpc('reset_upscaler_credits', {
+            _user_id: userId,
+            _amount: config.credits_per_month,
+            _description: `Ativação plano ${product.plan_slug} (${product.billing_period}) via Pagar.me`
+          })
+          if (resetError) {
+            console.error(`   ├─ ❌ Erro ao resetar créditos:`, resetError)
+          }
+
+          console.log(`   ├─ ✅ Plano ${product.plan_slug} ativado (${config.credits_per_month} créditos, expira: ${expiresAt})`)
+        } else {
+          console.error(`   ├─ ❌ Config não encontrada para plan_slug: ${product.plan_slug}`)
+        }
+      }
+
       // 4. Determinar método de pagamento
       const charge = eventData?.charges?.[0] || eventData
       const lastTransaction = charge?.last_transaction
@@ -831,6 +883,38 @@ serve(async (req) => {
               console.log(`   ├─ ✅ Créditos revogados: ${revokeResult.amount_revoked} (novo saldo: ${revokeResult.new_balance})`)
             }
           }
+        }
+
+        // === SUBSCRIPTION PLAN REVOCATION ===
+        if (order.user_id && product.type === 'subscription') {
+          console.log(`   ├─ 📋 Revogando plano de assinatura...`)
+
+          // Reset to free plan
+          await supabase.from('planos2_subscriptions').upsert({
+            user_id: order.user_id,
+            plan_slug: 'free',
+            is_active: true,
+            credits_per_month: 100,
+            daily_prompt_limit: 5,
+            has_image_generation: false,
+            has_video_generation: false,
+            cost_multiplier: 1.0,
+            expires_at: null,
+            pagarme_subscription_id: null,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' })
+
+          // Zero out monthly credits
+          const { error: zeroError } = await supabase.rpc('reset_upscaler_credits', {
+            _user_id: order.user_id,
+            _amount: 0,
+            _description: `Reembolso Pagar.me: plano revogado → free`
+          })
+          if (zeroError) {
+            console.error(`   ├─ ❌ Erro ao zerar créditos:`, zeroError)
+          }
+
+          console.log(`   ├─ ✅ Plano revogado → free, créditos mensais zerados`)
         }
 
         await supabase.from('asaas_orders').update({

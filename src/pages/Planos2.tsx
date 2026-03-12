@@ -15,10 +15,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { AnimatedSection, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
-import { appendUtmToUrl } from "@/lib/utmUtils";
+
 import { CreditsFAQSection } from "@/components/credits/CreditsFAQSection";
 import { StatsCards } from "@/components/credits/StatsCards";
-import { useLocale } from "@/contexts/LocaleContext";
+
 import { supabase } from "@/integrations/supabase/client";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 import HomeAuthModal from "@/components/HomeAuthModal";
@@ -32,7 +32,7 @@ const PLAN_NAME_TO_SLUG: Record<string, string> = { "Free": "free", "Starter": "
 const Planos2 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('prompts');
-  const { locale } = useLocale();
+  
   const [billingPeriod, setBillingPeriod] = useState<"mensal" | "anual">("mensal");
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [expandedAiTools, setExpandedAiTools] = useState<Record<string, boolean>>({});
@@ -210,13 +210,56 @@ const Planos2 = () => {
 
   const countdown = formatTime(timeLeft);
   
+  // Subscription purchase handler (same flow as credit purchase)
+  const handleSubscriptionPurchase = async (planName: string) => {
+    const slugMap: Record<string, string> = {
+      "Starter": `plano-starter-${billingPeriod}`,
+      "Pro": `plano-pro-${billingPeriod}`,
+      "Ultimate": `plano-ultimate-${billingPeriod}`,
+      "IA Unlimited": `plano-unlimited-${billingPeriod}`,
+    };
+    const slug = slugMap[planName];
+    if (!slug) return;
+
+    if (!userId) {
+      setSelectedCreditSlug(slug);
+      setShowPreCheckout(true);
+      return;
+    }
+
+    if (!startCheckout()) return;
+
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
+        .eq('id', userId)
+        .single();
+
+      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf 
+        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
+
+      if (isProfileComplete) {
+        setPendingSlug(slug);
+        setPendingProfile(profile);
+        setShowPaymentMethodModal(true);
+        endCheckout();
+      } else {
+        setSelectedCreditSlug(slug);
+        setShowPreCheckout(true);
+        endCheckout();
+      }
+    } catch {
+      endCheckout();
+    }
+  };
+
   const plans = {
     mensal: [{
       name: "Free",
       price: "0",
       originalPrice: null,
       perMonth: true,
-      paymentUrl: "",
       credits: "300 créditos de IA",
       images: 5,
       features: [
@@ -237,7 +280,6 @@ const Planos2 = () => {
       price: "19,90",
       originalPrice: "29,90",
       perMonth: true,
-      paymentUrl: "https://payfast.greenn.com.br/jx9yun8",
       credits: "1.800 créditos de IA",
       images: 30,
       features: [
@@ -258,7 +300,6 @@ const Planos2 = () => {
       price: "39,90",
       originalPrice: "49,90",
       perMonth: true,
-      paymentUrl: "https://payfast.greenn.com.br/h4np9xr",
       credits: "4.200 créditos de IA",
       images: 70,
       features: [
@@ -280,7 +321,6 @@ const Planos2 = () => {
       price: "59,90",
       originalPrice: "79,90",
       perMonth: true,
-      paymentUrl: "https://payfast.greenn.com.br/vqehk38",
       credits: "10.800 créditos de IA",
       images: 180,
       features: [
@@ -303,7 +343,6 @@ const Planos2 = () => {
       price: "149,90",
       originalPrice: "249,90",
       perMonth: true,
-      paymentUrl: "https://payfast.greenn.com.br/qj4w66m",
       credits: "Créditos Ilimitados",
       images: "Ilimitadas",
       features: [
@@ -326,7 +365,6 @@ const Planos2 = () => {
       price: "0",
       originalPrice: null,
       perMonth: true,
-      paymentUrl: "",
       credits: "300 créditos de IA",
       images: 5,
       features: [
@@ -348,7 +386,6 @@ const Planos2 = () => {
       originalPrice: null,
       perMonth: true,
       yearlyTotal: "238,80",
-      paymentUrl: "https://payfast.greenn.com.br/jx9yun8/offer/BBDc3r",
       credits: "1.800 créditos de IA",
       images: 30,
       features: [
@@ -370,7 +407,6 @@ const Planos2 = () => {
       originalPrice: "39,90",
       perMonth: true,
       yearlyTotal: "406,80",
-      paymentUrl: "https://payfast.greenn.com.br/h4np9xr/offer/dfNG8X",
       credits: "4.200 créditos de IA",
       images: 70,
       savings: "R$72",
@@ -394,7 +430,6 @@ const Planos2 = () => {
       originalPrice: "59,90",
       perMonth: true,
       yearlyTotal: "598,80",
-      paymentUrl: "https://payfast.greenn.com.br/vqehk38/offer/bOi2BO",
       credits: "10.800 créditos de IA",
       images: 180,
       savings: "R$120",
@@ -419,7 +454,6 @@ const Planos2 = () => {
       originalPrice: "149,90",
       perMonth: true,
       yearlyTotal: "1.438,80",
-      paymentUrl: "https://payfast.greenn.com.br/qj4w66m/offer/a6yNlw",
       credits: "Créditos Ilimitados",
       images: "Ilimitadas",
       savings: "R$360",
@@ -604,10 +638,10 @@ const Planos2 = () => {
                       if (isFree) {
                         if (!userId) setShowSignupModal(true);
                       } else {
-                        window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank');
+                        handleSubscriptionPurchase(plan.name);
                       }
                     }}
-                    disabled={isDisabled}
+                    disabled={isDisabled || isCheckoutSubmitting}
                     className={`w-full mb-2 text-sm h-9 ${isCurrentPlan ? "bg-purple-500/20 border border-purple-500/40 text-purple-300 cursor-not-allowed" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
                   >
                     {buttonText}
