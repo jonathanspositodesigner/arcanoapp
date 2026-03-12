@@ -391,8 +391,20 @@ const PlanosArtes = () => {
   const handleSelectOption = (accessType: string) => {
     if (!selectedPack) return;
 
-    // If this pack uses Pagar.me, route through that flow
-    if (isPagarmePackSlug) {
+    // If renewal and this pack has Pagar.me renewal slugs, use Pagar.me
+    if (isRenewal && isPagarmeRenewalSlug) {
+      const productSlug = isPagarmeRenewalSlug[accessType];
+      if (productSlug) {
+        // Reuse the same Pagar.me checkout flow with renewal slug
+        const originalSlug = pendingSlug;
+        setPendingSlug(productSlug);
+        handlePagarmeCheckoutWithSlug(productSlug);
+        return;
+      }
+    }
+
+    // If this pack uses Pagar.me (normal price), route through that flow
+    if (!isRenewal && isPagarmePackSlug) {
       handlePagarmeCheckout(accessType);
       return;
     }
