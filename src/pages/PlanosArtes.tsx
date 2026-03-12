@@ -397,9 +397,6 @@ const PlanosArtes = () => {
     if (isRenewal && isPagarmeRenewalSlug) {
       const productSlug = isPagarmeRenewalSlug[accessType];
       if (productSlug) {
-        // Reuse the same Pagar.me checkout flow with renewal slug
-        const originalSlug = pendingSlug;
-        setPendingSlug(productSlug);
         handlePagarmeCheckoutWithSlug(productSlug);
         return;
       }
