@@ -282,7 +282,7 @@ const Planos2 = () => {
 
   const countdown = formatTime(timeLeft);
   
-  // Subscription purchase handler (same flow as credit purchase)
+  // Subscription purchase handler
   const handleSubscriptionPurchase = async (planName: string) => {
     const slugMap: Record<string, string> = {
       "Starter": `plano-starter-${billingPeriod}`,
@@ -314,6 +314,8 @@ const Planos2 = () => {
       if (isProfileComplete) {
         setPendingSlug(slug);
         setPendingProfile(profile);
+        setPendingPlanName(planName);
+        setIsSubscriptionFlow(true);
         setShowPaymentMethodModal(true);
         endCheckout();
       } else {
