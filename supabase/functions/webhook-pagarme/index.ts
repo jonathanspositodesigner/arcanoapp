@@ -817,6 +817,30 @@ serve(async (req) => {
         console.error(`   ├─ ⚠️ Erro ao enviar email admin (não-crítico):`, adminErr)
       }
 
+      // 7.2 Enviar Purchase para Meta CAPI (server-side tracking)
+      try {
+        const utmData = order.utm_data as Record<string, string> | null
+        const capiResponse = await fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({
+            event_name: 'Purchase',
+            email,
+            value: Number(order.amount),
+            currency: 'BRL',
+            utm_data: utmData,
+            event_id: `purchase_${order.id}`,
+            event_source_url: 'https://arcanoapp.voxvisual.com.br',
+          }),
+        })
+        console.log(`   ├─ 📊 Meta CAPI Purchase: ${capiResponse.status}`)
+      } catch (capiErr: any) {
+        console.warn(`   ├─ ⚠️ Meta CAPI Purchase falhou (não-crítico): ${capiErr.message}`)
+      }
+
       // 8. UTMify
       try {
         const utmData = order.utm_data as Record<string, string> | null
