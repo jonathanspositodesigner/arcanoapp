@@ -215,7 +215,7 @@ async function sendPurchaseEmail(supabase: any, email: string, productName: stri
     }
 
     const trackingId = crypto.randomUUID()
-    const html = buildPurchaseEmailHtml(email, productName, ctaLink)
+    const html = buildPurchaseEmailHtml(email, productName, ctaLink, options)
     const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
 
     const token = await getSendPulseToken()
