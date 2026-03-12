@@ -1,26 +1,23 @@
 
 
+# Correção: Mover assinatura IA Unlimited para o perfil correto
+
 ## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-Usuários acessam `/prevenda-pack4` e veem 404 porque o navegador tem cache antigo do PWA (service worker servindo versão desatualizada que não conhece essa rota). Um reload forçado com limpeza de cache resolve.
+## Dados
 
-## Plano
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-**Arquivo: `src/pages/NotFound.tsx`**
+## Ações (via SQL migration)
 
-No `useEffect`, antes de mostrar o 404 visualmente:
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-1. Checar `sessionStorage` por uma flag `"404_reload_attempted"` para evitar loop infinito
-2. Se a flag **não existe**:
-   - Setar a flag no `sessionStorage`
-   - Limpar caches do service worker via `caches.keys()` + `caches.delete()`
-   - Chamar `registration.update()` no service worker (se existir)
-   - Fazer `window.location.reload()` (força o navegador buscar assets frescos)
-3. Se a flag **já existe** (já tentou reload):
-   - Remover a flag
-   - Mostrar a tela de 404 normalmente (é um 404 real)
-
-Isso garante que toda vez que alguém cai em 404 por cache antigo, o app tenta **uma única vez** limpar o cache e recarregar. Se depois do reload ainda for 404, aí mostra a página de erro normalmente.
-
-Nenhuma migração de banco necessária. Apenas edição de `src/pages/NotFound.tsx`.
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
