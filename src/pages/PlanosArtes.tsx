@@ -28,6 +28,19 @@ const PAGARME_PACK_SLUGS: Record<string, Record<string, string>> = {
   'pack-de-sao-joao': { '6_meses': 'saojoao-6meses', '1_ano': 'saojoao-1ano', 'vitalicio': 'saojoao-vitalicio' },
 };
 
+// Slugs Pagar.me para desconto de renovação (30% OFF)
+const PAGARME_RENEWAL_SLUGS: Record<string, Record<string, string>> = {
+  'pack-arcano-vol-1': { '6_meses': 'vol1-renov-6meses', '1_ano': 'vol1-renov-1ano', 'vitalicio': 'vol1-renov-vitalicio' },
+  'pack-arcano-vol-2': { '6_meses': 'vol2-renov-6meses', '1_ano': 'vol2-renov-1ano', 'vitalicio': 'vol2-renov-vitalicio' },
+  'pack-arcano-vol-3': { '6_meses': 'vol3-renov-6meses', '1_ano': 'vol3-renov-1ano', 'vitalicio': 'vol3-renov-vitalicio' },
+  'pack-arcano-vol-4': { '6_meses': 'pack4-renov-6meses', '1_ano': 'pack4-renov-1ano', 'vitalicio': 'pack4-renov-vitalicio' },
+  'pack-fim-de-ano': { '6_meses': 'fimdeano-renov-6meses', '1_ano': 'fimdeano-renov-1ano', 'vitalicio': 'fimdeano-renov-vitalicio' },
+  'pack-agendas': { '6_meses': 'agendas-renov-6meses', '1_ano': 'agendas-renov-1ano', 'vitalicio': 'agendas-renov-vitalicio' },
+  'pack-de-halloween': { '6_meses': 'halloween-renov-6meses', '1_ano': 'halloween-renov-1ano', 'vitalicio': 'halloween-renov-vitalicio' },
+  'pack-de-carnaval': { '6_meses': 'carnaval-renov-6meses', '1_ano': 'carnaval-renov-1ano', 'vitalicio': 'carnaval-renov-vitalicio' },
+  'pack-de-sao-joao': { '6_meses': 'saojoao-renov-6meses', '1_ano': 'saojoao-renov-1ano', 'vitalicio': 'saojoao-renov-vitalicio' },
+};
+
 interface Pack {
   id: string;
   name: string;
