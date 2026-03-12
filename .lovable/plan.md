@@ -1,23 +1,66 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Plano: Checkout Pagar.me para Pack 4 (3 variantes)
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+### Contexto atual
 
-## Dados
+- A página `/planos-artes?pack=pack-arcano-vol-4` mostra 3 cards (6 meses, 1 ano, Vitalício) mas os botões redirecionam para links Greenn que **estão vazios** (fallback para voxvisual.com.br)
+- Só existe 1 produto na `mp_products`: `pack4lancamento` (vitalício, R$37)
+- O webhook Pagar.me hardcoda `has_bonus_access: true` e `expires_at: null` para todos os packs
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+### Mudanças necessárias
 
-## Ações (via SQL migration)
+**1. Criar 3 produtos na `mp_products`** (via insert tool)
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+| slug | title | price | pack_slug | access_type |
+|------|-------|-------|-----------|-------------|
+| `pack4-6meses` | Pack Arcano 4 - 6 Meses | 27.00 | pack-arcano-vol-4 | 6_meses |
+| `pack4-1ano` | Pack Arcano 4 - 1 Ano | 37.00 | pack-arcano-vol-4 | 1_ano |
+| `pack4-vitalicio` | Pack Arcano 4 - Vitalício | 47.00 | pack-arcano-vol-4 | vitalicio |
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+**2. Atualizar `webhook-pagarme/index.ts`** — Lógica de `expires_at` e `has_bonus_access` dinâmica
+
+Atualmente está hardcodado:
+```typescript
+has_bonus_access: true,
+expires_at: null,
+```
+
+Mudar para:
+```typescript
+// Calcular expires_at baseado no access_type
+const accessType = product.access_type || 'vitalicio';
+let expiresAt = null;
+if (accessType === '6_meses') {
+  expiresAt = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString();
+} else if (accessType === '1_ano') {
+  expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+}
+const hasBonusAccess = accessType !== '6_meses'; // 1 ano e vitalício têm bônus
+
+// Insert com valores dinâmicos
+has_bonus_access: hasBonusAccess,
+expires_at: expiresAt,
+```
+
+**3. Atualizar `PlanosArtes.tsx`** — Usar Pagar.me para Pack 4
+
+Quando o pack selecionado for `pack-arcano-vol-4`, em vez de abrir links Greenn no `handleSelectOption`, usar o mesmo fluxo do Pagar.me (PreCheckoutModal + PaymentMethodModal) com o slug correto (`pack4-6meses`, `pack4-1ano` ou `pack4-vitalicio`).
+
+Mudanças:
+- Importar `useProcessingButton`, `PreCheckoutModal`, `PaymentMethodModal`
+- Adicionar states para controle dos modais
+- Mapear `accessType` → slug Pagar.me: `{ '6_meses': 'pack4-6meses', '1_ano': 'pack4-1ano', 'vitalicio': 'pack4-vitalicio' }`
+- No `handleSelectOption`: se o pack tem slugs Pagar.me configurados, abrir fluxo Pagar.me em vez de link Greenn
+- Desabilitar botão com `isSubmitting` durante processamento
+
+**4. Deploy da edge function** `webhook-pagarme`
+
+### Resultado
+
+- Usuário na biblioteca clica Pack 4 → vê 3 planos com preços corretos
+- Cada botão abre o checkout Pagar.me com o produto certo
+- 6 meses: R$27, sem bônus, expira em 180 dias
+- 1 ano: R$37, com bônus, expira em 365 dias
+- Vitalício: R$47, com bônus, sem expiração
 
