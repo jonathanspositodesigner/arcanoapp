@@ -1,16 +1,25 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { CheckCircle, Sparkles, ArrowRight, MessageCircle } from "lucide-react";
+import { CheckCircle, Sparkles, ArrowRight, MessageCircle, Lock, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+type Step = "email" | "password";
+
 const SucessoCompra = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const orderId = searchParams.get("order_id") || "";
+
   const [showConfetti, setShowConfetti] = useState(true);
+  const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -18,7 +27,7 @@ const SucessoCompra = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = email.trim().toLowerCase();
     if (!trimmed) {
@@ -35,31 +44,74 @@ const SucessoCompra = () => {
       if (error) throw error;
 
       const exists = data?.[0]?.exists_in_db || false;
-      const passwordChanged = data?.[0]?.password_changed || false;
 
-      if (!exists) {
-        toast.info(
-          "Seu pagamento ainda está sendo processado. Tente novamente em alguns minutos."
-        );
-      } else if (!passwordChanged) {
-        const { error: loginError } = await supabase.auth.signInWithPassword({
-          email: trimmed,
-          password: trimmed,
-        });
-        if (!loginError) {
-          toast.success("Bem-vindo! Defina sua senha.");
-          navigate("/change-password");
-        } else {
-          toast.success("Conta encontrada! Faça login com sua senha.");
-          navigate("/login");
-        }
+      if (exists) {
+        // User already has account → go straight to home
+        toast.success("Conta encontrada! Redirecionando...");
+        navigate("/");
       } else {
-        toast.success("Conta encontrada! Faça login para acessar.");
-        navigate("/login");
+        // No account yet → show password creation form
+        setStep("password");
       }
     } catch (err) {
       console.error(err);
       toast.error("Erro ao verificar email. Tente novamente.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (password.length < 6) {
+      toast.error("Senha deve ter no mínimo 6 caracteres");
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast.error("As senhas não conferem");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const trimmed = email.trim().toLowerCase();
+
+      const { data, error } = await supabase.functions.invoke(
+        "complete-purchase-onboarding",
+        {
+          body: { email: trimmed, password, order_id: orderId },
+        }
+      );
+
+      if (error) {
+        const msg = data?.error || "Erro ao criar conta. Tente novamente.";
+        toast.error(msg);
+        return;
+      }
+
+      if (!data?.success) {
+        toast.error(data?.error || "Erro ao criar conta. Tente novamente.");
+        return;
+      }
+
+      // Auto-login
+      const { error: loginError } = await supabase.auth.signInWithPassword({
+        email: trimmed,
+        password,
+      });
+
+      if (loginError) {
+        toast.error("Conta criada, mas erro no login. Tente fazer login manualmente.");
+        navigate("/login");
+        return;
+      }
+
+      toast.success("Conta criada com sucesso! Bem-vindo!");
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao criar conta. Tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -116,34 +168,98 @@ const SucessoCompra = () => {
             />
           </div>
 
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-            Seu pagamento está sendo processado
-          </h1>
-          <p className="text-muted-foreground mb-6">
-            Se você já pagou, seu acesso foi liberado! Coloque seu{" "}
-            <span className="text-primary font-semibold">email de compra</span>{" "}
-            para acessar seu conteúdo.
-          </p>
+          {step === "email" ? (
+            <>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+                Seu pagamento está sendo processado
+              </h1>
+              <p className="text-muted-foreground mb-6">
+                Se você já pagou, seu acesso foi liberado! Coloque seu{" "}
+                <span className="text-primary font-semibold">email de compra</span>{" "}
+                para acessar seu conteúdo.
+              </p>
 
-          <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-            <Input
-              type="email"
-              placeholder="Digite seu email de compra"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="text-center"
-              required
-            />
-            <Button
-              type="submit"
-              className="w-full gap-2"
-              size="lg"
-              disabled={isLoading}
-            >
-              {isLoading ? "Verificando..." : "Acessar meu conteúdo"}
-              {!isLoading && <ArrowRight className="w-4 h-4" />}
-            </Button>
-          </form>
+              <form onSubmit={handleEmailSubmit} className="space-y-4 mb-6">
+                <Input
+                  type="email"
+                  placeholder="Digite seu email de compra"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="text-center"
+                  required
+                />
+                <Button
+                  type="submit"
+                  className="w-full gap-2"
+                  size="lg"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Verificando..." : "Acessar meu conteúdo"}
+                  {!isLoading && <ArrowRight className="w-4 h-4" />}
+                </Button>
+              </form>
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+                Crie sua senha
+              </h1>
+              <p className="text-muted-foreground mb-1">
+                Defina uma senha para acessar sua conta com o email:
+              </p>
+              <p className="text-primary font-semibold mb-6 text-sm">{email}</p>
+
+              <form onSubmit={handlePasswordSubmit} className="space-y-4 mb-6">
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Crie sua senha (mín. 6 caracteres)"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 pr-10"
+                    required
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Confirme sua senha"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pl-10"
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full gap-2"
+                  size="lg"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Criando conta..." : "Criar conta e acessar"}
+                  {!isLoading && <ArrowRight className="w-4 h-4" />}
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => { setStep("email"); setPassword(""); setConfirmPassword(""); }}
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                >
+                  ← Voltar e trocar email
+                </button>
+              </form>
+            </>
+          )}
 
           <a
             href="https://wa.me/33988819891"
