@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CreditCard, Lock, Loader2, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,17 @@ const CreditCardForm = ({
   const [expYear, setExpYear] = useState("");
   const [cvv, setCvv] = useState("");
   const [tokenizing, setTokenizing] = useState(false);
+  const publicKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (open && !publicKeyRef.current) {
+      supabase.functions.invoke("get-pagarme-public-key").then(({ data, error }) => {
+        if (!error && data?.publicKey) {
+          publicKeyRef.current = data.publicKey;
+        }
+      });
+    }
+  }, [open]);
 
   const formatCardNumber = (value: string) => {
     const digits = value.replace(/\D/g, "").slice(0, 16);
@@ -69,9 +81,9 @@ const CreditCardForm = ({
     setTokenizing(true);
 
     try {
-      const publicKey = import.meta.env.VITE_PAGARME_PUBLIC_KEY;
+      const publicKey = publicKeyRef.current;
       if (!publicKey) {
-        toast.error("Chave pública de pagamento não configurada");
+        toast.error("Chave pública de pagamento não disponível. Tente novamente.");
         setTokenizing(false);
         return;
       }
