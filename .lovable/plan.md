@@ -1,24 +1,23 @@
 
 
+# Correção: Mover assinatura IA Unlimited para o perfil correto
+
 ## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-Em `src/pages/UserLogin.tsx` linha 16, o redirect padrão após login é `/biblioteca-prompts`:
+## Dados
 
-```typescript
-const redirectTo = searchParams.get('redirect') || '/biblioteca-prompts';
-```
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-Quando a página `/sucesso-compra` redireciona para `/login` (sem query param `?redirect=/`), o login leva o usuário para a Biblioteca de Prompts em vez da Home.
+## Ações (via SQL migration)
 
-## Correção
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-**Arquivo: `src/pages/UserLogin.tsx` (linha 16)**
-
-Mudar o fallback de `/biblioteca-prompts` para `/`:
-
-```typescript
-const redirectTo = searchParams.get('redirect') || '/';
-```
-
-Isso faz com que **todo login pelo `/login`** redirecione para a Home por padrão, a menos que um `?redirect=` específico seja passado na URL.
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 

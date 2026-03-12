@@ -13,7 +13,7 @@ import { LoginEmailStep, LoginPasswordStep, SignupForm } from "@/components/auth
 const UserLogin = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/biblioteca-prompts';
+  const redirectTo = searchParams.get('redirect') || '/';
   const { t } = useTranslation('auth');
 
   const auth = useUnifiedAuth({
