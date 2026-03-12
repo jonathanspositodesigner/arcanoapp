@@ -236,6 +236,27 @@ serve(async (req: Request) => {
     if (order.user_id && product?.type === 'subscription') {
       console.log(`   ├─ 📋 Revogando plano de assinatura...`)
 
+      // Cancel the subscription on Pagar.me if exists
+      const subId = order.pagarme_subscription_id
+      if (subId) {
+        console.log(`   ├─ 🔄 Cancelando subscription ${subId} no Pagar.me...`)
+        try {
+          const cancelResponse = await fetch(`https://api.pagar.me/core/v5/subscriptions/${subId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Basic ${basicAuth}` },
+          })
+          const cancelBody = await cancelResponse.text()
+          console.log(`   ├─ Pagar.me cancel response: ${cancelResponse.status} - ${cancelBody.substring(0, 200)}`)
+          if (cancelResponse.ok) {
+            console.log(`   ├─ ✅ Subscription cancelada no Pagar.me`)
+          } else {
+            console.warn(`   ├─ ⚠️ Erro ao cancelar subscription (não-bloqueante): ${cancelResponse.status}`)
+          }
+        } catch (cancelErr: any) {
+          console.warn(`   ├─ ⚠️ Erro ao cancelar subscription: ${cancelErr.message}`)
+        }
+      }
+
       // Reset to free plan
       await supabase.from('planos2_subscriptions').upsert({
         user_id: order.user_id,

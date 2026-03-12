@@ -23,6 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 import HomeAuthModal from "@/components/HomeAuthModal";
 import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
+import CreditCardForm from "@/components/checkout/CreditCardForm";
 import { usePlanos2Access } from "@/hooks/usePlanos2Access";
 import { toast } from "sonner";
 
@@ -47,6 +48,9 @@ const Planos2 = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [showSignupModal, setShowSignupModal] = useState(false);
+  const [showCardForm, setShowCardForm] = useState(false);
+  const [pendingPlanName, setPendingPlanName] = useState<string>("");
+  const [isSubscriptionFlow, setIsSubscriptionFlow] = useState(false);
   const { planSlug: activePlanSlug } = usePlanos2Access(userId || undefined);
   const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
 
@@ -133,6 +137,7 @@ const Planos2 = () => {
       if (isProfileComplete) {
         setPendingSlug(slug);
         setPendingProfile(profile);
+        setIsSubscriptionFlow(false);
         setShowPaymentMethodModal(true);
         endCheckout();
       } else {
@@ -147,6 +152,15 @@ const Planos2 = () => {
 
   const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
     if (!pendingSlug || !pendingProfile) return;
+
+    // For subscriptions with credit card: open card form for tokenization
+    if (isSubscriptionFlow && method === 'CREDIT_CARD') {
+      setShowPaymentMethodModal(false);
+      setShowCardForm(true);
+      return;
+    }
+
+    // For PIX (subscription or credits) and credit card (credits only): use hosted checkout
     if (!startCheckout()) return;
     
     setPixLoading(pendingSlug);
@@ -208,9 +222,68 @@ const Planos2 = () => {
     setShowPaymentMethodModal(false);
   };
 
+  // Handler for card token from CreditCardForm (subscription with real recurrence)
+  const handleCardTokenGenerated = async (cardToken: string) => {
+    if (!pendingSlug || !pendingProfile) return;
+    if (!startCheckout()) return;
+
+    try {
+      let utmData: Record<string, string> | null = null;
+      try {
+        const raw = sessionStorage.getItem('captured_utms');
+        if (raw) utmData = JSON.parse(raw);
+      } catch { /* ignore */ }
+
+      const response = await supabase.functions.invoke('create-pagarme-subscription', {
+        body: {
+          product_slug: pendingSlug,
+          card_token: cardToken,
+          user_email: userEmail,
+          user_phone: pendingProfile.phone,
+          user_name: pendingProfile.name,
+          user_cpf: pendingProfile.cpf,
+          utm_data: utmData,
+          user_address: {
+            line_1: pendingProfile.address_line,
+            zip_code: pendingProfile.address_zip,
+            city: pendingProfile.address_city,
+            state: pendingProfile.address_state,
+            country: pendingProfile.address_country || 'BR'
+          }
+        }
+      });
+
+      if (response.error) {
+        const errorMsg = response.error?.message || 'Erro ao criar assinatura';
+        console.error('Erro ao criar subscription:', response.error);
+        toast.error(errorMsg);
+        endCheckout();
+        setShowCardForm(false);
+        return;
+      }
+
+      const data = response.data;
+      if (data?.success) {
+        toast.success('Assinatura criada com sucesso! Seu plano será ativado em instantes.');
+        setShowCardForm(false);
+        // Redirect to success page
+        window.location.href = 'https://arcanoapp.voxvisual.com.br/sucesso-compra';
+        return;
+      } else {
+        toast.error(data?.error || 'Erro ao criar assinatura');
+      }
+    } catch (error: any) {
+      console.error('Erro subscription:', error);
+      toast.error('Erro ao processar assinatura. Tente novamente.');
+    }
+
+    endCheckout();
+    setShowCardForm(false);
+  };
+
   const countdown = formatTime(timeLeft);
   
-  // Subscription purchase handler (same flow as credit purchase)
+  // Subscription purchase handler
   const handleSubscriptionPurchase = async (planName: string) => {
     const slugMap: Record<string, string> = {
       "Starter": `plano-starter-${billingPeriod}`,
@@ -242,6 +315,8 @@ const Planos2 = () => {
       if (isProfileComplete) {
         setPendingSlug(slug);
         setPendingProfile(profile);
+        setPendingPlanName(planName);
+        setIsSubscriptionFlow(true);
         setShowPaymentMethodModal(true);
         endCheckout();
       } else {
@@ -905,6 +980,15 @@ const Planos2 = () => {
         onSelect={handlePaymentMethodSelected}
         isProcessing={isCheckoutSubmitting}
         colorScheme="purple"
+      />
+
+      {/* Credit Card Form for subscription with real recurrence */}
+      <CreditCardForm
+        open={showCardForm}
+        onOpenChange={setShowCardForm}
+        onTokenGenerated={handleCardTokenGenerated}
+        isProcessing={isCheckoutSubmitting}
+        planName={pendingPlanName}
       />
 
       {/* PreCheckout Modal for credit purchases */}
