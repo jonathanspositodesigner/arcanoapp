@@ -1020,6 +1020,9 @@ export type Database = {
           asaas_payment_id: string | null
           created_at: string | null
           id: string
+          meta_fbc: string | null
+          meta_fbp: string | null
+          meta_user_agent: string | null
           net_amount: number | null
           pagarme_subscription_id: string | null
           paid_at: string | null
@@ -1045,6 +1048,9 @@ export type Database = {
           asaas_payment_id?: string | null
           created_at?: string | null
           id?: string
+          meta_fbc?: string | null
+          meta_fbp?: string | null
+          meta_user_agent?: string | null
           net_amount?: number | null
           pagarme_subscription_id?: string | null
           paid_at?: string | null
@@ -1070,6 +1076,9 @@ export type Database = {
           asaas_payment_id?: string | null
           created_at?: string | null
           id?: string
+          meta_fbc?: string | null
+          meta_fbp?: string | null
+          meta_user_agent?: string | null
           net_amount?: number | null
           pagarme_subscription_id?: string | null
           paid_at?: string | null
@@ -2402,6 +2411,63 @@ export type Database = {
           initiated_checkouts?: number | null
           landing_page_views?: number | null
           spend?: number | null
+        }
+        Relationships: []
+      }
+      meta_capi_logs: {
+        Row: {
+          client_ip_address: string | null
+          client_user_agent: string | null
+          created_at: string | null
+          currency: string | null
+          email: string | null
+          event_id: string | null
+          event_name: string
+          event_source_url: string | null
+          fbc: string | null
+          fbp: string | null
+          id: string
+          meta_response_body: string | null
+          meta_response_status: number | null
+          success: boolean | null
+          utm_data: Json | null
+          value: number | null
+        }
+        Insert: {
+          client_ip_address?: string | null
+          client_user_agent?: string | null
+          created_at?: string | null
+          currency?: string | null
+          email?: string | null
+          event_id?: string | null
+          event_name: string
+          event_source_url?: string | null
+          fbc?: string | null
+          fbp?: string | null
+          id?: string
+          meta_response_body?: string | null
+          meta_response_status?: number | null
+          success?: boolean | null
+          utm_data?: Json | null
+          value?: number | null
+        }
+        Update: {
+          client_ip_address?: string | null
+          client_user_agent?: string | null
+          created_at?: string | null
+          currency?: string | null
+          email?: string | null
+          event_id?: string | null
+          event_name?: string
+          event_source_url?: string | null
+          fbc?: string | null
+          fbp?: string | null
+          id?: string
+          meta_response_body?: string | null
+          meta_response_status?: number | null
+          success?: boolean | null
+          utm_data?: Json | null
+          value?: number | null
         }
         Relationships: []
       }
