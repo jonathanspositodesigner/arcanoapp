@@ -55,13 +55,17 @@ serve(async (req: Request) => {
       return new Response(JSON.stringify({ error: 'Senha de confirmação é obrigatória' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    // Verify admin password
+    // Verify admin password using anonClient (NOT service role client to avoid corrupting its state)
     const { data: adminUser } = await supabase.auth.admin.getUserById(userId)
     if (!adminUser?.user?.email) {
       return new Response(JSON.stringify({ error: 'Admin user not found' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const verifyClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!
+    )
+    const { error: signInError } = await verifyClient.auth.signInWithPassword({
       email: adminUser.user.email,
       password: admin_password,
     })
