@@ -37,18 +37,27 @@ Deno.serve(async (req) => {
     );
 
     // Validate that an order exists for this email
+    const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(order_id);
+
     let orderQuery = supabaseAdmin
       .from("asaas_orders")
       .select("id, user_email, user_id, status")
       .eq("user_email", trimmedEmail);
 
     if (order_id) {
-      // Try matching by asaas_payment_id or id
-      orderQuery = supabaseAdmin
-        .from("asaas_orders")
-        .select("id, user_email, user_id, status")
-        .eq("user_email", trimmedEmail)
-        .or(`asaas_payment_id.eq.${order_id},id.eq.${order_id}`);
+      if (isUUID) {
+        orderQuery = supabaseAdmin
+          .from("asaas_orders")
+          .select("id, user_email, user_id, status")
+          .eq("user_email", trimmedEmail)
+          .or(`asaas_payment_id.eq.${order_id},id.eq.${order_id}`);
+      } else {
+        orderQuery = supabaseAdmin
+          .from("asaas_orders")
+          .select("id, user_email, user_id, status")
+          .eq("user_email", trimmedEmail)
+          .eq("asaas_payment_id", order_id);
+      }
     }
 
     const { data: orders, error: orderError } = await orderQuery.limit(1);
