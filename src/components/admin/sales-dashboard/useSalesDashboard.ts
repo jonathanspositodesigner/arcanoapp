@@ -175,7 +175,7 @@ export function useSalesDashboard() {
   const refunded = useMemo(() => orders.filter((o) => o.status === "refunded"), [orders]);
 
   const revenue = useMemo(
-    () => approved.reduce((sum, o) => sum + (o.net_amount ?? o.amount), 0),
+    () => approved.reduce((sum, o) => sum + o.amount, 0),
     [approved]
   );
 
