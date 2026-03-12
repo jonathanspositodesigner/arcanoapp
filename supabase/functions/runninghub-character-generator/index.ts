@@ -340,8 +340,27 @@ async function handleRun(req: Request) {
     });
   }
 
-  const { jobId, frontImageUrl, profileImageUrl, semiProfileImageUrl, lowAngleImageUrl, userId, creditCost } = await req.json();
-  
+  const body = await req.json();
+  const { jobId, frontImageUrl, profileImageUrl, semiProfileImageUrl, lowAngleImageUrl, creditCost } = body;
+
+  // ========== JWT AUTH VERIFICATION ==========
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return new Response(JSON.stringify({ error: 'Unauthorized', code: 'AUTH_REQUIRED' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  const anonClient = createClient(SUPABASE_URL, Deno.env.get('SUPABASE_ANON_KEY')!);
+  const jwtToken = authHeader.replace('Bearer ', '');
+  const { data: { user: authUser }, error: authError } = await anonClient.auth.getUser(jwtToken);
+  if (authError || !authUser) {
+    return new Response(JSON.stringify({ error: 'Unauthorized', code: 'INVALID_TOKEN' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  const userId = authUser.id;
+  console.log(`[CharacterGenerator] JWT verified - userId: ${userId}`);
+
   // ========== INPUT VALIDATION ==========
   if (!jobId || typeof jobId !== 'string' || jobId.length > 100) {
     return new Response(JSON.stringify({ error: 'Valid jobId is required', code: 'INVALID_JOB_ID' }), {
@@ -357,13 +376,6 @@ async function handleRun(req: Request) {
 
   if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) {
     return new Response(JSON.stringify({ error: 'Invalid credit cost', code: 'INVALID_CREDIT_COST' }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  if (!userId || typeof userId !== 'string' || !uuidRegex.test(userId)) {
-    return new Response(JSON.stringify({ error: 'Valid userId is required', code: 'INVALID_USER_ID' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
