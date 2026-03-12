@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { Check, Smartphone, Bell, ExternalLink, Clock } from "lucide-react";
+import { Check, Smartphone, Bell, ExternalLink, Clock, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import { FadeIn, StaggeredAnimation } from "@/hooks/useScrollAnimation";
@@ -15,6 +15,7 @@ import { usePackAccess } from "@/hooks/usePackAccess";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/contexts/CreditsContext";
+import { forcePwaUpdate } from "@/utils/forcePwaUpdate";
 
 // Imagens de preview para os cards
 import cardArtesArcanas from "@/assets/card-artes-arcanas.webp";
@@ -50,6 +51,52 @@ interface CardData {
 
 const Index = () => {
   const navigate = useNavigate();
+  const [isReloading, setIsReloading] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Auto-reload sem cache — 1x por sessão
+  useEffect(() => {
+    const FLAG = "home_cache_cleared";
+    const hasCleared = sessionStorage.getItem(FLAG);
+
+    if (!hasCleared) {
+      setIsReloading(true);
+      sessionStorage.setItem(FLAG, "1");
+      (async () => {
+        try {
+          if ("caches" in window) {
+            const names = await caches.keys();
+            await Promise.all(names.map(n => caches.delete(n)));
+          }
+          if ("serviceWorker" in navigator) {
+            const reg = await navigator.serviceWorker.getRegistration();
+            if (reg) await reg.update();
+          }
+        } catch (e) {
+          console.warn("[Home] cache clear error:", e);
+        }
+        window.location.reload();
+      })();
+      return;
+    }
+    // Segunda carga: remove flag para próxima sessão
+    sessionStorage.removeItem(FLAG);
+  }, []);
+
+  const handleManualUpdate = async () => {
+    setIsUpdating(true);
+    toast.info("Atualizando app...");
+    try {
+      if ("caches" in window) {
+        const names = await caches.keys();
+        await Promise.all(names.map(n => caches.delete(n)));
+      }
+      await forcePwaUpdate();
+    } catch {
+      window.location.replace(`/?v=${Date.now()}`);
+    }
+  };
+
   const { t } = useTranslation('index');
   const isAppInstalled = useIsAppInstalled();
   const { subscribe } = usePushNotifications();
@@ -315,6 +362,9 @@ const Index = () => {
     </div>
   );
 
+  // Se está fazendo auto-reload, não renderiza nada
+  if (isReloading) return null;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col">
       {/* Header fixo compacto */}
@@ -498,9 +548,17 @@ const Index = () => {
         onSignupEnd={() => { signupInProgressRef.current = false; }}
       />
 
-      {/* App Version */}
-      <div className="fixed bottom-2 left-1/2 -translate-x-1/2 z-10">
+      {/* App Version + Atualizar */}
+      <div className="fixed bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2">
         <span className="text-[10px] text-muted-foreground/50 select-none">v2026-02-12-001</span>
+        <button
+          onClick={handleManualUpdate}
+          disabled={isUpdating}
+          className="flex items-center gap-1 text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`h-2.5 w-2.5 ${isUpdating ? 'animate-spin' : ''}`} />
+          Atualizar app
+        </button>
       </div>
     </div>
   );
