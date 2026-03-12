@@ -1,29 +1,93 @@
 
-# Migração Planos Mensais/Anuais: Greenn → Pagar.me (CONCLUÍDA)
 
-## Resumo
-Migração dos 8 planos de assinatura (4 planos × 2 períodos) da Greenn para o checkout Pagar.me, reutilizando a infraestrutura existente (`create-pagarme-checkout` + `webhook-pagarme`).
+# Plano: Recorrência Real com Pagar.me (Assinatura com Cobrança Automática)
 
-## Decisão Arquitetural
-- **Sem edge function nova**: Pagar.me não suporta checkout hosted para subscriptions (requer tokenização de cartão). Solução: usar o mesmo checkout de pagamento avulso existente e ativar o plano por 30/365 dias.
-- **PIX + Cartão suportados**: mesmo fluxo dos créditos avulsos.
-- **Sem auto-renovação**: o plano expira após o período. O pg_cron existente (`expire_planos2_subscriptions`) já cuida de expirar planos.
+## O Problema Atual
 
-## O que foi feito
+Hoje os planos funcionam como **pagamento avulso**: o cliente paga uma vez, o plano ativa por 30/365 dias, e quando expira o cliente precisa voltar e pagar de novo manualmente. **Não existe cobrança automática.**
 
-### 1. Banco de Dados
-- Colunas `plan_slug` e `billing_period` adicionadas a `mp_products`
-- Coluna `pagarme_subscription_id` adicionada a `asaas_orders` e `planos2_subscriptions`
-- 8 produtos inseridos: `plano-{starter,pro,ultimate,unlimited}-{mensal,anual}`
+## Como Funciona a Recorrência no Pagar.me
 
-### 2. webhook-pagarme
-- Novo bloco `product.type === 'subscription'`: ativa plano via `planos2_subscriptions` upsert + `reset_upscaler_credits`
-- Reembolso: revoga para `free`, zera créditos mensais
+O Pagar.me **não permite criar subscriptions pelo checkout hosted** (aquela página onde o cliente preenche o cartão). Para recorrência real, é preciso:
 
-### 3. refund-pagarme
-- Novo bloco: quando produto é subscription, reseta `planos2_subscriptions` → free e zera créditos
+1. **Tokenizar o cartão no front-end** usando a API pública: `POST https://api.pagar.me/core/v5/tokens?appId=pk_XXXX`
+2. **Enviar o `card_token` para o backend** que cria a subscription via `POST /subscriptions`
+3. O Pagar.me cobra automaticamente a cada ciclo e envia webhooks (`charge.paid`, `subscription.canceled`, etc.)
 
-### 4. Planos2.tsx (Frontend)
-- Removidos todos os links Greenn (`paymentUrl`)
-- Novo handler `handleSubscriptionPurchase` que usa o mesmo fluxo de checkout Pagar.me (PreCheckoutModal / PaymentMethodModal)
-- Botão agora chama checkout interno em vez de `window.open(greennUrl)`
+**PIX não suporta recorrência** — só cartão de crédito. Para PIX, mantemos o modelo atual (pagamento avulso + plano por 30/365 dias).
+
+## Pré-requisito
+
+Preciso da **chave pública do Pagar.me** (`pk_XXXX`) para tokenizar cartões no front-end. Hoje só existe a `PAGARME_SECRET_KEY`. O usuário precisa adicionar o secret `PAGARME_PUBLIC_KEY`.
+
+## Implementação
+
+### 1. Adicionar Secret `PAGARME_PUBLIC_KEY`
+- Solicitar ao usuário a chave pública do Pagar.me (encontrada no dashboard Pagar.me)
+
+### 2. Componente de Formulário de Cartão (`CreditCardForm.tsx`)
+- Formulário seguro com campos: Número, Nome, Validade, CVV
+- Ao submeter, chama `POST https://api.pagar.me/core/v5/tokens?appId=pk_XXX` direto do browser
+- Retorna o `card_token` para o fluxo de checkout
+
+### 3. Nova Edge Function `create-pagarme-subscription`
+- Recebe: `{ product_slug, card_token, user_email, user_name, user_cpf, user_phone, user_address, utm_data }`
+- Cria ordem em `asaas_orders` (status: pending)
+- Chama `POST https://api.pagar.me/core/v5/subscriptions` com:
+  ```
+  payment_method: 'credit_card'
+  interval: 'month' ou 'year'
+  interval_count: 1
+  billing_type: 'prepaid'
+  card: { card_token }
+  customer: { name, email, document, phones }
+  items: [{ description, quantity: 1, pricing_scheme: { price: centavos } }]
+  metadata: { order_id }
+  ```
+- Salva `pagarme_subscription_id` na ordem e retorna sucesso
+
+### 4. Atualizar `webhook-pagarme` para Eventos de Subscription
+- Novo handler para `subscription.created`, `charge.paid` (de subscription), `subscription.canceled`
+- Na `charge.paid` de subscription: busca a ordem pelo `subscription_id` no metadata, ativa/renova plano
+- Na `subscription.canceled`: revoga plano → free, zera créditos
+- Lógica de renovação: a cada `charge.paid`, recalcula `expires_at` (+30d ou +365d) e reseta créditos
+
+### 5. Atualizar `refund-pagarme` para Cancelar Subscriptions
+- Quando produto é subscription e tem `pagarme_subscription_id`:
+  - `DELETE /subscriptions/{id}` para cancelar no Pagar.me
+  - Revogar plano → free + zerar créditos
+
+### 6. Frontend: Fluxo de Assinatura em `Planos2.tsx`
+- **Cartão de Crédito**: Ao clicar "Assinar" → coleta dados do perfil → abre `CreditCardForm` → tokeniza → chama `create-pagarme-subscription` → confirma
+- **PIX**: Mantém fluxo atual (checkout avulso via `create-pagarme-checkout`, plano ativa por 30/365 dias sem recorrência)
+- Informar ao cliente que PIX não tem renovação automática
+
+### 7. Banco de Dados
+- Adicionar coluna `pagarme_subscription_id` em `asaas_orders` (se não existir já)
+- Os 8 produtos de subscription na `mp_products` já foram criados na migração anterior
+
+## Resumo dos Arquivos
+
+| Arquivo | Ação |
+|---|---|
+| `src/components/checkout/CreditCardForm.tsx` | **NOVO** — formulário de cartão + tokenização |
+| `supabase/functions/create-pagarme-subscription/index.ts` | **NOVO** — cria subscription recorrente |
+| `supabase/functions/webhook-pagarme/index.ts` | EDITAR — tratar eventos de subscription |
+| `supabase/functions/refund-pagarme/index.ts` | EDITAR — cancelar subscription no reembolso |
+| `src/pages/Planos2.tsx` | EDITAR — fluxo cartão → form → subscription |
+
+## Fluxo Visual
+
+```text
+CARTÃO DE CRÉDITO (recorrência real):
+  Botão "Assinar" → PreCheckoutModal (se incompleto) → CreditCardForm
+  → Tokeniza cartão (API pública Pagar.me) → create-pagarme-subscription
+  → Pagar.me cria subscription → webhook charge.paid → ativa plano
+  → Todo mês: Pagar.me cobra → webhook charge.paid → renova plano
+
+PIX (sem recorrência):
+  Botão "Assinar" → PreCheckoutModal → create-pagarme-checkout (avulso)
+  → Checkout Pagar.me → webhook order.paid → ativa plano 30/365 dias
+  → Expira → pg_cron desativa → cliente paga de novo manualmente
+```
+
