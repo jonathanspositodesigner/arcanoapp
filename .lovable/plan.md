@@ -1,23 +1,24 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Teste End-to-End: Simulação de Compra + Estorno
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+O código das 3 edge functions e a RPC `revoke_lifetime_credits_on_refund` estão corretos e deployados. Para testar, preciso executar operações de escrita no banco.
 
-## Dados
+### Plano do teste (3 passos)
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+**Passo 1 — Simular compra de 1500 créditos**
+- Chamar `add_lifetime_credits` para o user `8f5fb835-...` com 1500 créditos e descrição "TESTE - Compra Pagar.me 1500 créditos"
+- Saldo esperado: 993.049 + 1.500 = **994.549**
 
-## Ações (via SQL migration)
+**Passo 2 — Simular estorno via `revoke_lifetime_credits_on_refund`**
+- Chamar a RPC com 1500 créditos e descrição "TESTE - Reembolso Pagar.me 1500 créditos"
+- Saldo esperado: 994.549 - 1.500 = **993.049** (volta ao original)
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+**Passo 3 — Validar**
+- Confirmar saldo final = 993.049
+- Confirmar que existem 2 transações de teste: +1500 (credit) e -1500 (refund)
+- Limpar as transações de teste
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+### Como vou executar
+Vou inserir os dados via migration tool (operações de escrita) e consultar o resultado via query de leitura.
 
