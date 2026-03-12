@@ -1,42 +1,43 @@
 
-# Migração Planos Mensais/Anuais: Greenn → Pagar.me (CONCLUÍDA v2 - Recorrência Real)
 
-## Resumo
-Migração dos 8 planos de assinatura (4 planos × 2 períodos) da Greenn para o Pagar.me com **recorrência real via cartão de crédito** e PIX como pagamento avulso.
+# Calcular taxas reais do Pagar.me no dashboard
 
-## Decisão Arquitetural
-- **Cartão de Crédito**: Recorrência real via `POST /subscriptions` do Pagar.me. Tokenização do cartão no front-end via API pública (`pk_XXXX`). Cobrança automática a cada ciclo.
-- **PIX**: Checkout avulso (sem recorrência) — plano ativa por 30/365 dias. pg_cron expira planos vencidos.
-- **Reembolso**: Cancela subscription no Pagar.me (`DELETE /subscriptions/{id}`) + revoga plano → free + zera créditos.
+## Taxas extraídas do PDF
 
-## O que foi feito
+| Método | Taxa |
+|--------|------|
+| Cartão à vista | 4,39% + R$0,55 (processamento) + R$0,44 (antifraude) = **4,39% + R$0,99** |
+| PIX | **1,19%** + R$0,55 (processamento) = **1,19% + R$0,55** |
+| Boleto | **R$3,49** + R$0,55 (processamento) = **R$4,04** |
 
-### 1. Banco de Dados
-- Colunas `plan_slug` e `billing_period` em `mp_products`
-- Coluna `pagarme_subscription_id` em `asaas_orders` e `planos2_subscriptions`
-- 8 produtos inseridos: `plano-{starter,pro,ultimate,unlimited}-{mensal,anual}`
+Nota: Cartão parcelado tem taxas maiores (8,19% a 25,29%), mas como os produtos são vendidos à vista, usarei a taxa de 4,39%.
 
-### 2. CreditCardForm.tsx (NOVO)
-- Formulário seguro com campos: Número, Nome, Validade, CVV
-- Tokenização direta via `POST https://api.pagar.me/core/v5/tokens?appId=pk_XXX`
-- Retorna `card_token` para o fluxo de subscription
+## Problema atual
 
-### 3. create-pagarme-subscription (NOVO)
-- Edge function que cria subscription recorrente via `POST /subscriptions`
-- Suporta `interval: month` ou `year` baseado no `billing_period` do produto
-- Salva `pagarme_subscription_id` na ordem
+- **Webhook** (linha 770): `net_amount = charge.amount / 100` — salva o valor bruto como net_amount, não desconta taxas
+- **Dashboard** (linha 187): usa taxa fixa estimada `3,99% + R$0,50` para Pagar.me — incorreto
 
-### 4. webhook-pagarme (ATUALIZADO)
-- Busca ordens por `pagarme_subscription_id` (fallback 4)
-- Trata `subscription.canceled`: revoga plano → free, zera créditos
-- Trata renovação (`charge.paid` em ordem já `paid`): renova plano + reseta créditos
-- Salva `pagarme_subscription_id` no `planos2_subscriptions`
+## Plano de implementação
 
-### 5. refund-pagarme (ATUALIZADO)
-- Cancela subscription no Pagar.me via `DELETE /subscriptions/{id}` antes de revogar
-- Revoga plano → free + zera créditos
+### 1. Atualizar webhook-pagarme — calcular net_amount real
+No `webhook-pagarme/index.ts`, após determinar o `paymentMethod`, calcular o `net_amount` real:
+- PIX: `amount - (amount * 0.0119 + 0.55)`
+- Cartão: `amount - (amount * 0.0439 + 0.99)`
+- Boleto: `amount - 4.04`
 
-### 6. Planos2.tsx (ATUALIZADO)
-- Cartão: abre CreditCardForm → tokeniza → create-pagarme-subscription → recorrência real
-- PIX: mantém checkout avulso via create-pagarme-checkout → 30/365 dias sem recorrência
-- Flag `isSubscriptionFlow` diferencia fluxos de assinatura vs créditos avulsos
+### 2. Atualizar dashboard — usar net_amount real para Pagar.me
+No `useSalesDashboard.ts`, mudar o cálculo de `platformFees` para Pagar.me usar `amount - net_amount` (como já faz para Mercado Pago), em vez da taxa hardcoded.
+
+### 3. Backfill — atualizar registros antigos
+Criar uma migration SQL que recalcula o `net_amount` de todas as ordens pagas do Pagar.me baseado no `payment_method` de cada uma:
+```sql
+UPDATE asaas_orders SET net_amount = amount - (amount * 0.0119 + 0.55) WHERE status = 'paid' AND payment_method = 'pix' AND source_platform = 'pagarme';
+UPDATE asaas_orders SET net_amount = amount - (amount * 0.0439 + 0.99) WHERE status = 'paid' AND payment_method = 'credit_card' AND source_platform = 'pagarme';
+UPDATE asaas_orders SET net_amount = amount - 4.04 WHERE status = 'paid' AND payment_method = 'boleto' AND source_platform = 'pagarme';
+```
+
+## Arquivos modificados
+- `supabase/functions/webhook-pagarme/index.ts` — cálculo do net_amount real
+- `src/components/admin/sales-dashboard/useSalesDashboard.ts` — usar net_amount real
+- Migration SQL — backfill dos registros antigos
+
