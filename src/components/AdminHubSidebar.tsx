@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-export type HubViewType = "home" | "dashboard" | "email-marketing" | "push-notifications" | "partners" | "abandoned-checkouts" | "admins" | "emails" | "sales" | "ads";
+export type HubViewType = "home" | "dashboard" | "email-marketing" | "push-notifications" | "partners" | "abandoned-checkouts" | "admins" | "emails" | "sales" | "ads" | "pixel";
 
 interface AdminHubSidebarProps {
   activeView: HubViewType;
