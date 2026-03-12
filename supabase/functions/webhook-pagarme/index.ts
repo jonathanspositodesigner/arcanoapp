@@ -713,6 +713,11 @@ serve(async (req) => {
           const periodDays = product.billing_period === 'anual' ? 365 : 30
           const expiresAt = new Date(Date.now() + periodDays * 24 * 60 * 60 * 1000).toISOString()
 
+          // Get pagarme_subscription_id from order or event
+          const subId = order.pagarme_subscription_id || 
+            eventData?.subscription?.id || 
+            null
+
           // Upsert subscription
           await supabase.from('planos2_subscriptions').upsert({
             user_id: userId,
@@ -724,6 +729,7 @@ serve(async (req) => {
             has_video_generation: config.has_video_generation,
             cost_multiplier: config.cost_multiplier,
             expires_at: expiresAt,
+            pagarme_subscription_id: subId,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' })
 
@@ -737,7 +743,7 @@ serve(async (req) => {
             console.error(`   ├─ ❌ Erro ao resetar créditos:`, resetError)
           }
 
-          console.log(`   ├─ ✅ Plano ${product.plan_slug} ativado (${config.credits_per_month} créditos, expira: ${expiresAt})`)
+          console.log(`   ├─ ✅ Plano ${product.plan_slug} ativado (${config.credits_per_month} créditos, expira: ${expiresAt}, sub_id: ${subId})`)
         } else {
           console.error(`   ├─ ❌ Config não encontrada para plan_slug: ${product.plan_slug}`)
         }
