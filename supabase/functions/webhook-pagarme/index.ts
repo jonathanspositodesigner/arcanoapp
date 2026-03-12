@@ -121,8 +121,25 @@ function getUnsubscribeLink(email: string): string {
   return `${baseUrl}/functions/v1/email-unsubscribe?email=${encodeURIComponent(email)}`
 }
 
-function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: string): string {
+function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: string, options?: { packSlug?: string; productType?: string; accessType?: string }): string {
   const unsubscribeLink = getUnsubscribeLink(email)
+  const isUpscalerOrCredits = options?.packSlug === 'upscaler-arcano' || options?.productType === 'credits'
+  
+  // Determine access label
+  let accessLabel = 'Vitalício'
+  if (options?.accessType === '6_meses') accessLabel = '6 Meses'
+  else if (options?.accessType === '1_ano') accessLabel = '1 Ano'
+  else if (options?.accessType === 'vitalicio') accessLabel = 'Vitalício'
+
+  const benefitBlock = isUpscalerOrCredits
+    ? `<div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">
+        <p style="color:#4ade80;font-size:15px;font-weight:700;margin:0 0 8px;">🎉 Acesso Vitalício Ativado!</p>
+        <p style="color:#bbf7d0;font-size:13px;margin:0;line-height:1.6;">Você <strong>NÃO precisa comprar créditos</strong> para usar o Upscaler Arcano. Seu acesso vitalício já inclui uso ilimitado da ferramenta!</p>
+      </div>`
+    : `<div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">
+        <p style="color:#4ade80;font-size:15px;font-weight:700;margin:0 0 8px;">🎉 Acesso ${accessLabel} Ativado!</p>
+        <p style="color:#bbf7d0;font-size:13px;margin:0;line-height:1.6;">Seu <strong>${productName}</strong> já está liberado! Acesse a plataforma para explorar todos os conteúdos do seu pack.</p>
+      </div>`
 
   return `<!DOCTYPE html>
 <html>
@@ -153,10 +170,7 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
         <p style="color:#fca5a5;font-size:12px;margin:0;">⚠️ Recomendamos alterar sua senha no primeiro acesso</p>
       </div>
     </div>
-    <div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">
-      <p style="color:#4ade80;font-size:15px;font-weight:700;margin:0 0 8px;">🎉 Acesso Vitalício Ativado!</p>
-      <p style="color:#bbf7d0;font-size:13px;margin:0;line-height:1.6;">Você <strong>NÃO precisa comprar créditos</strong> para usar o Upscaler Arcano. Seu acesso vitalício já inclui uso ilimitado da ferramenta!</p>
-    </div>
+    ${benefitBlock}
     <div style="text-align:center;padding-bottom:8px;">
       <a href="${ctaLink}" style="display:inline-block;background:linear-gradient(135deg,#d4af37 0%,#f5e27a 100%);color:#1a0533;text-decoration:none;padding:18px 52px;border-radius:12px;font-weight:700;font-size:17px;letter-spacing:0.3px;box-shadow:0 6px 24px rgba(212,175,55,0.4);">
         Acessar Agora →
