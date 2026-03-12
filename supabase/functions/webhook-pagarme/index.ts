@@ -820,6 +820,18 @@ serve(async (req) => {
       // 7.2 Enviar Purchase para Meta CAPI (server-side tracking)
       try {
         const utmData = order.utm_data as Record<string, string> | null
+        // Fallback: generate fbc from fbclid in utm_data if not stored
+        let effectiveFbc = order.meta_fbc || null
+        let effectiveFbp = order.meta_fbp || null
+        const fbclid = utmData?.fbclid || null
+        if (!effectiveFbc && fbclid) {
+          effectiveFbc = `fb.1.${Date.now()}.${fbclid}`
+          console.log(`   ├─ 🔗 fbc gerado a partir do fbclid para Purchase`)
+        }
+        if (!effectiveFbp && fbclid) {
+          effectiveFbp = `fb.1.${Date.now()}.${Math.floor(Math.random() * 2147483647)}`
+          console.log(`   ├─ 🔗 fbp fallback gerado para Purchase`)
+        }
         const capiResponse = await fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {
           method: 'POST',
           headers: {
@@ -832,14 +844,15 @@ serve(async (req) => {
             value: Number(order.amount),
             currency: 'BRL',
             utm_data: utmData,
-            fbp: order.meta_fbp || null,
-            fbc: order.meta_fbc || null,
+            fbp: effectiveFbp,
+            fbc: effectiveFbc,
             client_user_agent: order.meta_user_agent || null,
             event_id: `purchase_${order.id}`,
             event_source_url: 'https://arcanoapp.voxvisual.com.br',
           }),
         })
-        console.log(`   ├─ 📊 Meta CAPI Purchase: ${capiResponse.status} | fbp: ${order.meta_fbp ? '✅' : '❌'} | fbc: ${order.meta_fbc ? '✅' : '❌'}`)
+        const capiText = await capiResponse.text()
+        console.log(`   ├─ 📊 Meta CAPI Purchase: ${capiResponse.status} | fbp: ${effectiveFbp ? '✅' : '❌'} | fbc: ${effectiveFbc ? '✅' : '❌'}`)
       } catch (capiErr: any) {
         console.warn(`   ├─ ⚠️ Meta CAPI Purchase falhou (não-crítico): ${capiErr.message}`)
       }
