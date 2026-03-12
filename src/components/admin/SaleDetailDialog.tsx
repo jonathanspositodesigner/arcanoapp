@@ -33,6 +33,8 @@ const SaleDetailDialog = ({ sale, open, onClose }: SaleDetailDialogProps) => {
   const [isResending, setIsResending] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [isRefunding, setIsRefunding] = useState(false);
+  const [refundPassword, setRefundPassword] = useState("");
+  const [showRefundPasswordDialog, setShowRefundPasswordDialog] = useState(false);
 
   // Reset fields when sale changes
   const handleOpenChange = (isOpen: boolean) => {
