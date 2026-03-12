@@ -189,12 +189,63 @@ serve(async (req) => {
 
     console.log(`✅ One-Click Pagar.me: ${pagarmeData.id} | Status: ${chargeStatus}`)
 
+    // 6. Enviar InitiateCheckout + Purchase (se pago) para Meta CAPI
+    const capiEventId = crypto.randomUUID()
+    try {
+      await fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseServiceKey}` },
+        body: JSON.stringify({
+          event_name: 'InitiateCheckout',
+          email: user.email,
+          value: Number(product.price),
+          currency: 'BRL',
+          utm_data: utm_data || null,
+          fbp: fbp || null,
+          fbc: fbc || null,
+          event_id: capiEventId,
+          event_source_url: 'https://arcanoapp.voxvisual.com.br',
+          client_ip_address: clientIp,
+          client_user_agent: clientUserAgent,
+        }),
+      })
+      console.log(`📊 Meta CAPI InitiateCheckout (one-click) sent`)
+    } catch (e: any) {
+      console.warn(`⚠️ Meta CAPI InitiateCheckout falhou: ${e.message}`)
+    }
+
+    if (isPaid) {
+      try {
+        await fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseServiceKey}` },
+          body: JSON.stringify({
+            event_name: 'Purchase',
+            email: user.email,
+            value: Number(product.price),
+            currency: 'BRL',
+            utm_data: utm_data || null,
+            fbp: fbp || null,
+            fbc: fbc || null,
+            event_id: `purchase_${order.id}`,
+            event_source_url: 'https://arcanoapp.voxvisual.com.br',
+            client_ip_address: clientIp,
+            client_user_agent: clientUserAgent,
+          }),
+        })
+        console.log(`📊 Meta CAPI Purchase (one-click) sent`)
+      } catch (e: any) {
+        console.warn(`⚠️ Meta CAPI Purchase falhou: ${e.message}`)
+      }
+    }
+
     return new Response(JSON.stringify({
       success: true,
       order_id: order.id,
       pagarme_order_id: pagarmeData.id,
       status: chargeStatus,
-      is_paid: isPaid
+      is_paid: isPaid,
+      event_id: capiEventId
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
