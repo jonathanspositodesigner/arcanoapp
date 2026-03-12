@@ -34,6 +34,12 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebar
       description: "Campanhas Meta e atribuição"
     },
     {
+      id: "pixel" as const,
+      label: "PIXEL / CAPI",
+      icon: Activity,
+      description: "Logs e monitoramento Meta"
+    },
+    {
       id: "dashboard" as const,
       label: "MÉTRICAS ESSENCIAIS",
       icon: BarChart3,

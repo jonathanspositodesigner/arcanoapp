@@ -194,6 +194,8 @@ const AdminHub = () => {
         return <SalesManagementContent />;
       case "ads":
         return <AdsManagementContent />;
+      case "pixel":
+        return <MetaCapiLogsContent />;
       case "admins":
         return <AdminsManagementContent />;
       case "emails":
