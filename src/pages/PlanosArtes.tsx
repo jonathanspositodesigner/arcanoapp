@@ -290,6 +290,7 @@ const PlanosArtes = () => {
 
   // Check if this pack uses Pagar.me checkout
   const isPagarmePackSlug = selectedPack ? PAGARME_PACK_SLUGS[selectedPack.slug] : null;
+  const isPagarmeRenewalSlug = selectedPack ? PAGARME_RENEWAL_SLUGS[selectedPack.slug] : null;
 
   const handlePagarmeCheckout = async (accessType: string) => {
     if (!selectedPack || !isPagarmePackSlug) return;
