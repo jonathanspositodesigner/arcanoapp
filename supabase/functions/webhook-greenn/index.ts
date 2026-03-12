@@ -442,10 +442,13 @@ async function processPlanos2Webhook(
       }
     }
 
-    // Upsert profile
-    await supabase.from('profiles').upsert({
-      id: userId, name: clientName, email, email_verified: true, password_changed: false, updated_at: new Date().toISOString()
-    }, { onConflict: 'id' })
+    // Upsert profile — check if profile exists to avoid resetting password_changed
+    const { data: existingProfile } = await supabase.from('profiles').select('id').eq('id', userId).maybeSingle()
+    const profileData: Record<string, unknown> = {
+      id: userId, name: clientName, email, email_verified: true, updated_at: new Date().toISOString()
+    }
+    if (!existingProfile) { profileData.password_changed = false }
+    await supabase.from('profiles').upsert(profileData, { onConflict: 'id' })
 
     // Upsert planos2 subscription
     const { error: subError } = await supabase

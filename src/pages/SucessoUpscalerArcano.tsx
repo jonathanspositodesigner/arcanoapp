@@ -51,7 +51,7 @@ const SucessoUpscalerArcano = () => {
           toast.success("Bem-vindo! Defina sua senha.");
           navigate("/change-password");
         } else {
-          toast.error("Erro ao acessar. Tente fazer login manualmente.");
+          toast.success("Conta encontrada! Faça login com sua senha.");
           navigate("/login");
         }
       } else {

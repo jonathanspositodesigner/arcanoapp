@@ -1080,10 +1080,13 @@ async function processGreennArtesWebhook(supabase: any, payload: any, logId: str
         console.log(`   ├─ ✅ Novo usuário: ${userId}`)
       }
 
-      // Upsert profile
-      await supabase.from('profiles').upsert({
-        id: userId, name: clientName, phone: clientPhone, email, locale: userLocale, password_changed: false, email_verified: true, updated_at: new Date().toISOString()
-      }, { onConflict: 'id' })
+      // Upsert profile — check if profile exists to avoid resetting password_changed
+      const { data: existingProfileEv } = await supabase.from('profiles').select('id').eq('id', userId).maybeSingle()
+      const profileDataEv: Record<string, unknown> = {
+        id: userId, name: clientName, phone: clientPhone, email, locale: userLocale, email_verified: true, updated_at: new Date().toISOString()
+      }
+      if (!existingProfileEv) { profileDataEv.password_changed = false }
+      await supabase.from('profiles').upsert(profileDataEv, { onConflict: 'id' })
 
       // Process packs
       const platform = fromApp ? 'app' : 'eventos'

@@ -315,10 +315,13 @@ async function processGreennMusicosWebhook(supabase: any, payload: any, logId: s
         console.log(`   ├─ ✅ Novo usuário: ${userId}`)
       }
 
-      // Upsert profile
-      await supabase.from('profiles').upsert({
-        id: userId, name: clientName, phone: clientPhone, email, password_changed: false, email_verified: true, updated_at: new Date().toISOString()
-      }, { onConflict: 'id' })
+      // Upsert profile — check if profile exists to avoid resetting password_changed
+      const { data: existingProfileMus } = await supabase.from('profiles').select('id').eq('id', userId).maybeSingle()
+      const profileDataMus: Record<string, unknown> = {
+        id: userId, name: clientName, phone: clientPhone, email, email_verified: true, updated_at: new Date().toISOString()
+      }
+      if (!existingProfileMus) { profileDataMus.password_changed = false }
+      await supabase.from('profiles').upsert(profileDataMus, { onConflict: 'id' })
 
       // Calculate expiration
       const expiresAt = new Date()
