@@ -189,7 +189,7 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
 </html>`
 }
 
-async function sendPurchaseEmail(supabase: any, email: string, productName: string, ctaLink: string, requestId: string) {
+async function sendPurchaseEmail(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, options?: { packSlug?: string; productType?: string; accessType?: string }) {
   try {
     const { data: existing } = await supabase
       .from('welcome_email_logs')
