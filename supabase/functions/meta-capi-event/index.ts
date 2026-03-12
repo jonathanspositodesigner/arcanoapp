@@ -156,7 +156,7 @@ async function logCapiEvent(data: {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    await supabase.from('meta_capi_logs').insert({
+    const { data: insertData, error: insertError } = await supabase.from('meta_capi_logs').insert({
       event_name: data.event_name,
       email: data.email || null,
       value: data.value || null,
@@ -172,7 +172,13 @@ async function logCapiEvent(data: {
       meta_response_body: data.meta_response_body,
       success: data.success,
     })
+
+    if (insertError) {
+      console.warn(`⚠️ Failed to insert meta_capi_logs: ${insertError.message} | code: ${insertError.code} | details: ${insertError.details}`)
+    } else {
+      console.log(`✅ meta_capi_logs inserted successfully for event: ${data.event_name}`)
+    }
   } catch (logErr: any) {
-    console.warn(`⚠️ Failed to log CAPI event: ${logErr.message}`)
+    console.warn(`⚠️ Failed to log CAPI event (exception): ${logErr.message}`)
   }
 }
