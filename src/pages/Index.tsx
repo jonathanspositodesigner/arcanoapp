@@ -545,9 +545,17 @@ const Index = () => {
         onSignupEnd={() => { signupInProgressRef.current = false; }}
       />
 
-      {/* App Version */}
-      <div className="fixed bottom-2 left-1/2 -translate-x-1/2 z-10">
+      {/* App Version + Atualizar */}
+      <div className="fixed bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2">
         <span className="text-[10px] text-muted-foreground/50 select-none">v2026-02-12-001</span>
+        <button
+          onClick={handleManualUpdate}
+          disabled={isUpdating}
+          className="flex items-center gap-1 text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors disabled:opacity-50"
+        >
+          <RefreshCw className={`h-2.5 w-2.5 ${isUpdating ? 'animate-spin' : ''}`} />
+          Atualizar app
+        </button>
       </div>
     </div>
   );
