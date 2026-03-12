@@ -3,6 +3,9 @@
  * Cria um pedido com checkout no Pagar.me e retorna a URL de pagamento.
  * Recebe: { product_slug, user_email, user_phone, user_name, billing_type, utm_data }
  * Retorna: { checkout_url, order_id }
+ * 
+ * OTIMIZADO: Rate limit + produto em paralelo, Meta CAPI fire-and-forget,
+ * updates pós-checkout não bloqueiam resposta.
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -40,30 +43,6 @@ serve(async (req) => {
       })
     }
 
-    // ===== Rate Limit =====
-    const supabaseUrl_rl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceKey_rl = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase_rl = createClient(supabaseUrl_rl, supabaseServiceKey_rl)
-
-    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-    const rateLimitKey = `checkout_${email}_${clientIp}`
-
-    const { data: rlData } = await supabase_rl.rpc('check_rate_limit', {
-      _ip_address: rateLimitKey,
-      _endpoint: 'create-pagarme-checkout',
-      _max_requests: 5,
-      _window_seconds: 60
-    })
-
-    if (rlData && rlData.length > 0 && !rlData[0].allowed) {
-      console.warn(`🚫 Rate limit atingido: ${email} (${clientIp})`)
-      return new Response(JSON.stringify({ error: 'Muitas tentativas. Aguarde 1 minuto.' }), {
-        status: 429,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
-    }
-    // ===== End Rate Limit =====
-
     if (!phoneDigits || phoneDigits.length < 10 || phoneDigits.length > 11) {
       return new Response(JSON.stringify({ error: 'Celular inválido. Informe DDD + número.' }), {
         status: 400,
@@ -88,17 +67,39 @@ serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
 
-    // 1. Buscar produto
-    const { data: product, error: productError } = await supabase
-      .from('mp_products')
-      .select('*')
-      .eq('slug', product_slug)
-      .eq('is_active', true)
-      .single()
+    // ===== OTIMIZAÇÃO: Rate limit + busca de produto em PARALELO =====
+    const rateLimitKey = `checkout_${email}_${clientIp}`
 
-    if (productError || !product) {
-      console.error('Produto não encontrado:', product_slug, productError)
+    const [rlResult, productResult] = await Promise.all([
+      supabase.rpc('check_rate_limit', {
+        _ip_address: rateLimitKey,
+        _endpoint: 'create-pagarme-checkout',
+        _max_requests: 5,
+        _window_seconds: 60
+      }),
+      supabase
+        .from('mp_products')
+        .select('*')
+        .eq('slug', product_slug)
+        .eq('is_active', true)
+        .single()
+    ])
+
+    // Verificar rate limit
+    if (rlResult.data && rlResult.data.length > 0 && !rlResult.data[0].allowed) {
+      console.warn(`🚫 Rate limit atingido: ${email} (${clientIp})`)
+      return new Response(JSON.stringify({ error: 'Muitas tentativas. Aguarde 1 minuto.' }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Verificar produto
+    const product = productResult.data
+    if (productResult.error || !product) {
+      console.error('Produto não encontrado:', product_slug, productResult.error)
       return new Response(JSON.stringify({ error: 'Produto não encontrado' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -142,33 +143,36 @@ serve(async (req) => {
 
     console.log(`📦 Ordem criada: ${order.id} | Produto: ${product.title} | Email: ${email}`)
 
-    // Salvar dados no perfil imediatamente (pré-checkout)
+    // OTIMIZAÇÃO: Atualizar perfil sem bloquear (fire-and-forget)
     const trimmedName = user_name?.trim() || null
     if (trimmedName || cleanCpf || phoneDigits || user_address?.line_1) {
-      const { data: existingProfile } = await supabase
+      // Não aguarda — roda em background
+      supabase
         .from('profiles')
         .select('id, name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
         .eq('email', email)
         .maybeSingle()
-
-      if (existingProfile) {
-        const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
-        if (!existingProfile.name && trimmedName) updates.name = trimmedName
-        if (!existingProfile.cpf && cleanCpf) updates.cpf = cleanCpf
-        if (!existingProfile.phone && phoneDigits) updates.phone = phoneDigits
-        if (!existingProfile.address_line && user_address?.line_1) {
-          updates.address_line = user_address.line_1
-          updates.address_zip = user_address.zip_code || null
-          updates.address_city = user_address.city || null
-          updates.address_state = user_address.state || null
-          updates.address_country = user_address.country || 'BR'
-        }
-
-        if (Object.keys(updates).length > 1) {
-          await supabase.from('profiles').update(updates).eq('id', existingProfile.id)
-          console.log(`👤 Perfil atualizado (pré-checkout): ${email}`)
-        }
-      }
+        .then(({ data: existingProfile }) => {
+          if (existingProfile) {
+            const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
+            if (!existingProfile.name && trimmedName) updates.name = trimmedName
+            if (!existingProfile.cpf && cleanCpf) updates.cpf = cleanCpf
+            if (!existingProfile.phone && phoneDigits) updates.phone = phoneDigits
+            if (!existingProfile.address_line && user_address?.line_1) {
+              updates.address_line = user_address.line_1
+              updates.address_zip = user_address.zip_code || null
+              updates.address_city = user_address.city || null
+              updates.address_state = user_address.state || null
+              updates.address_country = user_address.country || 'BR'
+            }
+            if (Object.keys(updates).length > 1) {
+              supabase.from('profiles').update(updates).eq('id', existingProfile.id)
+                .then(() => console.log(`👤 Perfil atualizado (pré-checkout): ${email}`))
+                .catch((err: any) => console.warn(`⚠️ Falha ao atualizar perfil: ${err.message}`))
+            }
+          }
+        })
+        .catch((err: any) => console.warn(`⚠️ Falha ao buscar perfil: ${err.message}`))
     }
 
     // 3. Montar payload do checkout Pagar.me (valores em centavos)
@@ -307,18 +311,8 @@ serve(async (req) => {
       })
     }
 
-    // 6. Atualizar ordem com payment_id do Pagar.me
-    await supabase
-      .from('asaas_orders')
-      .update({ asaas_payment_id: pagarmeData.id })
-      .eq('id', order.id)
-
-    console.log(`✅ Checkout Pagar.me criado: ${pagarmeData.id} | URL: ${checkoutUrl.substring(0, 80)}...`)
-
-    // 7. Enviar InitiateCheckout para Meta CAPI (fire-and-forget, não bloqueia checkout)
+    // Preparar dados para fire-and-forget
     const capiEventId = crypto.randomUUID()
-
-    // Generate fbc from fbclid if not provided by frontend (critical for in-app browsers)
     let effectiveFbc = fbc || null
     let effectiveFbp = fbp || null
     const fbclid = utm_data?.fbclid || null
@@ -331,41 +325,11 @@ serve(async (req) => {
       console.log(`🔗 fbp fallback gerado: ${effectiveFbp}`)
     }
 
-    // Also update the order with the effective fbc/fbp
-    if ((effectiveFbc && !fbc) || (effectiveFbp && !fbp)) {
-      await supabase.from('asaas_orders').update({
-        meta_fbc: effectiveFbc,
-        meta_fbp: effectiveFbp,
-      }).eq('id', order.id)
-    }
+    console.log(`✅ Checkout Pagar.me criado: ${pagarmeData.id} | URL: ${checkoutUrl.substring(0, 80)}...`)
 
-    try {
-      const capiResponse = await fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseServiceKey}`,
-        },
-        body: JSON.stringify({
-          event_name: 'InitiateCheckout',
-          email,
-          value: Number(product.price),
-          currency: 'BRL',
-          utm_data: utm_data || null,
-          fbp: effectiveFbp,
-          fbc: effectiveFbc,
-          event_id: capiEventId,
-          event_source_url: 'https://arcanoapp.voxvisual.com.br',
-          client_ip_address: clientIp !== 'unknown' ? clientIp : null,
-          client_user_agent: clientUserAgent,
-        }),
-      })
-      console.log(`📊 Meta CAPI InitiateCheckout: ${capiResponse.status}`)
-    } catch (capiErr: any) {
-      console.warn(`⚠️ Meta CAPI InitiateCheckout falhou (não-crítico): ${capiErr.message}`)
-    }
-
-    return new Response(JSON.stringify({
+    // ===== RETORNAR RESPOSTA IMEDIATAMENTE =====
+    // Tudo abaixo roda em background (fire-and-forget)
+    const response = new Response(JSON.stringify({
       checkout_url: checkoutUrl,
       order_id: order.id,
       event_id: capiEventId,
@@ -373,6 +337,45 @@ serve(async (req) => {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
+
+    // 6. FIRE-AND-FORGET: Atualizar ordem com payment_id + fbc/fbp
+    const orderUpdates: Record<string, unknown> = { asaas_payment_id: pagarmeData.id }
+    if ((effectiveFbc && !fbc) || (effectiveFbp && !fbp)) {
+      orderUpdates.meta_fbc = effectiveFbc
+      orderUpdates.meta_fbp = effectiveFbp
+    }
+    supabase
+      .from('asaas_orders')
+      .update(orderUpdates)
+      .eq('id', order.id)
+      .then(() => console.log(`📝 Ordem atualizada com payment_id: ${pagarmeData.id}`))
+      .catch((err: any) => console.warn(`⚠️ Falha ao atualizar ordem: ${err.message}`))
+
+    // 7. FIRE-AND-FORGET: Meta CAPI InitiateCheckout
+    fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+      },
+      body: JSON.stringify({
+        event_name: 'InitiateCheckout',
+        email,
+        value: Number(product.price),
+        currency: 'BRL',
+        utm_data: utm_data || null,
+        fbp: effectiveFbp,
+        fbc: effectiveFbc,
+        event_id: capiEventId,
+        event_source_url: 'https://arcanoapp.voxvisual.com.br',
+        client_ip_address: clientIp !== 'unknown' ? clientIp : null,
+        client_user_agent: clientUserAgent,
+      }),
+    })
+      .then((r) => console.log(`📊 Meta CAPI InitiateCheckout: ${r.status}`))
+      .catch((err: any) => console.warn(`⚠️ Meta CAPI InitiateCheckout falhou: ${err.message}`))
+
+    return response
 
   } catch (error) {
     console.error('Erro geral:', error)
