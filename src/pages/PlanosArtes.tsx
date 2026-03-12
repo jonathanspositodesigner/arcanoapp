@@ -17,11 +17,15 @@ import { toast } from "sonner";
 
 // Packs que usam checkout Pagar.me em vez de links Greenn
 const PAGARME_PACK_SLUGS: Record<string, Record<string, string>> = {
-  'pack-arcano-vol-4': {
-    '6_meses': 'pack4-6meses',
-    '1_ano': 'pack4-1ano',
-    'vitalicio': 'pack4-vitalicio',
-  },
+  'pack-arcano-vol-4': { '6_meses': 'pack4-6meses', '1_ano': 'pack4-1ano', 'vitalicio': 'pack4-vitalicio' },
+  'pack-arcano-vol-1': { '6_meses': 'vol1-6meses', '1_ano': 'vol1-1ano', 'vitalicio': 'vol1-vitalicio' },
+  'pack-arcano-vol-2': { '6_meses': 'vol2-6meses', '1_ano': 'vol2-1ano', 'vitalicio': 'vol2-vitalicio' },
+  'pack-arcano-vol-3': { '6_meses': 'vol3-6meses', '1_ano': 'vol3-1ano', 'vitalicio': 'vol3-vitalicio' },
+  'pack-fim-de-ano': { '6_meses': 'fimdeano-6meses', '1_ano': 'fimdeano-1ano', 'vitalicio': 'fimdeano-vitalicio' },
+  'pack-agendas': { '6_meses': 'agendas-6meses', '1_ano': 'agendas-1ano', 'vitalicio': 'agendas-vitalicio' },
+  'pack-de-halloween': { '6_meses': 'halloween-6meses', '1_ano': 'halloween-1ano', 'vitalicio': 'halloween-vitalicio' },
+  'pack-de-carnaval': { '6_meses': 'carnaval-6meses', '1_ano': 'carnaval-1ano', 'vitalicio': 'carnaval-vitalicio' },
+  'pack-de-sao-joao': { '6_meses': 'saojoao-6meses', '1_ano': 'saojoao-1ano', 'vitalicio': 'saojoao-vitalicio' },
 };
 
 interface Pack {
