@@ -34,6 +34,17 @@ const CreditCardForm = ({
   const [expYear, setExpYear] = useState("");
   const [cvv, setCvv] = useState("");
   const [tokenizing, setTokenizing] = useState(false);
+  const publicKeyRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (open && !publicKeyRef.current) {
+      supabase.functions.invoke("get-pagarme-public-key").then(({ data, error }) => {
+        if (!error && data?.publicKey) {
+          publicKeyRef.current = data.publicKey;
+        }
+      });
+    }
+  }, [open]);
 
   const formatCardNumber = (value: string) => {
     const digits = value.replace(/\D/g, "").slice(0, 16);
