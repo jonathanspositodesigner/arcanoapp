@@ -23,6 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 import HomeAuthModal from "@/components/HomeAuthModal";
 import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
+import CreditCardForm from "@/components/checkout/CreditCardForm";
 import { usePlanos2Access } from "@/hooks/usePlanos2Access";
 import { toast } from "sonner";
 
