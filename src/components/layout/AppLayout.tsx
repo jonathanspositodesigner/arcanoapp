@@ -15,6 +15,7 @@ const AppLayout = ({ children, fullScreen = false }: AppLayoutProps) => {
   const { user, isPremium, planType, logout } = usePremiumStatus();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<{ name?: string; phone?: string } | null>(null);
+  useMetaPixelAdvancedMatching();
 
   useEffect(() => {
     const fetchProfile = async () => {
