@@ -339,6 +339,15 @@ serve(async (req) => {
       eventData?.charges?.[0]?.metadata?.order_id ||
       null
 
+    // Check if this is a subscription-related event
+    const subscriptionId: string | null = 
+      eventData?.subscription?.id ||
+      eventData?.id ||
+      null
+    const isSubscriptionEvent = eventType.startsWith('subscription.') || 
+      (eventType === 'charge.paid' && eventData?.subscription) ||
+      (eventType === 'charge.refunded' && eventData?.subscription)
+
     let order: any = null
     let product: any = null
 
@@ -388,7 +397,72 @@ serve(async (req) => {
       }
     }
 
+    // Tentativa 4 (subscription): buscar por pagarme_subscription_id
+    if (!order && subscriptionId && isSubscriptionEvent) {
+      console.log(`   ├─ 🔍 Fallback 3: buscando por pagarme_subscription_id = ${subscriptionId}`)
+      const subIdToSearch = eventData?.subscription?.id || subscriptionId
+      const { data, error } = await supabase
+        .from('asaas_orders')
+        .select('*, mp_products(*)')
+        .eq('pagarme_subscription_id', subIdToSearch)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (!error && data) {
+        order = data
+        product = data.mp_products
+        orderId = data.id
+        console.log(`   ├─ ✅ Ordem encontrada via subscription_id: ${orderId}`)
+      }
+    }
+
     if (!order) {
+      // For subscription.canceled events without a matching order, handle gracefully
+      if (eventType === 'subscription.canceled' && subscriptionId) {
+        console.log(`   ├─ 📋 subscription.canceled sem ordem — buscando planos2_subscriptions por subscription_id`)
+        const subIdToSearch = eventData?.subscription?.id || subscriptionId
+        const { data: subData } = await supabase
+          .from('planos2_subscriptions')
+          .select('user_id')
+          .eq('pagarme_subscription_id', subIdToSearch)
+          .maybeSingle()
+
+        if (subData?.user_id) {
+          console.log(`   ├─ 🔄 Revogando plano do user ${subData.user_id} (subscription canceled)`)
+          await supabase.from('planos2_subscriptions').upsert({
+            user_id: subData.user_id,
+            plan_slug: 'free',
+            is_active: true,
+            credits_per_month: 100,
+            daily_prompt_limit: 5,
+            has_image_generation: false,
+            has_video_generation: false,
+            cost_multiplier: 1.0,
+            expires_at: null,
+            pagarme_subscription_id: null,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' })
+
+          await supabase.rpc('reset_upscaler_credits', {
+            _user_id: subData.user_id,
+            _amount: 0,
+            _description: 'Subscription cancelada no Pagar.me'
+          })
+
+          await supabase.from('webhook_logs').insert({
+            platform: 'pagarme',
+            event_type: eventType,
+            transaction_id: idempotencyKey,
+            status: 'subscription_canceled',
+            email: null,
+            raw_payload: body,
+          })
+
+          console.log(`   ├─ ✅ Plano revogado → free (subscription canceled)`)
+          return new Response('OK', { status: 200, headers: corsHeaders })
+        }
+      }
+
       console.log(`   ├─ ⏭️ Ordem não encontrada por nenhum método`)
       await supabase.from('webhook_logs').insert({
         platform: 'pagarme',
