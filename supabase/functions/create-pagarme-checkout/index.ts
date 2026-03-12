@@ -327,11 +327,12 @@ serve(async (req) => {
           value: Number(product.price),
           currency: 'BRL',
           utm_data: utm_data || null,
-          fbp: null,
-          fbc: null,
+          fbp: fbp || null,
+          fbc: fbc || null,
           event_id: capiEventId,
           event_source_url: 'https://arcanoapp.voxvisual.com.br',
           client_ip_address: clientIp !== 'unknown' ? clientIp : null,
+          client_user_agent: clientUserAgent,
         }),
       })
       console.log(`📊 Meta CAPI InitiateCheckout: ${capiResponse.status}`)

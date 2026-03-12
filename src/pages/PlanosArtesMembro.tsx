@@ -293,6 +293,7 @@ const PlanosArtesMembro = () => {
         if (raw) utmData = JSON.parse(raw);
       } catch { /* ignore */ }
 
+      const { fbp, fbc } = getMetaCookies();
       const body: any = {
         product_slug: pendingSlug,
         user_email: userEmail,
@@ -301,6 +302,8 @@ const PlanosArtesMembro = () => {
         user_cpf: pendingProfile.cpf,
         billing_type: method,
         utm_data: utmData,
+        fbp,
+        fbc,
       };
 
       if (method === 'PIX') {

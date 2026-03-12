@@ -173,6 +173,7 @@ const Planos2 = () => {
         if (raw) utmData = JSON.parse(raw);
       } catch { /* ignore */ }
 
+      const { fbp, fbc } = getMetaCookies();
       const body: any = {
         product_slug: pendingSlug,
         user_email: userEmail,
@@ -181,6 +182,8 @@ const Planos2 = () => {
         user_cpf: pendingProfile.cpf,
         billing_type: method,
         utm_data: utmData,
+        fbp,
+        fbc,
       };
 
       // PIX: send address pre-filled; Credit card: omit address for antifraude form
