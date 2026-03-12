@@ -1,23 +1,47 @@
 
 
-# Correção: Mover assinatura IA Unlimited para o perfil correto
+## Problema identificado: Endpoint errado na API do Pagar.me
 
-## Problema
-A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
+A edge function `refund-pagarme` está usando o endpoint **errado** para estornar cobranças.
 
-## Dados
+**Código atual (ERRADO):**
+```
+POST /charges/{charge_id}/void
+```
 
-| Perfil | Email | User ID | Situação |
-|---|---|---|---|
-| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
-| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
-| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
+**Endpoint correto segundo a documentação do Pagar.me v5:**
+```
+DELETE /charges/{charge_id}
+```
 
-## Ações (via SQL migration)
+A documentação oficial do Pagar.me v5 mostra que cancelar/estornar uma cobrança usa o método **DELETE** no path `/charges/{charge_id}` — não existe endpoint `/void` na API v5. Por isso o reembolso sempre falha.
 
-1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
-2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
-3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
+Sobre a questão da senha: no dashboard do Pagar.me, o sistema pede senha como confirmação de segurança. Via API, a autenticação é feita pela `PAGARME_SECRET_KEY` (Basic Auth), então **não precisa de senha** — a secret key já autoriza o estorno.
 
-Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
+## Plano
+
+### Arquivo: `supabase/functions/refund-pagarme/index.ts`
+
+1. **Trocar o endpoint de estorno** de `POST /charges/{charge_id}/void` para `DELETE /charges/{charge_id}` (sem body)
+2. **Trocar o endpoint de verificação** — o GET em `/charges/{charge_id}` está correto e pode continuar
+3. **Adicionar suporte a estorno parcial via body** — para cartão de crédito, o DELETE aceita um body com `amount` (em centavos). Para estorno total, basta o DELETE sem body
+4. **Para boleto PSP** — estornos de boleto precisam dos dados bancários do cliente no body. Por agora, focaremos em estorno total (cartão + PIX), que é o caso mais comum
+
+### Mudança específica na edge function:
+
+```typescript
+// ANTES (errado):
+const pagarmeResponse = await fetch(`https://api.pagar.me/core/v5/charges/${chargeId}/void`, {
+  method: 'POST',
+  headers: { 'Authorization': `Basic ${basicAuth}`, 'Content-Type': 'application/json' },
+})
+
+// DEPOIS (correto):
+const pagarmeResponse = await fetch(`https://api.pagar.me/core/v5/charges/${chargeId}`, {
+  method: 'DELETE',
+  headers: { 'Authorization': `Basic ${basicAuth}`, 'Content-Type': 'application/json' },
+})
+```
+
+Apenas 2 linhas mudam no arquivo. O resto da lógica (verificação de status, revogação de acesso, logs) está correto.
 
