@@ -1,4 +1,5 @@
 import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock, QrCode } from "lucide-react";
+import { getMetaCookies } from "@/lib/metaCookies";
 import { useState, useEffect } from "react";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { supabase } from "@/integrations/supabase/client";
