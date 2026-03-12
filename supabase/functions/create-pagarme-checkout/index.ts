@@ -39,6 +39,30 @@ serve(async (req) => {
       })
     }
 
+    // ===== Rate Limit =====
+    const supabaseUrl_rl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey_rl = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabase_rl = createClient(supabaseUrl_rl, supabaseServiceKey_rl)
+
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    const rateLimitKey = `checkout_${email}_${clientIp}`
+
+    const { data: rlData } = await supabase_rl.rpc('check_rate_limit', {
+      _ip_address: rateLimitKey,
+      _endpoint: 'create-pagarme-checkout',
+      _max_requests: 5,
+      _window_seconds: 60
+    })
+
+    if (rlData && rlData.length > 0 && !rlData[0].allowed) {
+      console.warn(`🚫 Rate limit atingido: ${email} (${clientIp})`)
+      return new Response(JSON.stringify({ error: 'Muitas tentativas. Aguarde 1 minuto.' }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+    // ===== End Rate Limit =====
+
     if (!phoneDigits || phoneDigits.length < 10 || phoneDigits.length > 11) {
       return new Response(JSON.stringify({ error: 'Celular inválido. Informe DDD + número.' }), {
         status: 400,

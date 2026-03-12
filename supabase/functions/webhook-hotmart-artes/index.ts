@@ -773,6 +773,21 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // ===== Hotmart hottok Validation =====
+  const expectedHottok = Deno.env.get('HOTMART_HOTTOK')
+  if (expectedHottok) {
+    const hottokHeader = req.headers.get('x-hotmart-hottok')
+    if (hottokHeader !== expectedHottok) {
+      console.error(`🚫 [${requestId}] HOTTOK inválido - possível ataque`)
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+    console.log(`✅ [${requestId}] HOTTOK Hotmart válido`)
+  }
+  // ===== End hottok Validation =====
+
   console.log(`\n${'='.repeat(60)}`)
   console.log(`🔔 [${requestId}] WEBHOOK HOTMART ARTES (ES) - ${new Date().toISOString()}`)
   console.log(`${'='.repeat(60)}`)

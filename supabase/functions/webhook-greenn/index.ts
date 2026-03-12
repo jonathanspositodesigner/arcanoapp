@@ -752,6 +752,24 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // ===== Greenn Webhook Token Validation =====
+  const greennWebhookToken = Deno.env.get('GREENN_WEBHOOK_TOKEN')
+  if (greennWebhookToken) {
+    const url = new URL(req.url)
+    const tokenParam = url.searchParams.get('token')
+    const tokenHeader = req.headers.get('x-webhook-token')
+    
+    if (tokenParam !== greennWebhookToken && tokenHeader !== greennWebhookToken) {
+      console.error(`🚫 [${requestId}] Token de webhook Greenn inválido`)
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+    console.log(`✅ [${requestId}] Token Greenn válido`)
+  }
+  // ===== End Token Validation =====
+
   console.log(`\n${'='.repeat(70)}`)
   console.log(`🚀 [${requestId}] WEBHOOK PROMPTCLUB - ${new Date().toISOString()}`)
   console.log(`${'='.repeat(70)}`)
