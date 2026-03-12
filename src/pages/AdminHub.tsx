@@ -19,6 +19,7 @@ import AbandonedCheckoutsContent from "@/components/AbandonedCheckoutsContent";
 import AdminsManagementContent from "@/components/AdminsManagementContent";
 import SalesManagementContent from "@/components/admin/SalesManagementContent";
 import AdsManagementContent from "@/components/admin/AdsManagementContent";
+import MetaCapiLogsContent from "@/components/admin/MetaCapiLogsContent";
 
 const AdminHub = () => {
   const navigate = useNavigate();
