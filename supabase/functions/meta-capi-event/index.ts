@@ -39,6 +39,7 @@ serve(async (req) => {
       event_source_url,
       client_ip_address,
       client_user_agent,
+      event_time,
     } = await req.json()
 
     if (!event_name) {
