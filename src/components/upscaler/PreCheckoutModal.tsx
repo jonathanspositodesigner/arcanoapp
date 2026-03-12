@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { X, CreditCard, QrCode, ArrowRight, Shield, Zap, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { getMetaCookies } from "@/lib/metaCookies";
 
 interface PreCheckoutModalProps {
   isOpen: boolean;
