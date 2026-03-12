@@ -165,3 +165,6 @@ verify_jwt = false
 
 [functions.create-pagarme-subscription]
 verify_jwt = false
+
+[functions.get-pagarme-public-key]
+verify_jwt = false

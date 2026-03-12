@@ -81,9 +81,9 @@ const CreditCardForm = ({
     setTokenizing(true);
 
     try {
-      const publicKey = import.meta.env.VITE_PAGARME_PUBLIC_KEY;
+      const publicKey = publicKeyRef.current;
       if (!publicKey) {
-        toast.error("Chave pública de pagamento não configurada");
+        toast.error("Chave pública de pagamento não disponível. Tente novamente.");
         setTokenizing(false);
         return;
       }
