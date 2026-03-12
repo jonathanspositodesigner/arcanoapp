@@ -30,6 +30,7 @@ const SucessoCompra = () => {
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = email.trim().toLowerCase();
+
     if (!trimmed) {
       toast.error("Digite seu email de compra");
       return;
@@ -37,7 +38,18 @@ const SucessoCompra = () => {
 
     setIsLoading(true);
     try {
-      // 1. Check if profile already exists
+      const { data: purchaseData, error: purchaseError } = await supabase.functions.invoke(
+        "check-purchase-exists",
+        { body: { email: trimmed, order_id: orderId } }
+      );
+
+      if (purchaseError) throw purchaseError;
+
+      if (!purchaseData?.exists) {
+        setStep("not_found");
+        return;
+      }
+
       const { data, error } = await supabase.rpc("check_profile_exists", {
         check_email: trimmed,
       });
@@ -47,33 +59,22 @@ const SucessoCompra = () => {
       const exists = data?.[0]?.exists_in_db || false;
 
       if (exists) {
-        toast.success("Conta encontrada! Redirecionando...");
-        navigate("/");
-        return;
+        const { error: autoLoginError } = await supabase.auth.signInWithPassword({
+          email: trimmed,
+          password: trimmed,
+        });
+
+        if (!autoLoginError) {
+          toast.success("Conta encontrada! Redirecionando...");
+          navigate("/");
+          return;
+        }
       }
 
-      // 2. No profile → check if a purchase exists
-      const { data: purchaseData, error: purchaseError } = await supabase.functions.invoke(
-        "check-purchase-exists",
-        { body: { email: trimmed, order_id: orderId } }
-      );
-
-      if (purchaseError) {
-        console.error("Purchase check error:", purchaseError);
-        toast.error("Erro ao verificar compra. Tente novamente.");
-        return;
-      }
-
-      if (purchaseData?.exists) {
-        // Purchase found → show password creation
-        setStep("password");
-      } else {
-        // No purchase → show not found
-        setStep("not_found");
-      }
+      setStep("password");
     } catch (err) {
       console.error(err);
-      toast.error("Erro ao verificar email. Tente novamente.");
+      toast.error("Erro ao verificar acesso. Tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -86,6 +87,7 @@ const SucessoCompra = () => {
       toast.error("Senha deve ter no mínimo 6 caracteres");
       return;
     }
+
     if (password !== confirmPassword) {
       toast.error("As senhas não conferem");
       return;
@@ -102,34 +104,26 @@ const SucessoCompra = () => {
         }
       );
 
-      if (error) {
-        const msg = data?.error || "Erro ao criar conta. Tente novamente.";
-        toast.error(msg);
+      if (error || !data?.success) {
+        toast.error(data?.error || "Erro ao criar acesso. Tente novamente.");
         return;
       }
 
-      if (!data?.success) {
-        toast.error(data?.error || "Erro ao criar conta. Tente novamente.");
-        return;
-      }
-
-      // Auto-login
       const { error: loginError } = await supabase.auth.signInWithPassword({
         email: trimmed,
         password,
       });
 
       if (loginError) {
-        toast.error("Conta criada, mas erro no login. Tente fazer login manualmente.");
-        navigate("/login");
+        toast.error("Conta criada/atualizada, mas não foi possível entrar automaticamente.");
         return;
       }
 
-      toast.success("Conta criada com sucesso! Bem-vindo!");
+      toast.success("Acesso liberado! Bem-vindo!");
       navigate("/");
     } catch (err) {
       console.error(err);
-      toast.error("Erro ao criar conta. Tente novamente.");
+      toast.error("Erro ao criar acesso. Tente novamente.");
     } finally {
       setIsLoading(false);
     }
@@ -170,7 +164,7 @@ const SucessoCompra = () => {
 
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
       </div>
 
       <Card className="w-full max-w-lg relative z-10 border-primary/20 shadow-2xl">
@@ -178,8 +172,8 @@ const SucessoCompra = () => {
           {step === "not_found" ? (
             <>
               <div className="relative mb-6">
-                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center shadow-lg shadow-amber-500/30">
-                  <AlertTriangle className="w-10 h-10 text-white" />
+                <div className="w-20 h-20 mx-auto bg-secondary rounded-full flex items-center justify-center shadow-lg">
+                  <AlertTriangle className="w-10 h-10 text-foreground" />
                 </div>
               </div>
 
@@ -187,40 +181,28 @@ const SucessoCompra = () => {
                 Nenhuma compra encontrada
               </h1>
               <p className="text-muted-foreground mb-2">
-                Não encontramos nenhuma compra associada ao email{" "}
-                <span className="text-primary font-semibold">{email}</span>.
+                Não encontramos nenhuma compra associada ao email <span className="text-primary font-semibold">{email}</span>.
               </p>
-              <p className="text-muted-foreground text-sm mb-6">
-                Verifique se digitou o email correto ou entre em contato com o suporte.
-              </p>
+              <p className="text-muted-foreground text-sm mb-6">Verifique se digitou o email correto.</p>
 
-              <div className="space-y-3 mb-4">
-                <p className="text-sm font-medium text-foreground">Problemas com o pagamento?</p>
-                <Button
-                  asChild
-                  className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white"
-                  size="lg"
-                >
-                  <a
-                    href="https://wa.me/+5533988819891"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    Falar com o suporte
-                  </a>
-                </Button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStep("email");
-                    setEmail("");
-                  }}
-                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
-                >
-                  ← Tentar outro email
-                </button>
-              </div>
+              <p className="text-sm font-medium text-foreground mb-3">Problemas com o pagamento?</p>
+              <Button asChild className="w-full gap-2" size="lg">
+                <a href="https://wa.me/+5533988819891" target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="w-4 h-4" />
+                  Falar com o suporte
+                </a>
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setStep("email");
+                  setEmail("");
+                }}
+                className="mt-4 text-xs text-muted-foreground hover:text-primary transition-colors"
+              >
+                ← Tentar outro email
+              </button>
             </>
           ) : (
             <>
@@ -241,9 +223,7 @@ const SucessoCompra = () => {
                     Seu pagamento está sendo processado
                   </h1>
                   <p className="text-muted-foreground mb-6">
-                    Se você já pagou, seu acesso foi liberado! Coloque seu{" "}
-                    <span className="text-primary font-semibold">email de compra</span>{" "}
-                    para acessar seu conteúdo.
+                    Se você já pagou, seu acesso foi liberado! Coloque seu <span className="text-primary font-semibold">email de compra</span> para acessar seu conteúdo.
                   </p>
 
                   <form onSubmit={handleEmailSubmit} className="space-y-4 mb-6">
@@ -255,12 +235,7 @@ const SucessoCompra = () => {
                       className="text-center"
                       required
                     />
-                    <Button
-                      type="submit"
-                      className="w-full gap-2"
-                      size="lg"
-                      disabled={isLoading}
-                    >
+                    <Button type="submit" className="w-full gap-2" size="lg" disabled={isLoading}>
                       {isLoading ? "Verificando..." : "Acessar meu conteúdo"}
                       {!isLoading && <ArrowRight className="w-4 h-4" />}
                     </Button>
@@ -268,12 +243,8 @@ const SucessoCompra = () => {
                 </>
               ) : (
                 <>
-                  <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-                    Crie sua senha
-                  </h1>
-                  <p className="text-muted-foreground mb-1">
-                    Defina uma senha para acessar sua conta com o email:
-                  </p>
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Crie sua senha</h1>
+                  <p className="text-muted-foreground mb-1">Defina uma senha para acessar sua conta com o email:</p>
                   <p className="text-primary font-semibold mb-6 text-sm">{email}</p>
 
                   <form onSubmit={handlePasswordSubmit} className="space-y-4 mb-6">
@@ -308,18 +279,17 @@ const SucessoCompra = () => {
                         minLength={6}
                       />
                     </div>
-                    <Button
-                      type="submit"
-                      className="w-full gap-2"
-                      size="lg"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Criando conta..." : "Criar conta e acessar"}
+                    <Button type="submit" className="w-full gap-2" size="lg" disabled={isLoading}>
+                      {isLoading ? "Criando acesso..." : "Criar acesso e entrar"}
                       {!isLoading && <ArrowRight className="w-4 h-4" />}
                     </Button>
                     <button
                       type="button"
-                      onClick={() => { setStep("email"); setPassword(""); setConfirmPassword(""); }}
+                      onClick={() => {
+                        setStep("email");
+                        setPassword("");
+                        setConfirmPassword("");
+                      }}
                       className="text-xs text-muted-foreground hover:text-primary transition-colors"
                     >
                       ← Voltar e trocar email
