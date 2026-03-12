@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { X, CreditCard, QrCode, ArrowRight, Shield, Zap, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { getMetaCookies } from "@/lib/metaCookies";
 
 interface PreCheckoutModalProps {
   isOpen: boolean;
@@ -180,11 +181,14 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         if (raw) utmData = JSON.parse(raw);
       } catch { /* ignore */ }
 
+      const { fbp, fbc } = getMetaCookies();
       const response = await supabase.functions.invoke('pagarme-one-click', {
         body: {
           product_slug: productSlug,
           saved_card_id: selectedCardId,
-          utm_data: utmData
+          utm_data: utmData,
+          fbp,
+          fbc,
         }
       });
 
@@ -243,6 +247,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         if (raw) utmData = JSON.parse(raw);
       } catch { /* ignore */ }
 
+      const { fbp, fbc } = getMetaCookies();
       const response = await supabase.functions.invoke('create-pagarme-checkout', {
         body: {
           product_slug: productSlug,
@@ -251,7 +256,9 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
           user_name: name.trim(),
           user_cpf: cpf.replace(/\D/g, ''),
           billing_type: paymentMethod,
-          utm_data: utmData
+          utm_data: utmData,
+          fbp,
+          fbc,
         }
       });
 

@@ -20,7 +20,8 @@ serve(async (req) => {
   }
 
   try {
-    const { product_slug, user_email, user_phone, user_name, user_cpf, billing_type, utm_data, user_address } = await req.json()
+    const { product_slug, user_email, user_phone, user_name, user_cpf, billing_type, utm_data, user_address, fbp, fbc } = await req.json()
+    const clientUserAgent = req.headers.get('user-agent') || null
 
     if (!product_slug || !user_email) {
       return new Response(JSON.stringify({ error: 'product_slug e user_email são obrigatórios' }), {
@@ -326,11 +327,12 @@ serve(async (req) => {
           value: Number(product.price),
           currency: 'BRL',
           utm_data: utm_data || null,
-          fbp: null,
-          fbc: null,
+          fbp: fbp || null,
+          fbc: fbc || null,
           event_id: capiEventId,
           event_source_url: 'https://arcanoapp.voxvisual.com.br',
           client_ip_address: clientIp !== 'unknown' ? clientIp : null,
+          client_user_agent: clientUserAgent,
         }),
       })
       console.log(`📊 Meta CAPI InitiateCheckout: ${capiResponse.status}`)

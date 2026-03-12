@@ -1,4 +1,5 @@
 import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock, QrCode } from "lucide-react";
+import { getMetaCookies } from "@/lib/metaCookies";
 import { useState, useEffect } from "react";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { supabase } from "@/integrations/supabase/client";
@@ -129,6 +130,7 @@ export const PricingCardsSection = () => {
         if (raw) utmData = JSON.parse(raw);
       } catch { /* ignore */ }
 
+      const { fbp, fbc } = getMetaCookies();
       const body: any = {
         product_slug: PRODUCT_SLUG,
         user_email: userEmail,
@@ -137,6 +139,8 @@ export const PricingCardsSection = () => {
         user_cpf: pendingProfile.cpf,
         billing_type: method,
         utm_data: utmData,
+        fbp,
+        fbc,
       };
 
       if (method === 'PIX') {
@@ -160,7 +164,11 @@ export const PricingCardsSection = () => {
         return;
       }
 
-      const { checkout_url } = response.data;
+      const { checkout_url, event_id } = response.data;
+      // Fire InitiateCheckout with event_id for deduplication with server-side CAPI
+      if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
+        (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
+      }
       if (checkout_url) {
         window.location.href = checkout_url;
         return;

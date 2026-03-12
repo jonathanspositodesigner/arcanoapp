@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getMetaCookies } from "@/lib/metaCookies";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -292,6 +293,7 @@ const PlanosArtesMembro = () => {
         if (raw) utmData = JSON.parse(raw);
       } catch { /* ignore */ }
 
+      const { fbp, fbc } = getMetaCookies();
       const body: any = {
         product_slug: pendingSlug,
         user_email: userEmail,
@@ -300,6 +302,8 @@ const PlanosArtesMembro = () => {
         user_cpf: pendingProfile.cpf,
         billing_type: method,
         utm_data: utmData,
+        fbp,
+        fbc,
       };
 
       if (method === 'PIX') {
@@ -322,7 +326,11 @@ const PlanosArtesMembro = () => {
         return;
       }
 
-      const { checkout_url } = response.data;
+      const { checkout_url, event_id } = response.data;
+      // Fire InitiateCheckout with event_id for deduplication with server-side CAPI
+      if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
+        (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
+      }
       if (checkout_url) {
         window.location.href = checkout_url;
         return; // Keep modal open during redirect
