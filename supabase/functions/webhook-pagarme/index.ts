@@ -760,66 +760,98 @@ serve(async (req) => {
     }
 
     // =============================================
-    // REEMBOLSO
+    // REEMBOLSO (with atomic lock to prevent double processing)
     // =============================================
     else if (eventType === 'charge.refunded' || eventType === 'order.canceled' || eventType === 'charge.chargedback' || eventType === 'charge.underpaid') {
       console.log(`\n🚫 [${requestId}] REEMBOLSO PAGAR.ME - Revogando acesso...`)
 
-      if (order.user_id && product.pack_slug) {
-        await supabase
-          .from('user_pack_purchases')
-          .update({ is_active: false, updated_at: new Date().toISOString() })
-          .eq('user_id', order.user_id)
-          .eq('pack_slug', product.pack_slug)
+      // Atomic lock: only process if order is currently 'paid' → 'refund_processing'
+      const { data: refundLock, error: refundLockError } = await supabase
+        .from('asaas_orders')
+        .update({ status: 'refund_processing', updated_at: new Date().toISOString() })
+        .eq('id', order.id)
+        .in('status', ['paid', 'processing'])
+        .select('id')
+        .maybeSingle()
 
-        console.log(`   ├─ ✅ Acesso revogado: ${product.pack_slug}`)
+      if (refundLockError) {
+        console.error(`   ├─ ❌ Erro ao travar ordem para reembolso:`, refundLockError)
+      }
 
-        // Bundle: revogar packs extras
-        const REFUND_BUNDLE_EXTRA_PACKS: Record<string, string[]> = {
-          'pack4lancamento': ['pack-de-sao-joao']
-        }
-        const extraSlugs = REFUND_BUNDLE_EXTRA_PACKS[product.slug] || []
-        for (const extraSlug of extraSlugs) {
+      if (!refundLock) {
+        console.log(`   ├─ ⏭️ Ordem já sendo reembolsada ou já reembolsada (race condition evitada, status: ${order.status})`)
+        await supabase.from('webhook_logs').insert({
+          platform: 'pagarme',
+          event_type: eventType,
+          transaction_id: idempotencyKey,
+          status: 'skipped_refund_race',
+          email: order.user_email,
+          product_name: product?.title,
+          raw_payload: body,
+        })
+      } else {
+        // Proceed with revocation
+        if (order.user_id && product.pack_slug) {
           await supabase
             .from('user_pack_purchases')
             .update({ is_active: false, updated_at: new Date().toISOString() })
             .eq('user_id', order.user_id)
-            .eq('pack_slug', extraSlug)
-          console.log(`   ├─ ✅ Bundle: acesso extra revogado: ${extraSlug}`)
-        }
-      }
+            .eq('pack_slug', product.pack_slug)
 
-      if (order.user_id && product.type === 'credits' && product.credits_amount > 0) {
-        const { error: revokeError } = await supabase.rpc('remove_lifetime_credits', {
-          _user_id: order.user_id,
-          _amount: product.credits_amount,
-          _description: `Reembolso Pagar.me: ${product.title}`
+          console.log(`   ├─ ✅ Acesso revogado: ${product.pack_slug}`)
+
+          // Bundle: revogar packs extras
+          const REFUND_BUNDLE_EXTRA_PACKS: Record<string, string[]> = {
+            'pack4lancamento': ['pack-de-sao-joao']
+          }
+          const extraSlugs = REFUND_BUNDLE_EXTRA_PACKS[product.slug] || []
+          for (const extraSlug of extraSlugs) {
+            await supabase
+              .from('user_pack_purchases')
+              .update({ is_active: false, updated_at: new Date().toISOString() })
+              .eq('user_id', order.user_id)
+              .eq('pack_slug', extraSlug)
+            console.log(`   ├─ ✅ Bundle: acesso extra revogado: ${extraSlug}`)
+          }
+        }
+
+        if (order.user_id && product.type === 'credits' && product.credits_amount > 0) {
+          const { data: revokeData, error: revokeError } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
+            _user_id: order.user_id,
+            _amount: product.credits_amount,
+            _description: `Reembolso Pagar.me: ${product.title}`
+          })
+          if (revokeError) {
+            console.error(`   ├─ ❌ Erro de transporte ao revogar créditos:`, revokeError)
+          } else {
+            const revokeResult = revokeData?.[0] || revokeData
+            if (!revokeResult?.success) {
+              console.error(`   ├─ ❌ FALHA REAL na revogação de créditos:`, JSON.stringify(revokeResult))
+            } else {
+              console.log(`   ├─ ✅ Créditos revogados: ${revokeResult.amount_revoked} (novo saldo: ${revokeResult.new_balance})`)
+            }
+          }
+        }
+
+        await supabase.from('asaas_orders').update({
+          status: 'refunded',
+          updated_at: new Date().toISOString()
+        }).eq('id', order.id)
+
+        // Logar reembolso
+        await supabase.from('webhook_logs').insert({
+          platform: 'pagarme',
+          event_type: eventType,
+          transaction_id: idempotencyKey,
+          status: 'refunded',
+          email: order.user_email,
+          product_name: product.title,
+          amount: Number(order.amount),
+          raw_payload: body,
         })
-        if (revokeError) {
-          console.error(`   ├─ ❌ Erro ao revogar créditos:`, revokeError)
-        } else {
-          console.log(`   ├─ ✅ Créditos revogados: ${product.credits_amount}`)
-        }
+
+        console.log(`   ├─ ✅ Ordem marcada como refunded`)
       }
-
-      await supabase.from('asaas_orders').update({
-        status: 'refunded',
-        updated_at: new Date().toISOString()
-      }).eq('id', order.id)
-
-      // Logar reembolso
-      await supabase.from('webhook_logs').insert({
-        platform: 'pagarme',
-        event_type: eventType,
-        transaction_id: idempotencyKey,
-        status: 'refunded',
-        email: order.user_email,
-        product_name: product.title,
-        amount: Number(order.amount),
-        raw_payload: body,
-      })
-
-      console.log(`   ├─ ✅ Ordem marcada como refunded`)
     }
 
     else {

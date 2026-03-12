@@ -213,16 +213,21 @@ serve(async (req: Request) => {
 
     if (order.user_id && product?.type === 'credits' && product?.credits_amount > 0) {
       console.log(`   ├─ 🔄 Revogando ${product.credits_amount} créditos lifetime do usuário ${order.user_id}...`)
-      const { data: revokeData, error: revokeError } = await supabase.rpc('remove_lifetime_credits', {
+      const { data: revokeData, error: revokeError } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
         _user_id: order.user_id,
         _amount: product.credits_amount,
         _description: `Reembolso manual Pagar.me: ${product.title}`
       })
       if (revokeError) {
-        console.error(`   ├─ ❌ Erro ao revogar créditos:`, revokeError)
-      } else {
-        console.log(`   ├─ ✅ Créditos revogados: ${product.credits_amount}`, revokeData)
+        console.error(`   ├─ ❌ Erro de transporte ao revogar créditos:`, revokeError)
+        return new Response(JSON.stringify({ error: `Falha ao revogar créditos: ${revokeError.message}` }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
+      const revokeResult = revokeData?.[0] || revokeData
+      if (!revokeResult?.success) {
+        console.error(`   ├─ ❌ Revogação falhou:`, revokeResult)
+        return new Response(JSON.stringify({ error: `Falha ao revogar créditos: ${revokeResult?.error_message || 'Erro desconhecido'}` }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+      console.log(`   ├─ ✅ Créditos revogados: ${revokeResult.amount_revoked} (novo saldo: ${revokeResult.new_balance})`)
     } else {
       console.log(`   ├─ ⚠️ Sem créditos para revogar (user_id: ${!!order.user_id}, type: ${product?.type}, credits_amount: ${product?.credits_amount})`)
     }

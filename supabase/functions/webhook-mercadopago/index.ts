@@ -583,15 +583,20 @@ serve(async (req) => {
 
       // Revogar créditos se produto for do tipo credits
       if (order.user_id && product.type === 'credits' && product.credits_amount > 0) {
-        const { error: revokeError } = await supabase.rpc('remove_lifetime_credits', {
+        const { data: revokeData, error: revokeError } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
           _user_id: order.user_id,
           _amount: product.credits_amount,
           _description: `Reembolso MP: ${product.title}`
         })
         if (revokeError) {
-          console.error(`   ├─ ❌ Erro ao revogar créditos:`, revokeError)
+          console.error(`   ├─ ❌ Erro de transporte ao revogar créditos:`, revokeError)
         } else {
-          console.log(`   ├─ ✅ ${product.credits_amount} créditos revogados`)
+          const revokeResult = revokeData?.[0] || revokeData
+          if (!revokeResult?.success) {
+            console.error(`   ├─ ❌ FALHA REAL na revogação de créditos:`, JSON.stringify(revokeResult))
+          } else {
+            console.log(`   ├─ ✅ ${revokeResult.amount_revoked} créditos revogados (novo saldo: ${revokeResult.new_balance})`)
+          }
         }
       }
 
