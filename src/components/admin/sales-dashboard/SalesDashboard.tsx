@@ -153,7 +153,7 @@ export default function SalesDashboard() {
       <SalesDashboardSecondaryKPIs
         orders={orders} approved={approved} refunded={refunded} pending={pending}
         revenue={revenue} refundedTotal={refundedTotal} pendingTotal={pendingTotal}
-        adSpend={adSpend} isLoading={isLoading}
+        adSpend={adSpend} platformFees={platformFees} isLoading={isLoading}
       />
 
       {/* Donut + Funnel */}

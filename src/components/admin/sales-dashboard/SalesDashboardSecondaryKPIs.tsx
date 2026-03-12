@@ -10,6 +10,7 @@ interface Props {
   refundedTotal: number;
   pendingTotal: number;
   adSpend: number;
+  platformFees: number;
   isLoading: boolean;
 }
 
@@ -19,11 +20,12 @@ function fmt(v: number) {
 
 export default function SalesDashboardSecondaryKPIs({
   orders, approved, refunded, pending,
-  revenue, refundedTotal, pendingTotal, adSpend, isLoading,
+  revenue, refundedTotal, pendingTotal, adSpend, platformFees, isLoading,
 }: Props) {
   const cpa = adSpend > 0 && approved.length > 0 ? adSpend / approved.length : 0;
   const cbRate = orders.length > 0 ? (refunded.length / orders.length) * 100 : 0;
-  const margin = revenue > 0 && adSpend > 0 ? ((revenue - adSpend) / revenue) * 100 : 0;
+  const totalCosts = adSpend + platformFees;
+  const margin = revenue > 0 && totalCosts > 0 ? ((revenue - totalCosts) / revenue) * 100 : 0;
 
   const items = [
     { label: "CPA", value: adSpend > 0 ? fmt(cpa) : "—", icon: Target, color: "text-sky-400", borderColor: "border-sky-500/20" },
