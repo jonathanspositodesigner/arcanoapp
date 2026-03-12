@@ -594,7 +594,11 @@ serve(async (req) => {
         ? 'https://arcanoapp.voxvisual.com.br/upscaler-arcano'
         : 'https://arcanoapp.voxvisual.com.br/'
 
-      await sendPurchaseEmail(supabase, email, product.title, ctaLink, requestId)
+      await sendPurchaseEmail(supabase, email, product.title, ctaLink, requestId, {
+        packSlug: product.pack_slug,
+        productType: product.type,
+        accessType: product.access_type,
+      })
 
       // 7.1 Notificar admin
       try {
