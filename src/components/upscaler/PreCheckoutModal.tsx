@@ -181,11 +181,14 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         if (raw) utmData = JSON.parse(raw);
       } catch { /* ignore */ }
 
+      const { fbp, fbc } = getMetaCookies();
       const response = await supabase.functions.invoke('pagarme-one-click', {
         body: {
           product_slug: productSlug,
           saved_card_id: selectedCardId,
-          utm_data: utmData
+          utm_data: utmData,
+          fbp,
+          fbc,
         }
       });
 
