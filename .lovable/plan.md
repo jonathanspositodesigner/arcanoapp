@@ -1,42 +1,42 @@
 
-# Migração Planos Mensais/Anuais: Greenn → Pagar.me (CONCLUÍDA v2 - Recorrência Real)
 
-## Resumo
-Migração dos 8 planos de assinatura (4 planos × 2 períodos) da Greenn para o Pagar.me com **recorrência real via cartão de crédito** e PIX como pagamento avulso.
+# Diagnóstico: 3 Problemas Encontrados no Checkout Teste
 
-## Decisão Arquitetural
-- **Cartão de Crédito**: Recorrência real via `POST /subscriptions` do Pagar.me. Tokenização do cartão no front-end via API pública (`pk_XXXX`). Cobrança automática a cada ciclo.
-- **PIX**: Checkout avulso (sem recorrência) — plano ativa por 30/365 dias. pg_cron expira planos vencidos.
-- **Reembolso**: Cancela subscription no Pagar.me (`DELETE /subscriptions/{id}`) + revoga plano → free + zera créditos.
+## O que funcionou
+- O CAPI **enviou o evento com sucesso** para o Facebook: `events_received: 1`
+- UTMs foram capturadas corretamente (campanha, ad set, ad — todos presentes na ordem)
+- O `event_id` foi gerado e retornado ao frontend
 
-## O que foi feito
+## Problema 1: `meta_capi_logs` insert silencioso falhando
+A função `logCapiEvent` usa `supabase.from('meta_capi_logs').insert(...)` mas **não verifica o `{ error }` retornado** — apenas tem um try/catch que nunca dispara porque o SDK do Supabase não lança exceção em erros de insert. Resultado: o log nunca é salvo e o dashboard fica vazio.
 
-### 1. Banco de Dados
-- Colunas `plan_slug` e `billing_period` em `mp_products`
-- Coluna `pagarme_subscription_id` em `asaas_orders` e `planos2_subscriptions`
-- 8 produtos inseridos: `plano-{starter,pro,ultimate,unlimited}-{mensal,anual}`
+**Correção**: Adicionar verificação do `error` retornado pelo insert e logar com `console.warn` para diagnóstico. Também adicionar uma policy de INSERT para `service_role` ou tornar a policy de insert mais permissiva (atualmente referencia o role `authenticated` mas a edge function usa service_role que deveria bypass RLS — vamos adicionar log do erro para confirmar a causa).
 
-### 2. CreditCardForm.tsx (NOVO)
-- Formulário seguro com campos: Número, Nome, Validade, CVV
-- Tokenização direta via `POST https://api.pagar.me/core/v5/tokens?appId=pk_XXX`
-- Retorna `card_token` para o fluxo de subscription
+## Problema 2: `fbc` deveria ser gerado a partir do `fbclid` (CRÍTICO)
+O checkout recebeu `fbp: null` e `fbc: null` porque o usuário veio do **Instagram Stories** (in-app browser), que muitas vezes não tem os cookies `_fbp`/`_fbc`. Porém, o `fbclid` **ESTÁ presente** nos UTMs: `PAZXh0bgNhZW0BMABhZG...`.
 
-### 3. create-pagarme-subscription (NOVO)
-- Edge function que cria subscription recorrente via `POST /subscriptions`
-- Suporta `interval: month` ou `year` baseado no `billing_period` do produto
-- Salva `pagarme_subscription_id` na ordem
+O Facebook aceita que o `fbc` seja construído manualmente no formato: `fb.1.{timestamp}.{fbclid}`. Sem isso, o Facebook **não consegue linkar a venda ao clique no anúncio**.
 
-### 4. webhook-pagarme (ATUALIZADO)
-- Busca ordens por `pagarme_subscription_id` (fallback 4)
-- Trata `subscription.canceled`: revoga plano → free, zera créditos
-- Trata renovação (`charge.paid` em ordem já `paid`): renova plano + reseta créditos
-- Salva `pagarme_subscription_id` no `planos2_subscriptions`
+**Correção**: No `create-pagarme-checkout`, se `fbc` vier null mas `utm_data.fbclid` existir, construir o fbc automaticamente: `fbc = "fb.1." + Date.now() + "." + fbclid`. Mesmo para `fbp`, gerar um fallback se null.
 
-### 5. refund-pagarme (ATUALIZADO)
-- Cancela subscription no Pagar.me via `DELETE /subscriptions/{id}` antes de revogar
-- Revoga plano → free + zera créditos
+## Problema 3: Frontend não gera `fbc` a partir da URL
+A função `getMetaCookies()` só lê cookies. Se o cookie `_fbc` não existir (in-app browsers), ela retorna null mesmo quando o `fbclid` está na URL.
 
-### 6. Planos2.tsx (ATUALIZADO)
-- Cartão: abre CreditCardForm → tokeniza → create-pagarme-subscription → recorrência real
-- PIX: mantém checkout avulso via create-pagarme-checkout → 30/365 dias sem recorrência
-- Flag `isSubscriptionFlow` diferencia fluxos de assinatura vs créditos avulsos
+**Correção**: Atualizar `getMetaCookies()` para também verificar `fbclid` na URL e gerar `fbc` no formato `fb.1.{timestamp}.{fbclid}` quando o cookie não existir.
+
+---
+
+## Plano de Correções
+
+### A. Fix `getMetaCookies()` — gerar fbc a partir do fbclid na URL
+Se `_fbc` cookie não existir, verificar `window.location.search` por `fbclid` e gerar o valor.
+
+### B. Fix `create-pagarme-checkout` — fallback fbc a partir de utm_data.fbclid
+Se `fbc` vier null do frontend, construir a partir de `utm_data.fbclid` antes de enviar ao CAPI.
+
+### C. Fix `logCapiEvent` — capturar e logar erro do insert
+Mudar de try/catch para verificar `{ data, error }` do insert e logar o erro real.
+
+### D. Verificar RLS da tabela `meta_capi_logs`
+A policy INSERT refere o role `authenticated`. Service role deveria bypass, mas por segurança, adicionar política explícita ou confirmar via log.
+
