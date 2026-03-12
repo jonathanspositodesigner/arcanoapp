@@ -832,11 +832,14 @@ serve(async (req) => {
             value: Number(order.amount),
             currency: 'BRL',
             utm_data: utmData,
+            fbp: order.meta_fbp || null,
+            fbc: order.meta_fbc || null,
+            client_user_agent: order.meta_user_agent || null,
             event_id: `purchase_${order.id}`,
             event_source_url: 'https://arcanoapp.voxvisual.com.br',
           }),
         })
-        console.log(`   ├─ 📊 Meta CAPI Purchase: ${capiResponse.status}`)
+        console.log(`   ├─ 📊 Meta CAPI Purchase: ${capiResponse.status} | fbp: ${order.meta_fbp ? '✅' : '❌'} | fbc: ${order.meta_fbc ? '✅' : '❌'}`)
       } catch (capiErr: any) {
         console.warn(`   ├─ ⚠️ Meta CAPI Purchase falhou (não-crítico): ${capiErr.message}`)
       }

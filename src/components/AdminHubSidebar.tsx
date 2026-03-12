@@ -1,9 +1,9 @@
-import { Home, BarChart3, LogOut, ArrowLeft, Users, ShieldCheck, ShoppingCart, Mail, Receipt, Megaphone } from "lucide-react";
+import { Home, BarChart3, LogOut, ArrowLeft, Users, ShieldCheck, ShoppingCart, Mail, Receipt, Megaphone, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-export type HubViewType = "home" | "dashboard" | "email-marketing" | "push-notifications" | "partners" | "abandoned-checkouts" | "admins" | "emails" | "sales" | "ads";
+export type HubViewType = "home" | "dashboard" | "email-marketing" | "push-notifications" | "partners" | "abandoned-checkouts" | "admins" | "emails" | "sales" | "ads" | "pixel";
 
 interface AdminHubSidebarProps {
   activeView: HubViewType;
@@ -32,6 +32,12 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebar
       label: "ADS",
       icon: Megaphone,
       description: "Campanhas Meta e atribuição"
+    },
+    {
+      id: "pixel" as const,
+      label: "PIXEL / CAPI",
+      icon: Activity,
+      description: "Logs e monitoramento Meta"
     },
     {
       id: "dashboard" as const,

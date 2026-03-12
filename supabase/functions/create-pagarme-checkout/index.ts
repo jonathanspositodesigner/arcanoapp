@@ -124,7 +124,10 @@ serve(async (req) => {
         user_address_zip: user_address?.zip_code || null,
         user_address_city: user_address?.city || null,
         user_address_state: user_address?.state || null,
-        user_address_country: user_address?.country || 'BR'
+        user_address_country: user_address?.country || 'BR',
+        meta_fbp: fbp || null,
+        meta_fbc: fbc || null,
+        meta_user_agent: clientUserAgent || null,
       })
       .select('id')
       .single()

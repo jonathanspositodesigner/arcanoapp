@@ -19,6 +19,7 @@ import AbandonedCheckoutsContent from "@/components/AbandonedCheckoutsContent";
 import AdminsManagementContent from "@/components/AdminsManagementContent";
 import SalesManagementContent from "@/components/admin/SalesManagementContent";
 import AdsManagementContent from "@/components/admin/AdsManagementContent";
+import MetaCapiLogsContent from "@/components/admin/MetaCapiLogsContent";
 
 const AdminHub = () => {
   const navigate = useNavigate();
@@ -193,6 +194,8 @@ const AdminHub = () => {
         return <SalesManagementContent />;
       case "ads":
         return <AdsManagementContent />;
+      case "pixel":
+        return <MetaCapiLogsContent />;
       case "admins":
         return <AdminsManagementContent />;
       case "emails":
