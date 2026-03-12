@@ -948,7 +948,7 @@ async function handleRun(req: Request) {
     // Refund credits since RunningHub never started processing
     try {
       await supabase.rpc('refund_upscaler_credits', {
-        _user_id: userId,
+        _user_id: effectiveUserId,
         _amount: creditCost,
         _description: `START_FAILED_REFUNDED: ${startErrorMsg.slice(0, 100)}`
       });
