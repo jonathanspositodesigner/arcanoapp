@@ -362,6 +362,9 @@ const Index = () => {
     </div>
   );
 
+  // Se está fazendo auto-reload, não renderiza nada
+  if (isReloading) return null;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary flex flex-col">
       {/* Header fixo compacto */}
