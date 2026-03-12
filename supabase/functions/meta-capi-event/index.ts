@@ -39,6 +39,7 @@ serve(async (req) => {
       event_source_url,
       client_ip_address,
       client_user_agent,
+      event_time,
     } = await req.json()
 
     if (!event_name) {
@@ -79,7 +80,7 @@ serve(async (req) => {
     // Build event
     const event: Record<string, unknown> = {
       event_name,
-      event_time: Math.floor(Date.now() / 1000),
+      event_time: event_time || Math.floor(Date.now() / 1000),
       action_source: 'website',
       user_data: userData,
     }

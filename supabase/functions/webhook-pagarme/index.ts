@@ -832,6 +832,12 @@ serve(async (req) => {
           effectiveFbp = `fb.1.${Date.now()}.${Math.floor(Math.random() * 2147483647)}`
           console.log(`   ├─ 🔗 fbp fallback gerado para Purchase`)
         }
+        // Extract real payment timestamp from Pagar.me payload
+        const paidAtRaw = eventData?.paid_at || eventData?.charges?.[0]?.paid_at || order.paid_at || null
+        const realEventTime = paidAtRaw ? Math.floor(new Date(paidAtRaw).getTime() / 1000) : undefined
+        if (realEventTime) {
+          console.log(`   ├─ ⏱️ event_time real do pagamento: ${paidAtRaw} → ${realEventTime}`)
+        }
         const capiResponse = await fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {
           method: 'POST',
           headers: {
@@ -849,6 +855,7 @@ serve(async (req) => {
             client_user_agent: order.meta_user_agent || null,
             event_id: `purchase_${order.id}`,
             event_source_url: 'https://arcanoapp.voxvisual.com.br',
+            event_time: realEventTime,
           }),
         })
         const capiText = await capiResponse.text()

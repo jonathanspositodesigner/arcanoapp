@@ -1,5 +1,6 @@
 import { useState, useEffect, ReactNode } from "react";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { useMetaPixelAdvancedMatching } from "@/hooks/useMetaPixelAdvancedMatching";
 import { supabase } from "@/integrations/supabase/client";
 import AppSidebar from "./AppSidebar";
 import AppTopBar from "./AppTopBar";
@@ -14,6 +15,7 @@ const AppLayout = ({ children, fullScreen = false }: AppLayoutProps) => {
   const { user, isPremium, planType, logout } = usePremiumStatus();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<{ name?: string; phone?: string } | null>(null);
+  useMetaPixelAdvancedMatching();
 
   useEffect(() => {
     const fetchProfile = async () => {
