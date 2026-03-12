@@ -749,17 +749,13 @@ async function processCreditsWebhook(
       console.log(`   ├─ ✅ Novo usuário criado: ${userId}`)
     }
 
-    // Upsert profile
-    await supabase.from('profiles').upsert({
-      id: userId, 
-      name: clientName, 
-      phone: clientPhone, 
-      email, 
-      locale: userLocale, 
-      password_changed: false,
-      email_verified: true,
-      updated_at: new Date().toISOString()
-    }, { onConflict: 'id' })
+    // Upsert profile — check if profile exists to avoid resetting password_changed
+    const { data: existingProfileArtes } = await supabase.from('profiles').select('id').eq('id', userId).maybeSingle()
+    const profileDataArtes: Record<string, unknown> = {
+      id: userId, name: clientName, phone: clientPhone, email, locale: userLocale, email_verified: true, updated_at: new Date().toISOString()
+    }
+    if (!existingProfileArtes) { profileDataArtes.password_changed = false }
+    await supabase.from('profiles').upsert(profileDataArtes, { onConflict: 'id' })
     console.log(`   ├─ ✅ Profile atualizado`)
 
     // ── IDEMPOTÊNCIA: checar se este contract/sale já foi processado ──
