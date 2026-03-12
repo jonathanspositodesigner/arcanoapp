@@ -59,16 +59,9 @@ const SucessoCompra = () => {
       const exists = data?.[0]?.exists_in_db || false;
 
       if (exists) {
-        const { error: autoLoginError } = await supabase.auth.signInWithPassword({
-          email: trimmed,
-          password: trimmed,
-        });
-
-        if (!autoLoginError) {
-          toast.success("Conta encontrada! Redirecionando...");
-          navigate("/");
-          return;
-        }
+        toast.success("Conta encontrada! Redirecionando...");
+        navigate("/");
+        return;
       }
 
       setStep("password");
