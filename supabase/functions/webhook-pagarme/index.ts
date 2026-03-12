@@ -408,7 +408,38 @@ serve(async (req) => {
     // =============================================
     // PAGAMENTO CONFIRMADO
     // =============================================
+    // Atomic lock: update pending→processing to prevent race condition
+    // (Pagar.me sends order.paid + charge.paid simultaneously)
+    let lockedOrder = null
     if ((eventType === 'order.paid' || eventType === 'charge.paid') && order.status === 'pending') {
+      const { data: locked, error: lockError } = await supabase
+        .from('asaas_orders')
+        .update({ status: 'processing', updated_at: new Date().toISOString() })
+        .eq('id', order.id)
+        .eq('status', 'pending')
+        .select('id')
+        .maybeSingle()
+
+      if (lockError) {
+        console.error(`   ├─ ❌ Erro ao travar ordem:`, lockError)
+      }
+      lockedOrder = locked
+      if (!lockedOrder) {
+        console.log(`   ├─ ⏭️ Ordem já sendo processada por outro webhook (race condition evitada)`)
+        await supabase.from('webhook_logs').insert({
+          platform: 'pagarme',
+          event_type: eventType,
+          transaction_id: idempotencyKey,
+          status: 'skipped_race',
+          email: order.user_email,
+          product_name: product?.title,
+          raw_payload: body,
+        })
+        return new Response('OK', { status: 200, headers: corsHeaders })
+      }
+    }
+
+    if (lockedOrder) {
       console.log(`\n✅ [${requestId}] PAGAMENTO PAGAR.ME CONFIRMADO - Processando...`)
 
       const email = order.user_email

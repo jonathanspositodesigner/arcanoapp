@@ -1,50 +1,23 @@
 
 
-## Correção: Créditos em Dobro no webhook-pagarme
+# Correção: Mover assinatura IA Unlimited para o perfil correto
 
-### Causa raiz confirmada
+## Problema
+A cliente digitou `@gmaul.com` no checkout da Greenn. O webhook criou um perfil novo com esse typo e ativou a assinatura lá. O perfil real dela (`@gmail.com`, criado em 14/fev) ficou sem acesso.
 
-Linha 411 do `webhook-pagarme/index.ts`:
-```typescript
-if ((eventType === 'order.paid' || eventType === 'charge.paid') && order.status === 'pending') {
-```
+## Dados
 
-O Pagar.me envia **dois eventos simultâneos** (`order.paid` + `charge.paid`) para cada pagamento. Cada um tem um `eventId` diferente, então a idempotência (linha 321-333) não detecta a duplicata. Ambos leem `order.status === 'pending'` e processam — **créditos em dobro**.
+| Perfil | Email | User ID | Situação |
+|---|---|---|---|
+| Errado | `@gmaul.com` | `5da17f98-...` | Tem a assinatura Unlimited + 99.999 créditos |
+| Real | `@gmail.com` | `ffe10744-...` | Sem assinatura, apenas 60 créditos |
+| Outro typo | `@glaul.com` | `c87b9342-...` | Vazio, pode ser ignorado |
 
-Isso afeta **todas as compras** (créditos, packs, tudo).
+## Ações (via SQL migration)
 
-### Correção
+1. **Atualizar `planos2_subscriptions`**: mudar `user_id` de `5da17f98...` para `ffe10744...`
+2. **Atualizar `upscaler_credits`** do perfil real: setar `monthly_balance = 99999`, `balance = 99999 + 60` (manter os 60 lifetime dela)
+3. **Limpar créditos do perfil errado**: zerar o registro de créditos do `@gmaul.com`
 
-Substituir a checagem de `order.status === 'pending'` por um **update atômico** que só permite um processamento:
-
-```typescript
-// ANTES (race condition):
-if ((eventType === 'order.paid' || eventType === 'charge.paid') && order.status === 'pending') {
-
-// DEPOIS (atômico):
-const { data: lockedOrder, error: lockError } = await supabase
-  .from('asaas_orders')
-  .update({ status: 'processing', updated_at: new Date().toISOString() })
-  .eq('id', order.id)
-  .eq('status', 'pending')  // só atualiza se AINDA estiver pending
-  .select('id')
-  .maybeSingle()
-
-if (lockedOrder) {
-  // Processar pagamento (créditos, packs, emails, etc.)
-  // No final, atualizar para 'paid'
-}
-```
-
-O primeiro webhook que chegar faz `pending → processing` e processa. O segundo tenta o mesmo update mas não encontra `status = 'pending'` (já é `processing`), retorna 0 rows, e é ignorado.
-
-### Arquivos editados
-
-1. **`supabase/functions/webhook-pagarme/index.ts`** — substituir check na linha 411 por update atômico
-
-### O que NÃO muda
-- Nenhuma mudança no frontend
-- Nenhuma mudança nas RPCs de créditos
-- Nenhuma mudança nos webhooks de artes/Greenn/Hotmart
-- A lógica de processamento (créditos, packs, emails, cartão salvo) permanece idêntica — só muda a **guarda de entrada**
+Nenhuma alteração de código é necessária — isso é puramente um problema de dados causado por typo no email do checkout.
 
