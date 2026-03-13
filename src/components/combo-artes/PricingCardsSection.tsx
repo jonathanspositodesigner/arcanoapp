@@ -1,4 +1,4 @@
-import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock } from "lucide-react";
+import { Check, Star, Gift, Clock, CreditCard } from "lucide-react";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useState, useEffect } from "react";
 
@@ -251,63 +251,6 @@ export const PricingCardsSection = () => {
           </div>
         </div>
 
-        {/* Guarantee Card - full width below */}
-        <div className="max-w-2xl mx-auto mt-12">
-          <div className="relative rounded-3xl p-6 md:p-8 flex flex-col bg-gradient-to-br from-gray-200 to-gray-300 border-2 border-gray-300">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span className="bg-gray-700 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
-                <ShieldCheck className="w-3 h-3" />
-                GARANTIA
-              </span>
-            </div>
-
-            <h3 className="text-xl font-bold text-gray-900 mb-2 text-center">
-              Qual a minha garantia?
-            </h3>
-            <p className="text-gray-600 text-sm text-center mb-6">
-              Sua compra 100% segura
-            </p>
-
-            <div className="flex justify-center mb-6">
-              <img
-                src="https://lp.voxvisual.com.br/wp-content/uploads/2025/09/SELO-GARANTIA.png"
-                alt="Garantia de 7 Dias Incondicional"
-                className="w-36 md:w-44 h-auto"
-                loading="lazy"
-              />
-            </div>
-
-            <div className="space-y-4">
-              <p className="text-gray-700 text-sm leading-relaxed text-center">
-                Você tem <span className="font-bold text-gray-900">7 dias de garantia incondicional</span>
-              </p>
-              <p className="text-gray-600 text-sm leading-relaxed text-center">
-                Garantimos sua segurança com uma plataforma de pagamento altamente segura.
-              </p>
-              <p className="text-gray-600 text-sm leading-relaxed text-center">
-                Você também conta com <span className="font-semibold text-gray-700">7 dias de garantia para reembolso</span>
-              </p>
-
-              <div className="flex justify-center gap-6 pt-4">
-                <div className="flex flex-col items-center gap-1">
-                  <ShieldCheck className="w-6 h-6 text-gray-600" />
-                  <p className="text-[10px] font-bold text-gray-700">Compra</p>
-                  <p className="text-[10px] text-gray-500">Segura</p>
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                  <Award className="w-6 h-6 text-gray-600" />
-                  <p className="text-[10px] font-bold text-gray-700">Satisfação</p>
-                  <p className="text-[10px] text-gray-500">Garantida</p>
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                  <Lock className="w-6 h-6 text-gray-600" />
-                  <p className="text-[10px] font-bold text-gray-700">Privacidade</p>
-                  <p className="text-[10px] text-gray-500">Protegida</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );
