@@ -1,86 +1,134 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
 
-const allImages = [
-  "/images/pack4/baile-tiktok.webp",
-  "/images/pack4/after-domingo.webp",
-  "/images/pack4/after-love.webp",
-  "/images/pack4/agenda-mensal.webp",
-  "/images/pack4/agenda-rodriguinho.webp",
-  "/images/pack4/baile-mandela.webp",
-  "/images/pack4/baile-preto.webp",
-  "/images/pack4/baile-serrao.webp",
-  "/images/pack4/baile-funk.webp",
-  "/images/pack4/baile-on-fire.webp",
-  "/images/pack4/bailinho-quarta.webp",
-  "/images/pack4/biritas-funk.webp",
-  "/images/pack4/bye-bye-ferias.webp",
-  "/images/pack4/clima-srtnjo.webp",
-  "/images/pack4/close-friends.webp",
-  "/images/pack4/contrate-don-juan.webp",
-  "/images/pack4/eletro-after-astral.webp",
-  "/images/pack4/eletrofunk.webp",
-  "/images/pack4/ensaio-verao.webp",
-  "/images/pack4/esquenta-bahianeira.webp",
-  "/images/pack4/mexicomigo.webp",
-  "/images/pack4/exclusive-night.webp",
-  "/images/pack4/feriadinho-domingo.webp",
-  "/images/pack4/festa-do-branco.webp",
-  "/images/pack4/fogo-parquinho.webp",
-  "/images/pack4/forro-piseiro.webp",
-  "/images/pack4/forrozinho-delas.webp",
-  "/images/pack4/i-love-baile-funk.webp",
-  "/images/pack4/life-party-fest.webp",
-  "/images/pack4/live-sunset.webp",
-  "/images/pack4/trotao-universitario.webp",
-  "/images/pack4/noite-caliente.webp",
-  "/images/pack4/noite-do-fluxo.webp",
-  "/images/pack4/nuh-vokere.webp",
-  "/images/pack4/pagodinho-sunset.webp",
-  "/images/pack4/pagofunk.webp",
-  "/images/pack4/pre-venda-dynho.webp",
-  "/images/pack4/revoada-selva.webp",
-  "/images/pack4/sexta-universitaria.webp",
-  "/images/pack4/sunset-domingo.webp",
+const categories = [
+  {
+    label: "Artes de pagode",
+    images: [
+      "/images/combo/pagode-festeja-tropical.webp",
+      "/images/combo/pagode-mixturadinho.webp",
+      "/images/combo/pagode-bye-bye-ferias.webp",
+      "/images/combo/pagode-jonas-esticado.webp",
+      "/images/combo/pagode-tardezinha-havaiana.webp",
+      "/images/combo/pagode-pagodinho-sunset.webp",
+      "/images/combo/pagode-so-as-antigas.webp",
+      "/images/combo/pagode-sabado-com-pagode.webp",
+      "/images/combo/pagode-revoada-do-chefe.webp",
+      "/images/combo/pagode-end-of-summer.webp",
+    ],
+  },
+  {
+    label: "Artes de forró",
+    images: [
+      "/images/combo/forro-arrocha-patroa.webp",
+      "/images/combo/forro-baile-favorita.webp",
+      "/images/combo/forro-baladinha-sabado.webp",
+      "/images/combo/forro-do-vila.webp",
+      "/images/combo/forro-fenomeno-piseiro.webp",
+      "/images/combo/forro-furacao-hit.webp",
+      "/images/combo/forro-resenha-samba.webp",
+      "/images/combo/forro-sao-joao.webp",
+      "/images/combo/forro-vibe-forrozeira.webp",
+    ],
+  },
+  {
+    label: "Artes de sertanejo",
+    images: [
+      "/images/combo/sertanejo-balada-prime.webp",
+      "/images/combo/sertanejo-balada-prime1.webp",
+      "/images/combo/sertanejo-boteco-nossa-vibe.webp",
+      "/images/combo/sertanejo-boteco-sertanejo.webp",
+      "/images/combo/sertanejo-dia-pais-cabaret.webp",
+      "/images/combo/sertanejo-noite-sem-fim.webp",
+      "/images/combo/sertanejo-rota-sertaneja.webp",
+      "/images/combo/sertanejo-sunset-festival.webp",
+    ],
+  },
+  {
+    label: "Artes de funk",
+    images: [
+      "/images/combo/funk-baile-malvadao.webp",
+      "/images/combo/funk-baile-sinal.webp",
+      "/images/combo/funk-bday-mc-wm.webp",
+      "/images/combo/funk-bday-tubarao.webp",
+      "/images/combo/funk-embraza.webp",
+      "/images/combo/funk-fluxo-baile.webp",
+      "/images/combo/funk-giro-louco.webp",
+      "/images/combo/funk-made-in-funk.webp",
+      "/images/combo/funk-noite-vegas.webp",
+      "/images/combo/funk-party.webp",
+    ],
+  },
+  {
+    label: "Artes de cavalgada",
+    images: [
+      "/images/combo/cavalgada-12a-amigos.webp",
+      "/images/combo/cavalgada-agenda-toca-vale.webp",
+      "/images/combo/cavalgada-contrate-joao-gomes.webp",
+      "/images/combo/cavalgada-dos-gigantes.webp",
+      "/images/combo/cavalgada-evento.webp",
+      "/images/combo/cavalgada-fest-2025.webp",
+      "/images/combo/cavalgada-rodeio-vaquejada.webp",
+      "/images/combo/cavalgada-shows-biu-piseiro.webp",
+    ],
+  },
+  {
+    label: "Categorias variadas",
+    images: [
+      "/images/combo/variadas-arraia-sao-joao.webp",
+      "/images/combo/variadas-dia-das-maes.webp",
+      "/images/combo/variadas-dia-dos-namorados.webp",
+      "/images/combo/variadas-eletro-house.webp",
+      "/images/combo/variadas-encontro-paredoes.webp",
+      "/images/combo/variadas-halloween-party.webp",
+      "/images/combo/variadas-halloween-surreal.webp",
+      "/images/combo/variadas-play-nas-ferias.webp",
+    ],
+  },
 ];
 
-const INITIAL_COUNT = 20;
-
 export const FlyersGallerySection = () => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [activeCategory, setActiveCategory] = useState(0);
 
-  const visibleImages = isExpanded ? allImages : allImages.slice(0, INITIAL_COUNT);
+  const currentImages = categories[activeCategory].images;
 
   return (
     <section className="py-5 px-4 bg-gradient-to-b from-black to-[#0a0505]">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl md:text-4xl font-bold mb-4 text-white">
+        <div className="text-center mb-8 md:mb-12">
+          <h2 className="text-2xl md:text-4xl font-bold mb-6 text-white">
             Veja todas as artes que você terá acesso
           </h2>
+
+          {/* Category tabs */}
+          <div className="flex flex-wrap justify-center gap-2 md:gap-3">
+            {categories.map((cat, index) => (
+              <button
+                key={index}
+                onClick={() => setActiveCategory(index)}
+                className={`px-3 md:px-5 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-semibold transition-all duration-300 border ${
+                  activeCategory === index
+                    ? "bg-[#EF672C] text-white border-[#EF672C] shadow-lg shadow-orange-500/30"
+                    : "bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:border-white/20"
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
         </div>
 
+        {/* Images grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {visibleImages.map((image, idx) => (
+          {currentImages.map((image, idx) => (
             <img
-              key={image}
+              key={`${activeCategory}-${idx}`}
               src={image}
-              alt={`Arte ${idx + 1}`}
+              alt={`${categories[activeCategory].label} ${idx + 1}`}
               className="w-full h-auto rounded-xl shadow-lg hover:scale-105 transition-transform duration-300"
               loading="lazy"
               decoding="async"
             />
           ))}
-        </div>
-
-        <div className="flex justify-center mt-8">
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="flex items-center gap-2 px-8 py-3 rounded-full bg-[#EF672C] text-white font-semibold text-lg hover:bg-[#d55a24] transition-colors"
-          >
-            {isExpanded ? "Ver menos" : "Ver mais"}
-            {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-          </button>
         </div>
       </div>
     </section>
