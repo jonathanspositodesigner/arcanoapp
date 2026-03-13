@@ -95,7 +95,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
 
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value, false);
+      editor.commands.setContent(value);
     }
   }, [value]);
 
