@@ -1,23 +1,42 @@
 
+# Migração Planos Mensais/Anuais: Greenn → Pagar.me (CONCLUÍDA v2 - Recorrência Real)
 
-# Correção: Vídeos não reproduzem automaticamente no celular
+## Resumo
+Migração dos 8 planos de assinatura (4 planos × 2 períodos) da Greenn para o Pagar.me com **recorrência real via cartão de crédito** e PIX como pagamento avulso.
 
-## Problema
-Os vídeos da Biblioteca de Prompts usam `LazyVideo` → `SecureVideo` com `autoPlay={true}`, `muted={true}`, `playsInline={true}`. No desktop funciona, mas no mobile (especialmente iOS) o autoplay via atributo HTML é bloqueado pelos navegadores, resultando em tela preta.
+## Decisão Arquitetural
+- **Cartão de Crédito**: Recorrência real via `POST /subscriptions` do Pagar.me. Tokenização do cartão no front-end via API pública (`pk_XXXX`). Cobrança automática a cada ciclo.
+- **PIX**: Checkout avulso (sem recorrência) — plano ativa por 30/365 dias. pg_cron expira planos vencidos.
+- **Reembolso**: Cancela subscription no Pagar.me (`DELETE /subscriptions/{id}`) + revoga plano → free + zera créditos.
 
-## Causa raiz
-Navegadores mobile bloqueiam autoplay via atributo HTML. A solução é chamar `.play()` programaticamente no elemento de vídeo após ele estar carregado, garantindo que `muted` e `playsInline` estejam definidos como propriedades do elemento antes de tentar reproduzir.
+## O que foi feito
 
-## Solução
+### 1. Banco de Dados
+- Colunas `plan_slug` e `billing_period` em `mp_products`
+- Coluna `pagarme_subscription_id` em `asaas_orders` e `planos2_subscriptions`
+- 8 produtos inseridos: `plano-{starter,pro,ultimate,unlimited}-{mensal,anual}`
 
-### 1. Atualizar `SecureVideo` em `src/components/SecureMedia.tsx`
-- Adicionar um `useEffect` que, quando `autoPlay` e `muted` estão habilitados, chama `videoRef.current.play()` programaticamente nos eventos `onCanPlay`/`onLoadedData`
-- Garantir que `muted` e `playsInline` sejam definidos como propriedades do elemento DOM (não apenas atributos JSX) antes de chamar `.play()`
-- Tratar a promise rejeitada do `.play()` silenciosamente (alguns browsers ainda podem bloquear)
+### 2. CreditCardForm.tsx (NOVO)
+- Formulário seguro com campos: Número, Nome, Validade, CVV
+- Tokenização direta via `POST https://api.pagar.me/core/v5/tokens?appId=pk_XXX`
+- Retorna `card_token` para o fluxo de subscription
 
-### 2. Atualizar `LazyVideo` em `src/components/LazyVideo.tsx`
-- Sem mudanças necessárias — já passa os atributos corretos para `SecureVideo`
+### 3. create-pagarme-subscription (NOVO)
+- Edge function que cria subscription recorrente via `POST /subscriptions`
+- Suporta `interval: month` ou `year` baseado no `billing_period` do produto
+- Salva `pagarme_subscription_id` na ordem
 
-## Arquivos modificados
-- `src/components/SecureMedia.tsx` — adicionar lógica de autoplay programático para mobile
+### 4. webhook-pagarme (ATUALIZADO)
+- Busca ordens por `pagarme_subscription_id` (fallback 4)
+- Trata `subscription.canceled`: revoga plano → free, zera créditos
+- Trata renovação (`charge.paid` em ordem já `paid`): renova plano + reseta créditos
+- Salva `pagarme_subscription_id` no `planos2_subscriptions`
 
+### 5. refund-pagarme (ATUALIZADO)
+- Cancela subscription no Pagar.me via `DELETE /subscriptions/{id}` antes de revogar
+- Revoga plano → free + zera créditos
+
+### 6. Planos2.tsx (ATUALIZADO)
+- Cartão: abre CreditCardForm → tokeniza → create-pagarme-subscription → recorrência real
+- PIX: mantém checkout avulso via create-pagarme-checkout → 30/365 dias sem recorrência
+- Flag `isSubscriptionFlow` diferencia fluxos de assinatura vs créditos avulsos
