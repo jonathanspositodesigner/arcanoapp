@@ -98,7 +98,7 @@ serve(async (req) => {
         product_id: product.id,
         amount: product.price,
         status: 'pending',
-        utm_data: utm_data || null
+        utm_data: sanitizeUtmData(utm_data)
       })
       .select('id')
       .single()
