@@ -121,6 +121,7 @@ export function useAdsCampaigns(
           existing.total_clicks += row.clicks || 0;
           existing.total_landing_page_views += row.landing_page_views || 0;
           existing.total_initiated_checkouts += row.initiated_checkouts || 0;
+          existing.total_meta_purchases += (row as any).meta_purchases || 0;
           // Keep latest status/name/budget
           existing.campaign_name = row.campaign_name;
           existing.campaign_status = row.campaign_status || existing.campaign_status;
@@ -139,6 +140,7 @@ export function useAdsCampaigns(
             avg_cpc: 0,
             total_landing_page_views: row.landing_page_views || 0,
             total_initiated_checkouts: row.initiated_checkouts || 0,
+            total_meta_purchases: (row as any).meta_purchases || 0,
           });
         }
       }
