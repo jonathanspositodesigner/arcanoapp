@@ -312,7 +312,18 @@ function MetricsRow({ item, onClick, clickable = false, onStatusToggle }: { item
       <td className="p-3 text-right font-medium">{formatCurrency(spend)}</td>
       <td className="p-3 text-right">
         {salesCount > 0 ? (
-          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">{salesCount}</Badge>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="inline-flex items-center gap-1">
+                <Badge className="bg-green-500/20 text-green-400 border-green-500/30">{salesCount}</Badge>
+                {hasMetaBoost && <Megaphone className="h-3 w-3 text-blue-400" />}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">
+              <p>{utmSalesCount} via UTM · {metaSalesCount} via Meta</p>
+              {hasMetaBoost && <p className="text-blue-400">Meta detectou vendas extras (view-through)</p>}
+            </TooltipContent>
+          </Tooltip>
         ) : (
           <span className="text-muted-foreground">0</span>
         )}
