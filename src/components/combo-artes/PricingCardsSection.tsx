@@ -1,16 +1,17 @@
-import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock, X } from "lucide-react";
+import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock } from "lucide-react";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useState, useEffect } from "react";
 
 interface PricingFeature {
   text: string;
-  disabled?: boolean;
+  bold?: boolean;
 }
 
 interface PricingPlan {
   id: string;
   title: string;
   accessLabel: string;
+  description: string;
   originalPrice: string;
   price: string;
   discount: string;
@@ -24,60 +25,62 @@ interface PricingPlan {
 
 const plans: PricingPlan[] = [
   {
-    id: "6meses",
-    title: "Biblioteca de Artes Arcanas",
-    accessLabel: "ACESSO 6 MESES",
-    originalPrice: "49,90",
-    price: "27,00",
-    discount: "46% OFF",
-    features: [
-      { text: "+20 Movies para Telão", disabled: true },
-      { text: "210 Motions Editáveis", disabled: true },
-      { text: "40 Selos 3D", disabled: true },
-      { text: "+380 Artes Editáveis PSD e Canva" },
-      { text: "Acesso por 6 Meses" },
-      { text: "Video Aulas Exclusivas" },
-      { text: "Atualizações Semanais" },
-      { text: "Suporte via WhatsApp" },
-      { text: "Área de Membros" },
-    ],
-    buttonText: "QUERO ACESSO DE 6 MESES",
-    checkoutUrl: "https://payfast.greenn.com.br/135338/offer/0r2gUj?ch_id=23924",
-  },
-  {
-    id: "1ano",
-    title: "Biblioteca de Artes Arcanas",
+    id: "pack1",
+    title: "Pack Arcano Vol.1",
     accessLabel: "ACESSO 1 ANO",
-    originalPrice: "59,90",
-    price: "37,00",
-    discount: "38% OFF",
+    description: "Para quem quer começar com qualidade.",
+    originalPrice: "37",
+    price: "27,90",
+    discount: "24% OFF",
     features: [
-      { text: "+20 Movies para Telão", disabled: true },
+      { text: "+55 Artes Editáveis", bold: true },
+      { text: "1 Ano de Acesso" },
       { text: "210 Motions Editáveis" },
       { text: "40 Selos 3D" },
-      { text: "+380 Artes Editáveis PSD e Canva" },
-      { text: "Acesso por 1 Ano" },
       { text: "Video Aulas Exclusivas" },
       { text: "Bônus Exclusivos" },
       { text: "Atualizações Semanais" },
       { text: "Suporte via WhatsApp" },
       { text: "Área de Membros" },
     ],
-    buttonText: "QUERO ACESSO DE 1 ANO",
+    buttonText: "QUERO SÓ O PACK VOL.1",
     checkoutUrl: "https://payfast.greenn.com.br/135338/offer/0r2gUj?ch_id=23924",
   },
   {
-    id: "vitalicio",
-    title: "Biblioteca de Artes Arcanas",
-    accessLabel: "ACESSO VITALÍCIO",
-    originalPrice: "119,90",
-    price: "47,00",
-    discount: "61% OFF",
+    id: "pack1e2",
+    title: "Packs Arcano 1 e 2",
+    accessLabel: "ACESSO 1 ANO",
+    description: "Para quem quer mais economia e mais vantagem.",
+    originalPrice: "74",
+    price: "49,90",
+    discount: "33% OFF",
     features: [
+      { text: "+110 Artes Editáveis", bold: true },
+      { text: "1 Ano de Acesso" },
       { text: "210 Motions Editáveis" },
       { text: "40 Selos 3D" },
-      { text: "+380 Artes Editáveis PSD e Canva" },
-      { text: "Acesso Vitalício" },
+      { text: "Video Aulas Exclusivas" },
+      { text: "Bônus Exclusivos" },
+      { text: "Atualizações Semanais" },
+      { text: "Suporte via WhatsApp" },
+      { text: "Área de Membros" },
+    ],
+    buttonText: "QUERO OS PACKS VOL.1 E 2",
+    checkoutUrl: "https://payfast.greenn.com.br/135338/offer/0r2gUj?ch_id=23924",
+  },
+  {
+    id: "pack1ao3",
+    title: "Pack Arcano 1 ao 3",
+    accessLabel: "ACESSO VITALÍCIO",
+    description: "O mais vendido! 🔥",
+    originalPrice: "141",
+    price: "59,90",
+    discount: "58% OFF",
+    features: [
+      { text: "+210 Artes Editáveis", bold: true },
+      { text: "Acesso Vitalício", bold: true },
+      { text: "210 Motions Editáveis" },
+      { text: "40 Selos 3D" },
       { text: "Video Aulas Exclusivas" },
       { text: "Bônus Exclusivos" },
       { text: "Atualizações Semanais" },
@@ -86,8 +89,8 @@ const plans: PricingPlan[] = [
     ],
     bonus: "+20 MOVIES PARA TELÃO",
     highlight: true,
-    badge: "MAIS POPULAR",
-    buttonText: "QUERO ACESSO VITALÍCIO",
+    badge: "MAIS VENDIDO",
+    buttonText: "QUERO OS PACKS 1 AO 3",
     checkoutUrl: "https://payfast.greenn.com.br/135338/offer/0r2gUj?ch_id=23924&b_id_1=103023",
   },
 ];
@@ -152,7 +155,7 @@ export const PricingCardsSection = () => {
         {/* 3 Pricing Cards */}
         <div className="flex flex-col md:grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
           {plans.map((plan) => {
-            const mobileOrder: Record<string, number> = { 'vitalicio': 1, '1ano': 2, '6meses': 3 };
+            const mobileOrder: Record<string, number> = { 'pack1ao3': 1, 'pack1e2': 2, 'pack1': 3 };
             return (
             <div
               key={plan.id}
@@ -175,8 +178,11 @@ export const PricingCardsSection = () => {
               <h3 className="text-lg font-bold text-white mb-0.5 text-center">
                 {plan.title}
               </h3>
-              <p className={`text-sm font-bold text-center mb-4 ${plan.highlight ? "text-[#EF672C]" : "text-gray-400"}`}>
+              <p className={`text-sm font-bold text-center mb-1 ${plan.highlight ? "text-[#EF672C]" : "text-gray-400"}`}>
                 {plan.accessLabel}
+              </p>
+              <p className="text-xs text-gray-500 text-center mb-4">
+                {plan.description}
               </p>
 
               <div className="flex justify-center mb-2">
@@ -205,13 +211,9 @@ export const PricingCardsSection = () => {
 
               <ul className="space-y-2.5 mb-6 flex-grow">
                 {plan.features.map((feature, index) => (
-                  <li key={index} className={`flex items-center gap-2.5 ${feature.disabled ? 'text-gray-600' : 'text-gray-300'}`}>
-                    {feature.disabled ? (
-                      <X className="w-4 h-4 flex-shrink-0 text-red-500/70" />
-                    ) : (
-                      <Check className={`w-4 h-4 flex-shrink-0 ${plan.highlight ? "text-[#EF672C]" : "text-green-500"}`} />
-                    )}
-                    <span className={`text-sm ${feature.disabled ? 'line-through' : ''} ${!feature.disabled && (index === 0 || index === 1) ? 'font-bold text-white' : ''}`}>
+                  <li key={index} className="flex items-center gap-2.5 text-gray-300">
+                    <Check className={`w-4 h-4 flex-shrink-0 ${plan.highlight ? "text-[#EF672C]" : "text-green-500"}`} />
+                    <span className={`text-sm ${feature.bold ? 'font-bold text-white' : ''}`}>
                       {feature.text}
                     </span>
                   </li>
