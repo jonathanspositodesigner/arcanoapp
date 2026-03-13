@@ -578,7 +578,7 @@ const AdsManagementContent = () => {
                   {customEnd ? format(customEnd, "dd/MM", { locale: ptBR }) : "Fim"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={customEnd} onSelect={setCustomEnd} locale={ptBR} /></PopoverContent>
+              <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={customEnd} onSelect={setCustomEnd} locale={ptBR} className="pointer-events-auto" /></PopoverContent>
             </Popover>
           </div>
         )}
