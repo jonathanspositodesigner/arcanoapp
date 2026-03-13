@@ -176,11 +176,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
     setOneClickLoading(true);
     try {
-      let utmData: Record<string, string> | null = null;
-      try {
-        const raw = sessionStorage.getItem('captured_utms');
-        if (raw) utmData = JSON.parse(raw);
-      } catch { /* ignore */ }
+      const utmData = getSanitizedUtms();
 
       const { fbp, fbc } = getMetaCookies();
       const response = await supabase.functions.invoke('pagarme-one-click', {
