@@ -117,7 +117,7 @@ async function getSendPulseToken(): Promise<string> {
 }
 
 // ========== PAGAR.ME CHECKOUT ==========
-async function createPixCheckout(
+async function createRenewalCheckout(
   pagarmeSecretKey: string,
   userEmail: string,
   userName: string,
@@ -136,23 +136,18 @@ async function createPixCheckout(
       name: userName || userEmail.split('@')[0],
       email: userEmail,
       type: 'individual',
-      phones: { mobile_phone: { country_code: '55', area_code: '11', number: '999999999' } },
     },
     payments: [{
       payment_method: 'checkout',
       checkout: {
         expires_in: 259200, // 3 days
-        accepted_payment_methods: ['pix'],
+        accepted_payment_methods: ['pix', 'credit_card'],
         success_url: 'https://arcanoapp.voxvisual.com.br/sucesso-compra',
         customer_editable: true,
-        billing_address_editable: false,
+        billing_address_editable: true,
         skip_checkout_success_page: false,
-        billing_address: {
-          line_1: '1, Av Paulista, Bela Vista',
-          zip_code: '01310100',
-          city: 'São Paulo',
-          state: 'SP',
-          country: 'BR',
+        credit_card: {
+          installments: [{ number: 1, total: amountInCents }],
         },
         pix: { expires_in: 259200 },
       },
@@ -219,7 +214,7 @@ function wrapEmail(subject: string, preheader: string, bodyContent: string, emai
     ${bodyContent}
     <div style="text-align:center;margin:32px 0 16px;">
       <a href="\${CHECKOUT_URL}" style="display:inline-block;background:linear-gradient(135deg,#d4af37 0%,#f5e27a 100%);color:#1a0533;text-decoration:none;padding:18px 52px;border-radius:12px;font-weight:700;font-size:17px;letter-spacing:0.3px;box-shadow:0 6px 24px rgba(212,175,55,0.4);">
-        Pagar agora →
+        Renovar agora →
       </a>
     </div>
     \${PIX_SECTION}
@@ -510,7 +505,7 @@ serve(async (req) => {
         let checkoutUrl = ''
         let pixCopyPaste: string | null = null
         try {
-          const checkout = await createPixCheckout(
+          const checkout = await createRenewalCheckout(
             pagarmeSecretKey,
             userEmail,
             profile.name || '',
