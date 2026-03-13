@@ -244,111 +244,36 @@ function buildPixSection(pixCopyPaste: string | null): string {
   </div>`
 }
 
-function getEmailTemplate(dayOffset: number, d: EmailData): { subject: string; html: string } {
+function getEmailTemplateFromDb(
+  template: { subject: string; preheader: string; body_html: string },
+  d: EmailData
+): { subject: string; html: string } {
   const benefitsHtml = buildBenefitsList(d.benefits)
   const lossesHtml = buildLossesList(d.losses)
   const pixSection = buildPixSection(d.pixCopyPaste)
 
-  let subject = ''
-  let preheader = ''
-  let body = ''
+  // Replace placeholders in subject
+  const subject = template.subject
+    .replace(/\{\{PLAN_NAME\}\}/g, d.planName)
+    .replace(/\{\{PLAN_VALUE\}\}/g, d.planValue)
+    .replace(/\{\{DUE_DATE\}\}/g, d.dueDate)
+    .replace(/\{\{USER_NAME\}\}/g, d.userName)
 
-  switch (dayOffset) {
-    case 0: // DIA DO VENCIMENTO
-      subject = `Seu acesso ao plano ${d.planName} vence hoje`
-      preheader = 'Faça o pagamento por Pix e continue com seu acesso normalmente.'
-      body = `
-        <h1 style="color:#ffffff;font-size:26px;font-weight:700;margin:0 0 20px;text-align:center;">⏰ Seu plano vence hoje</h1>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 16px;">Olá, <strong style="color:#f5e27a;">${d.userName}</strong>.</p>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 16px;">O seu plano <strong style="color:#f5e27a;">${d.planName}</strong> vence hoje, <strong>${d.dueDate}</strong>.</p>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 20px;">Para continuar com acesso normal à plataforma, basta realizar o pagamento da sua renovação no valor de <strong style="color:#f5e27a;">${d.planValue}</strong>.</p>
-        <p style="color:#c4b5fd;font-size:14px;margin:0 0 8px;">Com a assinatura ativa, você continua tendo acesso a:</p>
-        <ul style="list-style:none;padding:0;margin:0 0 24px;">${benefitsHtml}</ul>
-        <p style="color:#e2d8f0;font-size:15px;margin:0 0 8px;text-align:center;">Evite interrupções no seu acesso e mantenha sua assinatura ativa normalmente.</p>`
-      break
+  // Replace placeholders in preheader
+  const preheader = template.preheader
+    .replace(/\{\{PLAN_NAME\}\}/g, d.planName)
+    .replace(/\{\{PLAN_VALUE\}\}/g, d.planValue)
+    .replace(/\{\{DUE_DATE\}\}/g, d.dueDate)
+    .replace(/\{\{USER_NAME\}\}/g, d.userName)
 
-    case 1: // 1 DIA APÓS
-      subject = `Seu pagamento do plano ${d.planName} ainda está pendente`
-      preheader = 'Ainda dá tempo de regularizar e continuar com seu acesso normalmente.'
-      body = `
-        <h1 style="color:#ffffff;font-size:26px;font-weight:700;margin:0 0 20px;text-align:center;">⚠️ Pagamento pendente</h1>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 16px;">Olá, <strong style="color:#f5e27a;">${d.userName}</strong>.</p>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 16px;">Identificamos que o pagamento da sua assinatura <strong style="color:#f5e27a;">${d.planName}</strong> ainda não foi concluído.</p>
-        <p style="color:#c4b5fd;font-size:14px;margin:0 0 8px;">Seu plano inclui recursos importantes como:</p>
-        <ul style="list-style:none;padding:0;margin:0 0 24px;">${benefitsHtml}</ul>
-        <p style="color:#e2d8f0;font-size:15px;line-height:1.6;margin:0 0 8px;">Para evitar qualquer impacto no seu acesso, faça a regularização agora por Pix:</p>
-        <p style="color:#c4b5fd;font-size:14px;margin:0 0 8px;">Valor da renovação: <strong style="color:#f5e27a;">${d.planValue}</strong></p>
-        <p style="color:#e2d8f0;font-size:15px;margin:0 0 8px;text-align:center;">Quanto antes você regularizar, mais fácil será continuar usando a plataforma sem pausas e sem perder o ritmo.</p>`
-      break
-
-    case 2: // 2 DIAS APÓS — dor da perda
-      subject = `Você pode perder o acesso ao que já usa no seu plano`
-      preheader = 'Seu pagamento segue pendente e seu acesso pode ser impactado.'
-      body = `
-        <h1 style="color:#ffffff;font-size:26px;font-weight:700;margin:0 0 20px;text-align:center;">🔴 Risco de perda de acesso</h1>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 16px;">Olá, <strong style="color:#f5e27a;">${d.userName}</strong>.</p>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 16px;">Seu plano <strong style="color:#f5e27a;">${d.planName}</strong> está com pagamento pendente há 2 dias.</p>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 20px;">A partir daqui, o problema não é só uma cobrança em aberto. É o risco de perder o acesso ao que já faz parte da sua rotina dentro da plataforma.</p>
-        <p style="color:#fca5a5;font-size:14px;font-weight:600;margin:0 0 8px;">Sem a renovação, você pode deixar de ter acesso a:</p>
-        <ul style="list-style:none;padding:0;margin:0 0 16px;">${lossesHtml}</ul>
-        <p style="color:#c4b5fd;font-size:14px;margin:0 0 8px;">Isso pode significar perder recursos como:</p>
-        <ul style="list-style:none;padding:0;margin:0 0 24px;">${benefitsHtml}</ul>
-        <p style="color:#e2d8f0;font-size:15px;line-height:1.6;margin:0 0 8px;">Se você já usa esse plano no dia a dia, interromper agora significa abrir mão de algo que já estava disponível.</p>
-        <p style="color:#c4b5fd;font-size:14px;margin:0 0 8px;">Valor: <strong style="color:#f5e27a;">${d.planValue}</strong></p>`
-      break
-
-    case 3: // 3 DIAS APÓS — prejuízo prático
-      subject = `Ficar sem seu plano pode custar mais do que a renovação`
-      preheader = 'O prejuízo de interromper seu acesso pode ser maior do que parece.'
-      body = `
-        <h1 style="color:#ffffff;font-size:26px;font-weight:700;margin:0 0 20px;text-align:center;">💸 O custo de não renovar</h1>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 16px;">Olá, <strong style="color:#f5e27a;">${d.userName}</strong>.</p>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 16px;">Seu pagamento do plano <strong style="color:#f5e27a;">${d.planName}</strong> continua pendente.</p>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 20px;">Muita gente deixa para depois e só percebe o custo real quando perde acesso ao que já estava usando.</p>
-        <p style="color:#fca5a5;font-size:14px;font-weight:600;margin:0 0 8px;">Ao não renovar, você corre o risco de ficar sem:</p>
-        <ul style="list-style:none;padding:0;margin:0 0 16px;">${benefitsHtml}</ul>
-        <p style="color:#c4b5fd;font-size:14px;margin:0 0 8px;">Na prática, isso pode significar:</p>
-        <ul style="list-style:none;padding:0;margin:0 0 24px;">
-          <li style="color:#e2d8f0;font-size:15px;padding:4px 0;">⚠️ Interromper sua rotina dentro da plataforma</li>
-          <li style="color:#e2d8f0;font-size:15px;padding:4px 0;">⚠️ Perder velocidade no que já vinha fazendo</li>
-          <li style="color:#e2d8f0;font-size:15px;padding:4px 0;">⚠️ Deixar de usar vantagens já liberadas no seu plano</li>
-          <li style="color:#e2d8f0;font-size:15px;padding:4px 0;">⚠️ Voltar a ter limitações justamente quando precisa continuar</li>
-        </ul>
-        <p style="color:#e2d8f0;font-size:15px;line-height:1.6;margin:0 0 8px;">O valor para manter tudo ativo é <strong style="color:#f5e27a;">${d.planValue}</strong>, mas o custo de perder o acesso pode ser ainda maior em tempo, atraso e oportunidade desperdiçada.</p>`
-      break
-
-    case 4: // 4 DIAS APÓS — FOMO
-      subject = `Enquanto outros continuam com acesso, seu plano segue pendente`
-      preheader = 'Não fique de fora dos recursos do seu plano por falta de renovação.'
-      body = `
-        <h1 style="color:#ffffff;font-size:26px;font-weight:700;margin:0 0 20px;text-align:center;">👀 Não fique para trás</h1>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 16px;">Olá, <strong style="color:#f5e27a;">${d.userName}</strong>.</p>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 16px;">Seu plano <strong style="color:#f5e27a;">${d.planName}</strong> ainda não foi renovado.</p>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 20px;">Enquanto assinantes ativos continuam usando normalmente os recursos disponíveis, seu acesso corre o risco de ser interrompido por falta de pagamento.</p>
-        <p style="color:#c4b5fd;font-size:14px;margin:0 0 8px;">Com a assinatura ativa, você segue com acesso a:</p>
-        <ul style="list-style:none;padding:0;margin:0 0 16px;">${benefitsHtml}</ul>
-        <p style="color:#fca5a5;font-size:14px;font-weight:600;margin:0 0 8px;">Sem renovar, você pode ficar de fora de:</p>
-        <ul style="list-style:none;padding:0;margin:0 0 24px;">${lossesHtml}</ul>
-        <p style="color:#e2d8f0;font-size:15px;line-height:1.6;margin:0 0 8px;">Se você pretende continuar usando a plataforma, o melhor momento para regularizar é agora.</p>
-        <p style="color:#c4b5fd;font-size:14px;margin:0 0 8px;">Valor: <strong style="color:#f5e27a;">${d.planValue}</strong></p>`
-      break
-
-    case 5: // 5 DIAS APÓS — último aviso
-      subject = `Último aviso: regularize hoje seu plano ${d.planName}`
-      preheader = 'Este é o último lembrete para manter sua assinatura ativa.'
-      body = `
-        <h1 style="color:#ffffff;font-size:26px;font-weight:700;margin:0 0 20px;text-align:center;">🚨 Último aviso</h1>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 16px;">Olá, <strong style="color:#f5e27a;">${d.userName}</strong>.</p>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 16px;">Este é o <strong style="color:#fca5a5;">último aviso</strong> sobre a pendência da sua assinatura <strong style="color:#f5e27a;">${d.planName}</strong>.</p>
-        <p style="color:#e2d8f0;font-size:16px;line-height:1.6;margin:0 0 20px;">Seu pagamento via Pix ainda não foi identificado e, sem a regularização, você poderá perder o acesso aos benefícios do seu plano, incluindo:</p>
-        <ul style="list-style:none;padding:0;margin:0 0 16px;">${benefitsHtml}</ul>
-        <p style="color:#fca5a5;font-size:14px;font-weight:600;margin:0 0 8px;">Resumo do que você deixa de ter sem renovar:</p>
-        <ul style="list-style:none;padding:0;margin:0 0 24px;">${lossesHtml}</ul>
-        <p style="color:#e2d8f0;font-size:15px;line-height:1.6;margin:0 0 8px;">Se você quer continuar com seu plano ativo, faça o pagamento agora:</p>
-        <p style="color:#c4b5fd;font-size:14px;margin:0 0 8px;">Valor: <strong style="color:#f5e27a;">${d.planValue}</strong></p>
-        <p style="color:#9ca3af;font-size:13px;margin:16px 0 0;text-align:center;font-style:italic;">Após isso, a assinatura poderá seguir o fluxo normal de expiração da plataforma.</p>`
-      break
-  }
+  // Replace placeholders in body
+  const body = template.body_html
+    .replace(/\{\{USER_NAME\}\}/g, d.userName)
+    .replace(/\{\{PLAN_NAME\}\}/g, d.planName)
+    .replace(/\{\{PLAN_VALUE\}\}/g, d.planValue)
+    .replace(/\{\{DUE_DATE\}\}/g, d.dueDate)
+    .replace(/\{\{BENEFITS_LIST\}\}/g, benefitsHtml)
+    .replace(/\{\{LOSSES_LIST\}\}/g, lossesHtml)
 
   // Build final HTML with checkout URL and pix section injected
   let html = wrapEmail(subject, preheader, body, d.email)
@@ -407,8 +332,25 @@ serve(async (req) => {
 
     console.log(`📋 Found ${subscriptions.length} subscriptions in range`)
 
-    // 2. Get SendPulse token once
+    // 2. Get SendPulse token and DB templates once
     const spToken = await getSendPulseToken()
+    
+    // Fetch all email templates from DB
+    const { data: dbTemplates, error: tplError } = await supabase
+      .from('renewal_email_templates')
+      .select('day_offset, subject, preheader, body_html')
+    
+    if (tplError) {
+      console.error('❌ Error fetching email templates:', tplError)
+    }
+    
+    const templateMap = new Map<number, { subject: string; preheader: string; body_html: string }>()
+    if (dbTemplates) {
+      for (const t of dbTemplates) {
+        templateMap.set(t.day_offset, { subject: t.subject, preheader: t.preheader, body_html: t.body_html })
+      }
+    }
+    
     let processed = 0
     let skipped = 0
     let errors = 0
@@ -597,7 +539,14 @@ serve(async (req) => {
           email: userEmail,
         }
 
-        const { subject, html } = getEmailTemplate(dayOffset, emailData)
+        // Get template from DB, fallback to hardcoded if not found
+        const dbTemplate = templateMap.get(dayOffset)
+        if (!dbTemplate) {
+          console.warn(`⚠️ No DB template for day_offset ${dayOffset}, skipping`)
+          skipped++
+          continue
+        }
+        const { subject, html } = getEmailTemplateFromDb(dbTemplate, emailData)
         const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
 
         const emailPayload = {
