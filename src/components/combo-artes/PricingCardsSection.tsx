@@ -1,4 +1,4 @@
-import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock } from "lucide-react";
+import { Check, Star, Gift, Clock, CreditCard } from "lucide-react";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useState, useEffect } from "react";
 
