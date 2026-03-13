@@ -539,7 +539,14 @@ serve(async (req) => {
           email: userEmail,
         }
 
-        const { subject, html } = getEmailTemplate(dayOffset, emailData)
+        // Get template from DB, fallback to hardcoded if not found
+        const dbTemplate = templateMap.get(dayOffset)
+        if (!dbTemplate) {
+          console.warn(`⚠️ No DB template for day_offset ${dayOffset}, skipping`)
+          skipped++
+          continue
+        }
+        const { subject, html } = getEmailTemplateFromDb(dbTemplate, emailData)
         const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
 
         const emailPayload = {
