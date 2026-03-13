@@ -118,6 +118,30 @@ export const SecureVideo = memo(({
   const [retryCount, setRetryCount] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Programmatic autoplay for mobile browsers
+  useEffect(() => {
+    const videoElement = videoRef.current;
+    if (!videoElement || !autoPlay || !muted) return;
+
+    const handleAutoplay = () => {
+      videoElement.muted = true;
+      videoElement.playsInline = true;
+      videoElement.play().catch(() => {});
+    };
+
+    videoElement.addEventListener('canplay', handleAutoplay);
+    videoElement.addEventListener('loadeddata', handleAutoplay);
+
+    if (videoElement.readyState >= 2) {
+      handleAutoplay();
+    }
+
+    return () => {
+      videoElement.removeEventListener('canplay', handleAutoplay);
+      videoElement.removeEventListener('loadeddata', handleAutoplay);
+    };
+  }, [autoPlay, muted, retryCount]);
+
   // Reset state when src changes
   useEffect(() => {
     setVideoLoaded(false);
