@@ -210,7 +210,7 @@ const PricingSection = () => {
               R$37
             </p>
 
-            <img src={BOX_IMG} alt="Box Pack Agendas Completo" className="w-48 md:w-56 my-4" />
+            <img src={BOX_IMG} alt="Box Pack Agendas Completo" className="w-48 md:w-56 my-4" loading="lazy" />
 
             <div className="w-full flex flex-col gap-2">
               <div
