@@ -149,6 +149,7 @@ const PlanosArcanoCloner = lazy(() => import("./pages/PlanosArcanoCloner"));
 const ObrigadoArcanoCloner = lazy(() => import("./pages/ObrigadoArcanoCloner"));
 const ArcanoClonerTeste = lazy(() => import("./pages/ArcanoClonerTeste"));
 const PrevendaPack4 = lazy(() => import("./pages/PrevendaPack4"));
+const PackAgendas = lazy(() => import("./pages/PackAgendas"));
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
 
@@ -336,7 +337,8 @@ const AppContent = () => {
           <Route path="/gerador-personagem" element={<Navigate to="/gerador-avatar" replace />} />
           <Route path="/upscaler-selection" element={<UpscalerSelectionPage />} />
           
-          <Route path="/combo-artes-arcanas" element={<ComboArtesArcanas />} />
+           <Route path="/combo-artes-arcanas" element={<ComboArtesArcanas />} />
+           <Route path="/pack-agendas" element={<PackAgendas />} />
           <Route path="/planos-creditos" element={<Navigate to="/planos-2" replace />} />
           <Route path="/ferramentas-ia-aplicativo" element={<FerramentasIAAplicativo />} />
            <Route path="/force-update" element={<ForceUpdate />} />
