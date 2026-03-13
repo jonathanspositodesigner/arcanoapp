@@ -1,14 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Play, X } from "lucide-react";
-import { Dialog, DialogContent, DialogClose, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { getMetaCookies } from "@/lib/metaCookies";
-import { getSanitizedUtms } from "@/lib/utmUtils";
-import { useProcessingButton } from "@/hooks/useProcessingButton";
-import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
-import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
+import { appendUtmToUrl } from "@/lib/utmUtils";
 
 // URLs exatas extraídas do HTML original do WordPress
 const motions = [{
