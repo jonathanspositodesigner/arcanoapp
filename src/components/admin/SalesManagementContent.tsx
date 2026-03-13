@@ -27,6 +27,7 @@ export interface SaleRecord {
   product_title: string;
   source_platform: string;
   payment_method: string | null;
+  utm_data?: Record<string, string> | null;
   name?: string;
   whatsapp?: string;
 }
