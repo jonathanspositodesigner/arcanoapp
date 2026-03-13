@@ -233,7 +233,7 @@ export function useAdsHierarchy(dateRange: { start: string; end: string }, sales
 
       const aggregated = aggregate(data || [], "ad_id", "ad_name", "ad_status");
       // Attribute sales using utm_content (ad ID)
-      const withSales = attributeSalesToItems(aggregated, sales, "utm_content");
+      const withSales = attributeSalesToItems(aggregated, sales, ["utm_content", "utm_id", "utm_term"]);
       setAds(withSales.sort((a, b) => b.total_spend - a.total_spend));
       setCurrentLevel("ads");
       setBreadcrumbs(prev => [
