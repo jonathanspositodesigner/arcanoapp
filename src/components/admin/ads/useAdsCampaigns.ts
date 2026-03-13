@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export type AdsPeriod = "today" | "7d" | "14d" | "30d" | "custom";
+export type AdsPeriod = "today" | "yesterday" | "7d" | "14d" | "30d" | "custom";
 
 interface CampaignInsight {
   campaign_id: string;
