@@ -8,6 +8,11 @@ import { toast } from "sonner";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
 
+interface PricingFeature {
+  text: string;
+  disabled?: boolean;
+}
+
 interface PricingPlan {
   id: string;
   slug: string;
@@ -16,7 +21,7 @@ interface PricingPlan {
   originalPrice: string;
   price: string;
   discount: string;
-  features: string[];
+  features: PricingFeature[];
   bonus?: string;
   highlight?: boolean;
   badge?: string;
