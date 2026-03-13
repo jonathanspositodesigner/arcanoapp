@@ -505,7 +505,7 @@ serve(async (req) => {
         let checkoutUrl = ''
         let pixCopyPaste: string | null = null
         try {
-          const checkout = await createPixCheckout(
+          const checkout = await createRenewalCheckout(
             pagarmeSecretKey,
             userEmail,
             profile.name || '',
