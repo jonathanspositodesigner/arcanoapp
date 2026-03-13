@@ -1,6 +1,12 @@
 import { Check, Star, Gift, Clock, CreditCard } from "lucide-react";
-import { appendUtmToUrl } from "@/lib/utmUtils";
+import { getSanitizedUtms } from "@/lib/utmUtils";
+import { getMetaCookies } from "@/lib/metaCookies";
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useProcessingButton } from "@/hooks/useProcessingButton";
+import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
+import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
+import { toast } from "sonner";
 
 interface PricingFeature {
   text: string;
@@ -20,7 +26,7 @@ interface PricingPlan {
   highlight?: boolean;
   badge?: string;
   buttonText: string;
-  checkoutUrl: string;
+  productSlug: string;
 }
 
 const plans: PricingPlan[] = [
@@ -44,7 +50,7 @@ const plans: PricingPlan[] = [
       { text: "Área de Membros" },
     ],
     buttonText: "QUERO SÓ O PACK VOL.1",
-    checkoutUrl: "https://payfast.greenn.com.br/135338/offer/0r2gUj?ch_id=23924",
+    productSlug: "combo-vol1-1ano",
   },
   {
     id: "pack1e2",
@@ -66,7 +72,7 @@ const plans: PricingPlan[] = [
       { text: "Área de Membros" },
     ],
     buttonText: "QUERO OS PACKS VOL.1 E 2",
-    checkoutUrl: "https://payfast.greenn.com.br/135338/offer/0r2gUj?ch_id=23924",
+    productSlug: "combo-1e2-1ano",
   },
   {
     id: "pack1ao3",
@@ -91,12 +97,31 @@ const plans: PricingPlan[] = [
     highlight: true,
     badge: "MAIS VENDIDO",
     buttonText: "QUERO OS PACKS 1 AO 3",
-    checkoutUrl: "https://payfast.greenn.com.br/135338/offer/0r2gUj?ch_id=23924&b_id_1=103023",
+    productSlug: "combo-1ao3-vitalicio",
   },
 ];
 
 export const PricingCardsSection = () => {
   const [timeLeft, setTimeLeft] = useState(0);
+  const [showPreCheckout, setShowPreCheckout] = useState(false);
+  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
+  const [pendingSlug, setPendingSlug] = useState<string | null>(null);
+  const [pendingProfile, setPendingProfile] = useState<any>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
+
+  // Check auth on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        setUserEmail(user.email || null);
+      }
+    };
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -119,18 +144,107 @@ export const PricingCardsSection = () => {
     return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handlePurchase = (checkoutUrl: string) => {
+  const handlePurchase = async (productSlug: string) => {
+    if (!startCheckout()) return;
+
+    // Fire Meta Pixel
     if (typeof window !== "undefined" && (window as any).fbq) {
       (window as any).fbq("track", "InitiateCheckout", {
-        content_name: "Combo Artes Arcanas 3 em 1",
+        content_name: "Combo Artes Arcanas",
         content_category: "Digital Product",
         content_type: "product",
         currency: "BRL",
       });
     }
 
-    const urlWithUtm = appendUtmToUrl(checkoutUrl);
-    window.open(urlWithUtm, "_blank");
+    if (!userId) {
+      // Not logged in → open PreCheckoutModal
+      setPendingSlug(productSlug);
+      setShowPreCheckout(true);
+      endCheckout();
+      return;
+    }
+
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
+        .eq('id', userId)
+        .single();
+
+      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf
+        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
+
+      if (isProfileComplete) {
+        setPendingSlug(productSlug);
+        setPendingProfile(profile);
+        setShowPaymentMethodModal(true);
+        endCheckout();
+      } else {
+        setPendingSlug(productSlug);
+        setShowPreCheckout(true);
+        endCheckout();
+      }
+    } catch {
+      endCheckout();
+    }
+  };
+
+  const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
+    if (!pendingSlug || !pendingProfile) return;
+    if (!startCheckout()) return;
+
+    try {
+      const utmData = getSanitizedUtms();
+      const { fbp, fbc } = getMetaCookies();
+      const body: any = {
+        product_slug: pendingSlug,
+        user_email: userEmail,
+        user_phone: pendingProfile.phone,
+        user_name: pendingProfile.name,
+        user_cpf: pendingProfile.cpf,
+        billing_type: method,
+        utm_data: utmData,
+        fbp,
+        fbc,
+      };
+
+      if (method === 'PIX') {
+        body.user_address = {
+          line_1: pendingProfile.address_line,
+          zip_code: pendingProfile.address_zip,
+          city: pendingProfile.address_city,
+          state: pendingProfile.address_state,
+          country: pendingProfile.address_country || 'BR'
+        };
+      }
+
+      const response = await supabase.functions.invoke('create-pagarme-checkout', { body });
+
+      if (response.error) {
+        console.error('Erro checkout direto:', response.error);
+        toast.error('Erro ao gerar pagamento. Tente novamente.');
+        setShowPaymentMethodModal(false);
+        endCheckout();
+        return;
+      }
+
+      const { checkout_url, event_id } = response.data;
+      if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
+        (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
+      }
+      if (checkout_url) {
+        window.location.href = checkout_url;
+        return;
+      } else {
+        toast.error('Erro ao gerar link de pagamento.');
+      }
+    } catch (error) {
+      console.error('Erro checkout direto:', error);
+      toast.error('Erro ao processar. Tente novamente.');
+    }
+    endCheckout();
+    setShowPaymentMethodModal(false);
   };
 
   return (
@@ -221,14 +335,15 @@ export const PricingCardsSection = () => {
               </ul>
 
               <button
-                onClick={() => handlePurchase(plan.checkoutUrl)}
-                className={`w-full font-bold text-sm py-3.5 rounded-xl transition-all duration-300 ${
+                onClick={() => handlePurchase(plan.productSlug)}
+                disabled={isCheckoutSubmitting}
+                className={`w-full font-bold text-sm py-3.5 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
                   plan.highlight
                     ? "bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white shadow-lg shadow-orange-500/30 hover:scale-105"
                     : "bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:scale-105"
                 }`}
               >
-                {plan.buttonText}
+                {isCheckoutSubmitting ? "Processando..." : plan.buttonText}
               </button>
             </div>
             );
@@ -250,8 +365,23 @@ export const PricingCardsSection = () => {
             </span>
           </div>
         </div>
-
       </div>
+
+      {/* PreCheckout Modal for Pagar.me */}
+      <PreCheckoutModal
+        isOpen={showPreCheckout}
+        onClose={() => setShowPreCheckout(false)}
+        productSlug={pendingSlug || 'combo-1ao3-vitalicio'}
+        colorScheme="orange"
+      />
+
+      {/* Payment Method Modal */}
+      <PaymentMethodModal
+        open={showPaymentMethodModal}
+        onOpenChange={setShowPaymentMethodModal}
+        onSelect={handlePaymentMethodSelected}
+        isProcessing={isCheckoutSubmitting}
+      />
     </section>
   );
 };

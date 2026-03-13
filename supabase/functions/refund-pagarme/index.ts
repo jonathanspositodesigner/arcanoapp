@@ -198,7 +198,9 @@ serve(async (req: Request) => {
       console.log(`   ├─ ✅ Acesso revogado: ${product.pack_slug}`)
 
       const REFUND_BUNDLE_EXTRA_PACKS: Record<string, string[]> = {
-        'pack4lancamento': ['pack-de-sao-joao']
+        'pack4lancamento': ['pack-de-sao-joao'],
+        'combo-1e2-1ano': ['pack-arcano-vol-2'],
+        'combo-1ao3-vitalicio': ['pack-arcano-vol-2', 'pack-arcano-vol-3']
       }
       const extraSlugs = REFUND_BUNDLE_EXTRA_PACKS[product.slug] || []
       for (const extraSlug of extraSlugs) {

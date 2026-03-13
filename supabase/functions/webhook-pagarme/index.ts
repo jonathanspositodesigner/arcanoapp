@@ -684,6 +684,13 @@ serve(async (req) => {
         const BUNDLE_EXTRA_PACKS: Record<string, Array<{pack_slug: string, access_type: string}>> = {
           'pack4lancamento': [
             { pack_slug: 'pack-de-sao-joao', access_type: 'vitalicio' }
+          ],
+          'combo-1e2-1ano': [
+            { pack_slug: 'pack-arcano-vol-2', access_type: '1_ano' }
+          ],
+          'combo-1ao3-vitalicio': [
+            { pack_slug: 'pack-arcano-vol-2', access_type: 'vitalicio' },
+            { pack_slug: 'pack-arcano-vol-3', access_type: 'vitalicio' }
           ]
         }
 
@@ -1028,7 +1035,9 @@ serve(async (req) => {
 
           // Bundle: revogar packs extras
           const REFUND_BUNDLE_EXTRA_PACKS: Record<string, string[]> = {
-            'pack4lancamento': ['pack-de-sao-joao']
+            'pack4lancamento': ['pack-de-sao-joao'],
+            'combo-1e2-1ano': ['pack-arcano-vol-2'],
+            'combo-1ao3-vitalicio': ['pack-arcano-vol-2', 'pack-arcano-vol-3']
           }
           const extraSlugs = REFUND_BUNDLE_EXTRA_PACKS[product.slug] || []
           for (const extraSlug of extraSlugs) {
