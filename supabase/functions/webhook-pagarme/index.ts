@@ -189,75 +189,102 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
 </html>`
 }
 
+async function sendPurchaseEmailAttempt(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, options?: { packSlug?: string; productType?: string; accessType?: string }): Promise<boolean> {
+  const { data: existing } = await supabase
+    .from('welcome_email_logs')
+    .select('id')
+    .eq('email', email)
+    .eq('template_name', `pagarme_purchase_${productName}`)
+    .maybeSingle()
+
+  if (existing) {
+    console.log(`   ├─ ℹ️ Email já enviado para ${email} (${productName})`)
+    return true
+  }
+
+  const { data: blacklisted } = await supabase
+    .from('blacklisted_emails')
+    .select('id')
+    .eq('email', email)
+    .maybeSingle()
+
+  if (blacklisted) {
+    console.log(`   ├─ ⛔ Email blacklisted: ${email}`)
+    return true
+  }
+
+  const trackingId = crypto.randomUUID()
+  const html = buildPurchaseEmailHtml(email, productName, ctaLink, options)
+  const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
+
+  const token = await getSendPulseToken()
+
+  const emailPayload = {
+    email: {
+      html: htmlBase64,
+      text: "",
+      subject: `✅ Compra confirmada - ${productName}`,
+      from: { name: "Vox Visual", email: "contato@voxvisual.com.br" },
+      to: [{ name: email, email }]
+    }
+  }
+
+  const response = await fetch("https://api.sendpulse.com/smtp/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify(emailPayload)
+  })
+
+  const responseText = await response.text()
+  console.log(`   ├─ 📧 SendPulse response: ${response.status}`)
+
+  await supabase.from('welcome_email_logs').insert({
+    email,
+    template_name: `pagarme_purchase_${productName}`,
+    tracking_id: trackingId,
+    status: response.ok ? 'sent' : 'failed',
+    sent_at: response.ok ? new Date().toISOString() : null,
+    error_message: response.ok ? null : responseText,
+  })
+
+  return response.ok
+}
+
 async function sendPurchaseEmail(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, options?: { packSlug?: string; productType?: string; accessType?: string }) {
   try {
-    const { data: existing } = await supabase
-      .from('welcome_email_logs')
-      .select('id')
-      .eq('email', email)
-      .eq('template_name', `pagarme_purchase_${productName}`)
-      .maybeSingle()
-
-    if (existing) {
-      console.log(`   ├─ ℹ️ Email já enviado para ${email} (${productName})`)
-      return
-    }
-
-    const { data: blacklisted } = await supabase
-      .from('blacklisted_emails')
-      .select('id')
-      .eq('email', email)
-      .maybeSingle()
-
-    if (blacklisted) {
-      console.log(`   ├─ ⛔ Email blacklisted: ${email}`)
-      return
-    }
-
-    const trackingId = crypto.randomUUID()
-    const html = buildPurchaseEmailHtml(email, productName, ctaLink, options)
-    const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
-
-    const token = await getSendPulseToken()
-
-    const emailPayload = {
-      email: {
-        html: htmlBase64,
-        text: "",
-        subject: `✅ Compra confirmada - ${productName}`,
-        from: { name: "Vox Visual", email: "contato@voxvisual.com.br" },
-        to: [{ name: email, email }]
-      }
-    }
-
-    const response = await fetch("https://api.sendpulse.com/smtp/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify(emailPayload)
-    })
-
-    const responseText = await response.text()
-    console.log(`   ├─ 📧 SendPulse response: ${response.status}`)
-
-    await supabase.from('welcome_email_logs').insert({
-      email,
-      template_name: `pagarme_purchase_${productName}`,
-      tracking_id: trackingId,
-      status: response.ok ? 'sent' : 'failed',
-      sent_at: response.ok ? new Date().toISOString() : null,
-      error_message: response.ok ? null : responseText,
-    })
-
-    if (response.ok) {
+    const success = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId, options)
+    if (success) {
       console.log(`   ├─ ✅ Email de compra enviado para ${email}`)
     } else {
-      console.error(`   ├─ ❌ Falha no envio: ${responseText}`)
+      console.log(`   ├─ ⏳ Primeira tentativa falhou, aguardando 3s para retry...`)
+      await new Promise(resolve => setTimeout(resolve, 3000))
+      // Delete failed log so retry can insert fresh
+      await supabase.from('welcome_email_logs').delete()
+        .eq('email', email)
+        .eq('template_name', `pagarme_purchase_${productName}`)
+        .eq('status', 'failed')
+      const retrySuccess = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId, options)
+      if (retrySuccess) {
+        console.log(`   ├─ ✅ Email enviado no retry para ${email}`)
+      } else {
+        console.error(`   ├─ ❌ Email falhou após retry para ${email}`)
+      }
     }
   } catch (err: any) {
     console.error(`   ├─ ❌ Erro ao enviar email: ${err.message}`)
+    // Log failure
+    try {
+      await supabase.from('welcome_email_logs').insert({
+        email,
+        template_name: `pagarme_purchase_${productName}`,
+        tracking_id: crypto.randomUUID(),
+        status: 'failed',
+        error_message: err.message,
+      })
+    } catch (_) {}
   }
 }
 

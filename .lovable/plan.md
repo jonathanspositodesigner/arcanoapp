@@ -1,55 +1,42 @@
 
+# Migração Planos Mensais/Anuais: Greenn → Pagar.me (CONCLUÍDA v2 - Recorrência Real)
 
-# Coluna de Status de Email na Aba de Vendas + Retry Automático
+## Resumo
+Migração dos 8 planos de assinatura (4 planos × 2 períodos) da Greenn para o Pagar.me com **recorrência real via cartão de crédito** e PIX como pagamento avulso.
 
-## O que será feito
+## Decisão Arquitetural
+- **Cartão de Crédito**: Recorrência real via `POST /subscriptions` do Pagar.me. Tokenização do cartão no front-end via API pública (`pk_XXXX`). Cobrança automática a cada ciclo.
+- **PIX**: Checkout avulso (sem recorrência) — plano ativa por 30/365 dias. pg_cron expira planos vencidos.
+- **Reembolso**: Cancela subscription no Pagar.me (`DELETE /subscriptions/{id}`) + revoga plano → free + zera créditos.
 
-### 1. Nova coluna "Email" na tabela de vendas
-- Adicionar coluna visual na tabela de vendas (`SalesManagementContent.tsx`) mostrando se o email pós-compra foi enviado, falhou ou não foi encontrado
-- Ícones: ✅ verde (enviado), ❌ vermelho (falhou), ⚠️ cinza (não encontrado)
-- A informação vem da tabela `welcome_email_logs`, cruzando por email
+## O que foi feito
 
-### 2. Buscar status de email junto com as vendas
-- Após carregar as vendas, fazer uma query em `welcome_email_logs` buscando os emails das vendas carregadas
-- Criar um Map `email → status` para renderizar na coluna
-- Campos usados: `email`, `status` ('sent'/'failed'), `error_message`
+### 1. Banco de Dados
+- Colunas `plan_slug` e `billing_period` em `mp_products`
+- Coluna `pagarme_subscription_id` em `asaas_orders` e `planos2_subscriptions`
+- 8 produtos inseridos: `plano-{starter,pro,ultimate,unlimited}-{mensal,anual}`
 
-### 3. Botão de reenvio manual
-- Na coluna de email, vendas com status "failed" ou sem registro terão um botão de reenvio
-- O reenvio chamará uma nova Edge Function `resend-purchase-email` que reenvia o email de compra via SendPulse
+### 2. CreditCardForm.tsx (NOVO)
+- Formulário seguro com campos: Número, Nome, Validade, CVV
+- Tokenização direta via `POST https://api.pagar.me/core/v5/tokens?appId=pk_XXX`
+- Retorna `card_token` para o fluxo de subscription
 
-### 4. Retry automático nos webhooks (Pagar.me, MercadoPago, Greenn)
-- Nos webhooks existentes, após um `sendPurchaseEmail` falhar (status 'failed'), adicionar lógica de retry:
-  - Aguardar 3 segundos e tentar novamente (1 retry)
-  - Se falhar de novo, o registro fica como 'failed' no `welcome_email_logs` e aparece na aba de vendas para reenvio manual
+### 3. create-pagarme-subscription (NOVO)
+- Edge function que cria subscription recorrente via `POST /subscriptions`
+- Suporta `interval: month` ou `year` baseado no `billing_period` do produto
+- Salva `pagarme_subscription_id` na ordem
 
-### 5. Edge Function `resend-purchase-email`
-- Recebe `email` e `order_id`
-- Busca o pedido no `asaas_orders` para obter produto e dados
-- Reconstrói o email e reenvia via SendPulse
-- Atualiza o status no `welcome_email_logs`
+### 4. webhook-pagarme (ATUALIZADO)
+- Busca ordens por `pagarme_subscription_id` (fallback 4)
+- Trata `subscription.canceled`: revoga plano → free, zera créditos
+- Trata renovação (`charge.paid` em ordem já `paid`): renova plano + reseta créditos
+- Salva `pagarme_subscription_id` no `planos2_subscriptions`
 
-## Arquivos modificados
+### 5. refund-pagarme (ATUALIZADO)
+- Cancela subscription no Pagar.me via `DELETE /subscriptions/{id}` antes de revogar
+- Revoga plano → free + zera créditos
 
-- `src/components/admin/SalesManagementContent.tsx` — nova coluna + fetch de email logs + botão reenvio
-- `supabase/functions/resend-purchase-email/index.ts` — nova Edge Function para reenvio manual
-- `supabase/functions/webhook-pagarme/index.ts` — retry automático no `sendPurchaseEmail`
-- `supabase/functions/webhook-mercadopago/index.ts` — retry automático
-- `supabase/functions/webhook-greenn/index.ts` — retry automático
-- `supabase/functions/webhook-greenn-creditos/index.ts` — retry automático
-- `supabase/config.toml` — registrar nova function `resend-purchase-email`
-
-## Fluxo do retry automático
-
-```text
-Webhook recebe pagamento aprovado
-  → sendPurchaseEmail()
-    → SendPulse API call
-      → Se falhou:
-        → Espera 3s
-        → Tenta novamente (1x)
-        → Se falhou de novo: grava status='failed' no welcome_email_logs
-  → Status visível na aba de Vendas
-  → Admin pode clicar "Reenviar" manualmente
-```
-
+### 6. Planos2.tsx (ATUALIZADO)
+- Cartão: abre CreditCardForm → tokeniza → create-pagarme-subscription → recorrência real
+- PIX: mantém checkout avulso via create-pagarme-checkout → 30/365 dias sem recorrência
+- Flag `isSubscriptionFlow` diferencia fluxos de assinatura vs créditos avulsos

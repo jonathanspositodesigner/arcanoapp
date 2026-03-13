@@ -656,11 +656,17 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
         payload: {} // Limpar payload para sucesso
       }).eq('id', logId)
 
-      // Send email
+      // Send email with retry
       try {
         await sendWelcomeEmail(supabase, email, clientName, planType, requestId, locale)
       } catch (e) {
-        console.log(`   ├─ ⚠️ Falha email (acesso já liberado)`)
+        console.log(`   ├─ ⏳ Primeira tentativa de email falhou, retry em 3s...`)
+        try {
+          await new Promise(resolve => setTimeout(resolve, 3000))
+          await sendWelcomeEmail(supabase, email, clientName, planType, requestId, locale)
+        } catch (e2) {
+          console.log(`   ├─ ⚠️ Email falhou após retry (acesso já liberado)`)
+        }
       }
 
       console.log(`\n✅ [${requestId}] Premium ativado: ${planType}, expira: ${expiresAt.toISOString()}`)
