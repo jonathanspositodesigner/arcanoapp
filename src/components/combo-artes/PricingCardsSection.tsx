@@ -25,6 +25,7 @@ interface PricingPlan {
   bonus?: string;
   highlight?: boolean;
   badge?: string;
+  buttonText: string;
 }
 
 const plans: PricingPlan[] = [
@@ -47,6 +48,7 @@ const plans: PricingPlan[] = [
       { text: "Suporte via WhatsApp" },
       { text: "Área de Membros" },
     ],
+    buttonText: "QUERO ACESSO DE 6 MESES",
   },
   {
     id: "1ano",
@@ -68,6 +70,7 @@ const plans: PricingPlan[] = [
       { text: "Suporte via WhatsApp" },
       { text: "Área de Membros" },
     ],
+    buttonText: "QUERO ACESSO DE 1 ANO",
   },
   {
     id: "vitalicio",
@@ -91,6 +94,7 @@ const plans: PricingPlan[] = [
     bonus: "+20 MOVIES PARA TELÃO",
     highlight: true,
     badge: "MAIS POPULAR",
+    buttonText: "QUERO ACESSO VITALÍCIO",
   },
 ];
 
@@ -333,7 +337,7 @@ export const PricingCardsSection = () => {
                     : "bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:scale-105"
                 }`}
               >
-                {isLoading && selectedSlug === plan.slug ? 'Processando...' : 'QUERO ESSAS ARTES'}
+                {isLoading && selectedSlug === plan.slug ? 'Processando...' : plan.buttonText}
               </button>
             </div>
           ))}
