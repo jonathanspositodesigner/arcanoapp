@@ -266,6 +266,9 @@ function MetricsRow({ item, onClick, clickable = false, onStatusToggle }: { item
   const accountId = isCampaign ? (item as CampaignWithSales).account_id : (item as AggregatedItem).account_id;
   const dailyBudget = isCampaign ? (item as CampaignWithSales).daily_budget : (item as AggregatedItem).daily_budget;
   const salesCount = isCampaign ? (item as CampaignWithSales).sales_count : (item as AggregatedItem).sales_count;
+  const utmSalesCount = isCampaign ? (item as CampaignWithSales).utm_sales_count : (item as AggregatedItem).utm_sales_count;
+  const metaSalesCount = isCampaign ? (item as CampaignWithSales).meta_sales_count : (item as AggregatedItem).meta_sales_count;
+  const hasMetaBoost = metaSalesCount > utmSalesCount;
   const revenue = isCampaign ? (item as CampaignWithSales).revenue : (item as AggregatedItem).revenue;
   const profit = isCampaign ? (item as CampaignWithSales).profit : (item as AggregatedItem).profit;
   const roi = isCampaign ? (item as CampaignWithSales).roi : (item as AggregatedItem).roi;
@@ -309,7 +312,20 @@ function MetricsRow({ item, onClick, clickable = false, onStatusToggle }: { item
       <td className="p-3 text-right font-medium">{formatCurrency(spend)}</td>
       <td className="p-3 text-right">
         {salesCount > 0 ? (
-          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">{salesCount}</Badge>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex items-center gap-1">
+                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30">{salesCount}</Badge>
+                  {hasMetaBoost && <Megaphone className="h-3 w-3 text-blue-400" />}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="text-xs">
+                <p>{utmSalesCount} via UTM · {metaSalesCount} via Meta</p>
+                {hasMetaBoost && <p className="text-blue-400">Meta detectou vendas extras (view-through)</p>}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         ) : (
           <span className="text-muted-foreground">0</span>
         )}

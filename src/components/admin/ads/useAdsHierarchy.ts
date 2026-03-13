@@ -20,7 +20,10 @@ export interface AggregatedItem {
   avg_cpc: number;
   total_landing_page_views: number;
   total_initiated_checkouts: number;
+  total_meta_purchases: number;
   sales_count: number;
+  utm_sales_count: number;
+  meta_sales_count: number;
   revenue: number;
   cpa: number;
   profit: number;
@@ -39,6 +42,7 @@ function aggregate(rows: any[], idField: string, nameField: string, statusField:
     const clicks = row.clicks || 0;
     const lpv = row.landing_page_views || 0;
     const ic = row.initiated_checkouts || 0;
+    const mp = row.meta_purchases || 0;
 
     if (existing) {
       existing.total_spend += spend;
@@ -46,6 +50,7 @@ function aggregate(rows: any[], idField: string, nameField: string, statusField:
       existing.total_clicks += clicks;
       existing.total_landing_page_views += lpv;
       existing.total_initiated_checkouts += ic;
+      existing.total_meta_purchases += mp;
       existing.name = row[nameField] || existing.name;
       existing.status = row[statusField] || existing.status;
       existing.daily_budget = Number(row.daily_budget) || existing.daily_budget;
@@ -65,7 +70,10 @@ function aggregate(rows: any[], idField: string, nameField: string, statusField:
         avg_cpc: 0,
         total_landing_page_views: lpv,
         total_initiated_checkouts: ic,
+        total_meta_purchases: mp,
         sales_count: 0,
+        utm_sales_count: 0,
+        meta_sales_count: 0,
         revenue: 0,
         cpa: 0,
         profit: 0,
@@ -131,7 +139,9 @@ function attributeSalesToItems(
 
   return items.map((item) => {
     const matchedSales = salesMap.get(item.id) || [];
-    const salesCount = matchedSales.length;
+    const utmSalesCount = matchedSales.length;
+    const metaSalesCount = item.total_meta_purchases;
+    const salesCount = Math.max(utmSalesCount, metaSalesCount);
     const revenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
     const spend = item.total_spend;
     const profit = revenue - spend;
@@ -139,7 +149,7 @@ function attributeSalesToItems(
     const roi = spend > 0 ? revenue / spend : 0;
     const roas = spend > 0 ? revenue / spend : 0;
 
-    return { ...item, sales_count: salesCount, revenue, cpa, profit, roi, roas };
+    return { ...item, sales_count: salesCount, utm_sales_count: utmSalesCount, meta_sales_count: metaSalesCount, revenue, cpa, profit, roi, roas };
   });
 }
 

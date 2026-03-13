@@ -32,7 +32,10 @@ function extractMetrics(row: any) {
   const initiatedCheckouts = getActionValue(actions, "offsite_conversion.fb_pixel_initiate_checkout")
     || getActionValue(actions, "initiate_checkout")
     || getActionValue(actions, "omni_initiated_checkout");
-  return { landingPageViews, initiatedCheckouts };
+  const purchases = getActionValue(actions, "offsite_conversion.fb_pixel_purchase")
+    || getActionValue(actions, "purchase")
+    || getActionValue(actions, "omni_purchase");
+  return { landingPageViews, initiatedCheckouts, purchases };
 }
 
 async function fetchAllPages(url: string, accessToken: string): Promise<any[]> {
@@ -218,7 +221,7 @@ Deno.serve(async (req) => {
           const rows = await fetchAllPages(insightsUrl, accessToken);
 
           for (const row of rows) {
-            const { landingPageViews, initiatedCheckouts } = extractMetrics(row);
+            const { landingPageViews, initiatedCheckouts, purchases } = extractMetrics(row);
             const campaignId = row.campaign_id;
             const budgetInfo = campaignBudgets[campaignId];
 
@@ -236,6 +239,7 @@ Deno.serve(async (req) => {
               cpc: parseFloat(row.cpc || "0"),
               landing_page_views: landingPageViews,
               initiated_checkouts: initiatedCheckouts,
+              meta_purchases: purchases,
             }, { onConflict: "campaign_id,date" });
           }
 
@@ -289,7 +293,7 @@ Deno.serve(async (req) => {
           const rows = await fetchAllPages(insightsUrl, accessToken);
 
           for (const row of rows) {
-            const { landingPageViews, initiatedCheckouts } = extractMetrics(row);
+            const { landingPageViews, initiatedCheckouts, purchases } = extractMetrics(row);
             const adsetId = row.adset_id;
             const meta = adsetMeta[adsetId];
 
@@ -309,6 +313,7 @@ Deno.serve(async (req) => {
               cpc: parseFloat(row.cpc || "0"),
               landing_page_views: landingPageViews,
               initiated_checkouts: initiatedCheckouts,
+              meta_purchases: purchases,
             }, { onConflict: "adset_id,date" });
           }
 
@@ -363,7 +368,7 @@ Deno.serve(async (req) => {
           const rows = await fetchAllPages(insightsUrl, accessToken);
 
           for (const row of rows) {
-            const { landingPageViews, initiatedCheckouts } = extractMetrics(row);
+            const { landingPageViews, initiatedCheckouts, purchases } = extractMetrics(row);
             const adId = row.ad_id;
             const meta = adMeta[adId];
 
@@ -382,6 +387,7 @@ Deno.serve(async (req) => {
               cpc: parseFloat(row.cpc || "0"),
               landing_page_views: landingPageViews,
               initiated_checkouts: initiatedCheckouts,
+              meta_purchases: purchases,
             }, { onConflict: "ad_id,date" });
           }
 

@@ -17,10 +17,13 @@ interface CampaignInsight {
   avg_cpc: number;
   total_landing_page_views: number;
   total_initiated_checkouts: number;
+  total_meta_purchases: number;
 }
 
 export interface CampaignWithSales extends CampaignInsight {
   sales_count: number;
+  utm_sales_count: number;
+  meta_sales_count: number;
   revenue: number;
   cpa: number;
   profit: number;
@@ -118,6 +121,7 @@ export function useAdsCampaigns(
           existing.total_clicks += row.clicks || 0;
           existing.total_landing_page_views += row.landing_page_views || 0;
           existing.total_initiated_checkouts += row.initiated_checkouts || 0;
+          existing.total_meta_purchases += (row as any).meta_purchases || 0;
           // Keep latest status/name/budget
           existing.campaign_name = row.campaign_name;
           existing.campaign_status = row.campaign_status || existing.campaign_status;
@@ -136,6 +140,7 @@ export function useAdsCampaigns(
             avg_cpc: 0,
             total_landing_page_views: row.landing_page_views || 0,
             total_initiated_checkouts: row.initiated_checkouts || 0,
+            total_meta_purchases: (row as any).meta_purchases || 0,
           });
         }
       }
@@ -267,7 +272,9 @@ export function useAdsCampaigns(
     return filtered
       .map((c) => {
         const matchedSales = campaignSalesMap.get(c.campaign_id) || [];
-        const salesCount = matchedSales.length;
+        const utmSalesCount = matchedSales.length;
+        const metaSalesCount = c.total_meta_purchases;
+        const salesCount = Math.max(utmSalesCount, metaSalesCount);
         const revenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
         const spend = c.total_spend;
         const profit = revenue - spend;
@@ -275,7 +282,7 @@ export function useAdsCampaigns(
         const roi = spend > 0 ? revenue / spend : 0;
         const roas = spend > 0 ? revenue / spend : 0;
 
-        return { ...c, sales_count: salesCount, revenue, cpa, profit, roi, roas };
+        return { ...c, sales_count: salesCount, utm_sales_count: utmSalesCount, meta_sales_count: metaSalesCount, revenue, cpa, profit, roi, roas };
       })
       .sort((a, b) => b.total_spend - a.total_spend);
   }, [campaigns, sales, accountFilter, searchQuery, campaignIdSet]);
