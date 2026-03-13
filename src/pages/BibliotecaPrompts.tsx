@@ -531,7 +531,7 @@ const BibliotecaPrompts = () => {
               </div>
               <div className="rounded-lg overflow-hidden border border-purple-500/30">
                 {isVideoUrl(selectedPrompt.imageUrl) ? (
-                  <SecureVideo src={selectedPrompt.imageUrl} isPremium={selectedPrompt.isPremium} className="w-full" controls autoPlay muted loop playsInline />
+                  <SecureVideo src={selectedPrompt.imageUrl} isPremium={selectedPrompt.isPremium} className="w-full" controls autoPlay muted loop playsInline poster={selectedPrompt.thumbnailUrl || undefined} />
                 ) : (
                   <SecureImage src={selectedPrompt.imageUrl} alt={selectedPrompt.title} isPremium={selectedPrompt.isPremium} className="w-full" />
                 )}
