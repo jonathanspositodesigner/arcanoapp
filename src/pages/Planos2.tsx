@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getSanitizedUtms } from "@/lib/utmUtils";
 import { getMetaCookies } from "@/lib/metaCookies";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { useNavigate } from "react-router-dom";
