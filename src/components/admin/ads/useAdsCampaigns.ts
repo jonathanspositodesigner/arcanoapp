@@ -277,7 +277,7 @@ export function useAdsCampaigns(
         return { ...c, sales_count: salesCount, revenue, cpa, profit, roi, roas };
       })
       .sort((a, b) => b.total_spend - a.total_spend);
-  }, [campaigns, sales, accountFilter, searchQuery]);
+  }, [campaigns, sales, accountFilter, searchQuery, campaignIdSet]);
 
   // Untracked = sales that DON'T have FB utm_source (truly untrackable)
   const untrackedSales = useMemo(() => {
