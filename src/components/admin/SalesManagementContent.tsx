@@ -243,7 +243,7 @@ const SalesManagementContent = () => {
   const renderEmailStatus = (sale: SaleRecord) => {
     if (sale.status !== "paid") return null;
     
-    const emailLog = emailStatuses.get(sale.user_email);
+    const emailLog = emailStatuses.get(sale.user_email.toLowerCase());
     const isResending = resendingEmails.has(sale.id);
     
     if (isResending) {
@@ -251,7 +251,7 @@ const SalesManagementContent = () => {
     }
     
     if (!emailLog) {
-      // No log found
+      // No log found — likely a sale from before the logging system existed
       return (
         <TooltipProvider>
           <Tooltip>
@@ -262,11 +262,11 @@ const SalesManagementContent = () => {
                 className="h-7 w-7"
                 onClick={(e) => handleResendEmail(sale, e)}
               >
-                <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                <Mail className="h-4 w-4 text-muted-foreground/50" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Email não encontrado — Clique para reenviar</p>
+              <p>Sem registro de envio — Clique para enviar</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
