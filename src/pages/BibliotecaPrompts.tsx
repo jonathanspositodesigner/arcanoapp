@@ -499,7 +499,7 @@ const BibliotecaPrompts = () => {
             {premiumModalItem && (
               <div className="mb-6 rounded-lg overflow-hidden border border-purple-500/30">
                 {isVideoUrl(premiumModalItem.imageUrl) ? (
-                  <SecureVideo src={premiumModalItem.imageUrl} isPremium={false} className="w-full h-48 object-cover opacity-50" autoPlay muted loop playsInline controls={false} />
+                  <SecureVideo src={premiumModalItem.imageUrl} isPremium={false} className="w-full h-48 object-cover opacity-50" autoPlay muted loop playsInline controls={false} poster={premiumModalItem.thumbnailUrl || undefined} />
                 ) : (
                   <SecureImage src={premiumModalItem.imageUrl} alt={premiumModalItem.title} isPremium={false} className="w-full h-48 object-cover opacity-50" />
                 )}
