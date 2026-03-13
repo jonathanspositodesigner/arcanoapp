@@ -9,9 +9,11 @@ interface AdminHubSidebarProps {
   activeView: HubViewType;
   onViewChange: (view: HubViewType) => void;
   onLogout: () => void;
+  onForceUpdate?: () => void;
+  isForcingUpdate?: boolean;
 }
 
-const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebarProps) => {
+const AdminHubSidebar = ({ activeView, onViewChange, onLogout, onForceUpdate, isForcingUpdate }: AdminHubSidebarProps) => {
   const navigate = useNavigate();
 
   const menuItems = [
