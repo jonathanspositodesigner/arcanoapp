@@ -37,14 +37,13 @@ export const BonusTelaoSection = () => {
           </div>
 
           {/* Title */}
-          <h2 className="text-xl md:text-4xl font-bold mb-4 px-2">
-            <span className="text-white drop-shadow-lg">Adquirindo hoje você leva também</span>
-            <br />
-            <span className="font-black text-black drop-shadow-lg">
-              Um Pack de Movies para Telão de Palco
-            </span>
+          <p className="text-white/90 text-sm md:text-lg mb-1 md:mb-2 px-2 drop-shadow-md">
+            Adquirindo hoje você leva também
+          </p>
+          <h2 className="text-2xl md:text-4xl font-black text-black mb-3 md:mb-4 px-2 drop-shadow-lg leading-tight">
+            Um Pack de Movies para Telão de Palco
           </h2>
-          <p className="text-white/90 text-base md:text-lg px-4 drop-shadow-md">
+          <p className="text-white/90 text-sm md:text-lg px-4 drop-shadow-md">
             +20 movies para telão de palco editáveis no Canva
           </p>
         </div>
