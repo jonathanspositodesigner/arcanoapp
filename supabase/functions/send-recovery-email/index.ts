@@ -136,8 +136,8 @@ serve(async (req) => {
       );
     }
 
-    const recoveryLink = linkData?.properties?.action_link;
-    if (!recoveryLink) {
+    const actionLink = linkData?.properties?.action_link;
+    if (!actionLink) {
       console.error("[send-recovery-email] No action_link in response:", JSON.stringify(linkData));
       return new Response(
         JSON.stringify({ success: false, error: "Failed to generate recovery link" }),
@@ -145,7 +145,22 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[send-recovery-email] Recovery link generated successfully`);
+    // Extract token_hash from the action_link to build a safe URL
+    // Gmail/Outlook prefetch bots consume /verify links, so we redirect to the app page instead
+    const actionUrl = new URL(actionLink);
+    const tokenHash = actionUrl.searchParams.get("token") || actionUrl.searchParams.get("token_hash");
+    const type = actionUrl.searchParams.get("type") || "recovery";
+
+    // Build safe recovery link pointing to the app's reset page
+    const baseRedirectUrl = redirect_url || "https://arcanoapp.voxvisual.com.br/reset-password";
+    const safeUrl = new URL(baseRedirectUrl);
+    if (tokenHash) {
+      safeUrl.searchParams.set("token_hash", tokenHash);
+    }
+    safeUrl.searchParams.set("type", type);
+    const recoveryLink = safeUrl.toString();
+
+    console.log(`[send-recovery-email] Safe recovery link generated (token_hash flow)`);
 
     // Build email HTML
     const htmlContent = buildRecoveryEmailHtml(recoveryLink);
