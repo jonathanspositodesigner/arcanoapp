@@ -207,18 +207,6 @@ const AdminHub = () => {
 
   return (
     <>
-      {/* Desktop Force Update Button - Fixed position, outside flex container */}
-      <div className="hidden md:flex fixed top-4 right-4 z-[9999]">
-        <Button
-          variant="destructive"
-          onClick={handleForceUpdate}
-          disabled={isForcingUpdate}
-          className="gap-2 shadow-lg"
-        >
-          <RefreshCw className={`h-4 w-4 ${isForcingUpdate ? 'animate-spin' : ''}`} />
-          {isForcingUpdate ? 'Enviando...' : 'Push Update Global'}
-        </Button>
-      </div>
 
       <div className="min-h-screen bg-background flex w-full">
         {/* Desktop Sidebar */}
@@ -227,6 +215,8 @@ const AdminHub = () => {
             activeView={activeView}
             onViewChange={handleViewChange}
             onLogout={handleLogout}
+            onForceUpdate={handleForceUpdate}
+            isForcingUpdate={isForcingUpdate}
           />
         </div>
 

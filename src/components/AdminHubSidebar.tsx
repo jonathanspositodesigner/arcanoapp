@@ -1,4 +1,4 @@
-import { Home, BarChart3, LogOut, ArrowLeft, Users, ShieldCheck, ShoppingCart, Mail, Receipt, Megaphone, Activity } from "lucide-react";
+import { Home, BarChart3, LogOut, ArrowLeft, Users, ShieldCheck, ShoppingCart, Mail, Receipt, Megaphone, Activity, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -9,9 +9,11 @@ interface AdminHubSidebarProps {
   activeView: HubViewType;
   onViewChange: (view: HubViewType) => void;
   onLogout: () => void;
+  onForceUpdate?: () => void;
+  isForcingUpdate?: boolean;
 }
 
-const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebarProps) => {
+const AdminHubSidebar = ({ activeView, onViewChange, onLogout, onForceUpdate, isForcingUpdate }: AdminHubSidebarProps) => {
   const navigate = useNavigate();
 
   const menuItems = [
@@ -106,6 +108,17 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebar
 
       {/* Footer Actions */}
       <div className="p-4 border-t border-border space-y-2">
+        {onForceUpdate && (
+          <Button 
+            variant="destructive" 
+            className="w-full justify-start gap-2"
+            onClick={onForceUpdate}
+            disabled={isForcingUpdate}
+          >
+            <RefreshCw className={`h-4 w-4 ${isForcingUpdate ? 'animate-spin' : ''}`} />
+            {isForcingUpdate ? 'Enviando...' : 'Push Update Global'}
+          </Button>
+        )}
         <Button 
           variant="outline" 
           className="w-full justify-start gap-2"
