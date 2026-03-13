@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export type AdsPeriod = "today" | "7d" | "14d" | "30d" | "custom";
+export type AdsPeriod = "today" | "yesterday" | "7d" | "14d" | "30d" | "custom";
 
 interface CampaignInsight {
   campaign_id: string;
@@ -49,6 +49,12 @@ function getDateRange(period: AdsPeriod, customStart?: Date, customEnd?: Date): 
     case "today":
       start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       break;
+    case "yesterday": {
+      const y = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      start = y;
+      end = y;
+      break;
+    }
     case "7d":
       start = new Date(now.getTime() - 7 * 86400000);
       break;

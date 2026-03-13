@@ -20,6 +20,7 @@ import { UntrackedSalesDialog } from "./ads/UntrackedSalesDialog";
 
 const PERIOD_OPTIONS: { value: AdsPeriod; label: string }[] = [
   { value: "today", label: "Hoje" },
+  { value: "yesterday", label: "Ontem" },
   { value: "7d", label: "7 dias" },
   { value: "14d", label: "14 dias" },
   { value: "30d", label: "30 dias" },
@@ -567,7 +568,7 @@ const AdsManagementContent = () => {
                   {customStart ? format(customStart, "dd/MM", { locale: ptBR }) : "Início"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={customStart} onSelect={setCustomStart} locale={ptBR} /></PopoverContent>
+              <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={customStart} onSelect={setCustomStart} locale={ptBR} className="pointer-events-auto" /></PopoverContent>
             </Popover>
             <span className="text-muted-foreground">—</span>
             <Popover>
@@ -577,7 +578,7 @@ const AdsManagementContent = () => {
                   {customEnd ? format(customEnd, "dd/MM", { locale: ptBR }) : "Fim"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={customEnd} onSelect={setCustomEnd} locale={ptBR} /></PopoverContent>
+              <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={customEnd} onSelect={setCustomEnd} locale={ptBR} className="pointer-events-auto" /></PopoverContent>
             </Popover>
           </div>
         )}
