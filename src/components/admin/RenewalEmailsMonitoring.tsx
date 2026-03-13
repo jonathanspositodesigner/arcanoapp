@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, Mail, MailX, RefreshCw, Loader2, ChevronLeft, ChevronRight, Save, TrendingUp, Edit3, Eye, Code, X } from "lucide-react";
+import { EmailHtmlEditor } from "./EmailHtmlEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -330,13 +331,7 @@ const TemplateEditorTab = () => {
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
-        Edite os emails de renovação. Variáveis disponíveis:{" "}
-        <code className="bg-muted px-1 rounded text-xs">{"{{USER_NAME}}"}</code>{" "}
-        <code className="bg-muted px-1 rounded text-xs">{"{{PLAN_NAME}}"}</code>{" "}
-        <code className="bg-muted px-1 rounded text-xs">{"{{PLAN_VALUE}}"}</code>{" "}
-        <code className="bg-muted px-1 rounded text-xs">{"{{DUE_DATE}}"}</code>{" "}
-        <code className="bg-muted px-1 rounded text-xs">{"{{BENEFITS_LIST}}"}</code>{" "}
-        <code className="bg-muted px-1 rounded text-xs">{"{{LOSSES_LIST}}"}</code>
+        Edite os emails de renovação. Clique em "Editar" para abrir o editor visual com todas as ferramentas de formatação.
       </p>
 
       {/* Preview Modal */}
@@ -412,14 +407,10 @@ const TemplateEditorTab = () => {
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground block mb-1 flex items-center gap-1">
-                  <Code className="h-3 w-3" /> Conteúdo HTML do email
-                </label>
-                <Textarea
+                <label className="text-xs text-muted-foreground block mb-1">Conteúdo do email</label>
+                <EmailHtmlEditor
                   value={editBodyHtml}
-                  onChange={(e) => setEditBodyHtml(e.target.value)}
-                  className="text-xs min-h-[300px] font-mono"
-                  placeholder="HTML do corpo do email..."
+                  onChange={setEditBodyHtml}
                 />
               </div>
               <div className="flex gap-2">
