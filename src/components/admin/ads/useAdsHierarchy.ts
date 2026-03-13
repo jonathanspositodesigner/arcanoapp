@@ -95,7 +95,14 @@ function extractIdFromUtm(utmValue: string | undefined | null): string {
   return parts[parts.length - 1].trim();
 }
 
-function attributeSalesToItems(items: AggregatedItem[], sales: SaleOrder[], utmField: string): AggregatedItem[] {
+function attributeSalesToItems(
+  items: AggregatedItem[],
+  sales: SaleOrder[],
+  utmFields: string[]
+): AggregatedItem[] {
+  // Build a set of known item IDs for smart matching
+  const knownIds = new Set(items.map(i => i.id));
+
   // Build map: item_id -> sales[]
   const salesMap = new Map<string, SaleOrder[]>();
 
@@ -104,13 +111,22 @@ function attributeSalesToItems(items: AggregatedItem[], sales: SaleOrder[], utmF
     const isFb = typeof utmSource === "string" && utmSource.toUpperCase().startsWith("FB");
     if (!isFb) continue;
 
-    const rawValue = sale.utm_data?.[utmField] || "";
-    const resolvedId = extractIdFromUtm(rawValue);
-    if (!resolvedId) continue;
+    // Collect candidate IDs from multiple UTM fields
+    const candidates: string[] = [];
+    for (const field of utmFields) {
+      const rawValue = sale.utm_data?.[field] || "";
+      const resolvedId = extractIdFromUtm(rawValue);
+      if (resolvedId) candidates.push(resolvedId);
+    }
 
-    const existing = salesMap.get(resolvedId) || [];
-    existing.push(sale);
-    salesMap.set(resolvedId, existing);
+    // Smart match: find the first candidate that exists as a known item
+    const matchedId = candidates.find(id => knownIds.has(id)) || "";
+
+    if (matchedId) {
+      const existing = salesMap.get(matchedId) || [];
+      existing.push(sale);
+      salesMap.set(matchedId, existing);
+    }
   }
 
   return items.map((item) => {

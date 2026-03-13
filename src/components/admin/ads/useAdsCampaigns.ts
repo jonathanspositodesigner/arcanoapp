@@ -197,7 +197,12 @@ export function useAdsCampaigns(
     }
   }, [dateRange, fetchData]);
 
-  // Merge campaigns with sales attribution via direct campaign_id matching
+  // Build a set of known campaign IDs for smart matching
+  const campaignIdSet = useMemo(() => {
+    return new Set(campaigns.map(c => c.campaign_id));
+  }, [campaigns]);
+
+  // Merge campaigns with sales attribution via smart campaign_id matching
   const campaignsWithSales = useMemo((): CampaignWithSales[] => {
     // 1. Identify FB sales and build a map: campaign_id -> sales[]
     const campaignSalesMap = new Map<string, SaleOrder[]>();
@@ -208,26 +213,38 @@ export function useAdsCampaigns(
       const isFb = typeof utmSource === "string" && utmSource.toUpperCase().startsWith("FB");
       if (!isFb) continue;
 
-      // Extract campaign_id: utm_id has {{campaign.id}}, utm_content has {{ad.id}}
       const utmCampaign = sale.utm_data?.utm_campaign || "";
       const utmId = sale.utm_data?.utm_id || "";
-      
-      let resolvedCampaignId = "";
-      
-      // 1st: utm_id contains the campaign_id directly
-      if (utmId && !utmId.includes("{{")) {
-        resolvedCampaignId = String(utmId).trim();
+      const utmContent = sale.utm_data?.utm_content || "";
+
+      // Collect all candidate IDs from UTM fields
+      const candidates: string[] = [];
+
+      // From utm_id
+      if (utmId && !String(utmId).includes("{{")) {
+        candidates.push(String(utmId).trim());
       }
-      
-      // 2nd: extract from utm_campaign "NAME|ID" format
-      if (!resolvedCampaignId && utmCampaign && !utmCampaign.includes("{{")) {
+
+      // From utm_campaign "NAME|ID" format
+      if (utmCampaign && !String(utmCampaign).includes("{{")) {
         const parts = String(utmCampaign).split("|");
         if (parts.length > 1) {
-          resolvedCampaignId = parts[parts.length - 1].trim();
+          candidates.push(parts[parts.length - 1].trim());
         }
       }
-      
-      // NOTE: utm_content is NOT used here — it contains the ad_id, not campaign_id
+
+      // From utm_content (may contain campaign_id in some setups)
+      if (utmContent && !String(utmContent).includes("{{")) {
+        candidates.push(String(utmContent).trim());
+      }
+
+      // Smart match: find the first candidate that exists as a known campaign
+      let resolvedCampaignId = candidates.find(id => campaignIdSet.has(id)) || "";
+
+      // Fallback: use first non-empty candidate (legacy behavior)
+      if (!resolvedCampaignId && candidates.length > 0) {
+        resolvedCampaignId = candidates[0];
+      }
 
       if (resolvedCampaignId) {
         const existing = campaignSalesMap.get(resolvedCampaignId) || [];
