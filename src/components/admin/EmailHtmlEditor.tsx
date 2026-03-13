@@ -132,9 +132,9 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
 
   const toggleSourceCode = () => {
     if (showSourceCode) {
-      // Apply source code changes back to editor
       if (editor) {
-        editor.commands.setContent(sourceCode, false);
+        editor.commands.setContent(sourceCode);
+        onChange(sourceCode);
         onChange(sourceCode);
       }
       setShowSourceCode(false);
