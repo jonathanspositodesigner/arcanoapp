@@ -1,4 +1,4 @@
-import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock } from "lucide-react";
+import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock, X } from "lucide-react";
 import { getMetaCookies } from "@/lib/metaCookies";
 import { getSanitizedUtms } from "@/lib/utmUtils";
 import { useState, useEffect } from "react";
