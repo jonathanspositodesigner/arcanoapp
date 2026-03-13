@@ -1,4 +1,4 @@
-import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock, QrCode } from "lucide-react";
+import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock } from "lucide-react";
 import { getMetaCookies } from "@/lib/metaCookies";
 import { getSanitizedUtms } from "@/lib/utmUtils";
 import { useState, useEffect } from "react";
@@ -6,32 +6,87 @@ import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
 
-const PRODUCT_SLUG = "pack4lancamento";
+interface PricingPlan {
+  id: string;
+  slug: string;
+  title: string;
+  accessLabel: string;
+  originalPrice: string;
+  price: string;
+  discount: string;
+  features: string[];
+  bonus?: string;
+  highlight?: boolean;
+  badge?: string;
+}
 
-const plan = {
-  id: "vitalicio",
-  title: "Pack Arcano 4\nACESSO VITALÍCIO",
-  subtitle: "Lançamento! 🔥",
-  originalPrice: "79,90",
-  price: "37,00",
-  discount: "54% OFF",
-  features: [
-    "+40 Artes Inéditas",
-    "Acesso Vitalício",
-    "210 Motions Editáveis",
-    "40 Selos 3D",
-    "Video Aulas Exclusivas",
-    "Bônus Exclusivos",
-    "Atualizações Semanais",
-    "Suporte via WhatsApp",
-    "Área de Membros",
-  ],
-  bonus: "+40 ARTES DE SÃO JOÃO",
-  buttonText: "QUERO ESSAS ARTES INÉDITAS",
-};
+const plans: PricingPlan[] = [
+  {
+    id: "6meses",
+    slug: "pack4-6meses",
+    title: "Pack Arcano 4",
+    accessLabel: "ACESSO 6 MESES",
+    originalPrice: "79,90",
+    price: "27,00",
+    discount: "66% OFF",
+    features: [
+      "+40 Artes Inéditas",
+      "Acesso por 6 Meses",
+      "210 Motions Editáveis",
+      "40 Selos 3D",
+      "Video Aulas Exclusivas",
+      "Atualizações Semanais",
+      "Suporte via WhatsApp",
+      "Área de Membros",
+    ],
+  },
+  {
+    id: "1ano",
+    slug: "pack4-1ano",
+    title: "Pack Arcano 4",
+    accessLabel: "ACESSO 1 ANO",
+    originalPrice: "79,90",
+    price: "37,00",
+    discount: "54% OFF",
+    features: [
+      "+40 Artes Inéditas",
+      "Acesso por 1 Ano",
+      "210 Motions Editáveis",
+      "40 Selos 3D",
+      "Video Aulas Exclusivas",
+      "Bônus Exclusivos",
+      "Atualizações Semanais",
+      "Suporte via WhatsApp",
+      "Área de Membros",
+    ],
+    bonus: "+40 ARTES DE SÃO JOÃO",
+  },
+  {
+    id: "vitalicio",
+    slug: "pack4lancamento",
+    title: "Pack Arcano 4",
+    accessLabel: "ACESSO VITALÍCIO",
+    originalPrice: "79,90",
+    price: "47,00",
+    discount: "41% OFF",
+    features: [
+      "+40 Artes Inéditas",
+      "Acesso Vitalício",
+      "210 Motions Editáveis",
+      "40 Selos 3D",
+      "Video Aulas Exclusivas",
+      "Bônus Exclusivos",
+      "Atualizações Semanais",
+      "Suporte via WhatsApp",
+      "Área de Membros",
+    ],
+    bonus: "+40 ARTES DE SÃO JOÃO",
+    highlight: true,
+    badge: "MAIS POPULAR",
+  },
+];
 
 export const PricingCardsSection = () => {
   const [timeLeft, setTimeLeft] = useState(0);
@@ -41,6 +96,7 @@ export const PricingCardsSection = () => {
   const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
   const [pendingProfile, setPendingProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedSlug, setSelectedSlug] = useState("pack4lancamento");
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
 
   useEffect(() => {
@@ -62,11 +118,9 @@ export const PricingCardsSection = () => {
     };
 
     setTimeLeft(calculateTimeLeft());
-
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft());
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
@@ -77,10 +131,10 @@ export const PricingCardsSection = () => {
     return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handlePurchase = async () => {
+  const handlePurchase = async (slug: string) => {
     if (!startSubmit()) return;
-    
-    // Fire Meta Pixel
+    setSelectedSlug(slug);
+
     if (typeof window !== "undefined" && (window as any).fbq) {
       (window as any).fbq("track", "InitiateCheckout", {
         content_name: "Prevenda Pack 4",
@@ -113,7 +167,6 @@ export const PricingCardsSection = () => {
         setShowPreCheckout(true);
       }
     } catch {
-      // Fallback: se falhar ao buscar perfil, abre pre-checkout
       setShowPreCheckout(true);
     }
     endSubmit();
@@ -127,10 +180,9 @@ export const PricingCardsSection = () => {
 
     try {
       const utmData = getSanitizedUtms();
-
       const { fbp, fbc } = getMetaCookies();
       const body: any = {
-        product_slug: PRODUCT_SLUG,
+        product_slug: selectedSlug,
         user_email: userEmail,
         user_phone: pendingProfile.phone,
         user_name: pendingProfile.name,
@@ -163,7 +215,6 @@ export const PricingCardsSection = () => {
       }
 
       const { checkout_url, event_id } = response.data;
-      // Fire InitiateCheckout with event_id for deduplication with server-side CAPI
       if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
         (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
       }
@@ -192,7 +243,7 @@ export const PricingCardsSection = () => {
             Planos
           </div>
         </div>
-        
+
         {/* Section title */}
         <h2 className="text-2xl md:text-4xl font-black text-center text-white mb-4">
           Seu bloqueio criativo acaba aqui!
@@ -201,81 +252,99 @@ export const PricingCardsSection = () => {
           Selecione o seu plano e comece a criar artes profissionais hoje mesmo!
         </p>
 
-        {/* Two cards side by side */}
-        <div className="grid grid-cols-1 md:grid-cols-[3fr_2fr] gap-6 max-w-4xl mx-auto items-stretch">
-          {/* Pricing Card */}
-          <div className="relative rounded-3xl p-6 md:p-8 flex flex-col bg-gradient-to-br from-[#EF672C]/20 to-[#EF672C]/5 border-2 border-[#EF672C]">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <span className="bg-[#EF672C] text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
-                <Star className="w-3 h-3 fill-white" />
-                LANÇAMENTO
-              </span>
-            </div>
-            
-            <h3 className="text-xl font-bold text-white mb-2 text-center whitespace-pre-line">
-              {plan.title}
-            </h3>
-            <p className="text-gray-400 text-sm text-center mb-6">
-              {plan.subtitle}
-            </p>
-            
-            <div className="flex justify-center mb-3">
-              <span className="bg-green-500 text-white text-sm font-bold px-3 py-1 rounded-full">
-                -{plan.discount}
-              </span>
-            </div>
-            
-            <div className="text-center mb-6">
-              <p className="text-gray-500 text-sm line-through mb-1">
-                De R$ {plan.originalPrice}
-              </p>
-              <div className="flex items-center justify-center gap-1">
-                <span className="text-gray-400 text-lg">R$</span>
-                <span className="text-5xl font-black text-white">{plan.price}</span>
-              </div>
-              <span className="text-gray-500 text-sm">à vista</span>
-            </div>
-            
-            <div className="bg-gradient-to-r from-yellow-600 via-yellow-500 to-amber-400 text-black text-sm font-bold px-4 py-2 rounded-lg mb-6 flex items-center justify-center gap-2">
-              <Gift className="w-4 h-4" />
-              {plan.bonus}
-            </div>
-            
-            <ul className="space-y-3 mb-8 flex-grow">
-              {plan.features.map((feature, index) => (
-                <li key={index} className="flex items-center gap-3 text-gray-300">
-                  <Check className="w-5 h-5 text-[#EF672C] flex-shrink-0" />
-                  <span className={`text-sm ${index === 0 || index === 1 ? 'font-bold text-white' : ''}`}>{feature}</span>
-                </li>
-              ))}
-            </ul>
-            
-            <button
-              onClick={handlePurchase}
-              disabled={isLoading || isSubmitting}
-              className="w-full font-bold text-lg py-4 rounded-xl transition-all duration-300 bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white shadow-lg shadow-orange-500/30 hover:scale-105 disabled:opacity-70 disabled:hover:scale-100"
+        {/* 3 Pricing Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
+          {plans.map((plan) => (
+            <div
+              key={plan.id}
+              className={`relative rounded-3xl p-6 md:p-8 flex flex-col ${
+                plan.highlight
+                  ? "bg-gradient-to-br from-[#EF672C]/20 to-[#EF672C]/5 border-2 border-[#EF672C] scale-[1.02] md:scale-105"
+                  : "bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10"
+              }`}
             >
-              {isLoading ? 'Processando...' : plan.buttonText}
-            </button>
+              {plan.badge && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <span className="bg-[#EF672C] text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
+                    <Star className="w-3 h-3 fill-white" />
+                    {plan.badge}
+                  </span>
+                </div>
+              )}
 
-            {/* Urgency Countdown */}
-            <div className="mt-4 flex flex-col items-center gap-1">
-              <div className="flex items-center gap-2 text-white text-sm font-medium">
-                <span className="animate-pulse">🚨</span>
-                <span>Últimas horas da promoção</span>
-                <span className="animate-pulse">🚨</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-400 text-xs">
-                <Clock className="w-3 h-3" />
-                <span>Oferta expira em</span>
-                <span className="text-[#EF672C] font-semibold font-mono">
-                  {formatTime(timeLeft)}
+              <h3 className="text-lg font-bold text-white mb-0.5 text-center">
+                {plan.title}
+              </h3>
+              <p className={`text-sm font-bold text-center mb-4 ${plan.highlight ? "text-[#EF672C]" : "text-gray-400"}`}>
+                {plan.accessLabel}
+              </p>
+
+              <div className="flex justify-center mb-2">
+                <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                  -{plan.discount}
                 </span>
               </div>
-            </div>
-          </div>
 
-          {/* Guarantee Card */}
+              <div className="text-center mb-5">
+                <p className="text-gray-500 text-xs line-through mb-0.5">
+                  De R$ {plan.originalPrice}
+                </p>
+                <div className="flex items-center justify-center gap-1">
+                  <span className="text-gray-400 text-base">R$</span>
+                  <span className="text-4xl font-black text-white">{plan.price}</span>
+                </div>
+                <span className="text-gray-500 text-xs">à vista</span>
+              </div>
+
+              {plan.bonus && (
+                <div className="bg-gradient-to-r from-yellow-600 via-yellow-500 to-amber-400 text-black text-xs font-bold px-3 py-2 rounded-lg mb-4 flex items-center justify-center gap-2">
+                  <Gift className="w-3.5 h-3.5" />
+                  {plan.bonus}
+                </div>
+              )}
+
+              <ul className="space-y-2.5 mb-6 flex-grow">
+                {plan.features.map((feature, index) => (
+                  <li key={index} className="flex items-center gap-2.5 text-gray-300">
+                    <Check className={`w-4 h-4 flex-shrink-0 ${plan.highlight ? "text-[#EF672C]" : "text-green-500"}`} />
+                    <span className={`text-sm ${index === 0 || index === 1 ? 'font-bold text-white' : ''}`}>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={() => handlePurchase(plan.slug)}
+                disabled={isLoading || isSubmitting}
+                className={`w-full font-bold text-sm py-3.5 rounded-xl transition-all duration-300 disabled:opacity-70 disabled:hover:scale-100 ${
+                  plan.highlight
+                    ? "bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white shadow-lg shadow-orange-500/30 hover:scale-105"
+                    : "bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:scale-105"
+                }`}
+              >
+                {isLoading && selectedSlug === plan.slug ? 'Processando...' : 'QUERO ESSAS ARTES'}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Countdown - shared */}
+        <div className="mt-8 flex flex-col items-center gap-1">
+          <div className="flex items-center gap-2 text-white text-sm font-medium">
+            <span className="animate-pulse">🚨</span>
+            <span>Últimas horas da promoção</span>
+            <span className="animate-pulse">🚨</span>
+          </div>
+          <div className="flex items-center gap-2 text-gray-400 text-xs">
+            <Clock className="w-3 h-3" />
+            <span>Oferta expira em</span>
+            <span className="text-[#EF672C] font-semibold font-mono">
+              {formatTime(timeLeft)}
+            </span>
+          </div>
+        </div>
+
+        {/* Guarantee Card - full width below */}
+        <div className="max-w-2xl mx-auto mt-12">
           <div className="relative rounded-3xl p-6 md:p-8 flex flex-col bg-gradient-to-br from-gray-200 to-gray-300 border-2 border-gray-300">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <span className="bg-gray-700 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 whitespace-nowrap">
@@ -292,23 +361,21 @@ export const PricingCardsSection = () => {
             </p>
 
             <div className="flex justify-center mb-6">
-              <img 
-                src="https://lp.voxvisual.com.br/wp-content/uploads/2025/09/SELO-GARANTIA.png" 
-                alt="Garantia de 7 Dias Incondicional" 
+              <img
+                src="https://lp.voxvisual.com.br/wp-content/uploads/2025/09/SELO-GARANTIA.png"
+                alt="Garantia de 7 Dias Incondicional"
                 className="w-36 md:w-44 h-auto"
                 loading="lazy"
               />
             </div>
 
-            <div className="flex-grow space-y-4">
+            <div className="space-y-4">
               <p className="text-gray-700 text-sm leading-relaxed text-center">
                 Você tem <span className="font-bold text-gray-900">7 dias de garantia incondicional</span>
               </p>
-              
               <p className="text-gray-600 text-sm leading-relaxed text-center">
                 Garantimos sua segurança com uma plataforma de pagamento altamente segura.
               </p>
-              
               <p className="text-gray-600 text-sm leading-relaxed text-center">
                 Você também conta com <span className="font-semibold text-gray-700">7 dias de garantia para reembolso</span>
               </p>
@@ -319,13 +386,11 @@ export const PricingCardsSection = () => {
                   <p className="text-[10px] font-bold text-gray-700">Compra</p>
                   <p className="text-[10px] text-gray-500">Segura</p>
                 </div>
-                
                 <div className="flex flex-col items-center gap-1">
                   <Award className="w-6 h-6 text-gray-600" />
                   <p className="text-[10px] font-bold text-gray-700">Satisfação</p>
                   <p className="text-[10px] text-gray-500">Garantida</p>
                 </div>
-                
                 <div className="flex flex-col items-center gap-1">
                   <Lock className="w-6 h-6 text-gray-600" />
                   <p className="text-[10px] font-bold text-gray-700">Privacidade</p>
@@ -352,7 +417,7 @@ export const PricingCardsSection = () => {
         onClose={() => setShowPreCheckout(false)}
         userEmail={userEmail}
         userId={userId}
-        productSlug={PRODUCT_SLUG}
+        productSlug={selectedSlug}
         modalTitle="Já é quase seu!"
         colorScheme="orange"
       />
