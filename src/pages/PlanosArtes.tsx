@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getSanitizedUtms } from "@/lib/utmUtils";
 import { getMetaCookies } from "@/lib/metaCookies";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -340,11 +341,7 @@ const PlanosArtes = () => {
     if (!startCheckout()) return;
 
     try {
-      let utmData: Record<string, string> | null = null;
-      try {
-        const raw = sessionStorage.getItem('captured_utms');
-        if (raw) utmData = JSON.parse(raw);
-      } catch { /* ignore */ }
+      const utmData = getSanitizedUtms();
 
       const { fbp, fbc } = getMetaCookies();
       const body: any = {

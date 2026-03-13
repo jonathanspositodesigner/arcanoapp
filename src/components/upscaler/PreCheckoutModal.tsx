@@ -3,6 +3,7 @@ import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { X, CreditCard, QrCode, ArrowRight, Shield, Zap, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMetaCookies } from "@/lib/metaCookies";
+import { getSanitizedUtms } from "@/lib/utmUtils";
 
 interface PreCheckoutModalProps {
   isOpen: boolean;
@@ -175,11 +176,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
     setOneClickLoading(true);
     try {
-      let utmData: Record<string, string> | null = null;
-      try {
-        const raw = sessionStorage.getItem('captured_utms');
-        if (raw) utmData = JSON.parse(raw);
-      } catch { /* ignore */ }
+      const utmData = getSanitizedUtms();
 
       const { fbp, fbc } = getMetaCookies();
       const response = await supabase.functions.invoke('pagarme-one-click', {
@@ -241,11 +238,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
     setLoading(true);
     try {
-      let utmData: Record<string, string> | null = null;
-      try {
-        const raw = sessionStorage.getItem('captured_utms');
-        if (raw) utmData = JSON.parse(raw);
-      } catch { /* ignore */ }
+      const utmData = getSanitizedUtms();
 
       const { fbp, fbc } = getMetaCookies();
       const response = await supabase.functions.invoke('create-pagarme-checkout', {

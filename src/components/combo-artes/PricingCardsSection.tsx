@@ -1,5 +1,6 @@
 import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock, QrCode } from "lucide-react";
 import { getMetaCookies } from "@/lib/metaCookies";
+import { getSanitizedUtms } from "@/lib/utmUtils";
 import { useState, useEffect } from "react";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { supabase } from "@/integrations/supabase/client";
@@ -124,11 +125,7 @@ export const PricingCardsSection = () => {
     setIsLoading(true);
 
     try {
-      let utmData: Record<string, string> | null = null;
-      try {
-        const raw = sessionStorage.getItem('captured_utms');
-        if (raw) utmData = JSON.parse(raw);
-      } catch { /* ignore */ }
+      const utmData = getSanitizedUtms();
 
       const { fbp, fbc } = getMetaCookies();
       const body: any = {
