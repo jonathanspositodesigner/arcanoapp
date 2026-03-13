@@ -202,30 +202,26 @@ export function useAdsCampaigns(
       const isFb = typeof utmSource === "string" && utmSource.toUpperCase().startsWith("FB");
       if (!isFb) continue;
 
-      // Extract campaign_id: utm_content has {{campaign.id}}, utm_id has {{adset.id}}
+      // Extract campaign_id: utm_id has {{campaign.id}}, utm_content has {{ad.id}}
       const utmCampaign = sale.utm_data?.utm_campaign || "";
-      const utmContent = sale.utm_data?.utm_content || "";
       const utmId = sale.utm_data?.utm_id || "";
       
       let resolvedCampaignId = "";
       
-      // Try utm_content first (contains campaign_id per user's Meta template)
-      if (utmContent && !utmContent.includes("{{")) {
-        resolvedCampaignId = String(utmContent).trim();
-      }
-      
-      // Fallback: utm_id (legacy compatibility)
-      if (!resolvedCampaignId && utmId && !utmId.includes("{{")) {
+      // 1st: utm_id contains the campaign_id directly
+      if (utmId && !utmId.includes("{{")) {
         resolvedCampaignId = String(utmId).trim();
       }
       
-      // Fallback: extract from utm_campaign "NAME|ID" format
+      // 2nd: extract from utm_campaign "NAME|ID" format
       if (!resolvedCampaignId && utmCampaign && !utmCampaign.includes("{{")) {
         const parts = String(utmCampaign).split("|");
         if (parts.length > 1) {
           resolvedCampaignId = parts[parts.length - 1].trim();
         }
       }
+      
+      // NOTE: utm_content is NOT used here — it contains the ad_id, not campaign_id
 
       if (resolvedCampaignId) {
         const existing = campaignSalesMap.get(resolvedCampaignId) || [];
