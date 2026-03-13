@@ -3706,6 +3706,36 @@ export type Database = {
           },
         ]
       }
+      renewal_email_templates: {
+        Row: {
+          body_html: string
+          day_offset: number
+          id: number
+          preheader: string
+          subject: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          body_html: string
+          day_offset: number
+          id?: number
+          preheader?: string
+          subject: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          body_html?: string
+          day_offset?: number
+          id?: number
+          preheader?: string
+          subject?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       saved_characters: {
         Row: {
           created_at: string | null
