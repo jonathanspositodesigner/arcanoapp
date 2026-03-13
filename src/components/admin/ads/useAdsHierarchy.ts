@@ -139,7 +139,9 @@ function attributeSalesToItems(
 
   return items.map((item) => {
     const matchedSales = salesMap.get(item.id) || [];
-    const salesCount = matchedSales.length;
+    const utmSalesCount = matchedSales.length;
+    const metaSalesCount = item.total_meta_purchases;
+    const salesCount = Math.max(utmSalesCount, metaSalesCount);
     const revenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
     const spend = item.total_spend;
     const profit = revenue - spend;
@@ -147,7 +149,7 @@ function attributeSalesToItems(
     const roi = spend > 0 ? revenue / spend : 0;
     const roas = spend > 0 ? revenue / spend : 0;
 
-    return { ...item, sales_count: salesCount, revenue, cpa, profit, roi, roas };
+    return { ...item, sales_count: salesCount, utm_sales_count: utmSalesCount, meta_sales_count: metaSalesCount, revenue, cpa, profit, roi, roas };
   });
 }
 
