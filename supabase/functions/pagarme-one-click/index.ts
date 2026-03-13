@@ -116,7 +116,7 @@ serve(async (req) => {
         amount: product.price,
         status: 'pending',
         asaas_customer_id: savedCard.pagarme_customer_id,
-        utm_data: utm_data || null
+        utm_data: sanitizeUtmData(utm_data),
       })
       .select('id')
       .single()

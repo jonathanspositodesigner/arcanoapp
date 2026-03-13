@@ -122,7 +122,7 @@ serve(async (req) => {
         amount: product.price,
         status: 'pending',
         asaas_customer_id: null,
-        utm_data: utm_data || null,
+        utm_data: sanitizeUtmData(utm_data),
         user_name: user_name?.trim() || null,
         user_phone: phoneDigits || null,
         user_cpf: cleanCpf,
