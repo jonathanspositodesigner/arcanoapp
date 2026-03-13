@@ -1,42 +1,97 @@
 
-# Migração Planos Mensais/Anuais: Greenn → Pagar.me (CONCLUÍDA v2 - Recorrência Real)
 
-## Resumo
-Migração dos 8 planos de assinatura (4 planos × 2 períodos) da Greenn para o Pagar.me com **recorrência real via cartão de crédito** e PIX como pagamento avulso.
+# Automação de Cobrança Pix — Emails de Vencimento (6 dias)
 
-## Decisão Arquitetural
-- **Cartão de Crédito**: Recorrência real via `POST /subscriptions` do Pagar.me. Tokenização do cartão no front-end via API pública (`pk_XXXX`). Cobrança automática a cada ciclo.
-- **PIX**: Checkout avulso (sem recorrência) — plano ativa por 30/365 dias. pg_cron expira planos vencidos.
-- **Reembolso**: Cancela subscription no Pagar.me (`DELETE /subscriptions/{id}`) + revoga plano → free + zera créditos.
+## Contexto
 
-## O que foi feito
+As assinaturas Pix funcionam como pagamentos avulsos com ativação manual de 30 ou 365 dias. A tabela `planos2_subscriptions` tem o campo `expires_at` que define o vencimento. Atualmente não existe nenhum sistema de lembrete de renovação.
 
-### 1. Banco de Dados
-- Colunas `plan_slug` e `billing_period` em `mp_products`
-- Coluna `pagarme_subscription_id` em `asaas_orders` e `planos2_subscriptions`
-- 8 produtos inseridos: `plano-{starter,pro,ultimate,unlimited}-{mensal,anual}`
+## Arquitetura
 
-### 2. CreditCardForm.tsx (NOVO)
-- Formulário seguro com campos: Número, Nome, Validade, CVV
-- Tokenização direta via `POST https://api.pagar.me/core/v5/tokens?appId=pk_XXX`
-- Retorna `card_token` para o fluxo de subscription
+```text
+pg_cron (1x/dia, 09h BRT)
+  → Edge Function: process-billing-reminders
+    → Para cada assinatura com vencimento entre hoje e 5 dias atrás:
+      → Verificar se já enviou email desse dia
+      → Verificar se o pagamento já foi feito (nova ordem paga)
+      → Se não pagou e não enviou: gerar link Pagar.me + enviar email via SendPulse
+      → Registrar envio na tabela de controle
+```
 
-### 3. create-pagarme-subscription (NOVO)
-- Edge function que cria subscription recorrente via `POST /subscriptions`
-- Suporta `interval: month` ou `year` baseado no `billing_period` do produto
-- Salva `pagarme_subscription_id` na ordem
+## O que será criado
 
-### 4. webhook-pagarme (ATUALIZADO)
-- Busca ordens por `pagarme_subscription_id` (fallback 4)
-- Trata `subscription.canceled`: revoga plano → free, zera créditos
-- Trata renovação (`charge.paid` em ordem já `paid`): renova plano + reseta créditos
-- Salva `pagarme_subscription_id` no `planos2_subscriptions`
+### 1. Tabela `subscription_billing_reminders` (migration)
 
-### 5. refund-pagarme (ATUALIZADO)
-- Cancela subscription no Pagar.me via `DELETE /subscriptions/{id}` antes de revogar
-- Revoga plano → free + zera créditos
+Controle de quais emails já foram enviados e quando parar:
 
-### 6. Planos2.tsx (ATUALIZADO)
-- Cartão: abre CreditCardForm → tokeniza → create-pagarme-subscription → recorrência real
-- PIX: mantém checkout avulso via create-pagarme-checkout → 30/365 dias sem recorrência
-- Flag `isSubscriptionFlow` diferencia fluxos de assinatura vs créditos avulsos
+- `id`, `user_id`, `subscription_id`, `plan_slug`
+- `due_date` (data do vencimento original)
+- `day_offset` (0 = dia do vencimento, 1-5 = dias após)
+- `sent_at`, `email_sent_to`
+- `stopped_reason` (null, 'paid', 'unsubscribed')
+
+### 2. Edge Function `process-billing-reminders`
+
+Lógica principal executada 1x/dia pelo cron:
+
+1. Busca assinaturas em `planos2_subscriptions` onde `plan_slug != 'free'`, `expires_at` entre hoje e 5 dias atrás
+2. Para cada assinatura, calcula o `day_offset` (0 a 5)
+3. Verifica se já enviou email para esse `day_offset` na tabela de controle
+4. Verifica se o usuário renovou (nova ordem `status = 'confirmed'` com `paid_at` após o `expires_at`)
+5. Se renovou → marca `stopped_reason = 'paid'` e para a sequência
+6. Verifica blacklist de emails (`blacklisted_emails`)
+7. Se não pagou e não enviou: cria um checkout Pagar.me (somente PIX) via API e captura o link + QR code/Pix copia-cola
+8. Monta o HTML do email correspondente ao `day_offset` (0-5), substituindo todos os placeholders por dados reais:
+   - Nome do usuário (da tabela `profiles`)
+   - Nome do plano (mapeado do `plan_slug`)
+   - Valor real (da tabela `mp_products` pelo `plan_slug`)
+   - Data de vencimento formatada
+   - Lista de benefícios reais do plano
+   - Resumo do que será perdido (benefícios do plano que ficam indisponíveis)
+   - Link de pagamento (checkout Pagar.me gerado)
+   - Pix copia e cola (do checkout gerado)
+9. Envia via SendPulse (usando `send-single-email` ou diretamente na função)
+10. Registra na tabela de controle
+
+### 3. Mapeamento de benefícios por plano
+
+Baseado nos dados reais de `Planos2.tsx`:
+
+| Plano | Créditos | Prompts/dia | Img Gen | Video Gen | Fila prioritária |
+|-------|----------|-------------|---------|-----------|-----------------|
+| Starter | 1.800/mês | 5 premium | ❌ | ❌ | ❌ |
+| Pro | 4.200/mês | 10 premium | ✅ | ✅ | ❌ |
+| Ultimate | 10.800/mês | 24 premium | ✅ | ✅ | ❌ |
+| Unlimited | Ilimitados | Ilimitados | ✅ | ✅ | ✅ |
+
+### 4. Templates dos 6 emails
+
+Todos os 6 templates conforme especificados pelo usuário, com:
+- HTML estilizado (mesma estética dos emails de compra existentes — dark theme roxo/dourado)
+- Placeholders dinâmicos substituídos por dados reais
+- Link de descadastro no rodapé (usando a Edge Function `email-unsubscribe` existente)
+- Tom escalando de lembrete leve (dia 0-1) para urgência máxima (dia 5)
+
+### 5. Cron job (pg_cron + pg_net)
+
+Agendamento diário às 12:00 UTC (09:00 BRT) para chamar a Edge Function.
+
+## Arquivos
+
+- **Migration SQL**: criar tabela `subscription_billing_reminders`
+- **`supabase/functions/process-billing-reminders/index.ts`**: Edge Function principal
+- **`supabase/config.toml`**: registrar nova function com `verify_jwt = false`
+- **SQL insert (pg_cron)**: agendar o cron job
+
+## Geração do link de pagamento Pix
+
+A Edge Function criará um checkout Pagar.me (somente PIX) para cada usuário no momento do envio do email, usando a API `POST /orders` com `accepted_payment_methods: ['pix']`. O checkout gerado terá validade de 3 dias. O link e o código Pix copia-cola serão extraídos da resposta e inseridos no email.
+
+Para evitar criar checkouts duplicados em caso de re-execução, a tabela de controle armazena o `checkout_url` gerado.
+
+## Detecção de pagamento
+
+A sequência é interrompida quando:
+- Uma nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at > expires_at` é encontrada para o mesmo email e um produto de assinatura do mesmo plano
+- OU quando o `planos2_subscriptions.expires_at` foi atualizado para uma data futura (webhook processou renovação)
+
