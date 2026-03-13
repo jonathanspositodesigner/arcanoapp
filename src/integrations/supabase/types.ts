@@ -1018,8 +1018,12 @@ export type Database = {
           amount: number
           asaas_customer_id: string | null
           asaas_payment_id: string | null
+          checkout_request_id: string | null
           created_at: string | null
+          gateway_error_code: string | null
+          gateway_error_message: string | null
           id: string
+          last_attempt_at: string | null
           meta_fbc: string | null
           meta_fbp: string | null
           meta_user_agent: string | null
@@ -1046,8 +1050,12 @@ export type Database = {
           amount: number
           asaas_customer_id?: string | null
           asaas_payment_id?: string | null
+          checkout_request_id?: string | null
           created_at?: string | null
+          gateway_error_code?: string | null
+          gateway_error_message?: string | null
           id?: string
+          last_attempt_at?: string | null
           meta_fbc?: string | null
           meta_fbp?: string | null
           meta_user_agent?: string | null
@@ -1074,8 +1082,12 @@ export type Database = {
           amount?: number
           asaas_customer_id?: string | null
           asaas_payment_id?: string | null
+          checkout_request_id?: string | null
           created_at?: string | null
+          gateway_error_code?: string | null
+          gateway_error_message?: string | null
           id?: string
+          last_attempt_at?: string | null
           meta_fbc?: string | null
           meta_fbp?: string | null
           meta_user_agent?: string | null
@@ -4662,6 +4674,7 @@ export type Database = {
       }
       cleanup_monthly_logs: { Args: never; Returns: undefined }
       cleanup_old_logs: { Args: never; Returns: undefined }
+      cleanup_orphaned_checkout_orders: { Args: never; Returns: number }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       cleanup_stale_pose_changer_jobs: { Args: never; Returns: undefined }
       cleanup_stale_upscaler_jobs: { Args: never; Returns: undefined }
