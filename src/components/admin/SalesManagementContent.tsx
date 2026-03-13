@@ -625,6 +625,8 @@ const SalesManagementContent = () => {
         open={!!selectedSale}
         onClose={() => setSelectedSale(null)}
       />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
