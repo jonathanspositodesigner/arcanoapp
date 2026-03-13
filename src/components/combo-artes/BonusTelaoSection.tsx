@@ -1,30 +1,12 @@
 import { Gift } from "lucide-react";
 
 const telaoVideos = [
-  {
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/DJ-ANDY.mp4",
-    title: "DJ Andy",
-  },
-  {
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/BOTECO-DO-LUAN.mp4",
-    title: "Boteco do Luan",
-  },
-  {
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/ERIC-LAND.mp4",
-    title: "Eric Land",
-  },
-  {
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/blacck.mp4",
-    title: "Black",
-  },
-  {
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/fecha-mes-selo.mp4",
-    title: "Fecha Mês",
-  },
-  {
-    video: "https://voxvisual.com.br/wp-content/uploads/2025/11/CALOURADA-ARQUARIUS1.mp4",
-    title: "Calourada",
-  },
+  { video: "https://baa.voxvisual.com.br/videos/DJ_GUUGA.mp4", title: "DJ Guuga" },
+  { video: "https://baa.voxvisual.com.br/videos/MAIARA_E_MARAISA.mp4", title: "Maiara e Maraisa" },
+  { video: "https://baa.voxvisual.com.br/videos/REVOADA_DO_PARANGO.mp4", title: "Revoada do Parango" },
+  { video: "https://baa.voxvisual.com.br/videos/TOCA_DO_VALE.mp4", title: "Toca do Vale" },
+  { video: "https://baa.voxvisual.com.br/videos/DJ_ALOK.mp4", title: "DJ Alok" },
+  { video: "https://baa.voxvisual.com.br/videos/GICA.mp4", title: "Gica" },
 ];
 
 export const BonusTelaoSection = () => {
