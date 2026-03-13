@@ -115,7 +115,6 @@ export const SecureVideo = memo(({
   onClick,
   poster
 }: SecureVideoProps) => {
-  const [videoLoaded, setVideoLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -143,50 +142,31 @@ export const SecureVideo = memo(({
     if (!el || !autoPlay || !muted) return;
 
     const tryPlay = () => {
-      // Ensure muted before every play attempt (iOS requirement)
       el.muted = true;
       el.play().catch(() => {
-        // Autoplay blocked — poster/thumbnail will show instead
+        // Autoplay blocked — native poster will show instead
       });
     };
 
-    const onCanPlay = () => {
-      setVideoLoaded(true);
-      tryPlay();
-    };
-
-    const onLoadedData = () => {
-      setVideoLoaded(true);
-      tryPlay();
-    };
-
-    const onPlaying = () => {
-      setVideoLoaded(true);
-    };
+    const onCanPlay = () => tryPlay();
+    const onLoadedData = () => tryPlay();
 
     el.addEventListener('canplay', onCanPlay);
     el.addEventListener('loadeddata', onLoadedData);
-    el.addEventListener('playing', onPlaying);
 
     // If already ready (cached)
-    if (el.readyState >= 3) {
-      setVideoLoaded(true);
-      tryPlay();
-    } else if (el.readyState >= 2) {
-      setVideoLoaded(true);
+    if (el.readyState >= 2) {
       tryPlay();
     }
 
     return () => {
       el.removeEventListener('canplay', onCanPlay);
       el.removeEventListener('loadeddata', onLoadedData);
-      el.removeEventListener('playing', onPlaying);
     };
   }, [autoPlay, muted, retryCount, src]);
 
   // Reset state when src changes
   useEffect(() => {
-    setVideoLoaded(false);
     setError(false);
     setRetryCount(0);
   }, [src]);
@@ -212,27 +192,11 @@ export const SecureVideo = memo(({
 
   return (
     <div className={`${className} relative overflow-hidden`}>
-      {/* Loading state - show poster if available, otherwise spinner */}
-      {!videoLoaded && (
-        <div className="absolute inset-0 z-10">
-          {poster ? (
-            <img src={poster} className="w-full h-full object-cover" alt="" />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_2s_infinite] -translate-x-full" />
-              <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-spin" />
-            </div>
-          )}
-        </div>
-      )}
-      
       <video
         ref={videoRef}
         key={`${src}-${retryCount}`}
         src={src}
-        className={`w-full h-full object-cover transition-all duration-500 ${
-          videoLoaded ? 'blur-0 opacity-100' : 'blur-md opacity-0'
-        }`}
+        className="w-full h-full object-cover"
         poster={poster}
         preload={autoPlay ? 'auto' : preload}
         autoPlay={autoPlay}
@@ -241,9 +205,6 @@ export const SecureVideo = memo(({
         playsInline={playsInline}
         controls={controls}
         onClick={onClick}
-        onLoadedData={() => setVideoLoaded(true)}
-        onCanPlay={() => setVideoLoaded(true)}
-        onPlaying={() => setVideoLoaded(true)}
         onError={handleVideoError}
       />
     </div>
