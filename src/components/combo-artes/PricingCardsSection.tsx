@@ -25,6 +25,7 @@ interface PricingPlan {
   bonus?: string;
   highlight?: boolean;
   badge?: string;
+  buttonText: string;
 }
 
 const plans: PricingPlan[] = [
