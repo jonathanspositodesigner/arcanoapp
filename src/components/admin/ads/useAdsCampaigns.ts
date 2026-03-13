@@ -49,6 +49,12 @@ function getDateRange(period: AdsPeriod, customStart?: Date, customEnd?: Date): 
     case "today":
       start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       break;
+    case "yesterday": {
+      const y = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      start = y;
+      end = y;
+      break;
+    }
     case "7d":
       start = new Date(now.getTime() - 7 * 86400000);
       break;

@@ -20,6 +20,7 @@ import { UntrackedSalesDialog } from "./ads/UntrackedSalesDialog";
 
 const PERIOD_OPTIONS: { value: AdsPeriod; label: string }[] = [
   { value: "today", label: "Hoje" },
+  { value: "yesterday", label: "Ontem" },
   { value: "7d", label: "7 dias" },
   { value: "14d", label: "14 dias" },
   { value: "30d", label: "30 dias" },
