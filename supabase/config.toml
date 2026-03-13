@@ -171,3 +171,6 @@ verify_jwt = false
 
 [functions.resend-purchase-email]
 verify_jwt = false
+
+[functions.process-billing-reminders]
+verify_jwt = false

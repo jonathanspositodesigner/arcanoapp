@@ -3733,6 +3733,48 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_billing_reminders: {
+        Row: {
+          checkout_url: string | null
+          created_at: string
+          day_offset: number
+          due_date: string
+          email_sent_to: string
+          id: string
+          plan_slug: string
+          sent_at: string
+          stopped_reason: string | null
+          subscription_id: string
+          user_id: string
+        }
+        Insert: {
+          checkout_url?: string | null
+          created_at?: string
+          day_offset: number
+          due_date: string
+          email_sent_to: string
+          id?: string
+          plan_slug: string
+          sent_at?: string
+          stopped_reason?: string | null
+          subscription_id: string
+          user_id: string
+        }
+        Update: {
+          checkout_url?: string | null
+          created_at?: string
+          day_offset?: number
+          due_date?: string
+          email_sent_to?: string
+          id?: string
+          plan_slug?: string
+          sent_at?: string
+          stopped_reason?: string | null
+          subscription_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tutorial_events: {
         Row: {
           created_at: string
