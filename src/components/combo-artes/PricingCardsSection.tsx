@@ -70,9 +70,8 @@ const plans: PricingPlan[] = [
       { text: "Suporte via WhatsApp" },
       { text: "Área de Membros" },
     ],
+    buttonText: "QUERO ACESSO DE 1 ANO",
   },
-  {
-    id: "vitalicio",
     slug: "pack4lancamento",
     title: "Pack Arcano 4",
     accessLabel: "ACESSO VITALÍCIO",
