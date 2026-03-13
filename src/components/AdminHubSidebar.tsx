@@ -108,6 +108,17 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout, onForceUpdate, is
 
       {/* Footer Actions */}
       <div className="p-4 border-t border-border space-y-2">
+        {onForceUpdate && (
+          <Button 
+            variant="destructive" 
+            className="w-full justify-start gap-2"
+            onClick={onForceUpdate}
+            disabled={isForcingUpdate}
+          >
+            <RefreshCw className={`h-4 w-4 ${isForcingUpdate ? 'animate-spin' : ''}`} />
+            {isForcingUpdate ? 'Enviando...' : 'Push Update Global'}
+          </Button>
+        )}
         <Button 
           variant="outline" 
           className="w-full justify-start gap-2"

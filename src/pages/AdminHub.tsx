@@ -215,6 +215,8 @@ const AdminHub = () => {
             activeView={activeView}
             onViewChange={handleViewChange}
             onLogout={handleLogout}
+            onForceUpdate={handleForceUpdate}
+            isForcingUpdate={isForcingUpdate}
           />
         </div>
 
