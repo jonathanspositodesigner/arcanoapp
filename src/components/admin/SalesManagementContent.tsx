@@ -3,8 +3,10 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, ChevronLeft, ChevronRight, Receipt, Calendar, Mail, MailX, AlertTriangle, RefreshCw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import RenewalEmailsMonitoring from "./RenewalEmailsMonitoring";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -374,6 +376,17 @@ const SalesManagementContent = () => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
+      <Tabs defaultValue="sales" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="sales">🛒 Vendas</TabsTrigger>
+          <TabsTrigger value="renewal">📧 Emails de Renovação</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="renewal">
+          <RenewalEmailsMonitoring />
+        </TabsContent>
+
+        <TabsContent value="sales">
       <div className="flex items-center gap-3">
         <Receipt className="h-6 w-6 text-primary" />
         <div>
@@ -612,6 +625,8 @@ const SalesManagementContent = () => {
         open={!!selectedSale}
         onClose={() => setSelectedSale(null)}
       />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
