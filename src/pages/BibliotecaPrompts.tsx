@@ -413,7 +413,7 @@ const BibliotecaPrompts = () => {
             return <Card key={item.id} className="overflow-hidden hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 hover:scale-[1.02] bg-[#1A0A2E] border-purple-500/20">
               <div className="aspect-square overflow-hidden bg-[#0D0221] relative">
                 {isVideo ? (
-                  <LazyVideo src={item.imageUrl} className="w-full h-full" onClick={() => handleItemClick(item)} />
+                  <LazyVideo src={item.imageUrl} className="w-full h-full" onClick={() => handleItemClick(item)} poster={item.thumbnailUrl || undefined} />
                 ) : (
                   <SecureImage src={item.imageUrl} alt={item.title} isPremium={false} loading="lazy" className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" onClick={() => handleItemClick(item)} />
                 )}
@@ -499,7 +499,7 @@ const BibliotecaPrompts = () => {
             {premiumModalItem && (
               <div className="mb-6 rounded-lg overflow-hidden border border-purple-500/30">
                 {isVideoUrl(premiumModalItem.imageUrl) ? (
-                  <SecureVideo src={premiumModalItem.imageUrl} isPremium={false} className="w-full h-48 object-cover opacity-50" autoPlay muted loop playsInline controls={false} />
+                  <SecureVideo src={premiumModalItem.imageUrl} isPremium={false} className="w-full h-48 object-cover opacity-50" autoPlay muted loop playsInline controls={false} poster={premiumModalItem.thumbnailUrl || undefined} />
                 ) : (
                   <SecureImage src={premiumModalItem.imageUrl} alt={premiumModalItem.title} isPremium={false} className="w-full h-48 object-cover opacity-50" />
                 )}
@@ -531,7 +531,7 @@ const BibliotecaPrompts = () => {
               </div>
               <div className="rounded-lg overflow-hidden border border-purple-500/30">
                 {isVideoUrl(selectedPrompt.imageUrl) ? (
-                  <SecureVideo src={selectedPrompt.imageUrl} isPremium={selectedPrompt.isPremium} className="w-full" controls autoPlay muted loop playsInline />
+                  <SecureVideo src={selectedPrompt.imageUrl} isPremium={selectedPrompt.isPremium} className="w-full" controls autoPlay muted loop playsInline poster={selectedPrompt.thumbnailUrl || undefined} />
                 ) : (
                   <SecureImage src={selectedPrompt.imageUrl} alt={selectedPrompt.title} isPremium={selectedPrompt.isPremium} className="w-full" />
                 )}
