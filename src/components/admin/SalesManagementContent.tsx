@@ -96,7 +96,7 @@ const SalesManagementContent = () => {
   const fetchEmailStatuses = useCallback(async (emails: string[]) => {
     if (emails.length === 0) return;
     
-    const uniqueEmails = [...new Set(emails)];
+    const uniqueEmails = [...new Set(emails.map(e => e.toLowerCase()))];
     const statusMap = new Map<string, EmailLogStatus>();
     
     // Fetch in chunks of 100
@@ -110,9 +110,9 @@ const SalesManagementContent = () => {
       
       if (data) {
         for (const log of data) {
-          // Keep the most recent status per email
-          if (!statusMap.has(log.email)) {
-            statusMap.set(log.email, {
+          const key = log.email?.toLowerCase();
+          if (key && !statusMap.has(key)) {
+            statusMap.set(key, {
               status: log.status || 'unknown',
               error_message: log.error_message,
             });
