@@ -332,8 +332,25 @@ serve(async (req) => {
 
     console.log(`📋 Found ${subscriptions.length} subscriptions in range`)
 
-    // 2. Get SendPulse token once
+    // 2. Get SendPulse token and DB templates once
     const spToken = await getSendPulseToken()
+    
+    // Fetch all email templates from DB
+    const { data: dbTemplates, error: tplError } = await supabase
+      .from('renewal_email_templates')
+      .select('day_offset, subject, preheader, body_html')
+    
+    if (tplError) {
+      console.error('❌ Error fetching email templates:', tplError)
+    }
+    
+    const templateMap = new Map<number, { subject: string; preheader: string; body_html: string }>()
+    if (dbTemplates) {
+      for (const t of dbTemplates) {
+        templateMap.set(t.day_offset, { subject: t.subject, preheader: t.preheader, body_html: t.body_html })
+      }
+    }
+    
     let processed = 0
     let skipped = 0
     let errors = 0
