@@ -252,7 +252,9 @@ const TemplateEditorTab = () => {
   const [editingDay, setEditingDay] = useState<number | null>(null);
   const [editSubject, setEditSubject] = useState("");
   const [editPreheader, setEditPreheader] = useState("");
+  const [editBodyHtml, setEditBodyHtml] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [previewDay, setPreviewDay] = useState<number | null>(null);
 
   useEffect(() => {
     fetchTemplates();
@@ -279,6 +281,7 @@ const TemplateEditorTab = () => {
     setEditingDay(t.day_offset);
     setEditSubject(t.subject);
     setEditPreheader(t.preheader);
+    setEditBodyHtml(t.body_html);
   };
 
   const saveTemplate = async (dayOffset: number) => {
@@ -289,6 +292,7 @@ const TemplateEditorTab = () => {
         .update({
           subject: editSubject,
           preheader: editPreheader,
+          body_html: editBodyHtml,
           updated_at: new Date().toISOString(),
         })
         .eq("day_offset", dayOffset);
@@ -304,6 +308,17 @@ const TemplateEditorTab = () => {
     }
   };
 
+  const getPreviewHtml = (bodyHtml: string) => {
+    // Replace placeholders with sample data for preview
+    return bodyHtml
+      .replace(/\{\{USER_NAME\}\}/g, "João Silva")
+      .replace(/\{\{PLAN_NAME\}\}/g, "Pro")
+      .replace(/\{\{PLAN_VALUE\}\}/g, "R$ 49,90")
+      .replace(/\{\{DUE_DATE\}\}/g, "13/03/2026")
+      .replace(/\{\{BENEFITS_LIST\}\}/g, '<li style="color:#e2d8f0;font-size:15px;padding:6px 0;line-height:1.5;">✅ 4.200 créditos mensais</li><li style="color:#e2d8f0;font-size:15px;padding:6px 0;line-height:1.5;">✅ 10 prompts premium por dia</li>')
+      .replace(/\{\{LOSSES_LIST\}\}/g, '<li style="color:#fca5a5;font-size:15px;padding:6px 0;line-height:1.5;">❌ Seus 4.200 créditos mensais</li><li style="color:#fca5a5;font-size:15px;padding:6px 0;line-height:1.5;">❌ O acesso a 10 prompts premium por dia</li>');
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
@@ -315,8 +330,41 @@ const TemplateEditorTab = () => {
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
-        Edite o assunto e pré-header dos emails de renovação. Use <code className="bg-muted px-1 rounded text-xs">{"{{PLAN_NAME}}"}</code> para inserir o nome do plano automaticamente.
+        Edite os emails de renovação. Variáveis disponíveis:{" "}
+        <code className="bg-muted px-1 rounded text-xs">{"{{USER_NAME}}"}</code>{" "}
+        <code className="bg-muted px-1 rounded text-xs">{"{{PLAN_NAME}}"}</code>{" "}
+        <code className="bg-muted px-1 rounded text-xs">{"{{PLAN_VALUE}}"}</code>{" "}
+        <code className="bg-muted px-1 rounded text-xs">{"{{DUE_DATE}}"}</code>{" "}
+        <code className="bg-muted px-1 rounded text-xs">{"{{BENEFITS_LIST}}"}</code>{" "}
+        <code className="bg-muted px-1 rounded text-xs">{"{{LOSSES_LIST}}"}</code>
       </p>
+
+      {/* Preview Modal */}
+      {previewDay !== null && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setPreviewDay(null)}>
+          <div className="bg-[#0d0015] rounded-xl max-w-[660px] w-full max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-[#0d0015] border-b border-border p-3 flex items-center justify-between z-10">
+              <span className="text-sm font-medium text-foreground">
+                Preview: {DAY_LABELS[previewDay]}
+              </span>
+              <Button variant="ghost" size="sm" onClick={() => setPreviewDay(null)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div
+              dangerouslySetInnerHTML={{
+                __html: getPreviewHtml(
+                  editingDay === previewDay
+                    ? editBodyHtml
+                    : templates.find((t) => t.day_offset === previewDay)?.body_html || ""
+                ),
+              }}
+              className="p-6"
+            />
+          </div>
+        </div>
+      )}
+
       {templates.map((t) => (
         <Card key={t.day_offset} className="p-4 bg-card border-border">
           <div className="flex items-center justify-between mb-2">
@@ -328,11 +376,21 @@ const TemplateEditorTab = () => {
                 Atualizado: {format(new Date(t.updated_at), "dd/MM/yy HH:mm", { locale: ptBR })}
               </span>
             </div>
-            {editingDay !== t.day_offset && (
-              <Button variant="ghost" size="sm" onClick={() => startEditing(t)} className="gap-1 text-xs">
-                <Edit3 className="h-3 w-3" /> Editar
+            <div className="flex gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setPreviewDay(t.day_offset)}
+                className="gap-1 text-xs"
+              >
+                <Eye className="h-3 w-3" /> Preview
               </Button>
-            )}
+              {editingDay !== t.day_offset && (
+                <Button variant="ghost" size="sm" onClick={() => startEditing(t)} className="gap-1 text-xs">
+                  <Edit3 className="h-3 w-3" /> Editar
+                </Button>
+              )}
+            </div>
           </div>
 
           {editingDay === t.day_offset ? (
@@ -353,10 +411,24 @@ const TemplateEditorTab = () => {
                   className="text-sm min-h-[60px]"
                 />
               </div>
+              <div>
+                <label className="text-xs text-muted-foreground block mb-1 flex items-center gap-1">
+                  <Code className="h-3 w-3" /> Conteúdo HTML do email
+                </label>
+                <Textarea
+                  value={editBodyHtml}
+                  onChange={(e) => setEditBodyHtml(e.target.value)}
+                  className="text-xs min-h-[300px] font-mono"
+                  placeholder="HTML do corpo do email..."
+                />
+              </div>
               <div className="flex gap-2">
                 <Button size="sm" onClick={() => saveTemplate(t.day_offset)} disabled={isSaving} className="gap-1">
                   {isSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
                   Salvar
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setPreviewDay(t.day_offset)} className="gap-1">
+                  <Eye className="h-3 w-3" /> Preview
                 </Button>
                 <Button variant="ghost" size="sm" onClick={() => setEditingDay(null)}>
                   Cancelar
@@ -367,6 +439,9 @@ const TemplateEditorTab = () => {
             <div>
               <p className="text-sm text-foreground font-medium">{t.subject}</p>
               <p className="text-xs text-muted-foreground mt-1">{t.preheader}</p>
+              <p className="text-xs text-muted-foreground mt-1 italic">
+                {t.body_html ? `${t.body_html.length} caracteres de HTML` : "Sem conteúdo HTML"}
+              </p>
             </div>
           )}
         </Card>
