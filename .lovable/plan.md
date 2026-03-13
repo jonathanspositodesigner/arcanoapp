@@ -1,52 +1,50 @@
 
+# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
-# Bug: Timezone incorreto na aba ADS — vendas de ontem contadas como hoje
+## Resumo
+Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
 
-## Causa raiz
+## O que foi feito
 
-O problema está em `src/components/admin/ads/useAdsCampaigns.ts`, linhas 153-154:
+### 1. Tabela `subscription_billing_reminders` (migration)
+- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
+- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
+- Campo `checkout_url` para evitar checkouts duplicados
+- Constraint UNIQUE em (subscription_id, day_offset, due_date)
 
-```typescript
-const startTs = new Date(dateRange.start).toISOString();  // "2026-03-13" → "2026-03-13T00:00:00.000Z"
-const endTs = new Date(new Date(dateRange.end).getTime() + 86400000).toISOString();
-```
+### 2. Edge Function `process-billing-reminders`
+- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
+- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
+- Para cada assinatura, verifica:
+  - Se já enviou email para esse `day_offset`
+  - Se a sequência foi parada (pagou ou descadastrou)
+  - Se o email está na blacklist
+  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
+- Gera checkout Pagar.me somente PIX com validade de 3 dias
+- Monta HTML personalizado com dados reais do plano
+- Envia via SendPulse SMTP API
+- Registra na tabela de controle
 
-`dateRange.start` é uma string como `"2026-03-13"`. Quando faz `new Date("2026-03-13")`, JavaScript interpreta como **meia-noite UTC**, não meia-noite São Paulo. Meia-noite UTC = 21:00 de ontem em SP.
+### 3. Mapeamento de benefícios por plano
+- Starter: 1.800 créditos, 5 prompts/dia
+- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
+- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
+- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
 
-Resultado: vendas que aconteceram entre 21:00 e 23:59 de São Paulo no dia 12/03 (que são 00:00-02:59 UTC do dia 13/03) são contadas como "hoje" na aba ADS, mas na Hotmart aparecem como ontem (horário de Brasília).
+### 4. Templates dos 6 emails
+- Dia 0: Lembrete leve ("Seu plano vence hoje")
+- Dia 1: Reforço pendência ("Pagamento ainda pendente")
+- Dia 2: Dor da perda ("Risco de perda de acesso")
+- Dia 3: Prejuízo prático ("O custo de não renovar")
+- Dia 4: FOMO ("Não fique para trás")
+- Dia 5: Último aviso ("Último aviso: regularize hoje")
+- Todos com link de descadastro no rodapé
 
-**Prova concreta:**
-- `boterocalle1@gmail.com` — received_at UTC: 02:11 → SP: **23:11 do dia 12** (ontem)
-- `chris-galy@hotmail.com` — received_at UTC: 02:18 → SP: **23:18 do dia 12** (ontem)
-- `zomilazii106@gmail.com` — received_at UTC: 15:33 → SP: **12:33 do dia 13** (hoje) ✅
+### 5. Cron job
+- pg_cron agendado: `0 12 * * *` (09:00 BRT)
+- Chama a Edge Function automaticamente
 
-O dashboard principal (`useSalesDashboard.ts`) **não tem esse bug** porque usa `startOfDay(now)` do date-fns que respeita o timezone local do navegador e depois converte para ISO corretamente.
-
-## Correção
-
-### Arquivo: `src/components/admin/ads/useAdsCampaigns.ts`
-
-Linhas 153-154 — converter as datas para São Paulo (UTC-3) antes de enviar para a RPC:
-
-```typescript
-// Antes (bugado):
-const startTs = new Date(dateRange.start).toISOString();
-const endTs = new Date(new Date(dateRange.end).getTime() + 86400000).toISOString();
-
-// Depois (correto — meia-noite São Paulo = 03:00 UTC):
-const startTs = `${dateRange.start}T03:00:00.000Z`;
-const endTs = new Date(new Date(`${dateRange.end}T03:00:00.000Z`).getTime() + 86400000).toISOString();
-```
-
-Isso garante que "hoje" na aba ADS = meia-noite a meia-noite em São Paulo, alinhado com a Hotmart e com o dashboard principal.
-
-### Verificação na RPC `get_unified_dashboard_orders`
-
-A RPC compara `wl.received_at >= _start AND wl.received_at < _end` — isso é correto pois os timestamps já estarão ajustados para SP. Nenhuma alteração necessária na RPC.
-
-### Resultado esperado
-
-- "Hoje" na aba ADS mostrará apenas 1 venda Hotmart (zomilazii106 às 12:33 SP) ✅
-- boterocalle1 e chris-galy aparecerão em "Ontem" ✅
-- Alinhamento total com o que a Hotmart mostra no painel deles
-
+## Detecção de pagamento (para de enviar)
+- `planos2_subscriptions.expires_at` estendido para data futura
+- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
+- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
