@@ -120,7 +120,7 @@ const PricingSection = () => {
               border: "1px solid rgba(255,255,255,0.1)",
             }}
           >
-            <img src={STARS_IMG} alt="5 estrelas" className="h-5 mb-2" />
+            <img src={STARS_IMG} alt="5 estrelas" className="h-5 mb-2" loading="lazy" />
             <p className="text-sm text-gray-300 mb-4" style={{ fontFamily: "Sora, sans-serif" }}>
               4.72 (328 Avaliações)
             </p>
@@ -189,7 +189,7 @@ const PricingSection = () => {
             </div>
 
             <div className="mt-6">
-              <img src={STARS_IMG} alt="5 estrelas" className="h-5 mb-2 mx-auto" />
+              <img src={STARS_IMG} alt="5 estrelas" className="h-5 mb-2 mx-auto" loading="lazy" />
             </div>
             <p className="text-sm text-gray-300 mb-4" style={{ fontFamily: "Sora, sans-serif" }}>
               4.94 (1.048 Avaliações)
@@ -210,7 +210,7 @@ const PricingSection = () => {
               R$37
             </p>
 
-            <img src={BOX_IMG} alt="Box Pack Agendas Completo" className="w-48 md:w-56 my-4" />
+            <img src={BOX_IMG} alt="Box Pack Agendas Completo" className="w-48 md:w-56 my-4" loading="lazy" />
 
             <div className="w-full flex flex-col gap-2">
               <div
