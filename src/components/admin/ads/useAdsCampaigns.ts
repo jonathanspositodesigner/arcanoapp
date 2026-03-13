@@ -22,6 +22,8 @@ interface CampaignInsight {
 
 export interface CampaignWithSales extends CampaignInsight {
   sales_count: number;
+  utm_sales_count: number;
+  meta_sales_count: number;
   revenue: number;
   cpa: number;
   profit: number;
