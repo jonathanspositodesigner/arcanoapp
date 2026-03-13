@@ -1,42 +1,39 @@
 
-# Migração Planos Mensais/Anuais: Greenn → Pagar.me (CONCLUÍDA v2 - Recorrência Real)
+Objetivo: corrigir de forma definitiva os vídeos da categoria “Movies para Telão” no mobile (tela preta + botão play + sem autoplay).
 
-## Resumo
-Migração dos 8 planos de assinatura (4 planos × 2 períodos) da Greenn para o Pagar.me com **recorrência real via cartão de crédito** e PIX como pagamento avulso.
+Diagnóstico (causa raiz confirmada no código + rede):
+1) `SecureVideo` marca vídeo como “carregado” em `onLoadedMetadata` (cedo demais). Em mobile isso remove o placeholder antes do 1º frame e deixa tela preta.
+2) A lógica de retry por `networkState === 3` força remounts (`key` com `retryCount`), gerando vários `ERR_ABORTED` e comportamento instável em celular.
+3) O autoplay programático existe, mas falta endurecer compatibilidade iOS (atributos/propriedades inline/muted no DOM antes do `play()`).
+4) A tela de cards não usa `poster` mesmo tendo `thumbnail_url`, então quando autoplay falha o usuário vê preto.
 
-## Decisão Arquitetural
-- **Cartão de Crédito**: Recorrência real via `POST /subscriptions` do Pagar.me. Tokenização do cartão no front-end via API pública (`pk_XXXX`). Cobrança automática a cada ciclo.
-- **PIX**: Checkout avulso (sem recorrência) — plano ativa por 30/365 dias. pg_cron expira planos vencidos.
-- **Reembolso**: Cancela subscription no Pagar.me (`DELETE /subscriptions/{id}`) + revoga plano → free + zera créditos.
+Plano de implementação:
+1) `src/components/SecureMedia.tsx`
+- Remover carregamento por `onLoadedMetadata` (usar só `loadeddata/canplay/play` para `videoLoaded`).
+- Remover a checagem agressiva de `networkState===3` (evitar retry falso).
+- Reforçar autoplay mobile:
+  - setar no elemento: `muted=true`, `defaultMuted=true`, `playsInline=true`
+  - `setAttribute('muted','')`, `setAttribute('playsinline','')`, `setAttribute('webkit-playsinline','true')`
+  - tentar `play()` em `loadeddata`, `canplay`, e quando visível.
+- Manter retry só em `onError` real, com limite baixo.
+- Adicionar prop `poster?: string`.
 
-## O que foi feito
+2) `src/components/LazyVideo.tsx`
+- Adicionar prop opcional `poster`.
+- Passar `poster` para `SecureVideo`.
+- Ajustar preload para reduzir travamentos em mobile (sem múltiplos reloads).
 
-### 1. Banco de Dados
-- Colunas `plan_slug` e `billing_period` em `mp_products`
-- Coluna `pagarme_subscription_id` em `asaas_orders` e `planos2_subscriptions`
-- 8 produtos inseridos: `plano-{starter,pro,ultimate,unlimited}-{mensal,anual}`
+3) `src/pages/BibliotecaPrompts.tsx`
+- Passar `thumbnailUrl` para `LazyVideo` nos cards.
+- Passar `thumbnailUrl` como `poster` no `SecureVideo` do modal.
 
-### 2. CreditCardForm.tsx (NOVO)
-- Formulário seguro com campos: Número, Nome, Validade, CVV
-- Tokenização direta via `POST https://api.pagar.me/core/v5/tokens?appId=pk_XXX`
-- Retorna `card_token` para o fluxo de subscription
+Escopo do impacto:
+- Afeta principalmente iOS Safari/PWA e parte de Android em rede/dispositivo limitados.
+- Como a falha está no componente compartilhado (`SecureVideo`), o ajuste melhora geral para todos os vídeos mobile, com foco imediato em “Movies para Telão”.
 
-### 3. create-pagarme-subscription (NOVO)
-- Edge function que cria subscription recorrente via `POST /subscriptions`
-- Suporta `interval: month` ou `year` baseado no `billing_period` do produto
-- Salva `pagarme_subscription_id` na ordem
-
-### 4. webhook-pagarme (ATUALIZADO)
-- Busca ordens por `pagarme_subscription_id` (fallback 4)
-- Trata `subscription.canceled`: revoga plano → free, zera créditos
-- Trata renovação (`charge.paid` em ordem já `paid`): renova plano + reseta créditos
-- Salva `pagarme_subscription_id` no `planos2_subscriptions`
-
-### 5. refund-pagarme (ATUALIZADO)
-- Cancela subscription no Pagar.me via `DELETE /subscriptions/{id}` antes de revogar
-- Revoga plano → free + zera créditos
-
-### 6. Planos2.tsx (ATUALIZADO)
-- Cartão: abre CreditCardForm → tokeniza → create-pagarme-subscription → recorrência real
-- PIX: mantém checkout avulso via create-pagarme-checkout → 30/365 dias sem recorrência
-- Flag `isSubscriptionFlow` diferencia fluxos de assinatura vs créditos avulsos
+Critérios de aceite (validação real):
+1) iPhone Safari: vídeos da grade iniciam mutados/inline sem botão de play.
+2) Android Chrome: comportamento igual ao desktop (autoplay estável).
+3) Sem tela preta inicial (thumbnail aparece enquanto carrega).
+4) Redução clara de requisições de mídia abortadas e sem loop de retries.
+5) Modal continua funcionando com controles quando aberto.
