@@ -1,4 +1,4 @@
-import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock } from "lucide-react";
+import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock, X } from "lucide-react";
 import { getMetaCookies } from "@/lib/metaCookies";
 import { getSanitizedUtms } from "@/lib/utmUtils";
 import { useState, useEffect } from "react";
@@ -8,6 +8,11 @@ import { toast } from "sonner";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
 
+interface PricingFeature {
+  text: string;
+  disabled?: boolean;
+}
+
 interface PricingPlan {
   id: string;
   slug: string;
@@ -16,7 +21,7 @@ interface PricingPlan {
   originalPrice: string;
   price: string;
   discount: string;
-  features: string[];
+  features: PricingFeature[];
   bonus?: string;
   highlight?: boolean;
   badge?: string;
@@ -32,12 +37,14 @@ const plans: PricingPlan[] = [
     price: "27,00",
     discount: "46% OFF",
     features: [
-      "+40 Artes Inéditas",
-      "Acesso por 6 Meses",
-      "Video Aulas Exclusivas",
-      "Atualizações Semanais",
-      "Suporte via WhatsApp",
-      "Área de Membros",
+      { text: "+40 Artes Inéditas" },
+      { text: "Acesso por 6 Meses" },
+      { text: "210 Motions Editáveis", disabled: true },
+      { text: "40 Selos 3D", disabled: true },
+      { text: "Video Aulas Exclusivas" },
+      { text: "Atualizações Semanais" },
+      { text: "Suporte via WhatsApp" },
+      { text: "Área de Membros" },
     ],
   },
   {
@@ -49,15 +56,15 @@ const plans: PricingPlan[] = [
     price: "37,00",
     discount: "38% OFF",
     features: [
-      "+40 Artes Inéditas",
-      "Acesso por 1 Ano",
-      "210 Motions Editáveis",
-      "40 Selos 3D",
-      "Video Aulas Exclusivas",
-      "Bônus Exclusivos",
-      "Atualizações Semanais",
-      "Suporte via WhatsApp",
-      "Área de Membros",
+      { text: "+40 Artes Inéditas" },
+      { text: "Acesso por 1 Ano" },
+      { text: "210 Motions Editáveis" },
+      { text: "40 Selos 3D" },
+      { text: "Video Aulas Exclusivas" },
+      { text: "Bônus Exclusivos" },
+      { text: "Atualizações Semanais" },
+      { text: "Suporte via WhatsApp" },
+      { text: "Área de Membros" },
     ],
   },
   {
@@ -65,19 +72,19 @@ const plans: PricingPlan[] = [
     slug: "pack4lancamento",
     title: "Pack Arcano 4",
     accessLabel: "ACESSO VITALÍCIO",
-    originalPrice: "79,90",
+    originalPrice: "119,90",
     price: "47,00",
-    discount: "41% OFF",
+    discount: "61% OFF",
     features: [
-      "+40 Artes Inéditas",
-      "Acesso Vitalício",
-      "210 Motions Editáveis",
-      "40 Selos 3D",
-      "Video Aulas Exclusivas",
-      "Bônus Exclusivos",
-      "Atualizações Semanais",
-      "Suporte via WhatsApp",
-      "Área de Membros",
+      { text: "+40 Artes Inéditas" },
+      { text: "Acesso Vitalício" },
+      { text: "210 Motions Editáveis" },
+      { text: "40 Selos 3D" },
+      { text: "Video Aulas Exclusivas" },
+      { text: "Bônus Exclusivos" },
+      { text: "Atualizações Semanais" },
+      { text: "Suporte via WhatsApp" },
+      { text: "Área de Membros" },
     ],
     bonus: "+20 MOVIES PARA TELÃO",
     highlight: true,
@@ -302,9 +309,15 @@ export const PricingCardsSection = () => {
 
               <ul className="space-y-2.5 mb-6 flex-grow">
                 {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-center gap-2.5 text-gray-300">
-                    <Check className={`w-4 h-4 flex-shrink-0 ${plan.highlight ? "text-[#EF672C]" : "text-green-500"}`} />
-                    <span className={`text-sm ${index === 0 || index === 1 ? 'font-bold text-white' : ''}`}>{feature}</span>
+                  <li key={index} className={`flex items-center gap-2.5 ${feature.disabled ? 'text-gray-600' : 'text-gray-300'}`}>
+                    {feature.disabled ? (
+                      <X className="w-4 h-4 flex-shrink-0 text-red-500/70" />
+                    ) : (
+                      <Check className={`w-4 h-4 flex-shrink-0 ${plan.highlight ? "text-[#EF672C]" : "text-green-500"}`} />
+                    )}
+                    <span className={`text-sm ${feature.disabled ? 'line-through' : ''} ${!feature.disabled && (index === 0 || index === 1) ? 'font-bold text-white' : ''}`}>
+                      {feature.text}
+                    </span>
                   </li>
                 ))}
               </ul>
