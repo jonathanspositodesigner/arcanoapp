@@ -214,7 +214,7 @@ function wrapEmail(subject: string, preheader: string, bodyContent: string, emai
     ${bodyContent}
     <div style="text-align:center;margin:32px 0 16px;">
       <a href="\${CHECKOUT_URL}" style="display:inline-block;background:linear-gradient(135deg,#d4af37 0%,#f5e27a 100%);color:#1a0533;text-decoration:none;padding:18px 52px;border-radius:12px;font-weight:700;font-size:17px;letter-spacing:0.3px;box-shadow:0 6px 24px rgba(212,175,55,0.4);">
-        Pagar agora →
+        Renovar agora →
       </a>
     </div>
     \${PIX_SECTION}
