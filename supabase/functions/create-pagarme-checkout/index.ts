@@ -15,7 +15,21 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const PAGARME_API_URL = 'https://api.pagar.me/core/v5'
+const INVALID_UTM_VALUES = ['aplicativo', '', 'app'];
+function sanitizeUtmData(utmData: any): any {
+  if (!utmData || typeof utmData !== 'object') return null;
+  const filtered: Record<string, any> = {};
+  for (const [key, value] of Object.entries(utmData)) {
+    if (typeof value === 'string') {
+      const v = value.trim();
+      if (INVALID_UTM_VALUES.includes(v.toLowerCase())) continue;
+      if (v.startsWith('{{') && v.endsWith('}}')) continue;
+      if (v.length > 0) filtered[key] = v;
+    }
+  }
+  return Object.keys(filtered).length > 0 ? filtered : null;
+}
+
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
