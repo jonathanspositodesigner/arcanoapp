@@ -309,9 +309,15 @@ export const PricingCardsSection = () => {
 
               <ul className="space-y-2.5 mb-6 flex-grow">
                 {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-center gap-2.5 text-gray-300">
-                    <Check className={`w-4 h-4 flex-shrink-0 ${plan.highlight ? "text-[#EF672C]" : "text-green-500"}`} />
-                    <span className={`text-sm ${index === 0 || index === 1 ? 'font-bold text-white' : ''}`}>{feature}</span>
+                  <li key={index} className={`flex items-center gap-2.5 ${feature.disabled ? 'text-gray-600' : 'text-gray-300'}`}>
+                    {feature.disabled ? (
+                      <X className="w-4 h-4 flex-shrink-0 text-red-500/70" />
+                    ) : (
+                      <Check className={`w-4 h-4 flex-shrink-0 ${plan.highlight ? "text-[#EF672C]" : "text-green-500"}`} />
+                    )}
+                    <span className={`text-sm ${feature.disabled ? 'line-through' : ''} ${!feature.disabled && (index === 0 || index === 1) ? 'font-bold text-white' : ''}`}>
+                      {feature.text}
+                    </span>
                   </li>
                 ))}
               </ul>
