@@ -134,7 +134,7 @@ const ArcanoClonerTool = lazy(() => import("./pages/ArcanoClonerTool"));
 const GeradorPersonagemTool = lazy(() => import("./pages/GeradorPersonagemTool"));
 const UpscalerSelectionPage = lazy(() => import("./pages/UpscalerSelectionPage"));
 const AguardandoPagamentoMusicos = lazy(() => import("./pages/AguardandoPagamentoMusicos"));
-const PackAgendas = lazy(() => import("./pages/PackAgendas"));
+
 const ComboArtesArcanas = lazy(() => import("./pages/ComboArtesArcanas"));
 const PlanosCreditos = lazy(() => import("./pages/PlanosCreditos"));
 const FerramentasIAAplicativo = lazy(() => import("./pages/FerramentasIAAplicativo"));
@@ -335,7 +335,7 @@ const AppContent = () => {
           <Route path="/gerador-avatar" element={<GeradorPersonagemTool />} />
           <Route path="/gerador-personagem" element={<Navigate to="/gerador-avatar" replace />} />
           <Route path="/upscaler-selection" element={<UpscalerSelectionPage />} />
-          <Route path="/pack-agendas" element={<PackAgendas />} />
+          
           <Route path="/combo-artes-arcanas" element={<ComboArtesArcanas />} />
           <Route path="/planos-creditos" element={<Navigate to="/planos-2" replace />} />
           <Route path="/ferramentas-ia-aplicativo" element={<FerramentasIAAplicativo />} />
