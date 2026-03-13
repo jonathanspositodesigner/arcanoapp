@@ -1,12 +1,6 @@
 import { Check, Star, Gift, Clock, CreditCard, ShieldCheck, Award, Lock, X } from "lucide-react";
-import { getMetaCookies } from "@/lib/metaCookies";
-import { getSanitizedUtms } from "@/lib/utmUtils";
+import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useState, useEffect } from "react";
-import { useProcessingButton } from "@/hooks/useProcessingButton";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
-import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
 
 interface PricingFeature {
   text: string;
@@ -15,7 +9,6 @@ interface PricingFeature {
 
 interface PricingPlan {
   id: string;
-  slug: string;
   title: string;
   accessLabel: string;
   originalPrice: string;
@@ -26,13 +19,13 @@ interface PricingPlan {
   highlight?: boolean;
   badge?: string;
   buttonText: string;
+  checkoutUrl: string;
 }
 
 const plans: PricingPlan[] = [
   {
     id: "6meses",
-    slug: "pack4-6meses",
-    title: "Pack Arcano 4",
+    title: "Biblioteca de Artes Arcanas",
     accessLabel: "ACESSO 6 MESES",
     originalPrice: "49,90",
     price: "27,00",
@@ -41,7 +34,7 @@ const plans: PricingPlan[] = [
       { text: "+20 Movies para Telão", disabled: true },
       { text: "210 Motions Editáveis", disabled: true },
       { text: "40 Selos 3D", disabled: true },
-      { text: "+40 Artes Inéditas" },
+      { text: "+380 Artes Editáveis PSD e Canva" },
       { text: "Acesso por 6 Meses" },
       { text: "Video Aulas Exclusivas" },
       { text: "Atualizações Semanais" },
@@ -49,11 +42,11 @@ const plans: PricingPlan[] = [
       { text: "Área de Membros" },
     ],
     buttonText: "QUERO ACESSO DE 6 MESES",
+    checkoutUrl: "https://payfast.greenn.com.br/135338/offer/0r2gUj?ch_id=23924",
   },
   {
     id: "1ano",
-    slug: "pack4-1ano",
-    title: "Pack Arcano 4",
+    title: "Biblioteca de Artes Arcanas",
     accessLabel: "ACESSO 1 ANO",
     originalPrice: "59,90",
     price: "37,00",
@@ -62,7 +55,7 @@ const plans: PricingPlan[] = [
       { text: "+20 Movies para Telão", disabled: true },
       { text: "210 Motions Editáveis" },
       { text: "40 Selos 3D" },
-      { text: "+40 Artes Inéditas" },
+      { text: "+380 Artes Editáveis PSD e Canva" },
       { text: "Acesso por 1 Ano" },
       { text: "Video Aulas Exclusivas" },
       { text: "Bônus Exclusivos" },
@@ -71,11 +64,11 @@ const plans: PricingPlan[] = [
       { text: "Área de Membros" },
     ],
     buttonText: "QUERO ACESSO DE 1 ANO",
+    checkoutUrl: "https://payfast.greenn.com.br/135338/offer/0r2gUj?ch_id=23924",
   },
   {
     id: "vitalicio",
-    slug: "pack4lancamento",
-    title: "Pack Arcano 4",
+    title: "Biblioteca de Artes Arcanas",
     accessLabel: "ACESSO VITALÍCIO",
     originalPrice: "119,90",
     price: "47,00",
@@ -83,7 +76,7 @@ const plans: PricingPlan[] = [
     features: [
       { text: "210 Motions Editáveis" },
       { text: "40 Selos 3D" },
-      { text: "+40 Artes Inéditas" },
+      { text: "+380 Artes Editáveis PSD e Canva" },
       { text: "Acesso Vitalício" },
       { text: "Video Aulas Exclusivas" },
       { text: "Bônus Exclusivos" },
@@ -95,30 +88,12 @@ const plans: PricingPlan[] = [
     highlight: true,
     badge: "MAIS POPULAR",
     buttonText: "QUERO ACESSO VITALÍCIO",
+    checkoutUrl: "https://payfast.greenn.com.br/135338/offer/0r2gUj?ch_id=23924&b_id_1=103023",
   },
 ];
 
 export const PricingCardsSection = () => {
   const [timeLeft, setTimeLeft] = useState(0);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [showPreCheckout, setShowPreCheckout] = useState(false);
-  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
-  const [pendingProfile, setPendingProfile] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedSlug, setSelectedSlug] = useState("pack4lancamento");
-  const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-        setUserEmail(user.email || null);
-      }
-    };
-    checkAuth();
-  }, []);
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -141,106 +116,18 @@ export const PricingCardsSection = () => {
     return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handlePurchase = async (slug: string) => {
-    if (!startSubmit()) return;
-    setSelectedSlug(slug);
-
+  const handlePurchase = (checkoutUrl: string) => {
     if (typeof window !== "undefined" && (window as any).fbq) {
       (window as any).fbq("track", "InitiateCheckout", {
-        content_name: "Prevenda Pack 4",
+        content_name: "Combo Artes Arcanas 3 em 1",
         content_category: "Digital Product",
         content_type: "product",
         currency: "BRL",
       });
     }
 
-    if (!userId) {
-      setShowPreCheckout(true);
-      endSubmit();
-      return;
-    }
-
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
-        .eq('id', userId)
-        .single();
-
-      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf
-        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
-
-      if (isProfileComplete) {
-        setPendingProfile(profile);
-        setShowPaymentMethodModal(true);
-      } else {
-        setShowPreCheckout(true);
-      }
-    } catch {
-      setShowPreCheckout(true);
-    }
-    endSubmit();
-  };
-
-  const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
-    if (!pendingProfile) return;
-    if (!startSubmit()) return;
-
-    setIsLoading(true);
-
-    try {
-      const utmData = getSanitizedUtms();
-      const { fbp, fbc } = getMetaCookies();
-      const body: any = {
-        product_slug: selectedSlug,
-        user_email: userEmail,
-        user_phone: pendingProfile.phone,
-        user_name: pendingProfile.name,
-        user_cpf: pendingProfile.cpf,
-        billing_type: method,
-        utm_data: utmData,
-        fbp,
-        fbc,
-      };
-
-      if (method === 'PIX') {
-        body.user_address = {
-          line_1: pendingProfile.address_line,
-          zip_code: pendingProfile.address_zip,
-          city: pendingProfile.address_city,
-          state: pendingProfile.address_state,
-          country: pendingProfile.address_country || 'BR'
-        };
-      }
-
-      const response = await supabase.functions.invoke('create-pagarme-checkout', { body });
-
-      if (response.error) {
-        console.error('Erro checkout direto:', response.error);
-        toast.error('Erro ao gerar pagamento. Tente novamente.');
-        setIsLoading(false);
-        setShowPaymentMethodModal(false);
-        endSubmit();
-        return;
-      }
-
-      const { checkout_url, event_id } = response.data;
-      if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
-        (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
-      }
-      if (checkout_url) {
-        window.location.href = checkout_url;
-        return;
-      } else {
-        toast.error('Erro ao gerar link de pagamento.');
-      }
-    } catch (error) {
-      console.error('Erro checkout direto:', error);
-      toast.error('Erro ao processar. Tente novamente.');
-    }
-    setIsLoading(false);
-    setShowPaymentMethodModal(false);
-    endSubmit();
+    const urlWithUtm = appendUtmToUrl(checkoutUrl);
+    window.open(urlWithUtm, "_blank");
   };
 
   return (
@@ -332,15 +219,14 @@ export const PricingCardsSection = () => {
               </ul>
 
               <button
-                onClick={() => handlePurchase(plan.slug)}
-                disabled={isLoading || isSubmitting}
-                className={`w-full font-bold text-sm py-3.5 rounded-xl transition-all duration-300 disabled:opacity-70 disabled:hover:scale-100 ${
+                onClick={() => handlePurchase(plan.checkoutUrl)}
+                className={`w-full font-bold text-sm py-3.5 rounded-xl transition-all duration-300 ${
                   plan.highlight
                     ? "bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white shadow-lg shadow-orange-500/30 hover:scale-105"
                     : "bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:scale-105"
                 }`}
               >
-                {isLoading && selectedSlug === plan.slug ? 'Processando...' : plan.buttonText}
+                {plan.buttonText}
               </button>
             </div>
             );
@@ -421,26 +307,6 @@ export const PricingCardsSection = () => {
           </div>
         </div>
       </div>
-
-      {/* Payment Method Modal */}
-      <PaymentMethodModal
-        open={showPaymentMethodModal}
-        onOpenChange={setShowPaymentMethodModal}
-        onSelect={handlePaymentMethodSelected}
-        isProcessing={isSubmitting}
-        colorScheme="orange"
-      />
-
-      {/* PreCheckout Modal */}
-      <PreCheckoutModal
-        isOpen={showPreCheckout}
-        onClose={() => setShowPreCheckout(false)}
-        userEmail={userEmail}
-        userId={userId}
-        productSlug={selectedSlug}
-        modalTitle="Já é quase seu!"
-        colorScheme="orange"
-      />
     </section>
   );
 };
