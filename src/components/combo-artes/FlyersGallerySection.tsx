@@ -12,8 +12,6 @@ const categories = [
       "/images/combo/pagode-pagodinho-sunset.webp",
       "/images/combo/pagode-so-as-antigas.webp",
       "/images/combo/pagode-sabado-com-pagode.webp",
-      "/images/combo/pagode-revoada-do-chefe.webp",
-      "/images/combo/pagode-end-of-summer.webp",
     ],
   },
   {
