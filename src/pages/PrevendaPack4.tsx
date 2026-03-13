@@ -125,9 +125,12 @@ const PrevendaPack4 = () => {
           <MotionsGallerySection />
         </Suspense>
       </LazySection>
-      
 
-
+      <LazySection>
+        <Suspense fallback={<SectionSkeleton />}>
+          <BonusTelaoSection />
+        </Suspense>
+      </LazySection>
       
       <LazySection>
         <Suspense fallback={<SectionSkeleton />}>
