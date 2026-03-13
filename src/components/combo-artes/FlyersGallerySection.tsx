@@ -25,7 +25,6 @@ const categories = [
       "/images/combo/forro-furacao-hit.webp",
       "/images/combo/forro-resenha-samba.webp",
       "/images/combo/forro-sao-joao.webp",
-      "/images/combo/forro-vibe-forrozeira.webp",
     ],
   },
   {
