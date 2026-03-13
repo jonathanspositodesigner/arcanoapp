@@ -331,13 +331,7 @@ const TemplateEditorTab = () => {
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted-foreground">
-        Edite os emails de renovação. Variáveis disponíveis:{" "}
-        <code className="bg-muted px-1 rounded text-xs">{"{{USER_NAME}}"}</code>{" "}
-        <code className="bg-muted px-1 rounded text-xs">{"{{PLAN_NAME}}"}</code>{" "}
-        <code className="bg-muted px-1 rounded text-xs">{"{{PLAN_VALUE}}"}</code>{" "}
-        <code className="bg-muted px-1 rounded text-xs">{"{{DUE_DATE}}"}</code>{" "}
-        <code className="bg-muted px-1 rounded text-xs">{"{{BENEFITS_LIST}}"}</code>{" "}
-        <code className="bg-muted px-1 rounded text-xs">{"{{LOSSES_LIST}}"}</code>
+        Edite os emails de renovação. Clique em "Editar" para abrir o editor visual com todas as ferramentas de formatação.
       </p>
 
       {/* Preview Modal */}
