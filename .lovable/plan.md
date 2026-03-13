@@ -1,42 +1,73 @@
 
-# Migração Planos Mensais/Anuais: Greenn → Pagar.me (CONCLUÍDA v2 - Recorrência Real)
 
-## Resumo
-Migração dos 8 planos de assinatura (4 planos × 2 períodos) da Greenn para o Pagar.me com **recorrência real via cartão de crédito** e PIX como pagamento avulso.
+# Correção: Vendas Hotmart e Greenn Artes não enviam eventos para Meta CAPI
 
-## Decisão Arquitetural
-- **Cartão de Crédito**: Recorrência real via `POST /subscriptions` do Pagar.me. Tokenização do cartão no front-end via API pública (`pk_XXXX`). Cobrança automática a cada ciclo.
-- **PIX**: Checkout avulso (sem recorrência) — plano ativa por 30/365 dias. pg_cron expira planos vencidos.
-- **Reembolso**: Cancela subscription no Pagar.me (`DELETE /subscriptions/{id}`) + revoga plano → free + zera créditos.
+## Diagnóstico
 
-## O que foi feito
+O `meta-capi-event` (que envia Purchase para o Facebook e grava em `meta_capi_logs`) **só é chamado pelo `webhook-pagarme`**. Os outros 3 webhooks de venda nunca chamam essa função:
 
-### 1. Banco de Dados
-- Colunas `plan_slug` e `billing_period` em `mp_products`
-- Coluna `pagarme_subscription_id` em `asaas_orders` e `planos2_subscriptions`
-- 8 produtos inseridos: `plano-{starter,pro,ultimate,unlimited}-{mensal,anual}`
+- `webhook-greenn` (conta principal Greenn/PromptClub) — **sem CAPI**
+- `webhook-greenn-artes` (pack de agendas/artes) — **sem CAPI**
+- `webhook-hotmart-artes` (Hotmart ES) — **sem CAPI**
 
-### 2. CreditCardForm.tsx (NOVO)
-- Formulário seguro com campos: Número, Nome, Validade, CVV
-- Tokenização direta via `POST https://api.pagar.me/core/v5/tokens?appId=pk_XXX`
-- Retorna `card_token` para o fluxo de subscription
+Por isso os logs de CAPI no monitor só mostram vendas do Pagar.me.
 
-### 3. create-pagarme-subscription (NOVO)
-- Edge function que cria subscription recorrente via `POST /subscriptions`
-- Suporta `interval: month` ou `year` baseado no `billing_period` do produto
-- Salva `pagarme_subscription_id` na ordem
+## Solução
 
-### 4. webhook-pagarme (ATUALIZADO)
-- Busca ordens por `pagarme_subscription_id` (fallback 4)
-- Trata `subscription.canceled`: revoga plano → free, zera créditos
-- Trata renovação (`charge.paid` em ordem já `paid`): renova plano + reseta créditos
-- Salva `pagarme_subscription_id` no `planos2_subscriptions`
+Adicionar chamada ao `meta-capi-event` nos 3 webhooks, usando a mesma lógica do `webhook-pagarme` (fire-and-forget, com UTM data, event_id para deduplicação).
 
-### 5. refund-pagarme (ATUALIZADO)
-- Cancela subscription no Pagar.me via `DELETE /subscriptions/{id}` antes de revogar
-- Revoga plano → free + zera créditos
+### 1. `webhook-greenn/index.ts` — Após linha ~657 (mark success)
+Adicionar bloco de chamada `meta-capi-event` com:
+- `event_name: 'Purchase'`
+- `email`, `value` (do payload: `payload.sale.amount` ou similar)
+- `utm_data` (já extraído via `extractFullUtmData`)
+- `event_id: purchase_greenn_{contractId}`
+- `event_source_url: 'https://arcanoapp.voxvisual.com.br'`
 
-### 6. Planos2.tsx (ATUALIZADO)
-- Cartão: abre CreditCardForm → tokeniza → create-pagarme-subscription → recorrência real
-- PIX: mantém checkout avulso via create-pagarme-checkout → 30/365 dias sem recorrência
-- Flag `isSubscriptionFlow` diferencia fluxos de assinatura vs créditos avulsos
+### 2. `webhook-greenn-artes/index.ts` — Após linha ~1110 (mark success para packs) e ~846 (mark success para créditos)
+Mesma lógica, com:
+- `value` do payload (`payload.sale?.amount`)
+- `utm_data` do `extractFullUtmData(payload)`
+- `event_id: purchase_artes_{contractId}`
+
+### 3. `webhook-hotmart-artes/index.ts` — Após linha ~727 (mark success)
+Mesma lógica, com:
+- `value` do `amountBrl` (já convertido para BRL)
+- `utm_data` do `parsedUtmData` (já extraído)
+- `event_id: purchase_hotmart_{transaction}`
+
+### Padrão de código (igual ao webhook-pagarme)
+```typescript
+// Meta CAPI Purchase (fire-and-forget)
+try {
+  await fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${supabaseServiceKey}`,
+    },
+    body: JSON.stringify({
+      event_name: 'Purchase',
+      email,
+      value: amount,
+      currency: 'BRL',
+      utm_data: utmData,
+      event_id: `purchase_${source}_${id}`,
+      event_source_url: 'https://arcanoapp.voxvisual.com.br',
+    }),
+  })
+} catch (capiErr) {
+  console.warn(`⚠️ Meta CAPI Purchase falhou (não-crítico): ${capiErr.message}`)
+}
+```
+
+## Arquivos modificados
+- `supabase/functions/webhook-greenn/index.ts`
+- `supabase/functions/webhook-greenn-artes/index.ts`
+- `supabase/functions/webhook-hotmart-artes/index.ts`
+
+## Impacto
+- Todas as 3 contas de anúncios passarão a enviar Purchase para o Facebook
+- Os logs aparecerão no monitor de CAPI
+- Deduplicação garantida via `event_id` único por fonte + ID da transação
+
