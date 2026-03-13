@@ -212,6 +212,29 @@ const SaleDetailDialog = ({ sale, open, onClose }: SaleDetailDialogProps) => {
           </div>
         </div>
 
+        {/* UTM Data */}
+        {sale.utm_data && Object.keys(sale.utm_data).length > 0 && (
+          <>
+            <Separator />
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Globe className="h-4 w-4 text-primary" />
+                <h4 className="text-sm font-semibold text-foreground">Rastreio (UTMs)</h4>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                {Object.entries(sale.utm_data)
+                  .filter(([, v]) => v && String(v).trim() !== "")
+                  .map(([key, value]) => (
+                    <div key={key}>
+                      <span className="text-muted-foreground text-xs">{key}</span>
+                      <p className="text-foreground text-xs font-mono truncate" title={String(value)}>{String(value)}</p>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </>
+        )}
+
         <Separator />
 
         {/* Client Info (Editable) */}
