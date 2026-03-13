@@ -189,7 +189,7 @@ const PricingSection = () => {
             </div>
 
             <div className="mt-6">
-              <img src={STARS_IMG} alt="5 estrelas" className="h-5 mb-2 mx-auto" />
+              <img src={STARS_IMG} alt="5 estrelas" className="h-5 mb-2 mx-auto" loading="lazy" />
             </div>
             <p className="text-sm text-gray-300 mb-4" style={{ fontFamily: "Sora, sans-serif" }}>
               4.94 (1.048 Avaliações)
