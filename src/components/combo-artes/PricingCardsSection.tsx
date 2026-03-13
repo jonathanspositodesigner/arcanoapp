@@ -263,11 +263,14 @@ export const PricingCardsSection = () => {
         </p>
 
         {/* 3 Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
-          {plans.map((plan) => (
+        <div className="flex flex-col md:grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
+          {plans.map((plan) => {
+            const mobileOrder: Record<string, number> = { 'vitalicio': 1, '1ano': 2, '6meses': 3 };
+            return (
             <div
               key={plan.id}
-              className={`relative rounded-3xl p-6 md:p-8 flex flex-col ${
+              style={{ order: mobileOrder[plan.id] ?? 99 }}
+              className={`relative rounded-3xl p-6 md:p-8 flex flex-col md:!order-none ${
                 plan.highlight
                   ? "bg-gradient-to-br from-[#EF672C]/20 to-[#EF672C]/5 border-2 border-[#EF672C] scale-[1.02] md:scale-105"
                   : "bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10"
@@ -340,7 +343,8 @@ export const PricingCardsSection = () => {
                 {isLoading && selectedSlug === plan.slug ? 'Processando...' : plan.buttonText}
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Countdown - shared */}
