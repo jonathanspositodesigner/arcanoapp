@@ -120,7 +120,7 @@ const PricingSection = () => {
               border: "1px solid rgba(255,255,255,0.1)",
             }}
           >
-            <img src={STARS_IMG} alt="5 estrelas" className="h-5 mb-2" />
+            <img src={STARS_IMG} alt="5 estrelas" className="h-5 mb-2" loading="lazy" />
             <p className="text-sm text-gray-300 mb-4" style={{ fontFamily: "Sora, sans-serif" }}>
               4.72 (328 Avaliações)
             </p>
