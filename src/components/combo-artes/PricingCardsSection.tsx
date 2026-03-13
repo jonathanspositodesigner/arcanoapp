@@ -78,7 +78,6 @@ const plans: PricingPlan[] = [
     price: "47,00",
     discount: "61% OFF",
     features: [
-      { text: "+20 Movies para Telão" },
       { text: "210 Motions Editáveis" },
       { text: "40 Selos 3D" },
       { text: "+40 Artes Inéditas" },
