@@ -20,7 +20,10 @@ export interface AggregatedItem {
   avg_cpc: number;
   total_landing_page_views: number;
   total_initiated_checkouts: number;
+  total_meta_purchases: number;
   sales_count: number;
+  utm_sales_count: number;
+  meta_sales_count: number;
   revenue: number;
   cpa: number;
   profit: number;
