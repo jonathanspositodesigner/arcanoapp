@@ -377,7 +377,7 @@ serve(async (req) => {
         email,
         value: Number(product.price),
         currency: 'BRL',
-        utm_data: utm_data || null,
+        utm_data: sanitizeUtmData(utm_data),
         fbp: effectiveFbp,
         fbc: effectiveFbc,
         event_id: capiEventId,
