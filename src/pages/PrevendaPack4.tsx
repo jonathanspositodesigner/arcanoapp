@@ -125,11 +125,8 @@ const PrevendaPack4 = () => {
         </Suspense>
       </LazySection>
       
-      <LazySection>
-        <Suspense fallback={<SectionSkeleton />}>
-          <BonusFimDeAnoSection />
-        </Suspense>
-      </LazySection>
+
+
       
       <LazySection>
         <Suspense fallback={<SectionSkeleton />}>
