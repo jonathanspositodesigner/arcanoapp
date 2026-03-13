@@ -134,7 +134,7 @@ const ArcanoClonerTool = lazy(() => import("./pages/ArcanoClonerTool"));
 const GeradorPersonagemTool = lazy(() => import("./pages/GeradorPersonagemTool"));
 const UpscalerSelectionPage = lazy(() => import("./pages/UpscalerSelectionPage"));
 const AguardandoPagamentoMusicos = lazy(() => import("./pages/AguardandoPagamentoMusicos"));
-const PackAgendas = lazy(() => import("./pages/PackAgendas"));
+
 const ComboArtesArcanas = lazy(() => import("./pages/ComboArtesArcanas"));
 const PlanosCreditos = lazy(() => import("./pages/PlanosCreditos"));
 const FerramentasIAAplicativo = lazy(() => import("./pages/FerramentasIAAplicativo"));
