@@ -242,9 +242,12 @@ export const MotionsGallerySection = () => {
 
       {/* Pre-checkout Modal */}
       <PreCheckoutModal
-        open={showPreCheckout}
-        onOpenChange={setShowPreCheckout}
+        isOpen={showPreCheckout}
+        onClose={() => setShowPreCheckout(false)}
+        userEmail={userEmail}
+        userId={userId}
         productSlug={VITALICIO_SLUG}
+        colorScheme="orange"
       />
 
       {/* Payment Method Modal */}
@@ -252,7 +255,8 @@ export const MotionsGallerySection = () => {
         open={showPaymentMethodModal}
         onOpenChange={setShowPaymentMethodModal}
         onSelect={handlePaymentMethodSelected}
-        isLoading={isLoading}
+        isProcessing={isLoading}
+        colorScheme="orange"
       />
     </section>;
 };
