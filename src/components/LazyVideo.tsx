@@ -6,13 +6,14 @@ interface LazyVideoProps {
   src: string;
   className?: string;
   onClick?: () => void;
+  poster?: string;
 }
 
 /**
  * LazyVideo - Only loads video when visible in viewport
  * Uses Intersection Observer for performance optimization
  */
-export const LazyVideo = memo(({ src, className = '', onClick }: LazyVideoProps) => {
+export const LazyVideo = memo(({ src, className = '', onClick, poster }: LazyVideoProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -26,14 +27,13 @@ export const LazyVideo = memo(({ src, className = '', onClick }: LazyVideoProps)
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setIsVisible(true);
-            // Once visible, we keep it loaded (don't unload on scroll away)
             setHasLoaded(true);
             observer.unobserve(element);
           }
         });
       },
       {
-        rootMargin: '100px', // Start loading 100px before entering viewport
+        rootMargin: '100px',
         threshold: 0.1
       }
     );
@@ -57,12 +57,19 @@ export const LazyVideo = memo(({ src, className = '', onClick }: LazyVideoProps)
           loop={true}
           playsInline={true}
           controls={false}
-          preload="metadata"
+          preload="auto"
+          poster={poster}
         />
       ) : (
-        // Placeholder while not visible
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/10 flex items-center justify-center">
-          <Video className="h-10 w-10 text-primary/30" />
+        // Placeholder while not visible - use poster if available
+        <div className="absolute inset-0 flex items-center justify-center">
+          {poster ? (
+            <img src={poster} className="w-full h-full object-cover" alt="" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-primary/20 via-secondary/20 to-primary/10 flex items-center justify-center">
+              <Video className="h-10 w-10 text-primary/30" />
+            </div>
+          )}
         </div>
       )}
     </div>

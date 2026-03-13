@@ -24,6 +24,7 @@ interface SecureVideoProps {
   controls?: boolean;
   preload?: 'none' | 'metadata' | 'auto';
   onClick?: () => void;
+  poster?: string;
 }
 
 // SIMPLIFIED: All URLs are public now - NO edge function calls = NO COSTS
@@ -111,36 +112,77 @@ export const SecureVideo = memo(({
   playsInline = false,
   controls = false,
   preload = 'metadata',
-  onClick
+  onClick,
+  poster
 }: SecureVideoProps) => {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [error, setError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Enforce mobile autoplay attributes on the DOM element
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+
+    if (muted) {
+      el.muted = true;
+      el.defaultMuted = true;
+      el.setAttribute('muted', '');
+    }
+    if (playsInline) {
+      el.playsInline = true;
+      el.setAttribute('playsinline', '');
+      el.setAttribute('webkit-playsinline', 'true');
+    }
+  }, [muted, playsInline, retryCount]);
+
   // Programmatic autoplay for mobile browsers
   useEffect(() => {
-    const videoElement = videoRef.current;
-    if (!videoElement || !autoPlay || !muted) return;
+    const el = videoRef.current;
+    if (!el || !autoPlay || !muted) return;
 
-    const handleAutoplay = () => {
-      videoElement.muted = true;
-      videoElement.playsInline = true;
-      videoElement.play().catch(() => {});
+    const tryPlay = () => {
+      // Ensure muted before every play attempt (iOS requirement)
+      el.muted = true;
+      el.play().catch(() => {
+        // Autoplay blocked — poster/thumbnail will show instead
+      });
     };
 
-    videoElement.addEventListener('canplay', handleAutoplay);
-    videoElement.addEventListener('loadeddata', handleAutoplay);
+    const onCanPlay = () => {
+      setVideoLoaded(true);
+      tryPlay();
+    };
 
-    if (videoElement.readyState >= 2) {
-      handleAutoplay();
+    const onLoadedData = () => {
+      setVideoLoaded(true);
+      tryPlay();
+    };
+
+    const onPlaying = () => {
+      setVideoLoaded(true);
+    };
+
+    el.addEventListener('canplay', onCanPlay);
+    el.addEventListener('loadeddata', onLoadedData);
+    el.addEventListener('playing', onPlaying);
+
+    // If already ready (cached)
+    if (el.readyState >= 3) {
+      setVideoLoaded(true);
+      tryPlay();
+    } else if (el.readyState >= 2) {
+      setVideoLoaded(true);
+      tryPlay();
     }
 
     return () => {
-      videoElement.removeEventListener('canplay', handleAutoplay);
-      videoElement.removeEventListener('loadeddata', handleAutoplay);
+      el.removeEventListener('canplay', onCanPlay);
+      el.removeEventListener('loadeddata', onLoadedData);
+      el.removeEventListener('playing', onPlaying);
     };
-  }, [autoPlay, muted, retryCount]);
+  }, [autoPlay, muted, retryCount, src]);
 
   // Reset state when src changes
   useEffect(() => {
@@ -149,33 +191,9 @@ export const SecureVideo = memo(({
     setRetryCount(0);
   }, [src]);
 
-  // Check if video is already loaded from cache or has network error
-  useEffect(() => {
-    if (videoRef.current && !videoLoaded && !error) {
-      const video = videoRef.current;
-      // readyState >= 2 means has current data
-      if (video.readyState >= 2) {
-        setVideoLoaded(true);
-      } else if (video.readyState === 0 && video.networkState === 3) {
-        // Network error - trigger retry
-        if (retryCount < 3) {
-          const delay = 1000 * (retryCount + 1);
-          setTimeout(() => {
-            setRetryCount(prev => prev + 1);
-          }, delay);
-        }
-      }
-    }
-  }, [videoLoaded, error, retryCount]);
-
-  const handleVideoLoad = () => {
-    setVideoLoaded(true);
-  };
-
   const handleVideoError = () => {
-    // Retry up to 3 times with increasing delays for videos
-    if (retryCount < 3) {
-      const delay = 1000 * (retryCount + 1); // 1s, 2s, 3s
+    if (retryCount < 2) {
+      const delay = 1000 * (retryCount + 1);
       setTimeout(() => {
         setRetryCount(prev => prev + 1);
       }, delay);
@@ -194,15 +212,20 @@ export const SecureVideo = memo(({
 
   return (
     <div className={`${className} relative overflow-hidden`}>
-      {/* Blur placeholder / loading state */}
+      {/* Loading state - show poster if available, otherwise spinner */}
       {!videoLoaded && (
-        <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center z-10">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_2s_infinite] -translate-x-full" />
-          <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-spin" />
+        <div className="absolute inset-0 z-10">
+          {poster ? (
+            <img src={poster} className="w-full h-full object-cover" alt="" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_2s_infinite] -translate-x-full" />
+              <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-primary animate-spin" />
+            </div>
+          )}
         </div>
       )}
       
-      {/* Actual video - use src directly, no signed URL needed */}
       <video
         ref={videoRef}
         key={`${src}-${retryCount}`}
@@ -210,16 +233,17 @@ export const SecureVideo = memo(({
         className={`w-full h-full object-cover transition-all duration-500 ${
           videoLoaded ? 'blur-0 opacity-100' : 'blur-md opacity-0'
         }`}
-        preload={preload}
+        poster={poster}
+        preload={autoPlay ? 'auto' : preload}
         autoPlay={autoPlay}
         muted={muted}
         loop={loop}
         playsInline={playsInline}
         controls={controls}
         onClick={onClick}
-        onLoadedData={handleVideoLoad}
-        onLoadedMetadata={handleVideoLoad}
-        onCanPlay={handleVideoLoad}
+        onLoadedData={() => setVideoLoaded(true)}
+        onCanPlay={() => setVideoLoaded(true)}
+        onPlaying={() => setVideoLoaded(true)}
         onError={handleVideoError}
       />
     </div>
