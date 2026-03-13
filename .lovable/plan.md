@@ -1,50 +1,79 @@
 
-# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
-## Resumo
-Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
+## Plano: Clonar seção de planos da referência para `/combo-artes-arcanas`
 
-## O que foi feito
+### O Problema
+A seção de planos atual mostra "Biblioteca de Artes Arcanas" com 3 tiers genéricos (6 meses R$27, 1 ano R$37, Vitalício R$47). A referência (print 2) mostra uma estrutura completamente diferente com packs individuais e cumulativos.
 
-### 1. Tabela `subscription_billing_reminders` (migration)
-- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
-- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
-- Campo `checkout_url` para evitar checkouts duplicados
-- Constraint UNIQUE em (subscription_id, day_offset, due_date)
+### Mudanças no `PricingCardsSection.tsx`
 
-### 2. Edge Function `process-billing-reminders`
-- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
-- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
-- Para cada assinatura, verifica:
-  - Se já enviou email para esse `day_offset`
-  - Se a sequência foi parada (pagou ou descadastrou)
-  - Se o email está na blacklist
-  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
-- Gera checkout Pagar.me somente PIX com validade de 3 dias
-- Monta HTML personalizado com dados reais do plano
-- Envia via SendPulse SMTP API
-- Registra na tabela de controle
+Reescrever os 3 cards com o conteúdo exato da referência:
 
-### 3. Mapeamento de benefícios por plano
-- Starter: 1.800 créditos, 5 prompts/dia
-- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
-- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
-- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
+**Card 1 - Pack Arcano Vol.1**
+- Titulo: "Pack Arcano Vol.1"
+- Subtitulo: "ACESSO 1 ANO"
+- Descrição: "Para quem quer começar com qualidade."
+- Badge desconto: -24% OFF
+- Preço riscado: De R$ 37
+- Preço atual: R$ 27,90 à vista
+- Features (todas com check verde):
+  - **+55 Artes Editáveis** (bold)
+  - 1 Ano de Acesso
+  - 210 Motions Editáveis
+  - 40 Selos 3D
+  - Video Aulas Exclusivas
+  - Bônus Exclusivos
+  - Atualizações Semanais
+  - Suporte via WhatsApp
+  - Área de Membros
+- Botão: "QUERO SÓ O PACK VOL.1" (estilo escuro/outline)
 
-### 4. Templates dos 6 emails
-- Dia 0: Lembrete leve ("Seu plano vence hoje")
-- Dia 1: Reforço pendência ("Pagamento ainda pendente")
-- Dia 2: Dor da perda ("Risco de perda de acesso")
-- Dia 3: Prejuízo prático ("O custo de não renovar")
-- Dia 4: FOMO ("Não fique para trás")
-- Dia 5: Último aviso ("Último aviso: regularize hoje")
-- Todos com link de descadastro no rodapé
+**Card 2 - Pack Arcano 1 e 2**
+- Titulo: "Pack Arcano 1 e 2"
+- Subtitulo: "ACESSO 1 ANO"
+- Descrição: "Para quem quer mais economia e mais vantagem."
+- Badge desconto: -33% OFF
+- Preço riscado: De R$ 74
+- Preço atual: R$ 49,90 à vista
+- Features (todas com check verde):
+  - **+110 Artes Editáveis** (bold)
+  - 1 Ano de Acesso
+  - 210 Motions Editáveis
+  - 40 Selos 3D
+  - Video Aulas Exclusivas
+  - Bônus Exclusivos
+  - Atualizações Semanais
+  - Suporte via WhatsApp
+  - Área de Membros
+- Botão: "QUERO OS PACKS VOL.1 E 2" (estilo escuro/outline)
 
-### 5. Cron job
-- pg_cron agendado: `0 12 * * *` (09:00 BRT)
-- Chama a Edge Function automaticamente
+**Card 3 - Pack Arcano 1 ao 3 (highlight)**
+- Badge topo: "MAIS VENDIDO" (laranja, com estrela)
+- Titulo: "Pack Arcano 1 ao 3"
+- Subtitulo: "ACESSO VITALÍCIO" (laranja)
+- Descrição: "O mais vendido! 🔥"
+- Badge desconto: -58% OFF
+- Preço riscado: De R$ 141
+- Preço atual: R$ 59,90 à vista
+- Bonus badge dourado: "+20 MOVIES PARA TELÃO"
+- Features (todas com check laranja):
+  - **+210 Artes Editáveis** (bold)
+  - **Acesso Vitalício** (bold)
+  - 210 Motions Editáveis
+  - 40 Selos 3D
+  - Video Aulas Exclusivas
+  - Bônus Exclusivos
+  - Atualizações Semanais
+  - Suporte via WhatsApp
+  - Área de Membros
+- Botão: "QUERO OS PACKS 1 AO 3" (laranja/gradient, destaque)
 
-## Detecção de pagamento (para de enviar)
-- `planos2_subscriptions.expires_at` estendido para data futura
-- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
-- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
+### O que NÃO muda
+- Links de checkout permanecem os mesmos
+- Contador e seção de garantia abaixo dos cards permanecem
+- Lógica de UTM e Meta Pixel permanecem
+- Nenhum outro arquivo é alterado
+
+### Arquivo editado
+- `src/components/combo-artes/PricingCardsSection.tsx` — reescrever o array `plans` e ajustar rendering (adicionar campo `description`, mudar badge de "MAIS POPULAR" para "MAIS VENDIDO", tornar todas features habilitadas, bold nas primeiras 1-2 features de cada card)
+
