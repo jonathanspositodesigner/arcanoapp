@@ -113,7 +113,8 @@ export const PricingCardsSection = () => {
         setShowPreCheckout(true);
       }
     } catch {
-      // ignore
+      // Fallback: se falhar ao buscar perfil, abre pre-checkout
+      setShowPreCheckout(true);
     }
     endSubmit();
   };
