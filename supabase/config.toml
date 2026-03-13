@@ -168,3 +168,6 @@ verify_jwt = false
 
 [functions.get-pagarme-public-key]
 verify_jwt = false
+
+[functions.resend-purchase-email]
+verify_jwt = false
