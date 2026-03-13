@@ -17,6 +17,7 @@ interface CampaignInsight {
   avg_cpc: number;
   total_landing_page_views: number;
   total_initiated_checkouts: number;
+  total_meta_purchases: number;
 }
 
 export interface CampaignWithSales extends CampaignInsight {
