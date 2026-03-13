@@ -337,7 +337,7 @@ export const PricingCardsSection = () => {
                     : "bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:scale-105"
                 }`}
               >
-                {isLoading && selectedSlug === plan.slug ? 'Processando...' : 'QUERO ESSAS ARTES'}
+                {isLoading && selectedSlug === plan.slug ? 'Processando...' : plan.buttonText}
               </button>
             </div>
           ))}
