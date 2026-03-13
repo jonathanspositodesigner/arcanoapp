@@ -293,7 +293,7 @@ Deno.serve(async (req) => {
           const rows = await fetchAllPages(insightsUrl, accessToken);
 
           for (const row of rows) {
-            const { landingPageViews, initiatedCheckouts } = extractMetrics(row);
+            const { landingPageViews, initiatedCheckouts, purchases } = extractMetrics(row);
             const adsetId = row.adset_id;
             const meta = adsetMeta[adsetId];
 
@@ -313,6 +313,7 @@ Deno.serve(async (req) => {
               cpc: parseFloat(row.cpc || "0"),
               landing_page_views: landingPageViews,
               initiated_checkouts: initiatedCheckouts,
+              meta_purchases: purchases,
             }, { onConflict: "adset_id,date" });
           }
 
