@@ -264,11 +264,9 @@ export const PricingCardsSection = () => {
 
         {/* 3 Pricing Cards */}
         <div className="flex flex-col md:grid md:grid-cols-3 gap-6 max-w-5xl mx-auto items-stretch">
-          {(() => {
-            const mobileOrder: Record<string, number> = { 'vitalicio': 0, '1ano': 1, '6meses': 2 };
-            const sorted = [...plans].sort((a, b) => (mobileOrder[a.id] ?? 99) - (mobileOrder[b.id] ?? 99));
-            return sorted;
-          })().map((plan) => (
+          {plans.map((plan) => {
+            const mobileOrder: Record<string, number> = { 'vitalicio': 1, '1ano': 2, '6meses': 3 };
+            return (
             <div
               key={plan.id}
               className={`relative rounded-3xl p-6 md:p-8 flex flex-col ${
