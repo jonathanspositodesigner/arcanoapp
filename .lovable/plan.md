@@ -1,42 +1,71 @@
 
-# Migração Planos Mensais/Anuais: Greenn → Pagar.me (CONCLUÍDA v2 - Recorrência Real)
 
-## Resumo
-Migração dos 8 planos de assinatura (4 planos × 2 períodos) da Greenn para o Pagar.me com **recorrência real via cartão de crédito** e PIX como pagamento avulso.
+# Diagnóstico: Atribuição de Vendas no Dashboard de ADS Completamente Quebrada
 
-## Decisão Arquitetural
-- **Cartão de Crédito**: Recorrência real via `POST /subscriptions` do Pagar.me. Tokenização do cartão no front-end via API pública (`pk_XXXX`). Cobrança automática a cada ciclo.
-- **PIX**: Checkout avulso (sem recorrência) — plano ativa por 30/365 dias. pg_cron expira planos vencidos.
-- **Reembolso**: Cancela subscription no Pagar.me (`DELETE /subscriptions/{id}`) + revoga plano → free + zera créditos.
+## Problema encontrado
 
-## O que foi feito
+A atribuição de vendas às campanhas está usando o campo UTM **errado**. Isso faz com que quase nenhuma venda seja corretamente associada às campanhas.
 
-### 1. Banco de Dados
-- Colunas `plan_slug` e `billing_period` em `mp_products`
-- Coluna `pagarme_subscription_id` em `asaas_orders` e `planos2_subscriptions`
-- 8 produtos inseridos: `plano-{starter,pro,ultimate,unlimited}-{mensal,anual}`
+### Evidência concreta (dados de hoje)
 
-### 2. CreditCardForm.tsx (NOVO)
-- Formulário seguro com campos: Número, Nome, Validade, CVV
-- Tokenização direta via `POST https://api.pagar.me/core/v5/tokens?appId=pk_XXX`
-- Retorna `card_token` para o fluxo de subscription
+- **8 vendas pagas do Pagar.me** com `utm_source: "FB"` — todas pertencendo à campanha "UPSCALLER ARCANO[VENDAS]" (ID: `120238961014270183`)
+- **O dashboard mostra 0 vendas** para essa campanha
+- **2 vendas** aparecem na campanha errada
 
-### 3. create-pagarme-subscription (NOVO)
-- Edge function que cria subscription recorrente via `POST /subscriptions`
-- Suporta `interval: month` ou `year` baseado no `billing_period` do produto
-- Salva `pagarme_subscription_id` na ordem
+### Causa raiz: `utm_content` contém o ID do **anúncio**, não da **campanha**
 
-### 4. webhook-pagarme (ATUALIZADO)
-- Busca ordens por `pagarme_subscription_id` (fallback 4)
-- Trata `subscription.canceled`: revoga plano → free, zera créditos
-- Trata renovação (`charge.paid` em ordem já `paid`): renova plano + reseta créditos
-- Salva `pagarme_subscription_id` no `planos2_subscriptions`
+O código atual em `useAdsCampaigns.ts` (linha 213) tenta usar `utm_content` como campaign_id:
 
-### 5. refund-pagarme (ATUALIZADO)
-- Cancela subscription no Pagar.me via `DELETE /subscriptions/{id}` antes de revogar
-- Revoga plano → free + zera créditos
+```text
+Código atual (ERRADO):
+  1º) utm_content → usa como campaign_id
+  2º) utm_id → fallback
+  3º) utm_campaign → fallback
 
-### 6. Planos2.tsx (ATUALIZADO)
-- Cartão: abre CreditCardForm → tokeniza → create-pagarme-subscription → recorrência real
-- PIX: mantém checkout avulso via create-pagarme-checkout → 30/365 dias sem recorrência
-- Flag `isSubscriptionFlow` diferencia fluxos de assinatura vs créditos avulsos
+Dados reais nos UTMs:
+  utm_content  = "AD08 ORGANICO|120239632965090183"    ← ID do ANÚNCIO
+  utm_campaign = "UPSCALLER ARCANO[VENDAS]|120238961014270183"  ← ID da CAMPANHA
+  utm_id       = "120238961014270183"                  ← ID da CAMPANHA
+  utm_medium   = "AD08 - ORGANICO|120239632965100183"  ← ID do ADSET
+```
+
+Como `utm_content` sempre tem valor (nunca cai no fallback), o código tenta casar um **ad_id** com **campaign_ids** → match nunca acontece → vendas ficam "não identificadas" ou atribuídas errado.
+
+## Impacto
+
+Com a atribuição quebrada, **todas** as colunas derivadas ficam erradas:
+- **Vendas**: 0 em vez do valor real
+- **CPA**: "—" ou infinito
+- **Faturamento**: R$ 0,00
+- **Lucro**: Mostra só o gasto negativo
+- **ROI**: 0.00x
+- **ROAS**: 0.00x
+
+## Solução
+
+### Arquivo: `src/components/admin/ads/useAdsCampaigns.ts` (linhas ~205-228)
+
+Corrigir a ordem de prioridade da extração do campaign_id:
+
+```text
+Ordem correta:
+  1º) utm_id → contém campaign_id puro (ex: "120238961014270183")
+  2º) utm_campaign → extrair ID após "|" (ex: "NOME|120238961014270183" → "120238961014270183")
+  3º) NÃO usar utm_content (esse é o ad_id)
+```
+
+O código passa a:
+1. Tentar `utm_id` primeiro (é o campo mais confiável, contém o campaign_id puro)
+2. Fazer fallback para `utm_campaign` extraindo o ID após o `|`
+3. **Remover** a tentativa com `utm_content` na atribuição de campanhas (utm_content é para anúncios, que já funciona corretamente em `useAdsHierarchy.ts`)
+
+### Sem mudanças necessárias em `useAdsHierarchy.ts`
+
+A hierarquia de adsets (utm_medium) e ads (utm_content) já usa os campos corretos — o `extractIdFromUtm` extrai o ID após `|` corretamente.
+
+## Resultado esperado
+
+- As 8+ vendas FB de hoje serão corretamente atribuídas a "UPSCALLER ARCANO[VENDAS]"
+- CPA, Faturamento, Lucro, ROI e ROAS passarão a mostrar valores reais
+- Todas as 3 contas de anúncios terão atribuição funcional
+
