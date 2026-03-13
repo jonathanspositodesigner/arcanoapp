@@ -1,50 +1,55 @@
 
-# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
-## Resumo
-Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
+# Fix: Atribuição de vendas Hotmart no dashboard ADS
 
-## O que foi feito
+## Problema identificado
 
-### 1. Tabela `subscription_billing_reminders` (migration)
-- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
-- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
-- Campo `checkout_url` para evitar checkouts duplicados
-- Constraint UNIQUE em (subscription_id, day_offset, due_date)
+A venda de `zomilazii106@gmail.com` veio da Hotmart com estes UTMs:
+- `utm_source`: FB
+- `utm_campaign`: `[ES][UPSCALER ARCANO] $7,90` (nome, sem ID)
+- `utm_content`: `120238937998350575` ← **este é o campaign_id real!**
+- `utm_id`: `120238937998430575` ← este é outro ID (ad ou adset)
+- `utm_term`: `AD3.2 VIDEO ANTES DPS ST`
 
-### 2. Edge Function `process-billing-reminders`
-- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
-- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
-- Para cada assinatura, verifica:
-  - Se já enviou email para esse `day_offset`
-  - Se a sequência foi parada (pagou ou descadastrou)
-  - Se o email está na blacklist
-  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
-- Gera checkout Pagar.me somente PIX com validade de 3 dias
-- Monta HTML personalizado com dados reais do plano
-- Envia via SendPulse SMTP API
-- Registra na tabela de controle
+O código de atribuição de campanhas (linha 211-230 de `useAdsCampaigns.ts`) tenta:
+1. `utm_id` → pega `120238937998430575` (não bate com nenhuma campanha)
+2. `utm_campaign` → pega o nome sem ID (não extrai nada)
+3. **Ignora `utm_content`** com o comentário "contém ad_id, não campaign_id"
 
-### 3. Mapeamento de benefícios por plano
-- Starter: 1.800 créditos, 5 prompts/dia
-- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
-- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
-- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
+Mas neste caso, `utm_content` TEM o campaign_id. O mesmo provavelmente acontece com outras vendas dessa conta ES.
 
-### 4. Templates dos 6 emails
-- Dia 0: Lembrete leve ("Seu plano vence hoje")
-- Dia 1: Reforço pendência ("Pagamento ainda pendente")
-- Dia 2: Dor da perda ("Risco de perda de acesso")
-- Dia 3: Prejuízo prático ("O custo de não renovar")
-- Dia 4: FOMO ("Não fique para trás")
-- Dia 5: Último aviso ("Último aviso: regularize hoje")
-- Todos com link de descadastro no rodapé
+## Solução
 
-### 5. Cron job
-- pg_cron agendado: `0 12 * * *` (09:00 BRT)
-- Chama a Edge Function automaticamente
+Tornar a atribuição mais inteligente: depois de tentar `utm_id` e `utm_campaign`, verificar se o valor extraído realmente existe como `campaign_id` no mapa de campanhas. Se não existir, tentar `utm_content` como fallback.
 
-## Detecção de pagamento (para de enviar)
-- `planos2_subscriptions.expires_at` estendido para data futura
-- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
-- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
+### Arquivo: `src/components/admin/ads/useAdsCampaigns.ts`
+
+Modificar o bloco de atribuição de campanhas (linhas 206-238) para:
+
+1. Extrair todos os IDs candidatos dos UTMs (`utm_id`, `utm_campaign` parte final, `utm_content`)
+2. Verificar qual desses IDs realmente existe no `campaignMap` (campanhas conhecidas)
+3. Usar o primeiro match válido
+
+```text
+Lógica atual:
+  utm_id → resolvedCampaignId (sem validar se existe)
+  utm_campaign "Name|ID" → resolvedCampaignId
+  utm_content → IGNORADO
+
+Lógica nova:
+  Coletar candidatos: [utm_id, utm_campaign_part, utm_content]
+  Para cada candidato, verificar se existe em campaignMap
+  Usar o primeiro que bater
+  Se nenhum bater, usar o primeiro candidato não-vazio (comportamento atual)
+```
+
+### Arquivo: `src/components/admin/ads/useAdsHierarchy.ts`
+
+Aplicar a mesma lógica flexível na atribuição de adsets e ads:
+- Para adsets: além de `utm_medium`, verificar `utm_id` e `utm_content` contra os adset_ids conhecidos
+- Para ads: além de `utm_content`, verificar `utm_id` e `utm_term` contra os ad_ids conhecidos
+
+## Impacto
+
+Corrige a atribuição para campanhas/contas que usam mapeamento UTM diferente do padrão, sem quebrar as que já funcionam.
+
