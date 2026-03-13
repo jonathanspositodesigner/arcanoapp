@@ -684,6 +684,13 @@ serve(async (req) => {
         const BUNDLE_EXTRA_PACKS: Record<string, Array<{pack_slug: string, access_type: string}>> = {
           'pack4lancamento': [
             { pack_slug: 'pack-de-sao-joao', access_type: 'vitalicio' }
+          ],
+          'combo-1e2-1ano': [
+            { pack_slug: 'pack-arcano-vol-2', access_type: '1_ano' }
+          ],
+          'combo-1ao3-vitalicio': [
+            { pack_slug: 'pack-arcano-vol-2', access_type: 'vitalicio' },
+            { pack_slug: 'pack-arcano-vol-3', access_type: 'vitalicio' }
           ]
         }
 
