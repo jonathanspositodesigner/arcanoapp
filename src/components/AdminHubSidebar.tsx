@@ -40,12 +40,6 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout }: AdminHubSidebar
       description: "Logs e monitoramento Meta"
     },
     {
-      id: "dashboard" as const,
-      label: "MÉTRICAS ESSENCIAIS",
-      icon: BarChart3,
-      description: "Instalações, Push, Primeiro Acesso"
-    },
-    {
       id: "partners" as const,
       label: "GERENCIAR PARCEIROS",
       icon: Users,
