@@ -72,6 +72,8 @@ const plans: PricingPlan[] = [
     ],
     buttonText: "QUERO ACESSO DE 1 ANO",
   },
+  {
+    id: "vitalicio",
     slug: "pack4lancamento",
     title: "Pack Arcano 4",
     accessLabel: "ACESSO VITALÍCIO",
@@ -92,6 +94,7 @@ const plans: PricingPlan[] = [
     bonus: "+20 MOVIES PARA TELÃO",
     highlight: true,
     badge: "MAIS POPULAR",
+    buttonText: "QUERO ACESSO VITALÍCIO",
   },
 ];
 
