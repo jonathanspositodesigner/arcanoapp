@@ -1,49 +1,42 @@
 
+# Migração Planos Mensais/Anuais: Greenn → Pagar.me (CONCLUÍDA v2 - Recorrência Real)
 
-# Correção: Vídeos travados na thumbnail sem autoplay no mobile
+## Resumo
+Migração dos 8 planos de assinatura (4 planos × 2 períodos) da Greenn para o Pagar.me com **recorrência real via cartão de crédito** e PIX como pagamento avulso.
 
-## Diagnóstico real
+## Decisão Arquitetural
+- **Cartão de Crédito**: Recorrência real via `POST /subscriptions` do Pagar.me. Tokenização do cartão no front-end via API pública (`pk_XXXX`). Cobrança automática a cada ciclo.
+- **PIX**: Checkout avulso (sem recorrência) — plano ativa por 30/365 dias. pg_cron expira planos vencidos.
+- **Reembolso**: Cancela subscription no Pagar.me (`DELETE /subscriptions/{id}`) + revoga plano → free + zera créditos.
 
-O problema está na lógica de overlay do `SecureVideo`:
+## O que foi feito
 
-1. **O vídeo começa com `opacity-0 blur-md`** — literalmente invisível
-2. **Um overlay com a poster/thumbnail cobre o vídeo** enquanto `videoLoaded === false`
-3. **No mobile (especialmente iOS Chrome/WebKit)**, com 16 cards carregando vídeos de 3-6MB simultaneamente, os eventos `loadeddata`/`canplay` demoram ou nunca disparam
-4. **Resultado**: o overlay nunca some, o vídeo fica escondido atrás da thumbnail para sempre
+### 1. Banco de Dados
+- Colunas `plan_slug` e `billing_period` em `mp_products`
+- Coluna `pagarme_subscription_id` em `asaas_orders` e `planos2_subscriptions`
+- 8 produtos inseridos: `plano-{starter,pro,ultimate,unlimited}-{mensal,anual}`
 
-O navegador mobile **consegue** fazer autoplay muted inline — o problema é que o código esconde o vídeo até receber um evento que nunca chega.
+### 2. CreditCardForm.tsx (NOVO)
+- Formulário seguro com campos: Número, Nome, Validade, CVV
+- Tokenização direta via `POST https://api.pagar.me/core/v5/tokens?appId=pk_XXX`
+- Retorna `card_token` para o fluxo de subscription
 
-## Solução
+### 3. create-pagarme-subscription (NOVO)
+- Edge function que cria subscription recorrente via `POST /subscriptions`
+- Suporta `interval: month` ou `year` baseado no `billing_period` do produto
+- Salva `pagarme_subscription_id` na ordem
 
-Eliminar a lógica de overlay/opacity que esconde o vídeo. Usar o atributo nativo `poster` do `<video>` (que o browser já gerencia perfeitamente) e deixar o vídeo visível desde o início.
+### 4. webhook-pagarme (ATUALIZADO)
+- Busca ordens por `pagarme_subscription_id` (fallback 4)
+- Trata `subscription.canceled`: revoga plano → free, zera créditos
+- Trata renovação (`charge.paid` em ordem já `paid`): renova plano + reseta créditos
+- Salva `pagarme_subscription_id` no `planos2_subscriptions`
 
-### 1. `SecureVideo` em `src/components/SecureMedia.tsx`
+### 5. refund-pagarme (ATUALIZADO)
+- Cancela subscription no Pagar.me via `DELETE /subscriptions/{id}` antes de revogar
+- Revoga plano → free + zera créditos
 
-- **Remover** o state `videoLoaded` e todo o overlay condicional
-- **Remover** as classes `blur-md opacity-0` / `blur-0 opacity-100` do vídeo
-- **Manter** o atributo nativo `poster` no `<video>` — o browser mostra o poster automaticamente até o primeiro frame estar pronto
-- **Manter** toda a lógica de autoplay programático (setAttribute muted/playsinline, `play()` em canplay/loadeddata)
-- **Manter** a lógica de retry em `onError`
-- O vídeo fica sempre visível; o browser nativamente mostra poster → primeiro frame → playback
-
-### 2. `LazyVideo` em `src/components/LazyVideo.tsx`
-
-- Sem mudanças necessárias (já passa poster para SecureVideo)
-
-### 3. `BibliotecaPrompts.tsx`
-
-- Sem mudanças necessárias (já passa thumbnailUrl como poster)
-
-## Arquivos modificados
-
-- `src/components/SecureMedia.tsx` — simplificar SecureVideo removendo overlay/opacity
-
-## Por que funciona
-
-O `<video poster="thumb.webp" autoplay muted playsinline loop>` é o padrão nativo que todos os browsers mobile suportam. O browser:
-1. Mostra o poster imediatamente
-2. Quando o vídeo carrega, substitui pelo primeiro frame automaticamente
-3. Se autoplay funcionar, reproduz; se não, mostra o poster
-
-Sem overlays React bloqueando, sem estados que nunca atualizam.
-
+### 6. Planos2.tsx (ATUALIZADO)
+- Cartão: abre CreditCardForm → tokeniza → create-pagarme-subscription → recorrência real
+- PIX: mantém checkout avulso via create-pagarme-checkout → 30/365 dias sem recorrência
+- Flag `isSubscriptionFlow` diferencia fluxos de assinatura vs créditos avulsos
