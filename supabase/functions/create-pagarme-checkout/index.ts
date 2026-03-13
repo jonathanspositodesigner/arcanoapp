@@ -274,18 +274,37 @@ serve(async (req) => {
     }
 
     const authHeader = 'Basic ' + btoa(pagarmeSecretKey + ':')
+    console.log(`🔑 Pagar.me API: ${PAGARME_API_URL} | Key prefix: ${pagarmeSecretKey.substring(0, 8)}...`)
 
-    // 4. Criar pedido no Pagar.me
-    const pagarmeResponse = await fetch(`${PAGARME_API_URL}/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': authHeader
-      },
-      body: JSON.stringify(checkoutPayload)
-    })
+    // 4. Criar pedido no Pagar.me (com timeout de 30s)
+    let pagarmeResponse: Response
+    let pagarmeResponseText: string
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 30000)
 
-    const pagarmeResponseText = await pagarmeResponse.text()
+      pagarmeResponse = await fetch(`${PAGARME_API_URL}/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authHeader
+        },
+        body: JSON.stringify(checkoutPayload),
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeout)
+      pagarmeResponseText = await pagarmeResponse.text()
+    } catch (fetchErr: any) {
+      const errMsg = fetchErr?.name === 'AbortError'
+        ? 'Timeout de 30s ao conectar com o gateway de pagamento'
+        : `Falha de rede ao conectar com Pagar.me: ${fetchErr?.message || 'unknown'}`
+      console.error(`❌ ${errMsg}`)
+      return new Response(JSON.stringify({ error: 'Erro de comunicação com o gateway. Tente novamente.' }), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
 
     if (!pagarmeResponse.ok) {
       console.error('Erro Pagar.me:', pagarmeResponse.status, pagarmeResponseText.substring(0, 800))
