@@ -1,50 +1,61 @@
 
-# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
+Objetivo: blindar o fluxo de geração de checkout do Pagar.me (incluindo /prevenda-pack4) para reduzir falhas, reduzir demora percebida e evitar “ordens penduradas”.
 
-## Resumo
-Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
+Diagnóstico já verificado
+- O erro crítico anterior (`PAGARME_API_URL is not defined`) já foi corrigido e os logs recentes mostram checkouts sendo criados.
+- Ainda existem riscos reais no código atual:
+  1) falhas transitórias de gateway/rede sem retry inteligente;
+  2) ordens ficam `pending` sem `asaas_payment_id` quando a chamada falha após criar ordem interna;
+  3) ausência de idempotência (risco de duplicar cobrança em reenvio/retry);
+  4) alguns `catch` no frontend são silenciosos (usuário clica e não sabe o que aconteceu);
+  5) modal de pré-checkout ainda pode ser fechado durante processamento (abandono/confusão).
 
-## O que foi feito
+Plano de implementação (em fases)
 
-### 1. Tabela `subscription_billing_reminders` (migration)
-- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
-- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
-- Campo `checkout_url` para evitar checkouts duplicados
-- Constraint UNIQUE em (subscription_id, day_offset, due_date)
+Fase 1 — Hotfix de robustez imediata (prioridade máxima)
+1. Hardening do `create-pagarme-checkout`:
+   - Adicionar `request_id`/`idempotency_key` por tentativa.
+   - Enviar idempotência para o gateway (mesmo id em retries).
+   - Retry controlado para erros transitórios (timeout/rede/429/5xx), com backoff curto.
+   - Timeout por tentativa + limpeza do timer em `finally`.
+   - Normalização mais tolerante de telefone (tratar prefixo 55) e validação consistente de CPF/email.
+   - Em qualquer falha final: atualizar a ordem para `failed` (em vez de deixar `pending` sem payment id).
 
-### 2. Edge Function `process-billing-reminders`
-- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
-- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
-- Para cada assinatura, verifica:
-  - Se já enviou email para esse `day_offset`
-  - Se a sequência foi parada (pagou ou descadastrou)
-  - Se o email está na blacklist
-  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
-- Gera checkout Pagar.me somente PIX com validade de 3 dias
-- Monta HTML personalizado com dados reais do plano
-- Envia via SendPulse SMTP API
-- Registra na tabela de controle
+2. Tratamento de erro explícito para usuário:
+   - Resposta padronizada com `error_code`, `message`, `request_id`.
+   - Frontend mostra erro claro e reaproveita `request_id` para suporte.
 
-### 3. Mapeamento de benefícios por plano
-- Starter: 1.800 créditos, 5 prompts/dia
-- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
-- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
-- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
+3. Frontend sem falhas silenciosas:
+   - Nos fluxos de compra (`PricingCardsSection`, `Planos2`, `PlanosArtes`, `PlanosArtesMembro`, `PreCheckoutModal`), remover `catch` “mudo”.
+   - Se falhar leitura de perfil, abrir pré-checkout como fallback + aviso visual.
+   - Bloquear fechamento do modal enquanto `loading/isSubmitting`.
 
-### 4. Templates dos 6 emails
-- Dia 0: Lembrete leve ("Seu plano vence hoje")
-- Dia 1: Reforço pendência ("Pagamento ainda pendente")
-- Dia 2: Dor da perda ("Risco de perda de acesso")
-- Dia 3: Prejuízo prático ("O custo de não renovar")
-- Dia 4: FOMO ("Não fique para trás")
-- Dia 5: Último aviso ("Último aviso: regularize hoje")
-- Todos com link de descadastro no rodapé
+Fase 2 — Integridade e recuperação automática
+4. Banco (migração):
+   - Adicionar metadados de tentativa em `asaas_orders` (ex.: `checkout_request_id`, `gateway_error_code`, `gateway_error_message`, `last_attempt_at`).
+   - Criar índice para monitorar rapidamente ordens problemáticas (`status`, `asaas_payment_id`, `created_at`).
+   - Função de saneamento para marcar como `failed` ordens `pending` sem `asaas_payment_id` após janela de segurança.
 
-### 5. Cron job
-- pg_cron agendado: `0 12 * * *` (09:00 BRT)
-- Chama a Edge Function automaticamente
+5. Resiliência de fallback (anti-timeout extremo):
+   - Implementar modo fila para contingência:
+     - função principal enfileira quando o gateway estiver instável;
+     - worker processa em background;
+     - cliente recebe `job_id` e faz polling até obter `checkout_url`.
+   - Estratégia híbrida: tentar síncrono primeiro (rápido), cair para fila apenas em indisponibilidade transitória.
 
-## Detecção de pagamento (para de enviar)
-- `planos2_subscriptions.expires_at` estendido para data futura
-- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
-- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
+Fase 3 — Validação operacional
+6. Testes e validação ponta a ponta:
+   - Cenários obrigatórios:
+     - sucesso PIX e cartão;
+     - timeout simulado + retry;
+     - falha de gateway 5xx;
+     - repetição de clique/reenvio (idempotência);
+     - perfil incompleto/inválido;
+     - fluxo específico `/prevenda-pack4`.
+   - Confirmar que não nasce nova ordem “pendurada” sem payment id em falhas.
+
+Resultado esperado
+- Queda forte nas falhas de criação de checkout.
+- Menos demora percebida (retry curto + fallback estruturado).
+- Sem ordens órfãs pendentes.
+- Fluxo previsível para usuário e suporte com `request_id` rastreável.
