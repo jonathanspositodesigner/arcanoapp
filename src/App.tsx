@@ -335,7 +335,7 @@ const AppContent = () => {
           <Route path="/gerador-avatar" element={<GeradorPersonagemTool />} />
           <Route path="/gerador-personagem" element={<Navigate to="/gerador-avatar" replace />} />
           <Route path="/upscaler-selection" element={<UpscalerSelectionPage />} />
-          <Route path="/pack-agendas" element={<PackAgendas />} />
+          
           <Route path="/combo-artes-arcanas" element={<ComboArtesArcanas />} />
           <Route path="/planos-creditos" element={<Navigate to="/planos-2" replace />} />
           <Route path="/ferramentas-ia-aplicativo" element={<FerramentasIAAplicativo />} />
