@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, Mail, MailX, RefreshCw, Loader2, ChevronLeft, ChevronRight, Save, TrendingUp, Edit3 } from "lucide-react";
+import { Search, Mail, MailX, RefreshCw, Loader2, ChevronLeft, ChevronRight, Save, TrendingUp, Edit3, Eye, Code, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
