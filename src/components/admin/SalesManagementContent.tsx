@@ -376,6 +376,17 @@ const SalesManagementContent = () => {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
+      <Tabs defaultValue="sales" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="sales">🛒 Vendas</TabsTrigger>
+          <TabsTrigger value="renewal">📧 Emails de Renovação</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="renewal">
+          <RenewalEmailsMonitoring />
+        </TabsContent>
+
+        <TabsContent value="sales">
       <div className="flex items-center gap-3">
         <Receipt className="h-6 w-6 text-primary" />
         <div>
