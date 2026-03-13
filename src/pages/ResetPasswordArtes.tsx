@@ -17,47 +17,49 @@ const ResetPasswordArtes = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const [isVerifying, setIsVerifying] = useState(true);
+
   useEffect(() => {
-    // Verificar se há erro no hash da URL
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const error = hashParams.get('error');
-    const errorDescription = hashParams.get('error_description');
-    
-    if (error) {
-      toast.error(errorDescription || t('errors.invalidResetLink'));
-      navigate("/forgot-password-artes");
-      return;
-    }
+    const verifyToken = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const tokenHash = params.get("token_hash");
+      const type = params.get("type");
 
-    // Escutar mudanças de autenticação para detectar recovery
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('Auth event:', event);
-        
-        if (event === 'PASSWORD_RECOVERY') {
-          console.log('Password recovery session detected');
+      if (tokenHash && type === "recovery") {
+        console.log("[ResetPasswordArtes] Verifying token_hash via verifyOtp...");
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: "recovery",
+        });
+        if (error) {
+          console.error("[ResetPasswordArtes] verifyOtp error:", error);
+          toast.error(t('errors.invalidResetLink'));
+          navigate("/forgot-password-artes");
           return;
         }
-        
-        if (event === 'SIGNED_IN' && session) {
-          return;
-        }
+        console.log("[ResetPasswordArtes] Token verified successfully");
+        setIsVerifying(false);
+        return;
       }
-    );
 
-    // Dar tempo para o Supabase processar os tokens do hash antes de verificar sessão
-    const timer = setTimeout(async () => {
+      // Fallback: check hash errors or existing session
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const hashError = hashParams.get('error');
+      if (hashError) {
+        toast.error(hashParams.get('error_description') || t('errors.invalidResetLink'));
+        navigate("/forgot-password-artes");
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast.error(t('errors.invalidResetLink'));
         navigate("/forgot-password-artes");
+        return;
       }
-    }, 1500);
-
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(timer);
+      setIsVerifying(false);
     };
+    verifyToken();
   }, [navigate, t]);
 
   const handleResetPassword = async (e: React.FormEvent) => {

@@ -18,16 +18,42 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [isVerifying, setIsVerifying] = useState(true);
+
   useEffect(() => {
-    // Check if user has a valid session from the reset link
-    const checkSession = async () => {
+    const verifyToken = async () => {
+      // Check for token_hash in query params (safe link from email)
+      const params = new URLSearchParams(window.location.search);
+      const tokenHash = params.get("token_hash");
+      const type = params.get("type");
+
+      if (tokenHash && type === "recovery") {
+        console.log("[ResetPassword] Verifying token_hash via verifyOtp...");
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: "recovery",
+        });
+        if (error) {
+          console.error("[ResetPassword] verifyOtp error:", error);
+          toast.error(t('errors.invalidResetLink'));
+          navigate("/forgot-password");
+          return;
+        }
+        console.log("[ResetPassword] Token verified successfully");
+        setIsVerifying(false);
+        return;
+      }
+
+      // Fallback: check if session already exists (legacy hash fragment flow)
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast.error(t('errors.invalidResetLink'));
         navigate("/login");
+        return;
       }
+      setIsVerifying(false);
     };
-    checkSession();
+    verifyToken();
   }, [navigate, t]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
