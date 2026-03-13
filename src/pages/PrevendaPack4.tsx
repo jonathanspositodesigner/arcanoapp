@@ -5,7 +5,6 @@ import { LazySection } from "@/components/combo-artes/LazySection";
 
 const FlyersGallerySection = lazy(() => import("@/components/combo-artes/FlyersGallerySection").then(m => ({ default: m.FlyersGallerySection })));
 const MotionsGallerySection = lazy(() => import("@/components/combo-artes/MotionsGallerySection").then(m => ({ default: m.MotionsGallerySection })));
-const BonusFimDeAnoSection = lazy(() => import("@/components/combo-artes/BonusFimDeAnoSection").then(m => ({ default: m.BonusFimDeAnoSection })));
 const BonusGridSection = lazy(() => import("@/components/combo-artes/BonusGridSection").then(m => ({ default: m.BonusGridSection })));
 const TestimonialsSection = lazy(() => import("@/components/combo-artes/TestimonialsSection").then(m => ({ default: m.TestimonialsSection })));
 const GuaranteeSectionCombo = lazy(() => import("@/components/combo-artes/GuaranteeSectionCombo").then(m => ({ default: m.GuaranteeSectionCombo })));
@@ -126,11 +125,8 @@ const PrevendaPack4 = () => {
         </Suspense>
       </LazySection>
       
-      <LazySection>
-        <Suspense fallback={<SectionSkeleton />}>
-          <BonusFimDeAnoSection />
-        </Suspense>
-      </LazySection>
+
+
       
       <LazySection>
         <Suspense fallback={<SectionSkeleton />}>
