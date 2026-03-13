@@ -150,8 +150,9 @@ export function useAdsCampaigns(
       setCampaigns(Array.from(campaignMap.values()));
 
       // Fetch sales for the same period
-      const startTs = new Date(dateRange.start).toISOString();
-      const endTs = new Date(new Date(dateRange.end).getTime() + 86400000).toISOString();
+      // Meia-noite São Paulo = 03:00 UTC (UTC-3)
+      const startTs = `${dateRange.start}T03:00:00.000Z`;
+      const endTs = new Date(new Date(`${dateRange.end}T03:00:00.000Z`).getTime() + 86400000).toISOString();
       
       const { data: salesData, error: salesError } = await supabase.rpc(
         "get_unified_dashboard_orders",
