@@ -32,7 +32,10 @@ function extractMetrics(row: any) {
   const initiatedCheckouts = getActionValue(actions, "offsite_conversion.fb_pixel_initiate_checkout")
     || getActionValue(actions, "initiate_checkout")
     || getActionValue(actions, "omni_initiated_checkout");
-  return { landingPageViews, initiatedCheckouts };
+  const purchases = getActionValue(actions, "offsite_conversion.fb_pixel_purchase")
+    || getActionValue(actions, "purchase")
+    || getActionValue(actions, "omni_purchase");
+  return { landingPageViews, initiatedCheckouts, purchases };
 }
 
 async function fetchAllPages(url: string, accessToken: string): Promise<any[]> {
