@@ -269,7 +269,8 @@ export const PricingCardsSection = () => {
             return (
             <div
               key={plan.id}
-              className={`relative rounded-3xl p-6 md:p-8 flex flex-col ${
+              style={{ order: mobileOrder[plan.id] ?? 99 }}
+              className={`relative rounded-3xl p-6 md:p-8 flex flex-col md:!order-none ${
                 plan.highlight
                   ? "bg-gradient-to-br from-[#EF672C]/20 to-[#EF672C]/5 border-2 border-[#EF672C] scale-[1.02] md:scale-105"
                   : "bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10"
