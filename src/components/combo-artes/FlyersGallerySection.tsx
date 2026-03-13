@@ -52,8 +52,6 @@ const categories = [
       "/images/combo/funk-fluxo-baile.webp",
       "/images/combo/funk-giro-louco.webp",
       "/images/combo/funk-made-in-funk.webp",
-      "/images/combo/funk-noite-vegas.webp",
-      "/images/combo/funk-party.webp",
     ],
   },
   {
