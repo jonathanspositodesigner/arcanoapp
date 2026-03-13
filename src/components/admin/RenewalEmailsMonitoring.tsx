@@ -413,14 +413,10 @@ const TemplateEditorTab = () => {
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground block mb-1 flex items-center gap-1">
-                  <Code className="h-3 w-3" /> Conteúdo HTML do email
-                </label>
-                <Textarea
+                <label className="text-xs text-muted-foreground block mb-1">Conteúdo do email</label>
+                <EmailHtmlEditor
                   value={editBodyHtml}
-                  onChange={(e) => setEditBodyHtml(e.target.value)}
-                  className="text-xs min-h-[300px] font-mono"
-                  placeholder="HTML do corpo do email..."
+                  onChange={setEditBodyHtml}
                 />
               </div>
               <div className="flex gap-2">
