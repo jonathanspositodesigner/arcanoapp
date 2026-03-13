@@ -1,15 +1,17 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, ChevronLeft, ChevronRight, Receipt, Calendar } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Receipt, Calendar, Mail, MailX, AlertTriangle, RefreshCw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { toast } from "sonner";
 import SaleDetailDialog from "./SaleDetailDialog";
 
 export interface SaleRecord {
@@ -25,6 +27,11 @@ export interface SaleRecord {
   payment_method: string | null;
   name?: string;
   whatsapp?: string;
+}
+
+interface EmailLogStatus {
+  status: string;
+  error_message: string | null;
 }
 
 const PAGE_SIZE = 20;
@@ -56,6 +63,8 @@ const SalesManagementContent = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [customStart, setCustomStart] = useState<Date | undefined>();
   const [customEnd, setCustomEnd] = useState<Date | undefined>();
+  const [emailStatuses, setEmailStatuses] = useState<Map<string, EmailLogStatus>>(new Map());
+  const [resendingEmails, setResendingEmails] = useState<Set<string>>(new Set());
 
   const dateRange = useMemo(() => {
     const now = new Date();
@@ -83,6 +92,37 @@ const SalesManagementContent = () => {
     }
     return { start, end };
   }, [rangePreset, customStart, customEnd]);
+
+  const fetchEmailStatuses = useCallback(async (emails: string[]) => {
+    if (emails.length === 0) return;
+    
+    const uniqueEmails = [...new Set(emails)];
+    const statusMap = new Map<string, EmailLogStatus>();
+    
+    // Fetch in chunks of 100
+    for (let i = 0; i < uniqueEmails.length; i += 100) {
+      const chunk = uniqueEmails.slice(i, i + 100);
+      const { data } = await supabase
+        .from("welcome_email_logs")
+        .select("email, status, error_message")
+        .in("email", chunk)
+        .order("sent_at", { ascending: false });
+      
+      if (data) {
+        for (const log of data) {
+          // Keep the most recent status per email
+          if (!statusMap.has(log.email)) {
+            statusMap.set(log.email, {
+              status: log.status || 'unknown',
+              error_message: log.error_message,
+            });
+          }
+        }
+      }
+    }
+    
+    setEmailStatuses(statusMap);
+  }, []);
 
   useEffect(() => {
     const fetchSales = async () => {
@@ -139,6 +179,12 @@ const SalesManagementContent = () => {
         }
 
         setSales(sorted);
+        
+        // Fetch email statuses for paid sales
+        const paidEmails = sorted
+          .filter((s) => s.status === "paid")
+          .map((s) => s.user_email);
+        await fetchEmailStatuses(paidEmails);
       } catch (err) {
         console.error("Error:", err);
       } finally {
@@ -147,7 +193,140 @@ const SalesManagementContent = () => {
     };
 
     fetchSales();
-  }, [dateRange]);
+  }, [dateRange, fetchEmailStatuses]);
+
+  const handleResendEmail = async (sale: SaleRecord, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    setResendingEmails((prev) => new Set(prev).add(sale.id));
+    
+    try {
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const response = await fetch(
+        `https://${projectId}.supabase.co/functions/v1/resend-purchase-email`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: sale.user_email,
+            order_id: sale.id,
+            product_name: sale.product_title,
+            source_platform: sale.source_platform,
+          }),
+        }
+      );
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        toast.success(`Email reenviado para ${sale.user_email}`);
+        // Update local status
+        setEmailStatuses((prev) => {
+          const newMap = new Map(prev);
+          newMap.set(sale.user_email, { status: 'sent', error_message: null });
+          return newMap;
+        });
+      } else {
+        toast.error(`Falha ao reenviar: ${result.error || 'Erro desconhecido'}`);
+      }
+    } catch (err) {
+      toast.error("Erro ao reenviar email");
+    } finally {
+      setResendingEmails((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(sale.id);
+        return newSet;
+      });
+    }
+  };
+
+  const renderEmailStatus = (sale: SaleRecord) => {
+    if (sale.status !== "paid") return null;
+    
+    const emailLog = emailStatuses.get(sale.user_email);
+    const isResending = resendingEmails.has(sale.id);
+    
+    if (isResending) {
+      return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
+    }
+    
+    if (!emailLog) {
+      // No log found
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={(e) => handleResendEmail(sale, e)}
+              >
+                <AlertTriangle className="h-4 w-4 text-yellow-500" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Email não encontrado — Clique para reenviar</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+    
+    if (emailLog.status === 'sent') {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Mail className="h-4 w-4 text-emerald-500" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Email enviado com sucesso</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+    
+    if (emailLog.status === 'failed') {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={(e) => handleResendEmail(sale, e)}
+              >
+                <MailX className="h-4 w-4 text-destructive" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Email falhou — Clique para reenviar</p>
+              {emailLog.error_message && (
+                <p className="text-xs text-muted-foreground max-w-[200px] truncate">{emailLog.error_message}</p>
+              )}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+    
+    // pending or other
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <RefreshCw className="h-4 w-4 text-yellow-500" />
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Email pendente ({emailLog.status})</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  };
 
   const filtered = useMemo(() => {
     let result = sales;
@@ -310,6 +489,7 @@ const SalesManagementContent = () => {
                     <th className="text-left py-2 px-3 font-medium">Pagamento</th>
                     <th className="text-right py-2 px-3 font-medium">Valor</th>
                     <th className="text-center py-2 px-3 font-medium">Status</th>
+                    <th className="text-center py-2 px-3 font-medium">📧</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -347,6 +527,9 @@ const SalesManagementContent = () => {
                         <td className="py-2.5 px-3 text-center">
                           <Badge variant={st.variant} className="text-xs">{st.label}</Badge>
                         </td>
+                        <td className="py-2.5 px-3 text-center">
+                          {renderEmailStatus(sale)}
+                        </td>
                       </tr>
                     );
                   })}
@@ -368,7 +551,10 @@ const SalesManagementContent = () => {
                       <span className="text-xs text-muted-foreground">
                         {formatDate(sale.paid_at || sale.created_at)}
                       </span>
-                      <Badge variant={st.variant} className="text-xs">{st.label}</Badge>
+                      <div className="flex items-center gap-2">
+                        {renderEmailStatus(sale)}
+                        <Badge variant={st.variant} className="text-xs">{st.label}</Badge>
+                      </div>
                     </div>
                     <p className="text-sm font-medium text-foreground truncate">
                       {sale.name || sale.user_email}
