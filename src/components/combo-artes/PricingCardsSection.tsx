@@ -343,7 +343,8 @@ export const PricingCardsSection = () => {
                 {isLoading && selectedSlug === plan.slug ? 'Processando...' : plan.buttonText}
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Countdown - shared */}
