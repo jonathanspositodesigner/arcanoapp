@@ -1,45 +1,86 @@
 const STORAGE_KEY = 'captured_utms';
 
+const INVALID_VALUES = ['aplicativo', '', 'app'];
+
+/**
+ * Checks if a UTM value is valid (not a placeholder or empty)
+ */
+const isValidUtmValue = (value: unknown): boolean => {
+  if (typeof value !== 'string') return false;
+  const trimmed = value.trim();
+  if (INVALID_VALUES.includes(trimmed.toLowerCase())) return false;
+  if (trimmed.startsWith('{{') && trimmed.endsWith('}}')) return false;
+  return trimmed.length > 0;
+};
+
+/**
+ * Reads captured UTMs from sessionStorage, strips invalid values.
+ * Returns null if no valid UTMs remain.
+ */
+export const getSanitizedUtms = (): Record<string, string> | null => {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Record<string, string>;
+    const filtered: Record<string, string> = {};
+    for (const [key, value] of Object.entries(parsed)) {
+      if (isValidUtmValue(value)) {
+        filtered[key] = value;
+      }
+    }
+    return Object.keys(filtered).length > 0 ? filtered : null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Server-side UTM sanitization for edge functions.
+ * Strips "aplicativo" and placeholder values from utm_data payload.
+ */
+export const sanitizeUtmData = (utmData: Record<string, any> | null | undefined): Record<string, any> | null => {
+  if (!utmData || typeof utmData !== 'object') return null;
+  const filtered: Record<string, any> = {};
+  for (const [key, value] of Object.entries(utmData)) {
+    if (isValidUtmValue(value)) {
+      filtered[key] = value;
+    }
+  }
+  return Object.keys(filtered).length > 0 ? filtered : null;
+};
+
 /**
  * Appends captured UTM parameters to a URL
  * Also adds Hotmart-specific 'sck' parameter for attribution
- * @param url The checkout URL to append UTMs to
- * @param locale Optional locale to append (e.g., 'es' for Spanish)
- * @returns URL with UTM parameters and sck appended
+ * Never appends placeholder values like "aplicativo"
  */
 export const appendUtmToUrl = (url: string, locale?: string): string => {
   try {
-    const utmsRaw = sessionStorage.getItem(STORAGE_KEY);
     const urlObj = new URL(url);
-    
-    // Add stored UTMs
-    if (utmsRaw) {
-      const utms = JSON.parse(utmsRaw) as Record<string, string>;
-      
-      // Add all standard UTM parameters
+    const utms = getSanitizedUtms();
+
+    if (utms) {
+      // Add all standard UTM parameters (skip fbclid, added separately)
       Object.entries(utms).forEach(([key, value]) => {
-        if (key !== 'fbclid') { // fbclid added separately
+        if (key !== 'fbclid') {
           urlObj.searchParams.set(key, value);
         }
       });
-      
-      // Add fbclid for Meta Ads attribution (critical for conversion tracking)
+
+      // Add fbclid for Meta Ads attribution
       if (utms.fbclid) {
         urlObj.searchParams.set('fbclid', utms.fbclid);
       }
-      
-      // Build and add Hotmart sck parameter (format: source|campaign|content)
-      // This is how Hotmart attributes sales to ad sources
-      // IMPORTANT: Keep 3 parts always to preserve positional structure
-      const sckSource = utms.utm_source || 'app';
-      const sckCampaign = utms.utm_campaign || '';
-      const sckContent = utms.utm_content || '';
 
-      // Always build with 3 parts so Hotmart interprets correctly
-      urlObj.searchParams.set('sck', `${sckSource}|${sckCampaign}|${sckContent}`);
+      // Build sck only if we have valid source data
+      const sckSource = utms.utm_source;
+      if (sckSource) {
+        const sckCampaign = utms.utm_campaign || '';
+        const sckContent = utms.utm_content || '';
+        urlObj.searchParams.set('sck', `${sckSource}|${sckCampaign}|${sckContent}`);
+      }
     }
 
-    // Add locale automatically if provided
     if (locale) {
       urlObj.searchParams.set('utm_locale', locale);
     }

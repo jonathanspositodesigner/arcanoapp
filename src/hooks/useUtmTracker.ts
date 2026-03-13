@@ -4,28 +4,32 @@ const UTM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_id', 'utm_ter
 const STORAGE_KEY = 'captured_utms';
 const CAPTURED_FLAG = 'utms_captured';
 
-const DEFAULT_UTMS = {
-  utm_source: 'aplicativo',
-  utm_medium: 'aplicativo',
-  utm_campaign: 'aplicativo',
-  utm_id: 'aplicativo',
-  utm_content: 'aplicativo',
-  utm_term: 'aplicativo',
-  xcod: 'aplicativo'
-};
-
 /**
  * Hook that captures UTM parameters on app load
- * - If user comes from an ad (has UTMs), saves original UTMs
- * - If user enters directly (no UTMs), sets default app UTMs
- * - UTMs are captured only once per session
+ * - Only captures when real UTMs exist in the URL
+ * - Never sets default/placeholder values
+ * - Cleans legacy "aplicativo" data from previous sessions
  */
 export const useUtmTracker = () => {
   useEffect(() => {
+    // Clean legacy "aplicativo" contamination from storage
+    try {
+      const existing = sessionStorage.getItem(STORAGE_KEY);
+      if (existing) {
+        const parsed = JSON.parse(existing);
+        const allAplicativo = Object.values(parsed).every(v => v === 'aplicativo');
+        if (allAplicativo) {
+          sessionStorage.removeItem(STORAGE_KEY);
+          sessionStorage.removeItem(CAPTURED_FLAG);
+          console.log('[UTM] Cleaned legacy "aplicativo" UTMs from storage');
+        }
+      }
+    } catch { /* ignore */ }
+
     const params = new URLSearchParams(window.location.search);
     const hasAnyUtm = UTM_KEYS.some(key => params.has(key));
 
-    // Se a URL atual tem UTMs, SEMPRE recapturar (anúncio tem prioridade)
+    // Only capture when real UTMs exist in the URL
     if (hasAnyUtm) {
       const utms: Record<string, string> = {};
       UTM_KEYS.forEach(key => {
@@ -36,16 +40,9 @@ export const useUtmTracker = () => {
       });
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(utms));
       sessionStorage.setItem(CAPTURED_FLAG, 'true');
-      console.log('[UTM] Captured/Updated UTMs from URL:', utms);
-      return;
+      console.log('[UTM] Captured UTMs from URL:', utms);
     }
-
-    // Se não tem UTM na URL E ainda não capturou, usar defaults
-    if (!sessionStorage.getItem(CAPTURED_FLAG)) {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_UTMS));
-      sessionStorage.setItem(CAPTURED_FLAG, 'true');
-      console.log('[UTM] Set default app UTMs');
-    }
+    // If no UTMs in URL, do nothing — no defaults, no placeholders
   }, []);
 };
 
