@@ -48,6 +48,7 @@ const plans: PricingPlan[] = [
       { text: "Suporte via WhatsApp" },
       { text: "Área de Membros" },
     ],
+    buttonText: "QUERO ACESSO DE 6 MESES",
   },
   {
     id: "1ano",
