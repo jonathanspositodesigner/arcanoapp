@@ -2230,6 +2230,7 @@ export type Database = {
           impressions: number | null
           initiated_checkouts: number | null
           landing_page_views: number | null
+          meta_purchases: number
           spend: number | null
         }
         Insert: {
@@ -2248,6 +2249,7 @@ export type Database = {
           impressions?: number | null
           initiated_checkouts?: number | null
           landing_page_views?: number | null
+          meta_purchases?: number
           spend?: number | null
         }
         Update: {
@@ -2266,6 +2268,7 @@ export type Database = {
           impressions?: number | null
           initiated_checkouts?: number | null
           landing_page_views?: number | null
+          meta_purchases?: number
           spend?: number | null
         }
         Relationships: []
@@ -2330,6 +2333,7 @@ export type Database = {
           impressions: number | null
           initiated_checkouts: number | null
           landing_page_views: number | null
+          meta_purchases: number
           spend: number | null
         }
         Insert: {
@@ -2349,6 +2353,7 @@ export type Database = {
           impressions?: number | null
           initiated_checkouts?: number | null
           landing_page_views?: number | null
+          meta_purchases?: number
           spend?: number | null
         }
         Update: {
@@ -2368,6 +2373,7 @@ export type Database = {
           impressions?: number | null
           initiated_checkouts?: number | null
           landing_page_views?: number | null
+          meta_purchases?: number
           spend?: number | null
         }
         Relationships: []
@@ -2388,6 +2394,7 @@ export type Database = {
           impressions: number | null
           initiated_checkouts: number | null
           landing_page_views: number | null
+          meta_purchases: number
           spend: number | null
         }
         Insert: {
@@ -2405,6 +2412,7 @@ export type Database = {
           impressions?: number | null
           initiated_checkouts?: number | null
           landing_page_views?: number | null
+          meta_purchases?: number
           spend?: number | null
         }
         Update: {
@@ -2422,6 +2430,7 @@ export type Database = {
           impressions?: number | null
           initiated_checkouts?: number | null
           landing_page_views?: number | null
+          meta_purchases?: number
           spend?: number | null
         }
         Relationships: []
