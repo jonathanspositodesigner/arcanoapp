@@ -50,7 +50,7 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}"],
         importScripts: ['/push-handler.js'],
-        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MiB
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MiB
         clientsClaim: true, // Allow new SW to take control immediately
         skipWaiting: false, // Manual control via SKIP_WAITING message
         cleanupOutdatedCaches: true,
