@@ -272,7 +272,9 @@ export function useAdsCampaigns(
     return filtered
       .map((c) => {
         const matchedSales = campaignSalesMap.get(c.campaign_id) || [];
-        const salesCount = matchedSales.length;
+        const utmSalesCount = matchedSales.length;
+        const metaSalesCount = c.total_meta_purchases;
+        const salesCount = Math.max(utmSalesCount, metaSalesCount);
         const revenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
         const spend = c.total_spend;
         const profit = revenue - spend;
@@ -280,7 +282,7 @@ export function useAdsCampaigns(
         const roi = spend > 0 ? revenue / spend : 0;
         const roas = spend > 0 ? revenue / spend : 0;
 
-        return { ...c, sales_count: salesCount, revenue, cpa, profit, roi, roas };
+        return { ...c, sales_count: salesCount, utm_sales_count: utmSalesCount, meta_sales_count: metaSalesCount, revenue, cpa, profit, roi, roas };
       })
       .sort((a, b) => b.total_spend - a.total_spend);
   }, [campaigns, sales, accountFilter, searchQuery, campaignIdSet]);
