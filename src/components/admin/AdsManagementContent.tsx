@@ -568,7 +568,7 @@ const AdsManagementContent = () => {
                   {customStart ? format(customStart, "dd/MM", { locale: ptBR }) : "Início"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={customStart} onSelect={setCustomStart} locale={ptBR} /></PopoverContent>
+              <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={customStart} onSelect={setCustomStart} locale={ptBR} className="pointer-events-auto" /></PopoverContent>
             </Popover>
             <span className="text-muted-foreground">—</span>
             <Popover>
