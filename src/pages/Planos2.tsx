@@ -233,11 +233,7 @@ const Planos2 = () => {
     if (!startCheckout()) return;
 
     try {
-      let utmData: Record<string, string> | null = null;
-      try {
-        const raw = sessionStorage.getItem('captured_utms');
-        if (raw) utmData = JSON.parse(raw);
-      } catch { /* ignore */ }
+      const utmData = getSanitizedUtms();
 
       const response = await supabase.functions.invoke('create-pagarme-subscription', {
         body: {

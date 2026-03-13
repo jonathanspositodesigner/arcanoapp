@@ -125,11 +125,7 @@ export const PricingCardsSection = () => {
     setIsLoading(true);
 
     try {
-      let utmData: Record<string, string> | null = null;
-      try {
-        const raw = sessionStorage.getItem('captured_utms');
-        if (raw) utmData = JSON.parse(raw);
-      } catch { /* ignore */ }
+      const utmData = getSanitizedUtms();
 
       const { fbp, fbc } = getMetaCookies();
       const body: any = {
