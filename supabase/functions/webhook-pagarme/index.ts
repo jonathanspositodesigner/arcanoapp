@@ -264,7 +264,7 @@ async function sendPurchaseEmail(supabase: any, email: string, productName: stri
       // Delete failed log so retry can insert fresh
       await supabase.from('welcome_email_logs').delete()
         .eq('email', email)
-        .eq('template_name', `pagarme_purchase_${productName}`)
+        .eq('template_used', `pagarme_purchase_${productName}`)
         .eq('status', 'failed')
       const retrySuccess = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId, options)
       if (retrySuccess) {
