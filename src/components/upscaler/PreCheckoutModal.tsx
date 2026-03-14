@@ -234,6 +234,12 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
   const handleSubmit = async () => {
     if (!validate()) return;
+    if (!productSlug || productSlug === 'upscaller-arcano-vitalicio') {
+      // If no valid slug was passed, block submission
+      console.error('[PreCheckoutModal] productSlug inválido:', productSlug);
+      alert('Erro: produto não identificado. Feche e tente novamente.');
+      return;
+    }
     if (!startFormSubmit()) return;
 
     setLoading(true);
