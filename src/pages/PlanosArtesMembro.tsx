@@ -492,15 +492,6 @@ const PlanosArtesMembro = () => {
         ) : (
           // Show access options for selected pack
           <>
-            <div className="flex justify-center mb-6">
-              <Button
-                variant="outline"
-                className="bg-[#2d4a5e]/30 border-[#2d4a5e] text-white hover:bg-[#2d4a5e]/50"
-                onClick={() => setSelectedPack(null)}
-              >
-                {t('buttons.chooseAnotherPack', { ns: 'library' })}
-              </Button>
-            </div>
 
 
             <div className="max-w-lg mx-auto">
