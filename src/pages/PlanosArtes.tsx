@@ -501,6 +501,7 @@ const PlanosArtes = () => {
   }
 
   const accessOptions = getAccessOptions();
+  const selectedOption = accessOptions.find(o => o.type === selectedAccessType) || accessOptions[0];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] p-4">
