@@ -545,8 +545,10 @@ const BibliotecaArtes = () => {
   };
   const getCurrentItems = () => {
     switch (activeSection) {
-      case 'packs':
-        return getPacksByType('pack');
+      case 'packs': {
+        const items = getPacksByType('pack');
+        return [...items].sort((a, b) => a.slug === 'pack-arcano-vol-4' ? -1 : b.slug === 'pack-arcano-vol-4' ? 1 : 0);
+      }
       case 'bonus':
         return getPacksByType('bonus');
       case 'cursos':
@@ -839,6 +841,16 @@ const BibliotecaArtes = () => {
                         {isPromoActive && !hasPackAccess && !isBonusType && !isToolType && <div className="absolute top-2 left-2 z-10">
                             <Badge className="bg-gradient-to-r from-red-600 to-red-500 text-white border-0 text-[10px] sm:text-xs font-bold shadow-lg animate-pulse">
                               🔥 50% OFF
+                            </Badge>
+                          </div>}
+                        
+                        {/* Vol 4 highlight badges */}
+                        {pack.slug === 'pack-arcano-vol-4' && !isPromoActive && <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+                            <Badge className="bg-primary text-white border-0 text-[10px] sm:text-xs font-bold shadow-lg">
+                              Novo
+                            </Badge>
+                            <Badge className="bg-amber-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
+                              Atualizando
                             </Badge>
                           </div>}
                         
