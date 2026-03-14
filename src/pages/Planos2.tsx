@@ -143,7 +143,7 @@ const Planos2 = () => {
         setShowPaymentMethodModal(true);
         endCheckout();
       } else {
-        setSelectedCreditSlug(slug);
+        setPreCheckoutSlug(slug);
         setShowPreCheckout(true);
         endCheckout();
       }
