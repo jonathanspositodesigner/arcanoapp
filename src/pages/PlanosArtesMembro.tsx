@@ -243,6 +243,13 @@ const PlanosArtesMembro = () => {
     return allOptions.filter(opt => isEnabled(opt.type));
   };
 
+  // Keep selectedAccessType in sync when pack changes
+  useEffect(() => {
+    const opts = getAccessOptions();
+    const vit = opts.find(o => o.type === 'vitalicio');
+    setSelectedAccessType(vit ? vit.type : opts[0]?.type || 'vitalicio');
+  }, [selectedPack]);
+
   // Check if this pack uses Pagar.me checkout
   const isPagarmeMemberSlug = selectedPack ? PAGARME_MEMBER_SLUGS[selectedPack.slug] : null;
 
