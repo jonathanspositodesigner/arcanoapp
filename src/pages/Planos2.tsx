@@ -296,7 +296,7 @@ const Planos2 = () => {
     if (!slug) return;
 
     if (!userId) {
-      setSelectedCreditSlug(slug);
+      setPreCheckoutSlug(slug);
       setShowPreCheckout(true);
       return;
     }
