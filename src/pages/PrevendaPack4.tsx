@@ -146,7 +146,7 @@ const PrevendaPack4 = () => {
       
       <LazySection>
         <Suspense fallback={<SectionSkeleton />}>
-          <PricingCardsSection />
+          <PricingCardsSectionPack4 />
         </Suspense>
       </LazySection>
 
