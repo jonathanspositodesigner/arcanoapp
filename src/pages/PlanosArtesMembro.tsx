@@ -76,6 +76,7 @@ const PlanosArtesMembro = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
   const [selectedAccessType, setSelectedAccessType] = useState('vitalicio');
+  const [arteCount, setArteCount] = useState<number | null>(null);
 
   // Check auth on mount
   useEffect(() => {
@@ -195,6 +196,13 @@ const PlanosArtesMembro = () => {
   };
 
   const getAccessOptions = () => {
+    const artesLabel = arteCount ? `+${arteCount} artes profissionais` : 'Acesso completo ao pack';
+    const sharedFeatures = [
+      artesLabel,
+      'Editável PSD e Canva',
+      t('features.unlimitedDownload'),
+    ];
+
     const allOptions = [
       {
         type: "vitalicio",
@@ -202,10 +210,9 @@ const PlanosArtesMembro = () => {
         icon: Gift,
         buttonText: t('unlockLifetime'),
         features: [
-          t('features.all1YearFeatures'),
+          ...sharedFeatures,
           t('features.permanentAccess'),
           t('features.allFutureUpdates'),
-          t('features.foreverBonus')
         ],
         hasBonus: true,
         highlighted: true
@@ -216,10 +223,9 @@ const PlanosArtesMembro = () => {
         icon: Star,
         buttonText: t('unlock1Year'),
         features: [
-          t('features.all6MonthsFeatures'),
+          ...sharedFeatures,
           t('features.access12Months'),
-          t('features.bonusAccess'),
-          t('features.premiumUpdates')
+          t('features.premiumUpdates'),
         ],
         hasBonus: true,
         highlighted: false
@@ -230,10 +236,8 @@ const PlanosArtesMembro = () => {
         icon: Clock,
         buttonText: t('unlock6Months'),
         features: [
-          t('features.fullAccess'),
-          t('features.unlimitedDownload'),
-          t('features.editableFiles'),
-          t('features.updates6Months')
+          ...sharedFeatures,
+          t('features.updates6Months'),
         ],
         hasBonus: false,
         highlighted: false
@@ -243,11 +247,22 @@ const PlanosArtesMembro = () => {
     return allOptions.filter(opt => isEnabled(opt.type));
   };
 
-  // Keep selectedAccessType in sync when pack changes
+  // Keep selectedAccessType in sync when pack changes + fetch arte count
   useEffect(() => {
     const opts = getAccessOptions();
     const vit = opts.find(o => o.type === 'vitalicio');
     setSelectedAccessType(vit ? vit.type : opts[0]?.type || 'vitalicio');
+
+    // Fetch arte count for this pack
+    if (selectedPack) {
+      supabase
+        .from('admin_artes')
+        .select('*', { count: 'exact', head: true })
+        .eq('pack', selectedPack.name)
+        .then(({ count }) => setArteCount(count ?? null));
+    } else {
+      setArteCount(null);
+    }
   }, [selectedPack]);
 
   // Check if this pack uses Pagar.me checkout
