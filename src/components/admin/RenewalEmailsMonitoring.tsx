@@ -316,8 +316,8 @@ const TemplateEditorTab = () => {
       .replace(/\{\{PLAN_NAME\}\}/g, "Pro")
       .replace(/\{\{PLAN_VALUE\}\}/g, "R$ 49,90")
       .replace(/\{\{DUE_DATE\}\}/g, "13/03/2026")
-      .replace(/\{\{BENEFITS_LIST\}\}/g, '<li style="color:#e2d8f0;font-size:15px;padding:6px 0;line-height:1.5;">✅ 4.200 créditos mensais</li><li style="color:#e2d8f0;font-size:15px;padding:6px 0;line-height:1.5;">✅ 10 prompts premium por dia</li>')
-      .replace(/\{\{LOSSES_LIST\}\}/g, '<li style="color:#fca5a5;font-size:15px;padding:6px 0;line-height:1.5;">❌ Seus 4.200 créditos mensais</li><li style="color:#fca5a5;font-size:15px;padding:6px 0;line-height:1.5;">❌ O acesso a 10 prompts premium por dia</li>');
+      .replace(/\{\{BENEFITS_LIST\}\}/g, '<li style="color:#e2d8f0;font-size:15px;padding:6px 0;line-height:1.5;">✅ 4.200 créditos mensais</li><li style="color:#e2d8f0;font-size:15px;padding:6px 0;line-height:1.5;">✅ Prompts premium ilimitados</li>')
+      .replace(/\{\{LOSSES_LIST\}\}/g, '<li style="color:#fca5a5;font-size:15px;padding:6px 0;line-height:1.5;">❌ Seus 4.200 créditos mensais</li><li style="color:#fca5a5;font-size:15px;padding:6px 0;line-height:1.5;">❌ O acesso ilimitado a prompts premium</li>');
   };
 
   if (isLoading) {
