@@ -196,18 +196,18 @@ const PlanosArtesMembro = () => {
   const getAccessOptions = () => {
     const allOptions = [
       {
-        type: "6_meses",
-        label: t('access6Months'),
-        icon: Clock,
-        buttonText: t('unlock6Months'),
+        type: "vitalicio",
+        label: t('accessLifetime'),
+        icon: Gift,
+        buttonText: t('unlockLifetime'),
         features: [
-          t('features.fullAccess'),
-          t('features.unlimitedDownload'),
-          t('features.editableFiles'),
-          t('features.updates6Months')
+          t('features.all1YearFeatures'),
+          t('features.permanentAccess'),
+          t('features.allFutureUpdates'),
+          t('features.foreverBonus')
         ],
-        hasBonus: false,
-        highlighted: false
+        hasBonus: true,
+        highlighted: true
       },
       {
         type: "1_ano",
@@ -224,18 +224,18 @@ const PlanosArtesMembro = () => {
         highlighted: false
       },
       {
-        type: "vitalicio",
-        label: t('accessLifetime'),
-        icon: Gift,
-        buttonText: t('unlockLifetime'),
+        type: "6_meses",
+        label: t('access6Months'),
+        icon: Clock,
+        buttonText: t('unlock6Months'),
         features: [
-          t('features.all1YearFeatures'),
-          t('features.permanentAccess'),
-          t('features.allFutureUpdates'),
-          t('features.foreverBonus')
+          t('features.fullAccess'),
+          t('features.unlimitedDownload'),
+          t('features.editableFiles'),
+          t('features.updates6Months')
         ],
-        hasBonus: true,
-        highlighted: true
+        hasBonus: false,
+        highlighted: false
       }
     ];
 
