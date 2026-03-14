@@ -35,7 +35,7 @@ const PLANOS2_PRODUCTS: Record<number, {
 }> = {
   160732: {
     slug: 'starter',
-    credits_per_month: 1800,
+    credits_per_month: 1500,
     daily_prompt_limit: null,
     has_image_generation: false,
     has_video_generation: false,
