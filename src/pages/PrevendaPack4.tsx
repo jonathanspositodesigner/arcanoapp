@@ -12,6 +12,7 @@ const PricingCardsSectionPack4 = lazy(() => import("@/components/prevenda-pack4/
 const AboutSectionPack4 = lazy(() => import("@/components/prevenda-pack4/AboutSectionPack4").then(m => ({ default: m.AboutSectionPack4 })));
 const FAQSectionPack4 = lazy(() => import("@/components/prevenda-pack4/FAQSectionPack4").then(m => ({ default: m.FAQSectionPack4 })));
 const WhatsAppSupportSectionPack4 = lazy(() => import("@/components/prevenda-pack4/WhatsAppSupportSectionPack4").then(m => ({ default: m.WhatsAppSupportSectionPack4 })));
+const GuaranteeSectionPack4 = lazy(() => import("@/components/prevenda-pack4/GuaranteeSectionPack4").then(m => ({ default: m.GuaranteeSectionPack4 })));
 const FooterSectionPack4 = lazy(() => import("@/components/prevenda-pack4/FooterSectionPack4").then(m => ({ default: m.FooterSectionPack4 })));
 
 const SectionSkeleton = () => (
