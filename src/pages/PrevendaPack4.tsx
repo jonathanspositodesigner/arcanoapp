@@ -10,7 +10,7 @@ const BonusGridSection = lazy(() => import("@/components/combo-artes/BonusGridSe
 const TestimonialsSection = lazy(() => import("@/components/combo-artes/TestimonialsSection").then(m => ({ default: m.TestimonialsSection })));
 const GuaranteeSectionCombo = lazy(() => import("@/components/combo-artes/GuaranteeSectionCombo").then(m => ({ default: m.GuaranteeSectionCombo })));
 const AboutSection = lazy(() => import("@/components/combo-artes/AboutSection").then(m => ({ default: m.AboutSection })));
-const PricingCardsSection = lazy(() => import("@/components/combo-artes/PricingCardsSection").then(m => ({ default: m.PricingCardsSection })));
+const PricingCardsSectionPack4 = lazy(() => import("@/components/prevenda-pack4/PricingCardsSectionPack4").then(m => ({ default: m.PricingCardsSectionPack4 })));
 const FAQSectionCombo = lazy(() => import("@/components/combo-artes/FAQSectionCombo").then(m => ({ default: m.FAQSectionCombo })));
 const WhatsAppSupportSection = lazy(() => import("@/components/combo-artes/WhatsAppSupportSection").then(m => ({ default: m.WhatsAppSupportSection })));
 const FooterSection = lazy(() => import("@/components/combo-artes/FooterSection").then(m => ({ default: m.FooterSection })));
@@ -146,7 +146,7 @@ const PrevendaPack4 = () => {
       
       <LazySection>
         <Suspense fallback={<SectionSkeleton />}>
-          <PricingCardsSection />
+          <PricingCardsSectionPack4 />
         </Suspense>
       </LazySection>
 
