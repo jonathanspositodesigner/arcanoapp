@@ -301,18 +301,20 @@ serve(async (req) => {
             billing_address_editable: billing_type === 'CREDIT_CARD',
             skip_checkout_success_page: billing_type === 'CREDIT_CARD',
             ...(billing_type === 'PIX' ? (
-              user_address?.line_1 ? {
+              (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) ? {
                 billing_address: {
                   line_1: user_address.line_1,
-                  zip_code: user_address.zip_code || '01310100',
-                  city: user_address.city || 'São Paulo',
-                  state: user_address.state || 'SP',
+                  zip_code: user_address.zip_code,
+                  city: user_address.city,
+                  state: user_address.state,
                   country: user_address.country || 'BR'
                 }
               } : {
                 billing_address_editable: true
               }
-            ) : {}),
+            ) : {
+              billing_address_editable: true
+            }),
             credit_card: {
               capture: true,
               installments: [

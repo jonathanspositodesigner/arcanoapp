@@ -371,7 +371,7 @@ export const PricingCardsSection = () => {
       <PreCheckoutModal
         isOpen={showPreCheckout}
         onClose={() => setShowPreCheckout(false)}
-        productSlug={pendingSlug || 'combo-1ao3-vitalicio'}
+        productSlug={pendingSlug || undefined}
         colorScheme="orange"
       />
 
