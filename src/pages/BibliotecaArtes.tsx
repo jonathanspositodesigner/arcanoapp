@@ -545,8 +545,10 @@ const BibliotecaArtes = () => {
   };
   const getCurrentItems = () => {
     switch (activeSection) {
-      case 'packs':
-        return getPacksByType('pack');
+      case 'packs': {
+        const items = getPacksByType('pack');
+        return [...items].sort((a, b) => a.slug === 'pack-arcano-vol-4' ? -1 : b.slug === 'pack-arcano-vol-4' ? 1 : 0);
+      }
       case 'bonus':
         return getPacksByType('bonus');
       case 'cursos':
