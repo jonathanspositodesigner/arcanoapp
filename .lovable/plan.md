@@ -1,56 +1,50 @@
 
-Objetivo
-- Corrigir o bug de créditos zerando para assinantes (todos os planos).
-- Restaurar os créditos perdidos do usuário juniorpardyn@gmail.com.
-- Blindar para não voltar a acontecer.
+# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
-Diagnóstico confirmado (já validado no banco)
-- O usuário juniorpardyn@gmail.com está com plano starter ativo (1800/mês), contrato ativo, expiração correta.
-- O saldo zerou por causa da função `expire_landing_trial_credits`:
-  - ela removeu **-1620** créditos mensais em 2026-03-13 16:21 UTC.
-  - depois disso, restou 60 vitalício e foi consumido, ficando 0.
-- Causa raiz:
-  1) `expire_landing_trial_credits` zera `monthly_balance` inteiro quando `landing_trial_expires_at` está vencido.
-  2) ela não limpa `landing_trial_expires_at`, então roda de novo e gera spam de transações (muitas com amount=0).
-  3) `reset_upscaler_credits` (usado na ativação de assinatura) não limpa o flag de trial; assim, assinante pago continua “marcado” como trial expirado e perde mensal depois.
-- Impacto confirmado:
-  - 26 usuários tiveram débito negativo por esse bug.
-  - 2 usuários pagos ativos impactados agora: junior (-1620) e outro legacy (-800).
+## Resumo
+Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
 
-Plano de implementação
-1) Hotfix de dados (imediato)
-- Repor créditos do junior: **+1620 mensais** (valor exato removido pelo bug).
-- Limpar `landing_trial_expires_at` dele para impedir nova remoção.
-- Aplicar mesma correção automática para qualquer usuário pago ativo afetado pelo mesmo evento (inclui o caso legacy de -800).
+## O que foi feito
 
-2) Correção definitiva no backend (migração SQL)
-- Atualizar `expire_landing_trial_credits` para ficar segura e idempotente:
-  - se não há trial: não faz nada.
-  - se trial não expirou: não faz nada.
-  - se usuário tem assinatura paga ativa (planos2 pago ou premium legado ativo): **não debita nada**, apenas limpa `landing_trial_expires_at`.
-  - se for trial real expirado: debita apenas o componente de trial (não zera mensal inteiro de forma cega).
-  - limpar `landing_trial_expires_at` após processamento.
-  - não inserir transação quando valor debitado for 0.
-- Atualizar `reset_upscaler_credits`:
-  - ao resetar mensal de assinatura, setar `landing_trial_expires_at = NULL`.
-- Atualizar `add_upscaler_credits` (mensal manual/admin):
-  - também limpar `landing_trial_expires_at` para evitar dedução indevida posterior.
+### 1. Tabela `subscription_billing_reminders` (migration)
+- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
+- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
+- Campo `checkout_url` para evitar checkouts duplicados
+- Constraint UNIQUE em (subscription_id, day_offset, due_date)
 
-3) Blindagem operacional
-- Adicionar query de auditoria para detectar automaticamente:
-  - transações “Créditos de teste expirados (24h)” com `amount < 0` em usuários pagos ativos.
-- Expor esse alerta no fluxo admin (ou rotina interna) para ação proativa.
+### 2. Edge Function `process-billing-reminders`
+- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
+- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
+- Para cada assinatura, verifica:
+  - Se já enviou email para esse `day_offset`
+  - Se a sequência foi parada (pagou ou descadastrou)
+  - Se o email está na blacklist
+  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
+- Gera checkout Pagar.me somente PIX com validade de 3 dias
+- Monta HTML personalizado com dados reais do plano
+- Envia via SendPulse SMTP API
+- Registra na tabela de controle
 
-Arquivos/áreas a alterar
-- Nova migration em `supabase/migrations/*` para:
-  - `CREATE OR REPLACE FUNCTION public.expire_landing_trial_credits`
-  - `CREATE OR REPLACE FUNCTION public.reset_upscaler_credits`
-  - `CREATE OR REPLACE FUNCTION public.add_upscaler_credits`
-  - bloco de backfill/reparo dos usuários afetados.
-- Sem alterar páginas de venda; é correção de regra de crédito no backend.
+### 3. Mapeamento de benefícios por plano
+- Starter: 1.800 créditos, 5 prompts/dia
+- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
+- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
+- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
 
-Critérios de aceite
-- juniorpardyn@gmail.com volta a ter saldo correto (1620 mensal, conforme consumo já realizado).
-- Assinantes pagos com trial antigo não perdem mensal ao abrir o app.
-- Não há novos registros de expiração com amount=0 em loop.
-- Fluxo de ativação de qualquer plano (starter/pro/ultimate/unlimited e legado) não sofre perda por trial expirado antigo.
+### 4. Templates dos 6 emails
+- Dia 0: Lembrete leve ("Seu plano vence hoje")
+- Dia 1: Reforço pendência ("Pagamento ainda pendente")
+- Dia 2: Dor da perda ("Risco de perda de acesso")
+- Dia 3: Prejuízo prático ("O custo de não renovar")
+- Dia 4: FOMO ("Não fique para trás")
+- Dia 5: Último aviso ("Último aviso: regularize hoje")
+- Todos com link de descadastro no rodapé
+
+### 5. Cron job
+- pg_cron agendado: `0 12 * * *` (09:00 BRT)
+- Chama a Edge Function automaticamente
+
+## Detecção de pagamento (para de enviar)
+- `planos2_subscriptions.expires_at` estendido para data futura
+- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
+- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
