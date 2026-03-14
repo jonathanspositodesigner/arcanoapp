@@ -91,7 +91,7 @@ const plans: PricingPlan[] = [
     highlight: true,
     badge: "MAIS VENDIDO",
     buttonText: "QUERO ACESSO VITALÍCIO",
-    productSlug: "pack4lancamento",
+    productSlug: "pack4-vitalicio",
   },
 ];
 
