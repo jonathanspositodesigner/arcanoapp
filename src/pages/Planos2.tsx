@@ -662,7 +662,7 @@ const Planos2 = () => {
                 </Badge>
               )}
               {isUnlimitedBadge && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 text-black font-extrabold px-4 py-1 shadow-lg shadow-yellow-400/40 tracking-wider animate-pulse">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 text-black font-extrabold px-4 py-1 shadow-lg shadow-yellow-400/40 tracking-wider">
                   ✨ CRIE SEM LIMITES ✨
                 </Badge>
               )}
