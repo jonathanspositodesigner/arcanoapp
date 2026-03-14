@@ -1,8 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Play, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { appendUtmToUrl } from "@/lib/utmUtils";
+import { supabase } from "@/integrations/supabase/client";
+import { useProcessingButton } from "@/hooks/useProcessingButton";
+import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
+import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
+import { getSanitizedUtms } from "@/lib/utmUtils";
+import { getMetaCookies } from "@/lib/metaCookies";
+import { toast } from "sonner";
 
 const motions = [{
   thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/AGENDA-HERIQUE-E-JULIANO.webp",
@@ -46,12 +52,31 @@ const motions = [{
   title: "Country"
 }];
 
-const CHECKOUT_URL_PACK4 = "https://pay.pagstar.com/pack4lancamento";
+const PRODUCT_SLUG = "pack4lancamento";
 
 export const MotionsGallerySectionPack4 = () => {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  const [showPreCheckout, setShowPreCheckout] = useState(false);
+  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
+  const [pendingProfile, setPendingProfile] = useState<any>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
 
-  const handlePurchase = () => {
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        setUserEmail(user.email || null);
+      }
+    };
+    checkAuth();
+  }, []);
+
+  const handlePurchase = async () => {
+    if (!startCheckout()) return;
+
     if (typeof window !== "undefined" && (window as any).fbq) {
       (window as any).fbq("track", "InitiateCheckout", {
         content_name: "Pack Arcano Vol. 4",
@@ -61,8 +86,89 @@ export const MotionsGallerySectionPack4 = () => {
       });
     }
 
-    const urlWithUtm = appendUtmToUrl(CHECKOUT_URL_PACK4);
-    window.open(urlWithUtm, "_blank");
+    if (!userId) {
+      setShowPreCheckout(true);
+      endCheckout();
+      return;
+    }
+
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
+        .eq('id', userId)
+        .single();
+
+      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf
+        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
+
+      if (isProfileComplete) {
+        setPendingProfile(profile);
+        setShowPaymentMethodModal(true);
+      } else {
+        setShowPreCheckout(true);
+      }
+    } catch {
+      // fallback
+    }
+    endCheckout();
+  };
+
+  const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
+    if (!pendingProfile) return;
+    if (!startCheckout()) return;
+
+    try {
+      const utmData = getSanitizedUtms();
+      const { fbp, fbc } = getMetaCookies();
+      const body: any = {
+        product_slug: PRODUCT_SLUG,
+        user_email: userEmail,
+        user_phone: pendingProfile.phone,
+        user_name: pendingProfile.name,
+        user_cpf: pendingProfile.cpf,
+        billing_type: method,
+        utm_data: utmData,
+        fbp,
+        fbc,
+      };
+
+      if (method === 'PIX') {
+        body.user_address = {
+          line_1: pendingProfile.address_line,
+          zip_code: pendingProfile.address_zip,
+          city: pendingProfile.address_city,
+          state: pendingProfile.address_state,
+          country: pendingProfile.address_country || 'BR'
+        };
+      }
+
+      const response = await supabase.functions.invoke('create-pagarme-checkout', { body });
+
+      if (response.error) {
+        console.error('Erro checkout direto:', response.error);
+        toast.error('Erro ao gerar pagamento. Tente novamente.');
+        setShowPaymentMethodModal(false);
+        endCheckout();
+        return;
+      }
+
+      const { checkout_url, event_id } = response.data;
+      if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
+        (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
+      }
+      if (checkout_url) {
+        window.location.href = checkout_url;
+        return;
+      } else {
+        toast.error('Erro ao gerar link de pagamento.');
+      }
+    } catch (error) {
+      console.error('Erro checkout direto:', error);
+      toast.error('Erro ao processar. Tente novamente.');
+    }
+    endCheckout();
+    setShowPaymentMethodModal(false);
   };
 
   return <section className="py-5 md:py-10 px-4 bg-black">
@@ -91,9 +197,10 @@ export const MotionsGallerySectionPack4 = () => {
         <div className="text-center mt-8 md:mt-10">
           <button 
             onClick={handlePurchase}
-            className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-sm md:text-lg px-6 md:px-8 py-2.5 md:py-3.5 rounded-lg shadow-lg shadow-orange-500/30 hover:scale-105 transition-transform duration-300 mb-0"
+            disabled={isCheckoutSubmitting}
+            className="bg-gradient-to-r from-[#EF672C] to-[#f65928] text-white font-bold text-sm md:text-lg px-6 md:px-8 py-2.5 md:py-3.5 rounded-lg shadow-lg shadow-orange-500/30 hover:scale-105 transition-transform duration-300 mb-0 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            QUERO ESSAS ARTES AGORA!
+            {isCheckoutSubmitting ? "PROCESSANDO..." : "QUERO ESSAS ARTES AGORA!"}
           </button>
           
           <div className="flex flex-wrap justify-center items-center gap-4 mt-2 mb-12">
@@ -119,5 +226,18 @@ export const MotionsGallerySectionPack4 = () => {
             </div>}
         </DialogContent>
       </Dialog>
+
+      <PreCheckoutModal
+        isOpen={showPreCheckout}
+        onClose={() => setShowPreCheckout(false)}
+        productSlug={PRODUCT_SLUG}
+      />
+
+      <PaymentMethodModal
+        isOpen={showPaymentMethodModal}
+        onClose={() => setShowPaymentMethodModal(false)}
+        onSelect={handlePaymentMethodSelected}
+        isProcessing={isCheckoutSubmitting}
+      />
     </section>;
 };
