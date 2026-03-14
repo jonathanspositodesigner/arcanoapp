@@ -244,11 +244,22 @@ const PlanosArtesMembro = () => {
     return allOptions.filter(opt => isEnabled(opt.type));
   };
 
-  // Keep selectedAccessType in sync when pack changes
+  // Keep selectedAccessType in sync when pack changes + fetch arte count
   useEffect(() => {
     const opts = getAccessOptions();
     const vit = opts.find(o => o.type === 'vitalicio');
     setSelectedAccessType(vit ? vit.type : opts[0]?.type || 'vitalicio');
+
+    // Fetch arte count for this pack
+    if (selectedPack) {
+      supabase
+        .from('admin_artes')
+        .select('*', { count: 'exact', head: true })
+        .eq('pack', selectedPack.name)
+        .then(({ count }) => setArteCount(count ?? null));
+    } else {
+      setArteCount(null);
+    }
   }, [selectedPack]);
 
   // Check if this pack uses Pagar.me checkout
