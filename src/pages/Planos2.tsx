@@ -120,7 +120,7 @@ const Planos2 = () => {
     if (!startCheckout()) return;
     
     if (!userId) {
-      setSelectedCreditSlug(slug);
+      setPreCheckoutSlug(slug);
       setShowPreCheckout(true);
       endCheckout();
       return;
