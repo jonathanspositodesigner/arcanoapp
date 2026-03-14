@@ -141,10 +141,20 @@ serve(async (req) => {
       return errorResponse('Celular inválido. Informe DDD + número (ex: 11999998888).', 400, 'INVALID_PHONE');
     }
 
-    // Validar CPF basicamente (11 dígitos)
+    // Validar CPF com algoritmo completo (módulo 11)
     const cleanCpf = user_cpf ? user_cpf.replace(/\D/g, '') : null;
-    if (cleanCpf && cleanCpf.length !== 11) {
-      return errorResponse('CPF inválido. Informe os 11 dígitos.', 400, 'INVALID_CPF');
+    if (cleanCpf) {
+      if (cleanCpf.length !== 11 || /^(\d)\1{10}$/.test(cleanCpf)) {
+        return errorResponse('CPF inválido. Verifique os dígitos informados.', 400, 'INVALID_CPF');
+      }
+      for (let t = 9; t < 11; t++) {
+        let sum = 0;
+        for (let i = 0; i < t; i++) sum += parseInt(cleanCpf[i]) * (t + 1 - i);
+        const remainder = (sum * 10) % 11;
+        if ((remainder === 10 ? 0 : remainder) !== parseInt(cleanCpf[t])) {
+          return errorResponse('CPF inválido. Verifique os dígitos informados.', 400, 'INVALID_CPF');
+        }
+      }
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
