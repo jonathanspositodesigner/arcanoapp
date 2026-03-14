@@ -1,19 +1,18 @@
 import { useEffect, useState, lazy, Suspense } from "react";
-import { HeroSectionPack4 } from "@/components/combo-artes/HeroSectionPack4";
-import { FeaturesSection } from "@/components/combo-artes/FeaturesSection";
-import { LazySection } from "@/components/combo-artes/LazySection";
+import { HeroSectionPack4 } from "@/components/prevenda-pack4/HeroSectionPack4";
+import { FeaturesSectionPack4 } from "@/components/prevenda-pack4/FeaturesSectionPack4";
+import { LazySectionPack4 } from "@/components/prevenda-pack4/LazySectionPack4";
 
-const FlyersGallerySection = lazy(() => import("@/components/combo-artes/FlyersGallerySection").then(m => ({ default: m.FlyersGallerySection })));
-const MotionsGallerySection = lazy(() => import("@/components/combo-artes/MotionsGallerySection").then(m => ({ default: m.MotionsGallerySection })));
-const BonusTelaoSection = lazy(() => import("@/components/combo-artes/BonusTelaoSection").then(m => ({ default: m.BonusTelaoSection })));
-const BonusGridSection = lazy(() => import("@/components/combo-artes/BonusGridSection").then(m => ({ default: m.BonusGridSection })));
-const TestimonialsSection = lazy(() => import("@/components/combo-artes/TestimonialsSection").then(m => ({ default: m.TestimonialsSection })));
-const GuaranteeSectionCombo = lazy(() => import("@/components/combo-artes/GuaranteeSectionCombo").then(m => ({ default: m.GuaranteeSectionCombo })));
-const AboutSection = lazy(() => import("@/components/combo-artes/AboutSection").then(m => ({ default: m.AboutSection })));
+const FlyersGallerySectionPack4 = lazy(() => import("@/components/prevenda-pack4/FlyersGallerySectionPack4").then(m => ({ default: m.FlyersGallerySectionPack4 })));
+const MotionsGallerySectionPack4 = lazy(() => import("@/components/prevenda-pack4/MotionsGallerySectionPack4").then(m => ({ default: m.MotionsGallerySectionPack4 })));
+const BonusTelaoSectionPack4 = lazy(() => import("@/components/prevenda-pack4/BonusTelaoSectionPack4").then(m => ({ default: m.BonusTelaoSectionPack4 })));
+const BonusGridSectionPack4 = lazy(() => import("@/components/prevenda-pack4/BonusGridSectionPack4").then(m => ({ default: m.BonusGridSectionPack4 })));
+const TestimonialsSectionPack4 = lazy(() => import("@/components/prevenda-pack4/TestimonialsSectionPack4").then(m => ({ default: m.TestimonialsSectionPack4 })));
 const PricingCardsSectionPack4 = lazy(() => import("@/components/prevenda-pack4/PricingCardsSectionPack4").then(m => ({ default: m.PricingCardsSectionPack4 })));
-const FAQSectionCombo = lazy(() => import("@/components/combo-artes/FAQSectionCombo").then(m => ({ default: m.FAQSectionCombo })));
-const WhatsAppSupportSection = lazy(() => import("@/components/combo-artes/WhatsAppSupportSection").then(m => ({ default: m.WhatsAppSupportSection })));
-const FooterSection = lazy(() => import("@/components/combo-artes/FooterSection").then(m => ({ default: m.FooterSection })));
+const AboutSectionPack4 = lazy(() => import("@/components/prevenda-pack4/AboutSectionPack4").then(m => ({ default: m.AboutSectionPack4 })));
+const FAQSectionPack4 = lazy(() => import("@/components/prevenda-pack4/FAQSectionPack4").then(m => ({ default: m.FAQSectionPack4 })));
+const WhatsAppSupportSectionPack4 = lazy(() => import("@/components/prevenda-pack4/WhatsAppSupportSectionPack4").then(m => ({ default: m.WhatsAppSupportSectionPack4 })));
+const FooterSectionPack4 = lazy(() => import("@/components/prevenda-pack4/FooterSectionPack4").then(m => ({ default: m.FooterSectionPack4 })));
 
 const SectionSkeleton = () => (
   <div className="min-h-[300px] bg-black animate-pulse" />
@@ -106,7 +105,7 @@ const PrevendaPack4 = () => {
       </div>
       
       <HeroSectionPack4 />
-      <FeaturesSection />
+      <FeaturesSectionPack4 />
       
       <div className="hidden md:flex justify-center pb-4 bg-black">
         <div className="animate-bounce">
@@ -114,67 +113,65 @@ const PrevendaPack4 = () => {
         </div>
       </div>
       
-      <LazySection>
+      <LazySectionPack4>
         <Suspense fallback={<SectionSkeleton />}>
-          <FlyersGallerySection />
+          <FlyersGallerySectionPack4 />
         </Suspense>
-      </LazySection>
+      </LazySectionPack4>
       
-      <LazySection>
+      <LazySectionPack4>
         <Suspense fallback={<SectionSkeleton />}>
-          <MotionsGallerySection />
+          <MotionsGallerySectionPack4 />
         </Suspense>
-      </LazySection>
+      </LazySectionPack4>
 
-      <LazySection>
+      <LazySectionPack4>
         <Suspense fallback={<SectionSkeleton />}>
-          <BonusTelaoSection />
+          <BonusTelaoSectionPack4 />
         </Suspense>
-      </LazySection>
+      </LazySectionPack4>
       
-      <LazySection>
+      <LazySectionPack4>
         <Suspense fallback={<SectionSkeleton />}>
-          <BonusGridSection />
+          <BonusGridSectionPack4 />
         </Suspense>
-      </LazySection>
+      </LazySectionPack4>
       
-      <LazySection>
+      <LazySectionPack4>
         <Suspense fallback={<SectionSkeleton />}>
-          <TestimonialsSection />
+          <TestimonialsSectionPack4 />
         </Suspense>
-      </LazySection>
+      </LazySectionPack4>
       
-      <LazySection>
+      <LazySectionPack4>
         <Suspense fallback={<SectionSkeleton />}>
           <PricingCardsSectionPack4 />
         </Suspense>
-      </LazySection>
+      </LazySectionPack4>
 
-
-      
-      <LazySection>
+      <LazySectionPack4>
         <Suspense fallback={<SectionSkeleton />}>
-          <AboutSection />
+          <AboutSectionPack4 />
         </Suspense>
-      </LazySection>
+      </LazySectionPack4>
       
-      <LazySection>
+      <LazySectionPack4>
         <Suspense fallback={<SectionSkeleton />}>
-          <FAQSectionCombo />
+          <FAQSectionPack4 />
         </Suspense>
-      </LazySection>
+      </LazySectionPack4>
       
-      <LazySection>
+      <LazySectionPack4>
         <Suspense fallback={<SectionSkeleton />}>
-          <WhatsAppSupportSection />
+          <WhatsAppSupportSectionPack4 />
         </Suspense>
-      </LazySection>
+      </LazySectionPack4>
       
-      <LazySection>
+      <LazySectionPack4>
         <Suspense fallback={<SectionSkeleton />}>
-          <FooterSection />
+          <FooterSectionPack4 />
         </Suspense>
-      </LazySection>
+      </LazySectionPack4>
     </div>
   );
 };
