@@ -647,20 +647,26 @@ const Planos2 = () => {
           {currentPlans.map((plan, index) => {
             const isBestSeller = (plan as any).bestSeller;
             const hasCountdown = (plan as any).hasCountdown;
+            const isUnlimitedBadge = (plan as any).isUnlimitedBadge;
             return (
             <div key={plan.name} className="flex flex-col h-full w-full">
-              <Card className={`relative p-4 flex flex-col rounded-lg bg-[#1A0A2E] w-full h-full ${isBestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
+              <Card className={`relative p-4 flex flex-col rounded-lg bg-[#1A0A2E] w-full h-full ${isUnlimitedBadge ? "border-2 border-yellow-400 shadow-lg shadow-yellow-400/30" : isBestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-3 py-0.5">
                   {t('planos.bestSeller')}
                 </Badge>
               )}
-              {hasCountdown && (
+              {hasCountdown && !isUnlimitedBadge && (
                 <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-purple-600 to-blue-500 text-white px-3 py-0.5">
                   MELHOR CUSTO/BENEFÍCIO
                 </Badge>
               )}
-              {(plan.promo || plan.popular) && !isBestSeller && !hasCountdown && (
+              {isUnlimitedBadge && (
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 text-black font-extrabold px-4 py-1 shadow-lg shadow-yellow-400/40 tracking-wider animate-pulse">
+                  ✨ CRIE SEM LIMITES ✨
+                </Badge>
+              )}
+              {(plan.promo || plan.popular) && !isBestSeller && !hasCountdown && !isUnlimitedBadge && (
                 <Badge className={`absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap ${plan.promo ? "bg-orange-500 text-white" : "bg-green-500 text-white"}`}>
                   {plan.promo ? t('planos.launchPromo') : t('planos.popular')}
                 </Badge>
