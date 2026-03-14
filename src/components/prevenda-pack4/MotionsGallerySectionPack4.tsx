@@ -234,7 +234,7 @@ export const MotionsGallerySectionPack4 = () => {
       />
 
       <PaymentMethodModal
-        isOpen={showPaymentMethodModal}
+        open={showPaymentMethodModal}
         onClose={() => setShowPaymentMethodModal(false)}
         onSelect={handlePaymentMethodSelected}
         isProcessing={isCheckoutSubmitting}
