@@ -112,6 +112,23 @@ serve(async (req) => {
     }
 
     const cleanCpf = user_cpf ? user_cpf.replace(/\D/g, '') : null
+    if (cleanCpf) {
+      if (cleanCpf.length !== 11 || /^(\d)\1{10}$/.test(cleanCpf)) {
+        return new Response(JSON.stringify({ error: 'CPF inválido. Verifique os dígitos informados.' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+      for (let t = 9; t < 11; t++) {
+        let sum = 0;
+        for (let i = 0; i < t; i++) sum += parseInt(cleanCpf[i]) * (t + 1 - i);
+        const remainder = (sum * 10) % 11;
+        if ((remainder === 10 ? 0 : remainder) !== parseInt(cleanCpf[t])) {
+          return new Response(JSON.stringify({ error: 'CPF inválido. Verifique os dígitos informados.' }), {
+            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          })
+        }
+      }
+    }
 
     // 2. Criar ordem interna
     const { data: order, error: orderError } = await supabase
