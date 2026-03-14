@@ -161,6 +161,12 @@ const PrevendaPack4 = () => {
           <FAQSectionPack4 />
         </Suspense>
       </LazySectionPack4>
+
+      <LazySectionPack4>
+        <Suspense fallback={<SectionSkeleton />}>
+          <GuaranteeSectionPack4 />
+        </Suspense>
+      </LazySectionPack4>
       
       <LazySectionPack4>
         <Suspense fallback={<SectionSkeleton />}>
