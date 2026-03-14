@@ -235,9 +235,10 @@ export const MotionsGallerySectionPack4 = () => {
 
       <PaymentMethodModal
         open={showPaymentMethodModal}
-        onClose={() => setShowPaymentMethodModal(false)}
+        onOpenChange={setShowPaymentMethodModal}
         onSelect={handlePaymentMethodSelected}
         isProcessing={isCheckoutSubmitting}
+        colorScheme="orange"
       />
     </section>;
 };
