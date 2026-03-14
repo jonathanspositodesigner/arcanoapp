@@ -463,12 +463,13 @@ const Planos2 = () => {
       promo: false
     }, {
       name: "Starter",
-      price: "19,90",
+      price: "24,90",
       originalPrice: null,
       perMonth: true,
-      yearlyTotal: "238,80",
-      credits: "1.800 créditos de IA",
-      images: 30,
+      yearlyTotal: "298,80",
+      credits: "1.500 créditos de IA",
+      images: 25,
+      tagline: "Para começar",
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -488,32 +489,10 @@ const Planos2 = () => {
       originalPrice: "39,90",
       perMonth: true,
       yearlyTotal: "406,80",
-      credits: "4.200 créditos de IA",
-      images: 70,
+      credits: "5.000 créditos de IA",
+      images: 83,
       savings: "R$72",
-      features: [
-        { text: t('planos.features.dailyUpdates'), included: true },
-        { text: t('planos.features.immediateRelease'), included: true },
-        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
-        { text: t('planos.features.whatsappSupport'), included: true },
-        { text: t('planos.features.unlimitedPrompts'), included: true },
-        { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
-        { text: 'Geração de Vídeo com Veo 3', included: true },
-        { text: 'Fila prioritária nas gerações de IA', included: false }
-      ],
-      popular: false,
-      promo: false,
-      hasTrial: false
-    }, {
-      name: "Ultimate",
-      price: "49,90",
-      originalPrice: "59,90",
-      perMonth: true,
-      yearlyTotal: "598,80",
-      credits: "10.800 créditos de IA",
-      images: 180,
-      savings: "R$120",
+      tagline: "Triplo de crédito por +R$20",
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -530,6 +509,31 @@ const Planos2 = () => {
       hasTrial: false,
       bestSeller: true
     }, {
+      name: "Ultimate",
+      price: "49,90",
+      originalPrice: "59,90",
+      perMonth: true,
+      yearlyTotal: "598,80",
+      credits: "14.000 créditos de IA",
+      images: 233,
+      savings: "R$120",
+      tagline: "Ideal para designers e criadores ativos",
+      features: [
+        { text: t('planos.features.dailyUpdates'), included: true },
+        { text: t('planos.features.immediateRelease'), included: true },
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: t('planos.features.whatsappSupport'), included: true },
+        { text: t('planos.features.unlimitedPrompts'), included: true },
+        { text: t('planos.features.allPremiumContent'), included: true },
+        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
+        { text: 'Geração de Vídeo com Veo 3', included: true },
+        { text: 'Fila prioritária nas gerações de IA', included: false }
+      ],
+      popular: false,
+      promo: false,
+      hasTrial: false,
+      hasCountdown: true
+    }, {
       name: "IA Unlimited",
       price: "119,90",
       originalPrice: "149,90",
@@ -538,6 +542,7 @@ const Planos2 = () => {
       credits: "Créditos Ilimitados",
       images: "Ilimitadas",
       savings: "R$360",
+      tagline: "Máxima liberdade",
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -551,7 +556,7 @@ const Planos2 = () => {
       ],
       popular: false,
       promo: false,
-      hasCountdown: true
+      isUnlimitedBadge: true
     }]
   };
 
