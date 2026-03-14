@@ -745,9 +745,9 @@ serve(async (req) => {
           has_video_generation: boolean;
           cost_multiplier: number;
         }> = {
-          'starter': { credits_per_month: 1800, daily_prompt_limit: null, has_image_generation: false, has_video_generation: false, cost_multiplier: 1.0 },
-          'pro': { credits_per_month: 4200, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
-          'ultimate': { credits_per_month: 10800, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
+          'starter': { credits_per_month: 1500, daily_prompt_limit: null, has_image_generation: false, has_video_generation: false, cost_multiplier: 1.0 },
+          'pro': { credits_per_month: 5000, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
+          'ultimate': { credits_per_month: 14000, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
           'unlimited': { credits_per_month: 99999, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 0.5 },
         }
 

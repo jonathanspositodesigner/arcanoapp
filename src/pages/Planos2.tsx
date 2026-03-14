@@ -353,11 +353,12 @@ const Planos2 = () => {
       promo: false
     }, {
       name: "Starter",
-      price: "19,90",
+      price: "24,90",
       originalPrice: "29,90",
       perMonth: true,
-      credits: "1.800 créditos de IA",
-      images: 30,
+      credits: "1.500 créditos de IA",
+      images: 25,
+      tagline: "Para começar",
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -376,29 +377,9 @@ const Planos2 = () => {
       price: "39,90",
       originalPrice: "49,90",
       perMonth: true,
-      credits: "4.200 créditos de IA",
-      images: 70,
-      features: [
-        { text: t('planos.features.dailyUpdates'), included: true },
-        { text: t('planos.features.immediateRelease'), included: true },
-        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
-        { text: t('planos.features.whatsappSupport'), included: true },
-        { text: t('planos.features.unlimitedPrompts'), included: true },
-        { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
-        { text: 'Geração de Vídeo com Veo 3', included: true },
-        { text: 'Fila prioritária nas gerações de IA', included: false }
-      ],
-      popular: false,
-      promo: false,
-      hasTrial: false
-    }, {
-      name: "Ultimate",
-      price: "59,90",
-      originalPrice: "79,90",
-      perMonth: true,
-      credits: "10.800 créditos de IA",
-      images: 180,
+      credits: "5.000 créditos de IA",
+      images: 83,
+      tagline: "Triplo de crédito por +R$20",
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -415,12 +396,36 @@ const Planos2 = () => {
       hasTrial: false,
       bestSeller: true
     }, {
+      name: "Ultimate",
+      price: "59,90",
+      originalPrice: "79,90",
+      perMonth: true,
+      credits: "14.000 créditos de IA",
+      images: 233,
+      tagline: "Ideal para designers e criadores ativos",
+      features: [
+        { text: t('planos.features.dailyUpdates'), included: true },
+        { text: t('planos.features.immediateRelease'), included: true },
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: t('planos.features.whatsappSupport'), included: true },
+        { text: t('planos.features.unlimitedPrompts'), included: true },
+        { text: t('planos.features.allPremiumContent'), included: true },
+        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
+        { text: 'Geração de Vídeo com Veo 3', included: true },
+        { text: 'Fila prioritária nas gerações de IA', included: false }
+      ],
+      popular: false,
+      promo: false,
+      hasTrial: false,
+      hasCountdown: true
+    }, {
       name: "IA Unlimited",
       price: "149,90",
       originalPrice: "249,90",
       perMonth: true,
       credits: "Créditos Ilimitados",
       images: "Ilimitadas",
+      tagline: "Máxima liberdade",
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -434,7 +439,7 @@ const Planos2 = () => {
       ],
       popular: false,
       promo: false,
-      hasCountdown: true
+      isUnlimitedBadge: true
     }],
     anual: [{
       name: "Free",
@@ -458,12 +463,13 @@ const Planos2 = () => {
       promo: false
     }, {
       name: "Starter",
-      price: "19,90",
+      price: "24,90",
       originalPrice: null,
       perMonth: true,
-      yearlyTotal: "238,80",
-      credits: "1.800 créditos de IA",
-      images: 30,
+      yearlyTotal: "298,80",
+      credits: "1.500 créditos de IA",
+      images: 25,
+      tagline: "Para começar",
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -483,32 +489,10 @@ const Planos2 = () => {
       originalPrice: "39,90",
       perMonth: true,
       yearlyTotal: "406,80",
-      credits: "4.200 créditos de IA",
-      images: 70,
+      credits: "5.000 créditos de IA",
+      images: 83,
       savings: "R$72",
-      features: [
-        { text: t('planos.features.dailyUpdates'), included: true },
-        { text: t('planos.features.immediateRelease'), included: true },
-        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
-        { text: t('planos.features.whatsappSupport'), included: true },
-        { text: t('planos.features.unlimitedPrompts'), included: true },
-        { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
-        { text: 'Geração de Vídeo com Veo 3', included: true },
-        { text: 'Fila prioritária nas gerações de IA', included: false }
-      ],
-      popular: false,
-      promo: false,
-      hasTrial: false
-    }, {
-      name: "Ultimate",
-      price: "49,90",
-      originalPrice: "59,90",
-      perMonth: true,
-      yearlyTotal: "598,80",
-      credits: "10.800 créditos de IA",
-      images: 180,
-      savings: "R$120",
+      tagline: "Triplo de crédito por +R$20",
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -525,6 +509,31 @@ const Planos2 = () => {
       hasTrial: false,
       bestSeller: true
     }, {
+      name: "Ultimate",
+      price: "49,90",
+      originalPrice: "59,90",
+      perMonth: true,
+      yearlyTotal: "598,80",
+      credits: "14.000 créditos de IA",
+      images: 233,
+      savings: "R$120",
+      tagline: "Ideal para designers e criadores ativos",
+      features: [
+        { text: t('planos.features.dailyUpdates'), included: true },
+        { text: t('planos.features.immediateRelease'), included: true },
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: t('planos.features.whatsappSupport'), included: true },
+        { text: t('planos.features.unlimitedPrompts'), included: true },
+        { text: t('planos.features.allPremiumContent'), included: true },
+        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
+        { text: 'Geração de Vídeo com Veo 3', included: true },
+        { text: 'Fila prioritária nas gerações de IA', included: false }
+      ],
+      popular: false,
+      promo: false,
+      hasTrial: false,
+      hasCountdown: true
+    }, {
       name: "IA Unlimited",
       price: "119,90",
       originalPrice: "149,90",
@@ -533,6 +542,7 @@ const Planos2 = () => {
       credits: "Créditos Ilimitados",
       images: "Ilimitadas",
       savings: "R$360",
+      tagline: "Máxima liberdade",
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -546,7 +556,7 @@ const Planos2 = () => {
       ],
       popular: false,
       promo: false,
-      hasCountdown: true
+      isUnlimitedBadge: true
     }]
   };
 
@@ -637,20 +647,26 @@ const Planos2 = () => {
           {currentPlans.map((plan, index) => {
             const isBestSeller = (plan as any).bestSeller;
             const hasCountdown = (plan as any).hasCountdown;
+            const isUnlimitedBadge = (plan as any).isUnlimitedBadge;
             return (
             <div key={plan.name} className="flex flex-col h-full w-full">
-              <Card className={`relative p-4 flex flex-col rounded-lg bg-[#1A0A2E] w-full h-full ${isBestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
+              <Card className={`relative p-4 flex flex-col rounded-lg bg-[#1A0A2E] w-full h-full ${isUnlimitedBadge ? "border-2 border-yellow-400 shadow-lg shadow-yellow-400/30" : isBestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "border-2 border-purple-500 shadow-lg shadow-purple-500/30" : "border border-purple-500/20"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-3 py-0.5">
                   {t('planos.bestSeller')}
                 </Badge>
               )}
-              {hasCountdown && (
+              {hasCountdown && !isUnlimitedBadge && (
                 <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-purple-600 to-blue-500 text-white px-3 py-0.5">
                   MELHOR CUSTO/BENEFÍCIO
                 </Badge>
               )}
-              {(plan.promo || plan.popular) && !isBestSeller && !hasCountdown && (
+              {isUnlimitedBadge && (
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 text-black font-extrabold px-4 py-1 shadow-lg shadow-yellow-400/40 tracking-wider animate-pulse">
+                  ✨ CRIE SEM LIMITES ✨
+                </Badge>
+              )}
+              {(plan.promo || plan.popular) && !isBestSeller && !hasCountdown && !isUnlimitedBadge && (
                 <Badge className={`absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap ${plan.promo ? "bg-orange-500 text-white" : "bg-green-500 text-white"}`}>
                   {plan.promo ? t('planos.launchPromo') : t('planos.popular')}
                 </Badge>
@@ -709,19 +725,24 @@ const Planos2 = () => {
                 }
 
                 return (
-                  <Button 
-                    onClick={() => {
-                      if (isFree) {
-                        if (!userId) setShowSignupModal(true);
-                      } else {
-                        handleSubscriptionPurchase(plan.name);
-                      }
-                    }}
-                    disabled={isDisabled || isCheckoutSubmitting}
-                    className={`w-full mb-2 text-sm h-9 ${isCurrentPlan ? "bg-purple-500/20 border border-purple-500/40 text-purple-300 cursor-not-allowed" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
-                  >
-                    {buttonText}
-                  </Button>
+                  <>
+                    <Button 
+                      onClick={() => {
+                        if (isFree) {
+                          if (!userId) setShowSignupModal(true);
+                        } else {
+                          handleSubscriptionPurchase(plan.name);
+                        }
+                      }}
+                      disabled={isDisabled || isCheckoutSubmitting}
+                      className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-purple-500/20 border border-purple-500/40 text-purple-300 cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
+                    >
+                      {buttonText}
+                    </Button>
+                    {(plan as any).tagline && (
+                      <p className="text-[10px] text-purple-400 text-center mb-1 italic">{(plan as any).tagline}</p>
+                    )}
+                  </>
                 );
               })()}
 
