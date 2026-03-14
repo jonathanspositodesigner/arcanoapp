@@ -596,7 +596,7 @@ const PlanosArtesMembro = () => {
       <PreCheckoutModal
         isOpen={showPreCheckout}
         onClose={() => setShowPreCheckout(false)}
-        productSlug={pendingSlug || 'vol1-membro-vitalicio'}
+        productSlug={pendingSlug || undefined}
       />
 
       {/* Payment Method Modal */}

@@ -759,7 +759,7 @@ const PlanosArtes = () => {
       <PreCheckoutModal
         isOpen={showPreCheckout}
         onClose={() => setShowPreCheckout(false)}
-        productSlug={pendingSlug || 'pack4-vitalicio'}
+        productSlug={pendingSlug || undefined}
       />
 
       {/* Payment Method Modal */}

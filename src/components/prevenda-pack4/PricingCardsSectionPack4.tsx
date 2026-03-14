@@ -322,7 +322,7 @@ export const PricingCardsSectionPack4 = () => {
       <PreCheckoutModal
         isOpen={showPreCheckout}
         onClose={() => setShowPreCheckout(false)}
-        productSlug={pendingSlug || 'pack4lancamento'}
+        productSlug={pendingSlug || undefined}
         colorScheme="orange"
       />
 

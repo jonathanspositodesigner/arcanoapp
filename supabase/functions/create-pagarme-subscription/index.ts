@@ -198,12 +198,12 @@ serve(async (req) => {
             number: phoneNumber
           }
         },
-        ...(user_address?.line_1 ? {
+        ...((user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) ? {
           address: {
             line_1: user_address.line_1,
-            zip_code: user_address.zip_code || '01310100',
-            city: user_address.city || 'São Paulo',
-            state: user_address.state || 'SP',
+            zip_code: user_address.zip_code,
+            city: user_address.city,
+            state: user_address.state,
             country: user_address.country || 'BR'
           }
         } : {})
