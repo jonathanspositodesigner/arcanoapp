@@ -194,7 +194,7 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
     .from('welcome_email_logs')
     .select('id')
     .eq('email', email)
-    .eq('template_name', `pagarme_purchase_${productName}`)
+    .eq('template_used', `pagarme_purchase_${productName}`)
     .maybeSingle()
 
   if (existing) {
