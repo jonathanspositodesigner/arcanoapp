@@ -487,15 +487,6 @@ const PlanosArtesMembro = () => {
               </Button>
             </div>
 
-            {selectedPack.cover_url && (
-              <div className="flex justify-center mb-8">
-                <img
-                  src={selectedPack.cover_url}
-                  alt={selectedPack.name}
-                  className="w-32 h-32 object-cover rounded-lg border-2 border-purple-500/50"
-                />
-              </div>
-            )}
 
             <div className="max-w-lg mx-auto">
               <Card className="relative bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
