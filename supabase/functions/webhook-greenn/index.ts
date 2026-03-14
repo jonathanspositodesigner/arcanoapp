@@ -43,7 +43,7 @@ const PLANOS2_PRODUCTS: Record<number, {
   },
   160735: {
     slug: 'pro',
-    credits_per_month: 4200,
+    credits_per_month: 5000,
     daily_prompt_limit: null,
     has_image_generation: true,
     has_video_generation: true,
