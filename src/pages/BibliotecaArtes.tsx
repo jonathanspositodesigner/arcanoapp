@@ -844,6 +844,16 @@ const BibliotecaArtes = () => {
                             </Badge>
                           </div>}
                         
+                        {/* Vol 4 highlight badges */}
+                        {pack.slug === 'pack-arcano-vol-4' && !isPromoActive && <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+                            <Badge className="bg-primary text-white border-0 text-[10px] sm:text-xs font-bold shadow-lg">
+                              Novo
+                            </Badge>
+                            <Badge className="bg-amber-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
+                              Atualizando
+                            </Badge>
+                          </div>}
+                        
                         {/* Access Tag - Priority: Active > Expired > None */}
                         {hasPackAccess && !isBonusType && <div className="absolute top-2 right-2 z-10">
                             <Badge className="bg-green-500 text-white border-0 text-[10px] sm:text-xs font-semibold shadow-lg">
