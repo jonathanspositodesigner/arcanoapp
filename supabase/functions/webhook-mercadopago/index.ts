@@ -194,7 +194,7 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
     .from('welcome_email_logs')
     .select('id')
     .eq('email', email)
-    .eq('template_name', `mp_purchase_${productName}`)
+    .eq('template_used', `mp_purchase_${productName}`)
     .maybeSingle()
 
   if (existing) {
@@ -243,7 +243,7 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
 
   await supabase.from('welcome_email_logs').insert({
     email,
-    template_name: `mp_purchase_${productName}`,
+    template_used: `mp_purchase_${productName}`,
     tracking_id: trackingId,
     status: response.ok ? 'sent' : 'failed',
     sent_at: response.ok ? new Date().toISOString() : null,
@@ -263,7 +263,7 @@ async function sendPurchaseEmail(supabase: any, email: string, productName: stri
       await new Promise(resolve => setTimeout(resolve, 3000))
       await supabase.from('welcome_email_logs').delete()
         .eq('email', email)
-        .eq('template_name', `mp_purchase_${productName}`)
+        .eq('template_used', `mp_purchase_${productName}`)
         .eq('status', 'failed')
       const retrySuccess = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId)
       if (retrySuccess) {
@@ -277,7 +277,7 @@ async function sendPurchaseEmail(supabase: any, email: string, productName: stri
     try {
       await supabase.from('welcome_email_logs').insert({
         email,
-        template_name: `mp_purchase_${productName}`,
+        template_used: `mp_purchase_${productName}`,
         tracking_id: crypto.randomUUID(),
         status: 'failed',
         error_message: err.message,
