@@ -462,12 +462,18 @@ const PlanosArtesMembro = () => {
                 </Button>
               </div>
             ) : (
-              availablePacks.map((pack) => (
+              [...availablePacks].sort((a, b) => a.slug === 'pack-arcano-vol-4' ? -1 : b.slug === 'pack-arcano-vol-4' ? 1 : 0).map((pack) => (
                 <Card
                   key={pack.id}
-                  className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-purple-500 transition-all relative"
+                  className={`bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-purple-500 transition-all relative ${pack.slug === 'pack-arcano-vol-4' ? 'ring-2 ring-purple-500/50' : ''}`}
                   onClick={() => setSelectedPack(pack)}
                 >
+                  {pack.slug === 'pack-arcano-vol-4' && (
+                    <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+                      <Badge className="bg-purple-500 text-white text-[10px] px-1.5 py-0.5">Novo</Badge>
+                      <Badge className="bg-amber-500/90 text-white text-[10px] px-1.5 py-0.5 leading-tight">Atualizando</Badge>
+                    </div>
+                  )}
                   <Badge className="absolute top-2 right-2 bg-purple-500/20 text-purple-400 text-xs">
                     -20%
                   </Badge>
