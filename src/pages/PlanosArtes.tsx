@@ -640,60 +640,69 @@ const PlanosArtes = () => {
               </div>
             )}
 
-            {selectedPack?.cover_url && (
-              <div className="flex justify-center mb-8">
-                <img
-                  src={selectedPack.cover_url}
-                  alt={selectedPack.name}
-                  className="w-32 h-32 object-cover rounded-lg border-2 border-[#2d4a5e]/50"
-                />
-              </div>
-            )}
-
-            <div className={`grid gap-6 ${accessOptions.length === 1 ? 'max-w-md mx-auto' : accessOptions.length === 2 ? 'md:grid-cols-2 max-w-2xl mx-auto' : 'md:grid-cols-3'}`}>
-              {accessOptions.map((option) => {
-                const IconComponent = option.icon;
-                return (
-                  <Card
-                    key={option.type}
-                    className={`relative bg-[#1a1a2e]/80 border-[#2d4a5e]/30 ${
-                      option.highlighted ? "ring-2 ring-[#2d4a5e] scale-105" : ""
-                    }`}
-                  >
-                    {option.highlighted && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2d4a5e] text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
-                        {t('bestValue')}
+            <div className="max-w-lg mx-auto">
+              <Card className="relative bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
+                {selectedAccessType === 'vitalicio' && accessOptions.length > 1 && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2d4a5e] text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
+                    {t('bestValue')}
+                  </div>
+                )}
+                <CardHeader className="text-center pt-8">
+                  {selectedPack?.cover_url && (
+                    <img
+                      src={selectedPack.cover_url}
+                      alt={selectedPack.name}
+                      className="w-24 h-24 object-cover rounded-lg border-2 border-[#2d4a5e]/50 mx-auto mb-3"
+                    />
+                  )}
+                  <CardTitle className="text-xl text-white">{selectedPack?.name}</CardTitle>
+                  <div className="mt-4">
+                    {(isRenewal || hasNotificationDiscount) && (
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        <span className="text-white/40 line-through text-lg">{formatOriginalPrice(selectedAccessType)}</span>
+                        <Badge className={`text-xs ${isRenewal ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                          -{isRenewal ? '30' : notificationDiscountPercent}%
+                        </Badge>
                       </div>
                     )}
-                    {option.hasBonus && (
-                      <div className="absolute top-3 right-3 bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1">
-                        <Gift className="h-3 w-3" />
-                        {t('plusBonus')}
-                      </div>
-                    )}
-                    <CardHeader className="text-center pt-8">
-                      <div className="mx-auto w-12 h-12 bg-[#2d4a5e]/30 rounded-full flex items-center justify-center mb-3">
-                        <IconComponent className="h-6 w-6 text-[#2d4a5e]" />
-                      </div>
-                      <CardTitle className="text-lg text-white">{option.label}</CardTitle>
-                      <div className="mt-4">
-                        {(isRenewal || hasNotificationDiscount) && (
-                          <div className="flex items-center justify-center gap-2 mb-1">
-                            <span className="text-white/40 line-through text-lg">{formatOriginalPrice(option.type)}</span>
-                            <Badge className={`text-xs ${isRenewal ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                              -{isRenewal ? '30' : notificationDiscountPercent}%
-                            </Badge>
+                    <span className={`text-3xl font-bold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
+                      {formatPrice(calculatePrice(selectedAccessType))}
+                    </span>
+                    <span className="text-white/60 text-sm block mt-1">{t('oneTimePayment')}</span>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {accessOptions.length > 1 && (
+                    <RadioGroup
+                      value={selectedAccessType}
+                      onValueChange={setSelectedAccessType}
+                      className="space-y-3 mb-6"
+                    >
+                      {accessOptions.map((option) => (
+                        <label
+                          key={option.type}
+                          className={`flex items-center justify-between gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                            selectedAccessType === option.type
+                              ? `border-[#2d4a5e] ${isRenewal ? 'bg-green-500/10' : hasNotificationDiscount ? 'bg-amber-500/10' : 'bg-[#2d4a5e]/10'}`
+                              : 'border-[#2d4a5e]/30 hover:border-[#2d4a5e]/60'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <RadioGroupItem value={option.type} className="border-[#2d4a5e] text-[#2d4a5e]" />
+                            <span className="text-white font-medium">{option.label}</span>
                           </div>
-                        )}
-                        <span className={`text-3xl font-bold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
-                          {formatPrice(calculatePrice(option.type))}
-                        </span>
-                        <span className="text-white/60 text-sm block mt-1">{t('oneTimePayment')}</span>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
+                          <span className={`font-semibold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
+                            {formatPrice(calculatePrice(option.type))}
+                          </span>
+                        </label>
+                      ))}
+                    </RadioGroup>
+                  )}
+
+                  {selectedOption && (
+                    <>
                       <ul className="space-y-3 mb-6">
-                        {option.features.map((feature) => (
+                        {selectedOption.features.map((feature) => (
                           <li key={feature} className="flex items-start gap-2 text-white/80">
                             <Check className="h-4 w-4 text-[#2d4a5e] mt-0.5 shrink-0" />
                             <span className="text-sm">{feature}</span>
@@ -702,15 +711,13 @@ const PlanosArtes = () => {
                       </ul>
                       <Button
                         className={`w-full ${
-                          option.highlighted
-                            ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-amber-500/30 animate-pulse"
-                            : isRenewal
-                              ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-                              : hasNotificationDiscount
-                                ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
-                                : "bg-[#2d4a5e]/50 hover:bg-[#2d4a5e] text-white"
+                          isRenewal
+                            ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold shadow-lg shadow-green-500/30"
+                            : hasNotificationDiscount
+                              ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-amber-500/30"
+                              : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-amber-500/30"
                         }`}
-                        onClick={() => handleSelectOption(option.type)}
+                        onClick={() => handleSelectOption(selectedAccessType)}
                         disabled={isCheckoutSubmitting}
                       >
                         {isCheckoutSubmitting ? (
@@ -724,12 +731,12 @@ const PlanosArtes = () => {
                           ? t('buttons.renewNow', { ns: 'library' }) 
                           : hasNotificationDiscount 
                             ? t('buttons.useMyDiscount', { ns: 'library' }) 
-                            : option.buttonText}
+                            : selectedOption.buttonText}
                       </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                    </>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </>
         )}
