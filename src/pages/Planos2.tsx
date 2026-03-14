@@ -998,7 +998,7 @@ const Planos2 = () => {
         onClose={() => setShowPreCheckout(false)}
         userEmail={userEmail}
         userId={userId}
-        productSlug={selectedCreditSlug}
+        productSlug={preCheckoutSlug || ''}
       />
 
       {/* Signup Modal for Free plan */}
