@@ -397,16 +397,6 @@ const PlanosArtesMembro = () => {
   }
 
   const accessOptions = getAccessOptions();
-  const defaultAccess = accessOptions.find(o => o.type === 'vitalicio')?.type || accessOptions[0]?.type || 'vitalicio';
-  const [selectedAccessType, setSelectedAccessType] = useState(defaultAccess);
-
-  // Keep selectedAccessType in sync when pack changes
-  useEffect(() => {
-    const opts = getAccessOptions();
-    const vit = opts.find(o => o.type === 'vitalicio');
-    setSelectedAccessType(vit ? vit.type : opts[0]?.type || 'vitalicio');
-  }, [selectedPack]);
-
   const selectedOption = accessOptions.find(o => o.type === selectedAccessType) || accessOptions[0];
 
   return (
