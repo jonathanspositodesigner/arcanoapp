@@ -8,7 +8,7 @@ import { getSanitizedUtms } from "@/lib/utmUtils";
 import { getMetaCookies } from "@/lib/metaCookies";
 import { toast } from "sonner";
 
-const PRODUCT_SLUG = "pack4lancamento";
+const PRODUCT_SLUG = "pack4-vitalicio";
 
 export const GuaranteeSectionPack4 = () => {
   const [showPreCheckout, setShowPreCheckout] = useState(false);

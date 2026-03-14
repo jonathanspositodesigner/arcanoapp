@@ -52,7 +52,7 @@ const motions = [{
   title: "Country"
 }];
 
-const PRODUCT_SLUG = "pack4lancamento";
+const PRODUCT_SLUG = "pack4-vitalicio";
 
 export const MotionsGallerySectionPack4 = () => {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
