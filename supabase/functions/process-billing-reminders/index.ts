@@ -57,7 +57,7 @@ const PLAN_INFO: Record<string, PlanInfo> = {
     ],
     losses: [
       'Seus 10.800 créditos mensais para uso nas ferramentas',
-      'O acesso a 24 prompts premium por dia',
+      'O acesso ilimitado a prompts premium',
       'A geração de imagens e vídeos com IA',
       'O suporte prioritário',
     ],
