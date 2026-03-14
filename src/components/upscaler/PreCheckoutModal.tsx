@@ -162,7 +162,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     if (!cpfDigits) {
       setCpfError('Digite seu CPF');
       valid = false;
-    } else if (cpfDigits.length !== 11) {
+    } else if (!validateCPF(cpfDigits)) {
       setCpfError('CPF inválido');
       valid = false;
     }
