@@ -263,7 +263,7 @@ async function sendPurchaseEmail(supabase: any, email: string, productName: stri
       await new Promise(resolve => setTimeout(resolve, 3000))
       await supabase.from('welcome_email_logs').delete()
         .eq('email', email)
-        .eq('template_name', `mp_purchase_${productName}`)
+        .eq('template_used', `mp_purchase_${productName}`)
         .eq('status', 'failed')
       const retrySuccess = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId)
       if (retrySuccess) {
