@@ -19,13 +19,13 @@ const PLAN_INFO: Record<string, PlanInfo> = {
   'plano-starter': {
     displayName: 'Starter',
     benefits: [
-      '1.800 créditos mensais para uso nas ferramentas de IA',
+      '1.500 créditos mensais para uso nas ferramentas de IA',
       'Prompts premium ilimitados',
       'Acesso às ferramentas de IA da plataforma',
       'Suporte via WhatsApp',
     ],
     losses: [
-      'Seus 1.800 créditos mensais para uso nas ferramentas',
+      'Seus 1.500 créditos mensais para uso nas ferramentas',
       'O acesso ilimitado a prompts premium',
       'A possibilidade de usar as ferramentas de IA normalmente',
     ],
@@ -33,14 +33,14 @@ const PLAN_INFO: Record<string, PlanInfo> = {
   'plano-pro': {
     displayName: 'Pro',
     benefits: [
-      '4.200 créditos mensais para uso nas ferramentas de IA',
+      '5.000 créditos mensais para uso nas ferramentas de IA',
       'Prompts premium ilimitados',
       'Geração de imagens com IA',
       'Geração de vídeos com IA',
       'Suporte prioritário via WhatsApp',
     ],
     losses: [
-      'Seus 4.200 créditos mensais para uso nas ferramentas',
+      'Seus 5.000 créditos mensais para uso nas ferramentas',
       'O acesso ilimitado a prompts premium',
       'A geração de imagens e vídeos com IA',
       'A prioridade no suporte via WhatsApp',
@@ -49,14 +49,14 @@ const PLAN_INFO: Record<string, PlanInfo> = {
   'plano-ultimate': {
     displayName: 'Ultimate',
     benefits: [
-      '10.800 créditos mensais para uso nas ferramentas de IA',
+      '14.000 créditos mensais para uso nas ferramentas de IA',
       'Prompts premium ilimitados',
       'Geração de imagens com IA',
       'Geração de vídeos com IA',
       'Suporte prioritário via WhatsApp',
     ],
     losses: [
-      'Seus 10.800 créditos mensais para uso nas ferramentas',
+      'Seus 14.000 créditos mensais para uso nas ferramentas',
       'O acesso ilimitado a prompts premium',
       'A geração de imagens e vídeos com IA',
       'O suporte prioritário',
