@@ -645,6 +645,14 @@ const PlanosArtes = () => {
                     />
                   )}
                   <CardTitle className="text-xl text-white">{selectedPack?.name}</CardTitle>
+                  {!isRenewal && (
+                    <button
+                      onClick={() => setSelectedPack(null)}
+                      className="text-white/40 hover:text-white/70 text-xs underline underline-offset-2 transition-colors mt-1"
+                    >
+                      {t('buttons.chooseAnotherPack', { ns: 'library' })}
+                    </button>
+                  )}
                   <div className="mt-4">
                     {(isRenewal || hasNotificationDiscount) && (
                       <div className="flex items-center justify-center gap-2 mb-1">
