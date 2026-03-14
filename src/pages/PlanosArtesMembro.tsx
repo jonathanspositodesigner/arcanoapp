@@ -75,6 +75,14 @@ const PlanosArtesMembro = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
+  const [selectedAccessType, setSelectedAccessType] = useState('vitalicio');
+
+  // Keep selectedAccessType in sync when pack changes
+  useEffect(() => {
+    const opts = getAccessOptions();
+    const vit = opts.find(o => o.type === 'vitalicio');
+    setSelectedAccessType(vit ? vit.type : opts[0]?.type || 'vitalicio');
+  }, [selectedPack]);
 
   // Check auth on mount
   useEffect(() => {
