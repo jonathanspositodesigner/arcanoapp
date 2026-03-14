@@ -300,21 +300,19 @@ serve(async (req) => {
             customer_editable: false,
             billing_address_editable: billing_type === 'CREDIT_CARD',
             skip_checkout_success_page: billing_type === 'CREDIT_CARD',
-            ...(billing_type === 'PIX' ? {
-              billing_address: user_address?.line_1 ? {
-                line_1: user_address.line_1,
-                zip_code: user_address.zip_code || '01310100',
-                city: user_address.city || 'São Paulo',
-                state: user_address.state || 'SP',
-                country: user_address.country || 'BR'
+            ...(billing_type === 'PIX' ? (
+              user_address?.line_1 ? {
+                billing_address: {
+                  line_1: user_address.line_1,
+                  zip_code: user_address.zip_code || '01310100',
+                  city: user_address.city || 'São Paulo',
+                  state: user_address.state || 'SP',
+                  country: user_address.country || 'BR'
+                }
               } : {
-                line_1: '1, Av Paulista, Bela Vista',
-                zip_code: '01310100',
-                city: 'São Paulo',
-                state: 'SP',
-                country: 'BR'
+                billing_address_editable: true
               }
-            } : {}),
+            ) : {}),
             credit_card: {
               capture: true,
               installments: [

@@ -40,9 +40,9 @@ const Planos2 = () => {
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [expandedAiTools, setExpandedAiTools] = useState<Record<string, boolean>>({});
   
-  // Credit purchase state
+  // Checkout state — single slug for ALL flows (credits + plans)
   const [showPreCheckout, setShowPreCheckout] = useState(false);
-  const [selectedCreditSlug, setSelectedCreditSlug] = useState('creditos-1500');
+  const [preCheckoutSlug, setPreCheckoutSlug] = useState<string | null>(null);
   const [pixLoading, setPixLoading] = useState<string | null>(null);
   const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
   const [pendingSlug, setPendingSlug] = useState<string | null>(null);
@@ -120,7 +120,7 @@ const Planos2 = () => {
     if (!startCheckout()) return;
     
     if (!userId) {
-      setSelectedCreditSlug(slug);
+      setPreCheckoutSlug(slug);
       setShowPreCheckout(true);
       endCheckout();
       return;
@@ -143,7 +143,7 @@ const Planos2 = () => {
         setShowPaymentMethodModal(true);
         endCheckout();
       } else {
-        setSelectedCreditSlug(slug);
+        setPreCheckoutSlug(slug);
         setShowPreCheckout(true);
         endCheckout();
       }
@@ -296,7 +296,7 @@ const Planos2 = () => {
     if (!slug) return;
 
     if (!userId) {
-      setSelectedCreditSlug(slug);
+      setPreCheckoutSlug(slug);
       setShowPreCheckout(true);
       return;
     }
@@ -321,7 +321,7 @@ const Planos2 = () => {
         setShowPaymentMethodModal(true);
         endCheckout();
       } else {
-        setSelectedCreditSlug(slug);
+        setPreCheckoutSlug(slug);
         setShowPreCheckout(true);
         endCheckout();
       }
@@ -998,7 +998,7 @@ const Planos2 = () => {
         onClose={() => setShowPreCheckout(false)}
         userEmail={userEmail}
         userId={userId}
-        productSlug={selectedCreditSlug}
+        productSlug={preCheckoutSlug || ''}
       />
 
       {/* Signup Modal for Free plan */}
