@@ -379,7 +379,7 @@ const Planos2 = () => {
       perMonth: true,
       credits: "5.000 créditos de IA",
       images: 83,
-      tagline: "Triplo de crédito por +R$20",
+      tagline: "3x mais créditos por mais R$15",
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
