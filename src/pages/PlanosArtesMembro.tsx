@@ -492,15 +492,6 @@ const PlanosArtesMembro = () => {
         ) : (
           // Show access options for selected pack
           <>
-            <div className="flex justify-center mb-6">
-              <Button
-                variant="outline"
-                className="bg-[#2d4a5e]/30 border-[#2d4a5e] text-white hover:bg-[#2d4a5e]/50"
-                onClick={() => setSelectedPack(null)}
-              >
-                {t('buttons.chooseAnotherPack', { ns: 'library' })}
-              </Button>
-            </div>
 
 
             <div className="max-w-lg mx-auto">
@@ -519,6 +510,12 @@ const PlanosArtesMembro = () => {
                     />
                   )}
                   <CardTitle className="text-xl text-white">{selectedPack.name}</CardTitle>
+                  <button
+                    onClick={() => setSelectedPack(null)}
+                    className="text-white/40 hover:text-white/70 text-xs underline underline-offset-2 transition-colors mt-1"
+                  >
+                    {t('buttons.chooseAnotherPack', { ns: 'library' })}
+                  </button>
                   <div className="mt-4">
                     <div className="flex items-center justify-center gap-2 mb-1">
                       <span className="text-white/40 line-through text-lg">{formatOriginalPrice(selectedAccessType)}</span>
