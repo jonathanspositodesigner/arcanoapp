@@ -279,7 +279,7 @@ async function sendPurchaseEmail(supabase: any, email: string, productName: stri
     try {
       await supabase.from('welcome_email_logs').insert({
         email,
-        template_name: `pagarme_purchase_${productName}`,
+        template_used: `pagarme_purchase_${productName}`,
         tracking_id: crypto.randomUUID(),
         status: 'failed',
         error_message: err.message,
