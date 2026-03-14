@@ -52,7 +52,7 @@ const PLANOS2_PRODUCTS: Record<number, {
   160738: {
     slug: 'ultimate',
     credits_per_month: 10800,
-    daily_prompt_limit: 24,
+    daily_prompt_limit: null,
     has_image_generation: true,
     has_video_generation: true,
     cost_multiplier: 1.0,
