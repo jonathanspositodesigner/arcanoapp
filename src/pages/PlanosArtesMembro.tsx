@@ -76,6 +76,7 @@ const PlanosArtesMembro = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
   const [selectedAccessType, setSelectedAccessType] = useState('vitalicio');
+  const [arteCount, setArteCount] = useState<number | null>(null);
 
   // Check auth on mount
   useEffect(() => {
