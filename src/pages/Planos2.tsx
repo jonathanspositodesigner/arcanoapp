@@ -425,6 +425,7 @@ const Planos2 = () => {
       perMonth: true,
       credits: "Créditos Ilimitados",
       images: "Ilimitadas",
+      tagline: "Máxima liberdade",
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
@@ -438,7 +439,7 @@ const Planos2 = () => {
       ],
       popular: false,
       promo: false,
-      hasCountdown: true
+      isUnlimitedBadge: true
     }],
     anual: [{
       name: "Free",
