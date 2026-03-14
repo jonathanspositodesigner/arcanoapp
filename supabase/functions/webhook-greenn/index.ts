@@ -36,7 +36,7 @@ const PLANOS2_PRODUCTS: Record<number, {
   160732: {
     slug: 'starter',
     credits_per_month: 1800,
-    daily_prompt_limit: 5,
+    daily_prompt_limit: null,
     has_image_generation: false,
     has_video_generation: false,
     cost_multiplier: 1.0,
@@ -44,7 +44,7 @@ const PLANOS2_PRODUCTS: Record<number, {
   160735: {
     slug: 'pro',
     credits_per_month: 4200,
-    daily_prompt_limit: 10,
+    daily_prompt_limit: null,
     has_image_generation: true,
     has_video_generation: true,
     cost_multiplier: 1.0,
@@ -52,7 +52,7 @@ const PLANOS2_PRODUCTS: Record<number, {
   160738: {
     slug: 'ultimate',
     credits_per_month: 10800,
-    daily_prompt_limit: 24,
+    daily_prompt_limit: null,
     has_image_generation: true,
     has_video_generation: true,
     cost_multiplier: 1.0,
@@ -257,13 +257,13 @@ async function sendPlanos2WelcomeEmail(
   const benefits: Record<string, string[]> = {
     'starter': [
       '✅ 1.800 créditos mensais (~30 imagens/mês)',
-      '✅ 5 prompts premium por dia',
+      '✅ Prompts premium ilimitados',
       '✅ Acesso à Biblioteca de Prompts',
       '✅ Atualizações diárias',
     ],
     'pro': [
       '✅ 4.200 créditos mensais (~70 imagens/mês)',
-      '✅ 10 prompts premium por dia',
+      '✅ Prompts premium ilimitados',
       '✅ Geração de Imagens com IA',
       '✅ Geração de Vídeos com IA',
       '✅ Acesso à Biblioteca de Prompts',
@@ -271,7 +271,7 @@ async function sendPlanos2WelcomeEmail(
     ],
     'ultimate': [
       '✅ 10.800 créditos mensais (~180 imagens/mês)',
-      '✅ 24 prompts premium por dia',
+      '✅ Prompts premium ilimitados',
       '✅ Geração de Imagens com IA',
       '✅ Geração de Vídeos com IA',
       '✅ Acesso à Biblioteca de Prompts',
