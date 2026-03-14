@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Check, Star, ArrowLeft, Gift, Clock, Crown, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
@@ -74,6 +75,7 @@ const PlanosArtesMembro = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
+  const [selectedAccessType, setSelectedAccessType] = useState('vitalicio');
 
   // Check auth on mount
   useEffect(() => {
@@ -195,18 +197,18 @@ const PlanosArtesMembro = () => {
   const getAccessOptions = () => {
     const allOptions = [
       {
-        type: "6_meses",
-        label: t('access6Months'),
-        icon: Clock,
-        buttonText: t('unlock6Months'),
+        type: "vitalicio",
+        label: t('accessLifetime'),
+        icon: Gift,
+        buttonText: t('unlockLifetime'),
         features: [
-          t('features.fullAccess'),
-          t('features.unlimitedDownload'),
-          t('features.editableFiles'),
-          t('features.updates6Months')
+          t('features.all1YearFeatures'),
+          t('features.permanentAccess'),
+          t('features.allFutureUpdates'),
+          t('features.foreverBonus')
         ],
-        hasBonus: false,
-        highlighted: false
+        hasBonus: true,
+        highlighted: true
       },
       {
         type: "1_ano",
@@ -223,23 +225,30 @@ const PlanosArtesMembro = () => {
         highlighted: false
       },
       {
-        type: "vitalicio",
-        label: t('accessLifetime'),
-        icon: Gift,
-        buttonText: t('unlockLifetime'),
+        type: "6_meses",
+        label: t('access6Months'),
+        icon: Clock,
+        buttonText: t('unlock6Months'),
         features: [
-          t('features.all1YearFeatures'),
-          t('features.permanentAccess'),
-          t('features.allFutureUpdates'),
-          t('features.foreverBonus')
+          t('features.fullAccess'),
+          t('features.unlimitedDownload'),
+          t('features.editableFiles'),
+          t('features.updates6Months')
         ],
-        hasBonus: true,
-        highlighted: true
+        hasBonus: false,
+        highlighted: false
       }
     ];
 
     return allOptions.filter(opt => isEnabled(opt.type));
   };
+
+  // Keep selectedAccessType in sync when pack changes
+  useEffect(() => {
+    const opts = getAccessOptions();
+    const vit = opts.find(o => o.type === 'vitalicio');
+    setSelectedAccessType(vit ? vit.type : opts[0]?.type || 'vitalicio');
+  }, [selectedPack]);
 
   // Check if this pack uses Pagar.me checkout
   const isPagarmeMemberSlug = selectedPack ? PAGARME_MEMBER_SLUGS[selectedPack.slug] : null;
@@ -388,6 +397,7 @@ const PlanosArtesMembro = () => {
   }
 
   const accessOptions = getAccessOptions();
+  const selectedOption = accessOptions.find(o => o.type === selectedAccessType) || accessOptions[0];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] p-4">
@@ -477,56 +487,66 @@ const PlanosArtesMembro = () => {
               </Button>
             </div>
 
-            {selectedPack.cover_url && (
-              <div className="flex justify-center mb-8">
-                <img
-                  src={selectedPack.cover_url}
-                  alt={selectedPack.name}
-                  className="w-32 h-32 object-cover rounded-lg border-2 border-purple-500/50"
-                />
-              </div>
-            )}
 
-            <div className={`grid gap-6 ${accessOptions.length === 1 ? 'max-w-md mx-auto' : accessOptions.length === 2 ? 'md:grid-cols-2 max-w-2xl mx-auto' : 'md:grid-cols-3'}`}>
-              {accessOptions.map((option) => {
-                const IconComponent = option.icon;
-                return (
-                  <Card
-                    key={option.type}
-                    className={`relative bg-[#1a1a2e]/80 border-[#2d4a5e]/30 ${
-                      option.highlighted ? "ring-2 ring-purple-500 scale-105" : ""
-                    }`}
-                  >
-                    {option.highlighted && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
-                        {t('bestValue')}
-                      </div>
-                    )}
-                    {option.hasBonus && (
-                      <div className="absolute top-3 right-3 bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1">
-                        <Gift className="h-3 w-3" />
-                        {t('plusBonus')}
-                      </div>
-                    )}
-                    <CardHeader className="text-center pt-8">
-                      <div className="mx-auto w-12 h-12 bg-purple-500/30 rounded-full flex items-center justify-center mb-3">
-                        <IconComponent className="h-6 w-6 text-purple-400" />
-                      </div>
-                      <CardTitle className="text-lg text-white">{option.label}</CardTitle>
-                      <div className="mt-4">
-                        <div className="flex items-center justify-center gap-2 mb-1">
-                          <span className="text-white/40 line-through text-lg">{formatOriginalPrice(option.type)}</span>
-                          <Badge className="bg-purple-500/20 text-purple-400 text-xs">-20%</Badge>
-                        </div>
-                        <span className="text-3xl font-bold text-purple-400">
-                          {formatPrice(calculatePrice(option.type))}
-                        </span>
-                        <span className="text-white/60 text-sm block mt-1">{t('oneTimePayment')}</span>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
+            <div className="max-w-lg mx-auto">
+              <Card className="relative bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
+                {selectedAccessType === 'vitalicio' && accessOptions.length > 1 && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
+                    {t('bestValue')}
+                  </div>
+                )}
+                <CardHeader className="text-center pt-8">
+                  {selectedPack.cover_url && (
+                    <img
+                      src={selectedPack.cover_url}
+                      alt={selectedPack.name}
+                      className="w-24 h-24 object-cover rounded-lg border-2 border-purple-500/50 mx-auto mb-3"
+                    />
+                  )}
+                  <CardTitle className="text-xl text-white">{selectedPack.name}</CardTitle>
+                  <div className="mt-4">
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <span className="text-white/40 line-through text-lg">{formatOriginalPrice(selectedAccessType)}</span>
+                      <Badge className="bg-purple-500/20 text-purple-400 text-xs">-20%</Badge>
+                    </div>
+                    <span className="text-3xl font-bold text-purple-400">
+                      {formatPrice(calculatePrice(selectedAccessType))}
+                    </span>
+                    <span className="text-white/60 text-sm block mt-1">{t('oneTimePayment')}</span>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {accessOptions.length > 1 && (
+                    <RadioGroup
+                      value={selectedAccessType}
+                      onValueChange={setSelectedAccessType}
+                      className="space-y-3 mb-6"
+                    >
+                      {accessOptions.map((option) => (
+                        <label
+                          key={option.type}
+                          className={`flex items-center justify-between gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                            selectedAccessType === option.type
+                              ? 'border-purple-500 bg-purple-500/10'
+                              : 'border-[#2d4a5e]/30 hover:border-[#2d4a5e]/60'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <RadioGroupItem value={option.type} className="border-purple-400 text-purple-400" />
+                            <span className="text-white font-medium">{option.label}</span>
+                          </div>
+                          <span className="text-purple-400 font-semibold">
+                            {formatPrice(calculatePrice(option.type))}
+                          </span>
+                        </label>
+                      ))}
+                    </RadioGroup>
+                  )}
+
+                  {selectedOption && (
+                    <>
                       <ul className="space-y-3 mb-6">
-                        {option.features.map((feature) => (
+                        {selectedOption.features.map((feature) => (
                           <li key={feature} className="flex items-start gap-2 text-white/80">
                             <Check className="h-4 w-4 text-purple-400 mt-0.5 shrink-0" />
                             <span className="text-sm">{feature}</span>
@@ -534,12 +554,8 @@ const PlanosArtesMembro = () => {
                         ))}
                       </ul>
                       <Button
-                        className={`w-full ${
-                          option.highlighted
-                            ? "bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white font-bold shadow-lg shadow-purple-500/30 animate-pulse"
-                            : "bg-gradient-to-r from-purple-500/80 to-violet-500/80 hover:from-purple-500 hover:to-violet-500 text-white"
-                        }`}
-                        onClick={() => handleSelectOption(option.type)}
+                        className="w-full bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white font-bold shadow-lg shadow-purple-500/30"
+                        onClick={() => handleSelectOption(selectedAccessType)}
                         disabled={isCheckoutSubmitting}
                       >
                         {isCheckoutSubmitting ? (
@@ -549,10 +565,10 @@ const PlanosArtesMembro = () => {
                         )}
                         {t('buttons.buyWithDiscount', { ns: 'library' })}
                       </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+                    </>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </>
         )}
