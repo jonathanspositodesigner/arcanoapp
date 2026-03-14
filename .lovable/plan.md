@@ -1,50 +1,36 @@
 
-# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
-## Resumo
-Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
+## Resultado da Verificação dos Checkouts da /prevenda-pack4
 
-## O que foi feito
+### ✅ O que está CORRETO
 
-### 1. Tabela `subscription_billing_reminders` (migration)
-- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
-- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
-- Campo `checkout_url` para evitar checkouts duplicados
-- Constraint UNIQUE em (subscription_id, day_offset, due_date)
+**Slugs dos botões de pricing** — Todos os 3 planos apontam para os slugs certos:
+- 6 meses → `pack4-6meses`
+- 1 ano → `pack4-1ano`
+- Vitalício → `pack4lancamento`
 
-### 2. Edge Function `process-billing-reminders`
-- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
-- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
-- Para cada assinatura, verifica:
-  - Se já enviou email para esse `day_offset`
-  - Se a sequência foi parada (pagou ou descadastrou)
-  - Se o email está na blacklist
-  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
-- Gera checkout Pagar.me somente PIX com validade de 3 dias
-- Monta HTML personalizado com dados reais do plano
-- Envia via SendPulse SMTP API
-- Registra na tabela de controle
+**Produtos no banco** — Os 3 slugs existem na tabela `mp_products`, ativos, com `pack_slug = 'pack-arcano-vol-4'` e preços corretos (R$ 27, R$ 37, R$ 47).
 
-### 3. Mapeamento de benefícios por plano
-- Starter: 1.800 créditos, 5 prompts/dia
-- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
-- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
-- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
+**Webhook Pagar.me (fulfillment)** — O webhook usa `product.pack_slug` para conceder acesso em `user_pack_purchases`, então qualquer um dos 3 slugs vai liberar o pack `pack-arcano-vol-4` com o `access_type` correto (6_meses, 1_ano ou vitalicio).
 
-### 4. Templates dos 6 emails
-- Dia 0: Lembrete leve ("Seu plano vence hoje")
-- Dia 1: Reforço pendência ("Pagamento ainda pendente")
-- Dia 2: Dor da perda ("Risco de perda de acesso")
-- Dia 3: Prejuízo prático ("O custo de não renovar")
-- Dia 4: FOMO ("Não fique para trás")
-- Dia 5: Último aviso ("Último aviso: regularize hoje")
-- Todos com link de descadastro no rodapé
+**Bundle do vitalício** — O slug `pack4lancamento` também concede o bônus `pack-de-sao-joao` via `BUNDLE_EXTRA_PACKS`.
 
-### 5. Cron job
-- pg_cron agendado: `0 12 * * *` (09:00 BRT)
-- Chama a Edge Function automaticamente
+**Reembolso** — O `refund-pagarme` tem `REFUND_BUNDLE_EXTRA_PACKS` configurado para revogar o `pack-de-sao-joao` junto com o estorno do `pack4lancamento`.
 
-## Detecção de pagamento (para de enviar)
-- `planos2_subscriptions.expires_at` estendido para data futura
-- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
-- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
+**Checkout flow (pricing cards)** — Usa `create-pagarme-checkout` corretamente via `supabase.functions.invoke`.
+
+### ⚠️ Problema encontrado
+
+**MotionsGallerySectionPack4** — O botão "QUERO ACESSO VITALÍCIO" da seção de vídeos animados (Motions) está usando uma URL externa hardcoded (`https://pay.pagstar.com/pack4lancamento`) em vez do fluxo Pagar.me. Isso significa que esse botão específico NÃO passa pelo checkout correto — abre uma URL externa que pode nem existir/funcionar.
+
+### Plano de correção
+
+Corrigir o `MotionsGallerySectionPack4.tsx` para usar o mesmo fluxo de checkout Pagar.me (via `create-pagarme-checkout`) em vez da URL hardcoded. Isso envolve:
+
+1. Adicionar a mesma lógica de checkout do `PricingCardsSectionPack4` (auth check → PreCheckoutModal ou PaymentMethodModal → `create-pagarme-checkout` com slug `pack4lancamento`).
+2. Remover a constante `CHECKOUT_URL_PACK4` e o `window.open` externo.
+
+**Arquivo a alterar:** `src/components/prevenda-pack4/MotionsGallerySectionPack4.tsx`
+
+Nenhum outro arquivo precisa de mudança. Todos os demais checkouts estão configurados corretamente.
+
