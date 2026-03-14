@@ -1,50 +1,44 @@
 
-# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
+Objetivo
+- Corrigir a /prevenda-pack4 para usar a galeria correta do Pack 4 em “Veja todas as artes”.
+- Isolar de vez /prevenda-pack4 de /combo-artes-arcanas para impedir impacto cruzado.
 
-## Resumo
-Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
+Diagnóstico confirmado
+- Hoje a /prevenda-pack4 ainda importa a galeria de `@/components/combo-artes/FlyersGallerySection`.
+- Essa galeria usa imagens de `/images/combo/*`, por isso aparece conteúdo da página de combo.
+- A página também continua compartilhando vários componentes com a pasta `combo-artes`, então qualquer ajuste futuro pode “vazar” entre páginas.
 
-## O que foi feito
+Plano de implementação
+1) Restaurar galeria de artes do Pack 4 (fix principal)
+- Criar `src/components/prevenda-pack4/FlyersGallerySectionPack4.tsx`.
+- Manter o mesmo layout/UX atual (abas + grid) para não quebrar visual.
+- Trocar dataset para imagens de `public/images/pack4/*` (apenas artes do Pack 4, sem `/images/combo/*`).
+- Manter título “Veja todas as artes que você terá acesso”.
 
-### 1. Tabela `subscription_billing_reminders` (migration)
-- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
-- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
-- Campo `checkout_url` para evitar checkouts duplicados
-- Constraint UNIQUE em (subscription_id, day_offset, due_date)
+2) Conectar a página /prevenda-pack4 à nova galeria
+- Editar `src/pages/PrevendaPack4.tsx`:
+  - Substituir lazy import de `combo-artes/FlyersGallerySection` por `prevenda-pack4/FlyersGallerySectionPack4`.
+- Não alterar `src/pages/ComboArtesArcanas.tsx`.
 
-### 2. Edge Function `process-billing-reminders`
-- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
-- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
-- Para cada assinatura, verifica:
-  - Se já enviou email para esse `day_offset`
-  - Se a sequência foi parada (pagou ou descadastrou)
-  - Se o email está na blacklist
-  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
-- Gera checkout Pagar.me somente PIX com validade de 3 dias
-- Monta HTML personalizado com dados reais do plano
-- Envia via SendPulse SMTP API
-- Registra na tabela de controle
+3) Separar estruturalmente as duas páginas (blindagem definitiva)
+- Duplicar para `src/components/prevenda-pack4/` os blocos ainda compartilhados pela pré-venda (cópia 1:1 do estado atual para manter visual):
+  - `FeaturesSection`, `MotionsGallerySection`, `BonusTelaoSection`, `BonusGridSection`,
+    `TestimonialsSection`, `GuaranteeSectionCombo`, `AboutSection`, `FAQSectionCombo`,
+    `WhatsAppSupportSection`, `FooterSection`, `HeroSectionPack4` (se ainda compartilhado).
+- Reapontar imports da `PrevendaPack4.tsx` para essas versões próprias.
+- Resultado: mudanças futuras em combo não afetam pré-venda, e vice-versa.
 
-### 3. Mapeamento de benefícios por plano
-- Starter: 1.800 créditos, 5 prompts/dia
-- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
-- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
-- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
+4) Critérios de aceite
+- Em `/prevenda-pack4`, a seção “Veja todas as artes” mostra somente imagens do Pack 4 (`/images/pack4/*`).
+- Em `/combo-artes-arcanas`, a galeria permanece exatamente como está hoje.
+- Alterar um componente de pré-venda não muda combo (e o inverso também não).
 
-### 4. Templates dos 6 emails
-- Dia 0: Lembrete leve ("Seu plano vence hoje")
-- Dia 1: Reforço pendência ("Pagamento ainda pendente")
-- Dia 2: Dor da perda ("Risco de perda de acesso")
-- Dia 3: Prejuízo prático ("O custo de não renovar")
-- Dia 4: FOMO ("Não fique para trás")
-- Dia 5: Último aviso ("Último aviso: regularize hoje")
-- Todos com link de descadastro no rodapé
+Validação final
+- Testar visualmente as duas rotas lado a lado:
+  - `/prevenda-pack4` (galeria Pack 4 correta)
+  - `/combo-artes-arcanas` (sem regressão)
+- Confirmar que nenhum import da página de pré-venda aponta para `components/combo-artes/*` (exceto utilitários neutros, se necessário).
 
-### 5. Cron job
-- pg_cron agendado: `0 12 * * *` (09:00 BRT)
-- Chama a Edge Function automaticamente
-
-## Detecção de pagamento (para de enviar)
-- `planos2_subscriptions.expires_at` estendido para data futura
-- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
-- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
+Detalhe técnico (resumo)
+- Causa raiz: compartilhamento de componente de conteúdo comercial.
+- Correção: componente dedicado + isolamento total de imports da página de pré-venda.
