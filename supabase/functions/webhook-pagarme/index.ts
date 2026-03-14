@@ -243,7 +243,7 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
 
   await supabase.from('welcome_email_logs').insert({
     email,
-    template_name: `pagarme_purchase_${productName}`,
+    template_used: `pagarme_purchase_${productName}`,
     tracking_id: trackingId,
     status: response.ok ? 'sent' : 'failed',
     sent_at: response.ok ? new Date().toISOString() : null,
