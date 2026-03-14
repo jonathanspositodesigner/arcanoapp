@@ -246,20 +246,26 @@ const PlanosArtes = () => {
   };
 
   const getAccessOptions = () => {
+    const artesLabel = arteCount ? `+${arteCount} artes profissionais` : 'Acesso completo ao pack';
+    const sharedFeatures = [
+      artesLabel,
+      'Editável PSD e Canva',
+      t('feature.unlimitedDownload'),
+    ];
+
     const allOptions = [
       {
-        type: "6_meses",
-        label: t('access6Months'),
-        icon: Clock,
-        buttonText: t('unlock6Months'),
+        type: "vitalicio",
+        label: t('accessLifetime'),
+        icon: Gift,
+        buttonText: t('unlockLifetime'),
         features: [
-          t('feature.fullAccess'),
-          t('feature.unlimitedDownload'),
-          t('feature.editableFiles'),
-          t('feature.updates6Months')
+          ...sharedFeatures,
+          t('feature.permanentAccess') || 'Acesso permanente',
+          t('feature.allFutureUpdates') || 'Todas as atualizações futuras',
         ],
-        hasBonus: false,
-        highlighted: false
+        hasBonus: true,
+        highlighted: true
       },
       {
         type: "1_ano",
@@ -267,31 +273,45 @@ const PlanosArtes = () => {
         icon: Star,
         buttonText: t('unlock1Year'),
         features: [
-          t('feature.everything6Months'),
+          ...sharedFeatures,
           t('feature.access12Months'),
-          t('feature.bonusContent'),
-          t('feature.premiumUpdates')
+          t('feature.premiumUpdates'),
         ],
         hasBonus: true,
         highlighted: false
       },
       {
-        type: "vitalicio",
-        label: t('accessLifetime'),
-        icon: Gift,
-        buttonText: t('unlockLifetime'),
+        type: "6_meses",
+        label: t('access6Months'),
+        icon: Clock,
+        buttonText: t('unlock6Months'),
         features: [
-          t('feature.everything1Year'),
-          t('feature.permanentAccess'),
-          t('feature.allFutureUpdates'),
-          t('feature.bonusForever')
+          ...sharedFeatures,
+          t('feature.updates6Months'),
         ],
-        hasBonus: true,
-        highlighted: true
+        hasBonus: false,
+        highlighted: false
       }
     ];
     return allOptions.filter(opt => isEnabled(opt.type));
   };
+
+  // Keep selectedAccessType in sync when pack changes + fetch arte count
+  useEffect(() => {
+    const opts = getAccessOptions();
+    const vit = opts.find(o => o.type === 'vitalicio');
+    setSelectedAccessType(vit ? vit.type : opts[0]?.type || 'vitalicio');
+
+    if (selectedPack) {
+      supabase
+        .from('admin_artes')
+        .select('*', { count: 'exact', head: true })
+        .eq('pack', selectedPack.name)
+        .then(({ count }) => setArteCount(count ?? null));
+    } else {
+      setArteCount(null);
+    }
+  }, [selectedPack]);
 
   // Check if this pack uses Pagar.me checkout
   const isPagarmePackSlug = selectedPack ? PAGARME_PACK_SLUGS[selectedPack.slug] : null;
