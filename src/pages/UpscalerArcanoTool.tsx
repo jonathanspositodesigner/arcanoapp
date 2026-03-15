@@ -23,7 +23,7 @@ import { optimizeForAI, validateImageDimensions, getImageDimensions, compressToM
 import AppLayout from '@/components/layout/AppLayout';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
-import { JobDebugPanel, ImageCompressionModal, DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
+import { JobDebugPanel, DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
 import { ResilientImage } from '@/components/upscaler/ResilientImage';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
@@ -120,10 +120,6 @@ const UpscalerArcanoTool: React.FC = () => {
    const [activeStatus, setActiveStatus] = useState<string | undefined>();
    // Now using centralized checkActiveJob from JobManager
 
-  // Compression modal state
-  const [showCompressionModal, setShowCompressionModal] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [pendingDimensions, setPendingDimensions] = useState<{ w: number; h: number } | null>(null);
   const [inputDimensions, setInputDimensions] = useState<{ w: number; h: number } | null>(null);
 
   // Mobile slider optimization state (only for preview, download uses original)
@@ -399,33 +395,30 @@ const UpscalerArcanoTool: React.FC = () => {
 
     try {
       // Get dimensions first
-      const dimensions = await getImageDimensions(file);
+      let dimensions = await getImageDimensions(file);
+      let fileToProcess = file;
       
-      // Check if image exceeds limit - show modal instead of error
+      // Auto-compress if image exceeds limit (silent, no modal)
       if (dimensions.width > MAX_AI_DIMENSION || dimensions.height > MAX_AI_DIMENSION) {
-        setPendingFile(file);
-        setPendingDimensions({ w: dimensions.width, h: dimensions.height });
-        setShowCompressionModal(true);
-        return;
+        toast.info('Redimensionando imagem automaticamente...');
+        const compressed = await compressToMaxDimension(file, MAX_AI_DIMENSION - 1);
+        fileToProcess = compressed.file;
+        dimensions = { width: compressed.width, height: compressed.height };
+        console.log(`[Upscaler] Auto-compressed: ${file.name} → ${compressed.width}x${compressed.height}`);
       }
 
-      // Image is within limits, process directly
-      await processFileWithDimensions(file, dimensions);
+      await processFileWithDimensions(fileToProcess, dimensions);
     } catch (error) {
-      console.error('[Upscaler] Error getting dimensions:', error);
-      toast.error('Erro ao processar imagem');
+      console.error('[Upscaler] Error getting dimensions, attempting fallback:', error);
+      // Fallback: try to process anyway without dimension check
+      try {
+        await processFileWithDimensions(file, { width: 0, height: 0 });
+      } catch (fallbackError) {
+        console.error('[Upscaler] Fallback also failed:', fallbackError);
+        toast.error('Erro ao processar imagem. Tente outro formato (JPG/PNG).');
+      }
     }
   }, [t, processFileWithDimensions]);
-
-  // Handle compression complete from modal
-  const handleCompressionComplete = useCallback(async (compressedFile: File, newWidth: number, newHeight: number) => {
-    setShowCompressionModal(false);
-    setPendingFile(null);
-    setPendingDimensions(null);
-    
-    toast.success(`Imagem comprimida para ${newWidth}x${newHeight}px`);
-    await processFileWithDimensions(compressedFile, { width: newWidth, height: newHeight });
-  }, [processFileWithDimensions]);
 
   // Handle drop
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -522,9 +515,9 @@ const UpscalerArcanoTool: React.FC = () => {
         bytes[i] = binaryStr.charCodeAt(i);
       }
 
-      // optimizeForAI always converts to WebP, so force the extension
+      // optimizeForAI always converts to JPEG
       const tempId = crypto.randomUUID();
-      const storagePath = `upscaler/${user.id}/${tempId}.webp`;
+      const storagePath = `upscaler/${user.id}/${tempId}.jpg`;
       
       setProgress(20);
       console.log('[Upscaler] Uploading image...');
@@ -532,7 +525,7 @@ const UpscalerArcanoTool: React.FC = () => {
       const { error: uploadError } = await supabase.storage
         .from('artes-cloudinary')
         .upload(storagePath, bytes.buffer, {
-          contentType: 'image/webp',
+          contentType: 'image/jpeg',
           upsert: true
         });
 
@@ -564,7 +557,7 @@ const UpscalerArcanoTool: React.FC = () => {
           detail_denoise: detailDenoise,
           prompt: getFinalPrompt(),
           user_id: user.id,
-          input_file_name: storagePath.split('/').pop() || `${tempId}.webp`,
+          input_file_name: storagePath.split('/').pop() || `${tempId}.jpg`,
           input_url: imageUrl,
           // Campos necessários para o fallback De Longe → Standard
           category: effectiveCategory,
@@ -1536,20 +1529,6 @@ const UpscalerArcanoTool: React.FC = () => {
         activeJobId={activeJobId}
         activeStatus={activeStatus}
         onCancelJob={centralCancelJob}
-      />
-
-      {/* Image Compression Modal */}
-      <ImageCompressionModal
-        isOpen={showCompressionModal}
-        onClose={() => {
-          setShowCompressionModal(false);
-          setPendingFile(null);
-          setPendingDimensions(null);
-        }}
-        file={pendingFile}
-        originalWidth={pendingDimensions?.w || 0}
-        originalHeight={pendingDimensions?.h || 0}
-        onCompress={handleCompressionComplete}
       />
 
       {/* Download Progress Overlay */}

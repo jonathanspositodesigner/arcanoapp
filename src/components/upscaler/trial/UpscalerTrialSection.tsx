@@ -6,8 +6,7 @@ import { toast } from "sonner";
 import { useTrialState } from "./useTrialState";
 import TrialSignupModal from "./TrialSignupModal";
 import UpscalerMockup from "./UpscalerMockup";
-import { ImageCompressionModal } from "@/components/ai-tools";
-import { optimizeForAI, getImageDimensions, MAX_AI_DIMENSION } from "@/hooks/useImageOptimizer";
+import { optimizeForAI, getImageDimensions, compressToMaxDimension, MAX_AI_DIMENSION } from "@/hooks/useImageOptimizer";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { getAIErrorMessage } from "@/utils/errorMessages";
 import { useJobStatusSync } from "@/hooks/useJobStatusSync";
@@ -41,10 +40,6 @@ export default function UpscalerTrialSection() {
   const [pessoasFraming, setPessoasFraming] = useState<PessoasFraming>('perto');
   const [comidaDetailLevel, setComidaDetailLevel] = useState(0.85);
   
-  // Compression modal state
-  const [showCompressionModal, setShowCompressionModal] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [pendingDimensions, setPendingDimensions] = useState<{ w: number; h: number } | null>(null);
   
   // Job tracking state
   const [jobId, setJobId] = useState<string | null>(null);
@@ -150,30 +145,24 @@ export default function UpscalerTrialSection() {
 
     try {
       const dimensions = await getImageDimensions(file);
+      let fileToProcess = file;
       
-      // If image exceeds MAX_AI_DIMENSION, show compression modal
+      // Auto-compress if exceeds limit
       if (dimensions.width > MAX_AI_DIMENSION || dimensions.height > MAX_AI_DIMENSION) {
-        setPendingFile(file);
-        setPendingDimensions({ w: dimensions.width, h: dimensions.height });
-        setShowCompressionModal(true);
-        return;
+        toast.info('Redimensionando imagem automaticamente...');
+        const compressed = await compressToMaxDimension(file, MAX_AI_DIMENSION - 1);
+        fileToProcess = compressed.file;
       }
 
-      // Image within limits, process directly
-      await processFileForUpload(file);
+      await processFileForUpload(fileToProcess);
     } catch (error) {
-      console.error('[TrialUpscaler] Error getting dimensions:', error);
-      toast.error('Erro ao processar imagem');
+      console.error('[TrialUpscaler] Error getting dimensions, trying fallback:', error);
+      try {
+        await processFileForUpload(file);
+      } catch {
+        toast.error('Erro ao processar imagem. Tente outro formato (JPG/PNG).');
+      }
     }
-  }, [processFileForUpload]);
-
-  // Handle compression complete from modal
-  const handleCompressionComplete = useCallback(async (compressedFile: File, newWidth: number, newHeight: number) => {
-    setShowCompressionModal(false);
-    setPendingFile(null);
-    setPendingDimensions(null);
-    toast.success(`Imagem comprimida para ${newWidth}x${newHeight}px`);
-    await processFileForUpload(compressedFile);
   }, [processFileForUpload]);
 
   // Main generate function
@@ -452,19 +441,6 @@ export default function UpscalerTrialSection() {
         onVerified={onVerified}
       />
 
-      {/* Image Compression Modal */}
-      <ImageCompressionModal
-        isOpen={showCompressionModal}
-        onClose={() => {
-          setShowCompressionModal(false);
-          setPendingFile(null);
-          setPendingDimensions(null);
-        }}
-        file={pendingFile}
-        originalWidth={pendingDimensions?.w || 0}
-        originalHeight={pendingDimensions?.h || 0}
-        onCompress={handleCompressionComplete}
-      />
     </div>
   );
 }

@@ -7,8 +7,7 @@ import { useClonerTrialState } from "./useClonerTrialState";
 import TrialSignupModal from "@/components/upscaler/trial/TrialSignupModal";
 import ClonerTrialMockup from "./ClonerTrialMockup";
 import PhotoLibraryModal from "@/components/arcano-cloner/PhotoLibraryModal";
-import { ImageCompressionModal } from "@/components/ai-tools";
-import { optimizeForAI, getImageDimensions, MAX_AI_DIMENSION } from "@/hooks/useImageOptimizer";
+import { optimizeForAI, getImageDimensions, compressToMaxDimension, MAX_AI_DIMENSION } from "@/hooks/useImageOptimizer";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { getAIErrorMessage } from "@/utils/errorMessages";
 import { useJobStatusSync } from "@/hooks/useJobStatusSync";
@@ -34,11 +33,6 @@ export default function ClonerTrialSection() {
   // Photo library
   const [showPhotoLibrary, setShowPhotoLibrary] = useState(false);
 
-  // Compression modal
-  const [showCompressionModal, setShowCompressionModal] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [pendingDimensions, setPendingDimensions] = useState<{ w: number; h: number } | null>(null);
-  const [pendingTarget, setPendingTarget] = useState<'user' | 'reference'>('user');
 
   // Job tracking
   const [jobId, setJobId] = useState<string | null>(null);
@@ -130,27 +124,23 @@ export default function ClonerTrialSection() {
 
     try {
       const dimensions = await getImageDimensions(file);
+      let fileToProcess = file;
+      
       if (dimensions.width > MAX_AI_DIMENSION || dimensions.height > MAX_AI_DIMENSION) {
-        setPendingFile(file);
-        setPendingDimensions({ w: dimensions.width, h: dimensions.height });
-        setPendingTarget(target);
-        setShowCompressionModal(true);
-        return;
+        toast.info('Redimensionando imagem automaticamente...');
+        const compressed = await compressToMaxDimension(file, MAX_AI_DIMENSION - 1);
+        fileToProcess = compressed.file;
       }
-      await processFile(file, target);
+      await processFile(fileToProcess, target);
     } catch (error) {
-      console.error('[ClonerTrial] Error getting dimensions:', error);
-      toast.error('Erro ao processar imagem');
+      console.error('[ClonerTrial] Error getting dimensions, trying fallback:', error);
+      try {
+        await processFile(file, target);
+      } catch {
+        toast.error('Erro ao processar imagem. Tente outro formato.');
+      }
     }
   }, [processFile]);
-
-  const handleCompressionComplete = useCallback(async (compressedFile: File, newWidth: number, newHeight: number) => {
-    setShowCompressionModal(false);
-    setPendingFile(null);
-    setPendingDimensions(null);
-    toast.success(`Imagem comprimida para ${newWidth}x${newHeight}px`);
-    await processFile(compressedFile, pendingTarget);
-  }, [processFile, pendingTarget]);
 
   // Main generate function - mirrors ArcanoClonerTool.handleProcess
   const handleGenerate = useCallback(async () => {
@@ -429,19 +419,6 @@ export default function ClonerTrialSection() {
         }}
       />
 
-      {/* Image Compression Modal */}
-      <ImageCompressionModal
-        isOpen={showCompressionModal}
-        onClose={() => {
-          setShowCompressionModal(false);
-          setPendingFile(null);
-          setPendingDimensions(null);
-        }}
-        file={pendingFile}
-        originalWidth={pendingDimensions?.w || 0}
-        originalHeight={pendingDimensions?.h || 0}
-        onCompress={handleCompressionComplete}
-      />
     </div>
   );
 }
