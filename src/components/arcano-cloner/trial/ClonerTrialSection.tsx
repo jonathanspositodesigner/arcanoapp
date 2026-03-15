@@ -419,19 +419,6 @@ export default function ClonerTrialSection() {
         }}
       />
 
-      {/* Image Compression Modal */}
-      <ImageCompressionModal
-        isOpen={showCompressionModal}
-        onClose={() => {
-          setShowCompressionModal(false);
-          setPendingFile(null);
-          setPendingDimensions(null);
-        }}
-        file={pendingFile}
-        originalWidth={pendingDimensions?.w || 0}
-        originalHeight={pendingDimensions?.h || 0}
-        onCompress={handleCompressionComplete}
-      />
     </div>
   );
 }
