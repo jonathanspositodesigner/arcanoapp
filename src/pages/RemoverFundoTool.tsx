@@ -443,7 +443,7 @@ const RemoverFundoTool: React.FC = () => {
           </div>
         </div>
 
-        <ImageCompressionModal isOpen={showCompressionModal} onClose={() => setShowCompressionModal(false)} file={pendingFile} originalWidth={pendingWidth} originalHeight={pendingHeight} onCompress={handleCompressed} />
+        
         <NoCreditsModal isOpen={showNoCreditsModal} onClose={() => setShowNoCreditsModal(false)} reason={noCreditsReason} />
         <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeToolName} activeJobId={activeJobId} activeStatus={activeStatus} onCancelJob={centralCancelJob} />
         <DownloadProgressOverlay isVisible={isDownloading} progress={downloadProgress} onCancel={cancelDownload} mediaType="image" locale="pt" />

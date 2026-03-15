@@ -219,9 +219,9 @@ const GeradorPersonagemTool: React.FC = () => {
   const uploadToStorage = async (file: File | Blob, prefix: string): Promise<string> => {
     if (!user?.id) throw new Error('User not authenticated');
     const timestamp = Date.now();
-    const fileName = `${prefix}-${timestamp}.webp`;
+    const fileName = `${prefix}-${timestamp}.jpg`;
     const filePath = `character-generator/${user.id}/${fileName}`;
-    const { error } = await supabase.storage.from('artes-cloudinary').upload(filePath, file, { contentType: 'image/webp', upsert: true });
+    const { error } = await supabase.storage.from('artes-cloudinary').upload(filePath, file, { contentType: 'image/jpeg', upsert: true });
     if (error) throw error;
     const { data: urlData } = supabase.storage.from('artes-cloudinary').getPublicUrl(filePath);
     return urlData.publicUrl;
