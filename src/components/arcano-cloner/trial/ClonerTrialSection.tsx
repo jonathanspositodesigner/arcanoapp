@@ -33,11 +33,6 @@ export default function ClonerTrialSection() {
   // Photo library
   const [showPhotoLibrary, setShowPhotoLibrary] = useState(false);
 
-  // Compression modal
-  const [showCompressionModal, setShowCompressionModal] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [pendingDimensions, setPendingDimensions] = useState<{ w: number; h: number } | null>(null);
-  const [pendingTarget, setPendingTarget] = useState<'user' | 'reference'>('user');
 
   // Job tracking
   const [jobId, setJobId] = useState<string | null>(null);
