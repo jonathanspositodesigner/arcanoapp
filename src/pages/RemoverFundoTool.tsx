@@ -210,8 +210,8 @@ const RemoverFundoTool: React.FC = () => {
   const uploadToStorage = async (file: File | Blob, prefix: string): Promise<string> => {
     if (!user?.id) throw new Error('User not authenticated');
     const timestamp = Date.now();
-    const filePath = `bg-remover/${user.id}/${prefix}-${timestamp}.webp`;
-    const { error } = await supabase.storage.from('artes-cloudinary').upload(filePath, file, { contentType: 'image/webp', upsert: true });
+    const filePath = `bg-remover/${user.id}/${prefix}-${timestamp}.jpg`;
+    const { error } = await supabase.storage.from('artes-cloudinary').upload(filePath, file, { contentType: 'image/jpeg', upsert: true });
     if (error) throw error;
     const { data: urlData } = supabase.storage.from('artes-cloudinary').getPublicUrl(filePath);
     return urlData.publicUrl;
