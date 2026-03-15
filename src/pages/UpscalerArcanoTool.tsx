@@ -557,7 +557,7 @@ const UpscalerArcanoTool: React.FC = () => {
           detail_denoise: detailDenoise,
           prompt: getFinalPrompt(),
           user_id: user.id,
-          input_file_name: storagePath.split('/').pop() || `${tempId}.webp`,
+          input_file_name: storagePath.split('/').pop() || `${tempId}.jpg`,
           input_url: imageUrl,
           // Campos necessários para o fallback De Longe → Standard
           category: effectiveCategory,
