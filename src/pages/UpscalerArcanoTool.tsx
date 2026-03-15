@@ -120,10 +120,6 @@ const UpscalerArcanoTool: React.FC = () => {
    const [activeStatus, setActiveStatus] = useState<string | undefined>();
    // Now using centralized checkActiveJob from JobManager
 
-  // Compression modal state
-  const [showCompressionModal, setShowCompressionModal] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [pendingDimensions, setPendingDimensions] = useState<{ w: number; h: number } | null>(null);
   const [inputDimensions, setInputDimensions] = useState<{ w: number; h: number } | null>(null);
 
   // Mobile slider optimization state (only for preview, download uses original)
