@@ -23,7 +23,7 @@ import { optimizeForAI, validateImageDimensions, getImageDimensions, compressToM
 import AppLayout from '@/components/layout/AppLayout';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
-import { JobDebugPanel, ImageCompressionModal, DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
+import { JobDebugPanel, DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
 import { ResilientImage } from '@/components/upscaler/ResilientImage';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
