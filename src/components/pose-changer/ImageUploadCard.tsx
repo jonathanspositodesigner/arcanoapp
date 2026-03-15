@@ -55,40 +55,24 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
     }
 
     try {
-      // Get dimensions first
       const dimensions = await getImageDimensions(file);
+      let fileToProcess = file;
+      let dims = dimensions;
       
-      // Check if image exceeds limit
+      // Auto-compress if exceeds limit
       if (dimensions.width > MAX_AI_DIMENSION || dimensions.height > MAX_AI_DIMENSION) {
-        // Show compression modal instead of error
-        setPendingFile(file);
-        setPendingDimensions({ w: dimensions.width, h: dimensions.height });
-        setShowCompressionModal(true);
-        return;
+        toast.info('Redimensionando imagem automaticamente...');
+        const compressed = await compressToMaxDimension(file, MAX_AI_DIMENSION - 1);
+        fileToProcess = compressed.file;
+        dims = { width: compressed.width, height: compressed.height };
       }
 
-      // Image is within limits, process directly
-      await processFile(file, dimensions);
+      await processFile(fileToProcess, dims);
     } catch (error) {
       console.error('[ImageUploadCard] Error getting dimensions:', error);
-      toast.error('Erro ao processar imagem');
+      toast.error('Erro ao processar imagem. Tente outro formato.');
     }
   }, [processFile]);
-
-  const handleCompressComplete = useCallback((compressedFile: File, newWidth: number, newHeight: number) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      onImageChange(e.target?.result as string, compressedFile);
-      setFinalDimensions({ w: newWidth, h: newHeight });
-    };
-    reader.readAsDataURL(compressedFile);
-    
-    // Clear pending state
-    setPendingFile(null);
-    setPendingDimensions(null);
-    
-    toast.success(`Imagem comprimida para ${newWidth}x${newHeight}px`);
-  }, [onImageChange]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
