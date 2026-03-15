@@ -395,33 +395,30 @@ const UpscalerArcanoTool: React.FC = () => {
 
     try {
       // Get dimensions first
-      const dimensions = await getImageDimensions(file);
+      let dimensions = await getImageDimensions(file);
+      let fileToProcess = file;
       
-      // Check if image exceeds limit - show modal instead of error
+      // Auto-compress if image exceeds limit (silent, no modal)
       if (dimensions.width > MAX_AI_DIMENSION || dimensions.height > MAX_AI_DIMENSION) {
-        setPendingFile(file);
-        setPendingDimensions({ w: dimensions.width, h: dimensions.height });
-        setShowCompressionModal(true);
-        return;
+        toast.info('Redimensionando imagem automaticamente...');
+        const compressed = await compressToMaxDimension(file, MAX_AI_DIMENSION - 1);
+        fileToProcess = compressed.file;
+        dimensions = { width: compressed.width, height: compressed.height };
+        console.log(`[Upscaler] Auto-compressed: ${file.name} → ${compressed.width}x${compressed.height}`);
       }
 
-      // Image is within limits, process directly
-      await processFileWithDimensions(file, dimensions);
+      await processFileWithDimensions(fileToProcess, dimensions);
     } catch (error) {
-      console.error('[Upscaler] Error getting dimensions:', error);
-      toast.error('Erro ao processar imagem');
+      console.error('[Upscaler] Error getting dimensions, attempting fallback:', error);
+      // Fallback: try to process anyway without dimension check
+      try {
+        await processFileWithDimensions(file, { width: 0, height: 0 });
+      } catch (fallbackError) {
+        console.error('[Upscaler] Fallback also failed:', fallbackError);
+        toast.error('Erro ao processar imagem. Tente outro formato (JPG/PNG).');
+      }
     }
   }, [t, processFileWithDimensions]);
-
-  // Handle compression complete from modal
-  const handleCompressionComplete = useCallback(async (compressedFile: File, newWidth: number, newHeight: number) => {
-    setShowCompressionModal(false);
-    setPendingFile(null);
-    setPendingDimensions(null);
-    
-    toast.success(`Imagem comprimida para ${newWidth}x${newHeight}px`);
-    await processFileWithDimensions(compressedFile, { width: newWidth, height: newHeight });
-  }, [processFileWithDimensions]);
 
   // Handle drop
   const handleDrop = useCallback((e: React.DragEvent) => {
