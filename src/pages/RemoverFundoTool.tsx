@@ -48,11 +48,6 @@ const RemoverFundoTool: React.FC = () => {
   const [inputFile, setInputFile] = useState<File | null>(null);
   const [outputImage, setOutputImage] = useState<string | null>(null);
 
-  // Compression modal
-  const [showCompressionModal, setShowCompressionModal] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [pendingWidth, setPendingWidth] = useState(0);
-  const [pendingHeight, setPendingHeight] = useState(0);
 
   // Cached image dimensions from processFile
   const [imageDims, setImageDims] = useState<{ width: number; height: number } | null>(null);
