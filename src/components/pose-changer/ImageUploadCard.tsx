@@ -4,8 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import { getImageDimensions, MAX_AI_DIMENSION } from '@/hooks/useImageOptimizer';
-import ImageCompressionModal from '@/components/ai-tools/ImageCompressionModal';
+import { getImageDimensions, compressToMaxDimension, MAX_AI_DIMENSION } from '@/hooks/useImageOptimizer';
 
 interface ImageUploadCardProps {
   title: string;
