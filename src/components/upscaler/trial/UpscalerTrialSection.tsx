@@ -145,30 +145,24 @@ export default function UpscalerTrialSection() {
 
     try {
       const dimensions = await getImageDimensions(file);
+      let fileToProcess = file;
       
-      // If image exceeds MAX_AI_DIMENSION, show compression modal
+      // Auto-compress if exceeds limit
       if (dimensions.width > MAX_AI_DIMENSION || dimensions.height > MAX_AI_DIMENSION) {
-        setPendingFile(file);
-        setPendingDimensions({ w: dimensions.width, h: dimensions.height });
-        setShowCompressionModal(true);
-        return;
+        toast.info('Redimensionando imagem automaticamente...');
+        const compressed = await compressToMaxDimension(file, MAX_AI_DIMENSION - 1);
+        fileToProcess = compressed.file;
       }
 
-      // Image within limits, process directly
-      await processFileForUpload(file);
+      await processFileForUpload(fileToProcess);
     } catch (error) {
-      console.error('[TrialUpscaler] Error getting dimensions:', error);
-      toast.error('Erro ao processar imagem');
+      console.error('[TrialUpscaler] Error getting dimensions, trying fallback:', error);
+      try {
+        await processFileForUpload(file);
+      } catch {
+        toast.error('Erro ao processar imagem. Tente outro formato (JPG/PNG).');
+      }
     }
-  }, [processFileForUpload]);
-
-  // Handle compression complete from modal
-  const handleCompressionComplete = useCallback(async (compressedFile: File, newWidth: number, newHeight: number) => {
-    setShowCompressionModal(false);
-    setPendingFile(null);
-    setPendingDimensions(null);
-    toast.success(`Imagem comprimida para ${newWidth}x${newHeight}px`);
-    await processFileForUpload(compressedFile);
   }, [processFileForUpload]);
 
   // Main generate function
