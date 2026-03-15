@@ -163,47 +163,43 @@ const RemoverFundoTool: React.FC = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const processFile = (file: File) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      const w = img.naturalWidth;
-      const h = img.naturalHeight;
-      URL.revokeObjectURL(url);
-      if (w > MAX_AI_DIMENSION || h > MAX_AI_DIMENSION) {
-        setPendingFile(file);
-        setPendingWidth(w);
-        setPendingHeight(h);
-        setShowCompressionModal(true);
-      } else {
-        setImageDims({ width: w, height: h });
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          setInputImage(ev.target?.result as string);
-          setInputFile(file);
-          setOutputImage(null);
-          setStatus('idle');
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-    img.src = url;
-  };
-
-  const handleCompressed = async (compressedFile: File) => {
-    // Update cached dims after compression
+  const processFile = async (file: File) => {
     try {
-      const dims = await getImageDimensions(compressedFile);
-      setImageDims({ width: dims.width, height: dims.height });
-    } catch { /* dims will be recalculated if needed */ }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      setInputImage(ev.target?.result as string);
-      setInputFile(compressedFile);
-      setOutputImage(null);
-      setStatus('idle');
-    };
-    reader.readAsDataURL(compressedFile);
+      const dims = await getImageDimensions(file);
+      let fileToUse = file;
+      let w = dims.width;
+      let h = dims.height;
+
+      // Auto-compress if exceeds limit
+      if (w > MAX_AI_DIMENSION || h > MAX_AI_DIMENSION) {
+        toast.info('Redimensionando imagem automaticamente...');
+        const compressed = await compressToMaxDimension(file, MAX_AI_DIMENSION - 1);
+        fileToUse = compressed.file;
+        w = compressed.width;
+        h = compressed.height;
+      }
+
+      setImageDims({ width: w, height: h });
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setInputImage(ev.target?.result as string);
+        setInputFile(fileToUse);
+        setOutputImage(null);
+        setStatus('idle');
+      };
+      reader.readAsDataURL(fileToUse);
+    } catch (error) {
+      console.error('[RemoverFundo] Error processing file:', error);
+      // Fallback: try to use original file
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setInputImage(ev.target?.result as string);
+        setInputFile(file);
+        setOutputImage(null);
+        setStatus('idle');
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const compressImage = async (file: File): Promise<Blob> => {
