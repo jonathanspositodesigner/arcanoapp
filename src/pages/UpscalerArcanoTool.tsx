@@ -515,9 +515,9 @@ const UpscalerArcanoTool: React.FC = () => {
         bytes[i] = binaryStr.charCodeAt(i);
       }
 
-      // optimizeForAI always converts to WebP, so force the extension
+      // optimizeForAI always converts to JPEG
       const tempId = crypto.randomUUID();
-      const storagePath = `upscaler/${user.id}/${tempId}.webp`;
+      const storagePath = `upscaler/${user.id}/${tempId}.jpg`;
       
       setProgress(20);
       console.log('[Upscaler] Uploading image...');
@@ -525,7 +525,7 @@ const UpscalerArcanoTool: React.FC = () => {
       const { error: uploadError } = await supabase.storage
         .from('artes-cloudinary')
         .upload(storagePath, bytes.buffer, {
-          contentType: 'image/webp',
+          contentType: 'image/jpeg',
           upsert: true
         });
 
