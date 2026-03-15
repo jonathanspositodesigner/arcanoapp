@@ -40,10 +40,6 @@ export default function UpscalerTrialSection() {
   const [pessoasFraming, setPessoasFraming] = useState<PessoasFraming>('perto');
   const [comidaDetailLevel, setComidaDetailLevel] = useState(0.85);
   
-  // Compression modal state
-  const [showCompressionModal, setShowCompressionModal] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [pendingDimensions, setPendingDimensions] = useState<{ w: number; h: number } | null>(null);
   
   // Job tracking state
   const [jobId, setJobId] = useState<string | null>(null);
