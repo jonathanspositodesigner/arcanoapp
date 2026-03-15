@@ -31,11 +31,6 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Compression modal state
-  const [showCompressionModal, setShowCompressionModal] = useState(false);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
-  const [pendingDimensions, setPendingDimensions] = useState<{ w: number; h: number } | null>(null);
-  
   // Final dimensions to display below image
   const [finalDimensions, setFinalDimensions] = useState<{ w: number; h: number } | null>(null);
 
