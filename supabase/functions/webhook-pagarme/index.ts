@@ -1024,7 +1024,7 @@ serve(async (req) => {
           status: 'skipped_refund_race',
           email: order.user_email,
           product_name: product?.title,
-          raw_payload: body,
+          payload: body,
         })
       } else {
         // Proceed with revocation
