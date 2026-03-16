@@ -379,8 +379,8 @@ serve(async (req) => {
 
       customerObj = {
         type: 'individual',
-        // Pagar.me exige name; usamos caractere invisível para não pré-preencher nome fictício
-        name: trimmedName || '\u200B',
+        // Pagar.me exige name; usamos espaço não-quebrável para não pré-preencher nome fictício
+        name: trimmedName || '\u00A0',
       }
 
       if (customerEmail) {
