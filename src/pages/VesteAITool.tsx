@@ -428,6 +428,10 @@ const VesteAITool: React.FC = () => {
 
     } catch (error: any) {
       console.error('[VesteAI] Process error:', error);
+      if (jobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(jobId, 'veste_ai', error.message || 'Erro desconhecido');
+      }
       setStatus('error');
       toast.error(error.message || 'Erro ao processar imagem');
       endSubmit();
