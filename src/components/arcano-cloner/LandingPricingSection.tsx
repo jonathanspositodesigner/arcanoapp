@@ -164,7 +164,7 @@ const LandingPricingSection = () => {
   const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
   const [preCheckoutSlug, setPreCheckoutSlug] = useState<string | null>(null);
   const [pendingProfile, setPendingProfile] = useState<any>(null);
-  const { isProcessing, startCheckout, endCheckout } = useProcessingButton();
+  const { isSubmitting: isProcessing, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
 
   useEffect(() => {
     const getUser = async () => {
