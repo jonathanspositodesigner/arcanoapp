@@ -221,7 +221,7 @@ export default function ArcanoClonerAuthModal({
 
         // Send confirmation email via SendPulse
         try {
-          await supabase.functions.invoke('send-confirmation-email', {
+          await supabase.functions.invoke('send-free-trial-confirmation-email', {
             body: { email: normalizedEmail, user_id: authData.user.id }
           });
           console.log('[ArcanoClonerAuth] Confirmation email sent');

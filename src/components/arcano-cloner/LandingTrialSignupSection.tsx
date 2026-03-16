@@ -1,8 +1,17 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Gift } from "lucide-react";
 import { AnimatedSection } from "@/hooks/useScrollAnimation";
+import ArcanoClonerAuthModal from "@/components/arcano-cloner/ArcanoClonerAuthModal";
 
 export const LandingTrialSignupSection = () => {
+  const [showModal, setShowModal] = useState(false);
+
+  const handleAuthSuccess = () => {
+    setShowModal(false);
+    window.location.href = "https://arcanoapp.voxvisual.com.br/ferramentas-ia-aplicativo";
+  };
+
   return (
     <section className="px-4 py-16 md:py-20 bg-black/30">
       <AnimatedSection className="max-w-lg mx-auto">
@@ -23,14 +32,18 @@ export const LandingTrialSignupSection = () => {
         </div>
 
         <Button
-          asChild
+          onClick={() => setShowModal(true)}
           className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold py-6 rounded-xl text-base"
         >
-          <a href="https://arcanoapp.voxvisual.com.br/arcano-cloner-tool" target="_blank" rel="noopener noreferrer">
-            🚀 Ir para o Arcano Cloner
-          </a>
+          🚀 Ir para o Arcano Cloner
         </Button>
       </AnimatedSection>
+
+      <ArcanoClonerAuthModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
     </section>
   );
 };

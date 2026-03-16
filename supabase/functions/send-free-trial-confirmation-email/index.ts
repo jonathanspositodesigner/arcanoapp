@@ -166,7 +166,7 @@ serve(async (req) => {
       email: {
         html: htmlBase64,
         text: "",
-        subject: "🎁 Confirme seu email e resgate 180 créditos grátis!",
+        subject: "🎁 Confirme seu email e resgate 300 créditos grátis!",
         from: { name: "Arcano App", email: "contato@voxvisual.com.br" },
         to: [{ name: normalizedEmail, email: normalizedEmail }],
       },

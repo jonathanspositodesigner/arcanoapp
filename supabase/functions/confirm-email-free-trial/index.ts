@@ -203,10 +203,10 @@ serve(async (req) => {
             .from("upscaler_credit_transactions")
             .insert({
               user_id: tokenData.user_id,
-              amount: 180,
+              amount: 300,
               balance_type: "monthly",
               type: "grant",
-              description: "180 créditos grátis - válidos por 24h (fallback)",
+              description: "300 créditos grátis - válidos por 24h (fallback)",
             });
           creditsClaimed = true;
           console.log(`[confirm-email-free-trial] Fallback succeeded for ${tokenData.user_id}`);
