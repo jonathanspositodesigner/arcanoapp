@@ -513,6 +513,8 @@ serve(async (req) => {
         return await handleEnqueue(req);
       case 'cancel-session':
         return await handleCancelSession(req);
+      case 'run-or-queue':
+        return await handleRunOrQueue(req);
       default:
         return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
           status: 400,
