@@ -30,7 +30,41 @@ const UPSCALER_AFTER_IMAGE_MOBILE = "/images/upscaler-hero-depois-mobile.webp";
 
 const CHECKOUT_URL = "https://payfast.greenn.com.br/869x6nw/offer/8DN4Jd";
 
-const ArcanoClonerTeste = () => {
+const CountUp = ({ target, duration = 2000 }: { target: number; duration?: number }) => {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !hasAnimated.current) {
+        hasAnimated.current = true;
+        const start = performance.now();
+        const step = (now: number) => {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          setCount(Math.floor(eased * target));
+          if (progress < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      }
+    }, { threshold: 0.5 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target, duration]);
+
+  return (
+    <div ref={ref} className="flex items-baseline justify-center gap-1">
+      <span className="font-space-grotesk font-bold text-6xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40">
+        {count}
+      </span>
+      <span className="text-fuchsia-400 text-3xl md:text-4xl font-bold">+</span>
+    </div>
+  );
+};
+
   const isMobile = useIsMobile();
 
   // Countdown timer - 1 hour with localStorage persistence
