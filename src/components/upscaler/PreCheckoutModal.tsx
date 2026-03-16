@@ -303,7 +303,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
       // Sequential: try full checkout first, fallback to lightweight only if full fails
       console.log('[PreCheckoutModal] Chamando checkout full...');
-      const fullResponse = await supabase.functions.invoke('create-pagarme-checkout', { body: fullPayload });
+      const fullResponse = await invokeCheckout(fullPayload);
       
       if (!fullResponse.error && fullResponse.data?.checkout_url) {
         const { checkout_url, event_id } = fullResponse.data;
