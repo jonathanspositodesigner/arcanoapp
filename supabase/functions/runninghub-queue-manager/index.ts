@@ -516,7 +516,7 @@ serve(async (req) => {
 // ==================== ENDPOINT HANDLERS ====================
 
 async function handleCheck(): Promise<Response> {
-  await cleanupStaleJobs();
+  // REMOVED: cleanupStaleJobs() - was causing heavy processing on high-traffic endpoint
   
   const globalRunning = await getGlobalRunningCount();
   const totalQueued = await getTotalQueuedCount();
