@@ -246,10 +246,10 @@ const LandingPricingSection = () => {
         <AnimatedSection as="div" delay={100}>
           <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
             Comece agora mesmo a gerar suas próprias{" "}
-            <span className="text-fuchsia-400">fotos profissionais em segundos.</span>
+            <span className="text-fuchsia-400">fotos profissionais!</span>
           </h2>
           <p className="text-white/50 text-center text-sm mb-8 max-w-xl mx-auto">
-            Escolha o melhor pacote para você iniciar
+            Sem <strong className="text-white/70">prompts complexos! Sem dificuldade!</strong> Escolha o melhor pacote para você iniciar
           </p>
         </AnimatedSection>
 
