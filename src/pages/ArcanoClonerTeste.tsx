@@ -300,7 +300,7 @@ const ArcanoClonerTeste = () => {
       {/* ==================== RESULTADOS REAIS ==================== */}
       <LazySection rootMargin="100px">
       <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
-        <div className="max-w-5xl mx-auto text-center">
+        <div className="max-w-7xl mx-auto text-center">
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3">
               Tudo feito com um clique,{" "}
