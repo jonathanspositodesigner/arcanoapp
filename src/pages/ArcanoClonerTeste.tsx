@@ -306,11 +306,17 @@ const ArcanoClonerTeste = () => {
               Tudo feito com um clique,{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">sem prompt!</span>
             </h2>
-            <p className="text-white/50 text-sm">
+            <p className="text-white/50 text-sm mb-10">
               Resultados reais de clientes usando o Arcano Cloner
             </p>
           </AnimatedSection>
-        </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+            <img src={clonerResult1} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
+            <img src={clonerResult2} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
+            <img src={clonerResult3} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
+            <img src={clonerResult4} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
+          </div>
       </AnimatedSection>
       </LazySection>
 
