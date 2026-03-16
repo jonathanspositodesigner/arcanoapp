@@ -2,11 +2,16 @@ import { useEffect, useState, useRef } from "react";
 import { Star } from "lucide-react";
 import { AnimatedSection } from "@/hooks/useScrollAnimation";
 import { useIsMobile } from "@/hooks/use-mobile";
+import feedbackRafael from "@/assets/feedback-rafael.png";
+import feedbackPedro from "@/assets/feedback-pedro.png";
+import feedbackBeatriz from "@/assets/feedback-beatriz.png";
+import feedbackLucas from "@/assets/feedback-lucas.png";
+import feedbackThiago from "@/assets/feedback-thiago.png";
 
 const feedbacks = [
   {
     name: "Lucas Mendes",
-    photo: "https://randomuser.me/api/portraits/men/32.jpg",
+    photo: feedbackLucas,
     text: "Usei pra fazer umas fotos pro meu perfil e ficou muito bom. Não esperava esse nível de qualidade sinceramente.",
   },
   {
@@ -16,7 +21,7 @@ const feedbacks = [
   },
   {
     name: "Rafael Costa",
-    photo: "https://randomuser.me/api/portraits/men/75.jpg",
+    photo: feedbackRafael,
     text: "Testei achando que não ia funcionar direito e me surpreendi. O resultado fica bem natural.",
   },
   {
@@ -26,7 +31,7 @@ const feedbacks = [
   },
   {
     name: "Pedro Oliveira",
-    photo: "https://randomuser.me/api/portraits/men/22.jpg",
+    photo: feedbackPedro,
     text: "Ferramenta simples de usar e o resultado sai rápido. Recomendo pra quem trabalha com social media.",
   },
   {
@@ -36,12 +41,12 @@ const feedbacks = [
   },
   {
     name: "Thiago Ferreira",
-    photo: "https://randomuser.me/api/portraits/men/45.jpg",
+    photo: feedbackThiago,
     text: "Já testei outras ferramentas parecidas mas essa aqui entrega um resultado bem mais realista.",
   },
   {
     name: "Beatriz Lima",
-    photo: "https://randomuser.me/api/portraits/women/52.jpg",
+    photo: feedbackBeatriz,
     text: "Uso quase todo dia pro meu trabalho. É prático e rápido, não tenho do que reclamar.",
   },
 ];
