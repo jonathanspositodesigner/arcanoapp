@@ -289,6 +289,26 @@ serve(async (req) => {
 
     const customerName = user_name?.trim() || email.split('@')[0]
 
+    // Build customer object based on lightweight mode
+    const customerObj: Record<string, unknown> = {
+      name: customerName,
+      email: email,
+      type: 'individual',
+    }
+    if (cleanCpf) {
+      customerObj.document = cleanCpf
+      customerObj.document_type = 'CPF'
+    }
+    if (phone) {
+      customerObj.phones = {
+        mobile_phone: {
+          country_code: '55',
+          area_code: phone.areaCode,
+          number: phone.phoneNumber
+        }
+      }
+    }
+
     const checkoutPayload: Record<string, unknown> = {
       items: [
         {
@@ -297,20 +317,7 @@ serve(async (req) => {
           quantity: 1
         }
       ],
-      customer: {
-        name: customerName,
-        email: email,
-        type: 'individual',
-        document: cleanCpf || undefined,
-        document_type: cleanCpf ? 'CPF' : undefined,
-        phones: {
-          mobile_phone: {
-            country_code: '55',
-            area_code: phone.areaCode,
-            number: phone.phoneNumber
-          }
-        }
-      },
+      customer: customerObj,
       payments: [
         {
           payment_method: 'checkout',
@@ -320,10 +327,11 @@ serve(async (req) => {
             success_url: product.pack_slug === 'upscaler-arcano'
               ? `https://arcanoapp.voxvisual.com.br/sucesso-upscaler-arcano`
               : `https://arcanoapp.voxvisual.com.br/sucesso-compra`,
-            customer_editable: false,
-            billing_address_editable: billing_type === 'CREDIT_CARD',
+            // Lightweight: user fills everything on Pagar.me page
+            customer_editable: isLightweight,
+            billing_address_editable: isLightweight || billing_type === 'CREDIT_CARD',
             skip_checkout_success_page: billing_type === 'CREDIT_CARD',
-            ...(billing_type === 'PIX' ? (
+            ...(!isLightweight && billing_type === 'PIX' ? (
               (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) ? {
                 billing_address: {
                   line_1: user_address.line_1,
@@ -335,9 +343,7 @@ serve(async (req) => {
               } : {
                 billing_address_editable: true
               }
-            ) : {
-              billing_address_editable: true
-            }),
+            ) : {}),
             credit_card: {
               capture: true,
               installments: [
@@ -354,7 +360,8 @@ serve(async (req) => {
       ],
       metadata: {
         order_id: order.id,
-        request_id: requestId
+        request_id: requestId,
+        ...(isLightweight ? { lightweight: true } : {})
       }
     }
 
