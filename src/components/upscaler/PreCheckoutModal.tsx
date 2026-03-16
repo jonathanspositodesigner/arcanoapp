@@ -155,9 +155,10 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
   const validate = () => {
     let valid = true;
+    const isCreditCard = paymentMethod === 'CREDIT_CARD';
     setNameError(''); setEmailError(''); setEmailConfirmError(''); setPhoneError(''); setCpfError('');
 
-    if (!name.trim() || name.trim().length < 3) {
+    if (!isCreditCard && (!name.trim() || name.trim().length < 3)) {
       setNameError('Digite seu nome completo');
       valid = false;
     }
@@ -179,22 +180,24 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       }
     }
 
-    const phoneDigits = phone.replace(/\D/g, '');
-    if (!phoneDigits) {
-      setPhoneError('Digite seu celular');
-      valid = false;
-    } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
-      setPhoneError('Celular inválido (DDD + número)');
-      valid = false;
-    }
+    if (!isCreditCard) {
+      const phoneDigits = phone.replace(/\D/g, '');
+      if (!phoneDigits) {
+        setPhoneError('Digite seu celular');
+        valid = false;
+      } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+        setPhoneError('Celular inválido (DDD + número)');
+        valid = false;
+      }
 
-    const cpfDigits = cpf.replace(/\D/g, '');
-    if (!cpfDigits) {
-      setCpfError('Digite seu CPF');
-      valid = false;
-    } else if (!validateCPF(cpfDigits)) {
-      setCpfError('CPF inválido');
-      valid = false;
+      const cpfDigits = cpf.replace(/\D/g, '');
+      if (!cpfDigits) {
+        setCpfError('Digite seu CPF');
+        valid = false;
+      } else if (!validateCPF(cpfDigits)) {
+        setCpfError('CPF inválido');
+        valid = false;
+      }
     }
 
     return valid;
