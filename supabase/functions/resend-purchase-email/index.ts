@@ -354,6 +354,7 @@ async function getMissingOrdersInRange(
   if (orders.length === 0) return []
 
   const uniqueEmails = Array.from(new Set(orders.map(o => o.email)))
+
   const { data: sentLogs, error: logsError } = await supabase
     .from('welcome_email_logs')
     .select('email, status, sent_at, dedup_key, template_used')
@@ -363,9 +364,19 @@ async function getMissingOrdersInRange(
 
   if (logsError) throw new Error(`Erro ao buscar logs de envio: ${logsError.message}`)
 
+  const { data: blacklistedRows, error: blacklistError } = await supabase
+    .from('blacklisted_emails')
+    .select('email')
+    .in('email', uniqueEmails)
+
+  if (blacklistError) throw new Error(`Erro ao buscar blacklist: ${blacklistError.message}`)
+
   const logs = sentLogs || []
+  const blacklistedSet = new Set((blacklistedRows || []).map((row: any) => normalizeEmail(row.email || '')))
 
   const missing = orders.filter(order => {
+    if (blacklistedSet.has(order.email)) return false
+
     const byDedup = logs.some((log: any) => log.dedup_key === buildPurchaseDedupKey(order.order_id))
     if (byDedup) return false
 
