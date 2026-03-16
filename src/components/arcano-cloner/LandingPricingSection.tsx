@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, X, Sparkles, Image, Video, Award, ShieldCheck, Zap, Headset } from "lucide-react";
+import { Check, X, Sparkles, Image, Video, Award, ShieldCheck, Zap, Headset, Rocket, Crown, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -184,6 +184,17 @@ const LandingPricingSection = () => {
                     MELHOR CUSTO/BENEFÍCIO
                   </Badge>
                 )}
+
+                {/* Plan Icon */}
+                <div className="flex justify-center mb-2">
+                  {plan.bestSeller ? (
+                    <Crown className="w-7 h-7 text-lime-400" />
+                  ) : plan.hasCountdown ? (
+                    <Flame className="w-7 h-7 text-fuchsia-500" />
+                  ) : (
+                    <Rocket className="w-7 h-7 text-white/60" />
+                  )}
+                </div>
 
                 <div className="text-center mb-3 min-h-[32px] flex items-center justify-center">
                   <h3 className="text-base font-bold text-white">{plan.name}</h3>
