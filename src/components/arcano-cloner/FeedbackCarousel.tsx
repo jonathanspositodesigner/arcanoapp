@@ -28,7 +28,7 @@ const feedbacks = [
   },
   {
     name: "Juliana Almeida",
-    photo: "https://randomuser.me/api/portraits/women/68.jpg",
+    photo: feedbackJuliana,
     text: "Uso pra gerar fotos pros meus clientes e eles adoram. Economizei muito com ensaio fotográfico.",
   },
   {
