@@ -926,6 +926,36 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
+      // 5.1 Sanitização automática: invalida pendings duplicados do mesmo email/janela de compra
+      try {
+        const paidTime = new Date(paidAtIso)
+        const cleanupStart = new Date((order?.created_at ? new Date(order.created_at).getTime() : paidTime.getTime()) - 2 * 60 * 60 * 1000)
+        const cleanupEnd = new Date(paidTime.getTime() + 15 * 60 * 1000)
+
+        const { data: invalidatedPendings, error: cleanupError } = await supabase
+          .from('asaas_orders')
+          .update({
+            status: 'failed',
+            payment_method: 'duplicate_pending_cleanup',
+            gateway_error_message: `Auto-cleanup: replaced by paid order ${order.id}`,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_email', email)
+          .eq('status', 'pending')
+          .neq('id', order.id)
+          .gte('created_at', cleanupStart.toISOString())
+          .lte('created_at', cleanupEnd.toISOString())
+          .select('id')
+
+        if (cleanupError) {
+          console.warn(`   ├─ ⚠️ Falha no cleanup de pendings duplicados: ${cleanupError.message}`)
+        } else if (invalidatedPendings?.length) {
+          console.log(`   ├─ 🧹 Pendings duplicados invalidados: ${invalidatedPendings.length}`)
+        }
+      } catch (cleanupErr: any) {
+        console.warn(`   ├─ ⚠️ Exceção no cleanup de pendings: ${cleanupErr?.message || cleanupErr}`)
+      }
+
       // 6. Logar na webhook_logs (non-blocking to not prevent email sending)
       try {
         await supabase.from('webhook_logs').insert({
