@@ -1,0 +1,1 @@
+SELECT add_lifetime_credits('9dbf12bf-cb7a-4340-89be-aecd72747d08'::uuid, 5700, 'Correção manual: 2 compras one-click não processadas (1500 + 4200 créditos)');
