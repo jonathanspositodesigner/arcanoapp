@@ -3,6 +3,7 @@ import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { X, CreditCard, QrCode, ArrowRight, Shield, Zap, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeCheckout } from "@/lib/checkoutFetch";
 import { getMetaCookies } from "@/lib/metaCookies";
 import { getSanitizedUtms } from "@/lib/utmUtils";
 
