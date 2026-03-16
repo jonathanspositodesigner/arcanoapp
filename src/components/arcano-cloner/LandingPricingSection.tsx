@@ -93,14 +93,58 @@ interface Plan {
   isUnlimitedBadge?: boolean;
 }
 
-const plansData: { mensal: Plan[]; anual: Plan[] } = {
-  mensal: [
-    {
-      name: "Starter",
-      price: "24,90",
-      originalPrice: "29,90",
-      credits: "1.500 créditos de IA",
-      images: 25,
+const landingPlans: Plan[] = [
+  {
+    name: "Starter",
+    price: "24,90",
+    originalPrice: null,
+    credits: "25 imagens",
+    images: 25,
+    tagline: "Para começar",
+    features: [
+      { text: "Atualizações diárias", included: true },
+      { text: "Acesso às Ferramentas de IA", included: true },
+      { text: "Suporte exclusivo via WhatsApp", included: true },
+      { text: "Prompts premium ilimitados", included: true },
+      { text: "Geração de Imagem com NanoBanana Pro", included: false },
+      { text: "Geração de Vídeo com Veo 3", included: false },
+    ],
+  },
+  {
+    name: "Pro",
+    price: "29,90",
+    originalPrice: null,
+    credits: "70 imagens",
+    images: 70,
+    tagline: "3x mais créditos por mais R$5",
+    bestSeller: true,
+    features: [
+      { text: "Atualizações diárias", included: true },
+      { text: "Acesso às Ferramentas de IA", included: true },
+      { text: "Suporte exclusivo via WhatsApp", included: true },
+      { text: "Prompts premium ilimitados", included: true },
+      { text: "Geração de Imagem com NanoBanana Pro", included: true },
+      { text: "Geração de Vídeo com Veo 3", included: true },
+    ],
+  },
+  {
+    name: "Ultimate",
+    price: "79,90",
+    originalPrice: null,
+    credits: "233 imagens",
+    images: 233,
+    tagline: "Ideal para designers e criadores ativos",
+    hasCountdown: true,
+    features: [
+      { text: "Atualizações diárias", included: true },
+      { text: "Acesso às Ferramentas de IA", included: true },
+      { text: "Suporte exclusivo via WhatsApp", included: true },
+      { text: "Prompts premium ilimitados", included: true },
+      { text: "Geração de Imagem com NanoBanana Pro", included: true },
+      { text: "Geração de Vídeo com Veo 3", included: true },
+    ],
+  },
+];
       tagline: "Para começar",
       features: [
         { text: "Atualizações diárias", included: true },
