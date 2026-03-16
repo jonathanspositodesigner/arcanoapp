@@ -497,7 +497,7 @@ serve(async (req) => {
         transaction_id: idempotencyKey,
         status: 'order_not_found',
         email: null,
-        raw_payload: body,
+        payload: body,
       })
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
