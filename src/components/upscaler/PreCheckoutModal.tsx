@@ -276,24 +276,22 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
       if (response.error) {
         console.error('Erro one-click:', response.error);
-        alert('Erro ao processar pagamento. Tente outro método de pagamento.');
+        setOneClickResult('declined');
         setOneClickLoading(false);
+        endOneClick();
         return;
       }
 
       const { is_paid, status } = response.data;
 
       if (is_paid) {
-        // Redirecionar para sucesso (fluxo unificado)
-        window.location.href = `https://arcanoapp.voxvisual.com.br/sucesso-compra`;
+        setOneClickResult('approved');
       } else {
-        // Pagamento pendente — webhook vai processar
-        alert('Pagamento em processamento. Você receberá uma confirmação em instantes.');
-        onClose();
+        setOneClickResult('declined');
       }
     } catch (error) {
       console.error('Erro one-click:', error);
-      alert('Erro ao processar. Tente outro método de pagamento.');
+      setOneClickResult('declined');
     }
     setOneClickLoading(false);
     endOneClick();
