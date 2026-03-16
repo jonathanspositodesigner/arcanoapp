@@ -242,6 +242,7 @@ export default function ArcanoClonerAuthModal({
               console.log('[ArcanoClonerAuth] Auto-login: email not verified, blocking');
               await supabase.auth.signOut();
               setVerifiedEmail(emailToCheck);
+              setPendingUserId(user.id);
               setStep('verify-email');
               toast.error('Confirme seu email antes de entrar. Verifique a caixa de entrada e o spam.');
               setIsLoading(false);
