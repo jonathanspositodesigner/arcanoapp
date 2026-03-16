@@ -21,7 +21,7 @@ const feedbacks = [
   },
   {
     name: "Rafael Costa",
-    photo: "https://randomuser.me/api/portraits/men/75.jpg",
+    photo: feedbackRafael,
     text: "Testei achando que não ia funcionar direito e me surpreendi. O resultado fica bem natural.",
   },
   {
