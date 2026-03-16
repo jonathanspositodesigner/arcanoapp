@@ -142,7 +142,7 @@ const DesktopFeedbackCarousel = () => {
 
 const MobileFeedbackCarousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
