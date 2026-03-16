@@ -1,8 +1,10 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, FormEvent } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Gift, ArrowLeft, Mail, CheckCircle } from 'lucide-react';
-import { LoginEmailStep, LoginPasswordStep, SignupForm } from '@/components/auth';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Gift, ArrowLeft, Mail, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { LoginEmailStep, LoginPasswordStep } from '@/components/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
