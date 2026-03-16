@@ -651,7 +651,8 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   </button>
                   <button
                     type="button"
-                    onClick={() => setPaymentMethod('CREDIT_CARD')}
+                    onClick={() => { setPaymentMethod('CREDIT_CARD'); handleCreditCardAutoSubmit(); }}
+                    disabled={loading || isFormSubmitting}
                     className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 ${
                       paymentMethod === 'CREDIT_CARD'
                         ? `${accentBorder} ${accentBg} text-white`
