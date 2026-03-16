@@ -7,6 +7,7 @@ import feedbackPedro from "@/assets/feedback-pedro.png";
 import feedbackBeatriz from "@/assets/feedback-beatriz.png";
 import feedbackLucas from "@/assets/feedback-lucas.png";
 import feedbackThiago from "@/assets/feedback-thiago.png";
+import feedbackCamila from "@/assets/feedback-camila.png";
 
 const feedbacks = [
   {
@@ -16,7 +17,7 @@ const feedbacks = [
   },
   {
     name: "Camila Souza",
-    photo: "https://randomuser.me/api/portraits/women/44.jpg",
+    photo: feedbackCamila,
     text: "Consegui criar as artes que eu precisava pro meu Instagram em minutos. Valeu muito a pena.",
   },
   {
