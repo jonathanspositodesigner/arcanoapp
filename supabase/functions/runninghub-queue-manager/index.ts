@@ -1159,10 +1159,9 @@ async function startJobOnRunningHub(
       nodeInfoList = [
         { nodeId: "58", fieldName: "image", fieldValue: job.user_image_url || job.user_file_name },
         { nodeId: "62", fieldName: "image", fieldValue: job.reference_image_url || job.reference_file_name },
-        { nodeId: "69", fieldName: "text", fieldValue: job.prompt || 'faça o homem da imagem 1 com a mesma pose, composição de cenário fundo e roupas da imagem 2. SEM RUÍDO NA FOTO' },
-        { nodeId: "85", fieldName: "aspectRatio", fieldValue: job.aspect_ratio || '1:1' },
         { nodeId: "133", fieldName: "value", fieldValue: String(job.creativity ?? 0) },
         { nodeId: "135", fieldName: "text", fieldValue: job.custom_prompt || '' },
+        { nodeId: "145", fieldName: "aspectRatio", fieldValue: job.aspect_ratio || '1:1' },
       ];
       break;
 
