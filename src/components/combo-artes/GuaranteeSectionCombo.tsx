@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ShieldCheck, Award, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeCheckout } from "@/lib/checkoutFetch";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";

@@ -22,6 +22,7 @@ import { CreditsFAQSection } from "@/components/credits/CreditsFAQSection";
 import { StatsCards } from "@/components/credits/StatsCards";
 
 import { supabase } from "@/integrations/supabase/client";
+import { invokeCheckout, preWarmCheckout } from "@/lib/checkoutFetch";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 import HomeAuthModal from "@/components/HomeAuthModal";
 import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";

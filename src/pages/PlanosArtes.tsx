@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Check, Star, ArrowLeft, Gift, Clock, Percent, Bell, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeCheckout, preWarmCheckout } from "@/lib/checkoutFetch";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 import { AnimatedSection, StaggeredAnimation, FadeIn, AnimatedGrid } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
