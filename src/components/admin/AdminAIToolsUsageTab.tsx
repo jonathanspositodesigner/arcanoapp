@@ -12,7 +12,8 @@ import { toast } from "sonner";
 import { 
   RefreshCw, Coins, TrendingUp, Clock, Users, 
   CheckCircle, XCircle, Timer, ChevronLeft, ChevronRight,
-  Cpu, ArrowUpDown, Ban, Loader2, AlertCircle, ExternalLink, ImageOff, AlertTriangle
+  Cpu, ArrowUpDown, Ban, Loader2, AlertCircle, ExternalLink, ImageOff, AlertTriangle,
+  Activity, Bug
 } from "lucide-react";
 import {
   Tooltip,
@@ -24,6 +25,7 @@ import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ZoomableBeforeAfter } from "@/components/admin/ZoomableBeforeAfter";
 import { FullscreenModal } from "@/components/upscaler/FullscreenModal";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface UsageRecord {
   id: string;
@@ -33,6 +35,7 @@ interface UsageRecord {
   user_name: string;
   status: string;
   error_message: string | null;
+  failed_at_step: string | null;
   rh_cost: number;
   user_credit_cost: number;
   profit: number;
@@ -54,6 +57,19 @@ interface UsageSummary {
   jobs_with_queue: number;
   avg_queue_wait_seconds: number;
   avg_processing_seconds: number;
+}
+
+interface JobErrorDetails {
+  error_message: string | null;
+  failed_at_step: string | null;
+  current_step: string | null;
+  step_history: any | null;
+  raw_api_response: any | null;
+  raw_webhook_payload: any | null;
+  credits_charged: boolean | null;
+  credits_refunded: boolean | null;
+  task_id: string | null;
+  api_account: string | null;
 }
 
 type UserClientType = 'free' | 'bought_credits' | 'redeemed_credits' | 'free_trial' | 'premium' | 'premium_credits';
@@ -83,6 +99,16 @@ const TOOL_FILTERS = [
   { value: "Remover Fundo", label: "Remover Fundo" },
 ];
 
+const STATUS_FILTERS = [
+  { value: "all", label: "Todos os status" },
+  { value: "completed", label: "✅ Concluídos" },
+  { value: "failed", label: "❌ Falhas" },
+  { value: "running", label: "⚙️ Processando" },
+  { value: "queued", label: "⏳ Na Fila" },
+  { value: "pending", label: "🔄 Pendente" },
+  { value: "starting", label: "🚀 Iniciando" },
+];
+
 const AdminAIToolsUsageTab = () => {
   const [usageRecords, setUsageRecords] = useState<UsageRecord[]>([]);
   const [summary, setSummary] = useState<UsageSummary | null>(null);
@@ -91,6 +117,7 @@ const AdminAIToolsUsageTab = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [dateFilter, setDateFilter] = useState("7days");
   const [toolFilter, setToolFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [cancellingJobId, setCancellingJobId] = useState<string | null>(null);
   const [userTypeMap, setUserTypeMap] = useState<Record<string, UserClientType>>({});
@@ -103,6 +130,10 @@ const AdminAIToolsUsageTab = () => {
   const [isOutputExpired, setIsOutputExpired] = useState(false);
   const [outputModalOpen, setOutputModalOpen] = useState(false);
   const [showFullscreen, setShowFullscreen] = useState(false);
+  
+  // Error details modal
+  const [errorDetails, setErrorDetails] = useState<JobErrorDetails | null>(null);
+  const [isLoadingErrorDetails, setIsLoadingErrorDetails] = useState(false);
 
   const isVideoTool = (toolName: string) => toolName === "Video Upscaler" || toolName === "Gerar Vídeo";
 
@@ -119,6 +150,44 @@ const AdminAIToolsUsageTab = () => {
     }
   };
 
+  const getTableName = (toolName: string): string => {
+    switch (toolName) {
+      case "Upscaler Arcano": return "upscaler_jobs";
+      case "Pose Changer": return "pose_changer_jobs";
+      case "Veste AI": return "veste_ai_jobs";
+      case "Video Upscaler": return "video_upscaler_jobs";
+      case "Arcano Cloner": return "arcano_cloner_jobs";
+      case "Gerador Avatar": return "character_generator_jobs";
+      case "Gerar Imagem": return "image_generator_jobs";
+      case "Gerar Vídeo": return "video_generator_jobs";
+      case "Flyer Maker": return "flyer_maker_jobs";
+      case "Remover Fundo": return "bg_remover_jobs";
+      default: return "upscaler_jobs";
+    }
+  };
+
+  const fetchErrorDetails = useCallback(async (record: UsageRecord) => {
+    setIsLoadingErrorDetails(true);
+    setErrorDetails(null);
+    try {
+      const tableName = getTableName(record.tool_name);
+      const { data, error } = await supabase
+        .from(tableName as any)
+        .select('error_message, failed_at_step, current_step, step_history, raw_api_response, raw_webhook_payload, credits_charged, credits_refunded, task_id, api_account')
+        .eq('id', record.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setErrorDetails(data as any as JobErrorDetails);
+      }
+    } catch (err) {
+      console.error("Error fetching error details:", err);
+    } finally {
+      setIsLoadingErrorDetails(false);
+    }
+  }, []);
+
   const handleJobClick = useCallback(async (record: UsageRecord) => {
     setSelectedJob(record);
     setOutputModalOpen(true);
@@ -126,8 +195,11 @@ const AdminAIToolsUsageTab = () => {
     setJobOutputUrl(null);
     setJobInputUrl(null);
     setShowFullscreen(false);
+    setErrorDetails(null);
 
+    // If failed or non-completed, fetch error details
     if (record.status !== "completed") {
+      fetchErrorDetails(record);
       setIsLoadingOutput(false);
       return;
     }
@@ -158,7 +230,7 @@ const AdminAIToolsUsageTab = () => {
     } finally {
       setIsLoadingOutput(false);
     }
-  }, []);
+  }, [fetchErrorDetails]);
 
   const getDateRange = () => {
     const now = new Date();
@@ -184,7 +256,6 @@ const AdminAIToolsUsageTab = () => {
     try {
       const { start, end } = getDateRange();
       
-      // Fetch usage records
       const { data: records, error: recordsError } = await supabase.rpc('get_ai_tools_usage', {
         p_start_date: start?.toISOString() || null,
         p_end_date: end?.toISOString() || null,
@@ -195,30 +266,14 @@ const AdminAIToolsUsageTab = () => {
       if (recordsError) throw recordsError;
       setUsageRecords(records || []);
 
-      // Fetch user types (subscription + credits) for all unique user_ids
+      // Fetch user types
       const userIds = [...new Set((records || []).map((r: UsageRecord) => r.user_id).filter(Boolean))];
       if (userIds.length > 0) {
         const [subsRes, creditsRes, promoRes, trialRes] = await Promise.all([
-          supabase
-            .from('planos2_subscriptions')
-            .select('user_id')
-            .eq('is_active', true)
-            .neq('plan_slug', 'free')
-            .in('user_id', userIds),
-          supabase
-            .from('upscaler_credits')
-            .select('user_id, lifetime_balance')
-            .gt('lifetime_balance', 0)
-            .in('user_id', userIds),
-          supabase
-            .from('promo_claims')
-            .select('user_id')
-            .eq('promo_code', 'UPSCALER_1500')
-            .in('user_id', userIds),
-          supabase
-            .from('arcano_cloner_free_trials')
-            .select('user_id')
-            .in('user_id', userIds),
+          supabase.from('planos2_subscriptions').select('user_id').eq('is_active', true).neq('plan_slug', 'free').in('user_id', userIds),
+          supabase.from('upscaler_credits').select('user_id, lifetime_balance').gt('lifetime_balance', 0).in('user_id', userIds),
+          supabase.from('promo_claims').select('user_id').eq('promo_code', 'UPSCALER_1500').in('user_id', userIds),
+          supabase.from('arcano_cloner_free_trials').select('user_id').in('user_id', userIds),
         ]);
 
         const premiumSet = new Set((subsRes.data || []).map(s => s.user_id));
@@ -274,13 +329,17 @@ const AdminAIToolsUsageTab = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [dateFilter, toolFilter]);
+  }, [dateFilter, toolFilter, statusFilter]);
 
   const filteredRecords = useMemo(() => {
     let filtered = [...usageRecords];
 
     if (toolFilter !== "all") {
       filtered = filtered.filter(r => r.tool_name === toolFilter);
+    }
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(r => r.status === statusFilter);
     }
 
     if (searchTerm) {
@@ -292,7 +351,27 @@ const AdminAIToolsUsageTab = () => {
     }
 
     return filtered;
-  }, [usageRecords, toolFilter, searchTerm]);
+  }, [usageRecords, toolFilter, statusFilter, searchTerm]);
+
+  // Error analytics from current page data
+  const errorAnalytics = useMemo(() => {
+    const failedJobs = usageRecords.filter(r => r.status === 'failed');
+    const errorByStep: Record<string, number> = {};
+    const errorByTool: Record<string, number> = {};
+    
+    for (const job of failedJobs) {
+      const step = job.failed_at_step || 'unknown';
+      errorByStep[step] = (errorByStep[step] || 0) + 1;
+      errorByTool[job.tool_name] = (errorByTool[job.tool_name] || 0) + 1;
+    }
+    
+    return {
+      totalFailed: failedJobs.length,
+      errorRate: usageRecords.length > 0 ? ((failedJobs.length / usageRecords.length) * 100).toFixed(1) : '0',
+      byStep: Object.entries(errorByStep).sort((a, b) => b[1] - a[1]),
+      byTool: Object.entries(errorByTool).sort((a, b) => b[1] - a[1]),
+    };
+  }, [usageRecords]);
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
@@ -315,24 +394,16 @@ const AdminAIToolsUsageTab = () => {
         return (
           <div className="flex items-center gap-1.5">
             <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Falhou</Badge>
-            {record.error_message && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <AlertCircle className="h-4 w-4 text-red-400 cursor-help" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs bg-red-950 border-red-500/30">
-                    <p className="text-sm">{record.error_message}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
           </div>
         );
       case "running":
         return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Processando</Badge>;
       case "queued":
         return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">Na Fila</Badge>;
+      case "starting":
+        return <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">Iniciando</Badge>;
+      case "pending":
+        return <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30">Pendente</Badge>;
       default:
         return <Badge variant="outline">{record.status}</Badge>;
     }
@@ -372,22 +443,6 @@ const AdminAIToolsUsageTab = () => {
     }
   };
 
-  const getTableName = (toolName: string): string => {
-    switch (toolName) {
-      case "Upscaler Arcano": return "upscaler_jobs";
-      case "Pose Changer": return "pose_changer_jobs";
-      case "Veste AI": return "veste_ai_jobs";
-      case "Video Upscaler": return "video_upscaler_jobs";
-      case "Arcano Cloner": return "arcano_cloner_jobs";
-      case "Gerador Avatar": return "character_generator_jobs";
-      case "Gerar Imagem": return "image_generator_jobs";
-      case "Gerar Vídeo": return "video_generator_jobs";
-      case "Flyer Maker": return "flyer_maker_jobs";
-      case "Remover Fundo": return "bg_remover_jobs";
-      default: return "upscaler_jobs";
-    }
-  };
-
   const handleCancelJob = async (record: UsageRecord) => {
     if (cancellingJobId) return;
     
@@ -414,7 +469,7 @@ const AdminAIToolsUsageTab = () => {
       
       if (result?.success) {
         toast.success(`Job cancelado! ${result.refunded_amount} créditos estornados.`);
-        fetchData(); // Refresh the list
+        fetchData();
       } else {
         toast.error(result?.error_message || "Erro ao cancelar job");
       }
@@ -424,6 +479,38 @@ const AdminAIToolsUsageTab = () => {
     } finally {
       setCancellingJobId(null);
     }
+  };
+
+  const getFailedAtStepBadge = (step: string | null) => {
+    if (!step) return <span className="text-muted-foreground text-xs">-</span>;
+    const stepColors: Record<string, string> = {
+      'pending_timeout': 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+      'uploading_user_image': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+      'uploading_reference_image': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+      'creating_task': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+      'webhook_received': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+      'downloading_result': 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
+      'consuming_credits': 'bg-red-500/20 text-red-400 border-red-500/30',
+    };
+    return (
+      <Badge className={`text-[10px] ${stepColors[step] || 'bg-red-500/20 text-red-400 border-red-500/30'}`}>
+        {step}
+      </Badge>
+    );
+  };
+
+  const renderJsonBlock = (label: string, data: any) => {
+    if (!data) return null;
+    return (
+      <div className="space-y-1">
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
+        <ScrollArea className="max-h-[200px] rounded border border-border bg-muted/30 p-2">
+          <pre className="text-xs font-mono whitespace-pre-wrap break-all text-foreground">
+            {typeof data === 'string' ? data : JSON.stringify(data, null, 2)}
+          </pre>
+        </ScrollArea>
+      </div>
+    );
   };
 
   return (
@@ -458,6 +545,20 @@ const AdminAIToolsUsageTab = () => {
           </Select>
         </div>
 
+        <div className="space-y-2">
+          <Label>Status</Label>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_FILTERS.map(f => (
+                <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="space-y-2 flex-1 min-w-[200px]">
           <Label>Buscar usuário</Label>
           <Input
@@ -474,7 +575,7 @@ const AdminAIToolsUsageTab = () => {
 
       {/* Summary Cards */}
       {summary && (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <Cpu className="h-8 w-8 text-primary" />
@@ -495,12 +596,22 @@ const AdminAIToolsUsageTab = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-red-500/5 border-red-500/20">
             <CardContent className="p-4 flex items-center gap-3">
               <XCircle className="h-8 w-8 text-red-500" />
               <div>
-                <p className="text-xs text-muted-foreground">Falhas</p>
-                <p className="text-xl font-bold">{summary.failed_jobs}</p>
+                <p className="text-xs text-red-400">Falhas</p>
+                <p className="text-xl font-bold text-red-400">{summary.failed_jobs}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-red-500/5 border-red-500/20">
+            <CardContent className="p-4 flex items-center gap-3">
+              <Activity className="h-8 w-8 text-red-500" />
+              <div>
+                <p className="text-xs text-red-400">Taxa de Erro</p>
+                <p className="text-xl font-bold text-red-400">{errorAnalytics.errorRate}%</p>
               </div>
             </CardContent>
           </Card>
@@ -531,6 +642,49 @@ const AdminAIToolsUsageTab = () => {
               <div>
                 <p className="text-xs text-green-400">Lucro Total</p>
                 <p className="text-xl font-bold text-green-400">{summary.total_profit}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Error Breakdown Cards */}
+      {errorAnalytics.totalFailed > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="border-red-500/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2 text-red-400">
+                <Bug className="h-4 w-4" />
+                Erros por Etapa (página atual)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-1.5">
+                {errorAnalytics.byStep.map(([step, count]) => (
+                  <div key={step} className="flex items-center justify-between text-sm">
+                    {getFailedAtStepBadge(step)}
+                    <span className="font-mono text-red-400 font-bold">{count}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-red-500/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2 text-red-400">
+                <AlertTriangle className="h-4 w-4" />
+                Erros por Ferramenta (página atual)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-1.5">
+                {errorAnalytics.byTool.map(([tool, count]) => (
+                  <div key={tool} className="flex items-center justify-between text-sm">
+                    {getToolBadge(tool)}
+                    <span className="font-mono text-red-400 font-bold">{count}</span>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -578,6 +732,9 @@ const AdminAIToolsUsageTab = () => {
           <CardTitle className="text-lg flex items-center gap-2">
             <ArrowUpDown className="h-5 w-5" />
             Histórico de Uso ({totalCount} registros)
+            {statusFilter === 'failed' && (
+              <Badge className="bg-red-500/20 text-red-400 border-red-500/30 ml-2">Somente Falhas</Badge>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -590,6 +747,7 @@ const AdminAIToolsUsageTab = () => {
                    <TableHead className="whitespace-nowrap">Tipo</TableHead>
                    <TableHead className="whitespace-nowrap">Ferramenta</TableHead>
                   <TableHead className="whitespace-nowrap">Status</TableHead>
+                  <TableHead className="whitespace-nowrap">Etapa do Erro</TableHead>
                   <TableHead className="whitespace-nowrap text-center">Fila?</TableHead>
                   <TableHead className="whitespace-nowrap text-right">Espera</TableHead>
                   <TableHead className="whitespace-nowrap text-right">Processamento</TableHead>
@@ -602,19 +760,19 @@ const AdminAIToolsUsageTab = () => {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={12} className="text-center py-8">
+                    <TableCell colSpan={13} className="text-center py-8">
                       <RefreshCw className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
                 ) : filteredRecords.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={12} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={13} className="text-center py-8 text-muted-foreground">
                       Nenhum registro encontrado
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredRecords.map((record) => (
-                    <TableRow key={record.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleJobClick(record)}>
+                    <TableRow key={record.id} className={`cursor-pointer hover:bg-muted/50 ${record.status === 'failed' ? 'bg-red-500/5' : ''}`} onClick={() => handleJobClick(record)}>
                       <TableCell className="whitespace-nowrap text-sm">
                         {formatDateTime(record.created_at)}
                       </TableCell>
@@ -627,6 +785,9 @@ const AdminAIToolsUsageTab = () => {
                       <TableCell>{getUserTypeBadge(record.user_id)}</TableCell>
                       <TableCell>{getToolBadge(record.tool_name)}</TableCell>
                       <TableCell>{getStatusBadge(record)}</TableCell>
+                      <TableCell>
+                        {record.status === 'failed' ? getFailedAtStepBadge(record.failed_at_step) : <span className="text-muted-foreground text-xs">-</span>}
+                      </TableCell>
                       <TableCell className="text-center">
                         {record.waited_in_queue ? (
                           <Badge variant="outline" className="text-orange-400 border-orange-500/30">Sim</Badge>
@@ -708,28 +869,112 @@ const AdminAIToolsUsageTab = () => {
           )}
         </CardContent>
       </Card>
-      {/* Job Output Modal */}
+
+      {/* Job Modal - Completed (output) or Failed (error details) */}
       <Dialog open={outputModalOpen} onOpenChange={setOutputModalOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {selectedJob && getToolBadge(selectedJob.tool_name)}
+              {selectedJob && getStatusBadge(selectedJob)}
               <span className="text-sm font-normal text-muted-foreground">
                 {selectedJob?.user_email}
               </span>
             </DialogTitle>
             <DialogDescription>
               {selectedJob && formatDateTime(selectedJob.created_at)}
+              {selectedJob?.id && (
+                <span className="ml-2 text-xs font-mono text-muted-foreground">ID: {selectedJob.id.slice(0, 8)}</span>
+              )}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="mt-2">
+          <div className="mt-2 space-y-4">
+            {/* FAILED JOB - Show full error details */}
             {selectedJob && selectedJob.status !== "completed" ? (
-              <div className="flex flex-col items-center gap-3 py-8 text-muted-foreground">
-                <AlertTriangle className="h-10 w-10" />
-                <p>Este job não gerou resultado</p>
-                <Badge variant="outline">{selectedJob.status}</Badge>
-              </div>
+              <>
+                {/* Error summary from RPC data */}
+                <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-red-400" />
+                    <h3 className="font-semibold text-red-400">Detalhes do Erro</h3>
+                  </div>
+                  
+                  {selectedJob.error_message && (
+                    <div>
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Mensagem de Erro</p>
+                      <p className="text-sm text-red-300 bg-red-950/50 rounded p-2 font-mono break-all">{selectedJob.error_message}</p>
+                    </div>
+                  )}
+
+                  {selectedJob.failed_at_step && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">Etapa da falha:</span>
+                      {getFailedAtStepBadge(selectedJob.failed_at_step)}
+                    </div>
+                  )}
+                </div>
+
+                {/* Detailed error data from direct table query */}
+                {isLoadingErrorDetails ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <span className="ml-2 text-sm text-muted-foreground">Carregando logs detalhados...</span>
+                  </div>
+                ) : errorDetails ? (
+                  <div className="space-y-3">
+                    {/* Credits status */}
+                    <div className="flex gap-4 text-sm">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-muted-foreground">Créditos cobrados:</span>
+                        {errorDetails.credits_charged ? (
+                          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">Sim</Badge>
+                        ) : (
+                          <Badge variant="outline">Não</Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-muted-foreground">Estornados:</span>
+                        {errorDetails.credits_refunded ? (
+                          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Sim</Badge>
+                        ) : (
+                          <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Não</Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Meta info */}
+                    <div className="flex gap-4 text-xs text-muted-foreground">
+                      {errorDetails.current_step && (
+                        <span>Último step: <code className="text-foreground">{errorDetails.current_step}</code></span>
+                      )}
+                      {errorDetails.task_id && (
+                        <span>Task ID: <code className="text-foreground">{errorDetails.task_id}</code></span>
+                      )}
+                      {errorDetails.api_account && (
+                        <span>API: <code className="text-foreground">{errorDetails.api_account}</code></span>
+                      )}
+                    </div>
+
+                    {/* Full error message from DB (may differ from RPC) */}
+                    {errorDetails.error_message && errorDetails.error_message !== selectedJob.error_message && (
+                      <div>
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Erro Completo (banco)</p>
+                        <p className="text-sm text-red-300 bg-red-950/50 rounded p-2 font-mono break-all">{errorDetails.error_message}</p>
+                      </div>
+                    )}
+
+                    {/* Step History */}
+                    {renderJsonBlock("Step History (Timeline)", errorDetails.step_history)}
+
+                    {/* Raw API Response */}
+                    {renderJsonBlock("Raw API Response", errorDetails.raw_api_response)}
+
+                    {/* Raw Webhook Payload */}
+                    {renderJsonBlock("Raw Webhook Payload", errorDetails.raw_webhook_payload)}
+                  </div>
+                ) : null}
+              </>
             ) : isLoadingOutput ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -767,7 +1012,7 @@ const AdminAIToolsUsageTab = () => {
             )}
           </div>
 
-          {jobOutputUrl && !isOutputExpired && (
+          {jobOutputUrl && !isOutputExpired && selectedJob?.status === "completed" && (
             <div className="flex justify-end">
               <Button variant="outline" size="sm" asChild>
                 <a href={jobOutputUrl} target="_blank" rel="noopener noreferrer">
