@@ -78,11 +78,7 @@ const FeedbackCard = ({ fb }: { fb: typeof feedbacks[0] }) => (
 const FeedbackCarousel = () => {
   const isMobile = useIsMobile();
 
-  if (isMobile) {
-    return <MobileFeedbackCarousel />;
-  }
-
-  return <DesktopFeedbackCarousel />;
+  return isMobile ? <MobileFeedbackCarousel /> : <DesktopFeedbackCarousel />;
 };
 
 const DesktopFeedbackCarousel = () => {
