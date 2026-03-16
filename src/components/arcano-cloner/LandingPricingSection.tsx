@@ -84,6 +84,7 @@ interface Plan {
   price: string;
   originalPrice: string | null;
   credits: string;
+  creditsCount: string;
   images: number | string;
   tagline?: string;
   features: { text: string; included: boolean }[];
@@ -97,6 +98,7 @@ const landingPlans: Plan[] = [
     price: "24,90",
     originalPrice: null,
     credits: "25 imagens",
+    creditsCount: "1.500 créditos",
     images: 25,
     tagline: "Para começar",
     features: [
@@ -110,11 +112,12 @@ const landingPlans: Plan[] = [
   },
   {
     name: "Pro",
-    price: "29,90",
+    price: "37,00",
     originalPrice: null,
     credits: "70 imagens",
+    creditsCount: "4.200 créditos",
     images: 70,
-    tagline: "3x mais créditos por mais R$5",
+    tagline: "3x mais créditos por mais R$12",
     bestSeller: true,
     features: [
       { text: "Atualizações diárias", included: true },
@@ -130,6 +133,7 @@ const landingPlans: Plan[] = [
     price: "79,90",
     originalPrice: null,
     credits: "233 imagens",
+    creditsCount: "14.000 créditos",
     images: 233,
     tagline: "Ideal para designers e criadores ativos",
     hasCountdown: true,
@@ -224,11 +228,12 @@ const LandingPricingSection = () => {
                 )}
 
                 {/* Images badge (highlighted) */}
-                <div className="flex flex-col items-center mb-4 mt-2">
+                <div className="flex flex-col items-center mb-4 mt-2 gap-1">
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-r from-fuchsia-600 to-blue-500">
                     <Sparkles className="w-3 h-3" />
                     {plan.credits}
                   </span>
+                  <span className="text-[10px] text-white/40 font-medium">{plan.creditsCount}</span>
                 </div>
 
                 {/* Features */}
