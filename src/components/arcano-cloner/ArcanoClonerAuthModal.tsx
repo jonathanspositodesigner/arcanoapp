@@ -142,7 +142,10 @@ export default function ArcanoClonerAuthModal({
   const [step, setStep] = useState<ModalStep>('email');
   const [email, setEmail] = useState('');
   const [verifiedEmail, setVerifiedEmail] = useState('');
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
+  const [emailSendError, setEmailSendError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
 
   // Reset state when modal opens
   useEffect(() => {
@@ -150,36 +153,36 @@ export default function ArcanoClonerAuthModal({
       setStep('email');
       setEmail('');
       setVerifiedEmail('');
+      setPendingUserId(null);
+      setEmailSendError(null);
       setIsLoading(false);
+      setIsResendingEmail(false);
     }
   }, [isOpen]);
 
-  // Listen for auth state changes (user logs in from verify email link)
-  // But only trigger if email is verified to prevent bypassing verification
+  // Listen for auth state changes only while user is waiting for email confirmation
   useEffect(() => {
-    if (!isOpen) return;
-    
+    if (!isOpen || step !== 'verify-email') return;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        // Check email_verified before granting access
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('email_verified')
-          .eq('id', session.user.id)
-          .maybeSingle();
+      if (event !== 'SIGNED_IN' || !session?.user) return;
 
-        if (profile && profile.email_verified === false) {
-          console.log('[ArcanoClonerAuth] onAuthStateChange: email not verified, signing out');
-          await supabase.auth.signOut();
-          return;
-        }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email_verified')
+        .eq('id', session.user.id)
+        .maybeSingle();
 
-        onAuthSuccess();
+      if (profile?.email_verified !== true) {
+        console.log('[ArcanoClonerAuth] onAuthStateChange: email not verified, ignoring login event');
+        return;
       }
+
+      onAuthSuccess();
     });
 
     return () => subscription.unsubscribe();
-  }, [isOpen, onAuthSuccess]);
+  }, [isOpen, step, onAuthSuccess]);
 
   const handleCheckEmail = useCallback(async () => {
     const emailToCheck = email.trim().toLowerCase();
