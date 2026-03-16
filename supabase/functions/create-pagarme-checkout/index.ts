@@ -371,16 +371,21 @@ serve(async (req) => {
       acceptedPaymentMethods = ['pix', 'credit_card']
     }
 
-    // Cartão puro: customer mínimo obrigatório pela API Pagar.me, mas customer_editable=true
-    // para que o cliente preencha tudo no checkout hospedado
+    // Cartão puro: envia somente metadados não pessoais para obrigar preenchimento no checkout hospedado
     let customerObj: Record<string, unknown>
 
     if (isPureCreditCardCheckout) {
-      // Mínimo absoluto exigido pela API — será sobrescrito pelo cliente no checkout
       customerObj = {
-        name: 'Cliente',
-        email: email !== `checkout-${email.split('-')[1]}` ? email : `temp-${Date.now()}@checkout.arcano`,
         type: 'individual',
+      }
+
+      if (customerEmail) {
+        customerObj.email = customerEmail
+      }
+
+      const trimmedName = user_name?.trim()
+      if (trimmedName) {
+        customerObj.name = trimmedName
       }
     } else {
       const customerName = user_name?.trim() || email.split('@')[0]
