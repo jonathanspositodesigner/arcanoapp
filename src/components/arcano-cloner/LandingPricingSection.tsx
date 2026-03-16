@@ -235,17 +235,23 @@ const LandingPricingSection = () => {
       const utmData = getSanitizedUtms();
       const { fbp, fbc } = getMetaCookies();
 
-      // Checkout Puro para cartão: só nome e email (antifraude do gateway coleta o resto)
+      // Checkout Puro para cartão: não envia NADA — Pagar.me coleta tudo
       // PIX: preenche tudo (nome, cpf, endereço)
       const body: any = {
         product_slug: preCheckoutSlug,
-        user_email: userEmail,
-        user_name: pendingProfile.name,
         billing_type: method,
         utm_data: utmData,
         fbp,
         fbc,
       };
+
+      if (method === 'PIX') {
+        body.user_email = userEmail;
+        body.user_name = pendingProfile.name;
+      } else {
+        // Cartão: opcionalmente envia email se disponível
+        if (userEmail) body.user_email = userEmail;
+      }
 
       if (method === 'PIX') {
         body.user_phone = pendingProfile.phone;
