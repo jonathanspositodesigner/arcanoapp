@@ -306,30 +306,11 @@ export default function ArcanoClonerAuthModal({
           )}
 
           {step === 'signup' && (
-            <SignupForm
+            <SimpleSignupForm
               defaultEmail={verifiedEmail || email}
               onSubmit={handleSignup}
               onBackToLogin={() => setStep('email')}
               isLoading={isLoading}
-              showNameField={true}
-              showPhoneField={false}
-              variant="purple"
-              labels={{
-                title: 'Criar Conta',
-                subtitle: 'Cadastre-se e ganhe 300 créditos grátis',
-                email: 'Email',
-                emailPlaceholder: 'seu@email.com',
-                name: 'Nome (opcional)',
-                namePlaceholder: 'Seu nome',
-                password: 'Senha',
-                passwordPlaceholder: 'Mínimo 6 caracteres',
-                confirmPassword: 'Confirmar Senha',
-                confirmPasswordPlaceholder: 'Confirme sua senha',
-                warning: 'Após criar sua conta, verifique seu email para ativar.',
-                createAccount: 'Criar Conta',
-                creatingAccount: 'Criando conta...',
-                backToLogin: 'Já tenho conta',
-              }}
             />
           )}
 
