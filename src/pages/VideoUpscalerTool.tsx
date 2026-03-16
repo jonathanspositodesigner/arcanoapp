@@ -361,6 +361,10 @@ const VideoUpscalerTool: React.FC = () => {
 
     } catch (error: any) {
       console.error('[VideoUpscaler] Process error:', error);
+      if (jobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(jobId, 'video_upscaler', error.message || 'Erro desconhecido');
+      }
       setStatus('error');
       toast.error(error.message || 'Erro ao processar vídeo');
       endSubmit();
