@@ -311,7 +311,7 @@ const ArcanoClonerTeste = () => {
             </p>
           </AnimatedSection>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-[1200px] mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto">
             <img src={clonerResult1} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
             <img src={clonerResult2} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
             <img src={clonerResult3} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
