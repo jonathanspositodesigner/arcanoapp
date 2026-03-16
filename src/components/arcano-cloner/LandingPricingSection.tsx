@@ -235,20 +235,21 @@ const LandingPricingSection = () => {
       const utmData = getSanitizedUtms();
       const { fbp, fbc } = getMetaCookies();
 
-      // Enviar dados completos para PIX e Cartão (antifraude precisa de CPF/telefone)
+      // Cartão: não enviar dados pessoais (gateway coleta tudo)
+      // PIX: envia dados completos para pré-preenchimento
       const body: any = {
         product_slug: preCheckoutSlug,
         billing_type: method,
         utm_data: utmData,
         fbp,
         fbc,
-        user_email: userEmail,
-        user_name: pendingProfile.name,
-        user_phone: pendingProfile.phone,
-        user_cpf: pendingProfile.cpf,
       };
 
       if (method === 'PIX') {
+        body.user_email = userEmail;
+        body.user_name = pendingProfile.name;
+        body.user_phone = pendingProfile.phone;
+        body.user_cpf = pendingProfile.cpf;
         body.user_address = {
           line_1: pendingProfile.address_line,
           zip_code: pendingProfile.address_zip,

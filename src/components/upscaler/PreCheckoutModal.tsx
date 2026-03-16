@@ -179,12 +179,9 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     try {
       const utmData = getSanitizedUtms();
       const { fbp, fbc } = getMetaCookies();
-      const normalizedEmail = email.trim().toLowerCase() || undefined;
-
       console.log('[PreCheckoutModal] 💳 Auto-submit cartão puro (sem dados)...');
       const response = await invokeCheckout({
         product_slug: productSlug,
-        ...(normalizedEmail ? { user_email: normalizedEmail } : {}),
         billing_type: 'CREDIT_CARD',
         utm_data: utmData,
         fbp,
@@ -208,7 +205,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     }
     setLoading(false);
     endFormSubmit();
-  }, [productSlug, email, startFormSubmit, endFormSubmit, showErrorToast]);
+  }, [productSlug, startFormSubmit, endFormSubmit, showErrorToast]);
 
   const validate = () => {
     let valid = true;
