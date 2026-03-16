@@ -142,7 +142,10 @@ export default function ArcanoClonerAuthModal({
   const [step, setStep] = useState<ModalStep>('email');
   const [email, setEmail] = useState('');
   const [verifiedEmail, setVerifiedEmail] = useState('');
+  const [pendingUserId, setPendingUserId] = useState<string | null>(null);
+  const [emailSendError, setEmailSendError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
 
   // Reset state when modal opens
   useEffect(() => {
@@ -150,36 +153,50 @@ export default function ArcanoClonerAuthModal({
       setStep('email');
       setEmail('');
       setVerifiedEmail('');
+      setPendingUserId(null);
+      setEmailSendError(null);
       setIsLoading(false);
+      setIsResendingEmail(false);
     }
   }, [isOpen]);
 
-  // Listen for auth state changes (user logs in from verify email link)
-  // But only trigger if email is verified to prevent bypassing verification
+  // Listen for auth state changes only while user is waiting for email confirmation
   useEffect(() => {
-    if (!isOpen) return;
-    
+    if (!isOpen || step !== 'verify-email') return;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        // Check email_verified before granting access
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('email_verified')
-          .eq('id', session.user.id)
-          .maybeSingle();
+      if (event !== 'SIGNED_IN' || !session?.user) return;
 
-        if (profile && profile.email_verified === false) {
-          console.log('[ArcanoClonerAuth] onAuthStateChange: email not verified, signing out');
-          await supabase.auth.signOut();
-          return;
-        }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email_verified')
+        .eq('id', session.user.id)
+        .maybeSingle();
 
-        onAuthSuccess();
+      if (profile?.email_verified !== true) {
+        console.log('[ArcanoClonerAuth] onAuthStateChange: email not verified, signing out');
+        await supabase.auth.signOut();
+        return;
       }
+
+      onAuthSuccess();
     });
 
     return () => subscription.unsubscribe();
-  }, [isOpen, onAuthSuccess]);
+  }, [isOpen, step, onAuthSuccess]);
+
+  const sendConfirmationEmail = useCallback(async (targetEmail: string, userId: string) => {
+    const { data, error } = await supabase.functions.invoke('send-free-trial-confirmation-email', {
+      body: { email: targetEmail, user_id: userId },
+    });
+
+    if (error || !data?.success) {
+      const errorMessage = data?.error || error?.message || 'Falha ao enviar email de confirmação';
+      return { success: false, error: errorMessage };
+    }
+
+    return { success: true as const };
+  }, []);
 
   const handleCheckEmail = useCallback(async () => {
     const emailToCheck = email.trim().toLowerCase();
@@ -221,10 +238,13 @@ export default function ArcanoClonerAuthModal({
               .eq('id', user.id)
               .maybeSingle();
 
-            if (profile && profile.email_verified === false) {
+            if (profile?.email_verified !== true) {
               console.log('[ArcanoClonerAuth] Auto-login: email not verified, blocking');
               await supabase.auth.signOut();
-              toast.error('Confirme seu email antes de entrar. Verifique sua caixa de entrada.');
+              setVerifiedEmail(emailToCheck);
+              setPendingUserId(user.id);
+              setStep('verify-email');
+              toast.error('Confirme seu email antes de entrar. Verifique a caixa de entrada e o spam.');
               setIsLoading(false);
               return;
             }
@@ -283,10 +303,13 @@ export default function ArcanoClonerAuthModal({
           .eq('id', data.user.id)
           .maybeSingle();
 
-        if (profile && profile.email_verified === false) {
+        if (profile?.email_verified !== true) {
           console.log('[ArcanoClonerAuth] Email not verified, blocking login');
           await supabase.auth.signOut();
-          toast.error('Confirme seu email antes de entrar. Verifique sua caixa de entrada.');
+          setStep('verify-email');
+          setPendingUserId(data.user.id);
+          setEmailSendError(null);
+          toast.error('Confirme seu email antes de entrar. Verifique a caixa de entrada e o spam.');
           return;
         }
 
@@ -339,22 +362,24 @@ export default function ArcanoClonerAuthModal({
           email_verified: false,
         }, { onConflict: 'id' });
 
-        // Send confirmation email via SendPulse
-        try {
-          await supabase.functions.invoke('send-free-trial-confirmation-email', {
-            body: { email: normalizedEmail, user_id: authData.user.id }
-          });
-          console.log('[ArcanoClonerAuth] Confirmation email sent');
-        } catch (e) {
-          console.error('[ArcanoClonerAuth] Failed to send confirmation email:', e);
-        }
+        setPendingUserId(authData.user.id);
+
+        const emailResult = await sendConfirmationEmail(normalizedEmail, authData.user.id);
 
         // Sign out immediately - user must confirm email first
         await supabase.auth.signOut();
 
-        toast.success('Conta criada! Verifique seu email para confirmar.');
         setVerifiedEmail(normalizedEmail);
         setStep('verify-email');
+
+        if (!emailResult.success) {
+          setEmailSendError(emailResult.error);
+          toast.error('Conta criada, mas houve falha no envio do email. Clique em reenviar.');
+          return;
+        }
+
+        setEmailSendError(null);
+        toast.success('Conta criada! Confirme seu email (verifique também o spam).');
       }
     } catch (error) {
       console.error('[ArcanoClonerAuth] Signup error:', error);
@@ -362,7 +387,37 @@ export default function ArcanoClonerAuthModal({
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [sendConfirmationEmail]);
+
+  const handleResendConfirmationEmail = useCallback(async () => {
+    const emailToResend = (verifiedEmail || email).trim().toLowerCase();
+
+    if (!pendingUserId || !emailToResend) {
+      setEmailSendError('Não foi possível reenviar agora. Tente criar a conta novamente.');
+      return;
+    }
+
+    setIsResendingEmail(true);
+
+    try {
+      const resendResult = await sendConfirmationEmail(emailToResend, pendingUserId);
+
+      if (!resendResult.success) {
+        setEmailSendError(resendResult.error);
+        toast.error('Falha ao reenviar email. Tente novamente em instantes.');
+        return;
+      }
+
+      setEmailSendError(null);
+      toast.success('Email reenviado! Confira caixa de entrada e spam.');
+    } catch (resendError) {
+      console.error('[ArcanoClonerAuth] Resend confirmation email error:', resendError);
+      setEmailSendError('Falha ao reenviar email de confirmação.');
+      toast.error('Falha ao reenviar email.');
+    } finally {
+      setIsResendingEmail(false);
+    }
+  }, [verifiedEmail, email, pendingUserId, sendConfirmationEmail]);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -438,14 +493,41 @@ export default function ArcanoClonerAuthModal({
                 <Mail className="w-8 h-8 text-green-400" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Verifique seu email!</h3>
+                <h3 className="text-lg font-bold text-white">Confirme seu email para continuar</h3>
                 <p className="text-sm text-purple-300 mt-2">
                   Enviamos um link de confirmação para <strong className="text-white">{verifiedEmail || email}</strong>
                 </p>
                 <p className="text-xs text-purple-400 mt-2">
-                  Após confirmar, você receberá seus 300 créditos grátis automaticamente.
+                  Verifique também a pasta de spam/lixo eletrônico. Sem confirmação do link, o login e o acesso ficam bloqueados.
+                </p>
+                <p className="text-xs text-purple-400 mt-2">
+                  Após confirmar no email, você será redirecionado automaticamente para a página de ferramentas.
                 </p>
               </div>
+
+              {emailSendError && (
+                <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/30 rounded-lg p-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{emailSendError}</span>
+                </div>
+              )}
+
+              <Button
+                variant="outline"
+                className="w-full border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
+                onClick={handleResendConfirmationEmail}
+                disabled={isResendingEmail || !pendingUserId}
+              >
+                {isResendingEmail ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Reenviando email...
+                  </>
+                ) : (
+                  'Reenviar email de confirmação'
+                )}
+              </Button>
+
               <Button
                 variant="outline"
                 className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
