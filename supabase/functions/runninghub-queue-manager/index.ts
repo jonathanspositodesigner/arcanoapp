@@ -1387,35 +1387,113 @@ async function callRunningHubApi(
   
   console.log(`[QueueManager] Calling RunningHub (${account.name}):`, JSON.stringify(requestBody));
   
-  try {
-    const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${webappId}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${account.apiKey}`,
-      },
-      body: JSON.stringify(requestBody),
-    });
-    
-    const data = await response.json();
-    console.log(`[QueueManager] RunningHub response:`, JSON.stringify(data));
-    
-    if (data.taskId) {
-      await supabase
-        .from(table)
-        .update({ 
-          task_id: data.taskId,
-          api_account: account.name,
-          status: 'running',
-        })
-        .eq('id', jobId);
+  const MAX_RETRIES = 3;
+  const RETRY_DELAYS = [3000, 8000, 15000];
+  const RETRYABLE_STATUSES = [429, 502, 503, 504];
+  
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
       
-      return { taskId: data.taskId };
-    } else {
-      const isQueueLimit = data.errorCode === 421 || String(data.message || '').toLowerCase().includes('queue limit');
-      const errorMsg = isQueueLimit ? 'api queue limit reached' : (data.message || data.error || 'Failed to start job');
+      const response = await fetch(`https://www.runninghub.ai/openapi/v2/run/ai-app/${webappId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${account.apiKey}`,
+        },
+        body: JSON.stringify(requestBody),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
       
-      // Buscar dados para reembolso
+      // Check for retryable HTTP status
+      if (RETRYABLE_STATUSES.includes(response.status) && attempt < MAX_RETRIES - 1) {
+        await response.text(); // consume body
+        const jitter = Math.random() * 2000;
+        const delay = RETRY_DELAYS[attempt] + jitter;
+        console.warn(`[QueueManager] RunningHub returned ${response.status}, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${MAX_RETRIES})`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      
+      const data = await response.json();
+      console.log(`[QueueManager] RunningHub response:`, JSON.stringify(data));
+      
+      if (data.taskId) {
+        await supabase
+          .from(table)
+          .update({ 
+            task_id: data.taskId,
+            api_account: account.name,
+            status: 'running',
+            raw_api_response: data,
+          })
+          .eq('id', jobId);
+        
+        return { taskId: data.taskId };
+      } else {
+        const isQueueLimit = data.errorCode === 421 || String(data.message || '').toLowerCase().includes('queue limit');
+        
+        // Retry on queue limit (transient)
+        if (isQueueLimit && attempt < MAX_RETRIES - 1) {
+          const jitter = Math.random() * 2000;
+          const delay = RETRY_DELAYS[attempt] + jitter;
+          console.warn(`[QueueManager] RunningHub queue limit, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${MAX_RETRIES})`);
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+        
+        const errorMsg = isQueueLimit ? 'api queue limit reached' : (data.message || data.error || 'Failed to start job');
+        
+        // Save raw response for debugging
+        await supabase.from(table).update({ raw_api_response: data }).eq('id', jobId);
+        await logStepFailure(table, jobId, 'runninghub_api_call', errorMsg, data);
+        
+        // Buscar dados para reembolso
+        const { data: job } = await supabase
+          .from(table)
+          .select('user_id, user_credit_cost, credits_charged, credits_refunded')
+          .eq('id', jobId)
+          .maybeSingle();
+        
+        if (job) {
+          await refundCreditsIfNeeded(
+            table, jobId, job.user_id, job.user_credit_cost,
+            job.credits_charged ?? false, job.credits_refunded ?? false
+          );
+        }
+        
+        await supabase
+          .from(table)
+          .update({
+            status: 'failed',
+            error_message: errorMsg,
+            failed_at_step: 'runninghub_api_call',
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', jobId);
+        
+        return { taskId: null };
+      }
+    } catch (error: any) {
+      const isAbort = error.name === 'AbortError';
+      const errorMsg = isAbort ? `RunningHub request timed out (attempt ${attempt + 1})` : (error.message || 'Unknown error');
+      
+      console.error(`[QueueManager] Error calling RunningHub (attempt ${attempt + 1}/${MAX_RETRIES}):`, errorMsg);
+      
+      // Retry on timeout or network error
+      if (attempt < MAX_RETRIES - 1) {
+        const jitter = Math.random() * 2000;
+        const delay = RETRY_DELAYS[attempt] + jitter;
+        console.warn(`[QueueManager] Retrying in ${Math.round(delay)}ms...`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      
+      // Final attempt failed - refund and mark as failed
+      await logStepFailure(table, jobId, 'runninghub_api_call', errorMsg);
+      
       const { data: job } = await supabase
         .from(table)
         .select('user_id, user_credit_cost, credits_charged, credits_refunded')
@@ -1434,38 +1512,14 @@ async function callRunningHubApi(
         .update({
           status: 'failed',
           error_message: errorMsg,
+          failed_at_step: 'runninghub_api_call',
           completed_at: new Date().toISOString(),
         })
         .eq('id', jobId);
       
       return { taskId: null };
     }
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`[QueueManager] Error calling RunningHub:`, error);
-    
-    const { data: job } = await supabase
-      .from(table)
-      .select('user_id, user_credit_cost, credits_charged, credits_refunded')
-      .eq('id', jobId)
-      .maybeSingle();
-    
-    if (job) {
-      await refundCreditsIfNeeded(
-        table, jobId, job.user_id, job.user_credit_cost,
-        job.credits_charged ?? false, job.credits_refunded ?? false
-      );
-    }
-    
-    await supabase
-      .from(table)
-      .update({
-        status: 'failed',
-        error_message: errorMsg,
-        completed_at: new Date().toISOString(),
-      })
-      .eq('id', jobId);
-    
-    return { taskId: null };
   }
+  
+  return { taskId: null };
 }

@@ -151,28 +151,46 @@ async function fetchWithRetry(
   url: string, 
   options: RequestInit, 
   context: string,
-  maxRetries: number = 4
+  maxRetries: number = 6
 ): Promise<Response> {
   const retryableStatuses = [429, 502, 503, 504];
-  const delays = [2000, 5000, 10000, 15000];
+  const baseDelays = [2000, 4000, 8000, 15000, 25000, 40000];
   
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    const response = await fetch(url, options);
-    
-    if (!retryableStatuses.includes(response.status)) {
-      return response;
-    }
-    
-    // Consume body to prevent leak
-    await response.text();
-    
-    if (attempt < maxRetries - 1) {
-      const delay = delays[attempt] || 2000;
-      console.warn(`[RunningHub] ${context} got ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
-      await new Promise(r => setTimeout(r, delay));
-    } else {
-      console.error(`[RunningHub] ${context} failed after ${maxRetries} retries with status ${response.status}`);
-      throw new Error(`${context} failed after ${maxRetries} retries (${response.status})`);
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout per attempt
+      
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timeout);
+      
+      if (!retryableStatuses.includes(response.status)) {
+        return response;
+      }
+      
+      // Consume body to prevent leak
+      await response.text();
+      
+      if (attempt < maxRetries - 1) {
+        const jitter = Math.random() * 2000;
+        const delay = (baseDelays[attempt] || 5000) + jitter;
+        console.warn(`[RunningHub] ${context} got ${response.status}, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(r => setTimeout(r, delay));
+      } else {
+        console.error(`[RunningHub] ${context} failed after ${maxRetries} retries with status ${response.status}`);
+        throw new Error(`${context} failed after ${maxRetries} retries (${response.status})`);
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        console.warn(`[RunningHub] ${context} timed out on attempt ${attempt + 1}/${maxRetries}`);
+        if (attempt >= maxRetries - 1) {
+          throw new Error(`${context} timed out after ${maxRetries} attempts`);
+        }
+        const jitter = Math.random() * 2000;
+        await new Promise(r => setTimeout(r, (baseDelays[attempt] || 5000) + jitter));
+        continue;
+      }
+      throw err;
     }
   }
   
@@ -606,12 +624,15 @@ async function handleRun(req: Request) {
       const errorMsg = error instanceof Error ? error.message : 'Image transfer failed';
       console.error('[RunningHub] Image transfer error:', error);
       
-      // Mark job as failed
+      await logStepFailure(jobId, 'image_transfer', errorMsg);
+      
+      // Mark job as failed with full observability
       await supabase
         .from('upscaler_jobs')
         .update({ 
           status: 'failed', 
           error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`,
+          failed_at_step: 'image_transfer',
           completed_at: new Date().toISOString()
         })
         .eq('id', jobId);
