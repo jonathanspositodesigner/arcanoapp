@@ -835,6 +835,70 @@ serve(async (req) => {
         }
       }
 
+      // === LANDING BUNDLE ACTIVATION (one-time purchase with lifetime credits + permanent premium) ===
+      if (product.type === 'landing_bundle' && product.plan_slug) {
+        console.log(`   ├─ 🎁 Landing bundle: ${product.plan_slug} (${product.credits_amount} créditos vitalícios)`)
+
+        const PLAN_CONFIG_BUNDLE: Record<string, {
+          has_image_generation: boolean;
+          has_video_generation: boolean;
+          cost_multiplier: number;
+        }> = {
+          'starter': { has_image_generation: false, has_video_generation: false, cost_multiplier: 1.0 },
+          'pro': { has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
+          'ultimate': { has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
+        }
+
+        // 1. Add lifetime credits
+        if (product.credits_amount > 0) {
+          const { error: creditsError } = await supabase.rpc('add_lifetime_credits', {
+            _user_id: userId,
+            _amount: product.credits_amount,
+            _description: `Landing bundle: ${product.title}`
+          })
+          if (creditsError) {
+            console.error(`   ├─ ❌ Erro ao adicionar créditos landing_bundle:`, creditsError)
+          } else {
+            console.log(`   ├─ ✅ +${product.credits_amount} créditos vitalícios adicionados`)
+          }
+        }
+
+        // 2. Activate permanent premium benefits (only upgrade, never downgrade)
+        const bundleConfig = PLAN_CONFIG_BUNDLE[product.plan_slug]
+        if (bundleConfig) {
+          const PLAN_RANK: Record<string, number> = { 'free': 0, 'starter': 1, 'pro': 2, 'ultimate': 3, 'unlimited': 4 }
+
+          // Check existing subscription to avoid downgrade
+          const { data: existingSub } = await supabase
+            .from('planos2_subscriptions')
+            .select('plan_slug')
+            .eq('user_id', userId)
+            .maybeSingle()
+
+          const existingRank = PLAN_RANK[existingSub?.plan_slug || 'free'] || 0
+          const newRank = PLAN_RANK[product.plan_slug] || 0
+
+          if (newRank >= existingRank) {
+            await supabase.from('planos2_subscriptions').upsert({
+              user_id: userId,
+              plan_slug: product.plan_slug,
+              is_active: true,
+              credits_per_month: 0, // No monthly credits — only lifetime
+              daily_prompt_limit: null,
+              has_image_generation: bundleConfig.has_image_generation,
+              has_video_generation: bundleConfig.has_video_generation,
+              cost_multiplier: bundleConfig.cost_multiplier,
+              expires_at: null, // Never expires
+              pagarme_subscription_id: null,
+              updated_at: new Date().toISOString(),
+            }, { onConflict: 'user_id' })
+            console.log(`   ├─ ✅ Benefícios premium permanentes ativados: ${product.plan_slug}`)
+          } else {
+            console.log(`   ├─ ℹ️ Plano superior já ativo (${existingSub?.plan_slug}), mantendo`)
+          }
+        }
+      }
+
       // === SUBSCRIPTION PLAN ACTIVATION ===
       if (product.type === 'subscription' && product.plan_slug) {
         console.log(`   ├─ 📋 Ativando plano: ${product.plan_slug} (${product.billing_period})`)
