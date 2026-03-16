@@ -396,10 +396,39 @@ serve(async (req) => {
       return errorResponse('Erro de comunicação com o gateway. Tente novamente em alguns instantes.', 502, 'GATEWAY_UNREACHABLE');
     }
 
+    const pagarmeElapsed = Date.now() - pagarmeStartTime
+    console.log(`[${requestId}] ⏱️ Pagar.me respondeu em ${pagarmeElapsed}ms (status: ${pagarmeResponse.status})`)
+
     if (!pagarmeResponse.ok) {
       console.error(`[${requestId}] Erro Pagar.me ${pagarmeResponse.status}: ${pagarmeResponseText.substring(0, 800)}`)
       // MARK ORDER AS FAILED
-      await supabase.from('asaas_orders').update({ status: 'failed', payment_method: 'checkout_failed' }).eq('id', order.id);
+      await supabase.from('asaas_orders').update({ 
+        status: 'failed', 
+        payment_method: 'checkout_failed',
+        gateway_error_code: String(pagarmeResponse.status),
+        gateway_error_message: pagarmeResponseText.substring(0, 500),
+      }).eq('id', order.id);
+      
+      // Parse 4xx errors for user-friendly messages
+      if (pagarmeResponse.status >= 400 && pagarmeResponse.status < 500) {
+        try {
+          const errData = JSON.parse(pagarmeResponseText);
+          const errMessages: string[] = [];
+          if (errData.errors && Array.isArray(errData.errors)) {
+            for (const e of errData.errors) {
+              errMessages.push(e.message || e.description || JSON.stringify(e));
+            }
+          } else if (errData.message) {
+            errMessages.push(errData.message);
+          }
+          const userMsg = errMessages.length > 0 
+            ? `Erro de validação: ${errMessages.join('; ')}` 
+            : 'Erro de validação nos dados. Verifique CPF e endereço.';
+          return errorResponse(userMsg, 422, 'GATEWAY_VALIDATION_ERROR');
+        } catch {
+          // Fall through to generic error
+        }
+      }
       return errorResponse('Erro ao criar cobrança. Tente novamente.', 500, 'GATEWAY_ERROR');
     }
 
