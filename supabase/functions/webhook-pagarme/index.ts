@@ -1118,7 +1118,7 @@ serve(async (req) => {
           email: order.user_email,
           product_name: product.title,
           amount: Number(order.amount),
-          raw_payload: body,
+          payload: body,
         })
 
         console.log(`   ├─ ✅ Ordem marcada como refunded`)
