@@ -1,49 +1,88 @@
+# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
-Objetivo: garantir que no fluxo de Cartão de Crédito do checkout puro não seja enviado nenhum e-mail (nem fictício), e impedir que pedidos/usuários fiquem com `@temp.arcano`.
+## Resumo
+Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
 
-1) Diagnóstico confirmado
-- O modal de cartão já dispara auto-submit sem `user_email` no frontend (`PreCheckoutModal`).
-- O e-mail fictício está sendo criado no backend em `create-pagarme-checkout` (`checkout-xxxx@temp.arcano`) quando `billing_type === 'CREDIT_CARD'`.
-- O webhook depois usa `order.user_email` como fonte principal, então mantém esse e-mail fictício no pedido/perfil mesmo quando o cliente digitou e-mail real no checkout hospedado.
+## O que foi feito
 
-2) Correção principal (somente backend de checkout)
-- Arquivo: `supabase/functions/create-pagarme-checkout/index.ts`
-  - Remover geração de e-mail fictício no cartão puro.
-  - Para `CREDIT_CARD` sem e-mail:
-    - não enviar `customer.email` ao gateway;
-    - não enviar dados pessoais (mantém checkout puro);
-    - parar de usar e-mail fictício em logs/rate-limit/meta.
-  - Se o gateway exigir e-mail em algum cenário, retornar erro explícito (sem inventar e-mail).
+### 1. Tabela `subscription_billing_reminders` (migration)
+- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
+- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
+- Campo `checkout_url` para evitar checkouts duplicados
+- Constraint UNIQUE em (subscription_id, day_offset, due_date)
 
-3) Ajuste de persistência interna (para não guardar lixo)
-- Banco:
-  - Tornar `public.asaas_orders.user_email` nullable (hoje é NOT NULL).
-- `create-pagarme-checkout`:
-  - Em cartão puro sem e-mail, salvar `user_email = null`.
-  - Deduplicação por e-mail só roda quando houver e-mail real (PIX e demais casos).
+### 2. Edge Function `process-billing-reminders`
+- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
+- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
+- Para cada assinatura, verifica:
+  - Se já enviou email para esse `day_offset`
+  - Se a sequência foi parada (pagou ou descadastrou)
+  - Se o email está na blacklist
+  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
+- Gera checkout Pagar.me somente PIX com validade de 3 dias
+- Monta HTML personalizado com dados reais do plano
+- Envia via SendPulse SMTP API
+- Registra na tabela de controle
 
-4) Correção de reconciliação no webhook (usar e-mail real digitado no gateway)
-- Arquivo: `supabase/functions/webhook-pagarme/index.ts`
-  - Extrair e-mail do payload do gateway (`customer.email` em `charge.*`).
-  - Definir `effectiveEmail` com prioridade:
-    1. e-mail real do gateway (válido e não temporário),
-    2. e-mail já salvo no pedido (se válido e não temporário).
-  - Antes de criar usuário/perfil, atualizar `asaas_orders.user_email` com `effectiveEmail`.
-  - Se evento de pagamento vier sem e-mail e o pedido estiver sem e-mail válido, não finalizar com dado inválido; registrar status técnico e aguardar evento com e-mail (ex.: `charge.paid`).
+### 3. Mapeamento de benefícios por plano
+- Starter: 1.800 créditos, 5 prompts/dia
+- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
+- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
+- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
 
-5) Limpeza dos dados já contaminados
-- Backfill controlado:
-  - Localizar pedidos `@temp.arcano`.
-  - Atualizar com e-mail real extraído de `webhook_logs.payload.data.customer.email` quando disponível e válido.
-  - Atualizar perfil vinculado quando não houver conflito de e-mail existente.
+### 4. Templates dos 6 emails
+- Dia 0: Lembrete leve ("Seu plano vence hoje")
+- Dia 1: Reforço pendência ("Pagamento ainda pendente")
+- Dia 2: Dor da perda ("Risco de perda de acesso")
+- Dia 3: Prejuízo prático ("O custo de não renovar")
+- Dia 4: FOMO ("Não fique para trás")
+- Dia 5: Último aviso ("Último aviso: regularize hoje")
+- Todos com link de descadastro no rodapé
 
-6) Validação final (E2E e regressão)
-- Cartão (upscaler arcano):
-  - Selecionar cartão no modal sem preencher dados locais.
-  - Confirmar request do checkout sem `user_email`.
-  - Confirmar que não aparece mais `@temp.arcano` no pedido final.
-  - Confirmar que, após pagamento, pedido/perfil usam o e-mail digitado no checkout hospedado.
-- PIX:
-  - Confirmar que continua exigindo e validando e-mail/CPF/telefone normalmente.
-- Regressão:
-  - Confirmar que fluxos que usam o mesmo backend (ex.: arcano cloner) não voltam a gravar e-mail fictício.
+### 5. Cron job
+- pg_cron agendado: `0 12 * * *` (09:00 BRT)
+- Chama a Edge Function automaticamente
+
+## Detecção de pagamento (para de enviar)
+- `planos2_subscriptions.expires_at` estendido para data futura
+- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
+- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
+
+# Auditoria Completa de Emails — Robustez Unificada (CONCLUÍDA)
+
+## O que foi feito
+
+### Padrão unificado aplicado em todos os 6 webhooks:
+
+1. **webhook-mercadopago** — `sendPurchaseEmail` refatorado:
+   - 3 retries com exponential backoff (2s, 5s, 10s)
+   - Removida lógica de DELETE de logs de falha (preserva auditoria)
+   - Cada tentativa registrada separadamente
+
+2. **webhook-greenn-creditos** — `sendWelcomeEmail` e `sendArcanoClonnerEmail`:
+   - Adicionado INSERT em `welcome_email_logs` (antes não tinha NENHUM log)
+   - Deduplicação via `dedup_key` unique constraint
+   - Blacklist check antes do envio
+   - 3 retries com exponential backoff
+   - Caller simplificado (retry agora é interno)
+
+3. **webhook-greenn** — Callers de `sendWelcomeEmail` e `sendPlanos2WelcomeEmail`:
+   - Retry loop 3x com exponential backoff (2s, 5s, 10s)
+   - Funções internas já tinham dedup + logging
+
+4. **webhook-greenn-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
+
+5. **webhook-greenn-musicos** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
+
+6. **webhook-hotmart-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup por transaction + logging
+
+### Sem mudanças (já robustos):
+- `webhook-pagarme` — 3 retries, dedup_key, logging completo
+- `resend-purchase-email` — robusto
+- `send-single-email` — utilitária independente

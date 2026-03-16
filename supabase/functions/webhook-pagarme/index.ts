@@ -662,7 +662,45 @@ serve(async (req) => {
     if (lockedOrder) {
       console.log(`\n✅ [${requestId}] PAGAMENTO PAGAR.ME CONFIRMADO - Processando...`)
 
-      const email = order.user_email
+      // === EXTRAIR EMAIL REAL: prioridade gateway > ordem (ignorar @temp.arcano) ===
+      const isTempEmail = (e: string | null) => !e || e.includes('@temp.arcano')
+      
+      const gatewayCustomer = eventData?.customer || eventData?.charges?.[0]?.customer || {}
+      const gatewayEmail = gatewayCustomer?.email?.toLowerCase()?.trim() || null
+      const orderEmail = order.user_email?.toLowerCase()?.trim() || null
+      
+      let email: string | null = null
+      if (gatewayEmail && !isTempEmail(gatewayEmail) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(gatewayEmail)) {
+        email = gatewayEmail
+      } else if (orderEmail && !isTempEmail(orderEmail)) {
+        email = orderEmail
+      }
+
+      if (!email) {
+        console.error(`   ├─ ❌ Nenhum email válido encontrado (gateway: ${gatewayEmail}, ordem: ${orderEmail})`)
+        await supabase.from('webhook_logs').insert({
+          platform: 'pagarme',
+          event_type: eventType,
+          transaction_id: idempotencyKey,
+          status: 'no_valid_email',
+          email: null,
+          product_name: product?.title,
+          payload: body,
+        })
+        // Não marca como erro — pode vir outro evento com email
+        return new Response('OK', { status: 200, headers: corsHeaders })
+      }
+
+      console.log(`   ├─ 📧 Email efetivo: ${email} (gateway: ${gatewayEmail}, ordem: ${orderEmail})`)
+
+      // Atualizar ordem com email real se estava null ou temp
+      if (isTempEmail(orderEmail) || !orderEmail) {
+        await supabase.from('asaas_orders').update({ 
+          user_email: email, 
+          updated_at: new Date().toISOString() 
+        }).eq('id', order.id)
+        console.log(`   ├─ 📝 Ordem atualizada com email real: ${email}`)
+      }
 
       // 1. Criar ou buscar usuário
       let userId: string | null = null
