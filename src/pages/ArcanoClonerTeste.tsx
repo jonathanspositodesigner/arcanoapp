@@ -65,7 +65,7 @@ const CountUp = ({ target, duration = 2000 }: { target: number; duration?: numbe
   );
 };
 
-  const isMobile = useIsMobile();
+  const ArcanoClonerTeste = () => {
 
   // Countdown timer - 1 hour with localStorage persistence
   const [timeLeft, setTimeLeft] = useState(() => {
