@@ -368,6 +368,7 @@ serve(async (req) => {
     const authHeader = 'Basic ' + btoa(pagarmeSecretKey + ':')
     const idempotencyKey = `checkout_${order.id}`
 
+    const pagarmeStartTime = Date.now()
     console.log(`[${requestId}] 🔑 Calling Pagar.me | Key: ${pagarmeSecretKey.substring(0, 8)}... | Idempotency: ${idempotencyKey}`)
 
     // 4. Criar pedido no Pagar.me com RETRY
