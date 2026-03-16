@@ -42,8 +42,8 @@ const StatsBar = () => {
 
   return (
     <div className="max-w-4xl mx-auto mb-10 px-2">
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center gap-4 sm:gap-0">
-        <div className="flex items-center gap-3 sm:flex-1 min-w-0">
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm px-4 sm:px-6 py-4 flex flex-col items-center gap-4">
+        <div className="flex items-center gap-3 w-full justify-center">
           <div className="flex -space-x-2 shrink-0">
             {socialProofImages.map((src, i) => (
               <img key={i} src={src} alt="" width="32" height="32" decoding="async" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-black object-cover" />
@@ -53,14 +53,14 @@ const StatsBar = () => {
             Junte-se a + de 3200 criadores em todo o mundo.
           </span>
         </div>
-        <div className="flex items-center gap-6 sm:gap-8 shrink-0">
+        <div className="flex items-center justify-center gap-8 w-full">
           <div className="flex flex-col items-center gap-0.5">
             <Image className="w-5 h-5 text-fuchsia-400 mb-1" />
             <div className="flex items-center gap-1">
               <span className="text-white font-bold text-base sm:text-lg">{animatedImages.displayValue.toLocaleString('pt-BR')}</span>
               <span className="text-fuchsia-400 text-lg font-bold">+</span>
             </div>
-            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">Imagens Geradas</span>
+            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium text-center">Imagens Geradas</span>
           </div>
           <div className="flex flex-col items-center gap-0.5">
             <Video className="w-5 h-5 text-fuchsia-400 mb-1" />
@@ -68,7 +68,7 @@ const StatsBar = () => {
               <span className="text-white font-bold text-base sm:text-lg">{animatedVideos.displayValue.toLocaleString('pt-BR')}</span>
               <span className="text-fuchsia-400 text-lg font-bold">+</span>
             </div>
-            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">Vídeos Gerados</span>
+            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium text-center">Vídeos Gerados</span>
           </div>
           <div className="flex flex-col items-center gap-0.5">
             <Award className="w-5 h-5 text-yellow-500 mb-1" />
@@ -76,7 +76,7 @@ const StatsBar = () => {
               <span className="text-white font-bold text-base sm:text-lg">{animatedSatisfaction.displayValue}</span>
               <span className="text-yellow-500 text-lg font-bold">%</span>
             </div>
-            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">Satisfação</span>
+            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium text-center">Satisfação</span>
           </div>
         </div>
       </div>
@@ -292,7 +292,7 @@ const LandingPricingSection = () => {
 
         {/* Plans Grid */}
         <StaggeredAnimation
-          className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto"
+          className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-4 max-w-4xl mx-auto"
           itemClassName="w-full"
           staggerDelay={100}
           animation="fade-up"
@@ -386,8 +386,8 @@ const LandingPricingSection = () => {
           <h3 className="font-space-grotesk font-extrabold text-3xl md:text-4xl lg:text-5xl text-white tracking-tight mb-6">
             ACESSO <span className="text-fuchsia-400">IMEDIATO</span>
           </h3>
-          <div className="max-w-4xl mx-auto rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 sm:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+          <div className="max-w-4xl mx-auto rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 sm:px-8 py-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 sm:gap-4">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               <ShieldCheck className="w-5 h-5 text-fuchsia-400 shrink-0" />
               <div className="text-left">
                 <p className="text-white text-sm font-semibold leading-tight">Pagamento seguro</p>
@@ -395,7 +395,8 @@ const LandingPricingSection = () => {
               </div>
             </div>
             <div className="hidden sm:block w-px h-8 bg-white/10" />
-            <div className="flex items-center gap-3">
+            <div className="block sm:hidden w-full h-px bg-white/10" />
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               <Zap className="w-5 h-5 text-fuchsia-400 shrink-0" />
               <div className="text-left">
                 <p className="text-white text-sm font-semibold leading-tight">Pagamento instantâneo</p>
@@ -403,7 +404,8 @@ const LandingPricingSection = () => {
               </div>
             </div>
             <div className="hidden sm:block w-px h-8 bg-white/10" />
-            <div className="flex items-center gap-3">
+            <div className="block sm:hidden w-full h-px bg-white/10" />
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               <Headset className="w-5 h-5 text-fuchsia-400 shrink-0" />
               <div className="text-left">
                 <p className="text-white text-sm font-semibold leading-tight">Suporte 24/7</p>
