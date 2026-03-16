@@ -387,6 +387,36 @@ export default function ArcanoClonerAuthModal({
     }
   }, [sendConfirmationEmail]);
 
+  const handleResendConfirmationEmail = useCallback(async () => {
+    const emailToResend = (verifiedEmail || email).trim().toLowerCase();
+
+    if (!pendingUserId || !emailToResend) {
+      setEmailSendError('Não foi possível reenviar agora. Tente criar a conta novamente.');
+      return;
+    }
+
+    setIsResendingEmail(true);
+
+    try {
+      const resendResult = await sendConfirmationEmail(emailToResend, pendingUserId);
+
+      if (!resendResult.success) {
+        setEmailSendError(resendResult.error);
+        toast.error('Falha ao reenviar email. Tente novamente em instantes.');
+        return;
+      }
+
+      setEmailSendError(null);
+      toast.success('Email reenviado! Confira caixa de entrada e spam.');
+    } catch (resendError) {
+      console.error('[ArcanoClonerAuth] Resend confirmation email error:', resendError);
+      setEmailSendError('Falha ao reenviar email de confirmação.');
+      toast.error('Falha ao reenviar email.');
+    } finally {
+      setIsResendingEmail(false);
+    }
+  }, [verifiedEmail, email, pendingUserId, sendConfirmationEmail]);
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-gradient-to-br from-[#1A0A2E] to-[#0D0221] border-purple-500/30 text-white p-0 max-w-md overflow-hidden [&>button]:text-purple-300 [&>button]:hover:text-white">
