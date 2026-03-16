@@ -291,10 +291,38 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     try {
       const utmData = getSanitizedUtms();
       const { fbp, fbc } = getMetaCookies();
-      
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // Cartão: sempre checkout puro (sem envio prévio de CPF/telefone/endereço)
+      if (paymentMethod === 'CREDIT_CARD') {
+        console.log('[PreCheckoutModal] Chamando checkout puro para cartão...');
+        const cardResponse = await invokeCheckout({
+          product_slug: productSlug,
+          user_email: normalizedEmail,
+          billing_type: 'CREDIT_CARD',
+          utm_data: utmData,
+          fbp,
+          fbc,
+          lightweight: true,
+        });
+
+        if (!cardResponse.error && cardResponse.data?.checkout_url) {
+          const { checkout_url, event_id } = cardResponse.data;
+          if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
+            (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
+          }
+          window.location.href = checkout_url;
+          return;
+        }
+
+        const cardErrorCode = cardResponse.data?.error_code || 'UNKNOWN';
+        showErrorToast(cardErrorCode);
+        return;
+      }
+
       const fullPayload = {
         product_slug: productSlug,
-        user_email: email.trim().toLowerCase(),
+        user_email: normalizedEmail,
         user_phone: phone.replace(/\D/g, ''),
         user_name: name.trim(),
         user_cpf: cpf.replace(/\D/g, ''),
@@ -304,10 +332,10 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         fbc,
       };
 
-      // Sequential: try full checkout first, fallback to lightweight only if full fails
+      // PIX: tenta full primeiro, fallback lightweight se necessário
       console.log('[PreCheckoutModal] Chamando checkout full...');
       const fullResponse = await invokeCheckout(fullPayload);
-      
+
       if (!fullResponse.error && fullResponse.data?.checkout_url) {
         const { checkout_url, event_id } = fullResponse.data;
         console.log(`[PreCheckoutModal] ✅ Full checkout OK: ${checkout_url.substring(0, 60)}...`);
@@ -318,11 +346,10 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         return;
       }
 
-      // Full failed — try lightweight as fallback
       console.warn('[PreCheckoutModal] Full falhou, tentando lightweight...', fullResponse.error);
       const lightweightPayload = {
         product_slug: productSlug,
-        user_email: email.trim().toLowerCase(),
+        user_email: normalizedEmail,
         user_name: name.trim(),
         billing_type: paymentMethod,
         utm_data: utmData,
@@ -343,7 +370,6 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         return;
       }
 
-      // Both failed — show detailed error
       let errorCode = 'UNKNOWN';
       const errorSource = lightResponse.data?.error_code || fullResponse.data?.error_code;
       if (errorSource) {
