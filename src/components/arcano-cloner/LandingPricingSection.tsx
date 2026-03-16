@@ -177,7 +177,7 @@ const LandingPricingSection = () => {
     getUser();
   }, []);
 
-  const handlePurchase = async (productSlug: string) => {
+  const handlePurchase = (productSlug: string) => {
     if (!startCheckout()) return;
 
     if (typeof window !== "undefined" && (window as any).fbq) {
@@ -189,93 +189,9 @@ const LandingPricingSection = () => {
       });
     }
 
-    if (!userId) {
-      setPreCheckoutSlug(productSlug);
-      setShowPreCheckout(true);
-      endCheckout();
-      return;
-    }
-
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
-        .eq('id', userId)
-        .single();
-
-      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf
-        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
-
-      if (isProfileComplete) {
-        setPreCheckoutSlug(productSlug);
-        setPendingProfile(profile);
-        setShowPaymentMethodModal(true);
-        endCheckout();
-      } else {
-        setPreCheckoutSlug(productSlug);
-        setShowPreCheckout(true);
-        endCheckout();
-      }
-    } catch {
-      endCheckout();
-    }
-  };
-
-  const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
-    if (!preCheckoutSlug || !pendingProfile) return;
-    if (!startCheckout()) return;
-
-    try {
-      const utmData = getSanitizedUtms();
-      const { fbp, fbc } = getMetaCookies();
-
-      // Cartão: não enviar dados pessoais (gateway coleta tudo)
-      // PIX: envia dados completos para pré-preenchimento
-      const body: any = {
-        product_slug: preCheckoutSlug,
-        billing_type: method,
-        utm_data: utmData,
-        fbp,
-        fbc,
-      };
-
-      if (method === 'PIX') {
-        body.user_email = userEmail;
-        body.user_name = pendingProfile.name;
-        body.user_phone = pendingProfile.phone;
-        body.user_cpf = pendingProfile.cpf;
-        body.user_address = {
-          line_1: pendingProfile.address_line,
-          zip_code: pendingProfile.address_zip,
-          city: pendingProfile.address_city,
-          state: pendingProfile.address_state,
-          country: pendingProfile.address_country || 'BR'
-        };
-      }
-
-      const response = await invokeCheckout(body);
-
-      if (response.error) {
-        console.error('Erro checkout direto:', response.error);
-        toast.error('Erro ao gerar pagamento. Tente novamente.');
-        setShowPaymentMethodModal(false);
-        endCheckout();
-        return;
-      }
-
-      if (response.data?.checkout_url) {
-        const { checkout_url, event_id } = response.data;
-        if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
-          (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
-        }
-        window.location.href = checkout_url;
-      }
-    } catch (err) {
-      console.error('Erro checkout:', err);
-      toast.error('Erro ao processar. Tente novamente.');
-      setShowPaymentMethodModal(false);
-      endCheckout();
-    }
+    setPreCheckoutSlug(productSlug);
+    setShowPreCheckout(true);
+    endCheckout();
   };
 
   return (
