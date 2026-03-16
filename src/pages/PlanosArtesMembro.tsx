@@ -79,6 +79,12 @@ const PlanosArtesMembro = () => {
   const [selectedAccessType, setSelectedAccessType] = useState('vitalicio');
   const [arteCount, setArteCount] = useState<number | null>(null);
 
+  // Pre-warm checkout edge function after 3s
+  useEffect(() => {
+    const timer = setTimeout(() => preWarmCheckout(), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Check auth on mount
   useEffect(() => {
     const checkAuth = async () => {

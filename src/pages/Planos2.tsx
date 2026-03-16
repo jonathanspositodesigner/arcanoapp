@@ -57,6 +57,12 @@ const Planos2 = () => {
   const { planSlug: activePlanSlug } = usePlanos2Access(userId || undefined);
   const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
 
+  // Pre-warm checkout edge function after 3s
+  useEffect(() => {
+    const timer = setTimeout(() => preWarmCheckout(), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Check auth and profile on mount
   useEffect(() => {
     const checkAuth = async () => {

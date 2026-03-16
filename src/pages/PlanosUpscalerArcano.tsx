@@ -220,6 +220,12 @@ const PlanosUpscalerArcano = () => {
 
   const TOOL_SLUG = "upscaller-arcano";
 
+  // Pre-warm checkout edge function after 3s
+  useEffect(() => {
+    const timer = setTimeout(() => preWarmCheckout(), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     fetchToolData();
   }, []);
