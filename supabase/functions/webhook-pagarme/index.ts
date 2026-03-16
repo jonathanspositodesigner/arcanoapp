@@ -124,6 +124,7 @@ function getUnsubscribeLink(email: string): string {
 function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: string, options?: { packSlug?: string; productType?: string; accessType?: string }): string {
   const unsubscribeLink = getUnsubscribeLink(email)
   const isUpscalerOrCredits = options?.packSlug === 'upscaler-arcano' || options?.productType === 'credits'
+  const isLandingBundle = options?.productType === 'landing_bundle'
   
   // Determine access label
   let accessLabel = 'Vitalício'
@@ -131,15 +132,23 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
   else if (options?.accessType === '1_ano') accessLabel = '1 Ano'
   else if (options?.accessType === 'vitalicio') accessLabel = 'Vitalício'
 
-  const benefitBlock = isUpscalerOrCredits
-    ? `<div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">
+  let benefitBlock = ''
+  if (isLandingBundle) {
+    benefitBlock = `<div style="background:linear-gradient(135deg,rgba(168,85,247,0.12) 0%,rgba(236,72,153,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(168,85,247,0.3);text-align:center;">
+        <p style="color:#c084fc;font-size:15px;font-weight:700;margin:0 0 8px;">🚀 Seus créditos já estão disponíveis!</p>
+        <p style="color:#e9d5ff;font-size:13px;margin:0;line-height:1.6;">Acesse o <strong>Arcano Cloner</strong> e comece a criar suas fotos profissionais agora mesmo. Sem prompts, tudo com um clique!</p>
+      </div>`
+  } else if (isUpscalerOrCredits) {
+    benefitBlock = `<div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">
         <p style="color:#4ade80;font-size:15px;font-weight:700;margin:0 0 8px;">🎉 Acesso Vitalício Ativado!</p>
         <p style="color:#bbf7d0;font-size:13px;margin:0;line-height:1.6;">Você <strong>NÃO precisa comprar créditos</strong> para usar o Upscaler Arcano. Seu acesso vitalício já inclui uso ilimitado da ferramenta!</p>
       </div>`
-    : `<div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">
+  } else {
+    benefitBlock = `<div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">
         <p style="color:#4ade80;font-size:15px;font-weight:700;margin:0 0 8px;">🎉 Acesso ${accessLabel} Ativado!</p>
         <p style="color:#bbf7d0;font-size:13px;margin:0;line-height:1.6;">Seu <strong>${productName}</strong> já está liberado! Acesse a plataforma para explorar todos os conteúdos do seu pack.</p>
       </div>`
+  }
 
   return `<!DOCTYPE html>
 <html>
