@@ -624,12 +624,15 @@ async function handleRun(req: Request) {
       const errorMsg = error instanceof Error ? error.message : 'Image transfer failed';
       console.error('[RunningHub] Image transfer error:', error);
       
-      // Mark job as failed
+      await logStepFailure(jobId, 'image_transfer', errorMsg);
+      
+      // Mark job as failed with full observability
       await supabase
         .from('upscaler_jobs')
         .update({ 
           status: 'failed', 
           error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`,
+          failed_at_step: 'image_transfer',
           completed_at: new Date().toISOString()
         })
         .eq('id', jobId);
