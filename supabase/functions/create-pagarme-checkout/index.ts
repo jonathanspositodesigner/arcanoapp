@@ -375,17 +375,16 @@ serve(async (req) => {
     let customerObj: Record<string, unknown>
 
     if (isPureCreditCardCheckout) {
+      const trimmedName = user_name?.trim()
+
       customerObj = {
         type: 'individual',
+        // Pagar.me exige name; usamos caractere invisível para não pré-preencher nome fictício
+        name: trimmedName || '\u200B',
       }
 
       if (customerEmail) {
         customerObj.email = customerEmail
-      }
-
-      const trimmedName = user_name?.trim()
-      if (trimmedName) {
-        customerObj.name = trimmedName
       }
     } else {
       const customerName = user_name?.trim() || email.split('@')[0]
