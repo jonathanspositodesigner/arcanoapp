@@ -107,6 +107,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const [savedCards, setSavedCards] = useState<SavedCard[]>([]);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [oneClickLoading, setOneClickLoading] = useState(false);
+  const [oneClickResult, setOneClickResult] = useState<'approved' | 'declined' | null>(null);
   const [showFullForm, setShowFullForm] = useState(false);
 
   // Race control ref
