@@ -235,27 +235,20 @@ const LandingPricingSection = () => {
       const utmData = getSanitizedUtms();
       const { fbp, fbc } = getMetaCookies();
 
-      // Checkout Puro para cartão: não envia NADA — Pagar.me coleta tudo
-      // PIX: preenche tudo (nome, cpf, endereço)
+      // Enviar dados completos para PIX e Cartão (antifraude precisa de CPF/telefone)
       const body: any = {
         product_slug: preCheckoutSlug,
         billing_type: method,
         utm_data: utmData,
         fbp,
         fbc,
+        user_email: userEmail,
+        user_name: pendingProfile.name,
+        user_phone: pendingProfile.phone,
+        user_cpf: pendingProfile.cpf,
       };
 
       if (method === 'PIX') {
-        body.user_email = userEmail;
-        body.user_name = pendingProfile.name;
-      } else {
-        // Cartão: opcionalmente envia email se disponível
-        if (userEmail) body.user_email = userEmail;
-      }
-
-      if (method === 'PIX') {
-        body.user_phone = pendingProfile.phone;
-        body.user_cpf = pendingProfile.cpf;
         body.user_address = {
           line_1: pendingProfile.address_line,
           zip_code: pendingProfile.address_zip,
