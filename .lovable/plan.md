@@ -1,88 +1,45 @@
-# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
-## Resumo
-Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
 
-## O que foi feito
+## Plano: Painel de Erros Detalhados na Página Custos IA
 
-### 1. Tabela `subscription_billing_reminders` (migration)
-- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
-- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
-- Campo `checkout_url` para evitar checkouts duplicados
-- Constraint UNIQUE em (subscription_id, day_offset, due_date)
+### Problema Atual
+A página admin "Custos IA" mostra erros apenas como um tooltip minúsculo com `error_message`. As tabelas de jobs armazenam dados ricos de debug (`failed_at_step`, `step_history`, `current_step`, `raw_api_response`, `raw_webhook_payload`) que nunca são exibidos.
 
-### 2. Edge Function `process-billing-reminders`
-- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
-- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
-- Para cada assinatura, verifica:
-  - Se já enviou email para esse `day_offset`
-  - Se a sequência foi parada (pagou ou descadastrou)
-  - Se o email está na blacklist
-  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
-- Gera checkout Pagar.me somente PIX com validade de 3 dias
-- Monta HTML personalizado com dados reais do plano
-- Envia via SendPulse SMTP API
-- Registra na tabela de controle
+### Mudanças
 
-### 3. Mapeamento de benefícios por plano
-- Starter: 1.800 créditos, 5 prompts/dia
-- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
-- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
-- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
+#### 1. Nova aba/seção "Log de Erros" no `AdminAIToolsUsageTab.tsx`
+Adicionar um filtro de status "Somente Falhas" e uma seção dedicada que aparece acima da tabela principal com:
+- **Cards de resumo de erros**: total de falhas por ferramenta, por tipo de erro (`failed_at_step`), taxa de erro (%)
+- **Tabela de erros expandida**: quando o status é `failed`, mostrar uma linha expandível com todos os detalhes
 
-### 4. Templates dos 6 emails
-- Dia 0: Lembrete leve ("Seu plano vence hoje")
-- Dia 1: Reforço pendência ("Pagamento ainda pendente")
-- Dia 2: Dor da perda ("Risco de perda de acesso")
-- Dia 3: Prejuízo prático ("O custo de não renovar")
-- Dia 4: FOMO ("Não fique para trás")
-- Dia 5: Último aviso ("Último aviso: regularize hoje")
-- Todos com link de descadastro no rodapé
+#### 2. Modal de detalhes do erro (ao clicar num job com falha)
+Quando o job clicado tem status `failed`, o modal existente vai buscar campos adicionais da tabela correspondente:
+- `error_message` (completo, sem truncar)
+- `failed_at_step` - em qual etapa falhou
+- `current_step` - último step atingido
+- `step_history` - timeline completa do job (JSON formatado)
+- `raw_api_response` - resposta bruta da API (JSON)
+- `raw_webhook_payload` - payload do webhook (JSON)
+- `credits_charged` / `credits_refunded` - estado dos créditos
 
-### 5. Cron job
-- pg_cron agendado: `0 12 * * *` (09:00 BRT)
-- Chama a Edge Function automaticamente
+**Implementação**: No `handleJobClick`, quando `record.status !== 'completed'`, buscar esses campos extras via `supabase.from(tableName).select('error_message, failed_at_step, current_step, step_history, raw_api_response, raw_webhook_payload, credits_charged, credits_refunded, task_id, api_account').eq('id', record.id)`.
 
-## Detecção de pagamento (para de enviar)
-- `planos2_subscriptions.expires_at` estendido para data futura
-- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
-- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
+#### 3. Filtro de status na tabela principal
+Adicionar um `Select` de filtro por status: "Todos", "Concluídos", "Falhas", "Em processamento", "Na fila"
+- Filtro "Falhas" mostra apenas jobs com `status = 'failed'`
 
-# Auditoria Completa de Emails — Robustez Unificada (CONCLUÍDA)
+#### 4. Novo card de resumo: "Erros por Tipo"
+Na seção de summary cards, adicionar:
+- Card com taxa de falha (% falhas/total)
+- Ao clicar, mostra breakdown por `failed_at_step` (pending_timeout, webhook_received, uploading_user_image, etc.)
 
-## O que foi feito
+#### 5. Coluna "Etapa do Erro" na tabela
+Adicionar coluna `failed_at_step` na tabela principal para jobs com status `failed`, mostrando exatamente onde falhou sem precisar abrir modal.
 
-### Padrão unificado aplicado em todos os 6 webhooks:
+### Mudanças no RPC (migration)
+Adicionar `failed_at_step` ao retorno de `get_ai_tools_usage` - campo já existe em todas as tabelas de jobs.
 
-1. **webhook-mercadopago** — `sendPurchaseEmail` refatorado:
-   - 3 retries com exponential backoff (2s, 5s, 10s)
-   - Removida lógica de DELETE de logs de falha (preserva auditoria)
-   - Cada tentativa registrada separadamente
+### Arquivos modificados
+1. **Migration SQL** - Recriar `get_ai_tools_usage` adicionando `failed_at_step` ao RETURNS TABLE
+2. **`AdminAIToolsUsageTab.tsx`** - Filtro de status, coluna `failed_at_step`, modal de erro expandido com dados completos, cards de taxa de erro
 
-2. **webhook-greenn-creditos** — `sendWelcomeEmail` e `sendArcanoClonnerEmail`:
-   - Adicionado INSERT em `welcome_email_logs` (antes não tinha NENHUM log)
-   - Deduplicação via `dedup_key` unique constraint
-   - Blacklist check antes do envio
-   - 3 retries com exponential backoff
-   - Caller simplificado (retry agora é interno)
-
-3. **webhook-greenn** — Callers de `sendWelcomeEmail` e `sendPlanos2WelcomeEmail`:
-   - Retry loop 3x com exponential backoff (2s, 5s, 10s)
-   - Funções internas já tinham dedup + logging
-
-4. **webhook-greenn-artes** — Caller de `sendWelcomeEmail`:
-   - Retry loop 3x com exponential backoff
-   - Função interna já tinha dedup + logging
-
-5. **webhook-greenn-musicos** — Caller de `sendWelcomeEmail`:
-   - Retry loop 3x com exponential backoff
-   - Função interna já tinha dedup + logging
-
-6. **webhook-hotmart-artes** — Caller de `sendWelcomeEmail`:
-   - Retry loop 3x com exponential backoff
-   - Função interna já tinha dedup por transaction + logging
-
-### Sem mudanças (já robustos):
-- `webhook-pagarme` — 3 retries, dedup_key, logging completo
-- `resend-purchase-email` — robusto
-- `send-single-email` — utilitária independente
