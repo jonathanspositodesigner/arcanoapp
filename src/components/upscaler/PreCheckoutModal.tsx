@@ -59,6 +59,25 @@ const formatCpf = (value: string) => {
   return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
 };
 
+// Fallback checkout URLs for when gateway is slow/unreachable
+const FALLBACK_CHECKOUT_URLS: Record<string, string> = {
+  'upscaller-arcano-vitalicio': 'https://arcanoapp.voxvisual.com.br/planos-upscaler-arcano',
+  'upscaller-arcano-1ano': 'https://arcanoapp.voxvisual.com.br/planos-upscaler-arcano',
+  'starter-mensal': 'https://arcanoapp.voxvisual.com.br/planos2',
+  'pro-mensal': 'https://arcanoapp.voxvisual.com.br/planos2',
+  'ultimate-mensal': 'https://arcanoapp.voxvisual.com.br/planos2',
+};
+
+const ERROR_MESSAGES: Record<string, string> = {
+  'RATE_LIMITED': 'Muitas tentativas. Aguarde 1 minuto e tente novamente.',
+  'GATEWAY_UNREACHABLE': 'Gateway de pagamento temporariamente indisponível.',
+  'INVALID_CPF': 'CPF inválido. Verifique os dígitos informados.',
+  'INVALID_PHONE': 'Celular inválido. Informe DDD + número.',
+  'INVALID_EMAIL': 'Email inválido. Verifique o endereço.',
+  'PRODUCT_NOT_FOUND': 'Produto não encontrado. Recarregue a página.',
+  'CONFIG_ERROR': 'Erro de configuração. Tente novamente em instantes.',
+};
+
 const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'upscaller-arcano-vitalicio', modalTitle, colorScheme = 'fuchsia' }: PreCheckoutModalProps) => {
   const isOrange = colorScheme === 'orange';
   const accentBorder = isOrange ? 'border-[#EF672C]' : 'border-fuchsia-500';
