@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
-import { X, CreditCard, QrCode, ArrowRight, Shield, Zap, Trash2 } from "lucide-react";
+import { X, CreditCard, QrCode, ArrowRight, Shield, Zap, Trash2, CheckCircle2, XCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { invokeCheckout } from "@/lib/checkoutFetch";
@@ -106,6 +107,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const [savedCards, setSavedCards] = useState<SavedCard[]>([]);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [oneClickLoading, setOneClickLoading] = useState(false);
+  const [oneClickResult, setOneClickResult] = useState<'approved' | 'declined' | null>(null);
   const [showFullForm, setShowFullForm] = useState(false);
 
   // Race control ref
@@ -275,24 +277,22 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
       if (response.error) {
         console.error('Erro one-click:', response.error);
-        alert('Erro ao processar pagamento. Tente outro método de pagamento.');
+        setOneClickResult('declined');
         setOneClickLoading(false);
+        endOneClick();
         return;
       }
 
       const { is_paid, status } = response.data;
 
       if (is_paid) {
-        // Redirecionar para sucesso (fluxo unificado)
-        window.location.href = `https://arcanoapp.voxvisual.com.br/sucesso-compra`;
+        setOneClickResult('approved');
       } else {
-        // Pagamento pendente — webhook vai processar
-        alert('Pagamento em processamento. Você receberá uma confirmação em instantes.');
-        onClose();
+        setOneClickResult('declined');
       }
     } catch (error) {
       console.error('Erro one-click:', error);
-      alert('Erro ao processar. Tente outro método de pagamento.');
+      setOneClickResult('declined');
     }
     setOneClickLoading(false);
     endOneClick();
@@ -408,6 +408,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const showOneClick = hasSavedCards && !showFullForm;
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-4 bg-black/80 backdrop-blur-sm" onClick={loading ? undefined : onClose}>
       <div
         className={`relative w-full max-w-md bg-gradient-to-br ${modalBg} border ${accentBorderLight} rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-2xl ${modalShadow} max-h-[95vh] overflow-y-auto`}
@@ -660,6 +661,46 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         )}
       </div>
     </div>
+
+      {/* Modal de resultado da compra 1-clique */}
+      <Dialog open={oneClickResult !== null} onOpenChange={() => {}}>
+        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-sm" onPointerDownOutside={(e) => e.preventDefault()}>
+          <DialogTitle className="sr-only">
+            {oneClickResult === 'approved' ? 'Compra aprovada' : 'Compra recusada'}
+          </DialogTitle>
+          <div className="flex flex-col items-center gap-4 py-4">
+            {oneClickResult === 'approved' ? (
+              <>
+                <CheckCircle2 className="h-16 w-16 text-green-400" />
+                <h3 className="text-xl font-bold">Compra aprovada!</h3>
+                <p className="text-sm text-white/60 text-center">Seu pagamento foi processado com sucesso.</p>
+                <button
+                  onClick={() => {
+                    setOneClickResult(null);
+                    onClose();
+                  }}
+                  className="w-full py-3 font-bold rounded-full bg-green-500 hover:bg-green-600 text-white transition-colors"
+                >
+                  Entendi
+                </button>
+              </>
+            ) : (
+              <>
+                <XCircle className="h-16 w-16 text-red-400" />
+                <h3 className="text-xl font-bold">Compra recusada</h3>
+                <p className="text-sm text-white/60 text-center">Não foi possível processar o pagamento com este cartão.</p>
+                <button
+                  onClick={() => setOneClickResult(null)}
+                  className="w-full py-3 font-bold rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                >
+                  Escolher outro meio de pagamento
+                </button>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
