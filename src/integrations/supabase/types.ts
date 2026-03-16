@@ -4746,6 +4746,7 @@ export type Database = {
               completed_at: string
               created_at: string
               error_message: string
+              failed_at_step: string
               id: string
               processing_seconds: number
               profit: number
@@ -4773,6 +4774,7 @@ export type Database = {
               completed_at: string
               created_at: string
               error_message: string
+              failed_at_step: string
               id: string
               processing_seconds: number
               profit: number
