@@ -385,7 +385,7 @@ serve(async (req) => {
           },
           body: JSON.stringify(checkoutPayload),
         },
-        { maxRetries: 1, timeoutMs: 8000, idempotencyKey }
+        { maxRetries: 2, timeoutMs: 15000, idempotencyKey }
       );
       pagarmeResponse = result.response;
       pagarmeResponseText = result.responseText;
