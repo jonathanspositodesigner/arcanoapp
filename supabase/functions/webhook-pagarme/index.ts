@@ -1134,7 +1134,7 @@ serve(async (req) => {
         transaction_id: idempotencyKey,
         status: eventData?.status || 'ignored',
         email: order.user_email,
-        raw_payload: body,
+        payload: body,
       })
     }
 
