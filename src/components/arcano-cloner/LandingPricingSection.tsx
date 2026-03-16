@@ -228,11 +228,12 @@ const LandingPricingSection = () => {
                 )}
 
                 {/* Images badge (highlighted) */}
-                <div className="flex flex-col items-center mb-4 mt-2">
+                <div className="flex flex-col items-center mb-4 mt-2 gap-1">
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-r from-fuchsia-600 to-blue-500">
                     <Sparkles className="w-3 h-3" />
                     {plan.credits}
                   </span>
+                  <span className="text-[10px] text-white/40 font-medium">{plan.creditsCount}</span>
                 </div>
 
                 {/* Features */}
