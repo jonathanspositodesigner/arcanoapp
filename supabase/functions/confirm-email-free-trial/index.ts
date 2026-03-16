@@ -22,7 +22,7 @@ function buildSuccessHtml(): string {
         </td></tr>
         <tr><td style="padding-bottom:24px;">
           <p style="color:#c4b5fd;font-size:16px;line-height:1.6;margin:0;text-align:center;">
-            Seu email foi confirmado e seus <strong style="color:#ffffff;">180 créditos grátis</strong> já estão na sua conta. Válidos por 24 horas!
+            Seu email foi confirmado e seus <strong style="color:#ffffff;">300 créditos grátis</strong> já estão na sua conta. Válidos por 24 horas!
           </p>
         </td></tr>
         <tr><td align="center" style="padding-bottom:24px;">
