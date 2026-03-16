@@ -379,13 +379,27 @@ serve(async (req) => {
         }
       }
     }
+    // Incluir endereço no customer para antifraude (credit card precisa disso)
+    if (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) {
+      customerObj.address = {
+        line_1: user_address.line_1,
+        zip_code: user_address.zip_code.replace(/\D/g, ''),
+        city: user_address.city,
+        state: user_address.state,
+        country: user_address.country || 'BR'
+      }
+    }
+
+    // Gerar code do item para antifraude
+    const itemCode = product.slug || product.id || 'PROD001'
 
     const checkoutPayload: Record<string, unknown> = {
       items: [
         {
           amount: amountInCents,
           description: product.title,
-          quantity: 1
+          quantity: 1,
+          code: itemCode
         }
       ],
       customer: customerObj,
@@ -400,21 +414,17 @@ serve(async (req) => {
               : `https://arcanoapp.voxvisual.com.br/sucesso-compra`,
             // Lightweight: user fills everything on Pagar.me page
             customer_editable: isLightweight,
-            billing_address_editable: isLightweight || billing_type === 'CREDIT_CARD',
+            billing_address_editable: true,
             skip_checkout_success_page: billing_type === 'CREDIT_CARD',
-            ...(!isLightweight && billing_type === 'PIX' ? (
-              (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) ? {
-                billing_address: {
-                  line_1: user_address.line_1,
-                  zip_code: user_address.zip_code,
-                  city: user_address.city,
-                  state: user_address.state,
-                  country: user_address.country || 'BR'
-                }
-              } : {
-                billing_address_editable: true
+            ...(!isLightweight && (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) ? {
+              billing_address: {
+                line_1: user_address.line_1,
+                zip_code: user_address.zip_code.replace(/\D/g, ''),
+                city: user_address.city,
+                state: user_address.state,
+                country: user_address.country || 'BR'
               }
-            ) : {}),
+            } : {}),
             credit_card: {
               capture: true,
               installments: [
