@@ -234,12 +234,13 @@ const LandingPricingSection = () => {
     try {
       const utmData = getSanitizedUtms();
       const { fbp, fbc } = getMetaCookies();
+
+      // Checkout Puro para cartão: só nome e email (antifraude do gateway coleta o resto)
+      // PIX: preenche tudo (nome, cpf, endereço)
       const body: any = {
         product_slug: preCheckoutSlug,
         user_email: userEmail,
-        user_phone: pendingProfile.phone,
         user_name: pendingProfile.name,
-        user_cpf: pendingProfile.cpf,
         billing_type: method,
         utm_data: utmData,
         fbp,
@@ -247,6 +248,8 @@ const LandingPricingSection = () => {
       };
 
       if (method === 'PIX') {
+        body.user_phone = pendingProfile.phone;
+        body.user_cpf = pendingProfile.cpf;
         body.user_address = {
           line_1: pendingProfile.address_line,
           zip_code: pendingProfile.address_zip,
