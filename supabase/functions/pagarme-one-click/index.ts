@@ -220,17 +220,38 @@ serve(async (req) => {
       })
     }
 
-    // 5. Atualizar ordem com payment_id
-    await supabase.from('asaas_orders').update({
-      asaas_payment_id: pagarmeData.id
-    }).eq('id', order.id)
-
-    const chargeStatus = pagarmeData.charges?.[0]?.status || pagarmeData.status
+    // 6. Atualizar ordem com payment_id
+    const charge = pagarmeData.charges?.[0]
+    const chargeStatus = charge?.status || pagarmeData.status
     const isPaid = chargeStatus === 'paid'
 
-    console.log(`✅ One-Click Pagar.me: ${pagarmeData.id} | Status: ${chargeStatus}`)
+    // Capturar erro do antifraude ou gateway
+    const gatewayError = charge?.last_transaction?.gateway_response?.errors?.[0]
+    const antifraudStatus = charge?.last_transaction?.antifraud_response?.status
+    const gatewayMessage = gatewayError?.message || charge?.last_transaction?.acquirer_message || null
 
-    // 6. Enviar InitiateCheckout + Purchase (se pago) para Meta CAPI
+    console.log(`✅ One-Click Pagar.me: ${pagarmeData.id} | Status: ${chargeStatus} | Antifraude: ${antifraudStatus || 'N/A'} | GW: ${gatewayMessage || 'OK'}`)
+
+    if (!isPaid && chargeStatus === 'failed') {
+      console.error(`❌ One-Click FALHOU: ${JSON.stringify({
+        charge_status: chargeStatus,
+        antifraud: antifraudStatus,
+        gateway_error: gatewayMessage,
+        acquirer_return_code: charge?.last_transaction?.acquirer_return_code,
+        acquirer_message: charge?.last_transaction?.acquirer_message,
+      })}`)
+    }
+
+    await supabase.from('asaas_orders').update({
+      asaas_payment_id: pagarmeData.id,
+      payment_method: 'credit_card',
+      status: isPaid ? 'paid' : (chargeStatus === 'failed' ? 'failed' : 'pending'),
+      gateway_error_code: charge?.last_transaction?.acquirer_return_code || null,
+      gateway_error_message: gatewayMessage || null,
+      ...(isPaid ? { paid_at: new Date().toISOString() } : {}),
+    }).eq('id', order.id)
+
+    // 7. Enviar InitiateCheckout + Purchase (se pago) para Meta CAPI
     const capiEventId = crypto.randomUUID()
     try {
       await fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {
