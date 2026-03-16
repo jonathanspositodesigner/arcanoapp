@@ -191,42 +191,95 @@ async function sendWelcomeEmail(
     console.log(`   ├─ [${requestId}] 📧 Usuário existente - pulando email de boas-vindas`)
     return
   }
+
+  // DEDUP CHECK via welcome_email_logs
+  const dedupMinute = new Date().toISOString().slice(0, 16).replace(/[-T:]/g, '')
+  const dedupKey = `creditos_welcome_${email}|${creditAmount}|${dedupMinute}`
   
-  try {
-    const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
-    const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")
-    
-    if (!clientId || !clientSecret) {
-      console.log(`   ├─ [${requestId}] ⚠️ SendPulse não configurado`)
-      return
-    }
+  const { data: existingLog } = await supabase
+    .from('welcome_email_logs')
+    .select('id')
+    .eq('dedup_key', dedupKey)
+    .maybeSingle()
+  
+  if (existingLog) {
+    console.log(`   ├─ [${requestId}] ⏭️ Email duplicado bloqueado (dedup_key)`)
+    return
+  }
 
-    const platformUrl = 'https://arcanoapp.voxvisual.com.br/ferramentas-ia-aplicativo'
-    const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
-    const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
+  // BLACKLIST CHECK
+  const { data: blacklisted } = await supabase
+    .from('blacklisted_emails')
+    .select('id')
+    .eq('email', email.toLowerCase())
+    .maybeSingle()
+  
+  if (blacklisted) {
+    console.log(`   ├─ [${requestId}] ⛔ Email blacklisted: ${email}`)
+    return
+  }
 
-    const tokenResponse = await fetch("https://api.sendpulse.com/oauth/access_token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        grant_type: "client_credentials", 
-        client_id: clientId, 
-        client_secret: clientSecret 
-      }),
+  // INSERT log as pending (atomic dedup)
+  const { data: inserted, error: insertError } = await supabase
+    .from('welcome_email_logs')
+    .insert({
+      email, name, platform: 'creditos',
+      product_info: `+${creditAmount.toLocaleString('pt-BR')} Créditos (Welcome)`,
+      status: 'pending', tracking_id: trackingId,
+      template_used: 'creditos_welcome', locale, dedup_key: dedupKey
     })
+    .select('id')
+    .single()
+  
+  if (insertError?.code === '23505') {
+    console.log(`   ├─ [${requestId}] ⏭️ Email duplicado bloqueado por constraint`)
+    return
+  }
+  if (insertError) {
+    console.log(`   ├─ [${requestId}] ❌ Erro ao inserir log: ${insertError.message}`)
+    return
+  }
+  
+  const logId = inserted.id
 
-    if (!tokenResponse.ok) {
-      console.log(`   ├─ [${requestId}] ❌ Falha ao obter token SendPulse`)
-      return
-    }
+  // 3 RETRIES with exponential backoff
+  const backoffDelays = [2000, 5000, 10000]
+  
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
+      const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")
+      
+      if (!clientId || !clientSecret) {
+        await supabase.from('welcome_email_logs').update({ status: 'failed', error_message: 'SendPulse não configurado' }).eq('id', logId)
+        return
+      }
 
-    const { access_token } = await tokenResponse.json()
+      const platformUrl = 'https://arcanoapp.voxvisual.com.br/ferramentas-ia-aplicativo'
+      const trackingBaseUrl = `${supabaseUrl}/functions/v1/welcome-email-tracking`
+      const clickTrackingUrl = `${trackingBaseUrl}?id=${trackingId}&action=click&redirect=${encodeURIComponent(platformUrl)}`
 
-    const formattedCredits = creditAmount.toLocaleString('pt-BR')
-    const subject = `🎉 +${formattedCredits} Créditos Adicionados à Sua Conta!`
-    
-    const welcomeHtml = `<!DOCTYPE html>
+      const tokenResponse = await fetch("https://api.sendpulse.com/oauth/access_token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          grant_type: "client_credentials", 
+          client_id: clientId, 
+          client_secret: clientSecret 
+        }),
+      })
+
+      if (!tokenResponse.ok) {
+        throw new Error(`Falha ao obter token SendPulse: ${tokenResponse.status}`)
+      }
+
+      const { access_token } = await tokenResponse.json()
+
+      const formattedCredits = creditAmount.toLocaleString('pt-BR')
+      const subject = `🎉 +${formattedCredits} Créditos Adicionados à Sua Conta!`
+      
+      const welcomeHtml = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -268,28 +321,48 @@ async function sendWelcomeEmail(
 </body>
 </html>`
 
-    const emailResponse = await fetch("https://api.sendpulse.com/smtp/emails", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json", 
-        "Authorization": `Bearer ${access_token}` 
-      },
-      body: JSON.stringify({
-        email: {
-          html: btoa(unescape(encodeURIComponent(welcomeHtml))),
-          text: `+${formattedCredits} créditos adicionados! Email: ${email}, Senha: ${email}`,
-          subject,
-          from: { name: 'Ferramentas IA Arcanas', email: 'contato@voxvisual.com.br' },
-          to: [{ email, name: name || "" }],
+      const emailResponse = await fetch("https://api.sendpulse.com/smtp/emails", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json", 
+          "Authorization": `Bearer ${access_token}` 
         },
-      }),
-    })
+        body: JSON.stringify({
+          email: {
+            html: btoa(unescape(encodeURIComponent(welcomeHtml))),
+            text: `+${formattedCredits} créditos adicionados! Email: ${email}, Senha: ${email}`,
+            subject,
+            from: { name: 'Ferramentas IA Arcanas', email: 'contato@voxvisual.com.br' },
+            to: [{ email, name: name || "" }],
+          },
+        }),
+      })
 
-    const result = await emailResponse.json()
-    console.log(`   ├─ [${requestId}] ${result.result === true ? '✅ Email enviado' : '❌ Falha no email'}`)
-    
-  } catch (error) {
-    console.log(`   ├─ [${requestId}] ❌ Erro email: ${error}`)
+      const result = await emailResponse.json()
+      
+      if (result.result === true) {
+        await supabase.from('welcome_email_logs').update({
+          status: 'sent', sent_at: new Date().toISOString()
+        }).eq('id', logId)
+        console.log(`   ├─ [${requestId}] ✅ Email enviado (tentativa ${attempt + 1})`)
+        return
+      }
+      
+      throw new Error(`SendPulse retornou erro: ${JSON.stringify(result)}`)
+    } catch (error) {
+      console.log(`   ├─ [${requestId}] ⚠️ Tentativa ${attempt + 1}/3 falhou: ${error}`)
+      
+      if (attempt < 2) {
+        const delay = backoffDelays[attempt]
+        console.log(`   ├─ [${requestId}] ⏳ Retry em ${delay / 1000}s...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      } else {
+        await supabase.from('welcome_email_logs').update({
+          status: 'failed', error_message: `3 tentativas falharam: ${error}`
+        }).eq('id', logId)
+        console.log(`   ├─ [${requestId}] ❌ Email falhou após 3 tentativas`)
+      }
+    }
   }
 }
 
