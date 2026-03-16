@@ -187,9 +187,9 @@ serve(async (req) => {
           .upsert(
             {
               user_id: tokenData.user_id,
-              monthly_balance: 180,
+              monthly_balance: 300,
               lifetime_balance: 0,
-              balance: 180,
+              balance: 300,
               landing_trial_expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
             },
             { onConflict: "user_id" }
