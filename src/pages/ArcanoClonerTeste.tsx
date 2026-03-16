@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,41 @@ const UPSCALER_BEFORE_IMAGE_MOBILE = "/images/upscaler-hero-antes-mobile.webp";
 const UPSCALER_AFTER_IMAGE_MOBILE = "/images/upscaler-hero-depois-mobile.webp";
 
 const CHECKOUT_URL = "https://payfast.greenn.com.br/869x6nw/offer/8DN4Jd";
+
+const CountUp = ({ target, duration = 2000 }: { target: number; duration?: number }) => {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !hasAnimated.current) {
+        hasAnimated.current = true;
+        const start = performance.now();
+        const step = (now: number) => {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          setCount(Math.floor(eased * target));
+          if (progress < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      }
+    }, { threshold: 0.5 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [target, duration]);
+
+  return (
+    <div ref={ref} className="flex items-baseline justify-center gap-1">
+      <span className="font-space-grotesk font-bold text-6xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40">
+        {count}
+      </span>
+      <span className="text-fuchsia-400 text-3xl md:text-4xl font-bold">+</span>
+    </div>
+  );
+};
 
 const ArcanoClonerTeste = () => {
   const isMobile = useIsMobile();
@@ -424,10 +459,21 @@ const ArcanoClonerTeste = () => {
       <LazySection>
         <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="fade">
           <div className="max-w-4xl mx-auto text-center mb-10">
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3">
-              Uma <span className="text-fuchsia-400">biblioteca</span> de referências completa!
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-2">
+              Gere sua imagem{" "}
+              <span className="text-fuchsia-400">ou copie o prompt</span>{" "}
+              direto no app
             </h2>
-            <p className="text-white/60 text-sm md:text-base">Centenas de modelos para você criar suas fotos</p>
+
+            <div className="flex flex-col items-center mt-8 mb-2">
+              <CountUp target={589} duration={2000} />
+              <p className="text-white/50 text-xs md:text-sm tracking-[0.2em] uppercase mt-1">Modelos Disponíveis</p>
+            </div>
+
+            <div className="inline-flex items-center gap-2 mt-4 px-4 py-1.5 rounded-full border border-white/10 bg-white/5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-white/70 text-xs uppercase tracking-wider">Atualizado todos os dias</span>
+            </div>
           </div>
 
           {/* Carrossel 1 - direita */}
