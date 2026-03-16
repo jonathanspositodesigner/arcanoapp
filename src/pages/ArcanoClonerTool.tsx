@@ -195,7 +195,7 @@ const ArcanoClonerTool: React.FC = () => {
   useJobPendingWatchdog({
     jobId,
     toolType: 'arcano_cloner',
-    enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
+    enabled: !!jobId && status !== 'idle' && status !== 'completed',
     onJobFailed: useCallback((errorMessage) => {
       console.warn('[ArcanoCloner] Job failed via watchdog:', errorMessage);
       setStatus('error');
@@ -486,6 +486,11 @@ const ArcanoClonerTool: React.FC = () => {
 
     } catch (error: any) {
       console.error('[ArcanoCloner] Process error:', error);
+      // DEFENSIVO: Marcar job como failed no banco para evitar órfãos
+      if (jobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(jobId, 'arcano_cloner', error.message || 'Erro desconhecido');
+      }
       setStatus('error');
       setDebugErrorMessage(error.message || 'Erro ao processar imagem');
       toast.error(error.message || 'Erro ao processar imagem');

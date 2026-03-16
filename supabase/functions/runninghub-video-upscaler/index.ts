@@ -234,6 +234,13 @@ serve(async (req) => {
         );
       }
 
+      // EARLY STATUS UPDATE: Mark as 'starting' immediately to reduce pending window
+      await logStep(supabase, jobId, 'starting', { userId });
+      await supabase
+        .from('video_upscaler_jobs')
+        .update({ status: 'starting', user_id: userId })
+        .eq('id', jobId);
+
       // Check global running count via Queue Manager (MULTI-API)
       const queueStatus = await checkQueueAvailability(supabase);
       const runningCount = queueStatus.running;

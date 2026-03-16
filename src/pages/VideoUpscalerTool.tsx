@@ -156,7 +156,7 @@ const VideoUpscalerTool: React.FC = () => {
   useJobPendingWatchdog({
     jobId,
     toolType: 'video_upscaler',
-    enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
+    enabled: !!jobId && status !== 'idle' && status !== 'completed',
     onJobFailed: useCallback((errorMessage) => {
       console.log('[VideoUpscaler] Watchdog triggered - job stuck as pending');
       setStatus('error');
@@ -361,6 +361,10 @@ const VideoUpscalerTool: React.FC = () => {
 
     } catch (error: any) {
       console.error('[VideoUpscaler] Process error:', error);
+      if (jobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(jobId, 'video_upscaler', error.message || 'Erro desconhecido');
+      }
       setStatus('error');
       toast.error(error.message || 'Erro ao processar vídeo');
       endSubmit();

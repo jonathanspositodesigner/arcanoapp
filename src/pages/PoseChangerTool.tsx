@@ -163,7 +163,7 @@ const PoseChangerTool: React.FC = () => {
   useJobPendingWatchdog({
     jobId,
     toolType: 'pose_changer',
-    enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
+    enabled: !!jobId && status !== 'idle' && status !== 'completed',
     onJobFailed: useCallback((errorMessage) => {
       console.log('[PoseChanger] Watchdog triggered - job stuck as pending');
       setStatus('error');
@@ -428,6 +428,10 @@ const PoseChangerTool: React.FC = () => {
 
     } catch (error: any) {
       console.error('[PoseChanger] Process error:', error);
+      if (jobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(jobId, 'pose_changer', error.message || 'Erro desconhecido');
+      }
       setStatus('error');
       toast.error(error.message || 'Erro ao processar imagem');
       endSubmit();

@@ -163,7 +163,7 @@ const VesteAITool: React.FC = () => {
   useJobPendingWatchdog({
     jobId,
     toolType: 'veste_ai',
-    enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
+    enabled: !!jobId && status !== 'idle' && status !== 'completed',
     onJobFailed: useCallback((errorMessage) => {
       console.log('[VesteAI] Watchdog triggered - job stuck as pending');
       setStatus('error');
@@ -428,6 +428,10 @@ const VesteAITool: React.FC = () => {
 
     } catch (error: any) {
       console.error('[VesteAI] Process error:', error);
+      if (jobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(jobId, 'veste_ai', error.message || 'Erro desconhecido');
+      }
       setStatus('error');
       toast.error(error.message || 'Erro ao processar imagem');
       endSubmit();

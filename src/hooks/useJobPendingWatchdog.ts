@@ -1,24 +1,22 @@
 /**
- * useJobPendingWatchdog v2 - Detecta e corrige jobs travados como 'pending'
+ * useJobPendingWatchdog v3 - Detecta e corrige jobs travados como 'pending'
  * 
- * Se um job fica 'pending' por mais de 30 segundos SEM iniciar (task_id = null),
- * algo deu errado na chamada à Edge Function. Este watchdog marca o job como 
- * 'failed' via RPC e notifica o usuário imediatamente.
- * 
- * IMPORTANTE: Jobs 'pending' nunca cobram créditos, então não há reembolso.
- * Isso é uma rede de segurança para evitar que usuários fiquem presos esperando.
- * 
- * CORREÇÃO v2: Não depende mais do status da UI (que nunca é 'pending').
- * Agora usa flag 'enabled' e faz verificação tripla no banco antes de agir:
- * - status === 'pending'
- * - task_id IS NULL
- * - idade > 30 segundos
+ * CORREÇÕES v3:
+ * 1. NÃO desativa quando UI status é 'error' - mantém ativo enquanto jobId existir
+ *    (o catch do frontend já marca o job como failed, mas se falhar, o watchdog pega)
+ * 2. Verifica step_history e current_step antes de marcar como órfão
+ *    (evita matar jobs que já estão progredindo internamente)
+ * 3. Jobs com step_history recebem janela maior (reconciliação híbrida)
  */
 import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ToolType } from '@/ai/JobManager';
 
-const PENDING_TIMEOUT_MS = 180000; // 180 segundos (alinhado com o backend)
+// Timeout para jobs sem nenhum progresso (verdadeiramente órfãos)
+const ORPHAN_TIMEOUT_MS = 180000; // 180s
+
+// Timeout para jobs COM progresso mas travados (reconciliação)
+const STALLED_TIMEOUT_MS = 300000; // 5 min
 
 // Mapeamento de ToolType para nome da tabela no banco
 const TABLE_NAME_MAP: Record<ToolType, string> = {
@@ -36,17 +34,12 @@ interface UseJobPendingWatchdogOptions {
   jobId: string | null;
   toolType: ToolType;
   /**
-   * Ativa o watchdog quando o job está em processo de inicialização.
-   * Recomendado: enabled = status !== 'idle' && status !== 'completed' && status !== 'error'
+   * Ativa o watchdog quando há job ativo.
+   * IMPORTANTE: NÃO desativar quando status === 'error' na UI!
+   * Usar: enabled = !!jobId && status !== 'idle' && status !== 'completed'
    */
   enabled: boolean;
   onJobFailed: (errorMessage: string) => void;
-}
-
-interface JobDbStatus {
-  status: string;
-  task_id: string | null;
-  created_at: string;
 }
 
 export function useJobPendingWatchdog({
@@ -59,7 +52,6 @@ export function useJobPendingWatchdog({
   const hasTriggeredRef = useRef(false);
   const currentJobIdRef = useRef<string | null>(null);
 
-  // Estabilizar callback para evitar re-renders desnecessários
   const stableOnJobFailed = useCallback(onJobFailed, [onJobFailed]);
 
   useEffect(() => {
@@ -68,7 +60,6 @@ export function useJobPendingWatchdog({
       currentJobIdRef.current = jobId;
       hasTriggeredRef.current = false;
       
-      // Limpar timeout anterior se existir
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
         timeoutRef.current = null;
@@ -89,19 +80,18 @@ export function useJobPendingWatchdog({
 
     const tableName = TABLE_NAME_MAP[toolType];
     
-    console.log(`[PendingWatchdog] Starting 30s timer for job ${jobId} (${toolType})`);
+    console.log(`[PendingWatchdog] Starting timer for job ${jobId} (${toolType})`);
 
+    // Primeiro check: após ORPHAN_TIMEOUT_MS
     timeoutRef.current = setTimeout(async () => {
       if (hasTriggeredRef.current) return;
 
-      console.log(`[PendingWatchdog] 30s elapsed, checking job ${jobId} in database...`);
+      console.log(`[PendingWatchdog] Checking job ${jobId} in database...`);
 
       try {
-        // VERIFICAÇÃO TRIPLA no banco de dados (não depende da UI)
-        // Usar type assertion para contornar limitação do TypeScript com tabelas dinâmicas
         const { data: job, error } = await supabase
           .from(tableName as 'upscaler_jobs')
-          .select('status, task_id, created_at')
+          .select('status, task_id, created_at, current_step, step_history')
           .eq('id', jobId)
           .maybeSingle();
 
@@ -115,32 +105,78 @@ export function useJobPendingWatchdog({
           return;
         }
 
-        // Verificação 1: Status ainda é 'pending'?
-        if (job.status !== 'pending') {
-          console.log(`[PendingWatchdog] Job already transitioned to '${job.status}', skipping`);
+        // Se o job já transitou para um estado terminal ou ativo, sair
+        if (job.status === 'completed' || job.status === 'failed' || job.status === 'running') {
+          console.log(`[PendingWatchdog] Job already at '${job.status}', skipping`);
           return;
         }
 
-        // Verificação 2: task_id ainda é null? (significa que nunca iniciou no RunningHub)
+        // Se tem task_id, o provedor já aceitou - não é órfão
         if (job.task_id) {
-          console.log(`[PendingWatchdog] Job has task_id=${job.task_id}, already started, skipping`);
+          console.log(`[PendingWatchdog] Job has task_id=${job.task_id}, not orphan`);
           return;
         }
 
-        // Verificação 3: Job tem mais de 30 segundos?
         const createdAt = new Date(job.created_at).getTime();
         const age = Date.now() - createdAt;
-        if (age < PENDING_TIMEOUT_MS) {
+
+        // Verificar se tem sinais de progresso
+        const stepHistory = (job as any).step_history;
+        const currentStep = (job as any).current_step;
+        const hasProgress = (
+          (stepHistory && Array.isArray(stepHistory) && stepHistory.length > 0) ||
+          (currentStep && currentStep !== 'pending' && currentStep !== null)
+        );
+
+        if (hasProgress) {
+          // Job tem progresso mas está travado - dar mais tempo (reconciliação)
+          if (age < STALLED_TIMEOUT_MS) {
+            console.log(`[PendingWatchdog] Job ${jobId} has progress (step=${currentStep}, history=${stepHistory?.length || 0}), waiting longer (age=${age}ms < ${STALLED_TIMEOUT_MS}ms)`);
+            
+            // Agendar segundo check para STALLED_TIMEOUT
+            const remainingTime = STALLED_TIMEOUT_MS - age;
+            timeoutRef.current = setTimeout(async () => {
+              if (hasTriggeredRef.current) return;
+              
+              // Re-check no banco
+              const { data: recheckJob } = await supabase
+                .from(tableName as 'upscaler_jobs')
+                .select('status, task_id')
+                .eq('id', jobId)
+                .maybeSingle();
+              
+              if (!recheckJob || recheckJob.status === 'completed' || recheckJob.status === 'failed' || recheckJob.status === 'running' || recheckJob.task_id) {
+                console.log(`[PendingWatchdog] Job ${jobId} resolved after extended wait`);
+                return;
+              }
+              
+              // Ainda travado após janela estendida
+              hasTriggeredRef.current = true;
+              console.warn(`[PendingWatchdog] Job ${jobId} stalled WITH progress after ${STALLED_TIMEOUT_MS}ms, marking as failed`);
+              
+              await supabase.rpc('mark_pending_job_as_failed', {
+                p_table_name: tableName,
+                p_job_id: jobId,
+                p_error_message: 'Processamento travado. O servidor parou de responder.',
+              });
+              
+              stableOnJobFailed('Processamento travado. Tente novamente.');
+            }, remainingTime);
+            
+            return;
+          }
+        }
+
+        // Job sem progresso E acima do timeout - verdadeiro órfão
+        if (age < ORPHAN_TIMEOUT_MS) {
           console.log(`[PendingWatchdog] Job age is only ${age}ms, not old enough, skipping`);
           return;
         }
 
-        // TODAS AS VERIFICAÇÕES PASSARAM: Job órfão confirmado!
         hasTriggeredRef.current = true;
-        console.warn(`[PendingWatchdog] Job ${jobId} confirmed as orphan pending (age=${age}ms, task_id=null), marking as failed`);
+        console.warn(`[PendingWatchdog] Job ${jobId} confirmed as orphan (age=${age}ms, task_id=null, no progress), marking as failed`);
 
-        // Marcar como failed via RPC
-        const { data: rpcResult, error: rpcError } = await supabase.rpc('mark_pending_job_as_failed', {
+        const { error: rpcError } = await supabase.rpc('mark_pending_job_as_failed', {
           p_table_name: tableName,
           p_job_id: jobId,
           p_error_message: 'Falha ao iniciar processamento. A conexão com o servidor falhou.',
@@ -148,17 +184,14 @@ export function useJobPendingWatchdog({
 
         if (rpcError) {
           console.error('[PendingWatchdog] RPC error:', rpcError);
-        } else {
-          console.log('[PendingWatchdog] Job marked as failed via RPC:', rpcResult);
         }
 
-        // Notificar UI (para liberar o usuário) independente do resultado da RPC
         stableOnJobFailed('Falha ao iniciar processamento. Tente novamente.');
 
       } catch (e) {
         console.error('[PendingWatchdog] Exception during check:', e);
       }
-    }, PENDING_TIMEOUT_MS);
+    }, ORPHAN_TIMEOUT_MS);
 
     return () => {
       if (timeoutRef.current) {

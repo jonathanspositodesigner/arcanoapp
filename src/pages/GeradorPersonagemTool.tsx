@@ -181,7 +181,7 @@ const GeradorPersonagemTool: React.FC = () => {
   useJobPendingWatchdog({
     jobId,
     toolType: 'character_generator',
-    enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
+    enabled: !!jobId && status !== 'idle' && status !== 'completed',
     onJobFailed: useCallback((errorMessage) => {
       setStatus('error');
       setDebugErrorMessage(errorMessage);
@@ -361,6 +361,10 @@ const GeradorPersonagemTool: React.FC = () => {
         setProgress(65);
       }
     } catch (error: any) {
+      if (jobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(jobId, 'character_generator', error.message || 'Erro desconhecido');
+      }
       setStatus('error');
       setDebugErrorMessage(error.message);
       toast.error(error.message || 'Erro ao processar');
@@ -476,6 +480,10 @@ const GeradorPersonagemTool: React.FC = () => {
         setProgress(50);
       }
     } catch (error: any) {
+      if (jobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(jobId, 'character_generator', error.message || 'Erro desconhecido');
+      }
       setStatus('error');
       setIsRefining(false);
       setDebugErrorMessage(error.message);
