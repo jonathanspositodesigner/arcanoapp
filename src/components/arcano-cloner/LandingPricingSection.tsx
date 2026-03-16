@@ -9,10 +9,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { invokeCheckout, preWarmCheckout } from "@/lib/checkoutFetch";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
-import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
-import { getSanitizedUtms } from "@/lib/utmUtils";
-import { getMetaCookies } from "@/lib/metaCookies";
-import { toast } from "sonner";
 
 const socialProofImages = [
   "/images/social-proof-1.webp",
