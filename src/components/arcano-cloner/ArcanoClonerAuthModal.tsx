@@ -184,6 +184,19 @@ export default function ArcanoClonerAuthModal({
     return () => subscription.unsubscribe();
   }, [isOpen, step, onAuthSuccess]);
 
+  const sendConfirmationEmail = useCallback(async (targetEmail: string, userId: string) => {
+    const { data, error } = await supabase.functions.invoke('send-free-trial-confirmation-email', {
+      body: { email: targetEmail, user_id: userId },
+    });
+
+    if (error || !data?.success) {
+      const errorMessage = data?.error || error?.message || 'Falha ao enviar email de confirmação';
+      return { success: false, error: errorMessage };
+    }
+
+    return { success: true as const };
+  }, []);
+
   const handleCheckEmail = useCallback(async () => {
     const emailToCheck = email.trim().toLowerCase();
     if (!emailToCheck) {
