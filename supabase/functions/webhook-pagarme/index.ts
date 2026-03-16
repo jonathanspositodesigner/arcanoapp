@@ -823,18 +823,22 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
-      // 6. Logar na webhook_logs
-      await supabase.from('webhook_logs').insert({
-        platform: 'pagarme',
-        event_type: eventType,
-        transaction_id: idempotencyKey,
-        status: 'paid',
-        email: email,
-        product_name: product.title,
-        amount: Number(order.amount),
-        payment_method: paymentMethod,
-        raw_payload: body,
-      })
+      // 6. Logar na webhook_logs (non-blocking to not prevent email sending)
+      try {
+        await supabase.from('webhook_logs').insert({
+          platform: 'pagarme',
+          event_type: eventType,
+          transaction_id: idempotencyKey,
+          status: 'paid',
+          email: email,
+          product_name: product.title,
+          amount: Number(order.amount),
+          payment_method: paymentMethod,
+          payload: body,
+        })
+      } catch (logErr: any) {
+        console.error(`   ├─ ⚠️ Erro ao logar webhook (não-crítico): ${logErr.message}`)
+      }
 
       // 7. Enviar email
       const ctaLink = product.pack_slug === 'upscaler-arcano' || product.type === 'credits'
