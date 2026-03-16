@@ -140,14 +140,22 @@ serve(async (req) => {
     const useMinimalValidation = isLightweightFallback || isPureCreditCardCheckout
     const shouldPersistPersonalData = !isPureCreditCardCheckout
 
-    if (!product_slug || !user_email) {
-      return errorResponse('product_slug e user_email são obrigatórios', 400, 'MISSING_FIELDS');
+    if (!product_slug) {
+      return errorResponse('product_slug é obrigatório', 400, 'MISSING_FIELDS');
     }
 
-    const email = user_email.toLowerCase().trim()
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return errorResponse('Email inválido', 400, 'INVALID_EMAIL');
+    // Cartão puro: email é opcional — usa placeholder para o Pagar.me coletar no checkout
+    let email: string
+    if (user_email) {
+      email = user_email.toLowerCase().trim()
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return errorResponse('Email inválido', 400, 'INVALID_EMAIL');
+      }
+    } else if (isPureCreditCardCheckout) {
+      email = `checkout-${crypto.randomUUID().slice(0, 8)}@temp.arcano`
+      console.log(`[${requestId}] 💳 Cartão puro sem email — usando placeholder: ${email}`)
+    } else {
+      return errorResponse('user_email é obrigatório para este método', 400, 'MISSING_FIELDS');
     }
 
     // Modo mínimo: validações relaxadas para checkout puro no cartão/fallback lightweight

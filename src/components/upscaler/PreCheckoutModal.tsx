@@ -153,12 +153,68 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
 
+  const showErrorToast = useCallback((errorCode?: string) => {
+    const message = (errorCode && ERROR_MESSAGES[errorCode]) || 
+      `Erro ao criar checkout. ${errorCode ? `(${errorCode})` : 'Tente novamente.'}`;
+    
+    toast({
+      title: "Erro no checkout",
+      description: message,
+      variant: "destructive",
+    });
+  }, []);
+
+  // Auto-submit for credit card: no data needed, redirect immediately
+  const handleCreditCardAutoSubmit = useCallback(async () => {
+    if (!productSlug) {
+      console.error('[PreCheckoutModal] productSlug inválido para auto-submit cartão');
+      toast({ title: "Erro", description: "Produto não identificado. Feche e tente novamente.", variant: "destructive" });
+      return;
+    }
+    if (!startFormSubmit()) return;
+
+    setLoading(true);
+    redirectedRef.current = false;
+
+    try {
+      const utmData = getSanitizedUtms();
+      const { fbp, fbc } = getMetaCookies();
+      const normalizedEmail = email.trim().toLowerCase() || undefined;
+
+      console.log('[PreCheckoutModal] 💳 Auto-submit cartão puro (sem dados)...');
+      const response = await invokeCheckout({
+        product_slug: productSlug,
+        ...(normalizedEmail ? { user_email: normalizedEmail } : {}),
+        billing_type: 'CREDIT_CARD',
+        utm_data: utmData,
+        fbp,
+        fbc,
+      });
+
+      if (!response.error && response.data?.checkout_url) {
+        const { checkout_url, event_id } = response.data;
+        if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
+          (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
+        }
+        window.location.href = checkout_url;
+        return;
+      }
+
+      const errorCode = response.data?.error_code || 'UNKNOWN';
+      showErrorToast(errorCode);
+    } catch (error) {
+      console.error('Erro checkout cartão:', error);
+      showErrorToast();
+    }
+    setLoading(false);
+    endFormSubmit();
+  }, [productSlug, email, startFormSubmit, endFormSubmit, showErrorToast]);
+
   const validate = () => {
     let valid = true;
-    const isCreditCard = paymentMethod === 'CREDIT_CARD';
     setNameError(''); setEmailError(''); setEmailConfirmError(''); setPhoneError(''); setCpfError('');
 
-    if (!isCreditCard && (!name.trim() || name.trim().length < 3)) {
+    if (!name.trim() || name.trim().length < 3) {
       setNameError('Digite seu nome completo');
       valid = false;
     }
@@ -180,24 +236,22 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       }
     }
 
-    if (!isCreditCard) {
-      const phoneDigits = phone.replace(/\D/g, '');
-      if (!phoneDigits) {
-        setPhoneError('Digite seu celular');
-        valid = false;
-      } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
-        setPhoneError('Celular inválido (DDD + número)');
-        valid = false;
-      }
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (!phoneDigits) {
+      setPhoneError('Digite seu celular');
+      valid = false;
+    } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+      setPhoneError('Celular inválido (DDD + número)');
+      valid = false;
+    }
 
-      const cpfDigits = cpf.replace(/\D/g, '');
-      if (!cpfDigits) {
-        setCpfError('Digite seu CPF');
-        valid = false;
-      } else if (!validateCPF(cpfDigits)) {
-        setCpfError('CPF inválido');
-        valid = false;
-      }
+    const cpfDigits = cpf.replace(/\D/g, '');
+    if (!cpfDigits) {
+      setCpfError('Digite seu CPF');
+      valid = false;
+    } else if (!validateCPF(cpfDigits)) {
+      setCpfError('CPF inválido');
+      valid = false;
     }
 
     return valid;
@@ -262,16 +316,6 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     }
   };
 
-  const showErrorToast = useCallback((errorCode?: string) => {
-    const message = (errorCode && ERROR_MESSAGES[errorCode]) || 
-      `Erro ao criar checkout. ${errorCode ? `(${errorCode})` : 'Tente novamente.'}`;
-    
-    toast({
-      title: "Erro no checkout",
-      description: message,
-      variant: "destructive",
-    });
-  }, []);
 
   const handleSubmit = async () => {
     if (!validate()) return;
@@ -290,32 +334,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       const { fbp, fbc } = getMetaCookies();
       const normalizedEmail = email.trim().toLowerCase();
 
-      // Cartão: sempre checkout puro (sem envio prévio de CPF/telefone/endereço)
-      if (paymentMethod === 'CREDIT_CARD') {
-        console.log('[PreCheckoutModal] Chamando checkout puro para cartão...');
-        const cardResponse = await invokeCheckout({
-          product_slug: productSlug,
-          user_email: normalizedEmail,
-          billing_type: 'CREDIT_CARD',
-          utm_data: utmData,
-          fbp,
-          fbc,
-          lightweight: true,
-        });
-
-        if (!cardResponse.error && cardResponse.data?.checkout_url) {
-          const { checkout_url, event_id } = cardResponse.data;
-          if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
-            (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
-          }
-          window.location.href = checkout_url;
-          return;
-        }
-
-        const cardErrorCode = cardResponse.data?.error_code || 'UNKNOWN';
-        showErrorToast(cardErrorCode);
-        return;
-      }
+      // handleSubmit agora só processa PIX (cartão é tratado em handleCreditCardAutoSubmit)
 
       const fullPayload = {
         product_slug: productSlug,
@@ -607,7 +626,8 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   </button>
                   <button
                     type="button"
-                    onClick={() => setPaymentMethod('CREDIT_CARD')}
+                    onClick={() => { setPaymentMethod('CREDIT_CARD'); handleCreditCardAutoSubmit(); }}
+                    disabled={loading || isFormSubmitting}
                     className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 ${
                       paymentMethod === 'CREDIT_CARD'
                         ? `${accentBorder} ${accentBg} text-white`
