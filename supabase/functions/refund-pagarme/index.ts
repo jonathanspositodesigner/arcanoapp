@@ -234,6 +234,48 @@ serve(async (req: Request) => {
       console.log(`   ├─ ⚠️ Sem créditos para revogar (user_id: ${!!order.user_id}, type: ${product?.type}, credits_amount: ${product?.credits_amount})`)
     }
 
+    // === LANDING BUNDLE REVOCATION ===
+    if (order.user_id && product?.type === 'landing_bundle') {
+      console.log(`   ├─ 📋 Revogando landing_bundle...`)
+
+      // Revoke lifetime credits
+      if (product.credits_amount > 0) {
+        console.log(`   ├─ 🔄 Revogando ${product.credits_amount} créditos lifetime...`)
+        const { data: revokeData, error: revokeError } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
+          _user_id: order.user_id,
+          _amount: product.credits_amount,
+          _description: `Reembolso manual landing_bundle: ${product.title}`
+        })
+        if (revokeError) {
+          console.error(`   ├─ ❌ Erro ao revogar créditos:`, revokeError)
+          return new Response(JSON.stringify({ error: `Falha ao revogar créditos: ${revokeError.message}` }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
+        const revokeResult = revokeData?.[0] || revokeData
+        if (!revokeResult?.success) {
+          console.error(`   ├─ ❌ Revogação falhou:`, revokeResult)
+          return new Response(JSON.stringify({ error: `Falha ao revogar créditos: ${revokeResult?.error_message || 'Erro desconhecido'}` }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
+        console.log(`   ├─ ✅ Créditos revogados: ${revokeResult.amount_revoked} (novo saldo: ${revokeResult.new_balance})`)
+      }
+
+      // Reset to free plan
+      await supabase.from('planos2_subscriptions').upsert({
+        user_id: order.user_id,
+        plan_slug: 'free',
+        is_active: true,
+        credits_per_month: 100,
+        daily_prompt_limit: 5,
+        has_image_generation: false,
+        has_video_generation: false,
+        cost_multiplier: 1.0,
+        expires_at: null,
+        pagarme_subscription_id: null,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' })
+
+      console.log(`   ├─ ✅ Landing bundle revogado → free`)
+    }
+
     // === SUBSCRIPTION PLAN REVOCATION ===
     if (order.user_id && product?.type === 'subscription') {
       console.log(`   ├─ 📋 Revogando plano de assinatura...`)

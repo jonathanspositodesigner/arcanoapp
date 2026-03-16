@@ -6,6 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { AnimatedSection, StaggeredAnimation } from "@/hooks/useScrollAnimation";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeCheckout } from "@/lib/checkoutFetch";
+import { useProcessingButton } from "@/hooks/useProcessingButton";
+import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
+import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
+import { getSanitizedUtms } from "@/lib/utmUtils";
+import { getMetaCookies } from "@/lib/metaCookies";
+import { toast } from "sonner";
 
 const socialProofImages = [
   "/images/social-proof-1.webp",
@@ -77,8 +84,6 @@ const StatsBar = () => {
   );
 };
 
-const CHECKOUT_BASE = "https://arcanoapp.lovable.app/planos-2";
-
 interface Plan {
   name: string;
   price: string;
@@ -90,6 +95,7 @@ interface Plan {
   features: { text: string; included: boolean }[];
   bestSeller?: boolean;
   hasCountdown?: boolean;
+  productSlug: string;
 }
 
 const landingPlans: Plan[] = [
@@ -101,6 +107,7 @@ const landingPlans: Plan[] = [
     creditsCount: "1.500 créditos",
     images: 25,
     tagline: "Para começar",
+    productSlug: "landing-starter-avulso",
     features: [
       { text: "Atualizações diárias", included: true },
       { text: "Acesso às Ferramentas de IA", included: true },
@@ -119,6 +126,7 @@ const landingPlans: Plan[] = [
     images: 70,
     tagline: "3x mais créditos por mais R$12",
     bestSeller: true,
+    productSlug: "landing-pro-avulso",
     features: [
       { text: "Atualizações diárias", included: true },
       { text: "Acesso às Ferramentas de IA", included: true },
@@ -137,6 +145,7 @@ const landingPlans: Plan[] = [
     images: 233,
     tagline: "Ideal para designers e criadores ativos",
     hasCountdown: true,
+    productSlug: "landing-ultimate-avulso",
     features: [
       { text: "Atualizações diárias", included: true },
       { text: "Acesso às Ferramentas de IA", included: true },
@@ -149,6 +158,123 @@ const landingPlans: Plan[] = [
 ];
 
 const LandingPricingSection = () => {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [showPreCheckout, setShowPreCheckout] = useState(false);
+  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
+  const [preCheckoutSlug, setPreCheckoutSlug] = useState<string | null>(null);
+  const [pendingProfile, setPendingProfile] = useState<any>(null);
+  const { isSubmitting: isProcessing, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        setUserEmail(user.email ?? null);
+      }
+    };
+    getUser();
+  }, []);
+
+  const handlePurchase = async (productSlug: string) => {
+    if (!startCheckout()) return;
+
+    if (typeof window !== "undefined" && (window as any).fbq) {
+      (window as any).fbq("track", "InitiateCheckout", {
+        content_name: productSlug,
+        content_category: "Landing Bundle",
+        content_type: "product",
+        currency: "BRL",
+      });
+    }
+
+    if (!userId) {
+      setPreCheckoutSlug(productSlug);
+      setShowPreCheckout(true);
+      endCheckout();
+      return;
+    }
+
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
+        .eq('id', userId)
+        .single();
+
+      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf
+        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
+
+      if (isProfileComplete) {
+        setPreCheckoutSlug(productSlug);
+        setPendingProfile(profile);
+        setShowPaymentMethodModal(true);
+        endCheckout();
+      } else {
+        setPreCheckoutSlug(productSlug);
+        setShowPreCheckout(true);
+        endCheckout();
+      }
+    } catch {
+      endCheckout();
+    }
+  };
+
+  const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
+    if (!preCheckoutSlug || !pendingProfile) return;
+    if (!startCheckout()) return;
+
+    try {
+      const utmData = getSanitizedUtms();
+      const { fbp, fbc } = getMetaCookies();
+      const body: any = {
+        product_slug: preCheckoutSlug,
+        user_email: userEmail,
+        user_phone: pendingProfile.phone,
+        user_name: pendingProfile.name,
+        user_cpf: pendingProfile.cpf,
+        billing_type: method,
+        utm_data: utmData,
+        fbp,
+        fbc,
+      };
+
+      if (method === 'PIX') {
+        body.user_address = {
+          line_1: pendingProfile.address_line,
+          zip_code: pendingProfile.address_zip,
+          city: pendingProfile.address_city,
+          state: pendingProfile.address_state,
+          country: pendingProfile.address_country || 'BR'
+        };
+      }
+
+      const response = await invokeCheckout(body);
+
+      if (response.error) {
+        console.error('Erro checkout direto:', response.error);
+        toast.error('Erro ao gerar pagamento. Tente novamente.');
+        setShowPaymentMethodModal(false);
+        endCheckout();
+        return;
+      }
+
+      if (response.data?.checkout_url) {
+        const { checkout_url, event_id } = response.data;
+        if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
+          (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
+        }
+        window.location.href = checkout_url;
+      }
+    } catch (err) {
+      console.error('Erro checkout:', err);
+      toast.error('Erro ao processar. Tente novamente.');
+      setShowPaymentMethodModal(false);
+      endCheckout();
+    }
+  };
+
   return (
     <AnimatedSection className="px-4 py-16 md:py-20">
       <div className="max-w-7xl mx-auto">
@@ -214,7 +340,8 @@ const LandingPricingSection = () => {
 
                 {/* CTA */}
                 <Button
-                  onClick={() => window.open(CHECKOUT_BASE, '_blank')}
+                  onClick={() => handlePurchase(plan.productSlug)}
+                  disabled={isProcessing}
                   className={`w-full mb-1 text-sm h-9 ${
                     plan.bestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" :
                     plan.hasCountdown ? "bg-gradient-to-r from-fuchsia-600 to-blue-500 hover:from-fuchsia-700 hover:to-blue-600 text-white font-semibold" :
@@ -286,6 +413,26 @@ const LandingPricingSection = () => {
           </div>
         </div>
       </div>
+
+      {/* PreCheckout Modal */}
+      <PreCheckoutModal
+        isOpen={showPreCheckout}
+        onClose={() => { setShowPreCheckout(false); setPreCheckoutSlug(null); }}
+        userEmail={userEmail}
+        userId={userId}
+        productSlug={preCheckoutSlug || undefined}
+        modalTitle="Finalizar Compra"
+        colorScheme="fuchsia"
+      />
+
+      {/* Payment Method Modal */}
+      <PaymentMethodModal
+        open={showPaymentMethodModal}
+        onOpenChange={(v) => { if (!isProcessing) { setShowPaymentMethodModal(v); if (!v) setPreCheckoutSlug(null); } }}
+        onSelect={handlePaymentMethodSelected}
+        isProcessing={isProcessing}
+        colorScheme="purple"
+      />
     </AnimatedSection>
   );
 };
