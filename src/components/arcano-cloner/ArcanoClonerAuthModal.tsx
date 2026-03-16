@@ -314,7 +314,7 @@ export default function ArcanoClonerAuthModal({
               variant="purple"
               labels={{
                 title: 'Criar Conta',
-                subtitle: 'Cadastre-se e ganhe 180 créditos grátis',
+                subtitle: 'Cadastre-se e ganhe 300 créditos grátis',
                 email: 'Email',
                 emailPlaceholder: 'seu@email.com',
                 name: 'Nome (opcional)',
