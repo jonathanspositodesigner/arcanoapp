@@ -122,8 +122,9 @@ serve(async (req) => {
   let supabase: any = null;
 
   try {
-    const { product_slug, user_email, user_phone, user_name, user_cpf, billing_type, utm_data, user_address, fbp, fbc } = await req.json()
+    const { product_slug, user_email, user_phone, user_name, user_cpf, billing_type, utm_data, user_address, fbp, fbc, lightweight } = await req.json()
     const clientUserAgent = req.headers.get('user-agent') || null
+    const isLightweight = lightweight === true
 
     if (!product_slug || !user_email) {
       return errorResponse('product_slug e user_email são obrigatórios', 400, 'MISSING_FIELDS');
@@ -135,24 +136,34 @@ serve(async (req) => {
       return errorResponse('Email inválido', 400, 'INVALID_EMAIL');
     }
 
-    // Normalizar telefone com tolerância a prefixo 55
-    const phone = normalizePhone(user_phone);
-    if (!phone) {
-      return errorResponse('Celular inválido. Informe DDD + número (ex: 11999998888).', 400, 'INVALID_PHONE');
-    }
+    // Lightweight mode: skip phone/CPF validation, use minimal data
+    let phone: { areaCode: string; phoneNumber: string; fullDigits: string } | null = null;
+    let cleanCpf: string | null = null;
 
-    // Validar CPF com algoritmo completo (módulo 11)
-    const cleanCpf = user_cpf ? user_cpf.replace(/\D/g, '') : null;
-    if (cleanCpf) {
-      if (cleanCpf.length !== 11 || /^(\d)\1{10}$/.test(cleanCpf)) {
-        return errorResponse('CPF inválido. Verifique os dígitos informados.', 400, 'INVALID_CPF');
+    if (isLightweight) {
+      // Minimal: try to parse phone but don't fail if missing
+      phone = normalizePhone(user_phone);
+      cleanCpf = user_cpf ? user_cpf.replace(/\D/g, '') : null;
+      console.log(`[${requestId}] ⚡ Lightweight mode - skipping validations`)
+    } else {
+      // Full mode: validate everything
+      phone = normalizePhone(user_phone);
+      if (!phone) {
+        return errorResponse('Celular inválido. Informe DDD + número (ex: 11999998888).', 400, 'INVALID_PHONE');
       }
-      for (let t = 9; t < 11; t++) {
-        let sum = 0;
-        for (let i = 0; i < t; i++) sum += parseInt(cleanCpf[i]) * (t + 1 - i);
-        const remainder = (sum * 10) % 11;
-        if ((remainder === 10 ? 0 : remainder) !== parseInt(cleanCpf[t])) {
+
+      cleanCpf = user_cpf ? user_cpf.replace(/\D/g, '') : null;
+      if (cleanCpf) {
+        if (cleanCpf.length !== 11 || /^(\d)\1{10}$/.test(cleanCpf)) {
           return errorResponse('CPF inválido. Verifique os dígitos informados.', 400, 'INVALID_CPF');
+        }
+        for (let t = 9; t < 11; t++) {
+          let sum = 0;
+          for (let i = 0; i < t; i++) sum += parseInt(cleanCpf[i]) * (t + 1 - i);
+          const remainder = (sum * 10) % 11;
+          if ((remainder === 10 ? 0 : remainder) !== parseInt(cleanCpf[t])) {
+            return errorResponse('CPF inválido. Verifique os dígitos informados.', 400, 'INVALID_CPF');
+          }
         }
       }
     }
