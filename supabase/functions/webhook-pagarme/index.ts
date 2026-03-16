@@ -914,13 +914,15 @@ serve(async (req) => {
         netAmount = grossAmount - (grossAmount * 0.0439 + 0.99) // fallback: taxa de cartão
       }
       netAmount = Math.round(netAmount * 100) / 100
+      const paidAtIso = charge?.paid_at || new Date().toISOString()
+
       await supabase.from('asaas_orders').update({
         status: 'paid',
         user_id: userId,
         asaas_payment_id: eventData?.id || charge?.id,
         payment_method: paymentMethod,
         net_amount: netAmount,
-        paid_at: charge?.paid_at || new Date().toISOString(),
+        paid_at: paidAtIso,
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
@@ -941,16 +943,41 @@ serve(async (req) => {
         console.error(`   ├─ ⚠️ Erro ao logar webhook (não-crítico): ${logErr.message}`)
       }
 
-      // 7. Enviar email
+      // 7. Enviar email com dedup + retry
       const ctaLink = product.pack_slug === 'upscaler-arcano' || product.type === 'credits'
         ? 'https://arcanoapp.voxvisual.com.br/upscaler-arcano'
         : 'https://arcanoapp.voxvisual.com.br/'
 
-      await sendPurchaseEmail(supabase, email, product.title, ctaLink, requestId, {
-        packSlug: product.pack_slug,
-        productType: product.type,
-        accessType: product.access_type,
+      const emailResult = await sendPurchaseEmail(supabase, {
+        orderId: order.id,
+        email,
+        productName: product.title,
+        ctaLink,
+        requestId,
+        paidAtIso,
+        options: {
+          packSlug: product.pack_slug,
+          productType: product.type,
+          accessType: product.access_type,
+        }
       })
+
+      const emailStatusMessage = emailResult.status === 'sent'
+        ? `sent_attempt_${emailResult.attempts}`
+        : emailResult.status === 'already_sent'
+          ? 'already_sent'
+          : emailResult.status === 'blacklisted'
+            ? 'blacklisted'
+            : `failed_attempts_${emailResult.attempts}: ${emailResult.error || 'unknown_error'}`
+
+      await supabase.from('asaas_orders').update({
+        last_attempt_at: new Date().toISOString(),
+        gateway_error_message: emailResult.status === 'sent' || emailResult.status === 'already_sent'
+          ? null
+          : `purchase_email_${emailStatusMessage}`,
+      }).eq('id', order.id)
+
+      console.log(`   ├─ 📬 Email status: ${emailResult.status} (attempts: ${emailResult.attempts})`)
 
       // 7.1 Notificar admin
       try {
