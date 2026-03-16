@@ -360,22 +360,24 @@ export default function ArcanoClonerAuthModal({
           email_verified: false,
         }, { onConflict: 'id' });
 
-        // Send confirmation email via SendPulse
-        try {
-          await supabase.functions.invoke('send-free-trial-confirmation-email', {
-            body: { email: normalizedEmail, user_id: authData.user.id }
-          });
-          console.log('[ArcanoClonerAuth] Confirmation email sent');
-        } catch (e) {
-          console.error('[ArcanoClonerAuth] Failed to send confirmation email:', e);
-        }
+        setPendingUserId(authData.user.id);
+
+        const emailResult = await sendConfirmationEmail(normalizedEmail, authData.user.id);
 
         // Sign out immediately - user must confirm email first
         await supabase.auth.signOut();
 
-        toast.success('Conta criada! Verifique seu email para confirmar.');
         setVerifiedEmail(normalizedEmail);
         setStep('verify-email');
+
+        if (!emailResult.success) {
+          setEmailSendError(emailResult.error);
+          toast.error('Conta criada, mas houve falha no envio do email. Clique em reenviar.');
+          return;
+        }
+
+        setEmailSendError(null);
+        toast.success('Conta criada! Confirme seu email (verifique também o spam).');
       }
     } catch (error) {
       console.error('[ArcanoClonerAuth] Signup error:', error);
