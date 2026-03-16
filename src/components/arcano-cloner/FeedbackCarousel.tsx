@@ -11,7 +11,7 @@ import feedbackThiago from "@/assets/feedback-thiago.png";
 const feedbacks = [
   {
     name: "Lucas Mendes",
-    photo: "https://randomuser.me/api/portraits/men/32.jpg",
+    photo: feedbackLucas,
     text: "Usei pra fazer umas fotos pro meu perfil e ficou muito bom. Não esperava esse nível de qualidade sinceramente.",
   },
   {
