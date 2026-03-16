@@ -157,9 +157,7 @@ const LandingPricingSection = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [showPreCheckout, setShowPreCheckout] = useState(false);
-  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
   const [preCheckoutSlug, setPreCheckoutSlug] = useState<string | null>(null);
-  const [pendingProfile, setPendingProfile] = useState<any>(null);
   const { isSubmitting: isProcessing, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
 
   // Pre-warm checkout edge function after 3s
