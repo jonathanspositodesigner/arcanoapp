@@ -384,13 +384,26 @@ async function cleanupOrphanPendingJobs(): Promise<number> {
       
       console.log(`[QueueManager] Found ${orphans.length} orphan pending jobs in ${table}`);
       
-      // Marcar como failed
+      // Marcar como failed - but skip jobs that show signs of active processing
       for (const orphan of orphans) {
+        // GUARD: Skip if job has step_history (means Edge Function started processing)
+        const stepHistory = (orphan as any).step_history;
+        const currentStep = (orphan as any).current_step;
+        if (stepHistory && Array.isArray(stepHistory) && stepHistory.length > 0) {
+          console.log(`[QueueManager] Skipping orphan ${orphan.id} - has ${stepHistory.length} step(s) in history, still processing`);
+          continue;
+        }
+        // GUARD: Skip if current_step indicates active work
+        if (currentStep && currentStep !== 'pending' && currentStep !== null) {
+          console.log(`[QueueManager] Skipping orphan ${orphan.id} - current_step='${currentStep}', still processing`);
+          continue;
+        }
+        
         const { error: updateError } = await supabase
           .from(table)
           .update({
             status: 'failed',
-            error_message: 'Falha ao iniciar: Edge Function não respondeu em 30s',
+            error_message: 'Falha ao iniciar: servidor não respondeu em tempo hábil',
             current_step: 'failed',
             failed_at_step: 'pending_timeout',
             completed_at: new Date().toISOString(),
