@@ -246,7 +246,7 @@ serve(async (req) => {
 
     // Fire-and-forget: atualizar perfil
     const trimmedName = user_name?.trim() || null
-    if (trimmedName || cleanCpf || phone.fullDigits || user_address?.line_1) {
+    if (trimmedName || cleanCpf || phone?.fullDigits || user_address?.line_1) {
       supabase
         .from('profiles')
         .select('id, name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
