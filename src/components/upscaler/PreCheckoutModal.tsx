@@ -282,77 +282,86 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     if (!startFormSubmit()) return;
 
     setLoading(true);
-    setShowFallback(false);
-    checkoutResolvedRef.current = false;
-
-    // Start 2s fallback timer
-    if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
-    fallbackTimerRef.current = setTimeout(() => {
-      if (!checkoutResolvedRef.current) {
-        setShowFallback(true);
-      }
-    }, 2000);
+    redirectedRef.current = false;
 
     try {
       const utmData = getSanitizedUtms();
       const { fbp, fbc } = getMetaCookies();
       
-      const response = await supabase.functions.invoke('create-pagarme-checkout', {
-        body: {
-          product_slug: productSlug,
-          user_email: email.trim().toLowerCase(),
-          user_phone: phone.replace(/\D/g, ''),
-          user_name: name.trim(),
-          user_cpf: cpf.replace(/\D/g, ''),
-          billing_type: paymentMethod,
-          utm_data: utmData,
-          fbp,
-          fbc,
+      const fullPayload = {
+        product_slug: productSlug,
+        user_email: email.trim().toLowerCase(),
+        user_phone: phone.replace(/\D/g, ''),
+        user_name: name.trim(),
+        user_cpf: cpf.replace(/\D/g, ''),
+        billing_type: paymentMethod,
+        utm_data: utmData,
+        fbp,
+        fbc,
+      };
+
+      const lightweightPayload = {
+        product_slug: productSlug,
+        user_email: email.trim().toLowerCase(),
+        user_name: name.trim(),
+        billing_type: paymentMethod,
+        utm_data: utmData,
+        fbp,
+        fbc,
+        lightweight: true,
+      };
+
+      // Dual-fire: race full vs lightweight checkout
+      const fullCall = supabase.functions.invoke('create-pagarme-checkout', { body: fullPayload });
+      const lightCall = supabase.functions.invoke('create-pagarme-checkout', { body: lightweightPayload });
+
+      const tryRedirect = (response: any, label: string): boolean => {
+        if (redirectedRef.current) return true;
+        if (response.error) {
+          console.warn(`[${label}] Erro:`, response.error);
+          return false;
         }
-      });
+        const { checkout_url, event_id } = response.data || {};
+        if (checkout_url) {
+          redirectedRef.current = true;
+          console.log(`[${label}] ✅ Redirect: ${checkout_url.substring(0, 60)}...`);
+          if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
+            (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
+          }
+          window.location.href = checkout_url;
+          return true;
+        }
+        return false;
+      };
 
-      // Clear fallback timer
-      if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
-
-      if (response.error) {
-        console.error('Erro ao criar checkout:', response.error);
-        // Try to extract error_code from response body
-        let errorCode = 'UNKNOWN';
-        try {
-          const errBody = typeof response.error === 'object' ? response.error : JSON.parse(String(response.error));
-          errorCode = errBody?.error_code || errBody?.context?.error_code || 'UNKNOWN';
-        } catch {}
-        
-        checkoutResolvedRef.current = true;
-        showErrorToast(errorCode);
-        setShowFallback(true); // Show fallback on error
-        setLoading(false);
-        endFormSubmit();
-        return;
+      // Race: first successful checkout_url wins
+      const results = await Promise.allSettled([fullCall, lightCall]);
+      
+      for (const [i, result] of results.entries()) {
+        if (result.status === 'fulfilled' && tryRedirect(result.value, i === 0 ? 'Full' : 'Lightweight')) {
+          return; // Redirected successfully
+        }
       }
 
-      const { checkout_url, event_id } = response.data;
-
-      // Fire InitiateCheckout with event_id for deduplication with server-side CAPI
-      if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
-        (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
+      // Both failed - show detailed error
+      let errorCode = 'UNKNOWN';
+      for (const result of results) {
+        if (result.status === 'fulfilled' && result.value?.data?.error_code) {
+          errorCode = result.value.data.error_code;
+          break;
+        }
+        if (result.status === 'fulfilled' && result.value?.error) {
+          try {
+            const errBody = typeof result.value.error === 'object' ? result.value.error : JSON.parse(String(result.value.error));
+            errorCode = errBody?.error_code || errBody?.context?.error_code || 'UNKNOWN';
+          } catch {}
+          if (errorCode !== 'UNKNOWN') break;
+        }
       }
-
-      if (checkout_url) {
-        checkoutResolvedRef.current = true;
-        window.location.href = checkout_url;
-        return;
-      } else {
-        checkoutResolvedRef.current = true;
-        showErrorToast('NO_CHECKOUT_URL');
-        setShowFallback(true);
-      }
+      showErrorToast(errorCode);
     } catch (error) {
-      console.error('Erro:', error);
-      if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
-      checkoutResolvedRef.current = true;
+      console.error('Erro dual-fire:', error);
       showErrorToast();
-      setShowFallback(true);
     }
     setLoading(false);
     endFormSubmit();
