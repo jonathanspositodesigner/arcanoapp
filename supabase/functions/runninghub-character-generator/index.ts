@@ -651,14 +651,6 @@ async function handleRefine(req: Request) {
     } catch { await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `REFINE_QM_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId); }
     return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: true }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
-    } catch (refundError) {
-      await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `REFINE_EXCEPTION (refund error): ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
-    }
-
-    return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: true }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
 }
 
 // Reconcile a stuck job
