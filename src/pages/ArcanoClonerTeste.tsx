@@ -293,6 +293,23 @@ const ArcanoClonerTeste = () => {
       </AnimatedSection>
       </LazySection>
 
+      {/* ==================== RESULTADOS REAIS ==================== */}
+      <LazySection rootMargin="100px">
+      <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+        <div className="max-w-5xl mx-auto text-center">
+          <AnimatedSection as="div" delay={100}>
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3">
+              Tudo feito com um clique,{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">sem prompt!</span>
+            </h2>
+            <p className="text-white/50 text-sm">
+              Resultados reais de clientes usando o Arcano Cloner
+            </p>
+          </AnimatedSection>
+        </div>
+      </AnimatedSection>
+      </LazySection>
+
       {/* ==================== HOW IT WORKS ==================== */}
       <LazySection>
       <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
