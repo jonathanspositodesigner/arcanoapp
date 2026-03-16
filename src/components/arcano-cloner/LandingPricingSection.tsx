@@ -386,8 +386,8 @@ const LandingPricingSection = () => {
           <h3 className="font-space-grotesk font-extrabold text-3xl md:text-4xl lg:text-5xl text-white tracking-tight mb-6">
             ACESSO <span className="text-fuchsia-400">IMEDIATO</span>
           </h3>
-          <div className="max-w-4xl mx-auto rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 sm:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+          <div className="max-w-4xl mx-auto rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 sm:px-8 py-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 sm:gap-4">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               <ShieldCheck className="w-5 h-5 text-fuchsia-400 shrink-0" />
               <div className="text-left">
                 <p className="text-white text-sm font-semibold leading-tight">Pagamento seguro</p>
@@ -395,7 +395,8 @@ const LandingPricingSection = () => {
               </div>
             </div>
             <div className="hidden sm:block w-px h-8 bg-white/10" />
-            <div className="flex items-center gap-3">
+            <div className="block sm:hidden w-full h-px bg-white/10" />
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               <Zap className="w-5 h-5 text-fuchsia-400 shrink-0" />
               <div className="text-left">
                 <p className="text-white text-sm font-semibold leading-tight">Pagamento instantâneo</p>
@@ -403,7 +404,8 @@ const LandingPricingSection = () => {
               </div>
             </div>
             <div className="hidden sm:block w-px h-8 bg-white/10" />
-            <div className="flex items-center gap-3">
+            <div className="block sm:hidden w-full h-px bg-white/10" />
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               <Headset className="w-5 h-5 text-fuchsia-400 shrink-0" />
               <div className="text-left">
                 <p className="text-white text-sm font-semibold leading-tight">Suporte 24/7</p>
