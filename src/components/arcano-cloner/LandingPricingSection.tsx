@@ -3,7 +3,6 @@ import { Check, X, Sparkles, Image, Video, Award, ShieldCheck, Zap, Headset } fr
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnimatedSection, StaggeredAnimation } from "@/hooks/useScrollAnimation";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { supabase } from "@/integrations/supabase/client";
@@ -90,7 +89,6 @@ interface Plan {
   features: { text: string; included: boolean }[];
   bestSeller?: boolean;
   hasCountdown?: boolean;
-  isUnlimitedBadge?: boolean;
 }
 
 const landingPlans: Plan[] = [
@@ -145,145 +143,8 @@ const landingPlans: Plan[] = [
     ],
   },
 ];
-      tagline: "Para começar",
-      features: [
-        { text: "Atualizações diárias", included: true },
-        { text: "Acesso às Ferramentas de IA", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: true },
-        { text: "Prompts premium ilimitados", included: true },
-        { text: "Geração de Imagem com NanoBanana Pro", included: false },
-        { text: "Geração de Vídeo com Veo 3", included: false },
-      ],
-    },
-    {
-      name: "Pro",
-      price: "39,90",
-      originalPrice: "49,90",
-      credits: "5.000 créditos de IA",
-      images: 83,
-      tagline: "3x mais créditos por mais R$15",
-      bestSeller: true,
-      features: [
-        { text: "Atualizações diárias", included: true },
-        { text: "Acesso às Ferramentas de IA", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: true },
-        { text: "Prompts premium ilimitados", included: true },
-        { text: "Geração de Imagem com NanoBanana Pro", included: true },
-        { text: "Geração de Vídeo com Veo 3", included: true },
-      ],
-    },
-    {
-      name: "Ultimate",
-      price: "59,90",
-      originalPrice: "79,90",
-      credits: "14.000 créditos de IA",
-      images: 233,
-      tagline: "Ideal para designers e criadores ativos",
-      hasCountdown: true,
-      features: [
-        { text: "Atualizações diárias", included: true },
-        { text: "Acesso às Ferramentas de IA", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: true },
-        { text: "Prompts premium ilimitados", included: true },
-        { text: "Geração de Imagem com NanoBanana Pro", included: true },
-        { text: "Geração de Vídeo com Veo 3", included: true },
-      ],
-    },
-    {
-      name: "IA Unlimited",
-      price: "149,90",
-      originalPrice: "249,90",
-      credits: "Créditos Ilimitados",
-      images: "Ilimitadas",
-      tagline: "Máxima liberdade",
-      isUnlimitedBadge: true,
-      features: [
-        { text: "Atualizações diárias", included: true },
-        { text: "Acesso às Ferramentas de IA", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: true },
-        { text: "Prompts premium ilimitados", included: true },
-        { text: "Geração de Imagem com NanoBanana Pro", included: true },
-        { text: "Geração de Vídeo com Veo 3", included: true },
-        { text: "Fila prioritária nas gerações de IA", included: true },
-      ],
-    },
-  ],
-  anual: [
-    {
-      name: "Starter",
-      price: "24,90",
-      originalPrice: null,
-      credits: "1.500 créditos de IA",
-      images: 25,
-      tagline: "Para começar",
-      features: [
-        { text: "Atualizações diárias", included: true },
-        { text: "Acesso às Ferramentas de IA", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: true },
-        { text: "Prompts premium ilimitados", included: true },
-        { text: "Geração de Imagem com NanoBanana Pro", included: false },
-        { text: "Geração de Vídeo com Veo 3", included: false },
-      ],
-    },
-    {
-      name: "Pro",
-      price: "33,90",
-      originalPrice: "39,90",
-      credits: "5.000 créditos de IA",
-      images: 83,
-      tagline: "3x mais créditos por mais R$15",
-      bestSeller: true,
-      features: [
-        { text: "Atualizações diárias", included: true },
-        { text: "Acesso às Ferramentas de IA", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: true },
-        { text: "Prompts premium ilimitados", included: true },
-        { text: "Geração de Imagem com NanoBanana Pro", included: true },
-        { text: "Geração de Vídeo com Veo 3", included: true },
-      ],
-    },
-    {
-      name: "Ultimate",
-      price: "49,90",
-      originalPrice: "59,90",
-      credits: "14.000 créditos de IA",
-      images: 233,
-      tagline: "Ideal para designers e criadores ativos",
-      hasCountdown: true,
-      features: [
-        { text: "Atualizações diárias", included: true },
-        { text: "Acesso às Ferramentas de IA", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: true },
-        { text: "Prompts premium ilimitados", included: true },
-        { text: "Geração de Imagem com NanoBanana Pro", included: true },
-        { text: "Geração de Vídeo com Veo 3", included: true },
-      ],
-    },
-    {
-      name: "IA Unlimited",
-      price: "119,90",
-      originalPrice: "149,90",
-      credits: "Créditos Ilimitados",
-      images: "Ilimitadas",
-      tagline: "Máxima liberdade",
-      isUnlimitedBadge: true,
-      features: [
-        { text: "Atualizações diárias", included: true },
-        { text: "Acesso às Ferramentas de IA", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: true },
-        { text: "Prompts premium ilimitados", included: true },
-        { text: "Geração de Imagem com NanoBanana Pro", included: true },
-        { text: "Geração de Vídeo com Veo 3", included: true },
-        { text: "Fila prioritária nas gerações de IA", included: true },
-      ],
-    },
-  ],
-};
 
 const LandingPricingSection = () => {
-  const [billingPeriod, setBillingPeriod] = useState<"mensal" | "anual">("mensal");
-  const currentPlans = plansData[billingPeriod];
-
   return (
     <AnimatedSection className="px-4 py-16 md:py-20">
       <div className="max-w-7xl mx-auto">
@@ -299,34 +160,16 @@ const LandingPricingSection = () => {
 
         <StatsBar />
 
-        {/* Billing Toggle */}
-        <div className="flex justify-center mb-8">
-          <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
-            <TabsList className="bg-white/5 border border-white/10">
-              <TabsTrigger value="mensal" className="data-[state=active]:bg-fuchsia-600 data-[state=active]:text-white text-white/60 px-6">
-                Mensal
-              </TabsTrigger>
-              <TabsTrigger value="anual" className="data-[state=active]:bg-fuchsia-600 data-[state=active]:text-white text-white/60 px-6 relative flex items-center gap-2">
-                Anual
-                <span className="bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  52% OFF
-                </span>
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
         {/* Plans Grid */}
         <StaggeredAnimation
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto"
+          className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto"
           itemClassName="w-full"
           staggerDelay={100}
           animation="fade-up"
         >
-          {currentPlans.map((plan) => (
+          {landingPlans.map((plan) => (
             <div key={plan.name} className="flex flex-col h-full w-full">
               <Card className={`relative p-4 flex flex-col rounded-2xl bg-white/[0.03] w-full h-full ${
-                plan.isUnlimitedBadge ? "border-2 border-yellow-400 shadow-lg shadow-yellow-400/20" :
                 plan.bestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/20" :
                 plan.hasCountdown ? "border-2 border-fuchsia-500 shadow-lg shadow-fuchsia-500/20" :
                 "border border-white/10"
@@ -336,14 +179,9 @@ const LandingPricingSection = () => {
                     Mais Vendido
                   </Badge>
                 )}
-                {plan.hasCountdown && !plan.isUnlimitedBadge && (
+                {plan.hasCountdown && (
                   <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-fuchsia-600 to-blue-500 text-white px-3 py-0.5">
                     MELHOR CUSTO/BENEFÍCIO
-                  </Badge>
-                )}
-                {plan.isUnlimitedBadge && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 text-black font-extrabold px-4 py-1 shadow-lg shadow-yellow-400/40 tracking-wider">
-                    ✨ CRIE SEM LIMITES ✨
                   </Badge>
                 )}
 
@@ -353,15 +191,9 @@ const LandingPricingSection = () => {
 
                 {/* Price */}
                 <div className="text-center mb-3">
-                  {plan.originalPrice ? (
-                    <p className="text-white/40 line-through text-xs">R${plan.originalPrice}/mês</p>
-                  ) : (
-                    <p className="text-transparent text-xs">.</p>
-                  )}
                   <div className="flex items-baseline justify-center gap-0.5">
                     <span className="text-fuchsia-400 text-sm">R$</span>
                     <span className="text-3xl font-bold text-white">{plan.price}</span>
-                    <span className="text-fuchsia-400 text-xs">/mês</span>
                   </div>
                 </div>
 
@@ -369,29 +201,23 @@ const LandingPricingSection = () => {
                 <Button
                   onClick={() => window.open(CHECKOUT_BASE, '_blank')}
                   className={`w-full mb-1 text-sm h-9 ${
-                    plan.isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" :
                     plan.bestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" :
                     plan.hasCountdown ? "bg-gradient-to-r from-fuchsia-600 to-blue-500 hover:from-fuchsia-700 hover:to-blue-600 text-white font-semibold" :
                     "bg-white/10 hover:bg-white/20 text-white/80"
                   }`}
                 >
-                  {plan.name === "Free" ? "Criar conta grátis" : "Assinar agora"}
+                  Comprar agora
                 </Button>
                 {plan.tagline && (
                   <p className="text-[10px] text-fuchsia-400 text-center mb-1 italic">{plan.tagline}</p>
                 )}
 
-                {/* Credits badge */}
+                {/* Images badge (highlighted) */}
                 <div className="flex flex-col items-center mb-4 mt-2">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white bg-gradient-to-r from-fuchsia-600 to-blue-500">
-                    <Sparkles className="w-2.5 h-2.5" />
-                    {plan.credits}/mês
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-r from-fuchsia-600 to-blue-500">
+                    <Sparkles className="w-3 h-3" />
+                    {plan.credits}
                   </span>
-                  {plan.images && (
-                    <span className="text-[9px] text-fuchsia-400 mt-0.5">
-                      ≈ {typeof plan.images === "string" ? plan.images : `${plan.images} imagens/mês`}
-                    </span>
-                  )}
                 </div>
 
                 {/* Features */}
@@ -437,8 +263,8 @@ const LandingPricingSection = () => {
             <div className="flex items-center gap-3">
               <Headset className="w-5 h-5 text-fuchsia-400 shrink-0" />
               <div className="text-left">
-                <p className="text-white text-sm font-semibold leading-tight">Suporte 24 horas por dia, 7 dias por semana</p>
-                <p className="text-white/50 text-xs">Estamos à sua disposição a qualquer momento.</p>
+                <p className="text-white text-sm font-semibold leading-tight">Suporte 24/7</p>
+                <p className="text-white/50 text-xs">estamos aqui para ajudar</p>
               </div>
             </div>
           </div>
