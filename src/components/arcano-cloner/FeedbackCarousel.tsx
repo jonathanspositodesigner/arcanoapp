@@ -17,7 +17,7 @@ const feedbacks = [
   },
   {
     name: "Camila Souza",
-    photo: "https://randomuser.me/api/portraits/women/44.jpg",
+    photo: feedbackCamila,
     text: "Consegui criar as artes que eu precisava pro meu Instagram em minutos. Valeu muito a pena.",
   },
   {
