@@ -477,136 +477,35 @@ async function handleRun(req: Request) {
     })
     .eq('id', jobId);
 
+  // Save job_payload for queue manager
+  await supabase.from(TABLE_NAME).update({
+    job_payload: { frontFileName, profileFileName, semiProfileFileName, lowAngleFileName }
+  }).eq('id', jobId);
+
+  // ========== DELEGATE TO QUEUE MANAGER ==========
   try {
-    // Check queue availability
-    await logStep(jobId, 'checking_queue');
-    
-    let slotsAvailable = 0;
-    let accountName: string | null = null;
-    let accountApiKey: string | null = null;
-    
-    try {
-      const queueCheckUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`;
-      const queueResponse = await fetch(queueCheckUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
-      });
-      const queueData = await queueResponse.json();
-      slotsAvailable = queueData.slotsAvailable || 0;
-      accountName = queueData.accountName || 'primary';
-      accountApiKey = queueData.accountApiKey || RUNNINGHUB_API_KEY;
-    } catch (queueError) {
-      accountName = 'primary';
-      accountApiKey = RUNNINGHUB_API_KEY;
-    }
-
-    if (slotsAvailable <= 0) {
-      await logStep(jobId, 'queuing');
-      
-      try {
-        const enqueueUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/enqueue`;
-        const enqueueResponse = await fetch(enqueueUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
-          body: JSON.stringify({ table: TABLE_NAME, jobId, creditCost }),
-        });
-        const enqueueData = await enqueueResponse.json();
-        
-        return new Response(JSON.stringify({ success: true, queued: true, position: enqueueData.position }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      } catch (enqueueError) {
-        await supabase.from(TABLE_NAME).update({ status: 'queued', position: 999, user_credit_cost: creditCost, waited_in_queue: true }).eq('id', jobId);
-        return new Response(JSON.stringify({ success: true, queued: true, position: 999 }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-    }
-
-    // Slot available - start processing
-    await logStep(jobId, 'running', { account: accountName });
-    
-    const apiKeyToUse = accountApiKey || RUNNINGHUB_API_KEY;
-    const accountToUse = accountName || 'primary';
-    
-    await supabase.from(TABLE_NAME).update({
-      user_credit_cost: creditCost,
-      waited_in_queue: false,
-      status: 'running',
-      started_at: new Date().toISOString(),
-      position: 0,
-      api_account: accountToUse
-    }).eq('id', jobId);
-
-    // Build node info list for Character Generator
-    const nodeInfoList = [
-      { nodeId: NODE_ID_FRONT, fieldName: "image", fieldValue: frontFileName },
-      { nodeId: NODE_ID_PROFILE, fieldName: "image", fieldValue: profileFileName },
-      { nodeId: NODE_ID_SEMI_PROFILE, fieldName: "image", fieldValue: semiProfileFileName },
-      { nodeId: NODE_ID_LOW_ANGLE, fieldName: "image", fieldValue: lowAngleFileName },
-    ];
-
-    const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
-
-    const requestBody = {
-      nodeInfoList,
-      instanceType: "default",
-      usePersonalQueue: false,
-      webhookUrl,
-    };
-
-    console.log('[CharacterGenerator] AI App request:', JSON.stringify(requestBody));
-    
-    const response = await fetchWithRetry(
-      `https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID_CHARACTER_GENERATOR}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKeyToUse}` },
-        body: JSON.stringify(requestBody),
-      },
-      'Run AI App'
-    );
-
-    const data = await safeParseResponse(response, 'AI App response');
-
-    if (data.taskId) {
-      await supabase.from(TABLE_NAME).update({ task_id: data.taskId, raw_api_response: data }).eq('id', jobId);
-      await logStep(jobId, 'task_started', { taskId: data.taskId });
-
-      return new Response(JSON.stringify({ success: true, taskId: data.taskId }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Start failed - refund
-    const startErrorMsg = data.msg || data.message || 'Failed to start workflow';
-    await logStepFailure(jobId, 'run_workflow', `START_FAILED_REFUNDED: ${startErrorMsg}`, data);
-    
-    try {
-      await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: `START_FAILED_REFUNDED: ${startErrorMsg.slice(0, 100)}` });
-      await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `START_FAILED_REFUNDED: ${startErrorMsg}`, credits_refunded: true, completed_at: new Date().toISOString(), raw_api_response: data }).eq('id', jobId);
-    } catch (refundError) {
-      await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `START_FAILED (refund error): ${startErrorMsg}`, completed_at: new Date().toISOString(), raw_api_response: data }).eq('id', jobId);
-    }
-
-    return new Response(JSON.stringify({ error: startErrorMsg, code: data.code || 'RUN_FAILED', refunded: true }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    await logStep(jobId, 'delegating_to_queue');
+    const qmResponse = await fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/run-or-queue`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+      body: JSON.stringify({ table: TABLE_NAME, jobId }),
     });
+    const qmResult = await qmResponse.json();
 
+    if (qmResult.queued) {
+      return new Response(JSON.stringify({ success: true, queued: true, position: qmResult.position }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    if (qmResult.taskId) {
+      return new Response(JSON.stringify({ success: true, taskId: qmResult.taskId }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    return new Response(JSON.stringify({ error: qmResult.error || 'Failed', code: 'RUN_FAILED', refunded: true }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    await logStepFailure(jobId, 'run_exception', `START_EXCEPTION_REFUNDED: ${errorMessage}`);
-    
     try {
-      await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
-      await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
-    } catch (refundError) {
-      await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `START_EXCEPTION (refund error): ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
-    }
-
-    return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: true }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+      await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
+      await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
+    } catch { await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `QM_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId); }
+    return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: true }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 }
 
