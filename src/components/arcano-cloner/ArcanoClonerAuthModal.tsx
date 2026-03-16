@@ -174,7 +174,8 @@ export default function ArcanoClonerAuthModal({
         .maybeSingle();
 
       if (profile?.email_verified !== true) {
-        console.log('[ArcanoClonerAuth] onAuthStateChange: email not verified, ignoring login event');
+        console.log('[ArcanoClonerAuth] onAuthStateChange: email not verified, signing out');
+        await supabase.auth.signOut();
         return;
       }
 
