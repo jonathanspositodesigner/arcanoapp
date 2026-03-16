@@ -53,7 +53,7 @@ function buildFreeTrialEmailHtml(confirmLink: string): string {
         </td></tr>
         <tr><td style="padding-bottom:24px;">
           <p style="color:#c4b5fd;font-size:16px;line-height:1.6;margin:0;text-align:center;">
-            Clique no botão abaixo para confirmar seu email e receber <strong style="color:#ffffff;">180 créditos grátis</strong> (válidos por 24 horas) para usar nas ferramentas de IA.
+            Clique no botão abaixo para confirmar seu email e receber <strong style="color:#ffffff;">300 créditos grátis</strong> (válidos por 24 horas) para usar nas ferramentas de IA.
           </p>
         </td></tr>
         <tr><td align="center" style="padding-bottom:24px;">
