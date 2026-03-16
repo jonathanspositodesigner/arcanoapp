@@ -220,54 +220,96 @@ serve(async (req) => {
       return errorResponse('Produto não encontrado', 404, 'PRODUCT_NOT_FOUND');
     }
 
-    // 2. Dedup: reuse recent pending order for same email+product (prevents double-click / fallback duplicates)
+    // 2. Dedup robusto: evita múltiplos pendings por tentativas/fallback no mesmo email
     let order: any = null
-    const { data: existingOrder } = await supabase
+    const dedupWindowIso = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+
+    const baseOrderPayload = {
+      user_email: email,
+      product_id: product.id,
+      amount: product.price,
+      utm_data: isLightweight
+        ? { ...(sanitizeUtmData(utm_data) || {}), race_fallback: true }
+        : sanitizeUtmData(utm_data),
+      user_name: user_name?.trim() || null,
+      user_phone: phone?.fullDigits || null,
+      user_cpf: cleanCpf,
+      user_address_line: user_address?.line_1 || null,
+      user_address_zip: user_address?.zip_code || null,
+      user_address_city: user_address?.city || null,
+      user_address_state: user_address?.state || null,
+      user_address_country: user_address?.country || 'BR',
+      meta_fbp: fbp || null,
+      meta_fbc: fbc || null,
+      meta_user_agent: clientUserAgent || null,
+    }
+
+    // 2.1 Reuso preferencial: mesmo produto + pending recente
+    const { data: exactPendingOrder } = await supabase
       .from('asaas_orders')
       .select('id')
       .eq('user_email', email)
       .eq('product_id', product.id)
       .eq('status', 'pending')
-      .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString())
+      .gte('created_at', dedupWindowIso)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
 
-    if (existingOrder) {
-      order = existingOrder
-      console.log(`[${requestId}] ♻️ Reutilizando ordem pendente: ${order.id} | ${email}`)
+    if (exactPendingOrder) {
+      order = exactPendingOrder
+      console.log(`[${requestId}] ♻️ Reutilizando pending exato: ${order.id} | ${email}`)
     } else {
-      const { data: newOrder, error: orderError } = await supabase
+      // 2.2 Fallback: pending recente do mesmo email sem checkout já emitido
+      const { data: reusablePendingOrder } = await supabase
         .from('asaas_orders')
-        .insert({
-          user_email: email,
-          product_id: product.id,
-          amount: product.price,
-          status: 'pending',
-          asaas_customer_id: null,
-          utm_data: isLightweight 
-            ? { ...(sanitizeUtmData(utm_data) || {}), race_fallback: true }
-            : sanitizeUtmData(utm_data),
-          user_name: user_name?.trim() || null,
-          user_phone: phone?.fullDigits || null,
-          user_cpf: cleanCpf,
-          user_address_line: user_address?.line_1 || null,
-          user_address_zip: user_address?.zip_code || null,
-          user_address_city: user_address?.city || null,
-          user_address_state: user_address?.state || null,
-          user_address_country: user_address?.country || 'BR',
-          meta_fbp: fbp || null,
-          meta_fbc: fbc || null,
-          meta_user_agent: clientUserAgent || null,
-        })
-        .select('id')
-        .single()
+        .select('id, product_id, amount, asaas_payment_id')
+        .eq('user_email', email)
+        .eq('status', 'pending')
+        .gte('created_at', dedupWindowIso)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
 
-      if (orderError || !newOrder) {
-        console.error(`[${requestId}] Erro ao criar ordem:`, orderError)
-        return errorResponse('Erro ao criar ordem', 500, 'ORDER_CREATE_FAILED');
+      if (reusablePendingOrder) {
+        const sameProduct = reusablePendingOrder.product_id === product.id
+        const sameAmount = Number(reusablePendingOrder.amount || 0) === Number(product.price)
+
+        // Se já existe payment_id e produto mudou, não reutiliza para evitar colisão de idempotência
+        if (!sameProduct && reusablePendingOrder.asaas_payment_id) {
+          console.log(`[${requestId}] ↪️ Pending recente já com payment_id e produto diferente, criando nova ordem`)
+        } else {
+          if (!sameProduct || !sameAmount) {
+            await supabase
+              .from('asaas_orders')
+              .update({
+                ...baseOrderPayload,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', reusablePendingOrder.id)
+          }
+          order = { id: reusablePendingOrder.id }
+          console.log(`[${requestId}] ♻️ Reutilizando pending por email: ${order.id} | ${email}`)
+        }
       }
-      order = newOrder
+
+      if (!order) {
+        const { data: newOrder, error: orderError } = await supabase
+          .from('asaas_orders')
+          .insert({
+            ...baseOrderPayload,
+            status: 'pending',
+            asaas_customer_id: null,
+          })
+          .select('id')
+          .single()
+
+        if (orderError || !newOrder) {
+          console.error(`[${requestId}] Erro ao criar ordem:`, orderError)
+          return errorResponse('Erro ao criar ordem', 500, 'ORDER_CREATE_FAILED');
+        }
+        order = newOrder
+      }
     }
 
     orderId = order.id;
