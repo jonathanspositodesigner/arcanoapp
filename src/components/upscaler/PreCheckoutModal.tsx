@@ -153,12 +153,57 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
 
+  // Auto-submit for credit card: no data needed, redirect immediately
+  const handleCreditCardAutoSubmit = useCallback(async () => {
+    if (!productSlug) {
+      console.error('[PreCheckoutModal] productSlug inválido para auto-submit cartão');
+      toast({ title: "Erro", description: "Produto não identificado. Feche e tente novamente.", variant: "destructive" });
+      return;
+    }
+    if (!startFormSubmit()) return;
+
+    setLoading(true);
+    redirectedRef.current = false;
+
+    try {
+      const utmData = getSanitizedUtms();
+      const { fbp, fbc } = getMetaCookies();
+      const normalizedEmail = email.trim().toLowerCase() || undefined;
+
+      console.log('[PreCheckoutModal] 💳 Auto-submit cartão puro (sem dados)...');
+      const response = await invokeCheckout({
+        product_slug: productSlug,
+        ...(normalizedEmail ? { user_email: normalizedEmail } : {}),
+        billing_type: 'CREDIT_CARD',
+        utm_data: utmData,
+        fbp,
+        fbc,
+      });
+
+      if (!response.error && response.data?.checkout_url) {
+        const { checkout_url, event_id } = response.data;
+        if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
+          (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
+        }
+        window.location.href = checkout_url;
+        return;
+      }
+
+      const errorCode = response.data?.error_code || 'UNKNOWN';
+      showErrorToast(errorCode);
+    } catch (error) {
+      console.error('Erro checkout cartão:', error);
+      showErrorToast();
+    }
+    setLoading(false);
+    endFormSubmit();
+  }, [productSlug, email, startFormSubmit, endFormSubmit, showErrorToast]);
+
   const validate = () => {
     let valid = true;
-    const isCreditCard = paymentMethod === 'CREDIT_CARD';
     setNameError(''); setEmailError(''); setEmailConfirmError(''); setPhoneError(''); setCpfError('');
 
-    if (!isCreditCard && (!name.trim() || name.trim().length < 3)) {
+    if (!name.trim() || name.trim().length < 3) {
       setNameError('Digite seu nome completo');
       valid = false;
     }
@@ -180,24 +225,22 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       }
     }
 
-    if (!isCreditCard) {
-      const phoneDigits = phone.replace(/\D/g, '');
-      if (!phoneDigits) {
-        setPhoneError('Digite seu celular');
-        valid = false;
-      } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
-        setPhoneError('Celular inválido (DDD + número)');
-        valid = false;
-      }
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (!phoneDigits) {
+      setPhoneError('Digite seu celular');
+      valid = false;
+    } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+      setPhoneError('Celular inválido (DDD + número)');
+      valid = false;
+    }
 
-      const cpfDigits = cpf.replace(/\D/g, '');
-      if (!cpfDigits) {
-        setCpfError('Digite seu CPF');
-        valid = false;
-      } else if (!validateCPF(cpfDigits)) {
-        setCpfError('CPF inválido');
-        valid = false;
-      }
+    const cpfDigits = cpf.replace(/\D/g, '');
+    if (!cpfDigits) {
+      setCpfError('Digite seu CPF');
+      valid = false;
+    } else if (!validateCPF(cpfDigits)) {
+      setCpfError('CPF inválido');
+      valid = false;
     }
 
     return valid;
