@@ -115,6 +115,7 @@ const landingPlans: Plan[] = [
     price: "37,00",
     originalPrice: null,
     credits: "70 imagens",
+    creditsCount: "4.200 créditos",
     images: 70,
     tagline: "3x mais créditos por mais R$12",
     bestSeller: true,
