@@ -261,14 +261,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     }
   };
 
-  const handleFallbackClick = useCallback(() => {
-    const fallbackUrl = FALLBACK_CHECKOUT_URLS[productSlug || ''];
-    if (fallbackUrl) {
-      window.location.href = fallbackUrl;
-    }
-  }, [productSlug]);
-
-  const showErrorToast = useCallback((errorCode?: string, requestId?: string) => {
+  const showErrorToast = useCallback((errorCode?: string) => {
     const message = (errorCode && ERROR_MESSAGES[errorCode]) || 
       `Erro ao criar checkout. ${errorCode ? `(${errorCode})` : 'Tente novamente.'}`;
     
