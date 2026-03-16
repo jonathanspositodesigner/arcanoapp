@@ -312,10 +312,18 @@ const ArcanoClonerTeste = () => {
           </AnimatedSection>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mx-auto">
-            <img src={clonerResult1} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
-            <img src={clonerResult2} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
-            <img src={clonerResult3} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
-            <img src={clonerResult4} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
+            <AnimatedElement delay={100}>
+              <img src={clonerResult1} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
+            </AnimatedElement>
+            <AnimatedElement delay={200}>
+              <img src={clonerResult2} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
+            </AnimatedElement>
+            <AnimatedElement delay={300}>
+              <img src={clonerResult3} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
+            </AnimatedElement>
+            <AnimatedElement delay={400}>
+              <img src={clonerResult4} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
+            </AnimatedElement>
           </div>
         </div>
       </AnimatedSection>
