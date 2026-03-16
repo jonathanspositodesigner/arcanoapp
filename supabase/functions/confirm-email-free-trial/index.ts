@@ -178,7 +178,7 @@ serve(async (req) => {
           .insert({
             user_id: tokenData.user_id,
             email: tokenData.email,
-            credits_granted: 180,
+            credits_granted: 300,
           });
 
         // UPSERT into upscaler_credits
