@@ -155,9 +155,10 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
   const validate = () => {
     let valid = true;
+    const isCreditCard = paymentMethod === 'CREDIT_CARD';
     setNameError(''); setEmailError(''); setEmailConfirmError(''); setPhoneError(''); setCpfError('');
 
-    if (!name.trim() || name.trim().length < 3) {
+    if (!isCreditCard && (!name.trim() || name.trim().length < 3)) {
       setNameError('Digite seu nome completo');
       valid = false;
     }
@@ -179,22 +180,24 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       }
     }
 
-    const phoneDigits = phone.replace(/\D/g, '');
-    if (!phoneDigits) {
-      setPhoneError('Digite seu celular');
-      valid = false;
-    } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
-      setPhoneError('Celular inválido (DDD + número)');
-      valid = false;
-    }
+    if (!isCreditCard) {
+      const phoneDigits = phone.replace(/\D/g, '');
+      if (!phoneDigits) {
+        setPhoneError('Digite seu celular');
+        valid = false;
+      } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+        setPhoneError('Celular inválido (DDD + número)');
+        valid = false;
+      }
 
-    const cpfDigits = cpf.replace(/\D/g, '');
-    if (!cpfDigits) {
-      setCpfError('Digite seu CPF');
-      valid = false;
-    } else if (!validateCPF(cpfDigits)) {
-      setCpfError('CPF inválido');
-      valid = false;
+      const cpfDigits = cpf.replace(/\D/g, '');
+      if (!cpfDigits) {
+        setCpfError('Digite seu CPF');
+        valid = false;
+      } else if (!validateCPF(cpfDigits)) {
+        setCpfError('CPF inválido');
+        valid = false;
+      }
     }
 
     return valid;
@@ -288,10 +291,38 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     try {
       const utmData = getSanitizedUtms();
       const { fbp, fbc } = getMetaCookies();
-      
+      const normalizedEmail = email.trim().toLowerCase();
+
+      // Cartão: sempre checkout puro (sem envio prévio de CPF/telefone/endereço)
+      if (paymentMethod === 'CREDIT_CARD') {
+        console.log('[PreCheckoutModal] Chamando checkout puro para cartão...');
+        const cardResponse = await invokeCheckout({
+          product_slug: productSlug,
+          user_email: normalizedEmail,
+          billing_type: 'CREDIT_CARD',
+          utm_data: utmData,
+          fbp,
+          fbc,
+          lightweight: true,
+        });
+
+        if (!cardResponse.error && cardResponse.data?.checkout_url) {
+          const { checkout_url, event_id } = cardResponse.data;
+          if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
+            (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
+          }
+          window.location.href = checkout_url;
+          return;
+        }
+
+        const cardErrorCode = cardResponse.data?.error_code || 'UNKNOWN';
+        showErrorToast(cardErrorCode);
+        return;
+      }
+
       const fullPayload = {
         product_slug: productSlug,
-        user_email: email.trim().toLowerCase(),
+        user_email: normalizedEmail,
         user_phone: phone.replace(/\D/g, ''),
         user_name: name.trim(),
         user_cpf: cpf.replace(/\D/g, ''),
@@ -301,10 +332,10 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         fbc,
       };
 
-      // Sequential: try full checkout first, fallback to lightweight only if full fails
+      // PIX: tenta full primeiro, fallback lightweight se necessário
       console.log('[PreCheckoutModal] Chamando checkout full...');
       const fullResponse = await invokeCheckout(fullPayload);
-      
+
       if (!fullResponse.error && fullResponse.data?.checkout_url) {
         const { checkout_url, event_id } = fullResponse.data;
         console.log(`[PreCheckoutModal] ✅ Full checkout OK: ${checkout_url.substring(0, 60)}...`);
@@ -315,11 +346,10 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         return;
       }
 
-      // Full failed — try lightweight as fallback
       console.warn('[PreCheckoutModal] Full falhou, tentando lightweight...', fullResponse.error);
       const lightweightPayload = {
         product_slug: productSlug,
-        user_email: email.trim().toLowerCase(),
+        user_email: normalizedEmail,
         user_name: name.trim(),
         billing_type: paymentMethod,
         utm_data: utmData,
@@ -340,7 +370,6 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         return;
       }
 
-      // Both failed — show detailed error
       let errorCode = 'UNKNOWN';
       const errorSource = lightResponse.data?.error_code || fullResponse.data?.error_code;
       if (errorSource) {
@@ -482,18 +511,22 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
             )}
 
             <div className="space-y-2.5 md:space-y-4">
-              {/* Nome */}
-              <div>
-                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Nome completo</label>
-                <input
-                  type="text"
-                  placeholder="Seu nome completo"
-                  value={name}
-                  onChange={(e) => { setName(e.target.value); setNameError(''); }}
-                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
-                />
-                {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
-              </div>
+              {paymentMethod === 'PIX' && (
+                <>
+                  {/* Nome */}
+                  <div>
+                    <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Nome completo</label>
+                    <input
+                      type="text"
+                      placeholder="Seu nome completo"
+                      value={name}
+                      onChange={(e) => { setName(e.target.value); setNameError(''); }}
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                    />
+                    {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
+                  </div>
+                </>
+              )}
 
               {/* Email */}
               <div>
@@ -524,33 +557,37 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                 </div>
               )}
 
-              {/* Celular */}
-              <div>
-                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Celular (com DDD)</label>
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="(11) 99999-9999"
-                  value={phone}
-                  onChange={(e) => { setPhone(formatPhone(e.target.value)); setPhoneError(''); }}
-                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
-                />
-                {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
-              </div>
+              {paymentMethod === 'PIX' && (
+                <>
+                  {/* Celular */}
+                  <div>
+                    <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Celular (com DDD)</label>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      placeholder="(11) 99999-9999"
+                      value={phone}
+                      onChange={(e) => { setPhone(formatPhone(e.target.value)); setPhoneError(''); }}
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                    />
+                    {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
+                  </div>
 
-              {/* CPF */}
-              <div>
-                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">CPF</label>
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="000.000.000-00"
-                  value={cpf}
-                  onChange={(e) => { setCpf(formatCpf(e.target.value)); setCpfError(''); }}
-                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
-                />
-                {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
-              </div>
+                  {/* CPF */}
+                  <div>
+                    <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">CPF</label>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      placeholder="000.000.000-00"
+                      value={cpf}
+                      onChange={(e) => { setCpf(formatCpf(e.target.value)); setCpfError(''); }}
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                    />
+                    {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
+                  </div>
+                </>
+              )}
 
               {/* Payment Method */}
               <div>

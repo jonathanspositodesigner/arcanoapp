@@ -135,7 +135,10 @@ serve(async (req) => {
   try {
     const { product_slug, user_email, user_phone, user_name, user_cpf, billing_type, utm_data, user_address, fbp, fbc, lightweight } = await req.json()
     const clientUserAgent = req.headers.get('user-agent') || null
-    const isLightweight = lightweight === true
+    const isPureCreditCardCheckout = billing_type === 'CREDIT_CARD'
+    const isLightweightFallback = lightweight === true
+    const useMinimalValidation = isLightweightFallback || isPureCreditCardCheckout
+    const shouldPersistPersonalData = !isPureCreditCardCheckout
 
     if (!product_slug || !user_email) {
       return errorResponse('product_slug e user_email são obrigatórios', 400, 'MISSING_FIELDS');
@@ -147,15 +150,15 @@ serve(async (req) => {
       return errorResponse('Email inválido', 400, 'INVALID_EMAIL');
     }
 
-    // Lightweight mode: skip phone/CPF validation, use minimal data
+    // Modo mínimo: validações relaxadas para checkout puro no cartão/fallback lightweight
     let phone: { areaCode: string; phoneNumber: string; fullDigits: string } | null = null;
     let cleanCpf: string | null = null;
 
-    if (isLightweight) {
+    if (useMinimalValidation) {
       // Minimal: try to parse phone but don't fail if missing
       phone = normalizePhone(user_phone);
       cleanCpf = user_cpf ? user_cpf.replace(/\D/g, '') : null;
-      console.log(`[${requestId}] ⚡ Lightweight mode - skipping validations`)
+      console.log(`[${requestId}] ⚡ Modo mínimo ativo (${isPureCreditCardCheckout ? 'cartão puro' : 'lightweight'}) - validações relaxadas`)
     } else {
       // Full mode: validate everything
       phone = normalizePhone(user_phone);
@@ -228,17 +231,17 @@ serve(async (req) => {
       user_email: email,
       product_id: product.id,
       amount: product.price,
-      utm_data: isLightweight
+      utm_data: isLightweightFallback
         ? { ...(sanitizeUtmData(utm_data) || {}), race_fallback: true }
         : sanitizeUtmData(utm_data),
-      user_name: user_name?.trim() || null,
-      user_phone: phone?.fullDigits || null,
-      user_cpf: cleanCpf,
-      user_address_line: user_address?.line_1 || null,
-      user_address_zip: user_address?.zip_code || null,
-      user_address_city: user_address?.city || null,
-      user_address_state: user_address?.state || null,
-      user_address_country: user_address?.country || 'BR',
+      user_name: shouldPersistPersonalData ? (user_name?.trim() || null) : null,
+      user_phone: shouldPersistPersonalData ? (phone?.fullDigits || null) : null,
+      user_cpf: shouldPersistPersonalData ? cleanCpf : null,
+      user_address_line: shouldPersistPersonalData ? (user_address?.line_1 || null) : null,
+      user_address_zip: shouldPersistPersonalData ? (user_address?.zip_code || null) : null,
+      user_address_city: shouldPersistPersonalData ? (user_address?.city || null) : null,
+      user_address_state: shouldPersistPersonalData ? (user_address?.state || null) : null,
+      user_address_country: shouldPersistPersonalData ? (user_address?.country || 'BR') : null,
       meta_fbp: fbp || null,
       meta_fbc: fbc || null,
       meta_user_agent: clientUserAgent || null,
@@ -315,9 +318,9 @@ serve(async (req) => {
     orderId = order.id;
     console.log(`[${requestId}] 📦 Ordem: ${orderId} | ${product.title} | ${email}`)
 
-    // Fire-and-forget: atualizar perfil
+    // Fire-and-forget: atualizar perfil (desabilitado no modo cartão puro)
     const trimmedName = user_name?.trim() || null
-    if (trimmedName || cleanCpf || phone?.fullDigits || user_address?.line_1) {
+    if (shouldPersistPersonalData && (trimmedName || cleanCpf || phone?.fullDigits || user_address?.line_1)) {
       supabase
         .from('profiles')
         .select('id, name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
@@ -360,33 +363,34 @@ serve(async (req) => {
 
     const customerName = user_name?.trim() || email.split('@')[0]
 
-    // Build customer object based on lightweight mode
+    // Modo cartão puro: enviar customer mínimo e deixar o checkout coletar dados sensíveis
     const customerObj: Record<string, unknown> = {
       name: customerName,
       email: email,
       type: 'individual',
     }
-    if (cleanCpf) {
-      customerObj.document = cleanCpf
-      customerObj.document_type = 'CPF'
-    }
-    if (phone) {
-      customerObj.phones = {
-        mobile_phone: {
-          country_code: '55',
-          area_code: phone.areaCode,
-          number: phone.phoneNumber
+    if (!isPureCreditCardCheckout) {
+      if (cleanCpf) {
+        customerObj.document = cleanCpf
+        customerObj.document_type = 'CPF'
+      }
+      if (phone) {
+        customerObj.phones = {
+          mobile_phone: {
+            country_code: '55',
+            area_code: phone.areaCode,
+            number: phone.phoneNumber
+          }
         }
       }
-    }
-    // Incluir endereço no customer para antifraude (credit card precisa disso)
-    if (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) {
-      customerObj.address = {
-        line_1: user_address.line_1,
-        zip_code: user_address.zip_code.replace(/\D/g, ''),
-        city: user_address.city,
-        state: user_address.state,
-        country: user_address.country || 'BR'
+      if (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) {
+        customerObj.address = {
+          line_1: user_address.line_1,
+          zip_code: user_address.zip_code.replace(/\D/g, ''),
+          city: user_address.city,
+          state: user_address.state,
+          country: user_address.country || 'BR'
+        }
       }
     }
 
@@ -412,11 +416,11 @@ serve(async (req) => {
             success_url: product.pack_slug === 'upscaler-arcano'
               ? `https://arcanoapp.voxvisual.com.br/sucesso-upscaler-arcano`
               : `https://arcanoapp.voxvisual.com.br/sucesso-compra`,
-            // Lightweight: user fills everything on Pagar.me page
-            customer_editable: isLightweight,
+            // Modo mínimo/cartão puro: gateway coleta dados direto no checkout hospedado
+            customer_editable: useMinimalValidation,
             billing_address_editable: true,
             skip_checkout_success_page: billing_type === 'CREDIT_CARD',
-            ...(!isLightweight && (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) ? {
+            ...(!useMinimalValidation && (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) ? {
               billing_address: {
                 line_1: user_address.line_1,
                 zip_code: user_address.zip_code.replace(/\D/g, ''),
@@ -442,7 +446,8 @@ serve(async (req) => {
       metadata: {
         order_id: order.id,
         request_id: requestId,
-        ...(isLightweight ? { lightweight: true } : {})
+        ...(isLightweightFallback ? { lightweight: true } : {}),
+        ...(isPureCreditCardCheckout ? { pure_credit_card_checkout: true } : {})
       }
     }
 
