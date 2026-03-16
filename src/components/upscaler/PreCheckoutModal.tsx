@@ -232,11 +232,8 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       const { is_paid, status } = response.data;
 
       if (is_paid) {
-        // Redirecionar para sucesso baseado no produto
-        const successPage = productSlug?.includes('upscaler-arcano') || productSlug === 'upscaller-arcano'
-          ? '/sucesso-upscaler-arcano'
-          : '/sucesso-compra';
-        window.location.href = `https://arcanoapp.voxvisual.com.br${successPage}`;
+        // Redirecionar para sucesso (fluxo unificado)
+        window.location.href = `https://arcanoapp.voxvisual.com.br/sucesso-compra`;
       } else {
         // Pagamento pendente — webhook vai processar
         alert('Pagamento em processamento. Você receberá uma confirmação em instantes.');
