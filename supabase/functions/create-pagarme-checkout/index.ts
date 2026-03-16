@@ -318,9 +318,9 @@ serve(async (req) => {
     orderId = order.id;
     console.log(`[${requestId}] 📦 Ordem: ${orderId} | ${product.title} | ${email}`)
 
-    // Fire-and-forget: atualizar perfil
+    // Fire-and-forget: atualizar perfil (desabilitado no modo cartão puro)
     const trimmedName = user_name?.trim() || null
-    if (trimmedName || cleanCpf || phone?.fullDigits || user_address?.line_1) {
+    if (shouldPersistPersonalData && (trimmedName || cleanCpf || phone?.fullDigits || user_address?.line_1)) {
       supabase
         .from('profiles')
         .select('id, name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
