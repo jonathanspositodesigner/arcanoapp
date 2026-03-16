@@ -369,7 +369,7 @@ const ArcanoClonerTeste = () => {
                 {
                   feature: "Preço de Entrada",
                   other: "R$ 100 a R$ 150+ /mês",
-                  cloner: "A partir de R$ 37,00 (Único)",
+                  cloner: "A partir de R$ 24,90 (Único)",
                 },
                 {
                   feature: "Qualidade da Imagem",
