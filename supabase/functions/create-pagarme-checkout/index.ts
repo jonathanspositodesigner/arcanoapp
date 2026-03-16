@@ -122,8 +122,9 @@ serve(async (req) => {
   let supabase: any = null;
 
   try {
-    const { product_slug, user_email, user_phone, user_name, user_cpf, billing_type, utm_data, user_address, fbp, fbc } = await req.json()
+    const { product_slug, user_email, user_phone, user_name, user_cpf, billing_type, utm_data, user_address, fbp, fbc, lightweight } = await req.json()
     const clientUserAgent = req.headers.get('user-agent') || null
+    const isLightweight = lightweight === true
 
     if (!product_slug || !user_email) {
       return errorResponse('product_slug e user_email são obrigatórios', 400, 'MISSING_FIELDS');
@@ -135,24 +136,34 @@ serve(async (req) => {
       return errorResponse('Email inválido', 400, 'INVALID_EMAIL');
     }
 
-    // Normalizar telefone com tolerância a prefixo 55
-    const phone = normalizePhone(user_phone);
-    if (!phone) {
-      return errorResponse('Celular inválido. Informe DDD + número (ex: 11999998888).', 400, 'INVALID_PHONE');
-    }
+    // Lightweight mode: skip phone/CPF validation, use minimal data
+    let phone: { areaCode: string; phoneNumber: string; fullDigits: string } | null = null;
+    let cleanCpf: string | null = null;
 
-    // Validar CPF com algoritmo completo (módulo 11)
-    const cleanCpf = user_cpf ? user_cpf.replace(/\D/g, '') : null;
-    if (cleanCpf) {
-      if (cleanCpf.length !== 11 || /^(\d)\1{10}$/.test(cleanCpf)) {
-        return errorResponse('CPF inválido. Verifique os dígitos informados.', 400, 'INVALID_CPF');
+    if (isLightweight) {
+      // Minimal: try to parse phone but don't fail if missing
+      phone = normalizePhone(user_phone);
+      cleanCpf = user_cpf ? user_cpf.replace(/\D/g, '') : null;
+      console.log(`[${requestId}] ⚡ Lightweight mode - skipping validations`)
+    } else {
+      // Full mode: validate everything
+      phone = normalizePhone(user_phone);
+      if (!phone) {
+        return errorResponse('Celular inválido. Informe DDD + número (ex: 11999998888).', 400, 'INVALID_PHONE');
       }
-      for (let t = 9; t < 11; t++) {
-        let sum = 0;
-        for (let i = 0; i < t; i++) sum += parseInt(cleanCpf[i]) * (t + 1 - i);
-        const remainder = (sum * 10) % 11;
-        if ((remainder === 10 ? 0 : remainder) !== parseInt(cleanCpf[t])) {
+
+      cleanCpf = user_cpf ? user_cpf.replace(/\D/g, '') : null;
+      if (cleanCpf) {
+        if (cleanCpf.length !== 11 || /^(\d)\1{10}$/.test(cleanCpf)) {
           return errorResponse('CPF inválido. Verifique os dígitos informados.', 400, 'INVALID_CPF');
+        }
+        for (let t = 9; t < 11; t++) {
+          let sum = 0;
+          for (let i = 0; i < t; i++) sum += parseInt(cleanCpf[i]) * (t + 1 - i);
+          const remainder = (sum * 10) % 11;
+          if ((remainder === 10 ? 0 : remainder) !== parseInt(cleanCpf[t])) {
+            return errorResponse('CPF inválido. Verifique os dígitos informados.', 400, 'INVALID_CPF');
+          }
         }
       }
     }
@@ -207,9 +218,11 @@ serve(async (req) => {
         amount: product.price,
         status: 'pending',
         asaas_customer_id: null,
-        utm_data: sanitizeUtmData(utm_data),
+        utm_data: isLightweight 
+          ? { ...(sanitizeUtmData(utm_data) || {}), race_fallback: true }
+          : sanitizeUtmData(utm_data),
         user_name: user_name?.trim() || null,
-        user_phone: phone.fullDigits,
+        user_phone: phone?.fullDigits || null,
         user_cpf: cleanCpf,
         user_address_line: user_address?.line_1 || null,
         user_address_zip: user_address?.zip_code || null,
@@ -276,6 +289,26 @@ serve(async (req) => {
 
     const customerName = user_name?.trim() || email.split('@')[0]
 
+    // Build customer object based on lightweight mode
+    const customerObj: Record<string, unknown> = {
+      name: customerName,
+      email: email,
+      type: 'individual',
+    }
+    if (cleanCpf) {
+      customerObj.document = cleanCpf
+      customerObj.document_type = 'CPF'
+    }
+    if (phone) {
+      customerObj.phones = {
+        mobile_phone: {
+          country_code: '55',
+          area_code: phone.areaCode,
+          number: phone.phoneNumber
+        }
+      }
+    }
+
     const checkoutPayload: Record<string, unknown> = {
       items: [
         {
@@ -284,20 +317,7 @@ serve(async (req) => {
           quantity: 1
         }
       ],
-      customer: {
-        name: customerName,
-        email: email,
-        type: 'individual',
-        document: cleanCpf || undefined,
-        document_type: cleanCpf ? 'CPF' : undefined,
-        phones: {
-          mobile_phone: {
-            country_code: '55',
-            area_code: phone.areaCode,
-            number: phone.phoneNumber
-          }
-        }
-      },
+      customer: customerObj,
       payments: [
         {
           payment_method: 'checkout',
@@ -307,10 +327,11 @@ serve(async (req) => {
             success_url: product.pack_slug === 'upscaler-arcano'
               ? `https://arcanoapp.voxvisual.com.br/sucesso-upscaler-arcano`
               : `https://arcanoapp.voxvisual.com.br/sucesso-compra`,
-            customer_editable: false,
-            billing_address_editable: billing_type === 'CREDIT_CARD',
+            // Lightweight: user fills everything on Pagar.me page
+            customer_editable: isLightweight,
+            billing_address_editable: isLightweight || billing_type === 'CREDIT_CARD',
             skip_checkout_success_page: billing_type === 'CREDIT_CARD',
-            ...(billing_type === 'PIX' ? (
+            ...(!isLightweight && billing_type === 'PIX' ? (
               (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) ? {
                 billing_address: {
                   line_1: user_address.line_1,
@@ -322,9 +343,7 @@ serve(async (req) => {
               } : {
                 billing_address_editable: true
               }
-            ) : {
-              billing_address_editable: true
-            }),
+            ) : {}),
             credit_card: {
               capture: true,
               installments: [
@@ -341,7 +360,8 @@ serve(async (req) => {
       ],
       metadata: {
         order_id: order.id,
-        request_id: requestId
+        request_id: requestId,
+        ...(isLightweight ? { lightweight: true } : {})
       }
     }
 
