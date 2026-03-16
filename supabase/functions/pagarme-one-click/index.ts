@@ -130,15 +130,33 @@ serve(async (req) => {
 
     console.log(`📦 One-Click: Ordem ${order.id} | Produto: ${product.title} | Card: ****${savedCard.card_last_four}`)
 
-    // 4. Criar pedido direto no Pagar.me com card_id
+    // 4. Buscar dados do perfil para billing address
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
+      .eq('id', user.id)
+      .single()
+
+    // 5. Criar pedido direto no Pagar.me com card_id
     const amountInCents = Math.round(Number(product.price) * 100)
 
-    const orderPayload = {
+    // Billing address é obrigatório para transações com card_id
+    const billingAddress: Record<string, any> = {
+      country: profile?.address_country || 'BR',
+      state: profile?.address_state || 'SP',
+      city: profile?.address_city || 'Sao Paulo',
+      zip_code: profile?.address_zip?.replace(/\D/g, '') || '01001000',
+      line_1: profile?.address_line || 'Não informado',
+    }
+
+    const orderPayload: Record<string, any> = {
+      code: order.id,
       items: [
         {
           amount: amountInCents,
           description: product.title,
-          quantity: 1
+          quantity: 1,
+          code: product.slug || product.id,
         }
       ],
       customer_id: savedCard.pagarme_customer_id,
@@ -148,13 +166,21 @@ serve(async (req) => {
           credit_card: {
             card_id: savedCard.pagarme_card_id,
             operation_type: 'auth_and_capture',
-            installments: 1
-          }
+            installments: 1,
+            recurrence_cycle: 'subsequent',
+            statement_descriptor: 'ARCANO',
+          },
+          amount: amountInCents,
         }
       ],
       metadata: {
         order_id: order.id
       }
+    }
+
+    // Adicionar billing_address ao payment de credit_card
+    orderPayload.payments[0].credit_card.card = {
+      billing_address: billingAddress,
     }
 
     const pagarmeAuth = 'Basic ' + btoa(pagarmeSecretKey + ':')
@@ -194,17 +220,38 @@ serve(async (req) => {
       })
     }
 
-    // 5. Atualizar ordem com payment_id
-    await supabase.from('asaas_orders').update({
-      asaas_payment_id: pagarmeData.id
-    }).eq('id', order.id)
-
-    const chargeStatus = pagarmeData.charges?.[0]?.status || pagarmeData.status
+    // 6. Atualizar ordem com payment_id
+    const charge = pagarmeData.charges?.[0]
+    const chargeStatus = charge?.status || pagarmeData.status
     const isPaid = chargeStatus === 'paid'
 
-    console.log(`✅ One-Click Pagar.me: ${pagarmeData.id} | Status: ${chargeStatus}`)
+    // Capturar erro do antifraude ou gateway
+    const gatewayError = charge?.last_transaction?.gateway_response?.errors?.[0]
+    const antifraudStatus = charge?.last_transaction?.antifraud_response?.status
+    const gatewayMessage = gatewayError?.message || charge?.last_transaction?.acquirer_message || null
 
-    // 6. Enviar InitiateCheckout + Purchase (se pago) para Meta CAPI
+    console.log(`✅ One-Click Pagar.me: ${pagarmeData.id} | Status: ${chargeStatus} | Antifraude: ${antifraudStatus || 'N/A'} | GW: ${gatewayMessage || 'OK'}`)
+
+    if (!isPaid && chargeStatus === 'failed') {
+      console.error(`❌ One-Click FALHOU: ${JSON.stringify({
+        charge_status: chargeStatus,
+        antifraud: antifraudStatus,
+        gateway_error: gatewayMessage,
+        acquirer_return_code: charge?.last_transaction?.acquirer_return_code,
+        acquirer_message: charge?.last_transaction?.acquirer_message,
+      })}`)
+    }
+
+    await supabase.from('asaas_orders').update({
+      asaas_payment_id: pagarmeData.id,
+      payment_method: 'credit_card',
+      status: isPaid ? 'paid' : (chargeStatus === 'failed' ? 'failed' : 'pending'),
+      gateway_error_code: charge?.last_transaction?.acquirer_return_code || null,
+      gateway_error_message: gatewayMessage || null,
+      ...(isPaid ? { paid_at: new Date().toISOString() } : {}),
+    }).eq('id', order.id)
+
+    // 7. Enviar InitiateCheckout + Purchase (se pago) para Meta CAPI
     const capiEventId = crypto.randomUUID()
     try {
       await fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {
