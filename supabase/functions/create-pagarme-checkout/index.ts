@@ -145,17 +145,18 @@ serve(async (req) => {
     }
 
     // Cartão puro: não enviamos nome/email fictícios ao gateway
-    let email: string
+    let email: string | null = null
     let customerEmail: string | null = null
     if (user_email) {
-      email = user_email.toLowerCase().trim()
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      const trimmedEmail = user_email.toLowerCase().trim()
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
         return errorResponse('Email inválido', 400, 'INVALID_EMAIL');
       }
-      customerEmail = email
+      email = trimmedEmail
+      customerEmail = trimmedEmail
     } else if (isPureCreditCardCheckout) {
-      email = `checkout-${crypto.randomUUID().slice(0, 8)}@temp.arcano`
-      console.log(`[${requestId}] 💳 Cartão puro sem email — sem pré-preenchimento de cliente no checkout`)
+      // Cartão puro: ZERO dados fictícios — gateway coleta tudo
+      console.log(`[${requestId}] 💳 Cartão puro sem email — nenhum dado fictício enviado`)
     } else {
       return errorResponse('user_email é obrigatório para este método', 400, 'MISSING_FIELDS');
     }

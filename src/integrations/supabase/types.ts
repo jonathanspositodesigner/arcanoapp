@@ -1040,7 +1040,7 @@ export type Database = {
           user_address_state: string | null
           user_address_zip: string | null
           user_cpf: string | null
-          user_email: string
+          user_email: string | null
           user_id: string | null
           user_name: string | null
           user_phone: string | null
@@ -1072,7 +1072,7 @@ export type Database = {
           user_address_state?: string | null
           user_address_zip?: string | null
           user_cpf?: string | null
-          user_email: string
+          user_email?: string | null
           user_id?: string | null
           user_name?: string | null
           user_phone?: string | null
@@ -1104,7 +1104,7 @@ export type Database = {
           user_address_state?: string | null
           user_address_zip?: string | null
           user_cpf?: string | null
-          user_email?: string
+          user_email?: string | null
           user_id?: string | null
           user_name?: string | null
           user_phone?: string | null

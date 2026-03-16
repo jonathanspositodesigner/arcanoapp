@@ -1,0 +1,1 @@
+ALTER TABLE public.asaas_orders ALTER COLUMN user_email DROP NOT NULL;
