@@ -343,7 +343,7 @@ const ArcanoClonerTeste = () => {
                 <span className="text-fuchsia-400">na palma da mão.</span>
               </h2>
               <p className="text-white/50 text-center text-sm mb-10 max-w-xl mx-auto">
-                Chega de ferramentas complexas que te prendem em assinaturas mensais e não funcionam no seu celular.
+                Chega de ferramentas complexas que não entregam o que prometem e não funcionam no seu celular.
               </p>
             </AnimatedSection>
 
