@@ -1203,151 +1203,164 @@ async function startJobOnRunningHub(
   account: ApiAccount
 ): Promise<{ taskId: string | null }> {
   const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
+  // Read params from job_payload (primary) with fallbacks to direct columns
+  const p = job.job_payload || {};
   
   let webappId: string;
   let nodeInfoList: any[];
   
   switch (table) {
-    case 'upscaler_jobs':
-      // Determinar WebApp baseado na categoria e versão persistidas
-      const category = job.category || 'pessoas_perto';
-      const version = job.version || 'standard';
-      const framingMode = job.framing_mode || 'perto';
+    case 'upscaler_jobs': {
+      const category = p.category || job.category || 'pessoas_perto';
+      const version = p.version || job.version || 'standard';
+      const framingMode = p.framingMode || job.framing_mode || 'perto';
+      const inputFile = p.inputFileName || job.input_file_name;
+      const detailDenoise = p.detailDenoise ?? job.detail_denoise;
+      const resolution = p.resolution || job.resolution;
+      const prompt = p.prompt || job.prompt;
+      const editingLevel = p.editingLevel ?? job.editing_level;
       
       if (category === 'fotoAntiga') {
         webappId = WEBAPP_IDS.upscaler_jobs.fotoAntiga;
-        nodeInfoList = [
-          { nodeId: "139", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
-        ];
+        nodeInfoList = [{ nodeId: "139", fieldName: "image", fieldValue: inputFile }];
       } else if (category === 'comida') {
         webappId = WEBAPP_IDS.upscaler_jobs.comida;
-        nodeInfoList = [
-          { nodeId: "50", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
-        ];
-        if (version === 'pro' && job.detail_denoise !== undefined) {
-          nodeInfoList.push({ nodeId: "48", fieldName: "value", fieldValue: job.detail_denoise });
+        nodeInfoList = [{ nodeId: "50", fieldName: "image", fieldValue: inputFile }];
+        if (detailDenoise !== undefined) {
+          nodeInfoList.push({ nodeId: "48", fieldName: "value", fieldValue: String(detailDenoise) });
         }
       } else if (category === 'logo') {
         webappId = WEBAPP_IDS.upscaler_jobs.logo;
-        nodeInfoList = [
-          { nodeId: "39", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
-        ];
-        if (version === 'pro' && job.detail_denoise !== undefined) {
-          nodeInfoList.push({ nodeId: "33", fieldName: "value", fieldValue: job.detail_denoise });
+        nodeInfoList = [{ nodeId: "39", fieldName: "image", fieldValue: inputFile }];
+        if (version === 'pro' && detailDenoise !== undefined) {
+          nodeInfoList.push({ nodeId: "33", fieldName: "value", fieldValue: String(detailDenoise) });
         }
       } else if (category === 'render3d') {
         webappId = WEBAPP_IDS.upscaler_jobs.render3d;
-        nodeInfoList = [
-          { nodeId: "301", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
-        ];
-        if (version === 'pro' && job.detail_denoise !== undefined) {
-          nodeInfoList.push({ nodeId: "300", fieldName: "value", fieldValue: job.detail_denoise });
+        nodeInfoList = [{ nodeId: "301", fieldName: "image", fieldValue: inputFile }];
+        if (version === 'pro' && detailDenoise !== undefined) {
+          nodeInfoList.push({ nodeId: "300", fieldName: "value", fieldValue: String(detailDenoise) });
         }
-      } else if (framingMode === 'longe') {
-        // Novo WebApp "De Longe" 2020634325636616194 com nodeIds 1 (image) e 2 (resolution)
+      } else if (framingMode === 'longe' && category?.startsWith('pessoas')) {
         webappId = WEBAPP_IDS.upscaler_jobs.longe;
         nodeInfoList = [
-          { nodeId: "1", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
+          { nodeId: "1", fieldName: "image", fieldValue: inputFile },
+          { nodeId: "2", fieldName: "value", fieldValue: String(resolution || 4096) },
         ];
-        if (job.resolution) {
-          const resValue = job.resolution === '4k' ? 4096 : 2048;
-          nodeInfoList.push({ nodeId: "2", fieldName: "value", fieldValue: resValue });
-        }
       } else {
         webappId = version === 'pro' ? WEBAPP_IDS.upscaler_jobs.pro : WEBAPP_IDS.upscaler_jobs.standard;
         const resNodeId = version === 'pro' ? '73' : '75';
-        
         nodeInfoList = [
-          { nodeId: "26", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
+          { nodeId: "26", fieldName: "image", fieldValue: inputFile },
+          { nodeId: "25", fieldName: "value", fieldValue: detailDenoise || 0.15 },
+          { nodeId: resNodeId, fieldName: "value", fieldValue: String(resolution || 2048) },
         ];
-        
-        if (job.detail_denoise !== undefined) {
-          nodeInfoList.push({ nodeId: "25", fieldName: "value", fieldValue: job.detail_denoise });
+        if (version === 'pro' && category === 'pessoas_perto' && editingLevel !== undefined) {
+          nodeInfoList.push({ nodeId: "91", fieldName: "value", fieldValue: String(editingLevel) });
         }
-        if (job.prompt) {
-          nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: job.prompt });
-        }
-        if (job.resolution) {
-          const resValue = job.resolution === '4k' ? 4096 : 2048;
-          nodeInfoList.push({ nodeId: resNodeId, fieldName: "value", fieldValue: resValue });
+        if (prompt) {
+          nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: prompt });
         }
       }
       break;
+    }
       
-    case 'pose_changer_jobs':
+    case 'pose_changer_jobs': {
       webappId = WEBAPP_IDS.pose_changer_jobs;
       nodeInfoList = [
-        { nodeId: "27", fieldName: "image", fieldValue: job.person_image_url || job.person_file_name },
-        { nodeId: "60", fieldName: "image", fieldValue: job.reference_image_url || job.reference_file_name },
+        { nodeId: "27", fieldName: "image", fieldValue: p.personFileName || job.person_file_name },
+        { nodeId: "60", fieldName: "image", fieldValue: p.referenceFileName || job.reference_file_name },
       ];
       break;
+    }
       
-    case 'veste_ai_jobs':
+    case 'veste_ai_jobs': {
       webappId = WEBAPP_IDS.veste_ai_jobs;
       nodeInfoList = [
-        { nodeId: "41", fieldName: "image", fieldValue: job.person_image_url || job.person_file_name },
-        { nodeId: "43", fieldName: "image", fieldValue: job.clothing_image_url || job.clothing_file_name },
+        { nodeId: "41", fieldName: "image", fieldValue: p.personFileName || job.person_file_name },
+        { nodeId: "43", fieldName: "image", fieldValue: p.clothingFileName || job.clothing_file_name },
       ];
       break;
+    }
       
-    case 'video_upscaler_jobs':
+    case 'video_upscaler_jobs': {
       webappId = WEBAPP_IDS.video_upscaler_jobs;
       const videoWebhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-video-upscaler-webhook`;
       nodeInfoList = [
-        { nodeId: "3", fieldName: "video", fieldValue: job.video_url || job.input_file_name },
+        { nodeId: "3", fieldName: "video", fieldValue: p.videoUrl || job.video_url || job.input_file_name },
       ];
       return await callRunningHubApi(webappId, nodeInfoList, videoWebhookUrl, table, job.id, account);
+    }
       
-    case 'arcano_cloner_jobs':
+    case 'arcano_cloner_jobs': {
       webappId = WEBAPP_IDS.arcano_cloner_jobs;
       nodeInfoList = [
-        { nodeId: "58", fieldName: "image", fieldValue: job.user_image_url || job.user_file_name },
-        { nodeId: "62", fieldName: "image", fieldValue: job.reference_image_url || job.reference_file_name },
-        { nodeId: "133", fieldName: "value", fieldValue: String(job.creativity ?? 0) },
-        { nodeId: "135", fieldName: "text", fieldValue: job.custom_prompt || '' },
-        { nodeId: "145", fieldName: "aspectRatio", fieldValue: job.aspect_ratio || '1:1' },
-      ];
-      break;
-
-    case 'character_generator_jobs':
-      webappId = WEBAPP_IDS.character_generator_jobs;
-      nodeInfoList = [
-        { nodeId: "41", fieldName: "image", fieldValue: job.front_image_url || job.front_file_name },
-        { nodeId: "39", fieldName: "image", fieldValue: job.profile_image_url || job.profile_file_name },
-        { nodeId: "40", fieldName: "image", fieldValue: job.semi_profile_image_url || job.semi_profile_file_name },
-        { nodeId: "42", fieldName: "image", fieldValue: job.low_angle_image_url || job.low_angle_file_name },
-      ];
-      break;
-
-    case 'flyer_maker_jobs': {
-      webappId = WEBAPP_IDS.flyer_maker_jobs;
-      const artistFiles = (job.artist_photo_file_names as string[]) || [];
-      const firstArtist = artistFiles[0] || '';
-      nodeInfoList = [
-        { nodeId: "11", fieldName: "image", fieldValue: artistFiles[0] || firstArtist },
-        { nodeId: "12", fieldName: "image", fieldValue: artistFiles[1] || firstArtist },
-        { nodeId: "13", fieldName: "image", fieldValue: artistFiles[2] || firstArtist },
-        { nodeId: "14", fieldName: "image", fieldValue: artistFiles[3] || firstArtist },
-        { nodeId: "15", fieldName: "image", fieldValue: artistFiles[4] || firstArtist },
-        { nodeId: "1", fieldName: "image", fieldValue: job.reference_file_name || job.reference_image_url },
-        { nodeId: "28", fieldName: "image", fieldValue: job.logo_file_name || job.logo_url },
-        { nodeId: "6", fieldName: "text", fieldValue: job.date_time_location || '' },
-        { nodeId: "10", fieldName: "text", fieldValue: job.artist_names || '' },
-        { nodeId: "7", fieldName: "text", fieldValue: job.title || '' },
-        { nodeId: "9", fieldName: "text", fieldValue: job.footer_promo || '' },
-        { nodeId: "103", fieldName: "text", fieldValue: job.address || '' },
-        { nodeId: "134", fieldName: "aspectRatio", fieldValue: job.image_size || '3:4' },
-        { nodeId: "111", fieldName: "value", fieldValue: String(job.creativity ?? 0) },
+        { nodeId: "58", fieldName: "image", fieldValue: p.userFileName || job.user_file_name },
+        { nodeId: "62", fieldName: "image", fieldValue: p.referenceFileName || job.reference_file_name },
+        { nodeId: "133", fieldName: "value", fieldValue: String(p.creativity ?? job.creativity ?? 0) },
+        { nodeId: "135", fieldName: "text", fieldValue: p.customPrompt || job.custom_prompt || '' },
+        { nodeId: "145", fieldName: "aspectRatio", fieldValue: p.aspectRatio || job.aspect_ratio || '1:1' },
       ];
       break;
     }
 
-    case 'bg_remover_jobs':
+    case 'character_generator_jobs': {
+      // Check if this is a refine job (has refine data in job_payload)
+      if (p.isRefine) {
+        webappId = '2021009449481150465'; // WEBAPP_ID_REFINE
+        nodeInfoList = [
+          { nodeId: "39", fieldName: "image", fieldValue: p.frontFileName },
+          { nodeId: "40", fieldName: "image", fieldValue: p.semiProfileFileName },
+          { nodeId: "41", fieldName: "image", fieldValue: p.profileFileName },
+          { nodeId: "42", fieldName: "image", fieldValue: p.lowAngleFileName },
+          { nodeId: "45", fieldName: "image", fieldValue: p.resultFileName },
+          { nodeId: "47", fieldName: "text", fieldValue: p.selectedNumbers || '' },
+        ];
+      } else {
+        webappId = WEBAPP_IDS.character_generator_jobs;
+        nodeInfoList = [
+          { nodeId: "41", fieldName: "image", fieldValue: p.frontFileName || job.front_file_name },
+          { nodeId: "39", fieldName: "image", fieldValue: p.profileFileName || job.profile_file_name },
+          { nodeId: "40", fieldName: "image", fieldValue: p.semiProfileFileName || job.semi_profile_file_name },
+          { nodeId: "42", fieldName: "image", fieldValue: p.lowAngleFileName || job.low_angle_file_name },
+        ];
+      }
+      break;
+    }
+
+    case 'flyer_maker_jobs': {
+      webappId = WEBAPP_IDS.flyer_maker_jobs;
+      const artistFiles = p.artistFileNames || (job.artist_photo_file_names as string[]) || [];
+      const firstArtist = artistFiles[0] || '';
+      nodeInfoList = [];
+      // Only include artist nodes that have actual images
+      const artistNodes = [11, 12, 13, 14, 15];
+      for (let i = 0; i < artistNodes.length; i++) {
+        if (artistFiles[i]) {
+          nodeInfoList.push({ nodeId: String(artistNodes[i]), fieldName: "image", fieldValue: artistFiles[i] });
+        }
+      }
+      nodeInfoList.push(
+        { nodeId: "1", fieldName: "image", fieldValue: p.referenceFileName || job.reference_file_name },
+        { nodeId: "28", fieldName: "image", fieldValue: p.logoFileName || job.logo_file_name },
+        { nodeId: "6", fieldName: "text", fieldValue: p.dateTimeLocation || job.date_time_location || '' },
+        { nodeId: "10", fieldName: "text", fieldValue: p.artistNames || job.artist_names || '' },
+        { nodeId: "7", fieldName: "text", fieldValue: p.title || job.title || '' },
+        { nodeId: "9", fieldName: "text", fieldValue: p.footerPromo || job.footer_promo || '' },
+        { nodeId: "103", fieldName: "text", fieldValue: p.address || job.address || '' },
+        { nodeId: "134", fieldName: "aspectRatio", fieldValue: p.imageSize || job.image_size || '3:4' },
+        { nodeId: "111", fieldName: "value", fieldValue: String(p.creativity ?? job.creativity ?? 0) },
+      );
+      break;
+    }
+
+    case 'bg_remover_jobs': {
       webappId = WEBAPP_IDS.bg_remover_jobs;
       nodeInfoList = [
-        { nodeId: "1", fieldName: "image", fieldValue: job.input_url || job.input_file_name },
+        { nodeId: "1", fieldName: "image", fieldValue: p.inputFileName || job.input_file_name },
       ];
       break;
+    }
       
     default:
       console.error(`[QueueManager] Unknown table: ${table}`);

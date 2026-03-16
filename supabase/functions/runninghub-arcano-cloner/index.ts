@@ -614,268 +614,67 @@ async function handleRun(req: Request) {
     .eq('id', jobId);
   console.log(`[ArcanoCloner] Job ${jobId} marked as credits_charged=${!isTrialMode}`);
 
-  try {
-    // Check queue availability via Queue Manager
-    await logStep(jobId, 'checking_queue');
-    
-    let slotsAvailable = 0;
-    let accountName: string | null = null;
-    let accountApiKey: string | null = null;
-    
-    try {
-      const queueCheckUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`;
-      const queueResponse = await fetch(queueCheckUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        },
-      });
-      const queueData = await queueResponse.json();
-      slotsAvailable = queueData.slotsAvailable || 0;
-      accountName = queueData.accountName || 'primary';
-      accountApiKey = queueData.accountApiKey || RUNNINGHUB_API_KEY;
-      console.log(`[ArcanoCloner] Queue Manager check: ${queueData.running}/${queueData.maxConcurrent}, slots: ${slotsAvailable}, account: ${accountName}`);
-    } catch (queueError) {
-      console.error('[ArcanoCloner] Queue Manager check failed, using primary account:', queueError);
-      accountName = 'primary';
-      accountApiKey = RUNNINGHUB_API_KEY;
-    }
-
-    if (slotsAvailable <= 0) {
-      // Queue the job
-      await logStep(jobId, 'queuing');
-      
-      try {
-        const enqueueUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/enqueue`;
-        const enqueueResponse = await fetch(enqueueUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          },
-          body: JSON.stringify({
-            table: 'arcano_cloner_jobs',
-            jobId,
-            creditCost,
-          }),
-        });
-        const enqueueData = await enqueueResponse.json();
-        
-        console.log(`[ArcanoCloner] Job ${jobId} queued at GLOBAL position ${enqueueData.position}`);
-        
-        return new Response(JSON.stringify({ 
-          success: true, 
-          queued: true, 
-          position: enqueueData.position,
-          message: 'Job queued, will start when slot available'
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      } catch (enqueueError) {
-        console.error('[ArcanoCloner] Enqueue failed:', enqueueError);
-        await supabase
-          .from('arcano_cloner_jobs')
-          .update({ 
-            status: 'queued',
-            position: 999,
-            user_credit_cost: creditCost,
-            waited_in_queue: true
-          })
-          .eq('id', jobId);
-        
-        return new Response(JSON.stringify({ 
-          success: true, 
-          queued: true, 
-          position: 999,
-          message: 'Job queued'
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+  // Save all RH params to job_payload for queue manager
+  await supabase
+    .from('arcano_cloner_jobs')
+    .update({ 
+      job_payload: {
+        userFileName,
+        referenceFileName,
+        creativity: creativity ?? 0,
+        customPrompt: customPrompt || '',
+        aspectRatio: finalAspectRatio,
       }
+    })
+    .eq('id', jobId);
+
+  // ========== DELEGATE TO QUEUE MANAGER (single path) ==========
+  try {
+    await logStep(jobId, 'delegating_to_queue');
+    
+    const qmUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/run-or-queue`;
+    const qmResponse = await fetch(qmUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+      body: JSON.stringify({ table: 'arcano_cloner_jobs', jobId }),
+    });
+    const qmResult = await qmResponse.json();
+
+    if (qmResult.queued) {
+      console.log(`[ArcanoCloner] Job ${jobId} queued at position ${qmResult.position}`);
+      return new Response(JSON.stringify({ success: true, queued: true, position: qmResult.position, message: 'Job queued, will start when slot available' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
-
-    // Slot available - start processing with assigned account
-    await logStep(jobId, 'running', { account: accountName });
     
-    const apiKeyToUse = accountApiKey || RUNNINGHUB_API_KEY;
-    const accountToUse = accountName || 'primary';
-    
-    await supabase
-      .from('arcano_cloner_jobs')
-      .update({ 
-        user_credit_cost: creditCost,
-        waited_in_queue: false,
-        status: 'running', 
-        started_at: new Date().toISOString(),
-        position: 0,
-        api_account: accountToUse
-      })
-      .eq('id', jobId);
-
-    // Build node info list for Arcano Cloner API (v2 - 5 nodes)
-    // Node 58 = User photo, Node 62 = Reference photo, Node 133 = Creativity, Node 135 = Custom prompt, Node 145 = Aspect Ratio
-    const finalCreativity = String(Math.min(100, Math.max(0, Number(creativity) || 0)));
-    const finalCustomPrompt = customPrompt || '';
-
-    const nodeInfoList = [
-      { nodeId: "58", fieldName: "image", fieldValue: userFileName },
-      { nodeId: "62", fieldName: "image", fieldValue: referenceFileName },
-      { nodeId: "133", fieldName: "value", fieldValue: finalCreativity },
-      { nodeId: "135", fieldName: "text", fieldValue: finalCustomPrompt },
-      { nodeId: "145", fieldName: "aspectRatio", fieldValue: finalAspectRatio }
-    ];
-
-    const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
-
-    const requestBody = {
-      nodeInfoList: nodeInfoList,
-      instanceType: "default",
-      usePersonalQueue: false,
-      webhookUrl: webhookUrl,
-    };
-
-    console.log('[ArcanoCloner] AI App request:', JSON.stringify(requestBody));
-    console.log(`[ArcanoCloner] Using API account: ${accountToUse}`);
-    
-    const response = await fetchWithRetry(
-      `https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID_CLONER}`,
-      {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKeyToUse}`
-        },
-        body: JSON.stringify(requestBody),
-      },
-      'Run AI App'
-    );
-
-    const data = await safeParseResponse(response, 'AI App response');
-    console.log('[ArcanoCloner] AI App response:', JSON.stringify(data));
-
-    if (data.taskId) {
-      await supabase
-        .from('arcano_cloner_jobs')
-        .update({ 
-          task_id: data.taskId,
-          raw_api_response: data 
-        })
-        .eq('id', jobId);
-      
-      await logStep(jobId, 'task_started', { taskId: data.taskId });
-
-      return new Response(JSON.stringify({
-        success: true, 
-        taskId: data.taskId,
-        method: 'ai-app-v2'
-      }), {
+    if (qmResult.taskId) {
+      console.log(`[ArcanoCloner] Job ${jobId} started with taskId: ${qmResult.taskId}`);
+      return new Response(JSON.stringify({ success: true, taskId: qmResult.taskId, method: 'ai-app-v2' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // ========== START FAILED - NO TASK_ID - REFUND IMMEDIATELY ==========
-    const startErrorMsg = data.msg || data.message || 'Failed to start workflow';
-    console.error(`[ArcanoCloner] START FAILED (no taskId) - Refunding credits for job ${jobId}`);
-    
-    await logStepFailure(jobId, 'run_workflow', `START_FAILED_REFUNDED: ${startErrorMsg}`, data);
-    
-    try {
-      if (!isTrialMode) {
-        await supabase.rpc('refund_upscaler_credits', {
-          _user_id: userId,
-          _amount: creditCost,
-          _description: `START_FAILED_REFUNDED: ${startErrorMsg.slice(0, 100)}`
-        });
-      }
-      
-      await supabase
-        .from('arcano_cloner_jobs')
-        .update({ 
-          status: 'failed', 
-          error_message: `START_FAILED_REFUNDED: ${startErrorMsg}`,
-          credits_refunded: !isTrialMode,
-          completed_at: new Date().toISOString(),
-          raw_api_response: data
-        })
-        .eq('id', jobId);
-      
-      if (!isTrialMode) {
-        console.log(`[ArcanoCloner] Job ${jobId} refunded ${creditCost} credits (start failed)`);
-      }
-    } catch (refundError) {
-      console.error(`[ArcanoCloner] Refund failed for job ${jobId}:`, refundError);
-      await supabase
-        .from('arcano_cloner_jobs')
-        .update({ 
-          status: 'failed', 
-          error_message: `START_FAILED (refund error): ${startErrorMsg}`,
-          completed_at: new Date().toISOString(),
-          raw_api_response: data
-        })
-        .eq('id', jobId);
-    }
-
-    return new Response(JSON.stringify({
-      error: startErrorMsg,
-      code: data.code || 'RUN_FAILED',
-      details: data,
-      refunded: true
-    }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    const errorMsg = qmResult.error || 'Failed to start job';
+    return new Response(JSON.stringify({ error: errorMsg, code: 'RUN_FAILED', refunded: true }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[ArcanoCloner] Run error:', error);
+    console.error('[ArcanoCloner] Queue Manager call failed:', errorMessage);
     
-    // ========== EXCEPTION DURING START - REFUND IMMEDIATELY ==========
-    console.error(`[ArcanoCloner] EXCEPTION during start - Refunding credits for job ${jobId}`);
-    
-    await logStepFailure(jobId, 'run_exception', `START_EXCEPTION_REFUNDED: ${errorMessage}`);
-    
-    try {
-      if (!isTrialMode) {
-        await supabase.rpc('refund_upscaler_credits', {
-          _user_id: userId,
-          _amount: creditCost,
-          _description: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}`
-        });
+    if (!isTrialMode) {
+      try {
+        await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
+        await supabase.from('arcano_cloner_jobs').update({ status: 'failed', error_message: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
+      } catch (refundError) {
+        await supabase.from('arcano_cloner_jobs').update({ status: 'failed', error_message: `QM_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
       }
-      
-      await supabase
-        .from('arcano_cloner_jobs')
-        .update({ 
-          status: 'failed', 
-          error_message: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`,
-          credits_refunded: !isTrialMode,
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', jobId);
-      
-      if (!isTrialMode) {
-        console.log(`[ArcanoCloner] Job ${jobId} refunded ${creditCost} credits (exception)`);
-      }
-    } catch (refundError) {
-      console.error(`[ArcanoCloner] Refund failed for job ${jobId}:`, refundError);
-      await supabase
-        .from('arcano_cloner_jobs')
-        .update({ 
-          status: 'failed', 
-          error_message: `START_EXCEPTION (refund error): ${errorMessage.slice(0, 200)}`,
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', jobId);
+    } else {
+      await supabase.from('arcano_cloner_jobs').update({ status: 'failed', error_message: `QM_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
     }
-
-    return new Response(JSON.stringify({ 
-      error: errorMessage, 
-      code: 'RUN_EXCEPTION',
-      refunded: true
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    
+    return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: !isTrialMode }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 }

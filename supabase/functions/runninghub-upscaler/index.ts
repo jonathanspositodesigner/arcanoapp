@@ -686,355 +686,73 @@ async function handleRun(req: Request) {
     console.log(`[RunningHub] Job ${jobId} marked as credits_charged=true`);
   }
 
-   // Select WebApp ID based on category, version and framing mode
-   const isLongeMode = framingMode === 'longe' && category?.startsWith('pessoas');
-   const isFotoAntigaMode = category === 'fotoAntiga';
-   const isComidaMode = category === 'comida';
-   const isLogoMode = category === 'logo';
-   const isRender3dMode = category === 'render3d';
-   
-   let webappId: string;
-   if (isFotoAntigaMode) {
-     webappId = WEBAPP_ID_FOTO_ANTIGA;
-   } else if (isComidaMode) {
-     webappId = WEBAPP_ID_COMIDA;
-   } else if (isLogoMode) {
-     webappId = WEBAPP_ID_LOGO;
-   } else if (isRender3dMode) {
-     webappId = WEBAPP_ID_RENDER3D;
-   } else if (isLongeMode) {
-     webappId = WEBAPP_ID_LONGE;
-   } else {
-     webappId = version === 'pro' ? WEBAPP_ID_PRO : WEBAPP_ID_STANDARD;
-   }
-   
-   console.log(`[RunningHub] Processing job ${jobId} - category: ${category}, version: ${version}, framingMode: ${framingMode}, webappId: ${webappId}, rhFileName: ${rhFileName}`);
-
-  try {
-    // Update job with input file name
-    await supabase
-      .from('upscaler_jobs')
-      .update({ input_file_name: rhFileName })
-      .eq('id', jobId);
-
-    // ========================================
-    // VERIFICAR DISPONIBILIDADE VIA QUEUE MANAGER CENTRALIZADO (MULTI-API)
-    // ========================================
-    let slotsAvailable = 0;
-    let accountName: string | null = null;
-    let accountApiKey: string | null = null;
-    
-    try {
-      const queueCheckUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`;
-      const queueResponse = await fetch(queueCheckUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        },
-      });
-      const queueData = await queueResponse.json();
-      slotsAvailable = queueData.slotsAvailable || 0;
-      accountName = queueData.accountName || 'primary';
-      accountApiKey = queueData.accountApiKey || RUNNINGHUB_API_KEY;
-      console.log(`[RunningHub] Queue Manager check: ${queueData.running}/${queueData.maxConcurrent}, slots: ${slotsAvailable}, account: ${accountName}`);
-    } catch (queueError) {
-      console.error('[RunningHub] Queue Manager check failed, using primary account:', queueError);
-      accountName = 'primary';
-      accountApiKey = RUNNINGHUB_API_KEY;
-    }
-
-    if (slotsAvailable <= 0) {
-      // Usar Queue Manager para enfileirar e obter posição GLOBAL
-      try {
-        const enqueueUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/enqueue`;
-        const enqueueResponse = await fetch(enqueueUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          },
-          body: JSON.stringify({
-            table: 'upscaler_jobs',
-            jobId,
-            creditCost,
-          }),
-        });
-        const enqueueData = await enqueueResponse.json();
-        
-        console.log(`[RunningHub] Job ${jobId} queued at GLOBAL position ${enqueueData.position}`);
-        
-        return new Response(JSON.stringify({ 
-          success: true, 
-          queued: true, 
-          position: enqueueData.position,
-          message: 'Job queued, will start when slot available'
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      } catch (enqueueError) {
-        console.error('[RunningHub] Enqueue failed:', enqueueError);
-        // Fallback: enfileirar localmente
-        await supabase
-          .from('upscaler_jobs')
-          .update({ 
-            status: 'queued',
-            position: 999,
-            user_credit_cost: creditCost,
-            waited_in_queue: true
-          })
-          .eq('id', jobId);
-        
-        return new Response(JSON.stringify({ 
-          success: true, 
-          queued: true, 
-          position: 999,
-          message: 'Job queued'
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-    }
-
-    // Slot available - start processing with assigned account
-    const apiKeyToUse = accountApiKey || RUNNINGHUB_API_KEY;
-    const accountToUse = accountName || 'primary';
-    
-    await supabase
-      .from('upscaler_jobs')
-      .update({ 
-        status: 'running', 
-        started_at: new Date().toISOString(),
-        position: 0,
-        user_credit_cost: creditCost,
-        waited_in_queue: false,
-        api_account: accountToUse
-      })
-      .eq('id', jobId);
-
-    // Build node info list
-    let nodeInfoList: any[];
-    
-     if (isFotoAntigaMode) {
-       // === FOTO ANTIGA ===
-       // Only image, no other parameters
-       nodeInfoList = [
-         { nodeId: "139", fieldName: "image", fieldValue: rhFileName },
-       ];
-       console.log(`[RunningHub] Using FOTO ANTIGA workflow - only image`);
-     } else if (isComidaMode) {
-       // === COMIDA/OBJETO ===
-       // Image + detail level (0.70-1.00)
-       nodeInfoList = [
-         { nodeId: "50", fieldName: "image", fieldValue: rhFileName },
-         { nodeId: "48", fieldName: "value", fieldValue: String(detailDenoise || 0.85) },
-       ];
-       console.log(`[RunningHub] Using COMIDA/OBJETO workflow - detail: ${detailDenoise}`);
-    } else if (isLogoMode) {
-      // === LOGO E ARTE ===
-      // Node 39: image, Node 33: value (detail level, PRO only)
-      nodeInfoList = [
-        { nodeId: "39", fieldName: "image", fieldValue: rhFileName },
-      ];
-      
-      // Detail level only for PRO version
-      if (version === 'pro' && detailDenoise !== undefined) {
-        nodeInfoList.push({ 
-          nodeId: "33", 
-          fieldName: "value", 
-          fieldValue: String(detailDenoise) 
-        });
-      }
-      
-      console.log(`[RunningHub] Using LOGO workflow - version: ${version}, detail: ${detailDenoise}`);
-    } else if (isRender3dMode) {
-      // === SELOS 3D ===
-      // Node 301: image, Node 300: value (detail level, PRO only)
-      nodeInfoList = [
-        { nodeId: "301", fieldName: "image", fieldValue: rhFileName },
-      ];
-      
-      // Detail level only for PRO version
-      if (version === 'pro' && detailDenoise !== undefined) {
-        nodeInfoList.push({ 
-          nodeId: "300", 
-          fieldName: "value", 
-          fieldValue: String(detailDenoise) 
-        });
-      }
-      
-      console.log(`[RunningHub] Using RENDER3D workflow - version: ${version}, detail: ${detailDenoise}`);
-     } else if (isLongeMode) {
-       // === DE LONGE (Novo WebApp 2020634325636616194) ===
-      nodeInfoList = [
-        { nodeId: "1", fieldName: "image", fieldValue: rhFileName },
-        { nodeId: "2", fieldName: "value", fieldValue: String(resolution || 4096) },
-      ];
-      console.log(`[RunningHub] Using "De Longe" WebApp 2020634325636616194 with nodeIds 1 (image) and 2 (resolution)`);
-    } else {
-       // === PADRÃO (Pessoas Perto, Logo, 3D) ===
-      const resolutionNodeId = version === 'pro' ? "73" : "75";
-      
-      nodeInfoList = [
-        { nodeId: "26", fieldName: "image", fieldValue: rhFileName },
-        { nodeId: "25", fieldName: "value", fieldValue: detailDenoise || 0.15 },
-        { nodeId: resolutionNodeId, fieldName: "value", fieldValue: String(resolution || 2048) },
-      ];
-
-       // Add editingLevel for PRO + Pessoas Perto (node 91)
-       if (version === 'pro' && category === 'pessoas_perto' && editingLevel !== undefined) {
-         nodeInfoList.push({ 
-           nodeId: "91", 
-           fieldName: "value", 
-           fieldValue: String(editingLevel) 
-         });
-         console.log(`[RunningHub] Adding editingLevel (node 91): ${editingLevel}`);
+   // Save all RH-relevant params to job_payload + input_file_name for queue manager
+   await supabase
+     .from('upscaler_jobs')
+     .update({ 
+       input_file_name: rhFileName,
+       job_payload: {
+         category: category || 'pessoas_perto',
+         version: version || 'standard',
+         framingMode: framingMode || 'perto',
+         detailDenoise: detailDenoise,
+         resolution: resolution,
+         prompt: prompt,
+         editingLevel: editingLevel,
+         inputFileName: rhFileName,
        }
- 
-      if (prompt) {
-        nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: prompt });
-      }
-       console.log(`[RunningHub] Using STANDARD/PRO workflow`);
-    }
+     })
+     .eq('id', jobId);
 
-    const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
+   // ========== DELEGATE TO QUEUE MANAGER (single path) ==========
+   try {
+     await logStep(jobId, 'delegating_to_queue');
+     
+     const qmUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/run-or-queue`;
+     const qmResponse = await fetch(qmUrl, {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+       body: JSON.stringify({ table: 'upscaler_jobs', jobId }),
+     });
+     const qmResult = await qmResponse.json();
 
-    const requestBody = {
-      nodeInfoList: nodeInfoList,
-      instanceType: "default",
-      usePersonalQueue: false,
-      webhookUrl: webhookUrl,
-    };
+     if (qmResult.queued) {
+       console.log(`[RunningHub] Job ${jobId} queued at position ${qmResult.position}`);
+       return new Response(JSON.stringify({ success: true, queued: true, position: qmResult.position, message: 'Job queued, will start when slot available' }), {
+         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+       });
+     }
+     
+     if (qmResult.taskId) {
+       console.log(`[RunningHub] Job ${jobId} started with taskId: ${qmResult.taskId}`);
+       return new Response(JSON.stringify({ success: true, taskId: qmResult.taskId, method: 'ai-app-v2' }), {
+         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+       });
+     }
 
-    console.log('[RunningHub] AI App request:', JSON.stringify({ 
-      ...requestBody,
-      webhookUrl: webhookUrl
-    }));
-
-    console.log(`[RunningHub] Using API account: ${accountToUse}`);
-    
-    const response = await fetchWithRetry(
-      `https://www.runninghub.ai/openapi/v2/run/ai-app/${webappId}`,
-      {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKeyToUse}`
-        },
-        body: JSON.stringify(requestBody),
-      },
-      'Run AI App'
-    );
-
-    const data = await safeParseResponse(response, 'AI App response');
-    console.log('[RunningHub] AI App response:', JSON.stringify(data));
-
-    if (data.taskId) {
-      await supabase
-        .from('upscaler_jobs')
-        .update({ task_id: data.taskId })
-        .eq('id', jobId);
-
-      return new Response(JSON.stringify({
-        success: true, 
-        taskId: data.taskId,
-        method: 'ai-app-v2'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // ========== START FAILED - NO TASK_ID - REFUND IMMEDIATELY ==========
-    const startErrorMsg = data.msg || data.message || 'Failed to start workflow';
-    console.error(`[RunningHub] START FAILED (no taskId) - Refunding credits for job ${jobId}`);
-    
-    // Refund credits since RunningHub never started processing
-    try {
-      await supabase.rpc('refund_upscaler_credits', {
-        _user_id: effectiveUserId,
-        _amount: creditCost,
-        _description: `START_FAILED_REFUNDED: ${startErrorMsg.slice(0, 100)}`
-      });
-      
-      await supabase
-        .from('upscaler_jobs')
-        .update({ 
-          status: 'failed', 
-          error_message: `START_FAILED_REFUNDED: ${startErrorMsg}`,
-          credits_refunded: true,
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', jobId);
-      
-      console.log(`[RunningHub] Job ${jobId} refunded ${creditCost} credits (start failed)`);
-    } catch (refundError) {
-      console.error(`[RunningHub] Refund failed for job ${jobId}:`, refundError);
-      await supabase
-        .from('upscaler_jobs')
-        .update({ 
-          status: 'failed', 
-          error_message: `START_FAILED (refund error): ${startErrorMsg}`,
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', jobId);
-    }
-
-    return new Response(JSON.stringify({
-      error: startErrorMsg,
-      code: data.code || 'RUN_FAILED',
-      details: data,
-      refunded: true
-    }), {
-      status: 400,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[RunningHub] Run error:', error);
-
-    // ========== EXCEPTION DURING START - REFUND IMMEDIATELY ==========
-    console.error(`[RunningHub] EXCEPTION during start - Refunding credits for job ${jobId}`);
-    
-    try {
-      await supabase.rpc('refund_upscaler_credits', {
-        _user_id: effectiveUserId,
-        _amount: creditCost,
-        _description: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}`
-      });
-      
-      await supabase
-        .from('upscaler_jobs')
-        .update({ 
-          status: 'failed', 
-          error_message: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`,
-          credits_refunded: true,
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', jobId);
-      
-      console.log(`[RunningHub] Job ${jobId} refunded ${creditCost} credits (exception)`);
-    } catch (refundError) {
-      console.error(`[RunningHub] Refund failed for job ${jobId}:`, refundError);
-      await supabase
-        .from('upscaler_jobs')
-        .update({ 
-          status: 'failed', 
-          error_message: `START_EXCEPTION (refund error): ${errorMessage.slice(0, 200)}`,
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', jobId);
-    }
-
-    return new Response(JSON.stringify({ 
-      error: errorMessage, 
-      code: 'RUN_EXCEPTION',
-      refunded: true
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
+     const errorMsg = qmResult.error || 'Failed to start job';
+     return new Response(JSON.stringify({ error: errorMsg, code: 'RUN_FAILED', refunded: true }), {
+       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+     });
+   } catch (error: unknown) {
+     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+     console.error('[RunningHub] Queue Manager call failed:', errorMessage);
+     
+     if (!isTrialMode) {
+       try {
+         await supabase.rpc('refund_upscaler_credits', { _user_id: effectiveUserId, _amount: creditCost, _description: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
+         await supabase.from('upscaler_jobs').update({ status: 'failed', error_message: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
+       } catch (refundError) {
+         await supabase.from('upscaler_jobs').update({ status: 'failed', error_message: `QM_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
+       }
+     } else {
+       await supabase.from('upscaler_jobs').update({ status: 'failed', error_message: `QM_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
+     }
+     
+     return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: !isTrialMode }), {
+       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+     });
+   }
 }
 
 // Get queue status

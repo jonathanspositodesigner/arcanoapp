@@ -583,250 +583,48 @@ async function handleRun(req: Request) {
     .eq('id', jobId);
   console.log(`[VesteAI] Job ${jobId} marked as credits_charged=true`);
 
+  // Save file names to DB + job_payload for queue manager
+  await supabase.from('veste_ai_jobs').update({ 
+    person_file_name: personFileName,
+    clothing_file_name: clothingFileName,
+    job_payload: { personFileName, clothingFileName }
+  }).eq('id', jobId);
+
+  // ========== DELEGATE TO QUEUE MANAGER (single path) ==========
   try {
-    // Update job with input file names
-    await supabase
-      .from('veste_ai_jobs')
-      .update({ 
-        person_file_name: personFileName,
-        clothing_file_name: clothingFileName
-      })
-      .eq('id', jobId);
+    const qmUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/run-or-queue`;
+    const qmResponse = await fetch(qmUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+      body: JSON.stringify({ table: 'veste_ai_jobs', jobId }),
+    });
+    const qmResult = await qmResponse.json();
 
-    // ========================================
-    // VERIFICAR DISPONIBILIDADE VIA QUEUE MANAGER CENTRALIZADO (MULTI-API)
-    // ========================================
-    let slotsAvailable = 0;
-    let accountName: string | null = null;
-    let accountApiKey: string | null = null;
-    
-    try {
-      const queueCheckUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`;
-      const queueResponse = await fetch(queueCheckUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        },
-      });
-      const queueData = await queueResponse.json();
-      slotsAvailable = queueData.slotsAvailable || 0;
-      accountName = queueData.accountName || 'primary';
-      accountApiKey = queueData.accountApiKey || RUNNINGHUB_API_KEY;
-      console.log(`[VesteAI] Queue Manager check: ${queueData.running}/${queueData.maxConcurrent}, slots: ${slotsAvailable}, account: ${accountName}`);
-    } catch (queueError) {
-      console.error('[VesteAI] Queue Manager check failed, using primary account:', queueError);
-      accountName = 'primary';
-      accountApiKey = RUNNINGHUB_API_KEY;
-    }
-
-    if (slotsAvailable <= 0) {
-      // Usar Queue Manager para enfileirar e obter posição GLOBAL
-      try {
-        const enqueueUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/enqueue`;
-        const enqueueResponse = await fetch(enqueueUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          },
-          body: JSON.stringify({
-            table: 'veste_ai_jobs',
-            jobId,
-            creditCost,
-          }),
-        });
-        const enqueueData = await enqueueResponse.json();
-        
-        console.log(`[VesteAI] Job ${jobId} queued at GLOBAL position ${enqueueData.position}`);
-        
-        return new Response(JSON.stringify({ 
-          success: true, 
-          queued: true,
-          position: enqueueData.position,
-          newBalance: creditResult[0].new_balance
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      } catch (enqueueError) {
-        console.error('[VesteAI] Enqueue failed:', enqueueError);
-        // Fallback: enfileirar localmente
-        await supabase
-          .from('veste_ai_jobs')
-          .update({ 
-            status: 'queued',
-            position: 999,
-            user_credit_cost: creditCost,
-            waited_in_queue: true
-          })
-          .eq('id', jobId);
-        
-        return new Response(JSON.stringify({ 
-          success: true, 
-          queued: true,
-          position: 999,
-          newBalance: creditResult[0].new_balance
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-    }
-
-    // Slot available - start processing with assigned account
-    const apiKeyToUse = accountApiKey || RUNNINGHUB_API_KEY;
-    const accountToUse = accountName || 'primary';
-
-    await supabase
-      .from('veste_ai_jobs')
-      .update({ 
-        status: 'running', 
-        started_at: new Date().toISOString(),
-        position: 0,
-        user_credit_cost: creditCost,
-        api_account: accountToUse
-      })
-      .eq('id', jobId);
-
-    // Call RunningHub API
-    const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
-    
-    // Node configuration for Veste AI
-    const nodeInfoList = [
-      { nodeId: NODE_ID_PERSON, fieldName: "image", fieldValue: personFileName },
-      { nodeId: NODE_ID_CLOTHING, fieldName: "image", fieldValue: clothingFileName }
-    ];
-
-    const requestBody = {
-      nodeInfoList: nodeInfoList,
-      instanceType: "default",
-      usePersonalQueue: false,
-      webhookUrl: webhookUrl,
-    };
-
-    console.log('[VesteAI] Starting job with RunningHub:', JSON.stringify(requestBody));
-
-    console.log(`[VesteAI] Using API account: ${accountToUse}`);
-    
-    const response = await fetchWithRetry(
-      `https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID_VESTE_AI}`,
-      {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKeyToUse}`
-        },
-        body: JSON.stringify(requestBody),
-      },
-      'RunningHub run'
-    );
-
-    const runData = await safeParseResponse(response, 'RunningHub run');
-    console.log('[VesteAI] RunningHub response:', JSON.stringify(runData));
-
-    if (runData.taskId) {
-      await supabase
-        .from('veste_ai_jobs')
-        .update({ task_id: runData.taskId })
-        .eq('id', jobId);
-      
-      console.log(`[VesteAI] Job ${jobId} started with taskId: ${runData.taskId}`);
-
-      return new Response(JSON.stringify({
-        success: true, 
-        taskId: runData.taskId,
-        newBalance: creditResult[0].new_balance
-      }), {
+    if (qmResult.queued) {
+      return new Response(JSON.stringify({ success: true, queued: true, position: qmResult.position, newBalance: creditResult[0].new_balance }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    
-    // ========== START FAILED - NO TASK_ID - REFUND IMMEDIATELY ==========
-    const startErrorMsg = runData.message || runData.error || runData.msg || 'Failed to start job';
-    console.error(`[VesteAI] START FAILED (no taskId) - Refunding credits for job ${jobId}`);
-    
-    try {
-      await supabase.rpc('refund_upscaler_credits', {
-        _user_id: userId,
-        _amount: creditCost,
-        _description: `START_FAILED_REFUNDED: ${startErrorMsg.slice(0, 100)}`
+    if (qmResult.taskId) {
+      return new Response(JSON.stringify({ success: true, taskId: qmResult.taskId, newBalance: creditResult[0].new_balance }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
-      
-      await supabase
-        .from('veste_ai_jobs')
-        .update({ 
-          status: 'failed', 
-          error_message: `START_FAILED_REFUNDED: ${startErrorMsg}`,
-          credits_refunded: true,
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', jobId);
-      
-      console.log(`[VesteAI] Job ${jobId} refunded ${creditCost} credits (start failed)`);
-    } catch (refundError) {
-      console.error(`[VesteAI] Refund failed for job ${jobId}:`, refundError);
-      await supabase
-        .from('veste_ai_jobs')
-        .update({ 
-          status: 'failed', 
-          error_message: `START_FAILED (refund error): ${startErrorMsg}`,
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', jobId);
     }
-    
-    return new Response(JSON.stringify({ 
-      error: startErrorMsg, 
-      code: 'RUN_FAILED',
-      refunded: true
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
 
+    return new Response(JSON.stringify({ error: qmResult.error || 'Failed', code: 'RUN_FAILED', refunded: true }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[VesteAI] Run error:', error);
-    
-    // ========== EXCEPTION DURING START - REFUND IMMEDIATELY ==========
-    console.error(`[VesteAI] EXCEPTION during start - Refunding credits for job ${jobId}`);
-    
+    console.error('[VesteAI] Queue Manager call failed:', errorMessage);
     try {
-      await supabase.rpc('refund_upscaler_credits', {
-        _user_id: userId,
-        _amount: creditCost,
-        _description: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}`
-      });
-      
-      await supabase
-        .from('veste_ai_jobs')
-        .update({ 
-          status: 'failed', 
-          error_message: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`,
-          credits_refunded: true,
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', jobId);
-      
-      console.log(`[VesteAI] Job ${jobId} refunded ${creditCost} credits (exception)`);
+      await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
+      await supabase.from('veste_ai_jobs').update({ status: 'failed', error_message: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
     } catch (refundError) {
-      console.error(`[VesteAI] Refund failed for job ${jobId}:`, refundError);
-      await supabase
-        .from('veste_ai_jobs')
-        .update({ 
-          status: 'failed', 
-          error_message: `START_EXCEPTION (refund error): ${errorMessage.slice(0, 200)}`,
-          completed_at: new Date().toISOString()
-        })
-        .eq('id', jobId);
+      await supabase.from('veste_ai_jobs').update({ status: 'failed', error_message: `QM_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
     }
-    
-    return new Response(JSON.stringify({ 
-      error: errorMessage, 
-      code: 'RUN_EXCEPTION',
-      refunded: true
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: true }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 }
