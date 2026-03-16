@@ -1,4 +1,3 @@
-
 # Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
 ## Resumo
@@ -48,3 +47,42 @@ Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 ema
 - `planos2_subscriptions.expires_at` estendido para data futura
 - Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
 - Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
+
+# Auditoria Completa de Emails — Robustez Unificada (CONCLUÍDA)
+
+## O que foi feito
+
+### Padrão unificado aplicado em todos os 6 webhooks:
+
+1. **webhook-mercadopago** — `sendPurchaseEmail` refatorado:
+   - 3 retries com exponential backoff (2s, 5s, 10s)
+   - Removida lógica de DELETE de logs de falha (preserva auditoria)
+   - Cada tentativa registrada separadamente
+
+2. **webhook-greenn-creditos** — `sendWelcomeEmail` e `sendArcanoClonnerEmail`:
+   - Adicionado INSERT em `welcome_email_logs` (antes não tinha NENHUM log)
+   - Deduplicação via `dedup_key` unique constraint
+   - Blacklist check antes do envio
+   - 3 retries com exponential backoff
+   - Caller simplificado (retry agora é interno)
+
+3. **webhook-greenn** — Callers de `sendWelcomeEmail` e `sendPlanos2WelcomeEmail`:
+   - Retry loop 3x com exponential backoff (2s, 5s, 10s)
+   - Funções internas já tinham dedup + logging
+
+4. **webhook-greenn-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
+
+5. **webhook-greenn-musicos** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
+
+6. **webhook-hotmart-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup por transaction + logging
+
+### Sem mudanças (já robustos):
+- `webhook-pagarme` — 3 retries, dedup_key, logging completo
+- `resend-purchase-email` — robusto
+- `send-single-email` — utilitária independente
