@@ -41,7 +41,7 @@ const feedbacks = [
   },
   {
     name: "Thiago Ferreira",
-    photo: "https://randomuser.me/api/portraits/men/45.jpg",
+    photo: feedbackThiago,
     text: "Já testei outras ferramentas parecidas mas essa aqui entrega um resultado bem mais realista.",
   },
   {
