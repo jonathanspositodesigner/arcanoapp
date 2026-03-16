@@ -482,7 +482,7 @@ serve(async (req) => {
             transaction_id: idempotencyKey,
             status: 'subscription_canceled',
             email: null,
-            raw_payload: body,
+            payload: body,
           })
 
           console.log(`   ├─ ✅ Plano revogado → free (subscription canceled)`)
