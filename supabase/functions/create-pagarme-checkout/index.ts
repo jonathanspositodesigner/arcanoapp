@@ -194,25 +194,25 @@ serve(async (req) => {
     // ===== Rate limit + busca de produto em PARALELO =====
     const rateLimitKey = `checkout_${email}_${clientIp}`
 
-    const [rlResult, productResult] = await Promise.all([
-      supabase.rpc('check_rate_limit', {
-        _ip_address: rateLimitKey,
-        _endpoint: 'create-pagarme-checkout',
-        _max_requests: 5,
-        _window_seconds: 60
-      }),
-      supabase
-        .from('mp_products')
-        .select('*')
-        .eq('slug', product_slug)
-        .eq('is_active', true)
-        .single()
-    ])
+    // Rate limit: fire-and-forget (non-blocking) — log only, don't block checkout
+    supabase.rpc('check_rate_limit', {
+      _ip_address: rateLimitKey,
+      _endpoint: 'create-pagarme-checkout',
+      _max_requests: 5,
+      _window_seconds: 60
+    }).then((rlResult: any) => {
+      if (rlResult.data && rlResult.data.length > 0 && !rlResult.data[0].allowed) {
+        console.warn(`[${requestId}] 🚫 Rate limit exceeded: ${email} (${clientIp})`);
+      }
+    }).catch(() => {});
 
-    if (rlResult.data && rlResult.data.length > 0 && !rlResult.data[0].allowed) {
-      console.warn(`[${requestId}] 🚫 Rate limit: ${email} (${clientIp})`)
-      return errorResponse('Muitas tentativas. Aguarde 1 minuto.', 429, 'RATE_LIMITED');
-    }
+    // Product lookup (blocking — required)
+    const productResult = await supabase
+      .from('mp_products')
+      .select('*')
+      .eq('slug', product_slug)
+      .eq('is_active', true)
+      .single()
 
     const product = productResult.data
     if (productResult.error || !product) {

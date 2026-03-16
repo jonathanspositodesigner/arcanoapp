@@ -98,7 +98,7 @@ export const GuaranteeSectionCombo = () => {
         };
       }
 
-      const response = await supabase.functions.invoke('create-pagarme-checkout', { body });
+      const response = await invokeCheckout(body);
 
       if (response.error) {
         console.error('Erro checkout direto:', response.error);

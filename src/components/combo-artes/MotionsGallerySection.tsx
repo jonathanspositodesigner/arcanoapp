@@ -128,7 +128,7 @@ export const MotionsGallerySection = () => {
           country: pendingProfile.address_country || 'BR'
         };
       }
-      const response = await supabase.functions.invoke('create-pagarme-checkout', { body });
+      const response = await invokeCheckout(body);
       if (response.error) {
         toast.error('Erro ao gerar pagamento. Tente novamente.');
         endCheckout();
