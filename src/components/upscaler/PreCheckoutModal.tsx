@@ -699,7 +699,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 };
 
