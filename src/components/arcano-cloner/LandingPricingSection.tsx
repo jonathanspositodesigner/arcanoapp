@@ -274,7 +274,7 @@ const LandingPricingSection = () => {
 
         {/* Plans Grid */}
         <StaggeredAnimation
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto"
           itemClassName="w-full"
           staggerDelay={100}
           animation="fade-up"
