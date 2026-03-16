@@ -360,15 +360,17 @@ async function cleanupStaleJobs(): Promise<number> {
  * - Podem ser marcados como 'failed' com segurança
  */
 async function cleanupOrphanPendingJobs(): Promise<number> {
-  const PENDING_TIMEOUT_SECONDS = 30;
+  // Increased from 30s to 180s - 30s was too aggressive and killed legitimate jobs
+  // that were still initializing (downloading images, uploading to RunningHub, etc.)
+  const PENDING_TIMEOUT_SECONDS = 180;
   let totalCleaned = 0;
   
   try {
     for (const table of JOB_TABLES) {
-      // Buscar pending órfãos
+      // Buscar pending órfãos - only truly orphaned jobs (no step_history progress)
       const { data: orphans, error } = await supabase
         .from(table)
-        .select('id, created_at, user_id')
+        .select('id, created_at, user_id, step_history, current_step')
         .eq('status', 'pending')
         .is('task_id', null)
         .lt('created_at', new Date(Date.now() - PENDING_TIMEOUT_SECONDS * 1000).toISOString());
