@@ -253,7 +253,7 @@ export default function ArcanoClonerAuthModal({
             <Gift className="w-8 h-8 text-purple-400" />
           </div>
           <h2 className="text-xl font-bold text-white">
-            Ganhe 180 créditos grátis!
+            Ganhe 300 créditos grátis!
           </h2>
           <p className="text-sm text-purple-300 mt-1">
             Faça login ou crie sua conta para começar
