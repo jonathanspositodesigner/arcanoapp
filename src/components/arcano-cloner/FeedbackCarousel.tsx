@@ -46,7 +46,7 @@ const feedbacks = [
   },
   {
     name: "Beatriz Lima",
-    photo: "https://randomuser.me/api/portraits/women/52.jpg",
+    photo: feedbackBeatriz,
     text: "Uso quase todo dia pro meu trabalho. É prático e rápido, não tenho do que reclamar.",
   },
 ];
