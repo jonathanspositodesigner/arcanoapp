@@ -300,6 +300,22 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         fbc,
       };
 
+      // Sequential: try full checkout first, fallback to lightweight only if full fails
+      console.log('[PreCheckoutModal] Chamando checkout full...');
+      const fullResponse = await supabase.functions.invoke('create-pagarme-checkout', { body: fullPayload });
+      
+      if (!fullResponse.error && fullResponse.data?.checkout_url) {
+        const { checkout_url, event_id } = fullResponse.data;
+        console.log(`[PreCheckoutModal] ✅ Full checkout OK: ${checkout_url.substring(0, 60)}...`);
+        if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
+          (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
+        }
+        window.location.href = checkout_url;
+        return;
+      }
+
+      // Full failed — try lightweight as fallback
+      console.warn('[PreCheckoutModal] Full falhou, tentando lightweight...', fullResponse.error);
       const lightweightPayload = {
         product_slug: productSlug,
         user_email: email.trim().toLowerCase(),
@@ -311,56 +327,32 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         lightweight: true,
       };
 
-      // Dual-fire: race full vs lightweight checkout
-      const fullCall = supabase.functions.invoke('create-pagarme-checkout', { body: fullPayload });
-      const lightCall = supabase.functions.invoke('create-pagarme-checkout', { body: lightweightPayload });
+      const lightResponse = await supabase.functions.invoke('create-pagarme-checkout', { body: lightweightPayload });
 
-      const tryRedirect = (response: any, label: string): boolean => {
-        if (redirectedRef.current) return true;
-        if (response.error) {
-          console.warn(`[${label}] Erro:`, response.error);
-          return false;
+      if (!lightResponse.error && lightResponse.data?.checkout_url) {
+        const { checkout_url, event_id } = lightResponse.data;
+        console.log(`[PreCheckoutModal] ✅ Lightweight checkout OK: ${checkout_url.substring(0, 60)}...`);
+        if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
+          (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
         }
-        const { checkout_url, event_id } = response.data || {};
-        if (checkout_url) {
-          redirectedRef.current = true;
-          console.log(`[${label}] ✅ Redirect: ${checkout_url.substring(0, 60)}...`);
-          if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
-            (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
-          }
-          window.location.href = checkout_url;
-          return true;
-        }
-        return false;
-      };
-
-      // Race: first successful checkout_url wins
-      const results = await Promise.allSettled([fullCall, lightCall]);
-      
-      for (const [i, result] of results.entries()) {
-        if (result.status === 'fulfilled' && tryRedirect(result.value, i === 0 ? 'Full' : 'Lightweight')) {
-          return; // Redirected successfully
-        }
+        window.location.href = checkout_url;
+        return;
       }
 
-      // Both failed - show detailed error
+      // Both failed — show detailed error
       let errorCode = 'UNKNOWN';
-      for (const result of results) {
-        if (result.status === 'fulfilled' && result.value?.data?.error_code) {
-          errorCode = result.value.data.error_code;
-          break;
-        }
-        if (result.status === 'fulfilled' && result.value?.error) {
-          try {
-            const errBody = typeof result.value.error === 'object' ? result.value.error : JSON.parse(String(result.value.error));
-            errorCode = errBody?.error_code || errBody?.context?.error_code || 'UNKNOWN';
-          } catch {}
-          if (errorCode !== 'UNKNOWN') break;
-        }
+      const errorSource = lightResponse.data?.error_code || fullResponse.data?.error_code;
+      if (errorSource) {
+        errorCode = errorSource;
+      } else {
+        try {
+          const errBody = typeof lightResponse.error === 'object' ? lightResponse.error : JSON.parse(String(lightResponse.error));
+          errorCode = errBody?.error_code || errBody?.context?.error_code || 'UNKNOWN';
+        } catch {}
       }
       showErrorToast(errorCode);
     } catch (error) {
-      console.error('Erro dual-fire:', error);
+      console.error('Erro checkout:', error);
       showErrorToast();
     }
     setLoading(false);
