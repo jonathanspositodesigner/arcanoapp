@@ -360,15 +360,17 @@ async function cleanupStaleJobs(): Promise<number> {
  * - Podem ser marcados como 'failed' com segurança
  */
 async function cleanupOrphanPendingJobs(): Promise<number> {
-  const PENDING_TIMEOUT_SECONDS = 30;
+  // Increased from 30s to 180s - 30s was too aggressive and killed legitimate jobs
+  // that were still initializing (downloading images, uploading to RunningHub, etc.)
+  const PENDING_TIMEOUT_SECONDS = 180;
   let totalCleaned = 0;
   
   try {
     for (const table of JOB_TABLES) {
-      // Buscar pending órfãos
+      // Buscar pending órfãos - only truly orphaned jobs (no step_history progress)
       const { data: orphans, error } = await supabase
         .from(table)
-        .select('id, created_at, user_id')
+        .select('id, created_at, user_id, step_history, current_step')
         .eq('status', 'pending')
         .is('task_id', null)
         .lt('created_at', new Date(Date.now() - PENDING_TIMEOUT_SECONDS * 1000).toISOString());
@@ -382,13 +384,26 @@ async function cleanupOrphanPendingJobs(): Promise<number> {
       
       console.log(`[QueueManager] Found ${orphans.length} orphan pending jobs in ${table}`);
       
-      // Marcar como failed
+      // Marcar como failed - but skip jobs that show signs of active processing
       for (const orphan of orphans) {
+        // GUARD: Skip if job has step_history (means Edge Function started processing)
+        const stepHistory = (orphan as any).step_history;
+        const currentStep = (orphan as any).current_step;
+        if (stepHistory && Array.isArray(stepHistory) && stepHistory.length > 0) {
+          console.log(`[QueueManager] Skipping orphan ${orphan.id} - has ${stepHistory.length} step(s) in history, still processing`);
+          continue;
+        }
+        // GUARD: Skip if current_step indicates active work
+        if (currentStep && currentStep !== 'pending' && currentStep !== null) {
+          console.log(`[QueueManager] Skipping orphan ${orphan.id} - current_step='${currentStep}', still processing`);
+          continue;
+        }
+        
         const { error: updateError } = await supabase
           .from(table)
           .update({
             status: 'failed',
-            error_message: 'Falha ao iniciar: Edge Function não respondeu em 30s',
+            error_message: 'Falha ao iniciar: servidor não respondeu em tempo hábil',
             current_step: 'failed',
             failed_at_step: 'pending_timeout',
             completed_at: new Date().toISOString(),
@@ -516,7 +531,7 @@ serve(async (req) => {
 // ==================== ENDPOINT HANDLERS ====================
 
 async function handleCheck(): Promise<Response> {
-  await cleanupStaleJobs();
+  // REMOVED: cleanupStaleJobs() - was causing heavy processing on high-traffic endpoint
   
   const globalRunning = await getGlobalRunningCount();
   const totalQueued = await getTotalQueuedCount();
@@ -543,7 +558,7 @@ async function handleCheck(): Promise<Response> {
 
 async function handleCheckUserActive(req: Request): Promise<Response> {
   try {
-    await cleanupStaleJobs();
+    // REMOVED: cleanupStaleJobs() - was causing heavy processing on high-traffic endpoint
     
     const { userId } = await req.json();
     
@@ -567,7 +582,7 @@ async function handleCheckUserActive(req: Request): Promise<Response> {
     
     // Verificar em TODAS as tabelas - incluir STARTING e PENDING recente (< 35s)
     // CORREÇÃO: Incluir pending recente para evitar duplicados
-    const PENDING_GRACE_PERIOD_SECONDS = 35;
+    const PENDING_GRACE_PERIOD_SECONDS = 185; // Slightly above orphan timeout (180s)
     const pendingCutoff = new Date(Date.now() - PENDING_GRACE_PERIOD_SECONDS * 1000).toISOString();
     
     for (const table of JOB_TABLES) {
@@ -897,8 +912,8 @@ async function handleStatus(): Promise<Response> {
 
 async function handleEnqueue(req: Request): Promise<Response> {
   try {
-    // Limpeza oportunística: qualquer enqueue limpa jobs presos de todos
-    await cleanupStaleJobs();
+    // REMOVED: cleanupStaleJobs() - moved to less frequent endpoints only
+    
     
     const { table, jobId, creditCost } = await req.json();
     

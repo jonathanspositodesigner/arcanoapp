@@ -18,7 +18,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ToolType } from '@/ai/JobManager';
 
-const PENDING_TIMEOUT_MS = 30000; // 30 segundos
+const PENDING_TIMEOUT_MS = 180000; // 180 segundos (alinhado com o backend)
 
 // Mapeamento de ToolType para nome da tabela no banco
 const TABLE_NAME_MAP: Record<ToolType, string> = {

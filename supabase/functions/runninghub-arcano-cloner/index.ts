@@ -466,6 +466,18 @@ async function handleRun(req: Request) {
     }
   }
 
+  // EARLY STATUS UPDATE: Mark as 'starting' immediately after validation
+  // This prevents the orphan cleanup from killing the job while we download/upload images
+  await supabase
+    .from('arcano_cloner_jobs')
+    .update({ 
+      status: 'starting',
+      current_step: 'starting',
+      started_at: new Date().toISOString(),
+    })
+    .eq('id', jobId)
+    .eq('status', 'pending'); // Only update if still pending
+
   // Log step: starting
   await logStep(jobId, 'starting', { aspectRatio: finalAspectRatio });
 

@@ -249,6 +249,11 @@ async function handleRun(req: Request) {
     } catch { return new Response(JSON.stringify({ error: 'Invalid image URL', code: 'INVALID_IMAGE_URL' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }); }
   }
 
+  // EARLY STATUS UPDATE: Mark as 'starting' to prevent orphan cleanup
+  await supabase.from('bg_remover_jobs').update({ 
+    status: 'starting', current_step: 'starting', started_at: new Date().toISOString()
+  }).eq('id', jobId).eq('status', 'pending');
+
   // Upload image to RunningHub + check queue in PARALLEL
   let inputFileName: string;
   let queueResult: { slotsAvailable: number; accountName: string | null; accountApiKey: string | null };
