@@ -342,7 +342,7 @@ export default function ArcanoClonerAuthModal({
                   Enviamos um link de confirmação para <strong className="text-white">{verifiedEmail || email}</strong>
                 </p>
                 <p className="text-xs text-purple-400 mt-2">
-                  Após confirmar, volte aqui e faça login para receber seus 180 créditos grátis.
+                  Após confirmar, você receberá seus 300 créditos grátis automaticamente.
                 </p>
               </div>
               <Button
