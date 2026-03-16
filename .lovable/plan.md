@@ -1,88 +1,36 @@
-# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
-## Resumo
-Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
 
-## O que foi feito
+## Problemas Encontrados
 
-### 1. Tabela `subscription_billing_reminders` (migration)
-- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
-- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
-- Campo `checkout_url` para evitar checkouts duplicados
-- Constraint UNIQUE em (subscription_id, day_offset, due_date)
+### 1. Edge Function não estava deployada
+A função `send-free-trial-confirmation-email` **não estava deployada** — por isso nenhum email foi enviado. Já deployei agora.
 
-### 2. Edge Function `process-billing-reminders`
-- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
-- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
-- Para cada assinatura, verifica:
-  - Se já enviou email para esse `day_offset`
-  - Se a sequência foi parada (pagou ou descadastrou)
-  - Se o email está na blacklist
-  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
-- Gera checkout Pagar.me somente PIX com validade de 3 dias
-- Monta HTML personalizado com dados reais do plano
-- Envia via SendPulse SMTP API
-- Registra na tabela de controle
+### 2. SignupForm exige 3 etapas completas (CPF, telefone, endereço)
+O `SignupForm` usado no modal é o formulário completo de checkout do Pagar.me com 3 etapas obrigatórias:
+- Etapa 1: Email + Senha
+- Etapa 2: Nome + Telefone + CPF (validação obrigatória)
+- Etapa 3: CEP + Endereço + Cidade + Estado
 
-### 3. Mapeamento de benefícios por plano
-- Starter: 1.800 créditos, 5 prompts/dia
-- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
-- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
-- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
+Para um teste grátis isso é absurdo. O usuário só quer testar, não precisa dar CPF e endereço.
 
-### 4. Templates dos 6 emails
-- Dia 0: Lembrete leve ("Seu plano vence hoje")
-- Dia 1: Reforço pendência ("Pagamento ainda pendente")
-- Dia 2: Dor da perda ("Risco de perda de acesso")
-- Dia 3: Prejuízo prático ("O custo de não renovar")
-- Dia 4: FOMO ("Não fique para trás")
-- Dia 5: Último aviso ("Último aviso: regularize hoje")
-- Todos com link de descadastro no rodapé
+### 3. Tela de "verifique seu email" já existe no modal
+O step `verify-email` (linhas 334-357) já mostra a mensagem correta com ícone de email e instruções. O problema é que o usuário nunca chega lá porque tem que preencher 3 etapas antes.
 
-### 5. Cron job
-- pg_cron agendado: `0 12 * * *` (09:00 BRT)
-- Chama a Edge Function automaticamente
+---
 
-## Detecção de pagamento (para de enviar)
-- `planos2_subscriptions.expires_at` estendido para data futura
-- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
-- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
+## Plano de Correção
 
-# Auditoria Completa de Emails — Robustez Unificada (CONCLUÍDA)
+### Simplificar o cadastro no modal do Arcano Cloner
 
-## O que foi feito
+No `ArcanoClonerAuthModal.tsx`, **substituir o `SignupForm` por um formulário inline simples** com apenas:
+- Email
+- Senha
+- Confirmar senha
+- Nome (opcional)
 
-### Padrão unificado aplicado em todos os 6 webhooks:
+Sem CPF, sem telefone, sem endereço. Ao submeter, o fluxo atual de `handleSignup` já funciona (cria conta, envia email, mostra tela de verificação).
 
-1. **webhook-mercadopago** — `sendPurchaseEmail` refatorado:
-   - 3 retries com exponential backoff (2s, 5s, 10s)
-   - Removida lógica de DELETE de logs de falha (preserva auditoria)
-   - Cada tentativa registrada separadamente
+### Mudanças técnicas:
+1. **`ArcanoClonerAuthModal.tsx`** — Remover o `SignupForm` importado e criar um formulário simples inline no step `signup` com apenas email + senha + confirmar senha + nome opcional
+2. **Nenhuma outra mudança necessária** — O `handleSignup`, o step `verify-email`, e a edge function já estão corretos
 
-2. **webhook-greenn-creditos** — `sendWelcomeEmail` e `sendArcanoClonnerEmail`:
-   - Adicionado INSERT em `welcome_email_logs` (antes não tinha NENHUM log)
-   - Deduplicação via `dedup_key` unique constraint
-   - Blacklist check antes do envio
-   - 3 retries com exponential backoff
-   - Caller simplificado (retry agora é interno)
-
-3. **webhook-greenn** — Callers de `sendWelcomeEmail` e `sendPlanos2WelcomeEmail`:
-   - Retry loop 3x com exponential backoff (2s, 5s, 10s)
-   - Funções internas já tinham dedup + logging
-
-4. **webhook-greenn-artes** — Caller de `sendWelcomeEmail`:
-   - Retry loop 3x com exponential backoff
-   - Função interna já tinha dedup + logging
-
-5. **webhook-greenn-musicos** — Caller de `sendWelcomeEmail`:
-   - Retry loop 3x com exponential backoff
-   - Função interna já tinha dedup + logging
-
-6. **webhook-hotmart-artes** — Caller de `sendWelcomeEmail`:
-   - Retry loop 3x com exponential backoff
-   - Função interna já tinha dedup por transaction + logging
-
-### Sem mudanças (já robustos):
-- `webhook-pagarme` — 3 retries, dedup_key, logging completo
-- `resend-purchase-email` — robusto
-- `send-single-email` — utilitária independente
