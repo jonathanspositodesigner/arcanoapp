@@ -245,11 +245,11 @@ const LandingPricingSection = () => {
       <div className="max-w-7xl mx-auto">
         <AnimatedSection as="div" delay={100}>
           <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
-            Escolha o plano ideal{" "}
-            <span className="text-fuchsia-400">para você</span>
+            Comece agora mesmo a gerar suas próprias{" "}
+            <span className="text-fuchsia-400">fotos profissionais em segundos.</span>
           </h2>
           <p className="text-white/50 text-center text-sm mb-8 max-w-xl mx-auto">
-            Comece grátis ou desbloqueie todo o potencial com um plano premium
+            Escolha o melhor pacote para você iniciar
           </p>
         </AnimatedSection>
 
