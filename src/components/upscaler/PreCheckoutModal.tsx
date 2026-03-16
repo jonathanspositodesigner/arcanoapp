@@ -607,24 +607,6 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
               {!loading && <ArrowRight className="h-5 w-5" />}
             </button>
 
-            {/* Fallback checkout button - appears after 2s or on error */}
-            {showFallback && FALLBACK_CHECKOUT_URLS[productSlug || ''] && (
-              <div className="mt-3 space-y-2 animate-in fade-in duration-300">
-                <button
-                  onClick={handleFallbackClick}
-                  className="w-full py-3 text-sm font-semibold rounded-full border-2 border-yellow-500/50 bg-yellow-500/10 text-yellow-300 hover:bg-yellow-500/20 transition-all flex items-center justify-center gap-2"
-                >
-                  <Zap className="h-4 w-4" />
-                  {loading ? 'Checkout Reserva (enquanto carrega)' : 'Abrir Checkout Alternativo'}
-                  <ExternalLink className="h-3.5 w-3.5" />
-                </button>
-                {loading && (
-                  <p className="text-white/40 text-[10px] text-center">
-                    O checkout principal ainda está sendo gerado...
-                  </p>
-                )}
-              </div>
-            )}
 
             <div className="flex items-center justify-center gap-2 mt-4 text-white/40 text-xs">
               <Shield className="h-3 w-3" />
