@@ -44,7 +44,7 @@ const StatsBar = () => {
             ))}
           </div>
           <span className="text-white/80 text-xs sm:text-sm font-medium leading-tight">
-            + de 3.200 criadores em todo o mundo.
+            Junte-se a + de 3200 criadores em todo o mundo.
           </span>
         </div>
         <div className="flex items-center gap-6 sm:gap-8 shrink-0">
