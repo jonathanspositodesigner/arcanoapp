@@ -1116,10 +1116,21 @@ async function processGreennArtesWebhook(supabase: any, payload: any, logId: str
         console.log(`   ├─ ⏭️ Email de boas-vindas PULADO (Upscaler Arcano vitalício)`)
       } else {
         const packInfo = processedPacks.length > 1 ? `${processedPacks.length} Packs` : packMapping?.packSlug || 'Pack'
-        try {
-          await sendWelcomeEmail(supabase, email, clientName, packInfo, requestId, packMapping?.isFerramentaIA || false, userLocale)
-        } catch (e) {
-          console.log(`   ├─ ⚠️ Falha no email (acesso já liberado)`)
+        const artesBackoffDelays = [2000, 5000, 10000]
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            await sendWelcomeEmail(supabase, email, clientName, packInfo, requestId, packMapping?.isFerramentaIA || false, userLocale)
+            break // Success
+          } catch (e) {
+            console.log(`   ├─ ⚠️ Email tentativa ${attempt + 1}/3 falhou: ${e}`)
+            if (attempt < 2) {
+              const delay = artesBackoffDelays[attempt]
+              console.log(`   ├─ ⏳ Retry em ${delay / 1000}s...`)
+              await new Promise(resolve => setTimeout(resolve, delay))
+            } else {
+              console.log(`   ├─ ⚠️ Email falhou após 3 tentativas (acesso já liberado)`)
+            }
+          }
         }
       }
 

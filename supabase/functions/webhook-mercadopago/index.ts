@@ -254,36 +254,47 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
 }
 
 async function sendPurchaseEmail(supabase: any, email: string, productName: string, ctaLink: string, requestId: string) {
-  try {
-    const success = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId)
-    if (success) {
-      console.log(`   ├─ ✅ Email de compra enviado para ${email}`)
-    } else {
-      console.log(`   ├─ ⏳ Primeira tentativa falhou, retry em 3s...`)
-      await new Promise(resolve => setTimeout(resolve, 3000))
-      await supabase.from('welcome_email_logs').delete()
-        .eq('email', email)
-        .eq('template_used', `mp_purchase_${productName}`)
-        .eq('status', 'failed')
-      const retrySuccess = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId)
-      if (retrySuccess) {
-        console.log(`   ├─ ✅ Email enviado no retry para ${email}`)
-      } else {
-        console.error(`   ├─ ❌ Email falhou após retry para ${email}`)
+  const backoffDelays = [2000, 5000, 10000] // 2s, 5s, 10s
+  
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const success = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId)
+      if (success) {
+        console.log(`   ├─ ✅ Email de compra enviado para ${email} (tentativa ${attempt + 1})`)
+        return
+      }
+      
+      // Failed but no exception - log and retry
+      console.log(`   ├─ ⚠️ Tentativa ${attempt + 1}/3 falhou para ${email}`)
+      
+      if (attempt < 2) {
+        const delay = backoffDelays[attempt]
+        console.log(`   ├─ ⏳ Retry em ${delay / 1000}s...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      }
+    } catch (err: any) {
+      console.error(`   ├─ ❌ Erro tentativa ${attempt + 1}/3: ${err.message}`)
+      
+      // Log failure (don't delete previous logs!)
+      try {
+        await supabase.from('welcome_email_logs').insert({
+          email,
+          template_used: `mp_purchase_${productName}`,
+          tracking_id: crypto.randomUUID(),
+          status: 'failed',
+          error_message: `Tentativa ${attempt + 1}: ${err.message}`,
+        })
+      } catch (_) {}
+      
+      if (attempt < 2) {
+        const delay = backoffDelays[attempt]
+        console.log(`   ├─ ⏳ Retry em ${delay / 1000}s...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
       }
     }
-  } catch (err: any) {
-    console.error(`   ├─ ❌ Erro ao enviar email: ${err.message}`)
-    try {
-      await supabase.from('welcome_email_logs').insert({
-        email,
-        template_used: `mp_purchase_${productName}`,
-        tracking_id: crypto.randomUUID(),
-        status: 'failed',
-        error_message: err.message,
-      })
-    } catch (_) {}
   }
+  
+  console.error(`   ├─ ❌ Email falhou após 3 tentativas para ${email}`)
 }
 
 serve(async (req) => {

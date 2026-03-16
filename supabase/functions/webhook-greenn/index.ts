@@ -495,16 +495,27 @@ async function processPlanos2Webhook(
       payload: {}
     }).eq('id', logId)
 
-    // Send welcome email
-    try {
-      await sendPlanos2WelcomeEmail(
-        supabase, email, clientName, planConfig.slug,
-        planConfig.credits_per_month, planConfig.daily_prompt_limit,
-        planConfig.has_image_generation, planConfig.has_video_generation,
-        planConfig.cost_multiplier, requestId
-      )
-    } catch (e) {
-      console.log(`   ├─ [${requestId}] ⚠️ Falha email planos2 (acesso já liberado)`)
+    // Send welcome email with 3x retry + exponential backoff
+    const planos2BackoffDelays = [2000, 5000, 10000]
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await sendPlanos2WelcomeEmail(
+          supabase, email, clientName, planConfig.slug,
+          planConfig.credits_per_month, planConfig.daily_prompt_limit,
+          planConfig.has_image_generation, planConfig.has_video_generation,
+          planConfig.cost_multiplier, requestId
+        )
+        break // Success
+      } catch (e) {
+        console.log(`   ├─ [${requestId}] ⚠️ Email planos2 tentativa ${attempt + 1}/3 falhou: ${e}`)
+        if (attempt < 2) {
+          const delay = planos2BackoffDelays[attempt]
+          console.log(`   ├─ [${requestId}] ⏳ Retry em ${delay / 1000}s...`)
+          await new Promise(resolve => setTimeout(resolve, delay))
+        } else {
+          console.log(`   ├─ [${requestId}] ⚠️ Email planos2 falhou após 3 tentativas (acesso já liberado)`)
+        }
+      }
     }
 
     console.log(`\n✅ [${requestId}] Plano ${planConfig.slug} ativado: ${email}, expira: ${expiresAt}`)
@@ -656,16 +667,21 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
         payload: {} // Limpar payload para sucesso
       }).eq('id', logId)
 
-      // Send email with retry
-      try {
-        await sendWelcomeEmail(supabase, email, clientName, planType, requestId, locale)
-      } catch (e) {
-        console.log(`   ├─ ⏳ Primeira tentativa de email falhou, retry em 3s...`)
+      // Send email with 3x retry + exponential backoff
+      const emailBackoffDelays = [2000, 5000, 10000]
+      for (let attempt = 0; attempt < 3; attempt++) {
         try {
-          await new Promise(resolve => setTimeout(resolve, 3000))
           await sendWelcomeEmail(supabase, email, clientName, planType, requestId, locale)
-        } catch (e2) {
-          console.log(`   ├─ ⚠️ Email falhou após retry (acesso já liberado)`)
+          break // Success
+        } catch (e) {
+          console.log(`   ├─ ⚠️ Email tentativa ${attempt + 1}/3 falhou: ${e}`)
+          if (attempt < 2) {
+            const delay = emailBackoffDelays[attempt]
+            console.log(`   ├─ ⏳ Retry em ${delay / 1000}s...`)
+            await new Promise(resolve => setTimeout(resolve, delay))
+          } else {
+            console.log(`   ├─ ⚠️ Email falhou após 3 tentativas (acesso já liberado)`)
+          }
         }
       }
 

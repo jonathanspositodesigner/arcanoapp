@@ -367,12 +367,23 @@ async function processGreennMusicosWebhook(supabase: any, payload: any, logId: s
         payload: {} // Limpar payload para sucesso
       }).eq('id', logId)
 
-      // Send email
+      // Send email with 3x retry + exponential backoff
       const planInfo = `Plano ${planType.toUpperCase()} (${billingPeriod})`
-      try {
-        await sendWelcomeEmail(supabase, email, clientName, planInfo, requestId, locale)
-      } catch (e) {
-        console.log(`   ├─ ⚠️ Falha email (assinatura já ativada)`)
+      const musicosBackoffDelays = [2000, 5000, 10000]
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          await sendWelcomeEmail(supabase, email, clientName, planInfo, requestId, locale)
+          break // Success
+        } catch (e) {
+          console.log(`   ├─ ⚠️ Email tentativa ${attempt + 1}/3 falhou: ${e}`)
+          if (attempt < 2) {
+            const delay = musicosBackoffDelays[attempt]
+            console.log(`   ├─ ⏳ Retry em ${delay / 1000}s...`)
+            await new Promise(resolve => setTimeout(resolve, delay))
+          } else {
+            console.log(`   ├─ ⚠️ Email falhou após 3 tentativas (assinatura já ativada)`)
+          }
+        }
       }
 
       console.log(`\n✅ [${requestId}] Assinatura ativada: ${planType}, expira: ${finalExpiresAt.toISOString()}`)
