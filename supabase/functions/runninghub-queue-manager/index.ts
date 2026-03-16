@@ -582,7 +582,7 @@ async function handleCheckUserActive(req: Request): Promise<Response> {
     
     // Verificar em TODAS as tabelas - incluir STARTING e PENDING recente (< 35s)
     // CORREÇÃO: Incluir pending recente para evitar duplicados
-    const PENDING_GRACE_PERIOD_SECONDS = 35;
+    const PENDING_GRACE_PERIOD_SECONDS = 185; // Slightly above orphan timeout (180s)
     const pendingCutoff = new Date(Date.now() - PENDING_GRACE_PERIOD_SECONDS * 1000).toISOString();
     
     for (const table of JOB_TABLES) {
