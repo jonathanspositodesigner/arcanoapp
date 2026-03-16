@@ -328,7 +328,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         lightweight: true,
       };
 
-      const lightResponse = await supabase.functions.invoke('create-pagarme-checkout', { body: lightweightPayload });
+      const lightResponse = await invokeCheckout(lightweightPayload);
 
       if (!lightResponse.error && lightResponse.data?.checkout_url) {
         const { checkout_url, event_id } = lightResponse.data;
