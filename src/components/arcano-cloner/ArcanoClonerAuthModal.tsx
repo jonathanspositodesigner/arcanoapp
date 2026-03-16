@@ -491,14 +491,41 @@ export default function ArcanoClonerAuthModal({
                 <Mail className="w-8 h-8 text-green-400" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Verifique seu email!</h3>
+                <h3 className="text-lg font-bold text-white">Confirme seu email para continuar</h3>
                 <p className="text-sm text-purple-300 mt-2">
                   Enviamos um link de confirmação para <strong className="text-white">{verifiedEmail || email}</strong>
                 </p>
                 <p className="text-xs text-purple-400 mt-2">
-                  Após confirmar, você receberá seus 300 créditos grátis automaticamente.
+                  Verifique também a pasta de spam/lixo eletrônico. Sem confirmação do link, o login e o acesso ficam bloqueados.
+                </p>
+                <p className="text-xs text-purple-400 mt-2">
+                  Após confirmar no email, você será redirecionado automaticamente para a página de ferramentas.
                 </p>
               </div>
+
+              {emailSendError && (
+                <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/30 rounded-lg p-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{emailSendError}</span>
+                </div>
+              )}
+
+              <Button
+                variant="outline"
+                className="w-full border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
+                onClick={handleResendConfirmationEmail}
+                disabled={isResendingEmail || !pendingUserId}
+              >
+                {isResendingEmail ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Reenviando email...
+                  </>
+                ) : (
+                  'Reenviar email de confirmação'
+                )}
+              </Button>
+
               <Button
                 variant="outline"
                 className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
