@@ -128,7 +128,7 @@ function SimpleSignupForm({ defaultEmail, onSubmit, onBackToLogin, isLoading: fo
   );
 }
 
-
+interface ArcanoClonerAuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAuthSuccess: () => void;
