@@ -153,6 +153,17 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
 
+  const showErrorToast = useCallback((errorCode?: string) => {
+    const message = (errorCode && ERROR_MESSAGES[errorCode]) || 
+      `Erro ao criar checkout. ${errorCode ? `(${errorCode})` : 'Tente novamente.'}`;
+    
+    toast({
+      title: "Erro no checkout",
+      description: message,
+      variant: "destructive",
+    });
+  }, []);
+
   // Auto-submit for credit card: no data needed, redirect immediately
   const handleCreditCardAutoSubmit = useCallback(async () => {
     if (!productSlug) {
