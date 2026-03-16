@@ -205,7 +205,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     }
     setLoading(false);
     endFormSubmit();
-  }, [productSlug, email, startFormSubmit, endFormSubmit, showErrorToast]);
+  }, [productSlug, startFormSubmit, endFormSubmit, showErrorToast]);
 
   const validate = () => {
     let valid = true;
