@@ -250,10 +250,7 @@ async function handleRun(req: Request) {
     }
   }
 
-  // EARLY STATUS UPDATE: Mark as 'starting' to prevent orphan cleanup
-  await supabase.from('flyer_maker_jobs').update({ 
-    status: 'starting', current_step: 'starting', started_at: new Date().toISOString()
-  }).eq('id', jobId).eq('status', 'pending');
+  // NOTE: No early status update - job stays 'pending' until queue manager decides
 
   await logStep(jobId, 'starting', { imageSize, creativity, artistCount: artistPhotoUrls.length });
 
