@@ -301,10 +301,13 @@ export default function ArcanoClonerAuthModal({
           .eq('id', data.user.id)
           .maybeSingle();
 
-        if (profile && profile.email_verified === false) {
+        if (profile?.email_verified !== true) {
           console.log('[ArcanoClonerAuth] Email not verified, blocking login');
           await supabase.auth.signOut();
-          toast.error('Confirme seu email antes de entrar. Verifique sua caixa de entrada.');
+          setStep('verify-email');
+          setPendingUserId(data.user.id);
+          setEmailSendError(null);
+          toast.error('Confirme seu email antes de entrar. Verifique a caixa de entrada e o spam.');
           return;
         }
 
