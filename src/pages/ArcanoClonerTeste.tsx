@@ -333,7 +333,85 @@ const ArcanoClonerTeste = () => {
       </AnimatedSection>
       </LazySection>
 
-      {/* ==================== RESULTADOS REAIS ==================== */}
+      {/* ==================== COMPARATIVO ==================== */}
+      <LazySection>
+        <AnimatedSection className="px-4 py-16 md:py-20">
+          <div className="max-w-3xl mx-auto">
+            <AnimatedSection as="div" delay={100}>
+              <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
+                O Arcano Cloner entrega tudo que você precisa{" "}
+                <span className="text-fuchsia-400">na palma da mão.</span>
+              </h2>
+              <p className="text-white/50 text-center text-sm mb-10 max-w-xl mx-auto">
+                Chega de ferramentas complexas que te prendem em assinaturas mensais e não funcionam no seu celular.
+              </p>
+            </AnimatedSection>
+
+            <div className="border border-white/10 rounded-2xl overflow-hidden">
+              {/* Header */}
+              <div className="grid grid-cols-3 border-b border-white/10 bg-white/[0.02]">
+                <div className="px-4 py-4 text-white/70 text-xs uppercase tracking-wider font-semibold">Recursos</div>
+                <div className="px-4 py-4 text-white/40 text-xs uppercase tracking-wider text-center font-semibold">Outras IAs</div>
+                <div className="px-4 py-4 text-fuchsia-400 text-xs uppercase tracking-wider text-center font-semibold">Arcano Cloner</div>
+              </div>
+
+              {[
+                {
+                  feature: "Modelos e Comandos",
+                  other: "Você precisa criar prompts complexos do zero",
+                  cloner: "Modelos e Prompts Prontos para Uso (1 Clique)",
+                },
+                {
+                  feature: "Experiência no Celular",
+                  other: "Interface pesada, trava ou exige PC",
+                  cloner: "100% Otimizado, Rápido e Leve no Celular",
+                },
+                {
+                  feature: "Preço de Entrada",
+                  other: "R$ 100 a R$ 150+ /mês",
+                  cloner: "A partir de R$ 37,00 (Único)",
+                },
+                {
+                  feature: "Modelo de Pagamento",
+                  other: "Assinatura Mensal Obrigatória",
+                  cloner: "Pacotes Avulsos (Sem pegadinhas)",
+                },
+                {
+                  feature: "Qualidade da Imagem",
+                  other: "Cara de 'Robô' e erros visuais",
+                  cloner: "Fotorrealismo Extremo (Nano Banana Pro)",
+                },
+                {
+                  feature: "Facilidade de Uso",
+                  other: "Precisa usar códigos e Discord",
+                  cloner: "App Simples e Direto ao Ponto",
+                },
+                {
+                  feature: "Comunidade no WhatsApp",
+                  other: "Sem suporte ou networking",
+                  cloner: "Grupo VIP e Suporte Ativo",
+                },
+              ].map((row, i) => (
+                <div key={i} className="grid grid-cols-3 border-b border-white/5 last:border-b-0">
+                  <div className="px-4 py-5 text-white font-semibold text-sm flex items-center">{row.feature}</div>
+                  <div className="px-4 py-5 flex flex-col items-center justify-center text-center gap-1">
+                    <span className="text-red-400 text-lg">✕</span>
+                    <span className="text-white/40 text-xs leading-tight">{row.other}</span>
+                  </div>
+                  <div className="px-3 py-4 flex items-center justify-center">
+                    <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-3 py-3 text-center w-full">
+                      <span className="text-emerald-400 text-lg block mb-1">✓</span>
+                      <span className="text-emerald-300 text-xs font-semibold leading-tight">{row.cloner}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </AnimatedSection>
+      </LazySection>
+
+
       <LazySection rootMargin="100px">
       <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
         <div className="max-w-7xl mx-auto text-center">
