@@ -334,32 +334,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       const { fbp, fbc } = getMetaCookies();
       const normalizedEmail = email.trim().toLowerCase();
 
-      // Cartão: sempre checkout puro (sem envio prévio de CPF/telefone/endereço)
-      if (paymentMethod === 'CREDIT_CARD') {
-        console.log('[PreCheckoutModal] Chamando checkout puro para cartão...');
-        const cardResponse = await invokeCheckout({
-          product_slug: productSlug,
-          user_email: normalizedEmail,
-          billing_type: 'CREDIT_CARD',
-          utm_data: utmData,
-          fbp,
-          fbc,
-          lightweight: true,
-        });
-
-        if (!cardResponse.error && cardResponse.data?.checkout_url) {
-          const { checkout_url, event_id } = cardResponse.data;
-          if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
-            (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
-          }
-          window.location.href = checkout_url;
-          return;
-        }
-
-        const cardErrorCode = cardResponse.data?.error_code || 'UNKNOWN';
-        showErrorToast(cardErrorCode);
-        return;
-      }
+      // handleSubmit agora só processa PIX (cartão é tratado em handleCreditCardAutoSubmit)
 
       const fullPayload = {
         product_slug: productSlug,
