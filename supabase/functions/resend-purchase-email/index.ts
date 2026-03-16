@@ -397,8 +397,8 @@ serve(async (req) => {
     const maxAttempts = Math.max(1, Math.min(Number(body.max_attempts || 3), 5))
 
     if (body.resend_missing === true) {
-      const startDate = body.start_date || '2026-03-13T00:00:00Z'
-      const endDate = body.end_date || '2026-03-17T00:00:00Z'
+      const startDate = body.start_date || new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString()
+      const endDate = body.end_date || new Date().toISOString()
       const limit = Number(body.limit || 500)
 
       const orders = await getMissingOrdersInRange(supabase, startDate, endDate, limit)
