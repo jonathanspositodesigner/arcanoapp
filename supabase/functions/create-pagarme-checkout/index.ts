@@ -12,7 +12,7 @@ const PAGARME_API_URL = 'https://api.pagar.me/core/v5'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
 const INVALID_UTM_VALUES = ['aplicativo', '', 'app'];
@@ -50,7 +50,7 @@ function normalizePhone(raw: string | null): { areaCode: string; phoneNumber: st
 async function fetchWithRetry(
   url: string,
   options: RequestInit,
-  { maxRetries = 1, timeoutMs = 8000, idempotencyKey }: { maxRetries?: number; timeoutMs?: number; idempotencyKey?: string }
+  { maxRetries = 2, timeoutMs = 15000, idempotencyKey }: { maxRetries?: number; timeoutMs?: number; idempotencyKey?: string }
 ): Promise<{ response: Response; responseText: string }> {
   let lastError: any = null;
 
@@ -246,7 +246,7 @@ serve(async (req) => {
 
     // Fire-and-forget: atualizar perfil
     const trimmedName = user_name?.trim() || null
-    if (trimmedName || cleanCpf || phone.fullDigits || user_address?.line_1) {
+    if (trimmedName || cleanCpf || phone?.fullDigits || user_address?.line_1) {
       supabase
         .from('profiles')
         .select('id, name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
@@ -257,7 +257,7 @@ serve(async (req) => {
             const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
             if (!existingProfile.name && trimmedName) updates.name = trimmedName
             if (!existingProfile.cpf && cleanCpf) updates.cpf = cleanCpf
-            if (!existingProfile.phone && phone.fullDigits) updates.phone = phone.fullDigits
+            if (!existingProfile.phone && phone?.fullDigits) updates.phone = phone.fullDigits
             if (!existingProfile.address_line && user_address?.line_1) {
               updates.address_line = user_address.line_1
               updates.address_zip = user_address.zip_code || null
@@ -368,6 +368,7 @@ serve(async (req) => {
     const authHeader = 'Basic ' + btoa(pagarmeSecretKey + ':')
     const idempotencyKey = `checkout_${order.id}`
 
+    const pagarmeStartTime = Date.now()
     console.log(`[${requestId}] 🔑 Calling Pagar.me | Key: ${pagarmeSecretKey.substring(0, 8)}... | Idempotency: ${idempotencyKey}`)
 
     // 4. Criar pedido no Pagar.me com RETRY
@@ -384,7 +385,7 @@ serve(async (req) => {
           },
           body: JSON.stringify(checkoutPayload),
         },
-        { maxRetries: 1, timeoutMs: 8000, idempotencyKey }
+        { maxRetries: 2, timeoutMs: 15000, idempotencyKey }
       );
       pagarmeResponse = result.response;
       pagarmeResponseText = result.responseText;
@@ -395,10 +396,39 @@ serve(async (req) => {
       return errorResponse('Erro de comunicação com o gateway. Tente novamente em alguns instantes.', 502, 'GATEWAY_UNREACHABLE');
     }
 
+    const pagarmeElapsed = Date.now() - pagarmeStartTime
+    console.log(`[${requestId}] ⏱️ Pagar.me respondeu em ${pagarmeElapsed}ms (status: ${pagarmeResponse.status})`)
+
     if (!pagarmeResponse.ok) {
       console.error(`[${requestId}] Erro Pagar.me ${pagarmeResponse.status}: ${pagarmeResponseText.substring(0, 800)}`)
       // MARK ORDER AS FAILED
-      await supabase.from('asaas_orders').update({ status: 'failed', payment_method: 'checkout_failed' }).eq('id', order.id);
+      await supabase.from('asaas_orders').update({ 
+        status: 'failed', 
+        payment_method: 'checkout_failed',
+        gateway_error_code: String(pagarmeResponse.status),
+        gateway_error_message: pagarmeResponseText.substring(0, 500),
+      }).eq('id', order.id);
+      
+      // Parse 4xx errors for user-friendly messages
+      if (pagarmeResponse.status >= 400 && pagarmeResponse.status < 500) {
+        try {
+          const errData = JSON.parse(pagarmeResponseText);
+          const errMessages: string[] = [];
+          if (errData.errors && Array.isArray(errData.errors)) {
+            for (const e of errData.errors) {
+              errMessages.push(e.message || e.description || JSON.stringify(e));
+            }
+          } else if (errData.message) {
+            errMessages.push(errData.message);
+          }
+          const userMsg = errMessages.length > 0 
+            ? `Erro de validação: ${errMessages.join('; ')}` 
+            : 'Erro de validação nos dados. Verifique CPF e endereço.';
+          return errorResponse(userMsg, 422, 'GATEWAY_VALIDATION_ERROR');
+        } catch {
+          // Fall through to generic error
+        }
+      }
       return errorResponse('Erro ao criar cobrança. Tente novamente.', 500, 'GATEWAY_ERROR');
     }
 
