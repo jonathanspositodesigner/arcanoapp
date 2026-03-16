@@ -11,6 +11,10 @@ import logoHorizontal from "@/assets/logo_horizontal.png";
 import HeroCarouselBackground from "@/components/combo-artes/HeroCarouselBackground";
 import { LazySection } from "@/components/combo-artes/LazySection";
 import LandingTrialSignupSection from "@/components/arcano-cloner/LandingTrialSignupSection";
+import clonerResult1 from "@/assets/cloner-result-1.webp";
+import clonerResult2 from "@/assets/cloner-result-2.webp";
+import clonerResult3 from "@/assets/cloner-result-3.webp";
+import clonerResult4 from "@/assets/cloner-result-4.webp";
 
 // Lazy-loaded heavy components (below the fold)
 const ExpandingGallery = lazy(() => import("@/components/combo-artes/ExpandingGallery"));
