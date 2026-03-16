@@ -1038,7 +1038,7 @@ serve(async (req) => {
       }
 
       // 7. Enviar email com dedup + retry
-      const ctaLink = product.pack_slug === 'upscaler-arcano' || product.type === 'credits' || product.type === 'landing_bundle'
+      const ctaLink = product.pack_slug === 'upscaler-arcano' || product.type === 'credits'
         ? 'https://arcanoapp.voxvisual.com.br/upscaler-arcano'
         : 'https://arcanoapp.voxvisual.com.br/'
 
