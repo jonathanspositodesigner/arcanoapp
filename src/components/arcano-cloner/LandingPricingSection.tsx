@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { AnimatedSection, StaggeredAnimation } from "@/hooks/useScrollAnimation";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { supabase } from "@/integrations/supabase/client";
-import { invokeCheckout } from "@/lib/checkoutFetch";
+import { invokeCheckout, preWarmCheckout } from "@/lib/checkoutFetch";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
