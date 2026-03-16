@@ -216,7 +216,11 @@ const ArcanoClonerTeste = () => {
                   <img src="/images/social-proof-2.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                   <img src="/images/social-proof-3.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                 </div>
-                <span className="text-white/80 text-xs font-medium">+5.000 pessoas já estão usando</span>
+                <span className="relative flex h-2.5 w-2.5 mr-1">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400 shadow-[0_0_6px_2px_rgba(52,211,153,0.4)]"></span>
+                </span>
+                <span className="text-white/80 text-xs font-medium">+3.200 usuários ativos</span>
               </div>
             </FadeIn>
 
