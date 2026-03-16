@@ -50,7 +50,7 @@ function normalizePhone(raw: string | null): { areaCode: string; phoneNumber: st
 async function fetchWithRetry(
   url: string,
   options: RequestInit,
-  { maxRetries = 2, timeoutMs = 25000, idempotencyKey }: { maxRetries?: number; timeoutMs?: number; idempotencyKey?: string }
+  { maxRetries = 1, timeoutMs = 8000, idempotencyKey }: { maxRetries?: number; timeoutMs?: number; idempotencyKey?: string }
 ): Promise<{ response: Response; responseText: string }> {
   let lastError: any = null;
 
