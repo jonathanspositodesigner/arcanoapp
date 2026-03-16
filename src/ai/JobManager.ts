@@ -234,60 +234,91 @@ export async function startJob(
   const edgeFunction = EDGE_FUNCTION_MAP[toolType];
   const tableName = TABLE_MAP[toolType];
   
-  try {
-    console.log(`[JobManager] Starting job ${jobId} via ${edgeFunction}`);
-    
-    const { data, error } = await supabase.functions.invoke(edgeFunction, {
-      body: { jobId, ...payload },
-    });
-    
-    if (error) {
-      // Tentar extrair erro detalhado
-      let errorMessage = error.message || 'Erro desconhecido';
-      if (errorMessage.includes('non-2xx')) {
-        errorMessage = 'Falha na comunicação com o servidor. Tente novamente.';
+  // Retry logic for transient gateway errors
+  const MAX_RETRIES = 3;
+  const RETRY_DELAYS = [2000, 5000, 10000];
+  
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      console.log(`[JobManager] Starting job ${jobId} via ${edgeFunction} (attempt ${attempt + 1})`);
+      
+      const { data, error } = await supabase.functions.invoke(edgeFunction, {
+        body: { jobId, ...payload },
+      });
+      
+      if (error) {
+        const errorMessage = error.message || 'Erro desconhecido';
+        
+        // Check if this is a transient error worth retrying
+        const isTransient = 
+          errorMessage.includes('Failed to send a request') ||
+          errorMessage.includes('non-2xx') ||
+          errorMessage.includes('502') ||
+          errorMessage.includes('504') ||
+          errorMessage.includes('network') ||
+          errorMessage.includes('fetch');
+        
+        if (isTransient && attempt < MAX_RETRIES) {
+          console.warn(`[JobManager] Transient error on attempt ${attempt + 1}, retrying in ${RETRY_DELAYS[attempt]}ms: ${errorMessage}`);
+          await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt]));
+          continue;
+        }
+        
+        // Final failure - mark as failed
+        const displayError = isTransient 
+          ? 'Falha na comunicação com o servidor. Tente novamente.'
+          : errorMessage;
+        
+        await markJobFailed(tableName, jobId, displayError);
+        return { success: false, error: displayError };
       }
       
-      // Marcar job como falho
-      await markJobFailed(tableName, jobId, errorMessage);
+      console.log(`[JobManager] Edge function response:`, data);
       
+      // Verificar erros conhecidos
+      if (data.code === 'INSUFFICIENT_CREDITS') {
+        return { success: false, code: 'INSUFFICIENT_CREDITS', error: 'Créditos insuficientes' };
+      }
+      
+      if (data.code === 'RATE_LIMIT_EXCEEDED') {
+        return { success: false, code: 'RATE_LIMIT_EXCEEDED', error: 'Muitas requisições. Aguarde 1 minuto.' };
+      }
+      
+      if (data.code === 'IMAGE_TRANSFER_ERROR') {
+        const detail = data.error || 'Falha ao enviar imagens';
+        await markJobFailed(tableName, jobId, detail);
+        return { success: false, code: 'IMAGE_TRANSFER_ERROR', error: detail };
+      }
+      
+      if (data.error && !data.success && !data.queued) {
+        await markJobFailed(tableName, jobId, data.error);
+        return { success: false, error: data.error };
+      }
+      
+      return {
+        success: data.success ?? false,
+        jobId,
+        queued: data.queued ?? false,
+        position: data.position ?? 0,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      
+      // Retry on network-level exceptions
+      if (attempt < MAX_RETRIES) {
+        console.warn(`[JobManager] Exception on attempt ${attempt + 1}, retrying: ${errorMessage}`);
+        await new Promise(r => setTimeout(r, RETRY_DELAYS[attempt]));
+        continue;
+      }
+      
+      console.error('[JobManager] startJob failed after all retries:', error);
+      await markJobFailed(tableName, jobId, errorMessage);
       return { success: false, error: errorMessage };
     }
-    
-    console.log(`[JobManager] Edge function response:`, data);
-    
-    // Verificar erros conhecidos
-    if (data.code === 'INSUFFICIENT_CREDITS') {
-      return { success: false, code: 'INSUFFICIENT_CREDITS', error: 'Créditos insuficientes' };
-    }
-    
-    if (data.code === 'RATE_LIMIT_EXCEEDED') {
-      return { success: false, code: 'RATE_LIMIT_EXCEEDED', error: 'Muitas requisições. Aguarde 1 minuto.' };
-    }
-    
-    if (data.code === 'IMAGE_TRANSFER_ERROR') {
-      const detail = data.error || 'Falha ao enviar imagens';
-      await markJobFailed(tableName, jobId, detail);
-      return { success: false, code: 'IMAGE_TRANSFER_ERROR', error: detail };
-    }
-    
-    if (data.error && !data.success && !data.queued) {
-      await markJobFailed(tableName, jobId, data.error);
-      return { success: false, error: data.error };
-    }
-    
-    return {
-      success: data.success ?? false,
-      jobId,
-      queued: data.queued ?? false,
-      position: data.position ?? 0,
-    };
-  } catch (error) {
-    console.error('[JobManager] startJob exception:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-    await markJobFailed(tableName, jobId, errorMessage);
-    return { success: false, error: errorMessage };
   }
+  
+  // Should never reach here, but just in case
+  return { success: false, error: 'Erro inesperado após tentativas' };
 }
 
 /**
