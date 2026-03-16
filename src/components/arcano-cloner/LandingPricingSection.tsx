@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, X, Sparkles, Image, Video, Award, ShieldCheck, Zap, Headset } from "lucide-react";
+import { Check, X, Sparkles, Image, Video, Award, ShieldCheck, Zap, Headset, Rocket, Crown, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
