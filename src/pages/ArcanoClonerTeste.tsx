@@ -424,7 +424,7 @@ const ArcanoClonerTeste = () => {
         <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="fade">
           <div className="max-w-4xl mx-auto text-center mb-10">
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3">
-              Uma <span className="text-fuchsia-400">biblioteca</span> completa!
+              Uma <span className="text-fuchsia-400">biblioteca</span> de referências completa!
             </h2>
             <p className="text-white/60 text-sm md:text-base">Centenas de modelos para você criar suas fotos</p>
           </div>
