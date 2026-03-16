@@ -414,7 +414,7 @@ serve(async (req) => {
               : `https://arcanoapp.voxvisual.com.br/sucesso-compra`,
             // Lightweight: user fills everything on Pagar.me page
             customer_editable: isLightweight,
-            billing_address_editable: isLightweight || billing_type === 'CREDIT_CARD',
+            billing_address_editable: true,
             skip_checkout_success_page: billing_type === 'CREDIT_CARD',
             ...(!isLightweight && (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) ? {
               billing_address: {
