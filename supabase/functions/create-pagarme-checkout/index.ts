@@ -416,11 +416,11 @@ serve(async (req) => {
             success_url: product.pack_slug === 'upscaler-arcano'
               ? `https://arcanoapp.voxvisual.com.br/sucesso-upscaler-arcano`
               : `https://arcanoapp.voxvisual.com.br/sucesso-compra`,
-            // Lightweight: user fills everything on Pagar.me page
-            customer_editable: isLightweight,
+            // Modo mínimo/cartão puro: gateway coleta dados direto no checkout hospedado
+            customer_editable: useMinimalValidation,
             billing_address_editable: true,
             skip_checkout_success_page: billing_type === 'CREDIT_CARD',
-            ...(!isLightweight && (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) ? {
+            ...(!useMinimalValidation && (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) ? {
               billing_address: {
                 line_1: user_address.line_1,
                 zip_code: user_address.zip_code.replace(/\D/g, ''),
@@ -446,7 +446,8 @@ serve(async (req) => {
       metadata: {
         order_id: order.id,
         request_id: requestId,
-        ...(isLightweight ? { lightweight: true } : {})
+        ...(isLightweightFallback ? { lightweight: true } : {}),
+        ...(isPureCreditCardCheckout ? { pure_credit_card_checkout: true } : {})
       }
     }
 
