@@ -270,20 +270,49 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     }
   };
 
+  const handleFallbackClick = useCallback(() => {
+    const fallbackUrl = FALLBACK_CHECKOUT_URLS[productSlug || ''];
+    if (fallbackUrl) {
+      window.location.href = fallbackUrl;
+    }
+  }, [productSlug]);
+
+  const showErrorToast = useCallback((errorCode?: string, requestId?: string) => {
+    const message = (errorCode && ERROR_MESSAGES[errorCode]) || 
+      `Erro ao criar checkout. ${errorCode ? `(${errorCode})` : 'Tente novamente.'}`;
+    
+    toast({
+      title: "Erro no checkout",
+      description: message,
+      variant: "destructive",
+    });
+  }, []);
+
   const handleSubmit = async () => {
     if (!validate()) return;
     if (!productSlug) {
       console.error('[PreCheckoutModal] productSlug inválido:', productSlug);
-      alert('Erro: produto não identificado. Feche e tente novamente.');
+      toast({ title: "Erro", description: "Produto não identificado. Feche e tente novamente.", variant: "destructive" });
       return;
     }
     if (!startFormSubmit()) return;
 
     setLoading(true);
+    setShowFallback(false);
+    checkoutResolvedRef.current = false;
+
+    // Start 2s fallback timer
+    if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+    fallbackTimerRef.current = setTimeout(() => {
+      if (!checkoutResolvedRef.current) {
+        setShowFallback(true);
+      }
+    }, 2000);
+
     try {
       const utmData = getSanitizedUtms();
-
       const { fbp, fbc } = getMetaCookies();
+      
       const response = await supabase.functions.invoke('create-pagarme-checkout', {
         body: {
           product_slug: productSlug,
@@ -298,10 +327,23 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         }
       });
 
+      // Clear fallback timer
+      if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+
       if (response.error) {
         console.error('Erro ao criar checkout:', response.error);
-        alert('Erro ao criar checkout. Tente novamente.');
+        // Try to extract error_code from response body
+        let errorCode = 'UNKNOWN';
+        try {
+          const errBody = typeof response.error === 'object' ? response.error : JSON.parse(String(response.error));
+          errorCode = errBody?.error_code || errBody?.context?.error_code || 'UNKNOWN';
+        } catch {}
+        
+        checkoutResolvedRef.current = true;
+        showErrorToast(errorCode);
+        setShowFallback(true); // Show fallback on error
         setLoading(false);
+        endFormSubmit();
         return;
       }
 
@@ -313,14 +355,20 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       }
 
       if (checkout_url) {
+        checkoutResolvedRef.current = true;
         window.location.href = checkout_url;
         return;
       } else {
-        alert('Erro ao gerar link de pagamento.');
+        checkoutResolvedRef.current = true;
+        showErrorToast('NO_CHECKOUT_URL');
+        setShowFallback(true);
       }
     } catch (error) {
       console.error('Erro:', error);
-      alert('Erro ao processar. Tente novamente.');
+      if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+      checkoutResolvedRef.current = true;
+      showErrorToast();
+      setShowFallback(true);
     }
     setLoading(false);
     endFormSubmit();
