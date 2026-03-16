@@ -330,41 +330,56 @@ async function getMissingOrdersInRange(
   endDate: string,
   limit: number,
 ): Promise<PurchaseOrder[]> {
-  const { data, error } = await supabase.rpc('run_sql', {
-    query: `
-      select
-        o.id as order_id,
-        lower(o.user_email) as email,
-        coalesce(p.title, 'Produto') as product_name,
-        p.type as product_type,
-        p.pack_slug,
-        p.access_type,
-        coalesce(o.paid_at, o.created_at) as paid_time
-      from public.asaas_orders o
-      left join public.mp_products p on p.id = o.product_id
-      where o.status = 'paid'
-        and coalesce(o.paid_at, o.created_at) >= '${startDate}'::timestamptz
-        and coalesce(o.paid_at, o.created_at) < '${endDate}'::timestamptz
-        and not exists (
-          select 1
-          from public.welcome_email_logs w
-          where lower(w.email) = lower(o.user_email)
-            and w.status = 'sent'
-            and (
-              w.dedup_key = ('pagarme_order_' || o.id::text)
-              or (
-                w.template_used = ('pagarme_purchase_' || coalesce(p.title, 'Produto'))
-                and w.sent_at >= coalesce(o.paid_at, o.created_at)
-              )
-            )
-        )
-      order by paid_time asc
-      limit ${Math.max(1, Math.min(limit, 1000))}
-    `
+  const safeLimit = Math.max(1, Math.min(limit, 1000))
+
+  const { data: orderRows, error: ordersError } = await supabase
+    .from('asaas_orders')
+    .select('id, user_email, paid_at, created_at, mp_products(title, type, pack_slug, access_type)')
+    .eq('status', 'paid')
+    .or(`and(paid_at.gte.${startDate},paid_at.lt.${endDate}),and(paid_at.is.null,created_at.gte.${startDate},created_at.lt.${endDate})`)
+    .limit(safeLimit)
+
+  if (ordersError) throw new Error(`Erro ao buscar pedidos pagos: ${ordersError.message}`)
+
+  const orders: PurchaseOrder[] = (orderRows || []).map((row: any) => ({
+    order_id: row.id,
+    email: normalizeEmail(row.user_email),
+    product_name: row.mp_products?.title || 'Produto',
+    product_type: row.mp_products?.type || null,
+    pack_slug: row.mp_products?.pack_slug || null,
+    access_type: row.mp_products?.access_type || null,
+    paid_time: row.paid_at || row.created_at || new Date().toISOString(),
+  }))
+
+  if (orders.length === 0) return []
+
+  const uniqueEmails = Array.from(new Set(orders.map(o => o.email)))
+  const { data: sentLogs, error: logsError } = await supabase
+    .from('welcome_email_logs')
+    .select('email, status, sent_at, dedup_key, template_used')
+    .in('email', uniqueEmails)
+    .eq('status', 'sent')
+    .gte('sent_at', startDate)
+
+  if (logsError) throw new Error(`Erro ao buscar logs de envio: ${logsError.message}`)
+
+  const logs = sentLogs || []
+
+  const missing = orders.filter(order => {
+    const byDedup = logs.some((log: any) => log.dedup_key === buildPurchaseDedupKey(order.order_id))
+    if (byDedup) return false
+
+    const byLegacy = logs.some((log: any) => {
+      if (normalizeEmail(log.email || '') !== order.email) return false
+      if (log.template_used !== buildPurchaseTemplateUsed(order.product_name)) return false
+      if (!log.sent_at) return false
+      return new Date(log.sent_at).getTime() >= new Date(order.paid_time).getTime()
+    })
+
+    return !byLegacy
   })
 
-  if (error) throw new Error(`Erro ao buscar pendentes: ${error.message}`)
-  return (data || []) as PurchaseOrder[]
+  return missing.sort((a, b) => new Date(a.paid_time).getTime() - new Date(b.paid_time).getTime())
 }
 
 serve(async (req) => {
