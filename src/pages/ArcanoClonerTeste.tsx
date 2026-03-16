@@ -460,9 +460,7 @@ const ArcanoClonerTeste = () => {
         <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="fade">
           <div className="max-w-4xl mx-auto text-center mb-10">
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-2">
-              Gere sua imagem{" "}
-              <span className="text-fuchsia-400">ou copie o prompt</span>{" "}
-              direto no app
+              Uma <span className="text-fuchsia-400">biblioteca</span> completa de referências
             </h2>
 
             <div className="flex flex-col items-center mt-8 mb-2">
