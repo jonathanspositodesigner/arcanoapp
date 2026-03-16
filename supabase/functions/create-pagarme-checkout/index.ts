@@ -371,34 +371,34 @@ serve(async (req) => {
 
     const customerName = user_name?.trim() || email.split('@')[0]
 
-    // Modo cartão puro: enviar customer mínimo e deixar o checkout coletar dados sensíveis
+    // Enviar CPF e telefone sempre (antifraude precisa disso) — endereço só para PIX
     const customerObj: Record<string, unknown> = {
       name: customerName,
       email: email,
       type: 'individual',
     }
-    if (!isPureCreditCardCheckout) {
-      if (cleanCpf) {
-        customerObj.document = cleanCpf
-        customerObj.document_type = 'CPF'
-      }
-      if (phone) {
-        customerObj.phones = {
-          mobile_phone: {
-            country_code: '55',
-            area_code: phone.areaCode,
-            number: phone.phoneNumber
-          }
+    // CPF e telefone para todos os métodos (melhora score antifraude)
+    if (cleanCpf) {
+      customerObj.document = cleanCpf
+      customerObj.document_type = 'CPF'
+    }
+    if (phone) {
+      customerObj.phones = {
+        mobile_phone: {
+          country_code: '55',
+          area_code: phone.areaCode,
+          number: phone.phoneNumber
         }
       }
-      if (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) {
-        customerObj.address = {
-          line_1: user_address.line_1,
-          zip_code: user_address.zip_code.replace(/\D/g, ''),
-          city: user_address.city,
-          state: user_address.state,
-          country: user_address.country || 'BR'
-        }
+    }
+    // Endereço apenas quando disponível (PIX preenche, cartão deixa editável)
+    if (!isPureCreditCardCheckout && user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) {
+      customerObj.address = {
+        line_1: user_address.line_1,
+        zip_code: user_address.zip_code.replace(/\D/g, ''),
+        city: user_address.city,
+        state: user_address.state,
+        country: user_address.country || 'BR'
       }
     }
 
