@@ -107,10 +107,8 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const [oneClickLoading, setOneClickLoading] = useState(false);
   const [showFullForm, setShowFullForm] = useState(false);
 
-  // Race/fallback state
-  const [showFallback, setShowFallback] = useState(false);
-  const checkoutResolvedRef = useRef(false);
-  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Race control ref
+  const redirectedRef = useRef(false);
 
   useEffect(() => {
     if (userEmail) {
