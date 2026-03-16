@@ -234,181 +234,48 @@ serve(async (req) => {
         );
       }
 
-      // EARLY STATUS UPDATE: Mark as 'starting' immediately to reduce pending window
-      await logStep(supabase, jobId, 'starting', { userId });
-      await supabase
-        .from('video_upscaler_jobs')
-        .update({ status: 'starting', user_id: userId })
-        .eq('id', jobId);
-
-      // Check global running count via Queue Manager (MULTI-API)
-      const queueStatus = await checkQueueAvailability(supabase);
-      const runningCount = queueStatus.running;
-      const accountName = (queueStatus as any).accountName || 'primary';
-      const accountApiKey = (queueStatus as any).accountApiKey || null;
-      console.log(`[VideoUpscaler] Global running jobs: ${runningCount}, account: ${accountName}`);
-
-      if (!queueStatus.available) {
-        // Usar Queue Manager para enfileirar e obter posição GLOBAL
-        const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-        const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-        
-        try {
-          const enqueueUrl = `${supabaseUrl}/functions/v1/runninghub-queue-manager/enqueue`;
-          const enqueueResponse = await fetch(enqueueUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${serviceRoleKey}`,
-            },
-            body: JSON.stringify({
-              table: 'video_upscaler_jobs',
-              jobId,
-            }),
-          });
-          const enqueueData = await enqueueResponse.json();
-          
-          console.log(`[VideoUpscaler] Job ${jobId} queued at GLOBAL position ${enqueueData.position}`);
-
-          return new Response(
-            JSON.stringify({ success: true, queued: true, position: enqueueData.position }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        } catch (enqueueError) {
-          console.error('[VideoUpscaler] Enqueue failed:', enqueueError);
-          // Fallback: enfileirar localmente
-          await supabase
-            .from('video_upscaler_jobs')
-            .update({
-              status: 'queued',
-              position: 999,
-              waited_in_queue: true,
-            })
-            .eq('id', jobId);
-
-          return new Response(
-            JSON.stringify({ success: true, queued: true, position: 999 }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-      }
+      // NOTE: No early status update - job stays 'pending' until queue manager decides
+      await logStep(supabase, jobId, 'validating', { userId });
 
       // Consume credits first
       const creditResult = await consumeCredits(supabase, userId, creditCost || CREDIT_COST);
       if (!creditResult.success) {
-        await supabase
-          .from('video_upscaler_jobs')
-          .update({ status: 'failed', error_message: 'Insufficient credits' })
-          .eq('id', jobId);
-
-        return new Response(
-          JSON.stringify({ success: false, code: "INSUFFICIENT_CREDITS", error: creditResult.error }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        await supabase.from('video_upscaler_jobs').update({ status: 'failed', error_message: 'Insufficient credits' }).eq('id', jobId);
+        return new Response(JSON.stringify({ success: false, code: "INSUFFICIENT_CREDITS", error: creditResult.error }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // CRITICAL: Mark credits as charged for idempotent refund on failure
-      await supabase
-        .from('video_upscaler_jobs')
-        .update({ 
-          credits_charged: true,
-          user_credit_cost: creditCost || CREDIT_COST
-        })
-        .eq('id', jobId);
-      console.log(`[VideoUpscaler] Job ${jobId} marked as credits_charged=true`);
+      // Mark credits as charged + save job_payload
+      await supabase.from('video_upscaler_jobs').update({ 
+        credits_charged: true, user_credit_cost: creditCost || CREDIT_COST, user_id: userId,
+        job_payload: { videoUrl: videoUrl }
+      }).eq('id', jobId);
 
-      // Get the RunningHub API key - use account from Queue Manager or fallback
-      const defaultApiKey = Deno.env.get("RUNNINGHUB_API_KEY");
-      const runninghubApiKey = accountApiKey || defaultApiKey;
-      const accountToUse = accountName;
-      
-      if (!runninghubApiKey) {
-        console.error("[VideoUpscaler] RUNNINGHUB_API_KEY not configured");
-        await supabase
-          .from('video_upscaler_jobs')
-          .update({ status: 'failed', error_message: 'API key not configured' })
-          .eq('id', jobId);
-        return new Response(
-          JSON.stringify({ success: false, error: "API key not configured" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Build webhook URL for this specific tool
-      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-      const webhookUrl = `${supabaseUrl}/functions/v1/runninghub-video-upscaler-webhook`;
-
-      // Call RunningHub API to start the video upscaling
-      console.log(`[VideoUpscaler] Starting job ${jobId}. Video: ${videoUrl}, Account: ${accountToUse}`);
-      
-      const runninghubResponse = await fetch(`${RUNNINGHUB_API_BASE}/run/ai-app/${VIDEO_UPSCALER_WEBAPP_ID}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${runninghubApiKey}`,
-        },
-        body: JSON.stringify({
-          nodeInfoList: [
-            {
-              nodeId: VIDEO_NODE_ID,
-              fieldName: VIDEO_FIELD_NAME,
-              fieldValue: videoUrl,
-            }
-          ],
-          instanceType: "default",
-          usePersonalQueue: "false",
-          webhookUrl: webhookUrl,
-        }),
-      });
-
-      let runninghubData;
+      // ========== DELEGATE TO QUEUE MANAGER ==========
       try {
-        runninghubData = await runninghubResponse.json();
-      } catch (e) {
-        console.error("[VideoUpscaler] Failed to parse RunningHub response:", e);
-        runninghubData = { error: "Failed to parse response" };
+        const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+        const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+        const qmResponse = await fetch(`${supabaseUrl}/functions/v1/runninghub-queue-manager/run-or-queue`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceRoleKey}` },
+          body: JSON.stringify({ table: 'video_upscaler_jobs', jobId }),
+        });
+        const qmResult = await qmResponse.json();
+
+        if (qmResult.queued) {
+          return new Response(JSON.stringify({ success: true, queued: true, position: qmResult.position }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        if (qmResult.taskId) {
+          return new Response(JSON.stringify({ success: true, jobId, taskId: qmResult.taskId }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        return new Response(JSON.stringify({ success: false, error: qmResult.error || 'Failed', refunded: true }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      } catch (qmError: any) {
+        console.error('[VideoUpscaler] Queue Manager call failed:', qmError);
+        try {
+          const { data } = await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost || CREDIT_COST, _description: `QM_EXCEPTION: ${qmError.message?.slice(0, 100)}` });
+          await supabase.from('video_upscaler_jobs').update({ status: 'failed', error_message: `QM_EXCEPTION_REFUNDED: ${qmError.message?.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
+        } catch { await supabase.from('video_upscaler_jobs').update({ status: 'failed', error_message: `QM_EXCEPTION: ${qmError.message?.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId); }
+        return new Response(JSON.stringify({ success: false, error: qmError.message, refunded: true }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-
-      console.log("[VideoUpscaler] RunningHub response:", JSON.stringify(runninghubData));
-
-      if (!runninghubResponse.ok || runninghubData.errorCode) {
-        const errorMsg = runninghubData.errorMessage || runninghubData.error || `HTTP ${runninghubResponse.status}`;
-        console.error("[VideoUpscaler] RunningHub API error:", errorMsg);
-        
-        await supabase
-          .from('video_upscaler_jobs')
-          .update({
-            status: 'failed',
-            error_message: errorMsg,
-            completed_at: new Date().toISOString(),
-          })
-          .eq('id', jobId);
-
-        return new Response(
-          JSON.stringify({ success: false, error: errorMsg }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Update job with task ID from RunningHub
-      const taskId = runninghubData.taskId;
-      await supabase
-        .from('video_upscaler_jobs')
-        .update({
-          status: 'running',
-          task_id: taskId,
-          started_at: new Date().toISOString(),
-          user_credit_cost: creditCost || CREDIT_COST,
-          api_account: accountToUse,
-        })
-        .eq('id', jobId);
-
-      console.log(`[VideoUpscaler] Job ${jobId} started successfully. Task ID: ${taskId}`);
-
-      return new Response(
-        JSON.stringify({ success: true, jobId, taskId }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
     }
 
     // NOTE: Legacy routes /queue-status and /process-queue were REMOVED

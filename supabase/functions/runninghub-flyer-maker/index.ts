@@ -250,10 +250,7 @@ async function handleRun(req: Request) {
     }
   }
 
-  // EARLY STATUS UPDATE: Mark as 'starting' to prevent orphan cleanup
-  await supabase.from('flyer_maker_jobs').update({ 
-    status: 'starting', current_step: 'starting', started_at: new Date().toISOString()
-  }).eq('id', jobId).eq('status', 'pending');
+  // NOTE: No early status update - job stays 'pending' until queue manager decides
 
   await logStep(jobId, 'starting', { imageSize, creativity, artistCount: artistPhotoUrls.length });
 
@@ -311,126 +308,42 @@ async function handleRun(req: Request) {
     image_size: imageSize,
   }).eq('id', jobId);
 
+  // Save job_payload for queue manager
+  await supabase.from(JOB_TABLE).update({
+    job_payload: {
+      referenceFileName, artistFileNames, logoFileName,
+      dateTimeLocation: dateTimeLocation || '', title: title || '',
+      address: address || '', artistNames: artistNames || '',
+      footerPromo: footerPromo || '', imageSize: imageSize || '3:4',
+      creativity: creativity ?? 0,
+    }
+  }).eq('id', jobId);
+
+  // ========== DELEGATE TO QUEUE MANAGER ==========
   try {
-    // ========== CHECK QUEUE ==========
-    await logStep(jobId, 'checking_queue');
-    let slotsAvailable = 0;
-    let accountName: string | null = null;
-    let accountApiKey: string | null = null;
-
-    try {
-      const queueResponse = await fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/check`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
-      });
-      const queueData = await queueResponse.json();
-      slotsAvailable = queueData.slotsAvailable || 0;
-      accountName = queueData.accountName || 'primary';
-      accountApiKey = queueData.accountApiKey || RUNNINGHUB_API_KEY;
-    } catch {
-      accountName = 'primary';
-      accountApiKey = RUNNINGHUB_API_KEY;
-    }
-
-    if (slotsAvailable <= 0) {
-      await logStep(jobId, 'queuing');
-      try {
-        const enqueueResponse = await fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/enqueue`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
-          body: JSON.stringify({ table: JOB_TABLE, jobId, creditCost }),
-        });
-        const enqueueData = await enqueueResponse.json();
-        return new Response(JSON.stringify({ success: true, queued: true, position: enqueueData.position }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      } catch {
-        await supabase.from(JOB_TABLE).update({ status: 'queued', position: 999, waited_in_queue: true }).eq('id', jobId);
-        return new Response(JSON.stringify({ success: true, queued: true, position: 999 }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-    }
-
-    // ========== START PROCESSING ==========
-    await logStep(jobId, 'running', { account: accountName });
-    const apiKeyToUse = accountApiKey || RUNNINGHUB_API_KEY;
-
-    await supabase.from(JOB_TABLE).update({
-      waited_in_queue: false, status: 'running', started_at: new Date().toISOString(), position: 0, api_account: accountName || 'primary'
-    }).eq('id', jobId);
-
-    const validAspectRatios = ['auto', '1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
-    const finalImageSize = validAspectRatios.includes(imageSize) ? imageSize : '4:3';
-    const finalCreativity = String(Math.min(5, Math.max(0, Number(creativity) || 0)));
-
-    // Only include artist nodes that have actual images - NO duplication
-    const artistNodes = [11, 12, 13, 14, 15];
-    const nodeInfoList: { nodeId: string; fieldName: string; fieldValue: string }[] = [];
-    
-    for (let i = 0; i < artistNodes.length; i++) {
-      if (artistFileNames[i]) {
-        nodeInfoList.push({ nodeId: String(artistNodes[i]), fieldName: "image", fieldValue: artistFileNames[i] });
-      }
-    }
-
-    nodeInfoList.push({ nodeId: "1", fieldName: "image", fieldValue: referenceFileName });
-    nodeInfoList.push({ nodeId: "28", fieldName: "image", fieldValue: logoFileName });
-    nodeInfoList.push({ nodeId: "6", fieldName: "text", fieldValue: dateTimeLocation || '' });
-    nodeInfoList.push({ nodeId: "10", fieldName: "text", fieldValue: artistNames || '' });
-    nodeInfoList.push({ nodeId: "7", fieldName: "text", fieldValue: title || '' });
-    nodeInfoList.push({ nodeId: "9", fieldName: "text", fieldValue: footerPromo || '' });
-    nodeInfoList.push({ nodeId: "103", fieldName: "text", fieldValue: address || '' });
-    nodeInfoList.push({ nodeId: "134", fieldName: "aspectRatio", fieldValue: finalImageSize });
-    nodeInfoList.push({ nodeId: "111", fieldName: "value", fieldValue: finalCreativity });
-
-    const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
-    const requestBody = { nodeInfoList, instanceType: "default", usePersonalQueue: false, webhookUrl };
-
-    console.log('[FlyerMaker] AI App request:', JSON.stringify(requestBody));
-    const response = await fetchWithRetry(
-      `https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID}`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKeyToUse}` }, body: JSON.stringify(requestBody) },
-      'Run AI App'
-    );
-
-    const data = await safeParseResponse(response, 'AI App response');
-
-    if (data.taskId) {
-      await supabase.from(JOB_TABLE).update({ task_id: data.taskId, raw_api_response: data }).eq('id', jobId);
-      await logStep(jobId, 'task_started', { taskId: data.taskId });
-      return new Response(JSON.stringify({ success: true, taskId: data.taskId }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // START FAILED - REFUND
-    const startErrorMsg = data.msg || data.message || 'Failed to start workflow';
-    console.error(`[FlyerMaker] START FAILED - Refunding for job ${jobId}`);
-    await logStepFailure(jobId, 'run_workflow', `START_FAILED_REFUNDED: ${startErrorMsg}`, data);
-    
-    await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: `START_FAILED_REFUNDED: ${startErrorMsg.slice(0, 100)}` });
-    await supabase.from(JOB_TABLE).update({ status: 'failed', error_message: `START_FAILED_REFUNDED: ${startErrorMsg}`, credits_refunded: true, completed_at: new Date().toISOString(), raw_api_response: data }).eq('id', jobId);
-
-    return new Response(JSON.stringify({ error: startErrorMsg, code: 'RUN_FAILED', refunded: true }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    await logStep(jobId, 'delegating_to_queue');
+    const qmResponse = await fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/run-or-queue`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+      body: JSON.stringify({ table: JOB_TABLE, jobId }),
     });
+    const qmResult = await qmResponse.json();
 
+    if (qmResult.queued) {
+      return new Response(JSON.stringify({ success: true, queued: true, position: qmResult.position }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    if (qmResult.taskId) {
+      return new Response(JSON.stringify({ success: true, taskId: qmResult.taskId }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    return new Response(JSON.stringify({ error: qmResult.error || 'Failed', code: 'RUN_FAILED', refunded: true }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`[FlyerMaker] EXCEPTION - Refunding for job ${jobId}`);
-    await logStepFailure(jobId, 'run_exception', `START_EXCEPTION_REFUNDED: ${errorMessage}`);
-
+    console.error(`[FlyerMaker] QM call failed:`, errorMessage);
     try {
-      await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
-      await supabase.from(JOB_TABLE).update({ status: 'failed', error_message: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
-    } catch {
-      await supabase.from(JOB_TABLE).update({ status: 'failed', error_message: `START_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
-    }
-
-    return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: true }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+      await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: `QM_EXCEPTION: ${errorMessage.slice(0, 100)}` });
+      await supabase.from(JOB_TABLE).update({ status: 'failed', error_message: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
+    } catch { await supabase.from(JOB_TABLE).update({ status: 'failed', error_message: `QM_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId); }
+    return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: true }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 }
 
