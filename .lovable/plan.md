@@ -1,88 +1,54 @@
-# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
-## Resumo
-Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
+Objetivo aprovado: fila global FIFO para todas as IAs, com regra prática rígida: job novo só deve entrar na fila quando os 3 slots globais estiverem ocupados (ou quando já existir fila anterior para preservar FIFO).
 
-## O que foi feito
+Diagnóstico confirmado no código atual (causas do erro de comportamento):
+1) Auto-contagem indevida: quase todas as funções marcam `status='starting'` antes de consultar a fila, e o Queue Manager conta `starting` + `running`; isso pode “comer” slot e forçar fila cedo.
+2) Caminhos duplicados: cada ferramenta decide fila e também chama RunningHub direto; o Queue Manager também chama RunningHub. Isso cria divergência de mapeamento (ex.: Arcano já corrigido; Flyer ainda divergente no node de aspect ratio; Upscaler tem diferenças de nós/parâmetros).
+3) BG Remover ainda usa `quickQueueCheck` próprio (não centralizado), quebrando a regra de caminho único.
 
-### 1. Tabela `subscription_billing_reminders` (migration)
-- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
-- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
-- Campo `checkout_url` para evitar checkouts duplicados
-- Constraint UNIQUE em (subscription_id, day_offset, due_date)
+Plano de implementação (sem quebrar as ferramentas):
+1) Centralizar decisão e execução no Queue Manager
+- Criar endpoint único `/run-or-queue` no `runninghub-queue-manager`.
+- Ele fará: (a) conferir ocupação global, (b) respeitar FIFO global, (c) iniciar ou enfileirar.
+- Regra final: se `running/starting < 3` e `queued=0` => inicia imediato; senão => enfileira.
+- Se houver fila antiga e slot livre, processa primeiro o mais antigo (FIFO) antes de aceitar “furar fila”.
 
-### 2. Edge Function `process-billing-reminders`
-- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
-- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
-- Para cada assinatura, verifica:
-  - Se já enviou email para esse `day_offset`
-  - Se a sequência foi parada (pagou ou descadastrou)
-  - Se o email está na blacklist
-  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
-- Gera checkout Pagar.me somente PIX com validade de 3 dias
-- Monta HTML personalizado com dados reais do plano
-- Envia via SendPulse SMTP API
-- Registra na tabela de controle
+2) Remover lógica duplicada de fila/start em TODAS as IAs
+- Refatorar 8 funções (`upscaler`, `arcano`, `pose`, `veste`, `video`, `character`, `flyer`, `bg-remover`) para:
+  - manter validação/upload/crédito como hoje;
+  - trocar bloco “check + enqueue + run direto” por uma única chamada ao `/run-or-queue`.
+- Remover atualização “early starting” antes da decisão de fila (principal causa de fila com 2 rodando).
 
-### 3. Mapeamento de benefícios por plano
-- Starter: 1.800 créditos, 5 prompts/dia
-- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
-- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
-- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
+3) Garantir caminho único real para rodar WebApp
+- Toda chamada ao RunningHub passa por `startJobOnRunningHub` do Queue Manager.
+- Sincronizar mapeamentos no Queue Manager com o comportamento já estável das ferramentas antes do corte:
+  - Arcano: manter prompt (node 135) + aspect ratio 145.
+  - Flyer: alinhar node de aspect ratio com fluxo atual da ferramenta.
+  - Upscaler: alinhar nós opcionais/defaults (incluindo casos específicos).
+  - Character refine: suportar variante de execução no Queue Manager (não deixar refine fora do caminho único).
+  - BG Remover: remover `quickQueueCheck` local.
 
-### 4. Templates dos 6 emails
-- Dia 0: Lembrete leve ("Seu plano vence hoje")
-- Dia 1: Reforço pendência ("Pagamento ainda pendente")
-- Dia 2: Dor da perda ("Risco de perda de acesso")
-- Dia 3: Prejuízo prático ("O custo de não renovar")
-- Dia 4: FOMO ("Não fique para trás")
-- Dia 5: Último aviso ("Último aviso: regularize hoje")
-- Todos com link de descadastro no rodapé
+4) Proteção anti-quebra (rollout seguro)
+- Deploy em ordem: `runninghub-queue-manager` primeiro, depois ferramentas uma a uma.
+- Manter endpoints antigos (`/check`, `/enqueue`) temporariamente para compatibilidade durante transição.
+- Não mexer no frontend nem em schema de banco nesta etapa (reduz risco).
 
-### 5. Cron job
-- pg_cron agendado: `0 12 * * *` (09:00 BRT)
-- Chama a Edge Function automaticamente
+Validação obrigatória (aceite):
+- Cenário A: 2 em execução, 0 na fila -> novo job inicia direto (não fila).
+- Cenário B: 3 em execução -> novo job entra na fila.
+- Cenário C: existe fila anterior -> novo job respeita FIFO (entra atrás).
+- Cenário D: mesmo payload de cada ferramenta gera mesmos nós no caminho direto/enfileirado (agora único caminho).
+- Conferir estorno idempotente e transição de status (`pending/queued/starting/running/completed/failed`) sem regressão.
 
-## Detecção de pagamento (para de enviar)
-- `planos2_subscriptions.expires_at` estendido para data futura
-- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
-- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
+Arquivos-alvo principais:
+- `supabase/functions/runninghub-queue-manager/index.ts` (núcleo)
+- `supabase/functions/runninghub-upscaler/index.ts`
+- `supabase/functions/runninghub-arcano-cloner/index.ts`
+- `supabase/functions/runninghub-pose-changer/index.ts`
+- `supabase/functions/runninghub-veste-ai/index.ts`
+- `supabase/functions/runninghub-video-upscaler/index.ts`
+- `supabase/functions/runninghub-character-generator/index.ts` (run + refine)
+- `supabase/functions/runninghub-flyer-maker/index.ts`
+- `supabase/functions/runninghub-bg-remover/index.ts`
 
-# Auditoria Completa de Emails — Robustez Unificada (CONCLUÍDA)
-
-## O que foi feito
-
-### Padrão unificado aplicado em todos os 6 webhooks:
-
-1. **webhook-mercadopago** — `sendPurchaseEmail` refatorado:
-   - 3 retries com exponential backoff (2s, 5s, 10s)
-   - Removida lógica de DELETE de logs de falha (preserva auditoria)
-   - Cada tentativa registrada separadamente
-
-2. **webhook-greenn-creditos** — `sendWelcomeEmail` e `sendArcanoClonnerEmail`:
-   - Adicionado INSERT em `welcome_email_logs` (antes não tinha NENHUM log)
-   - Deduplicação via `dedup_key` unique constraint
-   - Blacklist check antes do envio
-   - 3 retries com exponential backoff
-   - Caller simplificado (retry agora é interno)
-
-3. **webhook-greenn** — Callers de `sendWelcomeEmail` e `sendPlanos2WelcomeEmail`:
-   - Retry loop 3x com exponential backoff (2s, 5s, 10s)
-   - Funções internas já tinham dedup + logging
-
-4. **webhook-greenn-artes** — Caller de `sendWelcomeEmail`:
-   - Retry loop 3x com exponential backoff
-   - Função interna já tinha dedup + logging
-
-5. **webhook-greenn-musicos** — Caller de `sendWelcomeEmail`:
-   - Retry loop 3x com exponential backoff
-   - Função interna já tinha dedup + logging
-
-6. **webhook-hotmart-artes** — Caller de `sendWelcomeEmail`:
-   - Retry loop 3x com exponential backoff
-   - Função interna já tinha dedup por transaction + logging
-
-### Sem mudanças (já robustos):
-- `webhook-pagarme` — 3 retries, dedup_key, logging completo
-- `resend-purchase-email` — robusto
-- `send-single-email` — utilitária independente
+Com esse desenho, a fila deixa de entrar indevidamente com 2 rodando (quando não há backlog) e você passa a ter 1 único caminho real para execução em todas as IAs.
