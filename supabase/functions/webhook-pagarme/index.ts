@@ -189,32 +189,109 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
 </html>`
 }
 
-async function sendPurchaseEmailAttempt(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, options?: { packSlug?: string; productType?: string; accessType?: string }): Promise<boolean> {
-  const { data: existing } = await supabase
+type PurchaseEmailDispatchResult = {
+  status: 'sent' | 'already_sent' | 'blacklisted' | 'failed'
+  attempts: number
+  error?: string
+}
+
+function buildPurchaseTemplateUsed(productName: string): string {
+  return `pagarme_purchase_${productName}`
+}
+
+function buildPurchaseDedupKey(orderId: string): string {
+  return `pagarme_order_${orderId}`
+}
+
+async function logPurchaseEmail(
+  supabase: any,
+  payload: {
+    email: string
+    productName: string
+    dedupKey: string
+    status: 'sent' | 'failed'
+    trackingId: string
+    errorMessage?: string | null
+    sentAt?: string
+  }
+) {
+  await supabase.from('welcome_email_logs').insert({
+    email: payload.email,
+    template_used: buildPurchaseTemplateUsed(payload.productName),
+    dedup_key: payload.dedupKey,
+    tracking_id: payload.trackingId,
+    status: payload.status,
+    sent_at: payload.sentAt ?? new Date().toISOString(),
+    error_message: payload.errorMessage ?? null,
+    product_info: payload.productName,
+    platform: 'pagarme',
+  })
+}
+
+async function sendPurchaseEmailAttempt(
+  supabase: any,
+  params: {
+    orderId: string
+    email: string
+    productName: string
+    ctaLink: string
+    requestId: string
+    paidAtIso: string
+    options?: { packSlug?: string; productType?: string; accessType?: string }
+  }
+): Promise<PurchaseEmailDispatchResult> {
+  const normalizedEmail = params.email.toLowerCase().trim()
+  const dedupKey = buildPurchaseDedupKey(params.orderId)
+  const templateUsed = buildPurchaseTemplateUsed(params.productName)
+
+  const { data: existingByOrder } = await supabase
     .from('welcome_email_logs')
     .select('id')
-    .eq('email', email)
-    .eq('template_used', `pagarme_purchase_${productName}`)
+    .eq('dedup_key', dedupKey)
+    .eq('status', 'sent')
     .maybeSingle()
 
-  if (existing) {
-    console.log(`   ├─ ℹ️ Email já enviado para ${email} (${productName})`)
-    return true
+  if (existingByOrder) {
+    console.log(`   ├─ ℹ️ Email já enviado (dedup order): ${normalizedEmail} | ${params.orderId}`)
+    return { status: 'already_sent', attempts: 0 }
+  }
+
+  const { data: existingLegacy } = await supabase
+    .from('welcome_email_logs')
+    .select('id')
+    .eq('email', normalizedEmail)
+    .eq('template_used', templateUsed)
+    .eq('status', 'sent')
+    .gte('sent_at', params.paidAtIso)
+    .maybeSingle()
+
+  if (existingLegacy) {
+    console.log(`   ├─ ℹ️ Email já enviado (legacy dedup): ${normalizedEmail}`)
+    return { status: 'already_sent', attempts: 0 }
   }
 
   const { data: blacklisted } = await supabase
     .from('blacklisted_emails')
     .select('id')
-    .eq('email', email)
+    .eq('email', normalizedEmail)
     .maybeSingle()
 
   if (blacklisted) {
-    console.log(`   ├─ ⛔ Email blacklisted: ${email}`)
-    return true
+    console.log(`   ├─ ⛔ Email blacklisted: ${normalizedEmail}`)
+    const trackingId = crypto.randomUUID()
+    await logPurchaseEmail(supabase, {
+      email: normalizedEmail,
+      productName: params.productName,
+      dedupKey,
+      trackingId,
+      status: 'failed',
+      errorMessage: 'email_blacklisted',
+    })
+    return { status: 'blacklisted', attempts: 1, error: 'email_blacklisted' }
   }
 
   const trackingId = crypto.randomUUID()
-  const html = buildPurchaseEmailHtml(email, productName, ctaLink, options)
+  const html = buildPurchaseEmailHtml(normalizedEmail, params.productName, params.ctaLink, params.options)
   const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
 
   const token = await getSendPulseToken()
@@ -223,9 +300,9 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
     email: {
       html: htmlBase64,
       text: "",
-      subject: `✅ Compra confirmada - ${productName}`,
+      subject: `✅ Compra confirmada - ${params.productName}`,
       from: { name: "Vox Visual", email: "contato@voxvisual.com.br" },
-      to: [{ name: email, email }]
+      to: [{ name: normalizedEmail, email: normalizedEmail }]
     }
   }
 
@@ -241,51 +318,75 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
   const responseText = await response.text()
   console.log(`   ├─ 📧 SendPulse response: ${response.status}`)
 
-  await supabase.from('welcome_email_logs').insert({
-    email,
-    template_used: `pagarme_purchase_${productName}`,
-    tracking_id: trackingId,
+  await logPurchaseEmail(supabase, {
+    email: normalizedEmail,
+    productName: params.productName,
+    dedupKey,
+    trackingId,
     status: response.ok ? 'sent' : 'failed',
-    sent_at: response.ok ? new Date().toISOString() : null,
-    error_message: response.ok ? null : responseText,
+    errorMessage: response.ok ? null : responseText,
   })
 
-  return response.ok
+  if (response.ok) return { status: 'sent', attempts: 1 }
+  return { status: 'failed', attempts: 1, error: responseText || `http_${response.status}` }
 }
 
-async function sendPurchaseEmail(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, options?: { packSlug?: string; productType?: string; accessType?: string }) {
-  try {
-    const success = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId, options)
-    if (success) {
-      console.log(`   ├─ ✅ Email de compra enviado para ${email}`)
-    } else {
-      console.log(`   ├─ ⏳ Primeira tentativa falhou, aguardando 3s para retry...`)
-      await new Promise(resolve => setTimeout(resolve, 3000))
-      // Delete failed log so retry can insert fresh
-      await supabase.from('welcome_email_logs').delete()
-        .eq('email', email)
-        .eq('template_used', `pagarme_purchase_${productName}`)
-        .eq('status', 'failed')
-      const retrySuccess = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId, options)
-      if (retrySuccess) {
-        console.log(`   ├─ ✅ Email enviado no retry para ${email}`)
+async function sendPurchaseEmail(
+  supabase: any,
+  params: {
+    orderId: string
+    email: string
+    productName: string
+    ctaLink: string
+    requestId: string
+    paidAtIso: string
+    options?: { packSlug?: string; productType?: string; accessType?: string }
+  }
+): Promise<PurchaseEmailDispatchResult> {
+  const maxAttempts = 3
+  const retryDelaysMs = [2000, 5000]
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const result = await sendPurchaseEmailAttempt(supabase, params)
+
+      if (result.status === 'sent' || result.status === 'already_sent' || result.status === 'blacklisted') {
+        return { ...result, attempts: attempt }
+      }
+
+      if (attempt < maxAttempts) {
+        const delayMs = retryDelaysMs[attempt - 1] ?? 8000
+        console.log(`   ├─ ⏳ Tentativa ${attempt}/${maxAttempts} falhou. Retry em ${Math.round(delayMs / 1000)}s...`)
+        await new Promise(resolve => setTimeout(resolve, delayMs))
       } else {
-        console.error(`   ├─ ❌ Email falhou após retry para ${email}`)
+        return { ...result, attempts: attempt }
+      }
+    } catch (err: any) {
+      const dedupKey = buildPurchaseDedupKey(params.orderId)
+      const errorMessage = err?.message || 'unknown_error'
+      console.error(`   ├─ ❌ Erro tentativa ${attempt}/${maxAttempts}: ${errorMessage}`)
+
+      try {
+        await logPurchaseEmail(supabase, {
+          email: params.email.toLowerCase().trim(),
+          productName: params.productName,
+          dedupKey,
+          trackingId: crypto.randomUUID(),
+          status: 'failed',
+          errorMessage,
+        })
+      } catch (_) {}
+
+      if (attempt < maxAttempts) {
+        const delayMs = retryDelaysMs[attempt - 1] ?? 8000
+        await new Promise(resolve => setTimeout(resolve, delayMs))
+      } else {
+        return { status: 'failed', attempts: attempt, error: errorMessage }
       }
     }
-  } catch (err: any) {
-    console.error(`   ├─ ❌ Erro ao enviar email: ${err.message}`)
-    // Log failure
-    try {
-      await supabase.from('welcome_email_logs').insert({
-        email,
-        template_used: `pagarme_purchase_${productName}`,
-        tracking_id: crypto.randomUUID(),
-        status: 'failed',
-        error_message: err.message,
-      })
-    } catch (_) {}
   }
+
+  return { status: 'failed', attempts: maxAttempts, error: 'exhausted_retries' }
 }
 
 serve(async (req) => {
