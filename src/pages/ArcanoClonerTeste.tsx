@@ -592,6 +592,11 @@ const ArcanoClonerTeste = () => {
         </AnimatedSection>
       </LazySection>
 
+      {/* ==================== PREÇOS ==================== */}
+      <LazySection>
+        <LandingPricingSection />
+      </LazySection>
+
       {/* ==================== TESTE GRÁTIS ==================== */}
       <LazySection>
         <LandingTrialSignupSection />
