@@ -242,13 +242,16 @@ serve(async (req) => {
       })}`)
     }
 
+    // IMPORTANT: Keep status as 'pending' even when paid, so webhook-pagarme
+    // can acquire the lock (pending→processing) and handle credit provisioning,
+    // email sending, profile enrichment, etc. The frontend uses `is_paid` from
+    // the response to show success, independently of DB status.
     await supabase.from('asaas_orders').update({
       asaas_payment_id: pagarmeData.id,
       payment_method: 'credit_card',
-      status: isPaid ? 'paid' : (chargeStatus === 'failed' ? 'failed' : 'pending'),
+      status: chargeStatus === 'failed' ? 'failed' : 'pending',
       gateway_error_code: charge?.last_transaction?.acquirer_return_code || null,
       gateway_error_message: gatewayMessage || null,
-      ...(isPaid ? { paid_at: new Date().toISOString() } : {}),
     }).eq('id', order.id)
 
     // 7. Enviar InitiateCheckout + Purchase (se pago) para Meta CAPI
