@@ -261,10 +261,10 @@ const ArcanoClonerTeste = () => {
       <AnimatedSection className="px-4 py-16 md:py-20">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
-              Veja o que o Arcano Cloner é{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">capaz de fazer</span>
-            </h2>
+             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
+               Fotos profissionais{" "}
+               <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">sem gastar com ensaios</span>
+             </h2>
             <p className="text-white/50 text-center text-sm mb-10">Todas as imagens abaixo foram geradas com a ferramenta</p>
           </AnimatedSection>
 
