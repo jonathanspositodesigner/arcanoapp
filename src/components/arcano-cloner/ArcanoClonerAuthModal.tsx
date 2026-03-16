@@ -1,12 +1,132 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, FormEvent } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Gift, ArrowLeft, Mail, CheckCircle } from 'lucide-react';
-import { LoginEmailStep, LoginPasswordStep, SignupForm } from '@/components/auth';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Gift, ArrowLeft, Mail, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { LoginEmailStep, LoginPasswordStep } from '@/components/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 type ModalStep = 'email' | 'password' | 'signup' | 'verify-email';
+
+function SimpleSignupForm({ defaultEmail, onSubmit, onBackToLogin, isLoading: formLoading }: {
+  defaultEmail: string;
+  onSubmit: (data: { email: string; password: string; name?: string }) => Promise<void>;
+  onBackToLogin: () => void;
+  isLoading: boolean;
+}) {
+  const [formEmail, setFormEmail] = useState(defaultEmail);
+  const [formPassword, setFormPassword] = useState('');
+  const [formConfirmPassword, setFormConfirmPassword] = useState('');
+  const [formName, setFormName] = useState('');
+  const [showPwd, setShowPwd] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  const handleFormSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setFormError('');
+    if (!formEmail.trim()) { setFormError('Digite seu email'); return; }
+    if (formPassword.length < 6) { setFormError('Senha deve ter pelo menos 6 caracteres'); return; }
+    if (formPassword !== formConfirmPassword) { setFormError('As senhas não conferem'); return; }
+    await onSubmit({ email: formEmail, password: formPassword, name: formName || undefined });
+  };
+
+  return (
+    <form onSubmit={handleFormSubmit} className="space-y-3">
+      <div>
+        <Label className="text-purple-200">Email</Label>
+        <Input
+          type="email"
+          value={formEmail}
+          onChange={(e) => setFormEmail(e.target.value)}
+          placeholder="seu@email.com"
+          className="mt-1 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+          required
+        />
+      </div>
+      <div>
+        <Label className="text-purple-200">Nome (opcional)</Label>
+        <Input
+          type="text"
+          value={formName}
+          onChange={(e) => setFormName(e.target.value)}
+          placeholder="Seu nome"
+          className="mt-1 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+        />
+      </div>
+      <div className="relative">
+        <Label className="text-purple-200">Senha</Label>
+        <Input
+          type={showPwd ? "text" : "password"}
+          value={formPassword}
+          onChange={(e) => setFormPassword(e.target.value)}
+          placeholder="Mínimo 6 caracteres"
+          className="mt-1 pr-10 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+          required
+          minLength={6}
+        />
+        <button
+          type="button"
+          onClick={() => setShowPwd(!showPwd)}
+          className="absolute right-3 top-[calc(50%+4px)] text-purple-400 hover:text-white"
+        >
+          {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      </div>
+      <div>
+        <Label className="text-purple-200">Confirmar Senha</Label>
+        <Input
+          type="password"
+          value={formConfirmPassword}
+          onChange={(e) => setFormConfirmPassword(e.target.value)}
+          placeholder="Confirme sua senha"
+          className="mt-1 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+          required
+        />
+      </div>
+
+      {formError && (
+        <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/30 rounded-lg p-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{formError}</span>
+        </div>
+      )}
+
+      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-2.5">
+        <p className="text-yellow-400 text-xs">
+          ⚠️ Após criar sua conta, verifique seu email para ativar.
+        </p>
+      </div>
+
+      <Button
+        type="submit"
+        disabled={formLoading}
+        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-5"
+      >
+        {formLoading ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Criando conta...
+          </>
+        ) : (
+          '🚀 Criar Conta e Ganhar 300 Créditos'
+        )}
+      </Button>
+
+      <div className="text-center">
+        <button
+          type="button"
+          onClick={onBackToLogin}
+          className="text-purple-400 hover:text-white text-sm flex items-center justify-center gap-1 mx-auto"
+        >
+          <ArrowLeft className="w-3 h-3" />
+          Já tenho conta
+        </button>
+      </div>
+    </form>
+  );
+}
 
 interface ArcanoClonerAuthModalProps {
   isOpen: boolean;
@@ -304,30 +424,11 @@ export default function ArcanoClonerAuthModal({
           )}
 
           {step === 'signup' && (
-            <SignupForm
+            <SimpleSignupForm
               defaultEmail={verifiedEmail || email}
               onSubmit={handleSignup}
               onBackToLogin={() => setStep('email')}
               isLoading={isLoading}
-              showNameField={true}
-              showPhoneField={false}
-              variant="purple"
-              labels={{
-                title: 'Criar Conta',
-                subtitle: 'Cadastre-se e ganhe 300 créditos grátis',
-                email: 'Email',
-                emailPlaceholder: 'seu@email.com',
-                name: 'Nome (opcional)',
-                namePlaceholder: 'Seu nome',
-                password: 'Senha',
-                passwordPlaceholder: 'Mínimo 6 caracteres',
-                confirmPassword: 'Confirmar Senha',
-                confirmPasswordPlaceholder: 'Confirme sua senha',
-                warning: 'Após criar sua conta, verifique seu email para ativar.',
-                createAccount: 'Criar Conta',
-                creatingAccount: 'Criando conta...',
-                backToLogin: 'Já tenho conta',
-              }}
             />
           )}
 
