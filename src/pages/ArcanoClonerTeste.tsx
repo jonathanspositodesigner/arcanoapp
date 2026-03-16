@@ -265,7 +265,7 @@ const ArcanoClonerTeste = () => {
                Fotos profissionais{" "}
                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">sem gastar com ensaios</span>
              </h2>
-            <p className="text-white/50 text-center text-sm mb-10">Todas as imagens abaixo foram geradas com a ferramenta</p>
+            <p className="text-white/50 text-center text-sm mb-10">Todas as imagens abaixo foram feitas com o Arcano Cloner</p>
           </AnimatedSection>
 
           <Suspense fallback={<div className="min-h-[300px]" />}>
