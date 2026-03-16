@@ -361,6 +361,10 @@ const GeradorPersonagemTool: React.FC = () => {
         setProgress(65);
       }
     } catch (error: any) {
+      if (jobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(jobId, 'character_generator', error.message || 'Erro desconhecido');
+      }
       setStatus('error');
       setDebugErrorMessage(error.message);
       toast.error(error.message || 'Erro ao processar');
