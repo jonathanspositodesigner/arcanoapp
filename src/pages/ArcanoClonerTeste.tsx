@@ -372,11 +372,6 @@ const ArcanoClonerTeste = () => {
                   cloner: "A partir de R$ 37,00 (Único)",
                 },
                 {
-                  feature: "Modelo de Pagamento",
-                  other: "Assinatura Mensal Obrigatória",
-                  cloner: "Pacotes Avulsos (Sem pegadinhas)",
-                },
-                {
                   feature: "Qualidade da Imagem",
                   other: "Cara de 'Robô' e erros visuais",
                   cloner: "Fotorrealismo Extremo (Nano Banana Pro)",
