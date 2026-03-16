@@ -135,7 +135,10 @@ serve(async (req) => {
   try {
     const { product_slug, user_email, user_phone, user_name, user_cpf, billing_type, utm_data, user_address, fbp, fbc, lightweight } = await req.json()
     const clientUserAgent = req.headers.get('user-agent') || null
-    const isLightweight = lightweight === true
+    const isPureCreditCardCheckout = billing_type === 'CREDIT_CARD'
+    const isLightweightFallback = lightweight === true
+    const useMinimalValidation = isLightweightFallback || isPureCreditCardCheckout
+    const shouldPersistPersonalData = !isPureCreditCardCheckout
 
     if (!product_slug || !user_email) {
       return errorResponse('product_slug e user_email são obrigatórios', 400, 'MISSING_FIELDS');
@@ -147,15 +150,15 @@ serve(async (req) => {
       return errorResponse('Email inválido', 400, 'INVALID_EMAIL');
     }
 
-    // Lightweight mode: skip phone/CPF validation, use minimal data
+    // Modo mínimo: validações relaxadas para checkout puro no cartão/fallback lightweight
     let phone: { areaCode: string; phoneNumber: string; fullDigits: string } | null = null;
     let cleanCpf: string | null = null;
 
-    if (isLightweight) {
+    if (useMinimalValidation) {
       // Minimal: try to parse phone but don't fail if missing
       phone = normalizePhone(user_phone);
       cleanCpf = user_cpf ? user_cpf.replace(/\D/g, '') : null;
-      console.log(`[${requestId}] ⚡ Lightweight mode - skipping validations`)
+      console.log(`[${requestId}] ⚡ Modo mínimo ativo (${isPureCreditCardCheckout ? 'cartão puro' : 'lightweight'}) - validações relaxadas`)
     } else {
       // Full mode: validate everything
       phone = normalizePhone(user_phone);
