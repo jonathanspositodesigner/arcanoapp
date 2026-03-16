@@ -110,11 +110,11 @@ const landingPlans: Plan[] = [
   },
   {
     name: "Pro",
-    price: "29,90",
+    price: "37,00",
     originalPrice: null,
     credits: "70 imagens",
     images: 70,
-    tagline: "3x mais créditos por mais R$5",
+    tagline: "3x mais créditos por mais R$12",
     bestSeller: true,
     features: [
       { text: "Atualizações diárias", included: true },
