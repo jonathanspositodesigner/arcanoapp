@@ -316,16 +316,6 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     }
   };
 
-  const showErrorToast = useCallback((errorCode?: string) => {
-    const message = (errorCode && ERROR_MESSAGES[errorCode]) || 
-      `Erro ao criar checkout. ${errorCode ? `(${errorCode})` : 'Tente novamente.'}`;
-    
-    toast({
-      title: "Erro no checkout",
-      description: message,
-      variant: "destructive",
-    });
-  }, []);
 
   const handleSubmit = async () => {
     if (!validate()) return;
