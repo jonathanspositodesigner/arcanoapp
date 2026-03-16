@@ -543,7 +543,7 @@ async function handleCheck(): Promise<Response> {
 
 async function handleCheckUserActive(req: Request): Promise<Response> {
   try {
-    await cleanupStaleJobs();
+    // REMOVED: cleanupStaleJobs() - was causing heavy processing on high-traffic endpoint
     
     const { userId } = await req.json();
     
