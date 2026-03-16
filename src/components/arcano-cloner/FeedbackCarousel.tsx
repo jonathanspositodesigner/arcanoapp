@@ -50,7 +50,7 @@ const feedbacks = [
 const duplicated = [...feedbacks, ...feedbacks];
 
 const FeedbackCard = ({ fb }: { fb: typeof feedbacks[0] }) => (
-  <div className="min-w-[280px] sm:min-w-[300px] flex-shrink-0 bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col gap-4">
+  <div className="min-w-[240px] max-w-[260px] flex-shrink-0 bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
     <div className="flex items-center gap-3">
       <img
         src={fb.photo}
