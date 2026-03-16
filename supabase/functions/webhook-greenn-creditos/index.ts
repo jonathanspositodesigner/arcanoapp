@@ -840,24 +840,15 @@ async function processGreennCreditosWebhook(
       }
     }
 
-    // Enviar email de boas-vindas com retry (apenas para novos usuários)
-    const sendEmailFn = async () => {
+    // Enviar email de boas-vindas (retry interno nas funções)
+    try {
       if (productId === 159713) {
         await sendArcanoClonnerEmail(supabase, email, clientName, creditAmount, isNewUser, requestId)
       } else {
         await sendWelcomeEmail(supabase, email, clientName, creditAmount, isNewUser, requestId, userLocale)
       }
-    }
-    try {
-      await sendEmailFn()
     } catch (e) {
-      console.log(`   ├─ [${requestId}] ⏳ Primeira tentativa de email falhou, retry em 3s...`)
-      try {
-        await new Promise(resolve => setTimeout(resolve, 3000))
-        await sendEmailFn()
-      } catch (e2) {
-        console.log(`   ├─ [${requestId}] ⚠️ Email falhou após retry`)
-      }
+      console.log(`   ├─ [${requestId}] ⚠️ Email falhou (créditos já liberados): ${e}`)
     }
 
     // Atualizar log com sucesso
