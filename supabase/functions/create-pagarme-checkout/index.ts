@@ -257,7 +257,7 @@ serve(async (req) => {
             const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
             if (!existingProfile.name && trimmedName) updates.name = trimmedName
             if (!existingProfile.cpf && cleanCpf) updates.cpf = cleanCpf
-            if (!existingProfile.phone && phone.fullDigits) updates.phone = phone.fullDigits
+            if (!existingProfile.phone && phone?.fullDigits) updates.phone = phone.fullDigits
             if (!existingProfile.address_line && user_address?.line_1) {
               updates.address_line = user_address.line_1
               updates.address_zip = user_address.zip_code || null
