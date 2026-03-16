@@ -156,7 +156,7 @@ const VideoUpscalerTool: React.FC = () => {
   useJobPendingWatchdog({
     jobId,
     toolType: 'video_upscaler',
-    enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
+    enabled: !!jobId && status !== 'idle' && status !== 'completed',
     onJobFailed: useCallback((errorMessage) => {
       console.log('[VideoUpscaler] Watchdog triggered - job stuck as pending');
       setStatus('error');

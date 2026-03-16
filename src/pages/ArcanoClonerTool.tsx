@@ -195,7 +195,7 @@ const ArcanoClonerTool: React.FC = () => {
   useJobPendingWatchdog({
     jobId,
     toolType: 'arcano_cloner',
-    enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
+    enabled: !!jobId && status !== 'idle' && status !== 'completed',
     onJobFailed: useCallback((errorMessage) => {
       console.warn('[ArcanoCloner] Job failed via watchdog:', errorMessage);
       setStatus('error');

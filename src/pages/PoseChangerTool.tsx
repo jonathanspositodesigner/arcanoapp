@@ -163,7 +163,7 @@ const PoseChangerTool: React.FC = () => {
   useJobPendingWatchdog({
     jobId,
     toolType: 'pose_changer',
-    enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
+    enabled: !!jobId && status !== 'idle' && status !== 'completed',
     onJobFailed: useCallback((errorMessage) => {
       console.log('[PoseChanger] Watchdog triggered - job stuck as pending');
       setStatus('error');

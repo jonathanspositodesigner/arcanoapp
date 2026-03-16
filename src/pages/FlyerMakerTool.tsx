@@ -403,6 +403,10 @@ const FlyerMakerTool: React.FC = () => {
 
     } catch (error: any) {
       console.error('[FlyerMaker] Process error:', error);
+      if (jobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(jobId, 'flyer_maker', error.message || 'Erro desconhecido');
+      }
       setStatus('error');
       setDebugErrorMessage(error.message);
       toast.error(error.message);

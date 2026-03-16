@@ -181,7 +181,7 @@ const GeradorPersonagemTool: React.FC = () => {
   useJobPendingWatchdog({
     jobId,
     toolType: 'character_generator',
-    enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
+    enabled: !!jobId && status !== 'idle' && status !== 'completed',
     onJobFailed: useCallback((errorMessage) => {
       setStatus('error');
       setDebugErrorMessage(errorMessage);

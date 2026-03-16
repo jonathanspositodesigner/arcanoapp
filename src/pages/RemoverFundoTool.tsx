@@ -134,7 +134,7 @@ const RemoverFundoTool: React.FC = () => {
   useJobPendingWatchdog({
     jobId,
     toolType: 'bg_remover',
-    enabled: status !== 'idle' && status !== 'completed' && status !== 'error',
+    enabled: !!jobId && status !== 'idle' && status !== 'completed',
     onJobFailed: useCallback((errorMessage) => {
       setStatus('error');
       toast.error(errorMessage);
