@@ -474,6 +474,11 @@ const ArcanoClonerTeste = () => {
         <LandingTrialSignupSection />
       </LazySection>
 
+      {/* ==================== FEEDBACKS ==================== */}
+      <LazySection>
+        <FeedbackCarousel />
+      </LazySection>
+
       {/* ==================== FAQ ==================== */}
       <LazySection>
       <AnimatedSection className="px-4 py-16 md:py-20">
