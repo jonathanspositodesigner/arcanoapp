@@ -108,6 +108,17 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // ===== Ping handler: warm the runtime without executing logic =====
+  try {
+    const clonedReq = req.clone();
+    const maybeBody = await clonedReq.json().catch(() => null);
+    if (maybeBody?.ping) {
+      return new Response(JSON.stringify({ pong: true }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+  } catch { /* not JSON, continue */ }
+
   const requestId = crypto.randomUUID();
   let orderId: string | null = null;
 
