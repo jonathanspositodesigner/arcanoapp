@@ -660,6 +660,46 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         )}
       </div>
     </div>
+
+      {/* Modal de resultado da compra 1-clique */}
+      <Dialog open={oneClickResult !== null} onOpenChange={() => {}}>
+        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-sm" onPointerDownOutside={(e) => e.preventDefault()}>
+          <DialogTitle className="sr-only">
+            {oneClickResult === 'approved' ? 'Compra aprovada' : 'Compra recusada'}
+          </DialogTitle>
+          <div className="flex flex-col items-center gap-4 py-4">
+            {oneClickResult === 'approved' ? (
+              <>
+                <CheckCircle2 className="h-16 w-16 text-green-400" />
+                <h3 className="text-xl font-bold">Compra aprovada!</h3>
+                <p className="text-sm text-white/60 text-center">Seu pagamento foi processado com sucesso.</p>
+                <button
+                  onClick={() => {
+                    setOneClickResult(null);
+                    onClose();
+                  }}
+                  className="w-full py-3 font-bold rounded-full bg-green-500 hover:bg-green-600 text-white transition-colors"
+                >
+                  Entendi
+                </button>
+              </>
+            ) : (
+              <>
+                <XCircle className="h-16 w-16 text-red-400" />
+                <h3 className="text-xl font-bold">Compra recusada</h3>
+                <p className="text-sm text-white/60 text-center">Não foi possível processar o pagamento com este cartão.</p>
+                <button
+                  onClick={() => setOneClickResult(null)}
+                  className="w-full py-3 font-bold rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                >
+                  Escolher outro meio de pagamento
+                </button>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 
