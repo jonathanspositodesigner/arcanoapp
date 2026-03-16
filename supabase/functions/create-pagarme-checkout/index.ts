@@ -206,7 +206,7 @@ serve(async (req) => {
     const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
 
     // ===== Rate limit + busca de produto em PARALELO =====
-    const rateLimitKey = `checkout_${email}_${clientIp}`
+    const rateLimitKey = `checkout_${email || 'nomail'}_${clientIp}`
 
     // Rate limit: fire-and-forget (non-blocking) — log only, don't block checkout
     supabase.rpc('check_rate_limit', {
