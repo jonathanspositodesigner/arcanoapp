@@ -2,6 +2,11 @@ import { useEffect, useState, useRef } from "react";
 import { Star } from "lucide-react";
 import { AnimatedSection } from "@/hooks/useScrollAnimation";
 import { useIsMobile } from "@/hooks/use-mobile";
+import feedbackRafael from "@/assets/feedback-rafael.png";
+import feedbackPedro from "@/assets/feedback-pedro.png";
+import feedbackBeatriz from "@/assets/feedback-beatriz.png";
+import feedbackLucas from "@/assets/feedback-lucas.png";
+import feedbackThiago from "@/assets/feedback-thiago.png";
 
 const feedbacks = [
   {
