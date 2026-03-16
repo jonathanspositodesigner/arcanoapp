@@ -385,7 +385,7 @@ export default function ArcanoClonerAuthModal({
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [sendConfirmationEmail]);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
