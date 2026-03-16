@@ -286,6 +286,10 @@ const RemoverFundoTool: React.FC = () => {
       refetchCredits();
     } catch (error: any) {
       console.error('[BgRemover] Process error:', error);
+      if (jobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(jobId, 'bg_remover', error.message || 'Erro desconhecido');
+      }
       setStatus('error');
       toast.error(error.message || 'Erro ao processar imagem');
       endSubmit();
