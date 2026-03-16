@@ -84,6 +84,7 @@ interface Plan {
   price: string;
   originalPrice: string | null;
   credits: string;
+  creditsCount: string;
   images: number | string;
   tagline?: string;
   features: { text: string; included: boolean }[];
