@@ -144,16 +144,18 @@ serve(async (req) => {
       return errorResponse('product_slug é obrigatório', 400, 'MISSING_FIELDS');
     }
 
-    // Cartão puro: email é opcional — usa placeholder para o Pagar.me coletar no checkout
+    // Cartão puro: não enviamos nome/email fictícios ao gateway
     let email: string
+    let customerEmail: string | null = null
     if (user_email) {
       email = user_email.toLowerCase().trim()
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return errorResponse('Email inválido', 400, 'INVALID_EMAIL');
       }
+      customerEmail = email
     } else if (isPureCreditCardCheckout) {
       email = `checkout-${crypto.randomUUID().slice(0, 8)}@temp.arcano`
-      console.log(`[${requestId}] 💳 Cartão puro sem email — usando placeholder: ${email}`)
+      console.log(`[${requestId}] 💳 Cartão puro sem email — sem pré-preenchimento de cliente no checkout`)
     } else {
       return errorResponse('user_email é obrigatório para este método', 400, 'MISSING_FIELDS');
     }
