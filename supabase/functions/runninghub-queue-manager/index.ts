@@ -1053,6 +1053,148 @@ async function handleCancelSession(req: Request): Promise<Response> {
   }
 }
 
+// ==================== RUN-OR-QUEUE (CENTRALIZED DECISION) ====================
+
+/**
+ * handleRunOrQueue - Endpoint único para decidir se um job roda imediatamente ou entra na fila.
+ * 
+ * REGRA CRÍTICA: O job chega aqui com status='pending', portanto NÃO se conta
+ * como running/starting. Isso elimina o bug de auto-contagem.
+ * 
+ * Lógica:
+ * - Se running < 3 E fila vazia E conta disponível → marca starting, executa no RunningHub
+ * - Senão → enfileira com posição FIFO global
+ */
+async function handleRunOrQueue(req: Request): Promise<Response> {
+  try {
+    const { table, jobId } = await req.json();
+    
+    if (!table || !jobId || !JOB_TABLES.includes(table as JobTable)) {
+      return new Response(JSON.stringify({ error: 'Valid table and jobId are required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    console.log(`[QueueManager] /run-or-queue: table=${table}, jobId=${jobId}`);
+    
+    // Limpeza oportunística
+    await cleanupStaleJobs();
+    
+    // Job está 'pending' - NÃO conta como running/starting
+    const globalRunning = await getGlobalRunningCount();
+    const totalQueued = await getTotalQueuedCount();
+    
+    console.log(`[QueueManager] run-or-queue: running=${globalRunning}, queued=${totalQueued}, max=${GLOBAL_MAX_CONCURRENT}`);
+    
+    // Pode iniciar imediatamente se: running < 3 E fila vazia E conta disponível
+    if (globalRunning < GLOBAL_MAX_CONCURRENT && totalQueued === 0) {
+      const availableAccount = await getAccountWithAvailableSlot();
+      if (availableAccount) {
+        // Buscar dados completos do job
+        const { data: job, error: jobError } = await supabase
+          .from(table)
+          .select('*')
+          .eq('id', jobId)
+          .maybeSingle();
+        
+        if (jobError || !job) {
+          return new Response(JSON.stringify({ error: 'Job not found' }), {
+            status: 404,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        
+        // Marcar como STARTING agora (ocupa vaga)
+        await supabase
+          .from(table)
+          .update({
+            status: 'starting',
+            current_step: 'starting',
+            started_at: new Date().toISOString(),
+            position: 0,
+            waited_in_queue: false,
+            api_account: availableAccount.name,
+          })
+          .eq('id', jobId);
+        
+        await logStep(table, jobId, 'starting', { accountName: availableAccount.name, via: 'run-or-queue' });
+        
+        // Executar no RunningHub (caminho único)
+        const result = await startJobOnRunningHub(table as JobTable, job, availableAccount);
+        
+        if (result.taskId) {
+          return new Response(JSON.stringify({
+            success: true,
+            taskId: result.taskId,
+            accountUsed: availableAccount.name,
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        
+        // Falha ao iniciar - reembolso já feito por callRunningHubApi
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Failed to start job on RunningHub',
+          refunded: true,
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+    
+    // Enfileirar (FIFO global)
+    const { data: job } = await supabase.from(table).select('created_at').eq('id', jobId).maybeSingle();
+    
+    if (!job) {
+      return new Response(JSON.stringify({ error: 'Job not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Calcular posição global FIFO
+    let position = 1;
+    for (const t of JOB_TABLES) {
+      const { count } = await supabase
+        .from(t)
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'queued')
+        .lt('created_at', job.created_at);
+      position += count || 0;
+    }
+    
+    await supabase.from(table).update({
+      status: 'queued',
+      current_step: 'queued',
+      position,
+      waited_in_queue: true,
+    }).eq('id', jobId);
+    
+    await logStep(table, jobId, 'queued', { position, via: 'run-or-queue' });
+    
+    console.log(`[QueueManager] Job ${jobId} enqueued at position ${position} (via run-or-queue)`);
+    
+    return new Response(JSON.stringify({
+      success: true,
+      queued: true,
+      position,
+      totalQueued: await getTotalQueuedCount(),
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+    
+  } catch (error) {
+    console.error('[QueueManager] run-or-queue error:', error);
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
 // ==================== RUNNINGHUB INTEGRATION ====================
 
 async function startJobOnRunningHub(
