@@ -59,14 +59,7 @@ const formatCpf = (value: string) => {
   return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
 };
 
-// Fallback checkout URLs for when gateway is slow/unreachable
-const FALLBACK_CHECKOUT_URLS: Record<string, string> = {
-  'upscaller-arcano-vitalicio': 'https://arcanoapp.voxvisual.com.br/planos-upscaler-arcano',
-  'upscaller-arcano-1ano': 'https://arcanoapp.voxvisual.com.br/planos-upscaler-arcano',
-  'starter-mensal': 'https://arcanoapp.voxvisual.com.br/planos2',
-  'pro-mensal': 'https://arcanoapp.voxvisual.com.br/planos2',
-  'ultimate-mensal': 'https://arcanoapp.voxvisual.com.br/planos2',
-};
+// Error messages for detailed feedback
 
 const ERROR_MESSAGES: Record<string, string> = {
   'RATE_LIMITED': 'Muitas tentativas. Aguarde 1 minuto e tente novamente.',
