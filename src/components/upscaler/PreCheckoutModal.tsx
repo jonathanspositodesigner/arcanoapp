@@ -408,6 +408,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const showOneClick = hasSavedCards && !showFullForm;
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-4 bg-black/80 backdrop-blur-sm" onClick={loading ? undefined : onClose}>
       <div
         className={`relative w-full max-w-md bg-gradient-to-br ${modalBg} border ${accentBorderLight} rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-2xl ${modalShadow} max-h-[95vh] overflow-y-auto`}
