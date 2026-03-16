@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
-import { X, CreditCard, QrCode, ArrowRight, Shield, Zap, Trash2 } from "lucide-react";
+import { X, CreditCard, QrCode, ArrowRight, Shield, Zap, Trash2, CheckCircle2, XCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { invokeCheckout } from "@/lib/checkoutFetch";
