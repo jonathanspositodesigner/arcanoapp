@@ -217,33 +217,27 @@ async function handleRun(req: Request) {
 
   // NOTE: No early status update - job stays 'pending' until queue manager decides
 
-  // Upload image to RunningHub + check queue in PARALLEL
+  // Upload image to RunningHub
   let inputFileName: string;
-  let queueResult: { slotsAvailable: number; accountName: string | null; accountApiKey: string | null };
   
   try {
-    const uploadPromise = imageBase64
-      ? uploadBase64ToRunningHub(imageBase64, fileName || 'input.png')
-      : (async () => {
-          console.log('[BgRemover] Downloading image from storage...');
-          const imgResponse = await fetch(inputImageUrl);
-          if (!imgResponse.ok) throw new Error(`Failed to download image (${imgResponse.status})`);
-          const imgBlob = await imgResponse.blob();
-          const imgName = inputImageUrl.split('/').pop() || 'input.png';
-          const formData = new FormData();
-          formData.append('apiKey', RUNNINGHUB_API_KEY);
-          formData.append('fileType', 'image');
-          formData.append('file', imgBlob, imgName);
-          const uploadResponse = await fetchWithRetry('https://www.runninghub.ai/task/openapi/upload', { method: 'POST', body: formData }, 'Image upload');
-          const uploadData = await safeParseResponse(uploadResponse, 'Image upload');
-          if (uploadData.code !== 0) throw new Error('Image upload failed: ' + (uploadData.msg || 'Unknown'));
-          return uploadData.data.fileName;
-        })();
-
-    const queueCheckPromise = quickQueueCheck();
-
-    // Run upload + queue check in parallel
-    [inputFileName, queueResult] = await Promise.all([uploadPromise, queueCheckPromise]);
+    if (imageBase64) {
+      inputFileName = await uploadBase64ToRunningHub(imageBase64, fileName || 'input.png');
+    } else {
+      console.log('[BgRemover] Downloading image from storage...');
+      const imgResponse = await fetch(inputImageUrl);
+      if (!imgResponse.ok) throw new Error(`Failed to download image (${imgResponse.status})`);
+      const imgBlob = await imgResponse.blob();
+      const imgName = inputImageUrl.split('/').pop() || 'input.png';
+      const formData = new FormData();
+      formData.append('apiKey', RUNNINGHUB_API_KEY);
+      formData.append('fileType', 'image');
+      formData.append('file', imgBlob, imgName);
+      const uploadResponse = await fetchWithRetry('https://www.runninghub.ai/task/openapi/upload', { method: 'POST', body: formData }, 'Image upload');
+      const uploadData = await safeParseResponse(uploadResponse, 'Image upload');
+      if (uploadData.code !== 0) throw new Error('Image upload failed: ' + (uploadData.msg || 'Unknown'));
+      inputFileName = uploadData.data.fileName;
+    }
     console.log('[BgRemover] Image uploaded:', inputFileName);
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : 'Image transfer failed';
@@ -252,10 +246,8 @@ async function handleRun(req: Request) {
     return new Response(JSON.stringify({ error: errorMsg, code: 'IMAGE_TRANSFER_ERROR' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 
-  // Background: save to Supabase Storage for history (non-blocking)
+  // Background: save to storage for history (non-blocking)
   if (imageBase64) {
-    // Fire-and-forget: await before response since Deno doesn't support waitUntil
-    // We do this AFTER upload to RunningHub but BEFORE starting the AI app
     saveToStorageBackground(imageBase64, userId, jobId, fileName || 'input.png').catch(e => console.error('[BgRemover] Storage bg error:', e));
   }
 
@@ -263,81 +255,41 @@ async function handleRun(req: Request) {
   console.log(`[BgRemover] Consuming ${creditCost} credits for user ${userId}`);
   const { data: creditResult, error: creditError } = await supabase.rpc('consume_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: 'Remover Fundo' });
   if (creditError) {
-    console.error('[BgRemover] Credit error:', creditError);
     return new Response(JSON.stringify({ error: 'Erro ao processar créditos', code: 'CREDIT_ERROR' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
   if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
     return new Response(JSON.stringify({ error: creditResult?.[0]?.error_message || 'Saldo insuficiente', code: 'INSUFFICIENT_CREDITS' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
-  console.log(`[BgRemover] Credits consumed. New balance: ${creditResult[0].new_balance}`);
 
-  // Mark credits charged
-  await supabase.from('bg_remover_jobs').update({ credits_charged: true, user_credit_cost: creditCost, input_file_name: inputFileName }).eq('id', jobId);
+  // Mark credits charged + save job_payload
+  await supabase.from('bg_remover_jobs').update({ 
+    credits_charged: true, user_credit_cost: creditCost, input_file_name: inputFileName,
+    job_payload: { inputFileName }
+  }).eq('id', jobId);
 
+  // ========== DELEGATE TO QUEUE MANAGER ==========
   try {
-    const { slotsAvailable, accountName, accountApiKey } = queueResult;
+    const qmResponse = await fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/run-or-queue`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+      body: JSON.stringify({ table: 'bg_remover_jobs', jobId }),
+    });
+    const qmResult = await qmResponse.json();
 
-    if (slotsAvailable <= 0) {
-      // Enqueue
-      try {
-        const enqueueResponse = await fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/enqueue`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
-          body: JSON.stringify({ table: 'bg_remover_jobs', jobId, creditCost }),
-        });
-        const enqueueData = await enqueueResponse.json();
-        return new Response(JSON.stringify({ success: true, queued: true, position: enqueueData.position }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-      } catch (enqueueError) {
-        await supabase.from('bg_remover_jobs').update({ status: 'queued', position: 999, user_credit_cost: creditCost, waited_in_queue: true }).eq('id', jobId);
-        return new Response(JSON.stringify({ success: true, queued: true, position: 999 }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-      }
+    if (qmResult.queued) {
+      return new Response(JSON.stringify({ success: true, queued: true, position: qmResult.position }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
-
-    // Start processing
-    const apiKeyToUse = accountApiKey || RUNNINGHUB_API_KEY;
-    const accountToUse = accountName || 'primary';
-    await supabase.from('bg_remover_jobs').update({ user_credit_cost: creditCost, waited_in_queue: false, status: 'running', started_at: new Date().toISOString(), position: 0, api_account: accountToUse }).eq('id', jobId);
-
-    const nodeInfoList = [
-      { nodeId: "1", fieldName: "image", fieldValue: inputFileName }
-    ];
-
-    const webhookUrl = `${SUPABASE_URL}/functions/v1/runninghub-webhook`;
-    const requestBody = { nodeInfoList, instanceType: "default", usePersonalQueue: false, webhookUrl };
-    console.log('[BgRemover] AI App request:', JSON.stringify(requestBody));
-
-    const response = await fetchWithRetry(`https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID_BG_REMOVER}`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKeyToUse}` },
-      body: JSON.stringify(requestBody),
-    }, 'Run AI App');
-
-    const data = await safeParseResponse(response, 'AI App response');
-    console.log('[BgRemover] AI App response:', JSON.stringify(data));
-
-    if (data.taskId) {
-      await supabase.from('bg_remover_jobs').update({ task_id: data.taskId }).eq('id', jobId);
-      return new Response(JSON.stringify({ success: true, taskId: data.taskId }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    if (qmResult.taskId) {
+      return new Response(JSON.stringify({ success: true, taskId: qmResult.taskId }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
-
-    // Start failed - refund
-    const startErrorMsg = data.msg || data.message || 'Failed to start workflow';
-    console.error(`[BgRemover] START FAILED - Refunding for job ${jobId}`);
-    try {
-      await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: `START_FAILED_REFUNDED: ${startErrorMsg.slice(0, 100)}` });
-      await supabase.from('bg_remover_jobs').update({ status: 'failed', error_message: `START_FAILED_REFUNDED: ${startErrorMsg}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
-    } catch (refundError) {
-      await supabase.from('bg_remover_jobs').update({ status: 'failed', error_message: `START_FAILED (refund error): ${startErrorMsg}`, completed_at: new Date().toISOString() }).eq('id', jobId);
-    }
-    return new Response(JSON.stringify({ error: startErrorMsg, code: data.code || 'RUN_FAILED', refunded: true }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-
+    return new Response(JSON.stringify({ error: qmResult.error || 'Failed', code: 'RUN_FAILED', refunded: true }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[BgRemover] Run error:', error);
+    console.error('[BgRemover] QM call failed:', errorMessage);
     try {
-      await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
-      await supabase.from('bg_remover_jobs').update({ status: 'failed', error_message: `START_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
-    } catch {
-      await supabase.from('bg_remover_jobs').update({ status: 'failed', error_message: `START_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
-    }
+      await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: `QM_EXCEPTION: ${errorMessage.slice(0, 100)}` });
+      await supabase.from('bg_remover_jobs').update({ status: 'failed', error_message: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
+    } catch { await supabase.from('bg_remover_jobs').update({ status: 'failed', error_message: `QM_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId); }
     return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: true }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 }
