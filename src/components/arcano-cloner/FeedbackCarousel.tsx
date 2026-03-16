@@ -7,6 +7,7 @@ import feedbackPedro from "@/assets/feedback-pedro.png";
 import feedbackBeatriz from "@/assets/feedback-beatriz.png";
 import feedbackLucas from "@/assets/feedback-lucas.png";
 import feedbackThiago from "@/assets/feedback-thiago.png";
+import feedbackCamila from "@/assets/feedback-camila.png";
 
 const feedbacks = [
   {
