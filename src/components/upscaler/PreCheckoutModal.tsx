@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
-import { X, CreditCard, QrCode, ArrowRight, Shield, Zap, Trash2 } from "lucide-react";
+import { X, CreditCard, QrCode, ArrowRight, Shield, Zap, Trash2, ExternalLink } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { getMetaCookies } from "@/lib/metaCookies";
 import { getSanitizedUtms } from "@/lib/utmUtils";
@@ -58,6 +59,25 @@ const formatCpf = (value: string) => {
   return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
 };
 
+// Fallback checkout URLs for when gateway is slow/unreachable
+const FALLBACK_CHECKOUT_URLS: Record<string, string> = {
+  'upscaller-arcano-vitalicio': 'https://arcanoapp.voxvisual.com.br/planos-upscaler-arcano',
+  'upscaller-arcano-1ano': 'https://arcanoapp.voxvisual.com.br/planos-upscaler-arcano',
+  'starter-mensal': 'https://arcanoapp.voxvisual.com.br/planos2',
+  'pro-mensal': 'https://arcanoapp.voxvisual.com.br/planos2',
+  'ultimate-mensal': 'https://arcanoapp.voxvisual.com.br/planos2',
+};
+
+const ERROR_MESSAGES: Record<string, string> = {
+  'RATE_LIMITED': 'Muitas tentativas. Aguarde 1 minuto e tente novamente.',
+  'GATEWAY_UNREACHABLE': 'Gateway de pagamento temporariamente indisponível.',
+  'INVALID_CPF': 'CPF inválido. Verifique os dígitos informados.',
+  'INVALID_PHONE': 'Celular inválido. Informe DDD + número.',
+  'INVALID_EMAIL': 'Email inválido. Verifique o endereço.',
+  'PRODUCT_NOT_FOUND': 'Produto não encontrado. Recarregue a página.',
+  'CONFIG_ERROR': 'Erro de configuração. Tente novamente em instantes.',
+};
+
 const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'upscaller-arcano-vitalicio', modalTitle, colorScheme = 'fuchsia' }: PreCheckoutModalProps) => {
   const isOrange = colorScheme === 'orange';
   const accentBorder = isOrange ? 'border-[#EF672C]' : 'border-fuchsia-500';
@@ -93,6 +113,11 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [oneClickLoading, setOneClickLoading] = useState(false);
   const [showFullForm, setShowFullForm] = useState(false);
+
+  // Race/fallback state
+  const [showFallback, setShowFallback] = useState(false);
+  const checkoutResolvedRef = useRef(false);
+  const fallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (userEmail) {
@@ -245,20 +270,49 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     }
   };
 
+  const handleFallbackClick = useCallback(() => {
+    const fallbackUrl = FALLBACK_CHECKOUT_URLS[productSlug || ''];
+    if (fallbackUrl) {
+      window.location.href = fallbackUrl;
+    }
+  }, [productSlug]);
+
+  const showErrorToast = useCallback((errorCode?: string, requestId?: string) => {
+    const message = (errorCode && ERROR_MESSAGES[errorCode]) || 
+      `Erro ao criar checkout. ${errorCode ? `(${errorCode})` : 'Tente novamente.'}`;
+    
+    toast({
+      title: "Erro no checkout",
+      description: message,
+      variant: "destructive",
+    });
+  }, []);
+
   const handleSubmit = async () => {
     if (!validate()) return;
     if (!productSlug) {
       console.error('[PreCheckoutModal] productSlug inválido:', productSlug);
-      alert('Erro: produto não identificado. Feche e tente novamente.');
+      toast({ title: "Erro", description: "Produto não identificado. Feche e tente novamente.", variant: "destructive" });
       return;
     }
     if (!startFormSubmit()) return;
 
     setLoading(true);
+    setShowFallback(false);
+    checkoutResolvedRef.current = false;
+
+    // Start 2s fallback timer
+    if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+    fallbackTimerRef.current = setTimeout(() => {
+      if (!checkoutResolvedRef.current) {
+        setShowFallback(true);
+      }
+    }, 2000);
+
     try {
       const utmData = getSanitizedUtms();
-
       const { fbp, fbc } = getMetaCookies();
+      
       const response = await supabase.functions.invoke('create-pagarme-checkout', {
         body: {
           product_slug: productSlug,
@@ -273,10 +327,23 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         }
       });
 
+      // Clear fallback timer
+      if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+
       if (response.error) {
         console.error('Erro ao criar checkout:', response.error);
-        alert('Erro ao criar checkout. Tente novamente.');
+        // Try to extract error_code from response body
+        let errorCode = 'UNKNOWN';
+        try {
+          const errBody = typeof response.error === 'object' ? response.error : JSON.parse(String(response.error));
+          errorCode = errBody?.error_code || errBody?.context?.error_code || 'UNKNOWN';
+        } catch {}
+        
+        checkoutResolvedRef.current = true;
+        showErrorToast(errorCode);
+        setShowFallback(true); // Show fallback on error
         setLoading(false);
+        endFormSubmit();
         return;
       }
 
@@ -288,14 +355,20 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       }
 
       if (checkout_url) {
+        checkoutResolvedRef.current = true;
         window.location.href = checkout_url;
         return;
       } else {
-        alert('Erro ao gerar link de pagamento.');
+        checkoutResolvedRef.current = true;
+        showErrorToast('NO_CHECKOUT_URL');
+        setShowFallback(true);
       }
     } catch (error) {
       console.error('Erro:', error);
-      alert('Erro ao processar. Tente novamente.');
+      if (fallbackTimerRef.current) clearTimeout(fallbackTimerRef.current);
+      checkoutResolvedRef.current = true;
+      showErrorToast();
+      setShowFallback(true);
     }
     setLoading(false);
     endFormSubmit();
@@ -540,6 +613,25 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
               {loading ? 'Gerando checkout...' : 'Finalizar e Pagar'}
               {!loading && <ArrowRight className="h-5 w-5" />}
             </button>
+
+            {/* Fallback checkout button - appears after 2s or on error */}
+            {showFallback && FALLBACK_CHECKOUT_URLS[productSlug || ''] && (
+              <div className="mt-3 space-y-2 animate-in fade-in duration-300">
+                <button
+                  onClick={handleFallbackClick}
+                  className="w-full py-3 text-sm font-semibold rounded-full border-2 border-yellow-500/50 bg-yellow-500/10 text-yellow-300 hover:bg-yellow-500/20 transition-all flex items-center justify-center gap-2"
+                >
+                  <Zap className="h-4 w-4" />
+                  {loading ? 'Checkout Reserva (enquanto carrega)' : 'Abrir Checkout Alternativo'}
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </button>
+                {loading && (
+                  <p className="text-white/40 text-[10px] text-center">
+                    O checkout principal ainda está sendo gerado...
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="flex items-center justify-center gap-2 mt-4 text-white/40 text-xs">
               <Shield className="h-3 w-3" />

@@ -1,56 +1,88 @@
+# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
+## Resumo
+Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
 
-## Plano: Checkout em 2s com Fallback Reserva
+## O que foi feito
 
-### Diagnóstico Confirmado
-- O checkout Pagar.me funciona (17 pagamentos pagos nas últimas 24h, zero falhas no banco)
-- O problema é **latência**: a Edge Function tem timeout de 25s + 2 retries = até 75s no pior caso
-- O erro "Erro ao criar checkout" acontece quando o Edge Function excede o timeout do Supabase (~150s) ou o gateway demora demais
-- O `PreCheckoutModal.tsx` não tem nenhum mecanismo de timeout ou fallback no frontend
+### 1. Tabela `subscription_billing_reminders` (migration)
+- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
+- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
+- Campo `checkout_url` para evitar checkouts duplicados
+- Constraint UNIQUE em (subscription_id, day_offset, due_date)
 
-### Solução: Race com Timeout de 2s + Checkout Reserva
+### 2. Edge Function `process-billing-reminders`
+- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
+- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
+- Para cada assinatura, verifica:
+  - Se já enviou email para esse `day_offset`
+  - Se a sequência foi parada (pagou ou descadastrou)
+  - Se o email está na blacklist
+  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
+- Gera checkout Pagar.me somente PIX com validade de 3 dias
+- Monta HTML personalizado com dados reais do plano
+- Envia via SendPulse SMTP API
+- Registra na tabela de controle
 
-#### 1. Frontend - `PreCheckoutModal.tsx` (principal)
-Implementar um **race** entre a chamada real e um timeout de 2s:
-- Iniciar `supabase.functions.invoke('create-pagarme-checkout')` normalmente
-- Após **2 segundos** sem resposta, mostrar botão "Abrir Checkout Reserva" que leva o usuário a um link Pagar.me pré-gerado (fallback)
-- Se a resposta chegar antes, redirecionar normalmente (comportamento atual)
-- Se a resposta chegar DEPOIS do fallback aparecer e o usuário ainda não clicou, redirecionar automaticamente
-- O erro genérico `alert('Erro ao criar checkout')` será substituído por mensagem detalhada com `error_code` do backend
+### 3. Mapeamento de benefícios por plano
+- Starter: 1.800 créditos, 5 prompts/dia
+- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
+- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
+- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
 
-#### 2. Edge Function - `create-pagarme-checkout/index.ts` (otimização)
-Reduzir timeout para acelerar o fluxo normal:
-- Reduzir `timeoutMs` de 25s para **8s** (a maioria dos checkouts retorna em 1-3s)
-- Reduzir `maxRetries` de 2 para **1** (se deu timeout em 8s, retry 1x é suficiente)
-- Pular validação de CPF (Módulo 11) quando `billing_type === 'PIX'` (Pagar.me já valida)
-- Total worst case: 8s + 1.5s backoff + 8s = ~17s (vs 75s atual)
+### 4. Templates dos 6 emails
+- Dia 0: Lembrete leve ("Seu plano vence hoje")
+- Dia 1: Reforço pendência ("Pagamento ainda pendente")
+- Dia 2: Dor da perda ("Risco de perda de acesso")
+- Dia 3: Prejuízo prático ("O custo de não renovar")
+- Dia 4: FOMO ("Não fique para trás")
+- Dia 5: Último aviso ("Último aviso: regularize hoje")
+- Todos com link de descadastro no rodapé
 
-#### 3. Fallback Checkout Reserva
-Para o produto `upscaller-arcano-vitalicio`, usar um link de checkout Pagar.me pré-criado como fallback:
-- Criar uma tabela de mapeamento `product_slug → fallback_checkout_url` embutida no frontend
-- O fallback é um link genérico do Pagar.me que funciona sem personalização (o webhook ainda processa o pagamento)
-- Alternativa: redirecionar para o link Greenn que já existe em `artes_packs.checkout_link_vitalicio`
+### 5. Cron job
+- pg_cron agendado: `0 12 * * *` (09:00 BRT)
+- Chama a Edge Function automaticamente
 
-#### 4. Mensagens de Erro Detalhadas
-Substituir `alert('Erro ao criar checkout')` por um toast com informação útil:
-- Se `error_code === 'RATE_LIMITED'`: "Muitas tentativas, aguarde 1 minuto"
-- Se `error_code === 'GATEWAY_UNREACHABLE'`: "Gateway de pagamento indisponível. Use o checkout reserva"
-- Se `error_code === 'INVALID_CPF'`: "CPF inválido, verifique os dígitos"
-- Default: mostrar `error_code` e `request_id` para debug
+## Detecção de pagamento (para de enviar)
+- `planos2_subscriptions.expires_at` estendido para data futura
+- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
+- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
 
-### Arquivos Modificados
-1. **`src/components/upscaler/PreCheckoutModal.tsx`** - Race timeout 2s, botão fallback, mensagens detalhadas
-2. **`supabase/functions/create-pagarme-checkout/index.ts`** - Reduzir timeouts
-3. **Páginas que usam checkout direto** (`PlanosArtes.tsx`, `PlanosArtesMembro.tsx`, `Planos2.tsx`) - Mesmo padrão de fallback
+# Auditoria Completa de Emails — Robustez Unificada (CONCLUÍDA)
 
-### Fluxo Visual
-```text
-Usuário clica "Finalizar e Pagar"
-  ├── t=0s: Inicia chamada Edge Function + mostra "Gerando checkout..."
-  ├── t=2s: Se não respondeu → mostra botão "⚡ Checkout Reserva" (link direto)
-  │         (chamada continua em background)
-  ├── t<2s: Resposta OK → redireciona para checkout_url ✅
-  ├── t>2s: Resposta OK → redireciona automaticamente ✅
-  └── Erro: Mostra mensagem detalhada com error_code
-```
+## O que foi feito
 
+### Padrão unificado aplicado em todos os 6 webhooks:
+
+1. **webhook-mercadopago** — `sendPurchaseEmail` refatorado:
+   - 3 retries com exponential backoff (2s, 5s, 10s)
+   - Removida lógica de DELETE de logs de falha (preserva auditoria)
+   - Cada tentativa registrada separadamente
+
+2. **webhook-greenn-creditos** — `sendWelcomeEmail` e `sendArcanoClonnerEmail`:
+   - Adicionado INSERT em `welcome_email_logs` (antes não tinha NENHUM log)
+   - Deduplicação via `dedup_key` unique constraint
+   - Blacklist check antes do envio
+   - 3 retries com exponential backoff
+   - Caller simplificado (retry agora é interno)
+
+3. **webhook-greenn** — Callers de `sendWelcomeEmail` e `sendPlanos2WelcomeEmail`:
+   - Retry loop 3x com exponential backoff (2s, 5s, 10s)
+   - Funções internas já tinham dedup + logging
+
+4. **webhook-greenn-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
+
+5. **webhook-greenn-musicos** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
+
+6. **webhook-hotmart-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup por transaction + logging
+
+### Sem mudanças (já robustos):
+- `webhook-pagarme` — 3 retries, dedup_key, logging completo
+- `resend-purchase-email` — robusto
+- `send-single-email` — utilitária independente
