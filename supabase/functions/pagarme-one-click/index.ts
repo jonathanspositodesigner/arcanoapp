@@ -130,15 +130,33 @@ serve(async (req) => {
 
     console.log(`📦 One-Click: Ordem ${order.id} | Produto: ${product.title} | Card: ****${savedCard.card_last_four}`)
 
-    // 4. Criar pedido direto no Pagar.me com card_id
+    // 4. Buscar dados do perfil para billing address
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
+      .eq('id', user.id)
+      .single()
+
+    // 5. Criar pedido direto no Pagar.me com card_id
     const amountInCents = Math.round(Number(product.price) * 100)
 
-    const orderPayload = {
+    // Billing address é obrigatório para transações com card_id
+    const billingAddress: Record<string, any> = {
+      country: profile?.address_country || 'BR',
+      state: profile?.address_state || 'SP',
+      city: profile?.address_city || 'Sao Paulo',
+      zip_code: profile?.address_zip?.replace(/\D/g, '') || '01001000',
+      line_1: profile?.address_line || 'Não informado',
+    }
+
+    const orderPayload: Record<string, any> = {
+      code: order.id,
       items: [
         {
           amount: amountInCents,
           description: product.title,
-          quantity: 1
+          quantity: 1,
+          code: product.slug || product.id,
         }
       ],
       customer_id: savedCard.pagarme_customer_id,
@@ -148,13 +166,21 @@ serve(async (req) => {
           credit_card: {
             card_id: savedCard.pagarme_card_id,
             operation_type: 'auth_and_capture',
-            installments: 1
-          }
+            installments: 1,
+            recurrence_cycle: 'subsequent',
+            statement_descriptor: 'ARCANO',
+          },
+          amount: amountInCents,
         }
       ],
       metadata: {
         order_id: order.id
       }
+    }
+
+    // Adicionar billing_address ao payment de credit_card
+    orderPayload.payments[0].credit_card.card = {
+      billing_address: billingAddress,
     }
 
     const pagarmeAuth = 'Basic ' + btoa(pagarmeSecretKey + ':')
