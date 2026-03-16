@@ -912,8 +912,8 @@ async function handleStatus(): Promise<Response> {
 
 async function handleEnqueue(req: Request): Promise<Response> {
   try {
-    // Limpeza oportunística: qualquer enqueue limpa jobs presos de todos
-    await cleanupStaleJobs();
+    // REMOVED: cleanupStaleJobs() - moved to less frequent endpoints only
+    
     
     const { table, jobId, creditCost } = await req.json();
     
