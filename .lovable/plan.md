@@ -1,33 +1,88 @@
+# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
+## Resumo
+Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
 
-## Problem Analysis
+## O que foi feito
 
-The `planos-upscaler-arcano` page uses **only** `PreCheckoutModal` for all users — this component already has the credit card auto-submit logic built in and working. When users click "Cartão", it immediately fires `handleCreditCardAutoSubmit` which sends a minimal payload (`product_slug`, `billing_type`, `utm_data`, `fbp`, `fbc`) and redirects.
+### 1. Tabela `subscription_billing_reminders` (migration)
+- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
+- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
+- Campo `checkout_url` para evitar checkouts duplicados
+- Constraint UNIQUE em (subscription_id, day_offset, due_date)
 
-The `arcanocloner-teste` page has **two different flows**:
-1. **Unauthenticated or incomplete profile** → `PreCheckoutModal` (same as upscaler — works fine)
-2. **Authenticated with complete profile** → `PaymentMethodModal` → `handlePaymentMethodSelected` (a separate, redundant implementation)
+### 2. Edge Function `process-billing-reminders`
+- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
+- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
+- Para cada assinatura, verifica:
+  - Se já enviou email para esse `day_offset`
+  - Se a sequência foi parada (pagou ou descadastrou)
+  - Se o email está na blacklist
+  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
+- Gera checkout Pagar.me somente PIX com validade de 3 dias
+- Monta HTML personalizado com dados reais do plano
+- Envia via SendPulse SMTP API
+- Registra na tabela de controle
 
-This second flow is the problem source — it's a separate code path that has been repeatedly breaking. The upscaler page avoids this entirely by routing ALL users through `PreCheckoutModal`.
+### 3. Mapeamento de benefícios por plano
+- Starter: 1.800 créditos, 5 prompts/dia
+- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
+- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
+- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
 
-## Plan
+### 4. Templates dos 6 emails
+- Dia 0: Lembrete leve ("Seu plano vence hoje")
+- Dia 1: Reforço pendência ("Pagamento ainda pendente")
+- Dia 2: Dor da perda ("Risco de perda de acesso")
+- Dia 3: Prejuízo prático ("O custo de não renovar")
+- Dia 4: FOMO ("Não fique para trás")
+- Dia 5: Último aviso ("Último aviso: regularize hoje")
+- Todos com link de descadastro no rodapé
 
-**Single change in `src/components/arcano-cloner/LandingPricingSection.tsx`:**
+### 5. Cron job
+- pg_cron agendado: `0 12 * * *` (09:00 BRT)
+- Chama a Edge Function automaticamente
 
-1. **Remove `PaymentMethodModal` entirely** — delete the import, the state (`showPaymentMethodModal`), the `handlePaymentMethodSelected` function, and the modal JSX.
+## Detecção de pagamento (para de enviar)
+- `planos2_subscriptions.expires_at` estendido para data futura
+- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
+- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
 
-2. **Simplify `handlePurchase`** — for ALL cases (logged in or not, profile complete or not), just set `preCheckoutSlug` and open `PreCheckoutModal`. This is exactly what `planos-upscaler-arcano` does. Remove the profile-checking logic that routes to `PaymentMethodModal`.
+# Auditoria Completa de Emails — Robustez Unificada (CONCLUÍDA)
 
-3. **Remove `pendingProfile` state** — no longer needed since we're not using `PaymentMethodModal`.
+## O que foi feito
 
-This makes the arcanocloner page use the exact same single flow as the upscaler page: `PreCheckoutModal` handles everything — payment method selection, data collection for PIX, and credit card auto-submit.
+### Padrão unificado aplicado em todos os 6 webhooks:
 
-### Files to modify
-- `src/components/arcano-cloner/LandingPricingSection.tsx` — remove ~60 lines of redundant code, simplify `handlePurchase`
+1. **webhook-mercadopago** — `sendPurchaseEmail` refatorado:
+   - 3 retries com exponential backoff (2s, 5s, 10s)
+   - Removida lógica de DELETE de logs de falha (preserva auditoria)
+   - Cada tentativa registrada separadamente
 
-### Files NOT touched
-- `src/components/upscaler/PreCheckoutModal.tsx` — zero changes
-- `src/components/checkout/PaymentMethodModal.tsx` — zero changes
-- `supabase/functions/create-pagarme-checkout/index.ts` — zero changes
-- Any file related to `planos-upscaler-arcano` — zero changes
+2. **webhook-greenn-creditos** — `sendWelcomeEmail` e `sendArcanoClonnerEmail`:
+   - Adicionado INSERT em `welcome_email_logs` (antes não tinha NENHUM log)
+   - Deduplicação via `dedup_key` unique constraint
+   - Blacklist check antes do envio
+   - 3 retries com exponential backoff
+   - Caller simplificado (retry agora é interno)
 
+3. **webhook-greenn** — Callers de `sendWelcomeEmail` e `sendPlanos2WelcomeEmail`:
+   - Retry loop 3x com exponential backoff (2s, 5s, 10s)
+   - Funções internas já tinham dedup + logging
+
+4. **webhook-greenn-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
+
+5. **webhook-greenn-musicos** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
+
+6. **webhook-hotmart-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup por transaction + logging
+
+### Sem mudanças (já robustos):
+- `webhook-pagarme` — 3 retries, dedup_key, logging completo
+- `resend-purchase-email` — robusto
+- `send-single-email` — utilitária independente
