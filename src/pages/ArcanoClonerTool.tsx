@@ -486,6 +486,11 @@ const ArcanoClonerTool: React.FC = () => {
 
     } catch (error: any) {
       console.error('[ArcanoCloner] Process error:', error);
+      // DEFENSIVO: Marcar job como failed no banco para evitar órfãos
+      if (jobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(jobId, 'arcano_cloner', error.message || 'Erro desconhecido');
+      }
       setStatus('error');
       setDebugErrorMessage(error.message || 'Erro ao processar imagem');
       toast.error(error.message || 'Erro ao processar imagem');
