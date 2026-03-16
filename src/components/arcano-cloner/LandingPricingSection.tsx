@@ -96,21 +96,6 @@ interface Plan {
 const plansData: { mensal: Plan[]; anual: Plan[] } = {
   mensal: [
     {
-      name: "Free",
-      price: "0",
-      originalPrice: null,
-      credits: "300 créditos de IA",
-      images: 5,
-      features: [
-        { text: "Atualizações diárias", included: true },
-        { text: "Acesso às Ferramentas de IA", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: false },
-        { text: "Prompts premium ilimitados", included: false },
-        { text: "Geração de Imagem com NanoBanana Pro", included: false },
-        { text: "Geração de Vídeo com Veo 3", included: false },
-      ],
-    },
-    {
       name: "Starter",
       price: "24,90",
       originalPrice: "29,90",
@@ -180,21 +165,6 @@ const plansData: { mensal: Plan[]; anual: Plan[] } = {
     },
   ],
   anual: [
-    {
-      name: "Free",
-      price: "0",
-      originalPrice: null,
-      credits: "300 créditos de IA",
-      images: 5,
-      features: [
-        { text: "Atualizações diárias", included: true },
-        { text: "Acesso às Ferramentas de IA", included: true },
-        { text: "Suporte exclusivo via WhatsApp", included: false },
-        { text: "Prompts premium ilimitados", included: false },
-        { text: "Geração de Imagem com NanoBanana Pro", included: false },
-        { text: "Geração de Vídeo com Veo 3", included: false },
-      ],
-    },
     {
       name: "Starter",
       price: "24,90",
@@ -304,7 +274,7 @@ const LandingPricingSection = () => {
 
         {/* Plans Grid */}
         <StaggeredAnimation
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto"
           itemClassName="w-full"
           staggerDelay={100}
           animation="fade-up"
