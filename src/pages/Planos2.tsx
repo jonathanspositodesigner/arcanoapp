@@ -22,6 +22,7 @@ import { CreditsFAQSection } from "@/components/credits/CreditsFAQSection";
 import { StatsCards } from "@/components/credits/StatsCards";
 
 import { supabase } from "@/integrations/supabase/client";
+import { invokeCheckout, preWarmCheckout } from "@/lib/checkoutFetch";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 import HomeAuthModal from "@/components/HomeAuthModal";
 import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
@@ -55,6 +56,12 @@ const Planos2 = () => {
   const [isSubscriptionFlow, setIsSubscriptionFlow] = useState(false);
   const { planSlug: activePlanSlug } = usePlanos2Access(userId || undefined);
   const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
+
+  // Pre-warm checkout edge function after 3s
+  useEffect(() => {
+    const timer = setTimeout(() => preWarmCheckout(), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Check auth and profile on mount
   useEffect(() => {
@@ -194,7 +201,7 @@ const Planos2 = () => {
         };
       }
 
-      const response = await supabase.functions.invoke('create-pagarme-checkout', { body });
+      const response = await invokeCheckout(body);
 
       if (response.error) {
         console.error('Erro checkout direto:', response.error);

@@ -3,6 +3,7 @@ import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { X, CreditCard, QrCode, ArrowRight, Shield, Zap, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeCheckout } from "@/lib/checkoutFetch";
 import { getMetaCookies } from "@/lib/metaCookies";
 import { getSanitizedUtms } from "@/lib/utmUtils";
 
@@ -302,7 +303,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
       // Sequential: try full checkout first, fallback to lightweight only if full fails
       console.log('[PreCheckoutModal] Chamando checkout full...');
-      const fullResponse = await supabase.functions.invoke('create-pagarme-checkout', { body: fullPayload });
+      const fullResponse = await invokeCheckout(fullPayload);
       
       if (!fullResponse.error && fullResponse.data?.checkout_url) {
         const { checkout_url, event_id } = fullResponse.data;
@@ -327,7 +328,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         lightweight: true,
       };
 
-      const lightResponse = await supabase.functions.invoke('create-pagarme-checkout', { body: lightweightPayload });
+      const lightResponse = await invokeCheckout(lightweightPayload);
 
       if (!lightResponse.error && lightResponse.data?.checkout_url) {
         const { checkout_url, event_id } = lightResponse.data;

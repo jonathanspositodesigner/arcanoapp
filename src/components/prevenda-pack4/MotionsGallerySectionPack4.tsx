@@ -3,6 +3,7 @@ import { Play, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeCheckout } from "@/lib/checkoutFetch";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
@@ -143,7 +144,7 @@ export const MotionsGallerySectionPack4 = () => {
         };
       }
 
-      const response = await supabase.functions.invoke('create-pagarme-checkout', { body });
+      const response = await invokeCheckout(body);
 
       if (response.error) {
         console.error('Erro checkout direto:', response.error);

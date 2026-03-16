@@ -1,96 +1,88 @@
+# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
+## Resumo
+Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
 
-## Plano Unificado: Checkout Pagar.me Ultra-Rápido
+## O que foi feito
 
-### O que já está aplicado (plano anterior):
-- ✅ Timeout 15s + 2 retries com backoff
-- ✅ Null-check do `phone?.fullDigits` (linha 249)
-- ✅ CORS headers completos
-- ✅ Parsing de erros 4xx do Pagar.me
-- ✅ Dual-fire eliminado no PreCheckoutModal (agora é sequencial: full → lightweight fallback)
+### 1. Tabela `subscription_billing_reminders` (migration)
+- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
+- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
+- Campo `checkout_url` para evitar checkouts duplicados
+- Constraint UNIQUE em (subscription_id, day_offset, due_date)
 
-### O que falta aplicar (novas otimizações):
+### 2. Edge Function `process-billing-reminders`
+- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
+- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
+- Para cada assinatura, verifica:
+  - Se já enviou email para esse `day_offset`
+  - Se a sequência foi parada (pagou ou descadastrou)
+  - Se o email está na blacklist
+  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
+- Gera checkout Pagar.me somente PIX com validade de 3 dias
+- Monta HTML personalizado com dados reais do plano
+- Envia via SendPulse SMTP API
+- Registra na tabela de controle
 
-**A. Edge Function — Ping handler + Rate limit fire-and-forget**
+### 3. Mapeamento de benefícios por plano
+- Starter: 1.800 créditos, 5 prompts/dia
+- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
+- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
+- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
 
-No `create-pagarme-checkout/index.ts`:
+### 4. Templates dos 6 emails
+- Dia 0: Lembrete leve ("Seu plano vence hoje")
+- Dia 1: Reforço pendência ("Pagamento ainda pendente")
+- Dia 2: Dor da perda ("Risco de perda de acesso")
+- Dia 3: Prejuízo prático ("O custo de não renovar")
+- Dia 4: FOMO ("Não fique para trás")
+- Dia 5: Último aviso ("Último aviso: regularize hoje")
+- Todos com link de descadastro no rodapé
 
-1. **Ping handler** (logo após OPTIONS check): Se o body contém `{ ping: true }`, retornar `{ pong: true }` imediatamente sem executar nenhuma lógica. Isso aquece o runtime Deno.
+### 5. Cron job
+- pg_cron agendado: `0 12 * * *` (09:00 BRT)
+- Chama a Edge Function automaticamente
 
-2. **Rate limit fire-and-forget**: Atualmente o `check_rate_limit` está no `Promise.all` bloqueante (linhas 186-199). Mover para fire-and-forget — disparar o RPC sem `await`, e só logar se rate-limited (sem bloquear o fluxo). A busca do produto continua com `await` normal.
+## Detecção de pagamento (para de enviar)
+- `planos2_subscriptions.expires_at` estendido para data futura
+- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
+- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
 
-**B. Frontend — Pre-warm com delay de 3s**
+# Auditoria Completa de Emails — Robustez Unificada (CONCLUÍDA)
 
-Adicionar `useEffect` em 4 páginas de planos para disparar um `fetch()` fire-and-forget 3 segundos após montar, usando `{ ping: true }`:
+## O que foi feito
 
-- `src/pages/PlanosUpscalerArcano.tsx`
-- `src/pages/Planos2.tsx`
-- `src/pages/PlanosArtes.tsx`
-- `src/pages/PlanosArtesMembro.tsx`
+### Padrão unificado aplicado em todos os 6 webhooks:
 
-```typescript
-useEffect(() => {
-  const timer = setTimeout(() => {
-    fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-pagarme-checkout`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ping: true })
-    }).catch(() => {});
-  }, 3000);
-  return () => clearTimeout(timer);
-}, []);
-```
+1. **webhook-mercadopago** — `sendPurchaseEmail` refatorado:
+   - 3 retries com exponential backoff (2s, 5s, 10s)
+   - Removida lógica de DELETE de logs de falha (preserva auditoria)
+   - Cada tentativa registrada separadamente
 
-**C. Frontend — `fetch()` direto em vez de `supabase.functions.invoke()`**
+2. **webhook-greenn-creditos** — `sendWelcomeEmail` e `sendArcanoClonnerEmail`:
+   - Adicionado INSERT em `welcome_email_logs` (antes não tinha NENHUM log)
+   - Deduplicação via `dedup_key` unique constraint
+   - Blacklist check antes do envio
+   - 3 retries com exponential backoff
+   - Caller simplificado (retry agora é interno)
 
-Substituir `supabase.functions.invoke('create-pagarme-checkout', { body })` por `fetch()` nativo nos seguintes arquivos, eliminando overhead do SDK e headers extras:
+3. **webhook-greenn** — Callers de `sendWelcomeEmail` e `sendPlanos2WelcomeEmail`:
+   - Retry loop 3x com exponential backoff (2s, 5s, 10s)
+   - Funções internas já tinham dedup + logging
 
-- `src/components/upscaler/PreCheckoutModal.tsx` (2 chamadas: full + lightweight)
-- `src/pages/Planos2.tsx`
-- `src/pages/PlanosArtes.tsx`
-- `src/pages/PlanosArtesMembro.tsx`
-- `src/components/combo-artes/GuaranteeSectionCombo.tsx`
-- `src/components/combo-artes/PricingCardsSection.tsx`
-- `src/components/combo-artes/MotionsGallerySection.tsx`
-- `src/components/prevenda-pack4/PricingCardsSectionPack4.tsx`
-- `src/components/prevenda-pack4/GuaranteeSectionPack4.tsx`
-- `src/components/prevenda-pack4/MotionsGallerySectionPack4.tsx`
+4. **webhook-greenn-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
 
-Padrão de substituição:
-```typescript
-// ANTES:
-const response = await supabase.functions.invoke('create-pagarme-checkout', { body });
-const data = response.data;
-const error = response.error;
+5. **webhook-greenn-musicos** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
 
-// DEPOIS:
-const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-pagarme-checkout`;
-const res = await fetch(url, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(body),
-});
-const data = await res.json();
-const error = !res.ok ? data : null;
-```
+6. **webhook-hotmart-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup por transaction + logging
 
-### Arquivos afetados (14 total):
-1. `supabase/functions/create-pagarme-checkout/index.ts` — ping handler + rate limit fire-and-forget
-2. `src/pages/PlanosUpscalerArcano.tsx` — pre-warm
-3. `src/pages/Planos2.tsx` — pre-warm + fetch direto
-4. `src/pages/PlanosArtes.tsx` — pre-warm + fetch direto
-5. `src/pages/PlanosArtesMembro.tsx` — pre-warm + fetch direto
-6. `src/components/upscaler/PreCheckoutModal.tsx` — fetch direto (2x)
-7. `src/components/combo-artes/GuaranteeSectionCombo.tsx` — fetch direto
-8. `src/components/combo-artes/PricingCardsSection.tsx` — fetch direto
-9. `src/components/combo-artes/MotionsGallerySection.tsx` — fetch direto
-10. `src/components/prevenda-pack4/PricingCardsSectionPack4.tsx` — fetch direto
-11. `src/components/prevenda-pack4/GuaranteeSectionPack4.tsx` — fetch direto
-12. `src/components/prevenda-pack4/MotionsGallerySectionPack4.tsx` — fetch direto
-
-### Resultado esperado:
-- Cold start eliminado (pre-warm 3s após carregar)
-- Rate limit não bloqueia mais o fluxo (-300-800ms)
-- SDK overhead eliminado (-200ms)
-- **Tempo total: ~1.5-2.5s** (vs 5-10s atual)
-
+### Sem mudanças (já robustos):
+- `webhook-pagarme` — 3 retries, dedup_key, logging completo
+- `resend-purchase-email` — robusto
+- `send-single-email` — utilitária independente

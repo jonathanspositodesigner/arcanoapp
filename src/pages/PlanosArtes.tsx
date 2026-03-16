@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Check, Star, ArrowLeft, Gift, Clock, Percent, Bell, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeCheckout, preWarmCheckout } from "@/lib/checkoutFetch";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 import { AnimatedSection, StaggeredAnimation, FadeIn, AnimatedGrid } from "@/hooks/useScrollAnimation";
 import { appendUtmToUrl } from "@/lib/utmUtils";
@@ -105,6 +106,12 @@ const PlanosArtes = () => {
   const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
   const [selectedAccessType, setSelectedAccessType] = useState('vitalicio');
   const [arteCount, setArteCount] = useState<number | null>(null);
+
+  // Pre-warm checkout edge function after 3s
+  useEffect(() => {
+    const timer = setTimeout(() => preWarmCheckout(), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Check auth on mount
   useEffect(() => {
@@ -389,7 +396,7 @@ const PlanosArtes = () => {
         };
       }
 
-      const response = await supabase.functions.invoke('create-pagarme-checkout', { body });
+      const response = await invokeCheckout(body);
 
       if (response.error) {
         console.error('Erro checkout direto:', response.error);
