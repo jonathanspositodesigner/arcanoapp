@@ -8,6 +8,7 @@ import feedbackBeatriz from "@/assets/feedback-beatriz.png";
 import feedbackLucas from "@/assets/feedback-lucas.png";
 import feedbackThiago from "@/assets/feedback-thiago.png";
 import feedbackCamila from "@/assets/feedback-camila.png";
+import feedbackJuliana from "@/assets/feedback-juliana.png";
 
 const feedbacks = [
   {
@@ -27,7 +28,7 @@ const feedbacks = [
   },
   {
     name: "Juliana Almeida",
-    photo: "https://randomuser.me/api/portraits/women/68.jpg",
+    photo: feedbackJuliana,
     text: "Uso pra gerar fotos pros meus clientes e eles adoram. Economizei muito com ensaio fotográfico.",
   },
   {
