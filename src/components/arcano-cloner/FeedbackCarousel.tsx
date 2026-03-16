@@ -31,7 +31,7 @@ const feedbacks = [
   },
   {
     name: "Pedro Oliveira",
-    photo: "https://randomuser.me/api/portraits/men/22.jpg",
+    photo: feedbackPedro,
     text: "Ferramenta simples de usar e o resultado sai rápido. Recomendo pra quem trabalha com social media.",
   },
   {
