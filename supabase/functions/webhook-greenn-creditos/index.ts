@@ -379,36 +379,90 @@ async function sendArcanoClonnerEmail(
     return
   }
 
-  try {
-    const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
-    const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
+  // DEDUP CHECK
+  const dedupMinute = new Date().toISOString().slice(0, 16).replace(/[-T:]/g, '')
+  const dedupKey = `arcano_cloner_${email}|${dedupMinute}`
+  const trackingId = crypto.randomUUID()
 
-    if (!clientId || !clientSecret) {
-      console.log(`   ├─ [${requestId}] ⚠️ SendPulse não configurado`)
-      return
-    }
+  const { data: existingLog } = await supabase
+    .from('welcome_email_logs')
+    .select('id')
+    .eq('dedup_key', dedupKey)
+    .maybeSingle()
+  
+  if (existingLog) {
+    console.log(`   ├─ [${requestId}] ⏭️ Email Arcano Cloner duplicado bloqueado`)
+    return
+  }
 
-    const tokenResponse = await fetch("https://api.sendpulse.com/oauth/access_token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        grant_type: "client_credentials",
-        client_id: clientId,
-        client_secret: clientSecret
-      }),
+  // BLACKLIST CHECK
+  const { data: blacklisted } = await supabase
+    .from('blacklisted_emails')
+    .select('id')
+    .eq('email', email.toLowerCase())
+    .maybeSingle()
+  
+  if (blacklisted) {
+    console.log(`   ├─ [${requestId}] ⛔ Email blacklisted: ${email}`)
+    return
+  }
+
+  // INSERT log as pending (atomic dedup)
+  const { data: inserted, error: insertError } = await supabase
+    .from('welcome_email_logs')
+    .insert({
+      email, name, platform: 'creditos',
+      product_info: 'Arcano Cloner (+4.200 Créditos)',
+      status: 'pending', tracking_id: trackingId,
+      template_used: 'arcano_cloner', locale: 'pt', dedup_key: dedupKey
     })
+    .select('id')
+    .single()
+  
+  if (insertError?.code === '23505') {
+    console.log(`   ├─ [${requestId}] ⏭️ Email Arcano Cloner duplicado por constraint`)
+    return
+  }
+  if (insertError) {
+    console.log(`   ├─ [${requestId}] ❌ Erro ao inserir log: ${insertError.message}`)
+    return
+  }
+  
+  const logId = inserted.id
 
-    if (!tokenResponse.ok) {
-      console.log(`   ├─ [${requestId}] ❌ Falha ao obter token SendPulse`)
-      return
-    }
+  // 3 RETRIES with exponential backoff
+  const backoffDelays = [2000, 5000, 10000]
+  
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const clientId = Deno.env.get("SENDPULSE_CLIENT_ID")
+      const clientSecret = Deno.env.get("SENDPULSE_CLIENT_SECRET")
 
-    const { access_token } = await tokenResponse.json()
+      if (!clientId || !clientSecret) {
+        await supabase.from('welcome_email_logs').update({ status: 'failed', error_message: 'SendPulse não configurado' }).eq('id', logId)
+        return
+      }
 
-    const subject = `🎉 Seu Arcano Cloner está ativado! Comece a criar agora`
-    const appUrl = 'https://arcanoapp.voxvisual.com.br'
+      const tokenResponse = await fetch("https://api.sendpulse.com/oauth/access_token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          grant_type: "client_credentials",
+          client_id: clientId,
+          client_secret: clientSecret
+        }),
+      })
 
-    const arcanoHtml = `<!DOCTYPE html>
+      if (!tokenResponse.ok) {
+        throw new Error(`Falha ao obter token SendPulse: ${tokenResponse.status}`)
+      }
+
+      const { access_token } = await tokenResponse.json()
+
+      const subject = `🎉 Seu Arcano Cloner está ativado! Comece a criar agora`
+      const appUrl = 'https://arcanoapp.voxvisual.com.br'
+
+      const arcanoHtml = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
@@ -510,28 +564,48 @@ async function sendArcanoClonnerEmail(
 </body>
 </html>`
 
-    const emailResponse = await fetch("https://api.sendpulse.com/smtp/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${access_token}`
-      },
-      body: JSON.stringify({
-        email: {
-          html: btoa(unescape(encodeURIComponent(arcanoHtml))),
-          text: `Arcano Cloner ativado! Acesse em: ${appUrl}\nEmail: ${email}\nSenha temporária: ${email}\n+4.200 créditos vitalícios incluídos.`,
-          subject,
-          from: { name: 'Arcano App', email: 'contato@voxvisual.com.br' },
-          to: [{ email, name: name || "" }],
+      const emailResponse = await fetch("https://api.sendpulse.com/smtp/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${access_token}`
         },
-      }),
-    })
+        body: JSON.stringify({
+          email: {
+            html: btoa(unescape(encodeURIComponent(arcanoHtml))),
+            text: `Arcano Cloner ativado! Acesse em: ${appUrl}\nEmail: ${email}\nSenha temporária: ${email}\n+4.200 créditos vitalícios incluídos.`,
+            subject,
+            from: { name: 'Arcano App', email: 'contato@voxvisual.com.br' },
+            to: [{ email, name: name || "" }],
+          },
+        }),
+      })
 
-    const result = await emailResponse.json()
-    console.log(`   ├─ [${requestId}] ${result.result === true ? '✅ Email Arcano Cloner enviado' : '❌ Falha no email Arcano Cloner'}`)
-
-  } catch (error) {
-    console.log(`   ├─ [${requestId}] ❌ Erro email Arcano Cloner: ${error}`)
+      const result = await emailResponse.json()
+      
+      if (result.result === true) {
+        await supabase.from('welcome_email_logs').update({
+          status: 'sent', sent_at: new Date().toISOString()
+        }).eq('id', logId)
+        console.log(`   ├─ [${requestId}] ✅ Email Arcano Cloner enviado (tentativa ${attempt + 1})`)
+        return
+      }
+      
+      throw new Error(`SendPulse retornou erro: ${JSON.stringify(result)}`)
+    } catch (error) {
+      console.log(`   ├─ [${requestId}] ⚠️ Tentativa ${attempt + 1}/3 Arcano Cloner: ${error}`)
+      
+      if (attempt < 2) {
+        const delay = backoffDelays[attempt]
+        console.log(`   ├─ [${requestId}] ⏳ Retry em ${delay / 1000}s...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
+      } else {
+        await supabase.from('welcome_email_logs').update({
+          status: 'failed', error_message: `3 tentativas falharam: ${error}`
+        }).eq('id', logId)
+        console.log(`   ├─ [${requestId}] ❌ Email Arcano Cloner falhou após 3 tentativas`)
+      }
+    }
   }
 }
 

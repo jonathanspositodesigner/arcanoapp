@@ -741,11 +741,21 @@ async function processHotmartWebhook(
       if (shouldSendEmail) {
         console.log(`   ├─ 📧 Enviando email de boas-vindas...`)
         console.log(`   ├─ Tipo: ${isNewUser ? 'NOVO (com senha)' : 'ANTIGO (sem senha)'}`)
-        try {
-          // Passar transaction para deduplicação e isNewUser para decidir se mostra senha
-          await sendWelcomeEmail(supabase, email, name, productName, requestId, transaction, !isReturningCustomer)
-        } catch (emailError) {
-          console.log(`   ├─ ⚠️ Falha no email (acesso já liberado): ${emailError}`)
+        const hotmartBackoffDelays = [2000, 5000, 10000]
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            await sendWelcomeEmail(supabase, email, name, productName, requestId, transaction, !isReturningCustomer)
+            break // Success
+          } catch (emailError) {
+            console.log(`   ├─ ⚠️ Email tentativa ${attempt + 1}/3 falhou: ${emailError}`)
+            if (attempt < 2) {
+              const delay = hotmartBackoffDelays[attempt]
+              console.log(`   ├─ ⏳ Retry em ${delay / 1000}s...`)
+              await new Promise(resolve => setTimeout(resolve, delay))
+            } else {
+              console.log(`   ├─ ⚠️ Email falhou após 3 tentativas (acesso já liberado)`)
+            }
+          }
         }
       }
     }
