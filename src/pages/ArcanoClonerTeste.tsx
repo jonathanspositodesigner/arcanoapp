@@ -424,10 +424,21 @@ const ArcanoClonerTeste = () => {
       <LazySection>
         <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="fade">
           <div className="max-w-4xl mx-auto text-center mb-10">
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3">
-              Uma <span className="text-fuchsia-400">biblioteca</span> de referências completa!
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-2">
+              Gere sua imagem{" "}
+              <span className="text-fuchsia-400">ou copie o prompt</span>{" "}
+              direto no app
             </h2>
-            <p className="text-white/60 text-sm md:text-base">Centenas de modelos para você criar suas fotos</p>
+
+            <div className="flex flex-col items-center mt-8 mb-2">
+              <CountUp target={589} duration={2000} />
+              <p className="text-white/50 text-xs md:text-sm tracking-[0.2em] uppercase mt-1">Modelos Disponíveis</p>
+            </div>
+
+            <div className="inline-flex items-center gap-2 mt-4 px-4 py-1.5 rounded-full border border-white/10 bg-white/5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-white/70 text-xs uppercase tracking-wider">Atualizado todos os dias</span>
+            </div>
           </div>
 
           {/* Carrossel 1 - direita */}
