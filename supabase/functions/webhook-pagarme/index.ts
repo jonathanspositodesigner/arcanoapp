@@ -482,7 +482,7 @@ serve(async (req) => {
             transaction_id: idempotencyKey,
             status: 'subscription_canceled',
             email: null,
-            raw_payload: body,
+            payload: body,
           })
 
           console.log(`   ├─ ✅ Plano revogado → free (subscription canceled)`)
@@ -497,7 +497,7 @@ serve(async (req) => {
         transaction_id: idempotencyKey,
         status: 'order_not_found',
         email: null,
-        raw_payload: body,
+        payload: body,
       })
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
@@ -538,7 +538,7 @@ serve(async (req) => {
           status: 'skipped_race',
           email: order.user_email,
           product_name: product?.title,
-          raw_payload: body,
+          payload: body,
         })
         return new Response('OK', { status: 200, headers: corsHeaders })
       }
@@ -823,18 +823,22 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
-      // 6. Logar na webhook_logs
-      await supabase.from('webhook_logs').insert({
-        platform: 'pagarme',
-        event_type: eventType,
-        transaction_id: idempotencyKey,
-        status: 'paid',
-        email: email,
-        product_name: product.title,
-        amount: Number(order.amount),
-        payment_method: paymentMethod,
-        raw_payload: body,
-      })
+      // 6. Logar na webhook_logs (non-blocking to not prevent email sending)
+      try {
+        await supabase.from('webhook_logs').insert({
+          platform: 'pagarme',
+          event_type: eventType,
+          transaction_id: idempotencyKey,
+          status: 'paid',
+          email: email,
+          product_name: product.title,
+          amount: Number(order.amount),
+          payment_method: paymentMethod,
+          payload: body,
+        })
+      } catch (logErr: any) {
+        console.error(`   ├─ ⚠️ Erro ao logar webhook (não-crítico): ${logErr.message}`)
+      }
 
       // 7. Enviar email
       const ctaLink = product.pack_slug === 'upscaler-arcano' || product.type === 'credits'
@@ -1020,7 +1024,7 @@ serve(async (req) => {
           status: 'skipped_refund_race',
           email: order.user_email,
           product_name: product?.title,
-          raw_payload: body,
+          payload: body,
         })
       } else {
         // Proceed with revocation
@@ -1114,7 +1118,7 @@ serve(async (req) => {
           email: order.user_email,
           product_name: product.title,
           amount: Number(order.amount),
-          raw_payload: body,
+          payload: body,
         })
 
         console.log(`   ├─ ✅ Ordem marcada como refunded`)
@@ -1130,7 +1134,7 @@ serve(async (req) => {
         transaction_id: idempotencyKey,
         status: eventData?.status || 'ignored',
         email: order.user_email,
-        raw_payload: body,
+        payload: body,
       })
     }
 
