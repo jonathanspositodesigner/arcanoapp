@@ -346,14 +346,6 @@ const LandingPricingSection = () => {
         colorScheme="fuchsia"
       />
 
-      {/* Payment Method Modal */}
-      <PaymentMethodModal
-        open={showPaymentMethodModal}
-        onOpenChange={(v) => { if (!isProcessing) { setShowPaymentMethodModal(v); if (!v) setPreCheckoutSlug(null); } }}
-        onSelect={handlePaymentMethodSelected}
-        isProcessing={isProcessing}
-        colorScheme="purple"
-      />
     </AnimatedSection>
   );
 };
