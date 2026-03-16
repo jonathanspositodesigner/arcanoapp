@@ -317,6 +317,7 @@ const ArcanoClonerTeste = () => {
             <img src={clonerResult3} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
             <img src={clonerResult4} alt="Resultado Arcano Cloner" className="w-full rounded-xl" loading="lazy" />
           </div>
+        </div>
       </AnimatedSection>
       </LazySection>
 
