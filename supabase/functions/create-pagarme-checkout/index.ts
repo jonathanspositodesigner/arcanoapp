@@ -144,16 +144,18 @@ serve(async (req) => {
       return errorResponse('product_slug é obrigatório', 400, 'MISSING_FIELDS');
     }
 
-    // Cartão puro: email é opcional — usa placeholder para o Pagar.me coletar no checkout
+    // Cartão puro: não enviamos nome/email fictícios ao gateway
     let email: string
+    let customerEmail: string | null = null
     if (user_email) {
       email = user_email.toLowerCase().trim()
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return errorResponse('Email inválido', 400, 'INVALID_EMAIL');
       }
+      customerEmail = email
     } else if (isPureCreditCardCheckout) {
       email = `checkout-${crypto.randomUUID().slice(0, 8)}@temp.arcano`
-      console.log(`[${requestId}] 💳 Cartão puro sem email — usando placeholder: ${email}`)
+      console.log(`[${requestId}] 💳 Cartão puro sem email — sem pré-preenchimento de cliente no checkout`)
     } else {
       return errorResponse('user_email é obrigatório para este método', 400, 'MISSING_FIELDS');
     }
@@ -369,16 +371,20 @@ serve(async (req) => {
       acceptedPaymentMethods = ['pix', 'credit_card']
     }
 
-    // Cartão puro: customer mínimo obrigatório pela API Pagar.me, mas customer_editable=true
-    // para que o cliente preencha tudo no checkout hospedado
+    // Cartão puro: envia somente metadados não pessoais para obrigar preenchimento no checkout hospedado
     let customerObj: Record<string, unknown>
 
     if (isPureCreditCardCheckout) {
-      // Mínimo absoluto exigido pela API — será sobrescrito pelo cliente no checkout
+      const trimmedName = user_name?.trim()
+
       customerObj = {
-        name: 'Cliente',
-        email: email !== `checkout-${email.split('-')[1]}` ? email : `temp-${Date.now()}@checkout.arcano`,
         type: 'individual',
+        // Pagar.me exige name; usamos caractere vazio para evitar nome fictício
+        name: trimmedName || '\u3164',
+      }
+
+      if (customerEmail) {
+        customerObj.email = customerEmail
       }
     } else {
       const customerName = user_name?.trim() || email.split('@')[0]
