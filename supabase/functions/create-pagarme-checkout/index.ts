@@ -218,9 +218,11 @@ serve(async (req) => {
         amount: product.price,
         status: 'pending',
         asaas_customer_id: null,
-        utm_data: sanitizeUtmData(utm_data),
+        utm_data: isLightweight 
+          ? { ...(sanitizeUtmData(utm_data) || {}), race_fallback: true }
+          : sanitizeUtmData(utm_data),
         user_name: user_name?.trim() || null,
-        user_phone: phone.fullDigits,
+        user_phone: phone?.fullDigits || null,
         user_cpf: cleanCpf,
         user_address_line: user_address?.line_1 || null,
         user_address_zip: user_address?.zip_code || null,
