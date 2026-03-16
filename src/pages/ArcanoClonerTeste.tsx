@@ -398,11 +398,9 @@ const ArcanoClonerTeste = () => {
                     <span className="text-red-400 text-lg">✕</span>
                     <span className="text-white/40 text-xs leading-tight">{row.other}</span>
                   </div>
-                  <div className="px-3 py-4 flex items-center justify-center">
-                    <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-3 py-3 text-center w-full">
-                      <span className="text-emerald-400 text-lg block mb-1">✓</span>
-                      <span className="text-emerald-300 text-xs font-semibold leading-tight">{row.cloner}</span>
-                    </div>
+                  <div className="px-4 py-5 flex flex-col items-center justify-center text-center gap-1">
+                    <span className="text-emerald-400 text-lg">✓</span>
+                    <span className="text-emerald-300 text-xs font-semibold leading-tight">{row.cloner}</span>
                   </div>
                 </div>
               ))}
