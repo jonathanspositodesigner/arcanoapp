@@ -220,36 +220,54 @@ serve(async (req) => {
       return errorResponse('Produto não encontrado', 404, 'PRODUCT_NOT_FOUND');
     }
 
-    // 2. Criar ordem interna
-    const { data: order, error: orderError } = await supabase
+    // 2. Dedup: reuse recent pending order for same email+product (prevents double-click / fallback duplicates)
+    let order: any = null
+    const { data: existingOrder } = await supabase
       .from('asaas_orders')
-      .insert({
-        user_email: email,
-        product_id: product.id,
-        amount: product.price,
-        status: 'pending',
-        asaas_customer_id: null,
-        utm_data: isLightweight 
-          ? { ...(sanitizeUtmData(utm_data) || {}), race_fallback: true }
-          : sanitizeUtmData(utm_data),
-        user_name: user_name?.trim() || null,
-        user_phone: phone?.fullDigits || null,
-        user_cpf: cleanCpf,
-        user_address_line: user_address?.line_1 || null,
-        user_address_zip: user_address?.zip_code || null,
-        user_address_city: user_address?.city || null,
-        user_address_state: user_address?.state || null,
-        user_address_country: user_address?.country || 'BR',
-        meta_fbp: fbp || null,
-        meta_fbc: fbc || null,
-        meta_user_agent: clientUserAgent || null,
-      })
       .select('id')
-      .single()
+      .eq('user_email', email)
+      .eq('product_id', product.id)
+      .eq('status', 'pending')
+      .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString())
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
 
-    if (orderError || !order) {
-      console.error(`[${requestId}] Erro ao criar ordem:`, orderError)
-      return errorResponse('Erro ao criar ordem', 500, 'ORDER_CREATE_FAILED');
+    if (existingOrder) {
+      order = existingOrder
+      console.log(`[${requestId}] ♻️ Reutilizando ordem pendente: ${order.id} | ${email}`)
+    } else {
+      const { data: newOrder, error: orderError } = await supabase
+        .from('asaas_orders')
+        .insert({
+          user_email: email,
+          product_id: product.id,
+          amount: product.price,
+          status: 'pending',
+          asaas_customer_id: null,
+          utm_data: isLightweight 
+            ? { ...(sanitizeUtmData(utm_data) || {}), race_fallback: true }
+            : sanitizeUtmData(utm_data),
+          user_name: user_name?.trim() || null,
+          user_phone: phone?.fullDigits || null,
+          user_cpf: cleanCpf,
+          user_address_line: user_address?.line_1 || null,
+          user_address_zip: user_address?.zip_code || null,
+          user_address_city: user_address?.city || null,
+          user_address_state: user_address?.state || null,
+          user_address_country: user_address?.country || 'BR',
+          meta_fbp: fbp || null,
+          meta_fbc: fbc || null,
+          meta_user_agent: clientUserAgent || null,
+        })
+        .select('id')
+        .single()
+
+      if (orderError || !newOrder) {
+        console.error(`[${requestId}] Erro ao criar ordem:`, orderError)
+        return errorResponse('Erro ao criar ordem', 500, 'ORDER_CREATE_FAILED');
+      }
+      order = newOrder
     }
 
     orderId = order.id;
