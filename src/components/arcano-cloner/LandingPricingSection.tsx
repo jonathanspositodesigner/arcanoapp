@@ -185,6 +185,17 @@ const LandingPricingSection = () => {
                   </Badge>
                 )}
 
+                {/* Plan Icon */}
+                <div className="flex justify-center mb-2">
+                  {plan.bestSeller ? (
+                    <Crown className="w-7 h-7 text-lime-400" />
+                  ) : plan.hasCountdown ? (
+                    <Flame className="w-7 h-7 text-fuchsia-500" />
+                  ) : (
+                    <Rocket className="w-7 h-7 text-white/60" />
+                  )}
+                </div>
+
                 <div className="text-center mb-3 min-h-[32px] flex items-center justify-center">
                   <h3 className="text-base font-bold text-white">{plan.name}</h3>
                 </div>
