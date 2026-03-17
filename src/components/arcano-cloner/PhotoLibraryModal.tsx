@@ -56,18 +56,9 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const { searchTerm, setSearchTerm, debouncedSearch, expandedTerms } = useSmartSearch();
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Debounce search term
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
 
   const fetchAllPhotos = useCallback(async () => {
     setIsLoading(true);
