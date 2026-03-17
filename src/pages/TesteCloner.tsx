@@ -244,6 +244,12 @@ const TesteCloner = () => {
           <p className="text-white/40 text-xs">© 2026 Arcano App. Todos os direitos reservados.</p>
         </div>
       </footer>
+
+      <ArcanoClonerAuthModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
     </div>
   );
 };
