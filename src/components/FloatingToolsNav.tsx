@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Sparkles, BookOpen, Image, Video } from "lucide-react";
+import { Sparkles, BookOpen, Image, Video, FolderOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -7,9 +7,9 @@ const navItems = [
   { icon: BookOpen, label: "Prompts", path: "/biblioteca-prompts" },
   { icon: Image, label: "Gerar Imagem", path: "/gerar-imagem" },
   { icon: Video, label: "Gerar Vídeo", path: "/gerar-video" },
+  { icon: FolderOpen, label: "Minhas Criações", path: "/credit-history" },
 ];
 
-// Pages where the nav should NOT appear (actual AI tool interfaces)
 const excludedPaths = [
   "/upscaler-arcano-tool",
   "/remover-fundo-tool",
@@ -25,30 +25,32 @@ const excludedPaths = [
   "/ferramenta-ia-artes",
 ];
 
+const showOnPaths = [
+  "/ferramentas-ia-aplicativo",
+  "/biblioteca-prompts",
+  "/biblioteca-artes",
+  "/promptverso",
+  "/gerar-imagem",
+  "/gerar-video",
+  "/planos",
+  "/contribuir",
+  "/credit-history",
+];
+
 export function FloatingToolsNav() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Hide on excluded tool pages
   const isExcluded = excludedPaths.some(p => location.pathname.startsWith(p));
   if (isExcluded) return null;
 
-  // Only show on relevant pages
-  const showOnPaths = [
-    "/ferramentas-ia-aplicativo",
-    "/biblioteca-prompts",
-    "/biblioteca-artes",
-    "/promptverso",
-    "/gerar-imagem",
-    "/gerar-video",
-    "/planos",
-    "/contribuir",
-  ];
   const shouldShow = showOnPaths.some(p => location.pathname.startsWith(p));
   if (!shouldShow) return null;
 
   return (
-    <div className="fixed right-3 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-1.5 bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl p-1.5 shadow-lg shadow-black/20">
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-2 py-1.5 rounded-2xl shadow-lg shadow-primary/20 border border-primary/20"
+      style={{ background: 'linear-gradient(135deg, hsl(263 56% 20% / 0.95), hsl(273 50% 28% / 0.95))' }}
+    >
       {navItems.map((item) => {
         const isActive = location.pathname === item.path;
         return (
@@ -56,18 +58,14 @@ export function FloatingToolsNav() {
             key={item.path}
             onClick={() => navigate(item.path)}
             className={cn(
-              "relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 group",
+              "relative flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-200 min-w-[52px]",
               isActive
-                ? "bg-primary text-primary-foreground shadow-md shadow-primary/30"
-                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                ? "bg-primary text-primary-foreground shadow-md shadow-primary/40"
+                : "text-white/60 hover:text-white hover:bg-white/10"
             )}
-            title={item.label}
           >
-            <item.icon className="h-4.5 w-4.5" />
-            {/* Tooltip */}
-            <span className="absolute right-full mr-2.5 px-2.5 py-1 text-xs font-medium bg-popover text-popover-foreground border border-border rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity shadow-md">
-              {item.label}
-            </span>
+            <item.icon className="h-[18px] w-[18px]" />
+            <span className="text-[9px] font-medium leading-tight">{item.label}</span>
           </button>
         );
       })}
