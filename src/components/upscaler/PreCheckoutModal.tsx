@@ -300,11 +300,12 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
       
 
-      // Cartão: payload mínimo — gateway coleta todos os dados
+      // Cartão: envia só o nome que o cliente digitou — gateway coleta o resto
       const fullPayload = paymentMethod === 'CREDIT_CARD'
         ? {
             product_slug: productSlug,
             billing_type: 'CREDIT_CARD' as const,
+            user_name: name.trim(),
             utm_data: utmData,
             fbp,
             fbc,
