@@ -47,6 +47,13 @@ const CountUp = ({ target, duration = 2000 }: { target: number; duration?: numbe
 };
 
 const TesteCloner = () => {
+  const [showModal, setShowModal] = useState(false);
+
+  const handleAuthSuccess = () => {
+    setShowModal(false);
+    window.location.href = "https://arcanoapp.voxvisual.com.br/ferramentas-ia-aplicativo";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] font-space-grotesk">
 
