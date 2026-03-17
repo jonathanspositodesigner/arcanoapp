@@ -289,16 +289,15 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     try {
       const utmData = getSanitizedUtms();
       const { fbp, fbc } = getMetaCookies();
-      const normalizedEmail = email.trim().toLowerCase();
+      const normalizedEmail = (email || userEmail || '').trim().toLowerCase();
 
-      
-
-      // Cartão: envia só o nome que o cliente digitou — gateway coleta o resto
+      // Cartão: envia nome + email do modal (gateway coleta o resto)
       const fullPayload = paymentMethod === 'CREDIT_CARD'
         ? {
             product_slug: productSlug,
             billing_type: 'CREDIT_CARD' as const,
             user_name: name.trim(),
+            user_email: normalizedEmail,
             utm_data: utmData,
             fbp,
             fbc,

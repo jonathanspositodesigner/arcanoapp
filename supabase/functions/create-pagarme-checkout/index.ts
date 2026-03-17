@@ -383,10 +383,11 @@ serve(async (req) => {
     let customerObj: Record<string, unknown>
 
     if (isPureCreditCardCheckout) {
-      // Cartão puro: usa o nome que o cliente digitou no modal
-      const creditCardName = user_name?.trim() || 'Cliente'
+      // Cartão puro: usa nome + email enviados no modal
+      const creditCardName = user_name?.trim() || ''
       customerObj = {
         name: creditCardName,
+        email: email,
         type: 'individual',
       }
     } else {
