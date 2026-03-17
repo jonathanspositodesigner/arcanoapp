@@ -171,7 +171,7 @@ serve(async (req) => {
       // Minimal: try to parse phone but don't fail if missing
       phone = normalizePhone(user_phone);
       cleanCpf = user_cpf ? user_cpf.replace(/\D/g, '') : null;
-      console.log(`[${requestId}] ⚡ Modo mínimo ativo (${isPureCreditCardCheckout ? 'cartão puro' : 'lightweight'}) - validações relaxadas`)
+      console.log(`[${requestId}] ⚡ Modo mínimo ativo (lightweight) - validações relaxadas`)
     } else {
       // Full mode: validate everything
       phone = normalizePhone(user_phone);
