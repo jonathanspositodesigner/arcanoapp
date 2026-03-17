@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import imageCompression from 'browser-image-compression';
+import { useSmartSearch, buildSmartSearchFilter } from '@/hooks/useSmartSearch';
 
 interface FlyerLibraryModalProps {
   isOpen: boolean;
