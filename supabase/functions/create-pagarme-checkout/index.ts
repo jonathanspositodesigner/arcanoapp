@@ -144,21 +144,23 @@ serve(async (req) => {
       return errorResponse('product_slug é obrigatório', 400, 'MISSING_FIELDS');
     }
 
-    // Cartão puro: não enviamos nome/email fictícios ao gateway
+    // Email obrigatório para criação de checkout
     let email: string | null = null
-    let customerEmail: string | null = null
-    if (user_email) {
-      const trimmedEmail = user_email.toLowerCase().trim()
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-        return errorResponse('Email inválido', 400, 'INVALID_EMAIL');
-      }
-      email = trimmedEmail
-      customerEmail = trimmedEmail
-    } else if (isPureCreditCardCheckout) {
-      // Cartão puro: ZERO dados fictícios — gateway coleta tudo
-      console.log(`[${requestId}] 💳 Cartão puro sem email — nenhum dado fictício enviado`)
-    } else {
+    if (typeof user_email !== 'string' || !user_email.trim()) {
       return errorResponse('user_email é obrigatório para este método', 400, 'MISSING_FIELDS');
+    }
+
+    const trimmedEmail = user_email.toLowerCase().trim()
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      return errorResponse('Email inválido', 400, 'INVALID_EMAIL');
+    }
+    email = trimmedEmail
+
+    if (isPureCreditCardCheckout) {
+      const creditCardName = user_name?.trim() || ''
+      if (creditCardName.length < 3) {
+        return errorResponse('user_name é obrigatório para cartão', 400, 'MISSING_FIELDS');
+      }
     }
 
     // Modo mínimo: validações relaxadas para checkout puro no cartão/fallback lightweight
@@ -381,10 +383,11 @@ serve(async (req) => {
     let customerObj: Record<string, unknown>
 
     if (isPureCreditCardCheckout) {
-      // Cartão puro: usa o nome que o cliente digitou no modal
-      const creditCardName = user_name?.trim() || 'Cliente'
+      // Cartão puro: usa nome + email enviados no modal
+      const creditCardName = user_name?.trim() || ''
       customerObj = {
         name: creditCardName,
+        email: email,
         type: 'individual',
       }
     } else {
