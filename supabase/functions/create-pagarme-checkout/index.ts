@@ -461,7 +461,7 @@ serve(async (req) => {
         order_id: order.id,
         request_id: requestId,
         ...(isLightweightFallback ? { lightweight: true } : {}),
-        ...(isPureCreditCardCheckout ? { pure_credit_card_checkout: true } : {})
+        ...(billing_type === 'CREDIT_CARD' ? { pure_credit_card_checkout: true } : {})
       }
     }
 
