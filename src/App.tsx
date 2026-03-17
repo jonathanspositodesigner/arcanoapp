@@ -349,6 +349,7 @@ const AppContent = () => {
            <Route path="/gerar-video" element={<GerarVideoTool />} />
             <Route path="/planos-arcanocloner" element={<PlanosArcanoCloner />} />
             <Route path="/arcanocloner-teste" element={<ArcanoClonerTeste />} />
+            <Route path="/testecloner" element={<TesteCloner />} />
            <Route path="/obrigado-arcanocloner" element={<ObrigadoArcanoCloner />} />
           
            <Route path="/prevenda-pack4" element={<PrevendaPack4 />} />
