@@ -34,15 +34,9 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const { searchTerm, setSearchTerm, expandedTerms } = useSmartSearch();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
 
   const fetchFlyers = useCallback(async (pageNum: number, reset = false) => {
     setIsLoading(true);
