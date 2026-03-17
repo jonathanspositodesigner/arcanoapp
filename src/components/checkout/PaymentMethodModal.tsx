@@ -38,8 +38,8 @@ const PaymentMethodModal = ({
   const spinnerColor = isOrange ? 'text-[#EF672C]' : 'text-purple-400';
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!isProcessing) onOpenChange(v); }}>
-      <DialogContent className={`sm:max-w-md ${modalBg} ${borderAccent}`}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className={`sm:max-w-md max-h-[90dvh] overflow-y-auto ${modalBg} ${borderAccent}`}>
         {isProcessing ? (
           <div className="flex flex-col items-center justify-center py-12 gap-4">
             <div className="relative">

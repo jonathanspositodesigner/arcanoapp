@@ -367,13 +367,17 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
   return (
     <>
-    <div className="fixed inset-0 z-50 overflow-y-auto p-2 md:p-4 bg-black/80 backdrop-blur-sm flex items-start justify-center py-8" onClick={loading ? undefined : onClose}>
-      <div
-        className={`relative w-full max-w-md bg-gradient-to-br ${modalBg} border ${accentBorderLight} rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-2xl ${modalShadow} my-auto`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Close - disabled while loading */}
-        <button onClick={loading ? undefined : onClose} disabled={loading} className={`absolute top-3 right-3 md:top-4 md:right-4 p-1.5 md:p-2 text-white/50 hover:text-white transition-colors z-10 ${loading ? 'opacity-30 cursor-not-allowed' : ''}`}>
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] bg-black/80 backdrop-blur-sm p-2 md:p-4"
+      onClick={onClose}
+    >
+      <div className="min-h-full flex items-start md:items-center justify-center py-4 md:py-8">
+        <div
+          className={`relative w-full max-w-md bg-gradient-to-br ${modalBg} border ${accentBorderLight} rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-2xl ${modalShadow}`}
+          onClick={(e) => e.stopPropagation()}
+        >
+        {/* Close */}
+        <button onClick={onClose} className="absolute top-3 right-3 md:top-4 md:right-4 p-1.5 md:p-2 text-white/50 hover:text-white transition-colors z-10">
           <X className="h-4 w-4 md:h-5 md:w-5" />
         </button>
 
@@ -609,6 +613,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
             </div>
           </>
         )}
+        </div>
       </div>
     </div>
 
