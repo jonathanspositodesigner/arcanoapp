@@ -201,6 +201,7 @@ const AppContent = () => {
       <Sonner />
       <ForceUpdateModal />
        
+      <FloatingToolsNav />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           <Route path="/" element={<Index />} />
