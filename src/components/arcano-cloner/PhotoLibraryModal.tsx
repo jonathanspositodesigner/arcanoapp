@@ -105,7 +105,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [filter, debouncedSearch]);
+  }, [filter, expandedTerms]);
 
   // Reset and fetch when modal opens, filter changes, or search changes
   useEffect(() => {
