@@ -148,6 +148,7 @@ const RemoverFundoTool = lazy(() => import("./pages/RemoverFundoTool"));
 const PlanosArcanoCloner = lazy(() => import("./pages/PlanosArcanoCloner"));
 const ObrigadoArcanoCloner = lazy(() => import("./pages/ObrigadoArcanoCloner"));
 const ArcanoClonerTeste = lazy(() => import("./pages/ArcanoClonerTeste"));
+const TesteCloner = lazy(() => import("./pages/TesteCloner"));
 const PrevendaPack4 = lazy(() => import("./pages/PrevendaPack4"));
 const PackAgendas = lazy(() => import("./pages/PackAgendas"));
 import { useInstallTracker } from "./hooks/useInstallTracker";
