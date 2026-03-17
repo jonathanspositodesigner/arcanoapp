@@ -84,6 +84,7 @@ const BibliotecaPrompts = () => {
   const [showExpiringModal, setShowExpiringModal] = useState(false);
 
   const { allPrompts, getFilteredPrompts } = useOptimizedPrompts();
+  const { searchTerm, setSearchTerm, expandedTerms, isSearching } = useSmartSearch();
 
   useEffect(() => {
     const itemId = searchParams.get("item");
