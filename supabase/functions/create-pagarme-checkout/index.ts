@@ -381,9 +381,10 @@ serve(async (req) => {
     let customerObj: Record<string, unknown>
 
     if (isPureCreditCardCheckout) {
-      // Cartão puro: nome placeholder mínimo exigido pela API, gateway permite edição
+      // Cartão puro: usa o nome que o cliente digitou no modal
+      const creditCardName = user_name?.trim() || 'Cliente'
       customerObj = {
-        name: 'Cliente',
+        name: creditCardName,
         type: 'individual',
       }
     } else {

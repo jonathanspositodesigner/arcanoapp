@@ -502,22 +502,18 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
             )}
 
             <div className="space-y-2.5 md:space-y-4">
-              {paymentMethod === 'PIX' && (
-                <>
-                  {/* Nome */}
-                  <div>
-                    <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Nome completo</label>
-                    <input
-                      type="text"
-                      placeholder="Seu nome completo"
-                      value={name}
-                      onChange={(e) => { setName(e.target.value); setNameError(''); }}
-                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
-                    />
-                    {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
-                  </div>
-                </>
-              )}
+              {/* Nome — exibido para PIX e Cartão */}
+              <div>
+                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Nome completo</label>
+                <input
+                  type="text"
+                  placeholder="Seu nome completo"
+                  value={name}
+                  onChange={(e) => { setName(e.target.value); setNameError(''); }}
+                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                />
+                {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
+              </div>
 
               {/* Email */}
               <div>
