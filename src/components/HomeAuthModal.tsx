@@ -59,8 +59,8 @@ const HomeAuthModal = ({ open, onClose, onAuthSuccess, onSignupStart, onSignupEn
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden">
-        <div className="p-6 pt-8">
+      <DialogContent className="sm:max-w-md w-[calc(100%-40px)] mx-auto p-0 gap-0 overflow-hidden rounded-xl">
+        <div className="p-5 sm:p-6 pt-7 sm:pt-8">
           {signupSuccess ? (
             <div className="text-center py-6">
               <div className="flex justify-center mb-4">
