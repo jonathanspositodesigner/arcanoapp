@@ -29,7 +29,7 @@ const isVideoUrl = (url: string) => {
   return videoExtensions.some(ext => url.toLowerCase().includes(ext));
 };
 
-const ITEMS_PER_PAGE = 16;
+const ITEMS_PER_PAGE = 30;
 
 // Category slug conversion functions
 const categoryToSlug = (category: string): string => {
