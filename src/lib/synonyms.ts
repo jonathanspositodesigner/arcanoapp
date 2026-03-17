@@ -195,17 +195,21 @@ for (const group of SYNONYM_GROUPS) {
 
 /**
  * Given a single word, returns all its synonyms (including itself).
+ * Looks up both accented and unaccented versions.
  */
 export function getSynonyms(word: string): string[] {
   const normalized = word.toLowerCase().trim();
   if (!normalized) return [];
-  const group = synonymMap.get(normalized);
+  
+  // Try exact match first, then accent-stripped
+  const group = synonymMap.get(normalized) || synonymMap.get(removeAccents(normalized));
   return group ? Array.from(group) : [normalized];
 }
 
 /**
  * Given a search string (possibly multiple words), expands each word
  * with its synonyms and returns a flat deduplicated list.
+ * Both accented and unaccented variants are included for every term.
  */
 export function expandSearchTerms(search: string): string[] {
   const words = search
@@ -219,8 +223,14 @@ export function expandSearchTerms(search: string): string[] {
   const allTerms = new Set<string>();
 
   for (const word of words) {
+    // Add the original word and its accent-stripped version
+    allTerms.add(word);
+    allTerms.add(removeAccents(word));
+    
+    // Add all synonyms (which already include accent-stripped variants)
     for (const synonym of getSynonyms(word)) {
       allTerms.add(synonym);
+      allTerms.add(removeAccents(synonym));
     }
   }
 
