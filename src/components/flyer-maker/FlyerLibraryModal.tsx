@@ -76,7 +76,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
       setHasMore(true);
       fetchFlyers(0, true);
     }
-  }, [isOpen, debouncedSearch, fetchFlyers]);
+  }, [isOpen, expandedTerms, fetchFlyers]);
 
   const handleLoadMore = () => {
     const nextPage = page + 1;

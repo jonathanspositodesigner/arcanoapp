@@ -114,7 +114,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
       setAllPhotos([]);
       fetchAllPhotos();
     }
-  }, [isOpen, filter, debouncedSearch, fetchAllPhotos]);
+  }, [isOpen, filter, expandedTerms, fetchAllPhotos]);
 
   // Derived: visible photos (client-side pagination)
   const photos = allPhotos.slice(0, visibleCount);
