@@ -135,10 +135,9 @@ serve(async (req) => {
   try {
     const { product_slug, user_email, user_phone, user_name, user_cpf, billing_type, utm_data, user_address, fbp, fbc, lightweight } = await req.json()
     const clientUserAgent = req.headers.get('user-agent') || null
-    const isPureCreditCardCheckout = billing_type === 'CREDIT_CARD'
     const isLightweightFallback = lightweight === true
-    const useMinimalValidation = isLightweightFallback || isPureCreditCardCheckout
-    const shouldPersistPersonalData = !isPureCreditCardCheckout
+    const useMinimalValidation = isLightweightFallback
+    const shouldPersistPersonalData = true
 
     if (!product_slug) {
       return errorResponse('product_slug é obrigatório', 400, 'MISSING_FIELDS');
@@ -156,7 +155,8 @@ serve(async (req) => {
     }
     email = trimmedEmail
 
-    if (isPureCreditCardCheckout) {
+    // Nome obrigatório para todos os métodos
+    if (billing_type === 'CREDIT_CARD') {
       const creditCardName = user_name?.trim() || ''
       if (creditCardName.length < 3) {
         return errorResponse('user_name é obrigatório para cartão', 400, 'MISSING_FIELDS');
@@ -379,46 +379,34 @@ serve(async (req) => {
       acceptedPaymentMethods = ['pix', 'credit_card']
     }
 
-    // Cartão puro: envia somente metadados não pessoais para obrigar preenchimento no checkout hospedado
-    let customerObj: Record<string, unknown>
+    // Customer completo para todos os métodos (máxima aprovação antifraude)
+    const customerName = user_name?.trim() || email.split('@')[0]
+    const customerObj: Record<string, unknown> = {
+      name: customerName,
+      email: email,
+      type: 'individual',
+    }
 
-    if (isPureCreditCardCheckout) {
-      // Cartão puro: usa nome + email enviados no modal
-      const creditCardName = user_name?.trim() || ''
-      customerObj = {
-        name: creditCardName,
-        email: email,
-        type: 'individual',
-      }
-    } else {
-      const customerName = user_name?.trim() || email.split('@')[0]
-      customerObj = {
-        name: customerName,
-        email: email,
-        type: 'individual',
-      }
-
-      if (cleanCpf) {
-        customerObj.document = cleanCpf
-        customerObj.document_type = 'CPF'
-      }
-      if (phone) {
-        customerObj.phones = {
-          mobile_phone: {
-            country_code: '55',
-            area_code: phone.areaCode,
-            number: phone.phoneNumber
-          }
+    if (cleanCpf) {
+      customerObj.document = cleanCpf
+      customerObj.document_type = 'CPF'
+    }
+    if (phone) {
+      customerObj.phones = {
+        mobile_phone: {
+          country_code: '55',
+          area_code: phone.areaCode,
+          number: phone.phoneNumber
         }
       }
-      if (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) {
-        customerObj.address = {
-          line_1: user_address.line_1,
-          zip_code: user_address.zip_code.replace(/\D/g, ''),
-          city: user_address.city,
-          state: user_address.state,
-          country: user_address.country || 'BR'
-        }
+    }
+    if (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) {
+      customerObj.address = {
+        line_1: user_address.line_1,
+        zip_code: user_address.zip_code.replace(/\D/g, ''),
+        city: user_address.city,
+        state: user_address.state,
+        country: user_address.country || 'BR'
       }
     }
 
@@ -443,7 +431,7 @@ serve(async (req) => {
             accepted_payment_methods: acceptedPaymentMethods,
             success_url: `https://arcanoapp.voxvisual.com.br/sucesso-compra`,
             // Modo mínimo/cartão puro: gateway coleta dados direto no checkout hospedado
-            customer_editable: useMinimalValidation,
+            customer_editable: true,
             billing_address_editable: true,
             skip_checkout_success_page: billing_type === 'CREDIT_CARD',
             ...(!useMinimalValidation && (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) ? {

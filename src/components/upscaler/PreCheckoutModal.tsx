@@ -193,24 +193,23 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       }
     }
 
-    if (paymentMethod !== 'CREDIT_CARD') {
-      const phoneDigits = phone.replace(/\D/g, '');
-      if (!phoneDigits) {
-        setPhoneError('Digite seu celular');
-        valid = false;
-      } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
-        setPhoneError('Celular inválido (DDD + número)');
-        valid = false;
-      }
+    // CPF e celular obrigatórios para todos os métodos (antifraude)
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (!phoneDigits) {
+      setPhoneError('Digite seu celular');
+      valid = false;
+    } else if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+      setPhoneError('Celular inválido (DDD + número)');
+      valid = false;
+    }
 
-      const cpfDigits = cpf.replace(/\D/g, '');
-      if (!cpfDigits) {
-        setCpfError('Digite seu CPF');
-        valid = false;
-      } else if (!validateCPF(cpfDigits)) {
-        setCpfError('CPF inválido');
-        valid = false;
-      }
+    const cpfDigits = cpf.replace(/\D/g, '');
+    if (!cpfDigits) {
+      setCpfError('Digite seu CPF');
+      valid = false;
+    } else if (!validateCPF(cpfDigits)) {
+      setCpfError('CPF inválido');
+      valid = false;
     }
 
     return valid;
@@ -291,28 +290,18 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       const { fbp, fbc } = getMetaCookies();
       const normalizedEmail = (email || userEmail || '').trim().toLowerCase();
 
-      // Cartão: envia nome + email do modal (gateway coleta o resto)
-      const fullPayload = paymentMethod === 'CREDIT_CARD'
-        ? {
-            product_slug: productSlug,
-            billing_type: 'CREDIT_CARD' as const,
-            user_name: name.trim(),
-            user_email: normalizedEmail,
-            utm_data: utmData,
-            fbp,
-            fbc,
-          }
-        : {
-            product_slug: productSlug,
-            user_email: normalizedEmail,
-            user_phone: phone.replace(/\D/g, ''),
-            user_name: name.trim(),
-            user_cpf: cpf.replace(/\D/g, ''),
-            billing_type: paymentMethod,
-            utm_data: utmData,
-            fbp,
-            fbc,
-          };
+      // Envia dados completos para todos os métodos (antifraude)
+      const fullPayload = {
+        product_slug: productSlug,
+        user_email: normalizedEmail,
+        user_phone: phone.replace(/\D/g, ''),
+        user_name: name.trim(),
+        user_cpf: cpf.replace(/\D/g, ''),
+        billing_type: paymentMethod,
+        utm_data: utmData,
+        fbp,
+        fbc,
+      };
 
       // PIX: tenta full primeiro, fallback lightweight se necessário
       console.log('[PreCheckoutModal] Chamando checkout full...');
@@ -536,37 +525,33 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                 </div>
               )}
 
-              {paymentMethod === 'PIX' && (
-                <>
-                  {/* Celular */}
-                  <div>
-                    <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Celular (com DDD)</label>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      placeholder="(11) 99999-9999"
-                      value={phone}
-                      onChange={(e) => { setPhone(formatPhone(e.target.value)); setPhoneError(''); }}
-                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
-                    />
-                    {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
-                  </div>
+              {/* Celular */}
+              <div>
+                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Celular (com DDD)</label>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="(11) 99999-9999"
+                  value={phone}
+                  onChange={(e) => { setPhone(formatPhone(e.target.value)); setPhoneError(''); }}
+                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                />
+                {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
+              </div>
 
-                  {/* CPF */}
-                  <div>
-                    <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">CPF</label>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      placeholder="000.000.000-00"
-                      value={cpf}
-                      onChange={(e) => { setCpf(formatCpf(e.target.value)); setCpfError(''); }}
-                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
-                    />
-                    {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
-                  </div>
-                </>
-              )}
+              {/* CPF */}
+              <div>
+                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">CPF</label>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="000.000.000-00"
+                  value={cpf}
+                  onChange={(e) => { setCpf(formatCpf(e.target.value)); setCpfError(''); }}
+                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                />
+                {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
+              </div>
 
               {/* Payment Method */}
               <div>

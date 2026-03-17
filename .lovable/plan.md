@@ -1,39 +1,88 @@
+# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
+## Resumo
+Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
 
-## Diagnostico Completo do Antifraude
+## O que foi feito
 
-### O que descobri analisando os dados reais
+### 1. Tabela `subscription_billing_reminders` (migration)
+- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
+- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
+- Campo `checkout_url` para evitar checkouts duplicados
+- Constraint UNIQUE em (subscription_id, day_offset, due_date)
 
-Analisei todos os webhooks de antifraude dos ultimos 7 dias:
+### 2. Edge Function `process-billing-reminders`
+- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
+- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
+- Para cada assinatura, verifica:
+  - Se já enviou email para esse `day_offset`
+  - Se a sequência foi parada (pagou ou descadastrou)
+  - Se o email está na blacklist
+  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
+- Gera checkout Pagar.me somente PIX com validade de 3 dias
+- Monta HTML personalizado com dados reais do plano
+- Envia via SendPulse SMTP API
+- Registra na tabela de controle
 
-- **9 transacoes reprovadas** pelo antifraude - TODAS do mesmo CPF (118.122.966-90) e mesmo cartao (****8341)
-- **7 transacoes aprovadas** pelo antifraude - de clientes reais diferentes (merielenvieira02, cyellycosta, felipecavalcanti, labiberangel, zdmilani)
+### 3. Mapeamento de benefícios por plano
+- Starter: 1.800 créditos, 5 prompts/dia
+- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
+- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
+- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
 
-O antifraude **esta funcionando normalmente para clientes reais**. O seu cartao esta sendo reprovado porque:
-1. Mesmo cartao usado com emails diferentes (jonathandesigner1993, momentus.loja, yasmine-bernadini@tuamaeaquelaursa.com, clara-pino@tuamaeaquelaursa.com)
-2. Multiplas tentativas rapidas com o mesmo cartao
-3. O machine learning do Pagar.me aprendeu esse padrao como suspeito
+### 4. Templates dos 6 emails
+- Dia 0: Lembrete leve ("Seu plano vence hoje")
+- Dia 1: Reforço pendência ("Pagamento ainda pendente")
+- Dia 2: Dor da perda ("Risco de perda de acesso")
+- Dia 3: Prejuízo prático ("O custo de não renovar")
+- Dia 4: FOMO ("Não fique para trás")
+- Dia 5: Último aviso ("Último aviso: regularize hoje")
+- Todos com link de descadastro no rodapé
 
-### O que a documentacao do Pagar.me exige
+### 5. Cron job
+- pg_cron agendado: `0 12 * * *` (09:00 BRT)
+- Chama a Edge Function automaticamente
 
-A doc oficial diz que para maxima aprovacao no antifraude, o pedido **deve conter**: `name`, `email`, `phones`, `document` (CPF), `type`, `items`, `address` ou `billing_address`.
+## Detecção de pagamento (para de enviar)
+- `planos2_subscriptions.expires_at` estendido para data futura
+- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
+- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
 
-Hoje no modo cartao, voce so envia `name`, `email` e `type`. O restante e coletado na pagina hospedada. Isso funciona, mas enviar os dados pre-preenchidos da mais score positivo pro antifraude.
+# Auditoria Completa de Emails — Robustez Unificada (CONCLUÍDA)
 
-### Plano de implementacao
+## O que foi feito
 
-**1. Frontend - `PreCheckoutModal.tsx`**
-- Mostrar campos de **CPF** e **Celular** tambem quando o metodo for CREDIT_CARD (hoje so aparecem no PIX)
-- Validar CPF e celular para cartao tambem
+### Padrão unificado aplicado em todos os 6 webhooks:
 
-**2. Edge Function - `create-pagarme-checkout/index.ts`**
-- Quando for cartao, enviar o objeto `customer` completo com: `name`, `email`, `document`, `document_type`, `phones.mobile_phone`
-- Remover a flag `isPureCreditCardCheckout` que pula os dados pessoais
-- Manter `customer_editable: true` e `billing_address_editable: true` para que o cliente possa corrigir dados no checkout hospedado
+1. **webhook-mercadopago** — `sendPurchaseEmail` refatorado:
+   - 3 retries com exponential backoff (2s, 5s, 10s)
+   - Removida lógica de DELETE de logs de falha (preserva auditoria)
+   - Cada tentativa registrada separadamente
 
-Resultado: o antifraude recebe mais dados desde o inicio, aumentando a chance de score "low" em vez de "moderated", e aprovando mais transacoes.
+2. **webhook-greenn-creditos** — `sendWelcomeEmail` e `sendArcanoClonnerEmail`:
+   - Adicionado INSERT em `welcome_email_logs` (antes não tinha NENHUM log)
+   - Deduplicação via `dedup_key` unique constraint
+   - Blacklist check antes do envio
+   - 3 retries com exponential backoff
+   - Caller simplificado (retry agora é interno)
 
-**Arquivos alterados:**
-- `src/components/upscaler/PreCheckoutModal.tsx`
-- `supabase/functions/create-pagarme-checkout/index.ts`
+3. **webhook-greenn** — Callers de `sendWelcomeEmail` e `sendPlanos2WelcomeEmail`:
+   - Retry loop 3x com exponential backoff (2s, 5s, 10s)
+   - Funções internas já tinham dedup + logging
 
+4. **webhook-greenn-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
+
+5. **webhook-greenn-musicos** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
+
+6. **webhook-hotmart-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup por transaction + logging
+
+### Sem mudanças (já robustos):
+- `webhook-pagarme` — 3 retries, dedup_key, logging completo
+- `resend-purchase-email` — robusto
+- `send-single-email` — utilitária independente
