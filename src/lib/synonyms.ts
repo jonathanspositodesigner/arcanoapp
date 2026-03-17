@@ -4,6 +4,14 @@
  * uma delas, a busca expande para todas as outras do grupo.
  */
 
+/**
+ * Remove diacritics/accents from a string.
+ * "ração" -> "racao", "música" -> "musica", etc.
+ */
+export function removeAccents(str: string): string {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
 const SYNONYM_GROUPS: string[][] = [
   // Gênero / Pessoas
   ["homem", "rapaz", "garoto", "masculino", "cara", "boy", "menino", "jovem homem", "senhor", "macho"],
@@ -157,37 +165,51 @@ const SYNONYM_GROUPS: string[][] = [
 ];
 
 // Build a lookup map: word -> Set of all synonyms (including itself)
+// Keys are stored BOTH with accents and without for accent-insensitive lookup
 const synonymMap = new Map<string, Set<string>>();
 
 for (const group of SYNONYM_GROUPS) {
   const normalizedGroup = group.map(w => w.toLowerCase().trim());
   const groupSet = new Set(normalizedGroup);
-  for (const word of normalizedGroup) {
-    if (synonymMap.has(word)) {
-      // Merge with existing group
-      const existing = synonymMap.get(word)!;
-      for (const w of groupSet) existing.add(w);
-      // Update all members to point to merged set
-      for (const w of existing) synonymMap.set(w, existing);
-    } else {
-      synonymMap.set(word, groupSet);
+  
+  // Also add accent-stripped versions to the group
+  for (const w of normalizedGroup) {
+    const stripped = removeAccents(w);
+    if (stripped !== w) groupSet.add(stripped);
+  }
+  
+  // Map both accented and unaccented keys to the same group
+  for (const word of Array.from(groupSet)) {
+    const variants = [word, removeAccents(word)];
+    for (const variant of variants) {
+      if (synonymMap.has(variant)) {
+        const existing = synonymMap.get(variant)!;
+        for (const w of groupSet) existing.add(w);
+        for (const w of existing) synonymMap.set(w, existing);
+      } else {
+        synonymMap.set(variant, groupSet);
+      }
     }
   }
 }
 
 /**
  * Given a single word, returns all its synonyms (including itself).
+ * Looks up both accented and unaccented versions.
  */
 export function getSynonyms(word: string): string[] {
   const normalized = word.toLowerCase().trim();
   if (!normalized) return [];
-  const group = synonymMap.get(normalized);
+  
+  // Try exact match first, then accent-stripped
+  const group = synonymMap.get(normalized) || synonymMap.get(removeAccents(normalized));
   return group ? Array.from(group) : [normalized];
 }
 
 /**
  * Given a search string (possibly multiple words), expands each word
  * with its synonyms and returns a flat deduplicated list.
+ * Both accented and unaccented variants are included for every term.
  */
 export function expandSearchTerms(search: string): string[] {
   const words = search
@@ -201,8 +223,14 @@ export function expandSearchTerms(search: string): string[] {
   const allTerms = new Set<string>();
 
   for (const word of words) {
+    // Add the original word and its accent-stripped version
+    allTerms.add(word);
+    allTerms.add(removeAccents(word));
+    
+    // Add all synonyms (which already include accent-stripped variants)
     for (const synonym of getSynonyms(word)) {
       allTerms.add(synonym);
+      allTerms.add(removeAccents(synonym));
     }
   }
 
