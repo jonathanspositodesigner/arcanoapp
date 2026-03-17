@@ -76,9 +76,9 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
           .order('created_at', { ascending: false })
           .range(from, from + FETCH_BATCH_SIZE - 1);
 
-        if (debouncedSearch.trim()) {
-          const searchLower = debouncedSearch.toLowerCase().trim();
-          query = query.or(`title.ilike.%${searchLower}%,tags.cs.{${searchLower}}`);
+        if (expandedTerms.length > 0) {
+          const orFilter = buildSmartSearchFilter(expandedTerms, ['title'], 'tags');
+          query = query.or(orFilter);
         }
 
         const { data, error } = await query;
