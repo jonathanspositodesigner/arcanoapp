@@ -402,23 +402,34 @@ const BibliotecaPrompts = () => {
           <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-purple-300/80">{t('library.description')}</p>
 
           {/* Content Type Tabs */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => { setContentType("exclusive"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "exclusive" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/40 hover:bg-purple-500/20 border-purple-400/50 text-purple-200"}`}>
-              <Star className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+          <div className="flex gap-2 mb-3">
+            <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => { setContentType("exclusive"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "exclusive" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/40 hover:bg-purple-500/20 border-purple-400/50 text-purple-200"}`}>
+              <Star className="h-3.5 w-3.5 mr-1.5" />
               {t('library.exclusiveFiles')}
             </Button>
-            <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => { setContentType("community"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs sm:text-sm font-semibold ${contentType === "community" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/40 hover:bg-purple-500/20 border-purple-400/50 text-purple-200"}`}>
-              <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => { setContentType("community"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "community" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/40 hover:bg-purple-500/20 border-purple-400/50 text-purple-200"}`}>
+              <Users className="h-3.5 w-3.5 mr-1.5" />
               {t('library.community')}
             </Button>
           </div>
 
-          {/* Category Filters */}
-          <div className="flex gap-1.5 sm:gap-2 flex-wrap">
-            {categories.map(cat => <Button key={cat} variant={selectedCategory === cat ? "default" : "outline"} onClick={() => handleCategorySelect(cat)} size="sm" className={`text-[11px] sm:text-xs px-2 sm:px-3 ${selectedCategory === cat ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/40 hover:bg-purple-500/20 border-purple-400/50 text-purple-200"}`}>
-              {getCategoryIcon(cat)}
-              {getCategoryDisplayName(cat)}
-            </Button>)}
+          {/* Category Filters - horizontal scroll on mobile */}
+          <div className="overflow-x-auto scrollbar-hide -mx-3 sm:mx-0 px-3 sm:px-0">
+            <div className="flex gap-1.5 w-max sm:w-auto sm:flex-wrap">
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => handleCategorySelect(cat)}
+                  className={`whitespace-nowrap text-[11px] sm:text-xs px-3 py-1.5 rounded-full font-medium transition-all ${
+                    selectedCategory === cat
+                      ? "bg-purple-600 text-white shadow-sm shadow-purple-500/30"
+                      : "bg-purple-500/10 text-purple-300 hover:bg-purple-500/20"
+                  }`}
+                >
+                  {getCategoryDisplayName(cat)}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Search Input */}
