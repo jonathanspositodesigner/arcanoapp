@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, Search } from "lucide-react";
@@ -30,7 +29,7 @@ const isVideoUrl = (url: string) => {
   return videoExtensions.some(ext => url.toLowerCase().includes(ext));
 };
 
-const ITEMS_PER_PAGE = 16;
+const ITEMS_PER_PAGE = 30;
 
 // Category slug conversion functions
 const categoryToSlug = (category: string): string => {
@@ -435,50 +434,87 @@ const BibliotecaPrompts = () => {
           </div>
         </div>
 
-        {/* Prompts Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+        {/* Prompts Masonry Grid */}
+        <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-2 sm:gap-3">
           {paginatedPrompts.map(item => {
             const isVideo = isVideoUrl(item.imageUrl);
             const canAccess = !item.isPremium || isPremium;
-            return <Card key={item.id} className="overflow-hidden hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 hover:scale-[1.02] bg-[#1A0A2E] border-purple-500/20">
-              <div className="aspect-square overflow-hidden bg-[#0D0221] relative">
+            return (
+              <div
+                key={item.id}
+                className="group relative break-inside-avoid mb-2 sm:mb-3 rounded-lg sm:rounded-xl overflow-hidden cursor-pointer"
+                onClick={() => handleItemClick(item)}
+              >
+                {/* Image / Video */}
                 {isVideo ? (
-                  <LazyVideo src={item.imageUrl} className="w-full h-full" onClick={() => handleItemClick(item)} poster={item.thumbnailUrl || undefined} />
+                  <LazyVideo
+                    src={item.imageUrl}
+                    className="w-full block"
+                    poster={item.thumbnailUrl || undefined}
+                  />
                 ) : (
-                  <SecureImage src={item.imageUrl} alt={item.title} isPremium={false} loading="lazy" className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer" onClick={() => handleItemClick(item)} />
+                  <SecureImage
+                    src={item.imageUrl}
+                    alt={item.title}
+                    isPremium={false}
+                    loading="lazy"
+                    className="w-full block"
+                  />
                 )}
+
+                {/* Premium lock icon (always visible) */}
                 {item.isPremium && !isPremium && (
-                  <div className="absolute top-2 right-2 bg-black/60 rounded-full p-2">
-                    <Lock className="h-5 w-5 text-white" />
+                  <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1.5 z-10">
+                    <Lock className="h-3.5 w-3.5 text-white" />
                   </div>
                 )}
-                <div className="absolute bottom-2 left-2">
-                  <Badge variant="secondary" className="bg-purple-600/80 text-white text-[10px] flex items-center gap-1 w-fit">
-                    <Copy className="h-2.5 w-2.5" />
-                    {(item.clickCount || 0) + (item.bonusClicks || 0)}
-                  </Badge>
-                </div>
-              </div>
-              <div className="p-3 sm:p-5 space-y-2 sm:space-y-4">
-                <div className="flex justify-between items-start gap-2">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-sm sm:text-lg text-white mb-1 sm:mb-2 line-clamp-2">{item.title}</h3>
-                    {getBadgeContent(item)}
+
+                {/* Hover/Touch overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2.5 sm:p-3
+                  max-sm:active:opacity-100">
+                  {/* Title + badges */}
+                  <h3 className="font-bold text-xs sm:text-sm text-white line-clamp-2 mb-1.5">{item.title}</h3>
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {item.isPremium ? (
+                      <Badge className="bg-purple-600/90 text-white border-0 text-[9px] sm:text-[10px] px-1.5 py-0">
+                        <Star className="h-2.5 w-2.5 mr-0.5" fill="currentColor" />
+                        Premium
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-green-600/80 text-white border-0 text-[9px] sm:text-[10px] px-1.5 py-0">
+                        {t('badges.free')}
+                      </Badge>
+                    )}
+                    {item.tutorialUrl && (
+                      <Badge className="bg-red-600/80 text-white border-0 text-[9px] sm:text-[10px] px-1.5 py-0">
+                        <Youtube className="h-2.5 w-2.5 mr-0.5" />
+                        Tutorial
+                      </Badge>
+                    )}
                   </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <div className="flex gap-2">
-                    <Button onClick={() => canAccess ? copyToClipboard(item) : handleItemClick(item)} size="sm" className={`flex-1 text-xs ${canAccess ? 'bg-purple-600 hover:bg-purple-700 text-white' : 'bg-purple-900/50 text-purple-300'}`}>
+                  {/* Action buttons */}
+                  <div className="flex gap-1.5">
+                    <Button
+                      onClick={(e) => { e.stopPropagation(); canAccess ? copyToClipboard(item) : handleItemClick(item); }}
+                      size="sm"
+                      className="flex-1 h-7 text-[10px] sm:text-xs bg-purple-600 hover:bg-purple-700 text-white"
+                    >
                       <Copy className="h-3 w-3 mr-1" />
                       {t('card.copyPrompt')}
                     </Button>
-                    <Button onClick={() => handleItemClick(item)} variant="outline" size="sm" className="text-xs bg-purple-900/40 border-purple-400/50 text-purple-100 hover:bg-purple-500/20 hover:text-white">
+                    <Button
+                      onClick={(e) => { e.stopPropagation(); handleItemClick(item); }}
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-[10px] sm:text-xs bg-white/10 border-white/20 text-white hover:bg-white/20"
+                    >
                       {t('card.details')}
                     </Button>
                   </div>
-                  {item.category === 'Fotos' && !isVideoUrl(item.imageUrl) && (
+                  {item.category === 'Fotos' && !isVideo && (
                     <Button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         if (item.isPremium && !isPremium) {
                           setPremiumModalItem(item);
                           setShowPremiumModal(true);
@@ -488,18 +524,15 @@ const BibliotecaPrompts = () => {
                         }
                       }}
                       size="sm"
-                      className={`w-full text-xs ${item.isPremium && !isPremium ? 'bg-purple-900/60 hover:bg-purple-900/80 text-purple-300' : 'bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white'}`}
+                      className="w-full h-7 mt-1.5 text-[10px] sm:text-xs bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white"
                     >
-                      {item.isPremium && !isPremium ? (
-                        <><Lock className="h-3 w-3 mr-1" />Exclusivo Premium</>
-                      ) : (
-                        <><Sparkles className="h-3 w-3 mr-1" />Gerar sua foto</>
-                      )}
+                      <Sparkles className="h-3 w-3 mr-1" />
+                      Gerar sua foto
                     </Button>
                   )}
                 </div>
               </div>
-            </Card>;
+            );
           })}
         </div>
 
