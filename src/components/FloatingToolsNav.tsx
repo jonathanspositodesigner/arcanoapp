@@ -1,12 +1,10 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Sparkles, BookOpen, Image, Video, FolderOpen, User } from "lucide-react";
+import { Sparkles, BookOpen, FolderOpen, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { icon: Sparkles, label: "Ferramentas IA", path: "/ferramentas-ia-aplicativo" },
   { icon: BookOpen, label: "Prompts", path: "/biblioteca-prompts" },
-  { icon: Image, label: "Gerar Imagem", path: "/gerar-imagem" },
-  { icon: Video, label: "Gerar Vídeo", path: "/gerar-video" },
   { icon: FolderOpen, label: "Criações", path: "/credit-history" },
   { icon: User, label: "Perfil", path: "/profile-settings" },
 ];
@@ -24,6 +22,8 @@ const excludedPaths = [
   "/mudar-pose",
   "/forja-selos-3d",
   "/ferramenta-ia-artes",
+  "/gerar-imagem",
+  "/gerar-video",
 ];
 
 const showOnPaths = [
@@ -31,8 +31,6 @@ const showOnPaths = [
   "/biblioteca-prompts",
   "/biblioteca-artes",
   "/promptverso",
-  "/gerar-imagem",
-  "/gerar-video",
   "/planos",
   "/contribuir",
   "/credit-history",
