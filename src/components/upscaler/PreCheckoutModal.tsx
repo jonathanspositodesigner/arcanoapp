@@ -168,6 +168,9 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
 
   const validate = () => {
+    // Cartão de crédito: checkout puro sem nenhuma informação do cliente
+    if (paymentMethod === 'CREDIT_CARD') return true;
+
     let valid = true;
     setNameError(''); setEmailError(''); setEmailConfirmError(''); setPhoneError(''); setCpfError('');
 
