@@ -294,17 +294,26 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
       
 
-      const fullPayload = {
-        product_slug: productSlug,
-        user_email: normalizedEmail,
-        user_phone: phone.replace(/\D/g, ''),
-        user_name: name.trim(),
-        user_cpf: cpf.replace(/\D/g, ''),
-        billing_type: paymentMethod,
-        utm_data: utmData,
-        fbp,
-        fbc,
-      };
+      // Cartão: payload mínimo — gateway coleta todos os dados
+      const fullPayload = paymentMethod === 'CREDIT_CARD'
+        ? {
+            product_slug: productSlug,
+            billing_type: 'CREDIT_CARD' as const,
+            utm_data: utmData,
+            fbp,
+            fbc,
+          }
+        : {
+            product_slug: productSlug,
+            user_email: normalizedEmail,
+            user_phone: phone.replace(/\D/g, ''),
+            user_name: name.trim(),
+            user_cpf: cpf.replace(/\D/g, ''),
+            billing_type: paymentMethod,
+            utm_data: utmData,
+            fbp,
+            fbc,
+          };
 
       // PIX: tenta full primeiro, fallback lightweight se necessário
       console.log('[PreCheckoutModal] Chamando checkout full...');
