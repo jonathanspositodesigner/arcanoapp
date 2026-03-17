@@ -208,12 +208,6 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         : shuffledPromptsRef.current.filter(p => p.isCommunity);
     }
 
-    if (category === "Populares") {
-      return contentTypePrompts
-        .filter(p => p.category !== "Controles de Câmera")
-        .sort(sortByClicks);
-    }
-
     if (category === "Novos") {
       return contentTypePrompts
         .filter(p => p.category !== "Controles de Câmera")
@@ -221,16 +215,16 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         .slice(0, 16);
     }
 
+    if (category === "Populares") {
+      return shuffleArray(contentTypePrompts.filter(p => p.category !== "Controles de Câmera"));
+    }
+
     if (category === "Grátis") {
-      return contentTypePrompts
-        .filter(p => !p.isPremium && p.category !== "Controles de Câmera")
-        .sort(sortByDate);
+      return shuffleArray(contentTypePrompts.filter(p => !p.isPremium && p.category !== "Controles de Câmera"));
     }
 
     // Specific category
-    return contentTypePrompts
-      .filter(p => p.category === category)
-      .sort(sortByDate);
+    return shuffleArray(contentTypePrompts.filter(p => p.category === category));
   }, [allPrompts]);
 
   return {
