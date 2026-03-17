@@ -170,8 +170,22 @@ const BibliotecaPrompts = () => {
   };
 
   const filteredPrompts = useMemo(() => {
-    return getFilteredPrompts(contentType, selectedCategory);
-  }, [contentType, selectedCategory, getFilteredPrompts]);
+    let results = getFilteredPrompts(contentType, selectedCategory);
+    
+    // Apply smart search filter client-side
+    if (isSearching && expandedTerms.length > 0) {
+      results = results.filter(prompt => {
+        const titleNorm = removeAccents(prompt.title.toLowerCase());
+        const categoryNorm = removeAccents((prompt.category || '').toLowerCase());
+        return expandedTerms.some(term => {
+          const termNorm = removeAccents(term.toLowerCase());
+          return titleNorm.includes(termNorm) || categoryNorm.includes(termNorm);
+        });
+      });
+    }
+    
+    return results;
+  }, [contentType, selectedCategory, getFilteredPrompts, isSearching, expandedTerms]);
 
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
