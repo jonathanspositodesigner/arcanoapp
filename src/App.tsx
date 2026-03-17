@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import React, { lazy, Suspense, useEffect } from "react";
 
 import { LocaleProvider } from "./contexts/LocaleContext";
+import { FloatingToolsNav } from "./components/FloatingToolsNav";
 
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { CreditsProvider } from "./contexts/CreditsContext";
