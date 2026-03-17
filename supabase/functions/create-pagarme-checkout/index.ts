@@ -135,10 +135,9 @@ serve(async (req) => {
   try {
     const { product_slug, user_email, user_phone, user_name, user_cpf, billing_type, utm_data, user_address, fbp, fbc, lightweight } = await req.json()
     const clientUserAgent = req.headers.get('user-agent') || null
-    const isPureCreditCardCheckout = billing_type === 'CREDIT_CARD'
     const isLightweightFallback = lightweight === true
-    const useMinimalValidation = isLightweightFallback || isPureCreditCardCheckout
-    const shouldPersistPersonalData = !isPureCreditCardCheckout
+    const useMinimalValidation = isLightweightFallback
+    const shouldPersistPersonalData = true
 
     if (!product_slug) {
       return errorResponse('product_slug é obrigatório', 400, 'MISSING_FIELDS');
