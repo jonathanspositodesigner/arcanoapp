@@ -67,7 +67,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedSearch]);
+  }, [expandedTerms]);
 
   useEffect(() => {
     if (isOpen) {
