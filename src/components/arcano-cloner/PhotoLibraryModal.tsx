@@ -49,10 +49,9 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
 }) => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<GenderFilter>('masculino');
-  const [photos, setPhotos] = useState<PhotoItem[]>([]);
+  const [allPhotos, setAllPhotos] = useState<PhotoItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -68,26 +67,20 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const fetchPhotos = useCallback(async (pageNum: number, reset = false) => {
+  const fetchAllPhotos = useCallback(async () => {
     setIsLoading(true);
     
     try {
-      // Query photos from admin_prompts where category = 'Fotos' and gender matches filter
       let query = supabase
         .from('admin_prompts')
         .select('id, title, image_url, thumbnail_url, gender, tags, is_premium')
         .eq('category', 'Fotos')
         .eq('gender', filter);
 
-      // Add search filter if there's a search term
       if (debouncedSearch.trim()) {
         const searchLower = debouncedSearch.toLowerCase().trim();
         query = query.or(`title.ilike.%${searchLower}%,tags.cs.{${searchLower}}`);
       }
-
-      query = query
-        .range(pageNum * ITEMS_PER_PAGE, (pageNum + 1) * ITEMS_PER_PAGE - 1)
-        .order('created_at', { ascending: false });
 
       const { data, error } = await query;
 
@@ -96,36 +89,30 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
         return;
       }
 
-      const shuffledData = shuffleArray(data || []);
-      if (reset) {
-        setPhotos(shuffledData);
-      } else {
-        setPhotos(prev => [...prev, ...shuffledData]);
-      }
-
-      // If we got less than expected, we've reached the end
-      setHasMore(data && data.length === ITEMS_PER_PAGE);
+      // Shuffle ALL photos at once for true randomness
+      setAllPhotos(shuffleArray(data || []));
     } catch (error) {
       console.error('[PhotoLibrary] Fetch error:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [filter]);
+  }, [filter, debouncedSearch]);
 
   // Reset and fetch when modal opens, filter changes, or search changes
   useEffect(() => {
     if (isOpen) {
-      setPage(0);
-      setPhotos([]);
-      setHasMore(true);
-      fetchPhotos(0, true);
+      setVisibleCount(ITEMS_PER_PAGE);
+      setAllPhotos([]);
+      fetchAllPhotos();
     }
-  }, [isOpen, filter, debouncedSearch, fetchPhotos]);
+  }, [isOpen, filter, debouncedSearch, fetchAllPhotos]);
+
+  // Derived: visible photos (client-side pagination)
+  const photos = allPhotos.slice(0, visibleCount);
+  const hasMore = visibleCount < allPhotos.length;
 
   const handleLoadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchPhotos(nextPage);
+    setVisibleCount(prev => prev + ITEMS_PER_PAGE);
   };
 
   const handleSelectPhoto = (photo: PhotoItem) => {
