@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import imageCompression from 'browser-image-compression';
+import { useSmartSearch, buildSmartSearchFilter } from '@/hooks/useSmartSearch';
 
 interface PhotoLibraryModalProps {
   isOpen: boolean;
