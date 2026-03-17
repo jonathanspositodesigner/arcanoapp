@@ -381,8 +381,9 @@ serve(async (req) => {
     let customerObj: Record<string, unknown>
 
     if (isPureCreditCardCheckout) {
-      // Cartão puro: NÃO enviar dados do cliente — gateway coleta tudo
+      // Cartão puro: nome placeholder mínimo exigido pela API, gateway permite edição
       customerObj = {
+        name: 'Cliente',
         type: 'individual',
       }
     } else {
