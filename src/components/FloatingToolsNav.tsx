@@ -34,6 +34,7 @@ const showOnPaths = [
   "/planos",
   "/contribuir",
   "/credit-history",
+  "/profile-settings",
 ];
 
 export function FloatingToolsNav() {
