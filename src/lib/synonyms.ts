@@ -165,20 +165,30 @@ const SYNONYM_GROUPS: string[][] = [
 ];
 
 // Build a lookup map: word -> Set of all synonyms (including itself)
+// Keys are stored BOTH with accents and without for accent-insensitive lookup
 const synonymMap = new Map<string, Set<string>>();
 
 for (const group of SYNONYM_GROUPS) {
   const normalizedGroup = group.map(w => w.toLowerCase().trim());
   const groupSet = new Set(normalizedGroup);
-  for (const word of normalizedGroup) {
-    if (synonymMap.has(word)) {
-      // Merge with existing group
-      const existing = synonymMap.get(word)!;
-      for (const w of groupSet) existing.add(w);
-      // Update all members to point to merged set
-      for (const w of existing) synonymMap.set(w, existing);
-    } else {
-      synonymMap.set(word, groupSet);
+  
+  // Also add accent-stripped versions to the group
+  for (const w of normalizedGroup) {
+    const stripped = removeAccents(w);
+    if (stripped !== w) groupSet.add(stripped);
+  }
+  
+  // Map both accented and unaccented keys to the same group
+  for (const word of Array.from(groupSet)) {
+    const variants = [word, removeAccents(word)];
+    for (const variant of variants) {
+      if (synonymMap.has(variant)) {
+        const existing = synonymMap.get(variant)!;
+        for (const w of groupSet) existing.add(w);
+        for (const w of existing) synonymMap.set(w, existing);
+      } else {
+        synonymMap.set(variant, groupSet);
+      }
     }
   }
 }
