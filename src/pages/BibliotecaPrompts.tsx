@@ -2,8 +2,9 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, Search } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, Search, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
@@ -413,24 +414,30 @@ const BibliotecaPrompts = () => {
             </Button>
           </div>
 
-          {/* Category Filters - horizontal scroll on mobile */}
-          <div className="overflow-x-auto scrollbar-hide -mx-3 sm:mx-0 px-3 sm:px-0">
-            <div className="flex gap-1.5 w-max sm:w-auto sm:flex-wrap">
+          {/* Category Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="text-xs bg-purple-900/40 hover:bg-purple-500/20 border-purple-400/50 text-purple-200">
+                {getCategoryDisplayName(selectedCategory)}
+                <ChevronDown className="h-3.5 w-3.5 ml-1.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="bg-[hsl(263,30%,15%)] border-purple-500/30 min-w-[160px]">
               {categories.map(cat => (
-                <button
+                <DropdownMenuItem
                   key={cat}
                   onClick={() => handleCategorySelect(cat)}
-                  className={`whitespace-nowrap text-[11px] sm:text-xs px-3 py-1.5 rounded-full font-medium transition-all ${
+                  className={`text-xs cursor-pointer ${
                     selectedCategory === cat
-                      ? "bg-purple-600 text-white shadow-sm shadow-purple-500/30"
-                      : "bg-purple-500/10 text-purple-300 hover:bg-purple-500/20"
+                      ? "bg-purple-600 text-white"
+                      : "text-purple-200 hover:bg-purple-500/20"
                   }`}
                 >
                   {getCategoryDisplayName(cat)}
-                </button>
+                </DropdownMenuItem>
               ))}
-            </div>
-          </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Search Input */}
           <div className="relative mt-3">
