@@ -125,7 +125,7 @@ const BibliotecaPrompts = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, contentType]);
+  }, [selectedCategory, contentType, expandedTerms]);
 
   const categories = contentType === "exclusive" 
     ? ["Populares", "Ver Tudo", "Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Logo", "Movies para Telão", "Controles de Câmera"] 
