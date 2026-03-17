@@ -4,6 +4,14 @@
  * uma delas, a busca expande para todas as outras do grupo.
  */
 
+/**
+ * Remove diacritics/accents from a string.
+ * "ração" -> "racao", "música" -> "musica", etc.
+ */
+export function removeAccents(str: string): string {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
 const SYNONYM_GROUPS: string[][] = [
   // Gênero / Pessoas
   ["homem", "rapaz", "garoto", "masculino", "cara", "boy", "menino", "jovem homem", "senhor", "macho"],
