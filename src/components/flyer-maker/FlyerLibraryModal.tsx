@@ -46,9 +46,9 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
         .select('id, title, image_url, category')
         .not('image_url', 'like', '%.mp4');
 
-      if (debouncedSearch.trim()) {
-        const s = debouncedSearch.toLowerCase().trim();
-        query = query.or(`title.ilike.%${s}%,category.ilike.%${s}%`);
+      if (expandedTerms.length > 0) {
+        const orFilter = buildSmartSearchFilter(expandedTerms, ['title', 'category']);
+        query = query.or(orFilter);
       }
 
       query = query
