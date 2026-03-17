@@ -290,28 +290,18 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       const { fbp, fbc } = getMetaCookies();
       const normalizedEmail = (email || userEmail || '').trim().toLowerCase();
 
-      // Cartão: envia nome + email do modal (gateway coleta o resto)
-      const fullPayload = paymentMethod === 'CREDIT_CARD'
-        ? {
-            product_slug: productSlug,
-            billing_type: 'CREDIT_CARD' as const,
-            user_name: name.trim(),
-            user_email: normalizedEmail,
-            utm_data: utmData,
-            fbp,
-            fbc,
-          }
-        : {
-            product_slug: productSlug,
-            user_email: normalizedEmail,
-            user_phone: phone.replace(/\D/g, ''),
-            user_name: name.trim(),
-            user_cpf: cpf.replace(/\D/g, ''),
-            billing_type: paymentMethod,
-            utm_data: utmData,
-            fbp,
-            fbc,
-          };
+      // Envia dados completos para todos os métodos (antifraude)
+      const fullPayload = {
+        product_slug: productSlug,
+        user_email: normalizedEmail,
+        user_phone: phone.replace(/\D/g, ''),
+        user_name: name.trim(),
+        user_cpf: cpf.replace(/\D/g, ''),
+        billing_type: paymentMethod,
+        utm_data: utmData,
+        fbp,
+        fbc,
+      };
 
       // PIX: tenta full primeiro, fallback lightweight se necessário
       console.log('[PreCheckoutModal] Chamando checkout full...');

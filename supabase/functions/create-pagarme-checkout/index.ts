@@ -379,46 +379,34 @@ serve(async (req) => {
       acceptedPaymentMethods = ['pix', 'credit_card']
     }
 
-    // Cartão puro: envia somente metadados não pessoais para obrigar preenchimento no checkout hospedado
-    let customerObj: Record<string, unknown>
+    // Customer completo para todos os métodos (máxima aprovação antifraude)
+    const customerName = user_name?.trim() || email.split('@')[0]
+    const customerObj: Record<string, unknown> = {
+      name: customerName,
+      email: email,
+      type: 'individual',
+    }
 
-    if (isPureCreditCardCheckout) {
-      // Cartão puro: usa nome + email enviados no modal
-      const creditCardName = user_name?.trim() || ''
-      customerObj = {
-        name: creditCardName,
-        email: email,
-        type: 'individual',
-      }
-    } else {
-      const customerName = user_name?.trim() || email.split('@')[0]
-      customerObj = {
-        name: customerName,
-        email: email,
-        type: 'individual',
-      }
-
-      if (cleanCpf) {
-        customerObj.document = cleanCpf
-        customerObj.document_type = 'CPF'
-      }
-      if (phone) {
-        customerObj.phones = {
-          mobile_phone: {
-            country_code: '55',
-            area_code: phone.areaCode,
-            number: phone.phoneNumber
-          }
+    if (cleanCpf) {
+      customerObj.document = cleanCpf
+      customerObj.document_type = 'CPF'
+    }
+    if (phone) {
+      customerObj.phones = {
+        mobile_phone: {
+          country_code: '55',
+          area_code: phone.areaCode,
+          number: phone.phoneNumber
         }
       }
-      if (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) {
-        customerObj.address = {
-          line_1: user_address.line_1,
-          zip_code: user_address.zip_code.replace(/\D/g, ''),
-          city: user_address.city,
-          state: user_address.state,
-          country: user_address.country || 'BR'
-        }
+    }
+    if (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) {
+      customerObj.address = {
+        line_1: user_address.line_1,
+        zip_code: user_address.zip_code.replace(/\D/g, ''),
+        city: user_address.city,
+        state: user_address.state,
+        country: user_address.country || 'BR'
       }
     }
 
