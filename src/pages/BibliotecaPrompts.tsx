@@ -470,45 +470,39 @@ const BibliotecaPrompts = () => {
                 )}
 
                 {/* Hover/Touch overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2.5 sm:p-3
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-1.5 sm:p-3
                   max-sm:active:opacity-100">
                   {/* Title + badges */}
-                  <h3 className="font-bold text-xs sm:text-sm text-white line-clamp-2 mb-1.5">{item.title}</h3>
-                  <div className="flex flex-wrap gap-1 mb-2">
+                  <h3 className="font-bold text-[9px] sm:text-sm text-white line-clamp-1 sm:line-clamp-2 mb-1">{item.title}</h3>
+                  <div className="flex flex-wrap gap-0.5 sm:gap-1 mb-1 sm:mb-2">
                     {item.isPremium ? (
-                      <Badge className="bg-purple-600/90 text-white border-0 text-[9px] sm:text-[10px] px-1.5 py-0">
-                        <Star className="h-2.5 w-2.5 mr-0.5" fill="currentColor" />
-                        Premium
+                      <Badge className="bg-purple-600/90 text-white border-0 text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0 leading-tight">
+                        <Star className="h-2 w-2 sm:h-2.5 sm:w-2.5 mr-0.5" fill="currentColor" />
+                        Pro
                       </Badge>
                     ) : (
-                      <Badge className="bg-green-600/80 text-white border-0 text-[9px] sm:text-[10px] px-1.5 py-0">
-                        {t('badges.free')}
-                      </Badge>
-                    )}
-                    {item.tutorialUrl && (
-                      <Badge className="bg-red-600/80 text-white border-0 text-[9px] sm:text-[10px] px-1.5 py-0">
-                        <Youtube className="h-2.5 w-2.5 mr-0.5" />
-                        Tutorial
+                      <Badge className="bg-green-600/80 text-white border-0 text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0 leading-tight">
+                        Free
                       </Badge>
                     )}
                   </div>
                   {/* Action buttons */}
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1">
                     <Button
                       onClick={(e) => { e.stopPropagation(); canAccess ? copyToClipboard(item) : handleItemClick(item); }}
                       size="sm"
-                      className="flex-1 h-7 text-[10px] sm:text-xs bg-purple-600 hover:bg-purple-700 text-white"
+                      className="flex-1 h-5 sm:h-7 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-purple-600 hover:bg-purple-700 text-white min-w-0"
                     >
-                      <Copy className="h-3 w-3 mr-1" />
-                      {t('card.copyPrompt')}
+                      <Copy className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
+                      <span className="truncate">Copiar</span>
                     </Button>
                     <Button
                       onClick={(e) => { e.stopPropagation(); handleItemClick(item); }}
                       variant="outline"
                       size="sm"
-                      className="h-7 text-[10px] sm:text-xs bg-white/10 border-white/20 text-white hover:bg-white/20"
+                      className="h-5 sm:h-7 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-white/10 border-white/20 text-white hover:bg-white/20 min-w-0"
                     >
-                      {t('card.details')}
+                      <span className="truncate">Ver</span>
                     </Button>
                   </div>
                   {item.category === 'Fotos' && !isVideo && (
@@ -524,10 +518,10 @@ const BibliotecaPrompts = () => {
                         }
                       }}
                       size="sm"
-                      className="w-full h-7 mt-1.5 text-[10px] sm:text-xs bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white"
+                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1 sm:px-3 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white min-w-0"
                     >
-                      <Sparkles className="h-3 w-3 mr-1" />
-                      Gerar sua foto
+                      <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
+                      <span className="truncate">Gerar foto</span>
                     </Button>
                   )}
                 </div>
