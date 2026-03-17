@@ -105,6 +105,15 @@ const TesteCloner = () => {
             </FadeIn>
 
             <FadeIn duration={700}>
+              <button
+                onClick={() => setShowModal(true)}
+                className="mb-6 px-8 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold text-sm md:text-base transition-all pointer-events-auto"
+              >
+                🚀 Iniciar Teste Grátis
+              </button>
+            </FadeIn>
+
+            <FadeIn duration={700}>
               <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10">
                 <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
                   <Sparkles className="h-3.5 w-3.5 text-fuchsia-400" />
