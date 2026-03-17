@@ -155,7 +155,8 @@ serve(async (req) => {
     }
     email = trimmedEmail
 
-    if (isPureCreditCardCheckout) {
+    // Nome obrigatório para todos os métodos
+    if (billing_type === 'CREDIT_CARD') {
       const creditCardName = user_name?.trim() || ''
       if (creditCardName.length < 3) {
         return errorResponse('user_name é obrigatório para cartão', 400, 'MISSING_FIELDS');
