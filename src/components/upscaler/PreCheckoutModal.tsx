@@ -613,6 +613,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
             </div>
           </>
         )}
+        </div>
       </div>
     </div>
 
