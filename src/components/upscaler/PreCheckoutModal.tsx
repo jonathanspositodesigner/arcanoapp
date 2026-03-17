@@ -525,37 +525,33 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                 </div>
               )}
 
-              {paymentMethod === 'PIX' && (
-                <>
-                  {/* Celular */}
-                  <div>
-                    <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Celular (com DDD)</label>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      placeholder="(11) 99999-9999"
-                      value={phone}
-                      onChange={(e) => { setPhone(formatPhone(e.target.value)); setPhoneError(''); }}
-                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
-                    />
-                    {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
-                  </div>
+              {/* Celular */}
+              <div>
+                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Celular (com DDD)</label>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="(11) 99999-9999"
+                  value={phone}
+                  onChange={(e) => { setPhone(formatPhone(e.target.value)); setPhoneError(''); }}
+                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                />
+                {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
+              </div>
 
-                  {/* CPF */}
-                  <div>
-                    <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">CPF</label>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      placeholder="000.000.000-00"
-                      value={cpf}
-                      onChange={(e) => { setCpf(formatCpf(e.target.value)); setCpfError(''); }}
-                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
-                    />
-                    {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
-                  </div>
-                </>
-              )}
+              {/* CPF */}
+              <div>
+                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">CPF</label>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="000.000.000-00"
+                  value={cpf}
+                  onChange={(e) => { setCpf(formatCpf(e.target.value)); setCpfError(''); }}
+                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                />
+                {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
+              </div>
 
               {/* Payment Method */}
               <div>
