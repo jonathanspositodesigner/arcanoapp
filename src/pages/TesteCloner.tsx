@@ -4,6 +4,7 @@ import { AnimatedSection, AnimatedElement, FadeIn } from "@/hooks/useScrollAnima
 import HeroCarouselBackground from "@/components/combo-artes/HeroCarouselBackground";
 import { LazySection } from "@/components/combo-artes/LazySection";
 import LandingTrialSignupSection from "@/components/arcano-cloner/LandingTrialSignupSection";
+import ArcanoClonerAuthModal from "@/components/arcano-cloner/ArcanoClonerAuthModal";
 import clonerResult1 from "@/assets/cloner-result-1.webp";
 import clonerResult2 from "@/assets/cloner-result-2.webp";
 import clonerResult3 from "@/assets/cloner-result-3.webp";
@@ -46,6 +47,13 @@ const CountUp = ({ target, duration = 2000 }: { target: number; duration?: numbe
 };
 
 const TesteCloner = () => {
+  const [showModal, setShowModal] = useState(false);
+
+  const handleAuthSuccess = () => {
+    setShowModal(false);
+    window.location.href = "https://arcanoapp.voxvisual.com.br/ferramentas-ia-aplicativo";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] font-space-grotesk">
 
@@ -102,6 +110,15 @@ const TesteCloner = () => {
                 Basta subir sua foto e escolher a referência.{" "}
                 <span className="text-fuchsia-400 font-semibold">Resultado pronto em segundos.</span>
               </p>
+            </FadeIn>
+
+            <FadeIn duration={700}>
+              <button
+                onClick={() => setShowModal(true)}
+                className="mb-6 px-8 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold text-sm md:text-base transition-all pointer-events-auto"
+              >
+                🚀 Iniciar Teste Grátis
+              </button>
             </FadeIn>
 
             <FadeIn duration={700}>
@@ -227,6 +244,12 @@ const TesteCloner = () => {
           <p className="text-white/40 text-xs">© 2026 Arcano App. Todos os direitos reservados.</p>
         </div>
       </footer>
+
+      <ArcanoClonerAuthModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
     </div>
   );
 };
