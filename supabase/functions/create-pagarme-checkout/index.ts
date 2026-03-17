@@ -431,7 +431,7 @@ serve(async (req) => {
             accepted_payment_methods: acceptedPaymentMethods,
             success_url: `https://arcanoapp.voxvisual.com.br/sucesso-compra`,
             // Modo mínimo/cartão puro: gateway coleta dados direto no checkout hospedado
-            customer_editable: useMinimalValidation,
+            customer_editable: true,
             billing_address_editable: true,
             skip_checkout_success_page: billing_type === 'CREDIT_CARD',
             ...(!useMinimalValidation && (user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) ? {
