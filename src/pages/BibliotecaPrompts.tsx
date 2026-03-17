@@ -421,6 +421,18 @@ const BibliotecaPrompts = () => {
               {getCategoryDisplayName(cat)}
             </Button>)}
           </div>
+
+          {/* Search Input */}
+          <div className="relative mt-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400/60" />
+            <Input
+              type="text"
+              placeholder="Buscar por palavra-chave..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 h-9 text-sm bg-purple-500/10 border-purple-500/30 text-white placeholder:text-purple-400/50 focus:border-fuchsia-400"
+            />
+          </div>
         </div>
 
         {/* Prompts Grid */}
