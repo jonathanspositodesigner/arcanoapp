@@ -30,6 +30,7 @@ interface PhotoItem {
 }
 
 const ITEMS_PER_PAGE = 20;
+const FETCH_BATCH_SIZE = 1000;
 
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array];
@@ -69,28 +70,44 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
 
   const fetchAllPhotos = useCallback(async () => {
     setIsLoading(true);
-    
+
     try {
-      let query = supabase
-        .from('admin_prompts')
-        .select('id, title, image_url, thumbnail_url, gender, tags, is_premium')
-        .eq('category', 'Fotos')
-        .eq('gender', filter);
+      const allData: PhotoItem[] = [];
+      let from = 0;
 
-      if (debouncedSearch.trim()) {
-        const searchLower = debouncedSearch.toLowerCase().trim();
-        query = query.or(`title.ilike.%${searchLower}%,tags.cs.{${searchLower}}`);
+      while (true) {
+        let query = supabase
+          .from('admin_prompts')
+          .select('id, title, image_url, thumbnail_url, gender, tags, is_premium')
+          .eq('category', 'Fotos')
+          .eq('gender', filter)
+          .order('created_at', { ascending: false })
+          .range(from, from + FETCH_BATCH_SIZE - 1);
+
+        if (debouncedSearch.trim()) {
+          const searchLower = debouncedSearch.toLowerCase().trim();
+          query = query.or(`title.ilike.%${searchLower}%,tags.cs.{${searchLower}}`);
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+          console.error('[PhotoLibrary] Error fetching photos:', error);
+          break;
+        }
+
+        const batch = data || [];
+        allData.push(...batch);
+
+        if (batch.length < FETCH_BATCH_SIZE) {
+          break;
+        }
+
+        from += FETCH_BATCH_SIZE;
       }
 
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('[PhotoLibrary] Error fetching photos:', error);
-        return;
-      }
-
-      // Shuffle ALL photos at once for true randomness
-      setAllPhotos(shuffleArray(data || []));
+      // Shuffle full dataset (all ages of photos mixed together)
+      setAllPhotos(shuffleArray(allData));
     } catch (error) {
       console.error('[PhotoLibrary] Fetch error:', error);
     } finally {
