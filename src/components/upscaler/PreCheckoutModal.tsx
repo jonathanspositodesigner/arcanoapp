@@ -166,48 +166,6 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     });
   }, []);
 
-  // Auto-submit for credit card: no data needed, redirect immediately
-  const handleCreditCardAutoSubmit = useCallback(async () => {
-    if (!productSlug) {
-      console.error('[PreCheckoutModal] productSlug inválido para auto-submit cartão');
-      toast({ title: "Erro", description: "Produto não identificado. Feche e tente novamente.", variant: "destructive" });
-      return;
-    }
-    if (!startFormSubmit()) return;
-
-    setLoading(true);
-    redirectedRef.current = false;
-
-    try {
-      const utmData = getSanitizedUtms();
-      const { fbp, fbc } = getMetaCookies();
-      console.log('[PreCheckoutModal] 💳 Auto-submit cartão puro (sem dados)...');
-      const response = await invokeCheckout({
-        product_slug: productSlug,
-        billing_type: 'CREDIT_CARD',
-        utm_data: utmData,
-        fbp,
-        fbc,
-      });
-
-      if (!response.error && response.data?.checkout_url) {
-        const { checkout_url, event_id } = response.data;
-        if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
-          (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
-        }
-        window.location.href = checkout_url;
-        return;
-      }
-
-      const errorCode = response.data?.error_code || 'UNKNOWN';
-      showErrorToast(errorCode);
-    } catch (error) {
-      console.error('Erro checkout cartão:', error);
-      showErrorToast();
-    }
-    setLoading(false);
-    endFormSubmit();
-  }, [productSlug, startFormSubmit, endFormSubmit, showErrorToast]);
 
   const validate = () => {
     let valid = true;
@@ -331,7 +289,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       const { fbp, fbc } = getMetaCookies();
       const normalizedEmail = email.trim().toLowerCase();
 
-      // handleSubmit agora só processa PIX (cartão é tratado em handleCreditCardAutoSubmit)
+      
 
       const fullPayload = {
         product_slug: productSlug,
@@ -624,7 +582,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setPaymentMethod('CREDIT_CARD'); handleCreditCardAutoSubmit(); }}
+                    onClick={() => setPaymentMethod('CREDIT_CARD')}
                     disabled={loading || isFormSubmitting}
                     className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 ${
                       paymentMethod === 'CREDIT_CARD'
