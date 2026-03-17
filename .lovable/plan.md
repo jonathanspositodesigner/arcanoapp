@@ -1,78 +1,88 @@
+# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
+## Resumo
+Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
 
-## Plano: Motor de Busca Robusto com Sinônimos
+## O que foi feito
 
-### Problema Atual
-A busca atual faz apenas `title.ilike` e `tags.cs` diretamente no banco. Não tem inteligência para sinônimos (ex: "homem" vs "rapaz", "festa" vs "balada"), e cada componente implementa sua própria lógica de busca isoladamente.
+### 1. Tabela `subscription_billing_reminders` (migration)
+- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
+- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
+- Campo `checkout_url` para evitar checkouts duplicados
+- Constraint UNIQUE em (subscription_id, day_offset, due_date)
 
-### Arquitetura Proposta
+### 2. Edge Function `process-billing-reminders`
+- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
+- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
+- Para cada assinatura, verifica:
+  - Se já enviou email para esse `day_offset`
+  - Se a sequência foi parada (pagou ou descadastrou)
+  - Se o email está na blacklist
+  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
+- Gera checkout Pagar.me somente PIX com validade de 3 dias
+- Monta HTML personalizado com dados reais do plano
+- Envia via SendPulse SMTP API
+- Registra na tabela de controle
 
-**1. Criar um hook reutilizável `useSmartSearch`**
+### 3. Mapeamento de benefícios por plano
+- Starter: 1.800 créditos, 5 prompts/dia
+- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
+- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
+- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
 
-Um hook centralizado em `src/hooks/useSmartSearch.ts` que:
-- Recebe o termo digitado pelo usuário
-- Expande automaticamente com sinônimos usando um dicionário local
-- Retorna uma lista de termos expandidos para uso em queries
+### 4. Templates dos 6 emails
+- Dia 0: Lembrete leve ("Seu plano vence hoje")
+- Dia 1: Reforço pendência ("Pagamento ainda pendente")
+- Dia 2: Dor da perda ("Risco de perda de acesso")
+- Dia 3: Prejuízo prático ("O custo de não renovar")
+- Dia 4: FOMO ("Não fique para trás")
+- Dia 5: Último aviso ("Último aviso: regularize hoje")
+- Todos com link de descadastro no rodapé
 
-**2. Dicionário de sinônimos local**
+### 5. Cron job
+- pg_cron agendado: `0 12 * * *` (09:00 BRT)
+- Chama a Edge Function automaticamente
 
-Arquivo `src/lib/synonyms.ts` com um mapa de sinônimos em português relevantes ao contexto (fotos, moda, eventos, etc):
+## Detecção de pagamento (para de enviar)
+- `planos2_subscriptions.expires_at` estendido para data futura
+- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
+- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
 
-```text
-"homem" -> ["rapaz", "garoto", "masculino", "cara", "boy"]
-"mulher" -> ["garota", "moça", "feminino", "girl"]
-"festa" -> ["balada", "party", "evento", "celebração"]
-"roupa" -> ["vestimenta", "traje", "outfit", "look"]
-"casamento" -> ["noiva", "noivo", "wedding", "matrimônio"]
-// ... ~50-80 grupos de sinônimos
-```
+# Auditoria Completa de Emails — Robustez Unificada (CONCLUÍDA)
 
-**3. Lógica de expansão de busca no `useSmartSearch`**
+## O que foi feito
 
-- Usuário digita "rapaz elegante"
-- O hook identifica "rapaz" como sinônimo de "homem", "garoto", etc.
-- Gera termos expandidos: ["rapaz", "homem", "garoto", "elegante", "sofisticado", "chique"]
-- Retorna esses termos para o componente construir a query
+### Padrão unificado aplicado em todos os 6 webhooks:
 
-**4. Função de busca genérica `smartSearchQuery`**
+1. **webhook-mercadopago** — `sendPurchaseEmail` refatorado:
+   - 3 retries com exponential backoff (2s, 5s, 10s)
+   - Removida lógica de DELETE de logs de falha (preserva auditoria)
+   - Cada tentativa registrada separadamente
 
-Em `src/lib/smartSearch.ts`, uma função utilitária que:
-- Aceita os termos expandidos
-- Constrói o filtro `.or()` com múltiplos `ilike` para título e `cs` para tags
-- Funciona com qualquer tabela (admin_prompts, admin_artes, etc.)
+2. **webhook-greenn-creditos** — `sendWelcomeEmail` e `sendArcanoClonnerEmail`:
+   - Adicionado INSERT em `welcome_email_logs` (antes não tinha NENHUM log)
+   - Deduplicação via `dedup_key` unique constraint
+   - Blacklist check antes do envio
+   - 3 retries com exponential backoff
+   - Caller simplificado (retry agora é interno)
 
-**5. Aplicar nos componentes existentes**
+3. **webhook-greenn** — Callers de `sendWelcomeEmail` e `sendPlanos2WelcomeEmail`:
+   - Retry loop 3x com exponential backoff (2s, 5s, 10s)
+   - Funções internas já tinham dedup + logging
 
-- `PhotoLibraryModal.tsx` (Arcano Cloner / Veste AI / Pose Changer) - substituir a busca atual pelo `useSmartSearch`
-- `FlyerLibraryModal.tsx` (Flyer Maker) - mesma coisa
-- Qualquer outro componente com busca no futuro usa o mesmo hook
+4. **webhook-greenn-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
 
-### Arquivos a Criar/Editar
+5. **webhook-greenn-musicos** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
 
-| Arquivo | Ação |
-|---|---|
-| `src/lib/synonyms.ts` | Criar - dicionário de sinônimos PT-BR |
-| `src/hooks/useSmartSearch.ts` | Criar - hook com debounce + expansão de sinônimos |
-| `src/components/arcano-cloner/PhotoLibraryModal.tsx` | Editar - usar `useSmartSearch` |
-| `src/components/flyer-maker/FlyerLibraryModal.tsx` | Editar - usar `useSmartSearch` |
+6. **webhook-hotmart-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup por transaction + logging
 
-### Exemplo de Uso no Componente
-
-```tsx
-const { expandedTerms, debouncedSearch } = useSmartSearch(searchTerm);
-
-// Na query:
-if (expandedTerms.length > 0) {
-  const orFilters = expandedTerms
-    .map(t => `title.ilike.%${t}%,tags.cs.{${t}}`)
-    .join(',');
-  query = query.or(orFilters);
-}
-```
-
-### Benefícios
-- Busca centralizada e reutilizável em qualquer parte do site
-- Sinônimos em português expandem resultados automaticamente
-- Sem dependência de API externa (tudo local, instantâneo)
-- Fácil de expandir o dicionário no futuro
-
+### Sem mudanças (já robustos):
+- `webhook-pagarme` — 3 retries, dedup_key, logging completo
+- `resend-purchase-email` — robusto
+- `send-single-email` — utilitária independente

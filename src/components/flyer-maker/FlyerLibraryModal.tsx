@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import imageCompression from 'browser-image-compression';
+import { useSmartSearch, buildSmartSearchFilter } from '@/hooks/useSmartSearch';
 
 interface FlyerLibraryModalProps {
   isOpen: boolean;
@@ -33,15 +34,9 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const { searchTerm, setSearchTerm, expandedTerms } = useSmartSearch();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
 
   const fetchFlyers = useCallback(async (pageNum: number, reset = false) => {
     setIsLoading(true);
@@ -51,9 +46,9 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
         .select('id, title, image_url, category')
         .not('image_url', 'like', '%.mp4');
 
-      if (debouncedSearch.trim()) {
-        const s = debouncedSearch.toLowerCase().trim();
-        query = query.or(`title.ilike.%${s}%,category.ilike.%${s}%`);
+      if (expandedTerms.length > 0) {
+        const orFilter = buildSmartSearchFilter(expandedTerms, ['title', 'category']);
+        query = query.or(orFilter);
       }
 
       query = query
@@ -72,7 +67,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [debouncedSearch]);
+  }, [expandedTerms]);
 
   useEffect(() => {
     if (isOpen) {
@@ -81,7 +76,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
       setHasMore(true);
       fetchFlyers(0, true);
     }
-  }, [isOpen, debouncedSearch, fetchFlyers]);
+  }, [isOpen, expandedTerms, fetchFlyers]);
 
   const handleLoadMore = () => {
     const nextPage = page + 1;

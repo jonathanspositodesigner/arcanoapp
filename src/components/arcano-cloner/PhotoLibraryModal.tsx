@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import imageCompression from 'browser-image-compression';
+import { useSmartSearch, buildSmartSearchFilter } from '@/hooks/useSmartSearch';
 
 interface PhotoLibraryModalProps {
   isOpen: boolean;
@@ -55,18 +56,9 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const { searchTerm, setSearchTerm, debouncedSearch, expandedTerms } = useSmartSearch();
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Debounce search term
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
 
   const fetchAllPhotos = useCallback(async () => {
     setIsLoading(true);
@@ -84,9 +76,9 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
           .order('created_at', { ascending: false })
           .range(from, from + FETCH_BATCH_SIZE - 1);
 
-        if (debouncedSearch.trim()) {
-          const searchLower = debouncedSearch.toLowerCase().trim();
-          query = query.or(`title.ilike.%${searchLower}%,tags.cs.{${searchLower}}`);
+        if (expandedTerms.length > 0) {
+          const orFilter = buildSmartSearchFilter(expandedTerms, ['title'], 'tags');
+          query = query.or(orFilter);
         }
 
         const { data, error } = await query;
@@ -113,7 +105,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [filter, debouncedSearch]);
+  }, [filter, expandedTerms]);
 
   // Reset and fetch when modal opens, filter changes, or search changes
   useEffect(() => {
@@ -122,7 +114,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
       setAllPhotos([]);
       fetchAllPhotos();
     }
-  }, [isOpen, filter, debouncedSearch, fetchAllPhotos]);
+  }, [isOpen, filter, expandedTerms, fetchAllPhotos]);
 
   // Derived: visible photos (client-side pagination)
   const photos = allPhotos.slice(0, visibleCount);
