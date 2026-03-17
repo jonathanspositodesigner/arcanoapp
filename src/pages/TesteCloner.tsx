@@ -4,6 +4,7 @@ import { AnimatedSection, AnimatedElement, FadeIn } from "@/hooks/useScrollAnima
 import HeroCarouselBackground from "@/components/combo-artes/HeroCarouselBackground";
 import { LazySection } from "@/components/combo-artes/LazySection";
 import LandingTrialSignupSection from "@/components/arcano-cloner/LandingTrialSignupSection";
+import ArcanoClonerAuthModal from "@/components/arcano-cloner/ArcanoClonerAuthModal";
 import clonerResult1 from "@/assets/cloner-result-1.webp";
 import clonerResult2 from "@/assets/cloner-result-2.webp";
 import clonerResult3 from "@/assets/cloner-result-3.webp";
