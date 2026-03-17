@@ -168,8 +168,14 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
 
   const validate = () => {
-    // Cartão de crédito: checkout puro sem nenhuma informação do cliente
-    if (paymentMethod === 'CREDIT_CARD') return true;
+    // Cartão de crédito: só exige nome (gateway coleta o resto)
+    if (paymentMethod === 'CREDIT_CARD') {
+      if (!name.trim() || name.trim().length < 3) {
+        setNameError('Digite seu nome completo');
+        return false;
+      }
+      return true;
+    }
 
     let valid = true;
     setNameError(''); setEmailError(''); setEmailConfirmError(''); setPhoneError(''); setCpfError('');
