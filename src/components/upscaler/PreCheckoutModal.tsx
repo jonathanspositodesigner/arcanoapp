@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { X, CreditCard, QrCode, ArrowRight, Shield, Zap, Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -365,8 +366,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const hasSavedCards = savedCards.length > 0 && userId;
   const showOneClick = hasSavedCards && !showFullForm;
 
-  return (
-    <>
+  const checkoutModal = (
     <div
       className="fixed inset-0 z-50 overflow-y-auto overscroll-contain touch-pan-y [-webkit-overflow-scrolling:touch] bg-black/80 backdrop-blur-sm p-2 md:p-4"
       onClick={onClose}
@@ -376,246 +376,250 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
           className={`relative w-full max-w-md bg-gradient-to-br ${modalBg} border ${accentBorderLight} rounded-2xl md:rounded-3xl p-4 md:p-8 shadow-2xl ${modalShadow}`}
           onClick={(e) => e.stopPropagation()}
         >
-        {/* Close */}
-        <button onClick={onClose} className="absolute top-3 right-3 md:top-4 md:right-4 p-1.5 md:p-2 text-white/50 hover:text-white transition-colors z-10">
-          <X className="h-4 w-4 md:h-5 md:w-5" />
-        </button>
+          {/* Close */}
+          <button onClick={onClose} className="absolute top-3 right-3 md:top-4 md:right-4 p-1.5 md:p-2 text-white/50 hover:text-white transition-colors z-10">
+            <X className="h-4 w-4 md:h-5 md:w-5" />
+          </button>
 
-        {/* Title */}
-        <h3 className="font-bebas text-xl md:text-3xl text-white text-center mb-0.5 md:mb-1 tracking-wide">
-          {titleText.includes(' ') ? (
-            <>{titleText.split(' ').slice(0, -1).join(' ')} <span className={accentText}>{titleText.split(' ').slice(-1)}</span></>
-          ) : (
-            <span className={accentText}>{titleText}</span>
-          )}
-        </h3>
-        <p className="text-white/50 text-xs md:text-sm text-center mb-3 md:mb-6">
-          {showOneClick ? 'Compre de forma rápida e segura' : 'Preencha seus dados para continuar'}
-        </p>
+          {/* Title */}
+          <h3 className="font-bebas text-xl md:text-3xl text-white text-center mb-0.5 md:mb-1 tracking-wide">
+            {titleText.includes(' ') ? (
+              <>{titleText.split(' ').slice(0, -1).join(' ')} <span className={accentText}>{titleText.split(' ').slice(-1)}</span></>
+            ) : (
+              <span className={accentText}>{titleText}</span>
+            )}
+          </h3>
+          <p className="text-white/50 text-xs md:text-sm text-center mb-3 md:mb-6">
+            {showOneClick ? 'Compre de forma rápida e segura' : 'Preencha seus dados para continuar'}
+          </p>
 
-        {/* ===== ONE-CLICK BUY SECTION ===== */}
-        {showOneClick && (
-          <div className="space-y-4">
-            <label className="text-white/70 text-sm mb-2 block">💳 Cartão salvo</label>
-            <div className="space-y-2">
-              {savedCards.map((card) => (
-                <div
-                  key={card.id}
-                  onClick={() => setSelectedCardId(card.id)}
-                  className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
-                    selectedCardId === card.id
-                      ? `${accentBorder} ${accentBg}`
-                      : 'border-white/15 bg-white/5 hover:border-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <CreditCard className={`h-5 w-5 ${accentText}`} />
-                    <div>
-                      <span className="text-white text-sm font-medium">
-                        •••• {card.card_last_four}
-                      </span>
-                      <span className="text-white/50 text-xs ml-2">
-                        {brandDisplay[card.card_brand] || card.card_brand}
-                      </span>
+          {/* ===== ONE-CLICK BUY SECTION ===== */}
+          {showOneClick && (
+            <div className="space-y-4">
+              <label className="text-white/70 text-sm mb-2 block">💳 Cartão salvo</label>
+              <div className="space-y-2">
+                {savedCards.map((card) => (
+                  <div
+                    key={card.id}
+                    onClick={() => setSelectedCardId(card.id)}
+                    className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
+                      selectedCardId === card.id
+                        ? `${accentBorder} ${accentBg}`
+                        : 'border-white/15 bg-white/5 hover:border-white/30'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <CreditCard className={`h-5 w-5 ${accentText}`} />
+                      <div>
+                        <span className="text-white text-sm font-medium">
+                          •••• {card.card_last_four}
+                        </span>
+                        <span className="text-white/50 text-xs ml-2">
+                          {brandDisplay[card.card_brand] || card.card_brand}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {selectedCardId === card.id && (
+                        <span className={`${accentText} text-xs`}>✓</span>
+                      )}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleRemoveCard(card.id); }}
+                        className="p-1 text-white/30 hover:text-red-400 transition-colors"
+                        title="Remover cartão"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {selectedCardId === card.id && (
-                      <span className={`${accentText} text-xs`}>✓</span>
-                    )}
+                ))}
+              </div>
+
+              {/* One-click buy button */}
+              <button
+                onClick={handleOneClickBuy}
+                disabled={oneClickLoading || !selectedCardId || isOneClickSubmitting}
+                className={`w-full mt-4 py-4 text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
+              >
+                {oneClickLoading ? (
+                  'Processando...'
+                ) : (
+                  <>
+                    <Zap className="h-5 w-5" />
+                    Comprar com 1 Clique
+                  </>
+                )}
+              </button>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3 my-4">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-white/30 text-xs">ou</span>
+                <div className="flex-1 h-px bg-white/10" />
+              </div>
+
+              {/* Switch to full form */}
+              <button
+                onClick={() => setShowFullForm(true)}
+                className="w-full text-center text-white/50 hover:text-white text-sm transition-colors py-2"
+              >
+                Usar outro método de pagamento →
+              </button>
+
+              <div className="flex items-center justify-center gap-2 mt-2 text-white/40 text-xs">
+                <Shield className="h-3 w-3" />
+                <span>Pagamento 100% seguro</span>
+              </div>
+            </div>
+          )}
+
+          {/* ===== FULL FORM (default or fallback) ===== */}
+          {!showOneClick && (
+            <>
+              {/* Back to one-click if available */}
+              {hasSavedCards && showFullForm && (
+                <button
+                  onClick={() => setShowFullForm(false)}
+                  className={`${accentText} text-sm mb-4 hover:underline`}
+                >
+                  ← Voltar para compra rápida
+                </button>
+              )}
+
+              <div className="space-y-2.5 md:space-y-4">
+                {/* Nome — exibido para PIX e Cartão */}
+                <div>
+                  <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Nome completo</label>
+                  <input
+                    type="text"
+                    placeholder="Seu nome completo"
+                    value={name}
+                    onChange={(e) => { setName(e.target.value); setNameError(''); }}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                  />
+                  {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Email</label>
+                  <input
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={email}
+                    onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
+                    disabled={!!userEmail}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed`}
+                  />
+                  {emailError && <p className="text-red-400 text-xs mt-1">{emailError}</p>}
+                </div>
+
+                {/* Email Confirm */}
+                {!userEmail && (
+                  <div>
+                    <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Confirme seu email</label>
+                    <input
+                      type="email"
+                      placeholder="Digite novamente seu email"
+                      value={emailConfirm}
+                      onChange={(e) => { setEmailConfirm(e.target.value); setEmailConfirmError(''); }}
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                    />
+                    {emailConfirmError && <p className="text-red-400 text-xs mt-1">{emailConfirmError}</p>}
+                  </div>
+                )}
+
+                {/* Celular */}
+                <div>
+                  <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Celular (com DDD)</label>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    placeholder="(11) 99999-9999"
+                    value={phone}
+                    onChange={(e) => { setPhone(formatPhone(e.target.value)); setPhoneError(''); }}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                  />
+                  {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
+                </div>
+
+                {/* CPF */}
+                <div>
+                  <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">CPF</label>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    placeholder="000.000.000-00"
+                    value={cpf}
+                    onChange={(e) => { setCpf(formatCpf(e.target.value)); setCpfError(''); }}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                  />
+                  {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
+                </div>
+
+                {/* Payment Method */}
+                <div>
+                  <label className="text-white/70 text-xs md:text-sm mb-1.5 md:mb-2 block">Forma de pagamento</label>
+                  <div className="grid grid-cols-2 gap-2 md:gap-3">
                     <button
-                      onClick={(e) => { e.stopPropagation(); handleRemoveCard(card.id); }}
-                      className="p-1 text-white/30 hover:text-red-400 transition-colors"
-                      title="Remover cartão"
+                      type="button"
+                      onClick={() => setPaymentMethod('PIX')}
+                      className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 ${
+                        paymentMethod === 'PIX'
+                          ? `${accentBorder} ${accentBg} text-white`
+                          : 'border-white/15 bg-white/5 text-white/60 hover:border-white/30'
+                      }`}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <QrCode className="h-5 w-5 md:h-6 md:w-6" />
+                      <span className="text-xs md:text-sm font-medium">PIX</span>
+                      {paymentMethod === 'PIX' && (
+                        <span className={`text-[10px] ${accentTextLight}`}>Aprovação instantânea</span>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('CREDIT_CARD')}
+                      disabled={loading || isFormSubmitting}
+                      className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 ${
+                        paymentMethod === 'CREDIT_CARD'
+                          ? `${accentBorder} ${accentBg} text-white`
+                          : 'border-white/15 bg-white/5 text-white/60 hover:border-white/30'
+                      }`}
+                    >
+                      <CreditCard className="h-5 w-5 md:h-6 md:w-6" />
+                      <span className="text-xs md:text-sm font-medium">Cartão</span>
+                      {paymentMethod === 'CREDIT_CARD' && (
+                        <span className={`text-[10px] ${accentTextLight}`}>Até 3x sem juros</span>
+                      )}
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
 
-            {/* One-click buy button */}
-            <button
-              onClick={handleOneClickBuy}
-              disabled={oneClickLoading || !selectedCardId || isOneClickSubmitting}
-              className={`w-full mt-4 py-4 text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
-            >
-              {oneClickLoading ? (
-                'Processando...'
-              ) : (
-                <>
-                  <Zap className="h-5 w-5" />
-                  Comprar com 1 Clique
-                </>
-              )}
-            </button>
-
-            {/* Divider */}
-            <div className="flex items-center gap-3 my-4">
-              <div className="flex-1 h-px bg-white/10" />
-              <span className="text-white/30 text-xs">ou</span>
-              <div className="flex-1 h-px bg-white/10" />
-            </div>
-
-            {/* Switch to full form */}
-            <button
-              onClick={() => setShowFullForm(true)}
-              className="w-full text-center text-white/50 hover:text-white text-sm transition-colors py-2"
-            >
-              Usar outro método de pagamento →
-            </button>
-
-            <div className="flex items-center justify-center gap-2 mt-2 text-white/40 text-xs">
-              <Shield className="h-3 w-3" />
-              <span>Pagamento 100% seguro</span>
-            </div>
-          </div>
-        )}
-
-        {/* ===== FULL FORM (default or fallback) ===== */}
-        {!showOneClick && (
-          <>
-            {/* Back to one-click if available */}
-            {hasSavedCards && showFullForm && (
+              {/* Submit */}
               <button
-                onClick={() => setShowFullForm(false)}
-                className={`${accentText} text-sm mb-4 hover:underline`}
+                onClick={handleSubmit}
+                disabled={loading || isFormSubmitting}
+                className={`w-full mt-4 md:mt-6 py-3 md:py-4 text-sm md:text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
               >
-                ← Voltar para compra rápida
+                {loading ? 'Gerando checkout...' : 'Finalizar e Pagar'}
+                {!loading && <ArrowRight className="h-5 w-5" />}
               </button>
-            )}
 
-            <div className="space-y-2.5 md:space-y-4">
-              {/* Nome — exibido para PIX e Cartão */}
-              <div>
-                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Nome completo</label>
-                <input
-                  type="text"
-                  placeholder="Seu nome completo"
-                  value={name}
-                  onChange={(e) => { setName(e.target.value); setNameError(''); }}
-                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
-                />
-                {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
+              <div className="flex items-center justify-center gap-2 mt-4 text-white/40 text-xs">
+                <Shield className="h-3 w-3" />
+                <span>Pagamento 100% seguro</span>
               </div>
-
-              {/* Email */}
-              <div>
-                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Email</label>
-                <input
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
-                  disabled={!!userEmail}
-                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed`}
-                />
-                {emailError && <p className="text-red-400 text-xs mt-1">{emailError}</p>}
-              </div>
-
-              {/* Email Confirm */}
-              {!userEmail && (
-                <div>
-                  <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Confirme seu email</label>
-                  <input
-                    type="email"
-                    placeholder="Digite novamente seu email"
-                    value={emailConfirm}
-                    onChange={(e) => { setEmailConfirm(e.target.value); setEmailConfirmError(''); }}
-                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
-                  />
-                  {emailConfirmError && <p className="text-red-400 text-xs mt-1">{emailConfirmError}</p>}
-                </div>
-              )}
-
-              {/* Celular */}
-              <div>
-                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Celular (com DDD)</label>
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="(11) 99999-9999"
-                  value={phone}
-                  onChange={(e) => { setPhone(formatPhone(e.target.value)); setPhoneError(''); }}
-                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
-                />
-                {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
-              </div>
-
-              {/* CPF */}
-              <div>
-                <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">CPF</label>
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="000.000.000-00"
-                  value={cpf}
-                  onChange={(e) => { setCpf(formatCpf(e.target.value)); setCpfError(''); }}
-                  className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
-                />
-                {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
-              </div>
-
-              {/* Payment Method */}
-              <div>
-                <label className="text-white/70 text-xs md:text-sm mb-1.5 md:mb-2 block">Forma de pagamento</label>
-                <div className="grid grid-cols-2 gap-2 md:gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('PIX')}
-                    className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 ${
-                      paymentMethod === 'PIX'
-                        ? `${accentBorder} ${accentBg} text-white`
-                        : 'border-white/15 bg-white/5 text-white/60 hover:border-white/30'
-                    }`}
-                  >
-                    <QrCode className="h-5 w-5 md:h-6 md:w-6" />
-                    <span className="text-xs md:text-sm font-medium">PIX</span>
-                    {paymentMethod === 'PIX' && (
-                      <span className={`text-[10px] ${accentTextLight}`}>Aprovação instantânea</span>
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('CREDIT_CARD')}
-                    disabled={loading || isFormSubmitting}
-                    className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 ${
-                      paymentMethod === 'CREDIT_CARD'
-                        ? `${accentBorder} ${accentBg} text-white`
-                        : 'border-white/15 bg-white/5 text-white/60 hover:border-white/30'
-                    }`}
-                  >
-                    <CreditCard className="h-5 w-5 md:h-6 md:w-6" />
-                    <span className="text-xs md:text-sm font-medium">Cartão</span>
-                    {paymentMethod === 'CREDIT_CARD' && (
-                      <span className={`text-[10px] ${accentTextLight}`}>Até 3x sem juros</span>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Submit */}
-            <button
-              onClick={handleSubmit}
-              disabled={loading || isFormSubmitting}
-              className={`w-full mt-4 md:mt-6 py-3 md:py-4 text-sm md:text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
-            >
-              {loading ? 'Gerando checkout...' : 'Finalizar e Pagar'}
-              {!loading && <ArrowRight className="h-5 w-5" />}
-            </button>
-
-
-            <div className="flex items-center justify-center gap-2 mt-4 text-white/40 text-xs">
-              <Shield className="h-3 w-3" />
-              <span>Pagamento 100% seguro</span>
-            </div>
-          </>
-        )}
+            </>
+          )}
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {typeof document !== 'undefined' ? createPortal(checkoutModal, document.body) : checkoutModal}
 
       {/* Modal de resultado da compra 1-clique */}
       <Dialog open={oneClickResult !== null} onOpenChange={() => {}}>
