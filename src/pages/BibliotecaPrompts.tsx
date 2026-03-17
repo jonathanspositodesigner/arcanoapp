@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
@@ -21,6 +22,8 @@ import RunningHubBonusModal from "@/components/RunningHubBonusModal";
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 import AppLayout from "@/components/layout/AppLayout";
 import PromoToolsBanner from "@/components/PromoToolsBanner";
+import { useSmartSearch } from "@/hooks/useSmartSearch";
+import { removeAccents } from "@/lib/synonyms";
 
 const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
@@ -81,6 +84,7 @@ const BibliotecaPrompts = () => {
   const [showExpiringModal, setShowExpiringModal] = useState(false);
 
   const { allPrompts, getFilteredPrompts } = useOptimizedPrompts();
+  const { searchTerm, setSearchTerm, expandedTerms, isSearching } = useSmartSearch();
 
   useEffect(() => {
     const itemId = searchParams.get("item");
@@ -121,7 +125,7 @@ const BibliotecaPrompts = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, contentType]);
+  }, [selectedCategory, contentType, expandedTerms]);
 
   const categories = contentType === "exclusive" 
     ? ["Populares", "Ver Tudo", "Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Logo", "Movies para Telão", "Controles de Câmera"] 
@@ -166,8 +170,22 @@ const BibliotecaPrompts = () => {
   };
 
   const filteredPrompts = useMemo(() => {
-    return getFilteredPrompts(contentType, selectedCategory);
-  }, [contentType, selectedCategory, getFilteredPrompts]);
+    let results = getFilteredPrompts(contentType, selectedCategory);
+    
+    // Apply smart search filter client-side
+    if (isSearching && expandedTerms.length > 0) {
+      results = results.filter(prompt => {
+        const titleNorm = removeAccents(prompt.title.toLowerCase());
+        const categoryNorm = removeAccents((prompt.category || '').toLowerCase());
+        return expandedTerms.some(term => {
+          const termNorm = removeAccents(term.toLowerCase());
+          return titleNorm.includes(termNorm) || categoryNorm.includes(termNorm);
+        });
+      });
+    }
+    
+    return results;
+  }, [contentType, selectedCategory, getFilteredPrompts, isSearching, expandedTerms]);
 
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -402,6 +420,18 @@ const BibliotecaPrompts = () => {
               {getCategoryIcon(cat)}
               {getCategoryDisplayName(cat)}
             </Button>)}
+          </div>
+
+          {/* Search Input */}
+          <div className="relative mt-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400/60" />
+            <Input
+              type="text"
+              placeholder="Buscar por palavra-chave..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 h-9 text-sm bg-purple-500/10 border-purple-500/30 text-white placeholder:text-purple-400/50 focus:border-fuchsia-400"
+            />
           </div>
         </div>
 
