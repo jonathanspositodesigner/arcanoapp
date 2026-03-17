@@ -289,7 +289,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       const { fbp, fbc } = getMetaCookies();
       const normalizedEmail = email.trim().toLowerCase();
 
-      // handleSubmit agora só processa PIX (cartão é tratado em handleCreditCardAutoSubmit)
+      
 
       const fullPayload = {
         product_slug: productSlug,

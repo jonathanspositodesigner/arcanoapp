@@ -381,16 +381,9 @@ serve(async (req) => {
     let customerObj: Record<string, unknown>
 
     if (isPureCreditCardCheckout) {
-      const trimmedName = user_name?.trim()
-
+      // Cartão puro: NÃO enviar dados do cliente — gateway coleta tudo
       customerObj = {
         type: 'individual',
-        // Pagar.me exige name; usamos caractere vazio para evitar nome fictício
-        name: trimmedName || '\u3164',
-      }
-
-      if (customerEmail) {
-        customerObj.email = customerEmail
       }
     } else {
       const customerName = user_name?.trim() || email.split('@')[0]
