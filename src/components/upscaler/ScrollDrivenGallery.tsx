@@ -60,6 +60,7 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
   const currentIndex = Math.min(Math.floor(scrollProgress), totalItems - 1);
   const sliderPosition = (1 - (scrollProgress - currentIndex)) * 100;
   const clampedSlider = scrollProgress >= totalItems ? 0 : Math.max(0, Math.min(100, sliderPosition));
+  const currentItem = items[currentIndex] || items[0];
 
   return (
     <div ref={containerRef} style={{ height: `${totalItems * 100}vh` }}>
@@ -72,45 +73,31 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
 
       <div className="sticky top-0 h-screen flex items-center justify-center bg-black/30 px-2 md:px-4">
         <div className="relative h-[94vh] aspect-[4/5] w-auto overflow-hidden">
-          {items.map((item, i) => {
-            const isActive = i === currentIndex;
-            const reveal = isActive ? clampedSlider : i < currentIndex ? 0 : 100;
+          <img
+            src={currentItem.afterImage}
+            alt="Depois"
+            className="absolute inset-0 w-full h-full object-cover"
+            loading="eager"
+            decoding="async"
+            draggable={false}
+          />
 
-            return (
-              <div
-                key={i}
-                className={`absolute inset-0 transition-opacity duration-150 ${
-                  isActive ? "opacity-100 z-20" : "opacity-0 z-10 pointer-events-none"
-                }`}
-              >
-                <img
-                  src={item.afterImage}
-                  alt="Depois"
-                  className="absolute inset-0 w-full h-full object-cover"
-                  loading="eager"
-                  decoding="async"
-                  draggable={false}
-                />
-
-                <div
-                  className="absolute inset-0 overflow-hidden"
-                  style={{
-                    clipPath: `inset(0 ${100 - reveal}% 0 0)`,
-                    willChange: isActive ? "clip-path" : "auto",
-                  }}
-                >
-                  <img
-                    src={item.beforeImage}
-                    alt="Antes"
-                    className="absolute inset-0 w-full h-full object-cover"
-                    loading="eager"
-                    decoding="async"
-                    draggable={false}
-                  />
-                </div>
-              </div>
-            );
-          })}
+          <div
+            className="absolute inset-0 overflow-hidden"
+            style={{
+              clipPath: `inset(0 ${100 - clampedSlider}% 0 0)`,
+              willChange: "clip-path",
+            }}
+          >
+            <img
+              src={currentItem.beforeImage}
+              alt="Antes"
+              className="absolute inset-0 w-full h-full object-cover"
+              loading="eager"
+              decoding="async"
+              draggable={false}
+            />
+          </div>
 
           <div
             className="absolute top-0 bottom-0 w-[2px] bg-white/80 pointer-events-none z-30"
@@ -130,7 +117,7 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
             {items.map((_, i) => (
               <div
                 key={i}
-                className={`rounded-full transition-all duration-300 ${
+                className={`rounded-full ${
                   i === currentIndex
                     ? "w-8 h-2 bg-fuchsia-500"
                     : i < currentIndex
@@ -140,7 +127,7 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
               />
             ))}
           </div>
-          <p className="text-white/30 text-xs animate-pulse">Role para comparar ↕</p>
+          <p className="text-white/30 text-xs">Role para comparar ↕</p>
         </div>
       </div>
     </div>
