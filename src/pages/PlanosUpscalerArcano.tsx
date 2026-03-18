@@ -1045,7 +1045,7 @@ const PlanosUpscalerArcano = () => {
         onClose={() => setCheckoutModalOpen(false)}
         userEmail={user?.email}
         userId={user?.id}
-        productSlug="upscaller-arcano-vitalicio"
+        productSlug={checkoutProductSlug}
       />
 
       {/* Modal Fullscreen */}
