@@ -1,4 +1,14 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import upscalerBefore1 from "@/assets/upscaler-before-1.webp";
+import upscalerAfter1 from "@/assets/upscaler-after-1.webp";
+import upscalerBefore2 from "@/assets/upscaler-before-2.webp";
+import upscalerAfter2 from "@/assets/upscaler-after-2.webp";
+import upscalerBefore3 from "@/assets/upscaler-before-3.webp";
+import upscalerAfter3 from "@/assets/upscaler-after-3.webp";
+import upscalerBefore4 from "@/assets/upscaler-before-4.webp";
+import upscalerAfter4 from "@/assets/upscaler-after-4.webp";
+import upscalerBefore5 from "@/assets/upscaler-before-5.webp";
+import upscalerAfter5 from "@/assets/upscaler-after-5.webp";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
