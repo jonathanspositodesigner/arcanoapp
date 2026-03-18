@@ -267,8 +267,11 @@ const PlanosUpscalerArcano = () => {
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [checkoutProductSlug, setCheckoutProductSlug] = useState("upscaller-arcano-vitalicio");
 
-  const handlePurchase = (productSlug = "upscaller-arcano-vitalicio") => {
-    setCheckoutProductSlug(productSlug);
+  const handlePurchase = (productSlug?: string | unknown) => {
+    const slug = typeof productSlug === 'string' && productSlug.trim().length > 0
+      ? productSlug
+      : 'upscaller-arcano-vitalicio';
+    setCheckoutProductSlug(slug);
     setCheckoutModalOpen(true);
   };
 
