@@ -563,82 +563,8 @@ const PlanosUpscalerArcano69v2 = () => {
           {/* PROVA SOCIAL - Lazy loaded with Intersection Observer */}
           <LazySocialProofWrapper locale="pt" onZoomClick={openModal} isMobile={isMobile} />
 
-          {/* SEÇÃO DE PREÇO E CTA - Com Card */}
-          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
-            <div className="max-w-lg mx-auto">
-              <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
-                <CardContent className="p-5 md:p-8 text-center">
-                  {/* Badge de desconto */}
-                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-sm md:text-lg font-bold mb-4 md:mb-6">
-                    🔥 30% OFF
-                  </Badge>
-
-                  {isPremium && (
-                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-4 md:mb-6">
-                      <Crown className="h-3 w-3 md:h-4 md:w-4" />
-                      {t('tools:upscaler.finalCTA.memberDiscount')}
-                    </div>
-                  )}
-
-                  <h2 className="font-bebas text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6 tracking-wide">
-                    {t('tools:upscaler.finalCTA.title')} <span className="text-fuchsia-400">{t('tools:upscaler.finalCTA.subtitle')}</span>
-                  </h2>
-
-                  {/* Preços */}
-                  <div className="mb-5 md:mb-6">
-                    <span className="text-white/40 text-lg md:text-xl line-through block mb-1">{formatPrice(originalPrice)}</span>
-                    <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2">
-                      {formatPrice(price)}
-                    </div>
-                    <p className="text-white/60 text-base md:text-lg">
-                      {t('tools:upscaler.finalCTA.or')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.finalCTA.installments')} {formatPrice(installmentPrice)}</span>
-                    </p>
-                    <p className="text-white/40 text-xs md:text-sm mt-2">{t('tools:upscaler.finalCTA.oneTimePayment')}</p>
-                  </div>
-
-                  {/* Features checklist */}
-                  <div className="grid gap-2 md:gap-3 mb-5 md:mb-6 text-left">
-                    {features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2 md:gap-3 text-white/80">
-                        <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                          <Check className="h-3 w-3 md:h-4 md:w-4 text-green-400" />
-                        </div>
-                        <span className="text-xs md:text-sm">{feature.text}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Alerta de urgência */}
-                  <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/40 rounded-xl md:rounded-2xl p-2.5 md:p-3 mb-5 md:mb-6">
-                    <div className="flex items-center justify-center gap-2 text-red-400 text-xs md:text-sm">
-                      <span>🔥</span>
-                      <span className="font-bold">Últimos dias de venda do Upscaler na versão vitalícia</span>
-                    </div>
-                  </div>
-
-                  <div className="px-0 md:px-2">
-                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
-                  </div>
-
-                  {/* Badges de pagamento */}
-                  <div className="flex flex-wrap justify-center gap-3 md:gap-4 mt-5 md:mt-6 text-white/50 text-xs">
-                    <span className="flex items-center gap-1">
-                      <CreditCard className="h-3 w-3" />
-                      {t('tools:upscaler.finalCTA.card')}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="text-sm">💵</span>
-                      {t('tools:upscaler.finalCTA.pix')}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Shield className="h-3 w-3" />
-                      {t('tools:upscaler.finalCTA.secure')}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </AnimatedSection>
+          {/* SEÇÃO DE PREÇO E CTA - 4 Cards */}
+          <UpscalerPricingSection isPremium={isPremium} tool={tool} handlePurchaseLegacy={handlePurchase} t={t} />
 
           {/* BENEFÍCIOS (O QUE FAZ) */}
           <AnimatedSection className="px-4 py-20 bg-black/30">
