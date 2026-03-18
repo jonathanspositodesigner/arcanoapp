@@ -1,14 +1,14 @@
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
-import galleryBefore1 from "@/assets/upscaler/1a.png";
-import galleryAfter1 from "@/assets/upscaler/1d.png";
-import galleryBefore2 from "@/assets/upscaler/2a.png";
-import galleryAfter2 from "@/assets/upscaler/2d.png";
-import galleryBefore3 from "@/assets/upscaler/3a.png";
-import galleryAfter3 from "@/assets/upscaler/3d.png";
-import galleryBefore4 from "@/assets/upscaler/5a.png";
-import galleryAfter4 from "@/assets/upscaler/5d.png";
-import galleryBefore5 from "@/assets/upscaler/6a.png";
-import galleryAfter5 from "@/assets/upscaler/6d.png";
+import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
+import galleryBefore1 from "@/assets/upscaler/1a.webp";
+import galleryAfter1 from "@/assets/upscaler/1d.webp";
+import galleryBefore2 from "@/assets/upscaler/2a.webp";
+import galleryAfter2 from "@/assets/upscaler/2d.webp";
+import galleryBefore3 from "@/assets/upscaler/3a.webp";
+import galleryAfter3 from "@/assets/upscaler/3d.webp";
+import galleryBefore4 from "@/assets/upscaler/5a.webp";
+import galleryAfter4 from "@/assets/upscaler/5d.webp";
+import galleryBefore5 from "@/assets/upscaler/6a.webp";
+import galleryAfter5 from "@/assets/upscaler/6d.webp";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,15 @@ const upscalerHeroDepoisMobile = "/images/upscaler-hero-depois-mobile.webp";
 const BeforeAfterGalleryPT = lazy(() => import("@/components/upscaler/sections/BeforeAfterGalleryPT"));
 const ExpandingGallery = lazy(() => import("@/components/combo-artes/ExpandingGallery"));
 const ScrollDrivenGallery = lazy(() => import("@/components/upscaler/ScrollDrivenGallery"));
+
+// Stable gallery items - defined outside component to prevent re-creation on re-renders
+const galleryItems = [
+  { beforeImage: galleryBefore1, afterImage: galleryAfter1, label: "Qualidade impressionante" },
+  { beforeImage: galleryBefore2, afterImage: galleryAfter2, label: "Detalhes nítidos" },
+  { beforeImage: galleryBefore3, afterImage: galleryAfter3, label: "Cores vibrantes" },
+  { beforeImage: galleryBefore4, afterImage: galleryAfter4, label: "Alta resolução" },
+  { beforeImage: galleryBefore5, afterImage: galleryAfter5, label: "Resultado profissional" },
+];
 
 interface ToolData {
   id: string;
@@ -671,7 +680,7 @@ const PlanosUpscalerArcano = () => {
 
 
           {/* GALERIA - O que o Upscaler faz */}
-          <LazySection rootMargin="100px">
+          <LazySection rootMargin="1200px">
           {/* Fullscreen scroll-driven gallery - all devices */}
           <div>
             <AnimatedSection className="px-4 pt-20 pb-8 bg-black/30">
@@ -685,13 +694,7 @@ const PlanosUpscalerArcano = () => {
               </div>
             </AnimatedSection>
             <Suspense fallback={<div className="h-screen bg-white/5 animate-pulse" />}>
-              <ScrollDrivenGallery items={[
-                { beforeImage: galleryBefore1, afterImage: galleryAfter1, label: "Qualidade impressionante" },
-                { beforeImage: galleryBefore2, afterImage: galleryAfter2, label: "Detalhes nítidos" },
-                { beforeImage: galleryBefore3, afterImage: galleryAfter3, label: "Cores vibrantes" },
-                { beforeImage: galleryBefore4, afterImage: galleryAfter4, label: "Alta resolução" },
-                { beforeImage: galleryBefore5, afterImage: galleryAfter5, label: "Resultado profissional" },
-              ]} />
+              <ScrollDrivenGallery items={galleryItems} />
             </Suspense>
             <div className="bg-black/30 px-4 pb-20 pt-8">
               <div className="max-w-md mx-auto">

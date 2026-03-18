@@ -1,48 +1,88 @@
+# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
-Objetivo: eliminar a lentidão no celular na troca de imagens do slider e fazer a troca instantânea (sem “buraco” entre uma e outra).
+## Resumo
+Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
 
-Diagnóstico encontrado no código + profiling:
-1) Requisições repetidas sem parar para as imagens da galeria.
-- Em `ScrollDrivenGallery.tsx`, o preload roda em `useEffect(..., [items])`.
-- Em `PlanosUpscalerArcano.tsx`, o `items={[...]}` é criado inline no JSX.
-- A página tem countdown com `setInterval` a cada 1s, então o componente pai re-renderiza a cada segundo, gerando novo array `items` e disparando preload novamente.
-- Resultado: tempestade de downloads/decode no mobile (engasgo e atraso na próxima imagem).
+## O que foi feito
 
-2) As imagens atuais da galeria estão em PNG (pesadas para full-screen mobile/tablet).
-- Mesmo com preload, arquivos grandes + decode em dispositivos móveis causam atraso perceptível.
+### 1. Tabela `subscription_billing_reminders` (migration)
+- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
+- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
+- Campo `checkout_url` para evitar checkouts duplicados
+- Constraint UNIQUE em (subscription_id, day_offset, due_date)
 
-3) A seção da galeria ainda está dentro de `LazySection rootMargin="100px"`, ou seja, começa tarde demais para quem chega rápido nela.
+### 2. Edge Function `process-billing-reminders`
+- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
+- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
+- Para cada assinatura, verifica:
+  - Se já enviou email para esse `day_offset`
+  - Se a sequência foi parada (pagou ou descadastrou)
+  - Se o email está na blacklist
+  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
+- Gera checkout Pagar.me somente PIX com validade de 3 dias
+- Monta HTML personalizado com dados reais do plano
+- Envia via SendPulse SMTP API
+- Registra na tabela de controle
 
-Plano de implementação:
-1) Parar o preload repetitivo (correção principal)
-- Em `PlanosUpscalerArcano.tsx`: criar `galleryItems` com `useMemo` (ou constante fora do componente), em vez de array inline.
-- Em `ScrollDrivenGallery.tsx`: mudar preload para depender de uma assinatura estável de URLs (não do objeto/array por referência) e manter `Set` em `useRef` para garantir preload “uma vez por URL”.
+### 3. Mapeamento de benefícios por plano
+- Starter: 1.800 créditos, 5 prompts/dia
+- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
+- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
+- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
 
-2) Deixar preload realmente “one-shot” e previsível
-- No `ScrollDrivenGallery`, preload com `new Image()` + `decode()` apenas para URLs ainda não pré-carregadas.
-- Remover reexecução desnecessária por re-render de estado não relacionado (contador, animações etc.).
+### 4. Templates dos 6 emails
+- Dia 0: Lembrete leve ("Seu plano vence hoje")
+- Dia 1: Reforço pendência ("Pagamento ainda pendente")
+- Dia 2: Dor da perda ("Risco de perda de acesso")
+- Dia 3: Prejuízo prático ("O custo de não renovar")
+- Dia 4: FOMO ("Não fique para trás")
+- Dia 5: Último aviso ("Último aviso: regularize hoje")
+- Todos com link de descadastro no rodapé
 
-3) Troca instantânea sem tela vazia
-- Adicionar controle de readiness por slide (before+after carregadas).
-- Ao avançar de índice, só ativar o slide novo quando o par daquele índice estiver pronto; até lá mantém o anterior visível.
-- Isso elimina o efeito “handle anda e imagem nova aparece depois”.
+### 5. Cron job
+- pg_cron agendado: `0 12 * * *` (09:00 BRT)
+- Chama a Edge Function automaticamente
 
-4) Reduzir peso das imagens da galeria (mobile-first)
-- Converter os 10 PNG da galeria para WebP otimizados (alvo: ~300–700KB por imagem, ajustando qualidade).
-- Atualizar imports em `PlanosUpscalerArcano.tsx` para os novos `.webp`.
-- (Opcional) adicionar versões mobile menores via `srcSet/sizes` se necessário.
+## Detecção de pagamento (para de enviar)
+- `planos2_subscriptions.expires_at` estendido para data futura
+- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
+- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
 
-5) Antecipar carregamento da seção
-- Aumentar `rootMargin` da `LazySection` da galeria (ex.: 1200px no mobile/tablet) ou remover lazy dessa seção específica para iniciar mais cedo.
-- Manter o restante da página lazy para não piorar performance geral.
+# Auditoria Completa de Emails — Robustez Unificada (CONCLUÍDA)
 
-Arquivos a alterar:
-- `src/pages/PlanosUpscalerArcano.tsx`
-- `src/components/upscaler/ScrollDrivenGallery.tsx`
-- `src/assets/upscaler/*` (substituição para versões WebP otimizadas)
+## O que foi feito
 
-Validação (aceite):
-1) No mobile (390x844), rolar pela galeria e confirmar: terminou uma imagem, próxima aparece na hora (sem delay visual).
-2) Verificar no network: imagens da galeria não ficam sendo requisitadas continuamente a cada segundo.
-3) Confirmar fluidez em tablet (ex.: 768x1024) com o mesmo comportamento.
-4) Confirmar que layout continua full-screen e sem labels extras.
+### Padrão unificado aplicado em todos os 6 webhooks:
+
+1. **webhook-mercadopago** — `sendPurchaseEmail` refatorado:
+   - 3 retries com exponential backoff (2s, 5s, 10s)
+   - Removida lógica de DELETE de logs de falha (preserva auditoria)
+   - Cada tentativa registrada separadamente
+
+2. **webhook-greenn-creditos** — `sendWelcomeEmail` e `sendArcanoClonnerEmail`:
+   - Adicionado INSERT em `welcome_email_logs` (antes não tinha NENHUM log)
+   - Deduplicação via `dedup_key` unique constraint
+   - Blacklist check antes do envio
+   - 3 retries com exponential backoff
+   - Caller simplificado (retry agora é interno)
+
+3. **webhook-greenn** — Callers de `sendWelcomeEmail` e `sendPlanos2WelcomeEmail`:
+   - Retry loop 3x com exponential backoff (2s, 5s, 10s)
+   - Funções internas já tinham dedup + logging
+
+4. **webhook-greenn-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
+
+5. **webhook-greenn-musicos** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
+
+6. **webhook-hotmart-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup por transaction + logging
+
+### Sem mudanças (já robustos):
+- `webhook-pagarme` — 3 retries, dedup_key, logging completo
+- `resend-purchase-email` — robusto
+- `send-single-email` — utilitária independente
