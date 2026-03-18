@@ -110,6 +110,7 @@ const ExpandingGallery = ({ items, badgeText = "Feito com o Arcano Cloner" }: Ex
                         afterImage={item.afterImage!}
                         locale="pt"
                         aspectRatio="3/5"
+                        compact
                       />
                     </div>
                   ) : (
@@ -196,6 +197,7 @@ const ExpandingGallery = ({ items, badgeText = "Feito com o Arcano Cloner" }: Ex
                     afterImage={item.afterImage!}
                     locale="pt"
                     aspectRatio="4/5"
+                    compact
                   />
                 </div>
               ) : (
