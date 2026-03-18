@@ -51,7 +51,7 @@ interface CardData {
 
 const Index = () => {
   const navigate = useNavigate();
-  const [isReloading, setIsReloading] = useState(false);
+  
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Service worker update check (non-blocking, no reload)
