@@ -527,14 +527,13 @@ const Index = () => {
       />
 
       {/* App Version + Atualizar */}
-      <div className="fixed bottom-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2">
-        <span className="text-[10px] text-muted-foreground/50 select-none">v2026-02-12-001</span>
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
         <button
           onClick={handleManualUpdate}
           disabled={isUpdating}
-          className="flex items-center gap-1 text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/90 hover:bg-primary text-primary-foreground text-xs font-medium shadow-lg shadow-primary/25 backdrop-blur-sm transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
         >
-          <RefreshCw className={`h-2.5 w-2.5 ${isUpdating ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-3.5 w-3.5 ${isUpdating ? 'animate-spin' : ''}`} />
           Atualizar app
         </button>
       </div>
