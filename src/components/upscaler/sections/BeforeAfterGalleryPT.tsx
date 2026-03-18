@@ -33,7 +33,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.photoImproved4K'),
       badge: "Fotos de Ensaio",
       badgeColor: "from-fuchsia-500 to-pink-500",
-      aspectRatio: "5/3"
+      aspectRatio: "3/5"
     },
     {
       before: render3dAntes,
