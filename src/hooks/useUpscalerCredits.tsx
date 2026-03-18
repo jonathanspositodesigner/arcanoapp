@@ -23,12 +23,12 @@ export const useUpscalerCredits = (userId: string | undefined) => {
     }
 
     try {
-      // Only check trial expiration once per session to save a connection
+      // Check trial expiration in background (non-blocking) once per session
       if (!trialCheckedRef.current) {
         trialCheckedRef.current = true;
-        await supabase.rpc('expire_landing_trial_credits', {
+        void supabase.rpc('expire_landing_trial_credits', {
           _user_id: userId
-        });
+        }); // fire-and-forget
       }
 
       // Fetch breakdown

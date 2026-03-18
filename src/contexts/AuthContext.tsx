@@ -101,81 +101,58 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [planos2Subscription, setPlanos2Subscription] = useState<Planos2Subscription | null>(null);
   
   const isInitialized = useRef(false);
+  const enrichingRef = useRef(false);
 
-  // Retry helper with exponential backoff
-  const retryQuery = async <T,>(
-    fn: () => Promise<T>,
-    retries = 3,
-    baseDelay = 1000
-  ): Promise<T> => {
-    for (let i = 0; i < retries; i++) {
-      try {
-        return await fn();
-      } catch (err) {
-        if (i === retries - 1) throw err;
-        const delay = baseDelay * Math.pow(2, i) + Math.random() * 500;
-        console.warn(`[Auth] Query failed, retrying in ${Math.round(delay)}ms...`, err);
-        await new Promise(r => setTimeout(r, delay));
-      }
-    }
-    throw new Error('Unreachable');
-  };
-
-  // Check all premium statuses - serialized in 2 batches to reduce connection pressure
+  // Check all premium statuses - runs in BACKGROUND, does NOT block render
   const checkAllStatuses = async (userId: string) => {
+    // Prevent duplicate concurrent enrichment
+    if (enrichingRef.current) return;
+    enrichingRef.current = true;
+    
     try {
-      // Batch 1: Critical auth queries + premium_users detail (3 connections)
-      const [isPremiumResult, userPacksResult, premiumDetailResult] = await retryQuery(() =>
-        Promise.all([
-          supabase.rpc('is_premium'),
-          supabase.rpc('get_user_packs', { _user_id: userId }),
-          supabase
-            .from('premium_users')
-            .select('plan_type, expires_at, is_active')
-            .eq('user_id', userId)
-            .order('expires_at', { ascending: false })
-            .limit(2),
-        ])
-      );
-
-      // Batch 2: Secondary queries + planos2 (3 connections) - after batch 1 releases
-      const [expiredPacksResult, musicosResult, planos2Result] = await retryQuery(() =>
-        Promise.all([
-          supabase.rpc('get_user_expired_packs', { _user_id: userId }),
-          supabase
-            .from('premium_musicos_users')
-            .select('*')
-            .eq('user_id', userId)
-            .eq('is_active', true)
-            .or('expires_at.is.null,expires_at.gt.now()')
-            .maybeSingle(),
-          supabase
-            .from('planos2_subscriptions')
-            .select('plan_slug, is_active, credits_per_month, daily_prompt_limit, has_image_generation, has_video_generation, cost_multiplier')
-            .eq('user_id', userId)
-            .maybeSingle(),
-        ])
-      );
+      // Run ALL 6 queries in parallel (single batch) - no retry, no serialization
+      const [isPremiumResult, userPacksResult, premiumDetailResult, expiredPacksResult, musicosResult, planos2Result] = await Promise.allSettled([
+        supabase.rpc('is_premium'),
+        supabase.rpc('get_user_packs', { _user_id: userId }),
+        supabase
+          .from('premium_users')
+          .select('plan_type, expires_at, is_active')
+          .eq('user_id', userId)
+          .order('expires_at', { ascending: false })
+          .limit(2),
+        supabase.rpc('get_user_expired_packs', { _user_id: userId }),
+        supabase
+          .from('premium_musicos_users')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('is_active', true)
+          .or('expires_at.is.null,expires_at.gt.now()')
+          .maybeSingle(),
+        supabase
+          .from('planos2_subscriptions')
+          .select('plan_slug, is_active, credits_per_month, daily_prompt_limit, has_image_generation, has_video_generation, cost_multiplier')
+          .eq('user_id', userId)
+          .maybeSingle(),
+      ]);
 
       // Process prompts premium status
-      const premiumStatus = !isPremiumResult.error && isPremiumResult.data === true;
-      setIsPremium(premiumStatus);
+      const isPremRes = isPremiumResult.status === 'fulfilled' ? isPremiumResult.value : null;
+      const premiumStatus = isPremRes && !isPremRes.error && isPremRes.data === true;
+      setIsPremium(!!premiumStatus);
 
-      // Process premium detail from batch 1 result (no extra query needed)
-      if (premiumStatus && !premiumDetailResult.error && premiumDetailResult.data) {
-        const activeRecord = (premiumDetailResult.data as any[]).find((r: any) => r.is_active);
+      // Process premium detail
+      const premDetailRes = premiumDetailResult.status === 'fulfilled' ? premiumDetailResult.value : null;
+      if (premiumStatus && premDetailRes && !premDetailRes.error && premDetailRes.data) {
+        const activeRecord = (premDetailRes.data as any[]).find((r: any) => r.is_active);
         if (activeRecord) {
           setPlanType(activeRecord.plan_type);
           
-          // Check if subscription expires today or tomorrow
           if (activeRecord.expires_at) {
             const expiresDate = new Date(activeRecord.expires_at);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
-            
             const expiresDay = new Date(expiresDate);
             expiresDay.setHours(0, 0, 0, 0);
             
@@ -201,9 +178,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setPlanType(null);
         setExpiringStatus(null);
         
-        // Check for expired subscription from same batch result
-        if (!premiumDetailResult.error && premiumDetailResult.data) {
-          const expiredRecord = (premiumDetailResult.data as any[]).find((r: any) => !r.is_active && r.expires_at);
+        if (premDetailRes && !premDetailRes.error && premDetailRes.data) {
+          const expiredRecord = (premDetailRes.data as any[]).find((r: any) => !r.is_active && r.expires_at);
           if (expiredRecord) {
             const expiresAt = new Date(expiredRecord.expires_at);
             const now = new Date();
@@ -225,30 +201,31 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
 
       // Process user packs
-      if (!userPacksResult.error) {
-        const packList = (userPacksResult.data || []) as PackAccess[];
+      const packsRes = userPacksResult.status === 'fulfilled' ? userPacksResult.value : null;
+      if (packsRes && !packsRes.error) {
+        const packList = (packsRes.data || []) as PackAccess[];
         setUserPacks(packList);
         setHasBonusAccess(packList.some((p: PackAccess) => p.has_bonus));
       } else {
-        console.error("Error fetching user packs:", userPacksResult.error);
         setUserPacks([]);
         setHasBonusAccess(false);
       }
 
       // Process expired packs
-      if (!expiredPacksResult.error) {
-        setExpiredPacks((expiredPacksResult.data || []) as PackAccess[]);
+      const expPacksRes = expiredPacksResult.status === 'fulfilled' ? expiredPacksResult.value : null;
+      if (expPacksRes && !expPacksRes.error) {
+        setExpiredPacks((expPacksRes.data || []) as PackAccess[]);
       } else {
-        console.error("Error fetching expired packs:", expiredPacksResult.error);
         setExpiredPacks([]);
       }
 
       // Process musicos status
-      if (!musicosResult.error && musicosResult.data) {
+      const musicosRes = musicosResult.status === 'fulfilled' ? musicosResult.value : null;
+      if (musicosRes && !musicosRes.error && musicosRes.data) {
         setIsMusicosPremium(true);
-        setMusicosPlanType(musicosResult.data.plan_type);
-        setMusicosBillingPeriod(musicosResult.data.billing_period);
-        setMusicosExpiresAt(musicosResult.data.expires_at);
+        setMusicosPlanType(musicosRes.data.plan_type);
+        setMusicosBillingPeriod(musicosRes.data.billing_period);
+        setMusicosExpiresAt(musicosRes.data.expires_at);
       } else {
         setIsMusicosPremium(false);
         setMusicosPlanType(null);
@@ -257,14 +234,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
 
       // Process planos2 subscription
-      if (!planos2Result.error && planos2Result.data) {
-        setPlanos2Subscription(planos2Result.data as Planos2Subscription);
+      const planos2Res = planos2Result.status === 'fulfilled' ? planos2Result.value : null;
+      if (planos2Res && !planos2Res.error && planos2Res.data) {
+        setPlanos2Subscription(planos2Res.data as Planos2Subscription);
       } else {
         setPlanos2Subscription(null);
       }
     } catch (error) {
       console.error('Error checking statuses:', error);
-      resetAllStates();
+      // Don't reset states on error - keep whatever was loaded
+    } finally {
+      enrichingRef.current = false;
     }
   };
 
@@ -292,12 +272,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
-        // Defer async operations with setTimeout to avoid deadlocks
         if (currentSession?.user) {
+          // Release loading immediately - enrichment happens in background
+          setIsLoading(false);
+          // Defer async operations with setTimeout to avoid deadlocks
           setTimeout(() => {
             checkAllStatuses(currentSession.user.id)
-              .catch(err => console.error('[Auth] Status check failed:', err))
-              .finally(() => setIsLoading(false));
+              .catch(err => console.error('[Auth] Status check failed:', err));
           }, 0);
         } else {
           resetAllStates();
@@ -306,35 +287,35 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     );
 
-    // THEN check for existing session (only once) with safety timeout
+    // THEN check for existing session (only once)
     if (!isInitialized.current) {
       isInitialized.current = true;
       
+      // Safety timeout reduced to 3s
       const safetyTimeout = setTimeout(() => {
-        console.warn('[Auth] Safety timeout: forcing loading=false after 8s');
+        console.warn('[Auth] Safety timeout: forcing loading=false after 3s');
         setIsLoading(false);
-      }, 8000);
+      }, 3000);
 
       supabase.auth.getSession()
-        .then(async ({ data: { session: existingSession } }) => {
+        .then(({ data: { session: existingSession } }) => {
+          clearTimeout(safetyTimeout);
           setSession(existingSession);
           setUser(existingSession?.user ?? null);
           
-          if (existingSession?.user) {
-            try {
-              await checkAllStatuses(existingSession.user.id);
-            } catch (err) {
-              console.error('[Auth] checkAllStatuses failed:', err);
-            }
-          }
+          // Release loading IMMEDIATELY after session is known
           setIsLoading(false);
+          
+          if (existingSession?.user) {
+            // Enrich in background - don't block render
+            checkAllStatuses(existingSession.user.id)
+              .catch(err => console.error('[Auth] checkAllStatuses failed:', err));
+          }
         })
         .catch((err) => {
+          clearTimeout(safetyTimeout);
           console.error('[Auth] getSession failed:', err);
           setIsLoading(false);
-        })
-        .finally(() => {
-          clearTimeout(safetyTimeout);
         });
     }
 
