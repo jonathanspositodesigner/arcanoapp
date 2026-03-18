@@ -21,6 +21,7 @@ export const BeforeAfterSlider = ({
   afterImage, 
   label,
   size = "default",
+  compact = false,
   onZoomClick,
   locale = 'pt',
   aspectRatio,
