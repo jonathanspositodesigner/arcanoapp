@@ -65,7 +65,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.oldPhotoRestored'),
       badge: "Foto Antiga",
       badgeColor: "from-amber-500 to-orange-500",
-      aspectRatio: "1/1"
+      aspectRatio: "5/3"
     },
     {
       before: isMobile ? "/images/upscaler-food-antes-mobile.webp" : upscalerFoodAntes,
