@@ -39,12 +39,18 @@ const excludedPaths = [
   "/prevenda-pack4",
   "/pack-agendas",
   "/obrigado",
+  // Biblioteca de Artes (plataforma isolada)
+  "/biblioteca-artes",
+  "/biblioteca-artes-hub",
+  "/biblioteca-artes-musicos",
+  "/planos-artes",
+  "/login-artes",
+  "/login-artes-musicos",
 ];
 
 const showOnPaths = [
   "/ferramentas-ia-aplicativo",
   "/biblioteca-prompts",
-  "/biblioteca-artes",
   "/promptverso",
   "/planos",
   "/contribuir",
