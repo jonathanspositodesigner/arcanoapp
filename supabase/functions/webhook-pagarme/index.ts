@@ -1433,6 +1433,82 @@ serve(async (req) => {
       }
     }
 
+    // =============================================
+    // ANTIFRAUDE REPROVADO — retry automático sem antifraude (1x)
+    // =============================================
+    else if (eventType === 'charge.antifraud_reproved') {
+      const chargeId = eventData?.id
+      console.log(`\n🛡️ [${requestId}] ANTIFRAUDE REPROVADO — charge: ${chargeId}`)
+
+      if (order.antifraud_retry_done) {
+        console.log(`   ├─ ⏭️ Retry já realizado anteriormente, ignorando`)
+        await supabase.from('webhook_logs').insert({
+          platform: 'pagarme',
+          event_type: eventType,
+          transaction_id: idempotencyKey,
+          status: 'antifraud_retry_already_done',
+          email: order.user_email,
+          payload: body,
+        })
+      } else {
+        // Marcar ANTES de chamar a API (evita race condition)
+        await supabase.from('asaas_orders').update({
+          antifraud_retry_done: true,
+          updated_at: new Date().toISOString()
+        }).eq('id', order.id)
+
+        console.log(`   ├─ 🔄 Retentando cobrança sem antifraude...`)
+
+        try {
+          const retryResponse = await fetch(
+            `https://api.pagar.me/core/v5/charges/${chargeId}/retry`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + btoa(pagarmeSecretKey + ':'),
+              },
+            }
+          )
+
+          const retryBody = await retryResponse.text()
+          console.log(`   ├─ 📡 Pagar.me retry response: ${retryResponse.status}`)
+          console.log(`   ├─ 📡 Pagar.me retry body: ${retryBody.slice(0, 500)}`)
+
+          await supabase.from('webhook_logs').insert({
+            platform: 'pagarme',
+            event_type: eventType,
+            transaction_id: idempotencyKey,
+            status: retryResponse.ok ? 'antifraud_retry_sent' : 'antifraud_retry_failed',
+            email: order.user_email,
+            product_name: product?.title,
+            amount: Number(order.amount),
+            payload: { 
+              original_event: body, 
+              retry_status: retryResponse.status, 
+              retry_response: retryBody.slice(0, 1000) 
+            },
+          })
+
+          if (retryResponse.ok) {
+            console.log(`   ├─ ✅ Retry enviado com sucesso — aguardando novo webhook do Pagar.me`)
+          } else {
+            console.error(`   ├─ ❌ Retry falhou: ${retryResponse.status} — ${retryBody.slice(0, 200)}`)
+          }
+        } catch (retryErr: any) {
+          console.error(`   ├─ ❌ Erro de rede no retry: ${retryErr.message}`)
+          await supabase.from('webhook_logs').insert({
+            platform: 'pagarme',
+            event_type: eventType,
+            transaction_id: idempotencyKey,
+            status: 'antifraud_retry_error',
+            email: order.user_email,
+            payload: { original_event: body, error: retryErr.message },
+          })
+        }
+      }
+    }
+
     else {
       console.log(`   ├─ ⏭️ Evento ignorado: ${eventType} (status atual: ${order.status})`)
       // Logar eventos ignorados também
