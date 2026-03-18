@@ -94,7 +94,7 @@ export function FloatingToolsNav() {
           );
         })}
       </div>
-      <MyCreationsModal open={showCreations} onOpenChange={setShowCreations} />
+      <MyCreationsModal open={showCreations} onClose={() => setShowCreations(false)} />
     </>
   );
 }
