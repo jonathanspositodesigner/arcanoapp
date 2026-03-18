@@ -327,7 +327,7 @@ const PlanosUpscalerArcano = () => {
   ];
 
   const pricingPlans: Array<{
-    key: string; name: string; price: string; credits: string; creditsCount: string;
+    key: string; name: string; price: string; originalPrice: string; credits: string; creditsCount: string;
     tagline: string; productSlug: string; desktopOrder: string;
     features: Array<{ text: string; included: boolean }>;
     isLifetime?: boolean; bestSeller?: boolean; bestValue?: boolean;
