@@ -5,7 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X, User, Rocket, PenTool } from "lucide-react";
+import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X, User, Rocket, PenTool, Flame, ShieldCheck, Headset, Image, Video, Award } from "lucide-react";
+import { invokeCheckout, preWarmCheckout } from "@/lib/checkoutFetch";
+import { useProcessingButton } from "@/hooks/useProcessingButton";
+import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
+import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
@@ -184,6 +188,368 @@ const TrustBadges = ({ t }: { t: (key: string) => string }) => (
     </span>
   </div>
 );
+
+// Social proof images for stats bar
+const socialProofImages = [
+  "/images/social-proof-1.webp",
+  "/images/social-proof-2.webp",
+  "/images/social-proof-3.webp",
+];
+
+const PricingStatsBar = () => {
+  const [totalImages, setTotalImages] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const { data } = await supabase.rpc('get_ai_tools_cost_averages');
+      if (data) {
+        const total = data.reduce((acc: number, tool: any) => acc + (tool.total_completed || 0), 0);
+        setTotalImages(total);
+      }
+      setLoaded(true);
+    };
+    fetchStats();
+  }, []);
+
+  const animatedImages = useAnimatedNumber(totalImages, 1500);
+  const animatedSatisfaction = useAnimatedNumber(loaded ? 100 : 0, 1500);
+
+  return (
+    <div className="max-w-4xl mx-auto mb-10 px-2">
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm px-4 sm:px-6 py-4 flex flex-col items-center gap-4">
+        <div className="flex items-center gap-3 w-full justify-center">
+          <div className="flex -space-x-2 shrink-0">
+            {socialProofImages.map((src, i) => (
+              <img key={i} src={src} alt="" width="32" height="32" decoding="async" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-black object-cover" />
+            ))}
+          </div>
+          <span className="text-white/80 text-xs sm:text-sm font-medium leading-tight">
+            Junte-se a + de 3200 criadores em todo o mundo.
+          </span>
+        </div>
+        <div className="flex items-center justify-center gap-8 w-full">
+          <div className="flex flex-col items-center gap-0.5">
+            <Image className="w-5 h-5 text-fuchsia-400 mb-1" />
+            <div className="flex items-center gap-1">
+              <span className="text-white font-bold text-base sm:text-lg">{animatedImages.displayValue.toLocaleString('pt-BR')}</span>
+              <span className="text-fuchsia-400 text-lg font-bold">+</span>
+            </div>
+            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium text-center">Imagens Geradas</span>
+          </div>
+          <div className="flex flex-col items-center gap-0.5">
+            <Award className="w-5 h-5 text-yellow-500 mb-1" />
+            <div className="flex items-center gap-0.5">
+              <span className="text-white font-bold text-base sm:text-lg">{animatedSatisfaction.displayValue}</span>
+              <span className="text-yellow-500 text-lg font-bold">%</span>
+            </div>
+            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium text-center">Satisfação</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface UpscalerPlan {
+  name: string;
+  price: string;
+  originalPrice: string | null;
+  credits: string;
+  creditsCount: string;
+  images: number | string;
+  tagline?: string;
+  features: { text: string; included: boolean }[];
+  bestSeller?: boolean;
+  hasCountdown?: boolean;
+  isLifetime?: boolean;
+  productSlug: string;
+}
+
+const upscalerPlans: UpscalerPlan[] = [
+  {
+    name: "Starter",
+    price: "24,90",
+    originalPrice: null,
+    credits: "25 imagens",
+    creditsCount: "1.500 créditos",
+    images: 25,
+    tagline: "Para começar",
+    productSlug: "landing-starter-avulso",
+    features: [
+      { text: "Atualizações diárias", included: true },
+      { text: "Acesso às Ferramentas de IA", included: true },
+      { text: "Suporte exclusivo via WhatsApp", included: true },
+      { text: "Prompts premium ilimitados", included: true },
+      { text: "Geração de Imagem com NanoBanana Pro", included: false },
+      { text: "Geração de Vídeo com Veo 3", included: false },
+    ],
+  },
+  {
+    name: "Pro",
+    price: "37,00",
+    originalPrice: null,
+    credits: "70 imagens",
+    creditsCount: "4.200 créditos",
+    images: 70,
+    tagline: "3x mais créditos por mais R$12",
+    bestSeller: true,
+    productSlug: "landing-pro-avulso",
+    features: [
+      { text: "Atualizações diárias", included: true },
+      { text: "Acesso às Ferramentas de IA", included: true },
+      { text: "Suporte exclusivo via WhatsApp", included: true },
+      { text: "Prompts premium ilimitados", included: true },
+      { text: "Geração de Imagem com NanoBanana Pro", included: true },
+      { text: "Geração de Vídeo com Veo 3", included: true },
+    ],
+  },
+  {
+    name: "Ultimate",
+    price: "79,90",
+    originalPrice: null,
+    credits: "233 imagens",
+    creditsCount: "14.000 créditos",
+    images: 233,
+    tagline: "Ideal para designers e criadores ativos",
+    hasCountdown: true,
+    productSlug: "landing-ultimate-avulso",
+    features: [
+      { text: "Atualizações diárias", included: true },
+      { text: "Acesso às Ferramentas de IA", included: true },
+      { text: "Suporte exclusivo via WhatsApp", included: true },
+      { text: "Prompts premium ilimitados", included: true },
+      { text: "Geração de Imagem com NanoBanana Pro", included: true },
+      { text: "Geração de Vídeo com Veo 3", included: true },
+    ],
+  },
+  {
+    name: "Vitalício",
+    price: "99,90",
+    originalPrice: null,
+    credits: "Acesso vitalício",
+    creditsCount: "Todas as ferramentas para sempre",
+    images: "∞",
+    tagline: "Acesso permanente a tudo",
+    isLifetime: true,
+    productSlug: "",
+    features: [
+      { text: "Melhore imagens com IA", included: true },
+      { text: "Remova fundos automaticamente", included: true },
+      { text: "Acesso vitalício", included: true },
+      { text: "Todas as atualizações futuras", included: true },
+      { text: "Geração de Imagem com NanoBanana Pro", included: true },
+      { text: "Geração de Vídeo com Veo 3", included: true },
+    ],
+  },
+];
+
+const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { isPremium: boolean; tool: ToolData | null; handlePurchaseLegacy: () => void; t: (key: string) => string }) => {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [showPreCheckout, setShowPreCheckout] = useState(false);
+  const [preCheckoutSlug, setPreCheckoutSlug] = useState<string | null>(null);
+  const { isSubmitting: isProcessing, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
+
+  useEffect(() => {
+    const timer = setTimeout(() => preWarmCheckout(), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        setUserEmail(user.email ?? null);
+      }
+    };
+    getUser();
+  }, []);
+
+  const handlePurchase = (plan: UpscalerPlan) => {
+    if (plan.isLifetime) {
+      handlePurchaseLegacy();
+      return;
+    }
+    if (!startCheckout()) return;
+    if (typeof window !== "undefined" && (window as any).fbq) {
+      (window as any).fbq("track", "InitiateCheckout", {
+        content_name: plan.productSlug,
+        content_category: "Upscaler Bundle",
+        content_type: "product",
+        currency: "BRL",
+      });
+    }
+    setPreCheckoutSlug(plan.productSlug);
+    setShowPreCheckout(true);
+    endCheckout();
+  };
+
+  return (
+    <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
+      <div className="max-w-7xl mx-auto">
+        <AnimatedSection as="div" delay={100}>
+          <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-3 tracking-wide">
+            {t('tools:upscaler.finalCTA.title')} <span className="text-fuchsia-400">{t('tools:upscaler.finalCTA.subtitle')}</span>
+          </h2>
+          <p className="text-white/50 text-center text-sm mb-8 max-w-xl mx-auto">
+            Escolha o melhor pacote para você e comece agora
+          </p>
+        </AnimatedSection>
+
+        <PricingStatsBar />
+
+        <StaggeredAnimation
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-6 lg:gap-5 max-w-6xl mx-auto px-2 sm:px-4"
+          itemClassName="w-full"
+          staggerDelay={100}
+          animation="fade-up"
+        >
+          {upscalerPlans.map((plan) => (
+            <div key={plan.name} className="flex flex-col h-full w-full">
+              <Card className={`relative flex flex-col rounded-2xl bg-white/[0.03] w-full h-full p-5 sm:p-6 lg:p-7 min-h-[420px] lg:min-h-[520px] ${
+                plan.bestSeller ? "border-2 border-lime-400 shadow-[0_0_40px_-8px_rgba(163,230,53,0.25)]" :
+                plan.hasCountdown ? "border-2 border-fuchsia-500 shadow-[0_0_40px_-8px_rgba(217,70,239,0.25)]" :
+                plan.isLifetime ? "border-2 border-amber-500 shadow-[0_0_40px_-8px_rgba(245,158,11,0.25)]" :
+                "border border-white/10 hover:border-white/20 transition-colors"
+              }`}>
+                {plan.bestSeller && (
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-4 py-1">
+                    Mais Vendido
+                  </Badge>
+                )}
+                {plan.hasCountdown && (
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-fuchsia-600 to-blue-500 text-white px-4 py-1">
+                    MELHOR CUSTO/BENEFÍCIO
+                  </Badge>
+                )}
+                {plan.isLifetime && (
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold px-4 py-1">
+                    ♾️ ACESSO VITALÍCIO
+                  </Badge>
+                )}
+
+                {/* Plan Icon */}
+                <div className="flex justify-center mb-3 lg:mb-5">
+                  {plan.isLifetime ? (
+                    <Infinity className="w-8 h-8 lg:w-10 lg:h-10 text-amber-400" />
+                  ) : plan.bestSeller ? (
+                    <Crown className="w-8 h-8 lg:w-10 lg:h-10 text-lime-400" />
+                  ) : plan.hasCountdown ? (
+                    <Flame className="w-8 h-8 lg:w-10 lg:h-10 text-fuchsia-500" />
+                  ) : (
+                    <Rocket className="w-8 h-8 lg:w-10 lg:h-10 text-white/60" />
+                  )}
+                </div>
+
+                <div className="text-center mb-4 lg:mb-5 min-h-[36px] flex items-center justify-center">
+                  <h3 className="text-lg lg:text-xl font-bold text-white">{plan.name}</h3>
+                </div>
+
+                {/* Price */}
+                <div className="text-center mb-5 lg:mb-6">
+                  <div className="flex items-baseline justify-center gap-0.5">
+                    <span className="text-fuchsia-400 text-base lg:text-lg">R$</span>
+                    <span className="text-4xl lg:text-5xl font-bold text-white">{plan.price}</span>
+                  </div>
+                </div>
+
+                {/* CTA */}
+                <Button
+                  onClick={() => handlePurchase(plan)}
+                  disabled={isProcessing}
+                  className={`w-full mb-2 text-sm lg:text-base h-10 lg:h-12 ${
+                    plan.isLifetime ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold" :
+                    plan.bestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" :
+                    plan.hasCountdown ? "bg-gradient-to-r from-fuchsia-600 to-blue-500 hover:from-fuchsia-700 hover:to-blue-600 text-white font-semibold" :
+                    "bg-white/10 hover:bg-white/20 text-white/80"
+                  }`}
+                >
+                  Comprar agora
+                </Button>
+                {plan.tagline && (
+                  <p className="text-[10px] lg:text-[11px] text-fuchsia-400 text-center mb-2 italic">{plan.tagline}</p>
+                )}
+
+                {/* Images badge */}
+                <div className="flex flex-col items-center mb-5 lg:mb-6 mt-3 gap-1.5">
+                  <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs lg:text-sm font-bold text-white ${
+                    plan.isLifetime ? "bg-gradient-to-r from-amber-500 to-orange-500" : "bg-gradient-to-r from-fuchsia-600 to-blue-500"
+                  }`}>
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {plan.credits}
+                  </span>
+                  <span className="text-[10px] lg:text-[11px] text-white/40 font-medium">{plan.creditsCount}</span>
+                </div>
+
+                {/* Features */}
+                <ul className="space-y-2.5 lg:space-y-3 flex-1">
+                  {plan.features.map((f, i) => (
+                    <li key={i} className="flex items-start gap-2 text-xs lg:text-sm">
+                      {f.included ? (
+                        <Check className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-fuchsia-400 shrink-0 mt-0.5" />
+                      ) : (
+                        <X className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-orange-500 shrink-0 mt-0.5" />
+                      )}
+                      <span className={f.included ? "text-white/70" : "text-orange-500"}>{f.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            </div>
+          ))}
+        </StaggeredAnimation>
+
+        {/* Acesso Imediato + Trust Badges */}
+        <div className="mt-12 text-center">
+          <h3 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white tracking-tight mb-6">
+            ACESSO <span className="text-fuchsia-400">IMEDIATO</span>
+          </h3>
+          <div className="max-w-4xl mx-auto rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 sm:px-8 py-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 sm:gap-4">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <ShieldCheck className="w-5 h-5 text-fuchsia-400 shrink-0" />
+              <div className="text-left">
+                <p className="text-white text-sm font-semibold leading-tight">Pagamento seguro</p>
+                <p className="text-white/50 text-xs">transmissão criptografada SSL</p>
+              </div>
+            </div>
+            <div className="hidden sm:block w-px h-8 bg-white/10" />
+            <div className="block sm:hidden w-full h-px bg-white/10" />
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <Zap className="w-5 h-5 text-fuchsia-400 shrink-0" />
+              <div className="text-left">
+                <p className="text-white text-sm font-semibold leading-tight">Pagamento instantâneo</p>
+                <p className="text-white/50 text-xs">Os pontos chegam instantaneamente.</p>
+              </div>
+            </div>
+            <div className="hidden sm:block w-px h-8 bg-white/10" />
+            <div className="block sm:hidden w-full h-px bg-white/10" />
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <Headset className="w-5 h-5 text-fuchsia-400 shrink-0" />
+              <div className="text-left">
+                <p className="text-white text-sm font-semibold leading-tight">Suporte 24/7</p>
+                <p className="text-white/50 text-xs">estamos aqui para ajudar</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* PreCheckout Modal */}
+      <PreCheckoutModal
+        isOpen={showPreCheckout}
+        onClose={() => { setShowPreCheckout(false); setPreCheckoutSlug(null); }}
+        userEmail={userEmail}
+        userId={userId}
+        productSlug={preCheckoutSlug || undefined}
+        modalTitle="Finalizar Compra"
+        colorScheme="fuchsia"
+      />
+    </AnimatedSection>
+  );
+};
+
 
 const PlanosUpscalerArcano69v2 = () => {
   const navigate = useNavigate();
@@ -559,82 +925,8 @@ const PlanosUpscalerArcano69v2 = () => {
           {/* PROVA SOCIAL - Lazy loaded with Intersection Observer */}
           <LazySocialProofWrapper locale="pt" onZoomClick={openModal} isMobile={isMobile} />
 
-          {/* SEÇÃO DE PREÇO E CTA - Com Card */}
-          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
-            <div className="max-w-lg mx-auto">
-              <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
-                <CardContent className="p-5 md:p-8 text-center">
-                  {/* Badge de desconto */}
-                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-sm md:text-lg font-bold mb-4 md:mb-6">
-                    🔥 30% OFF
-                  </Badge>
-
-                  {isPremium && (
-                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-4 md:mb-6">
-                      <Crown className="h-3 w-3 md:h-4 md:w-4" />
-                      {t('tools:upscaler.finalCTA.memberDiscount')}
-                    </div>
-                  )}
-
-                  <h2 className="font-bebas text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6 tracking-wide">
-                    {t('tools:upscaler.finalCTA.title')} <span className="text-fuchsia-400">{t('tools:upscaler.finalCTA.subtitle')}</span>
-                  </h2>
-
-                  {/* Preços */}
-                  <div className="mb-5 md:mb-6">
-                    <span className="text-white/40 text-lg md:text-xl line-through block mb-1">{formatPrice(originalPrice)}</span>
-                    <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2">
-                      {formatPrice(price)}
-                    </div>
-                    <p className="text-white/60 text-base md:text-lg">
-                      {t('tools:upscaler.finalCTA.or')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.finalCTA.installments')} {formatPrice(installmentPrice)}</span>
-                    </p>
-                    <p className="text-white/40 text-xs md:text-sm mt-2">{t('tools:upscaler.finalCTA.oneTimePayment')}</p>
-                  </div>
-
-                  {/* Features checklist */}
-                  <div className="grid gap-2 md:gap-3 mb-5 md:mb-6 text-left">
-                    {features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2 md:gap-3 text-white/80">
-                        <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
-                          <Check className="h-3 w-3 md:h-4 md:w-4 text-green-400" />
-                        </div>
-                        <span className="text-xs md:text-sm">{feature.text}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Alerta de urgência */}
-                  <div className="bg-gradient-to-r from-red-600/20 to-orange-600/20 border border-red-500/40 rounded-xl md:rounded-2xl p-2.5 md:p-3 mb-5 md:mb-6">
-                    <div className="flex items-center justify-center gap-2 text-red-400 text-xs md:text-sm">
-                      <span>🔥</span>
-                      <span className="font-bold">Últimos dias de venda do Upscaler na versão vitalícia</span>
-                    </div>
-                  </div>
-
-                  <div className="px-0 md:px-2">
-                    <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
-                  </div>
-
-                  {/* Badges de pagamento */}
-                  <div className="flex flex-wrap justify-center gap-3 md:gap-4 mt-5 md:mt-6 text-white/50 text-xs">
-                    <span className="flex items-center gap-1">
-                      <CreditCard className="h-3 w-3" />
-                      {t('tools:upscaler.finalCTA.card')}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="text-sm">💵</span>
-                      {t('tools:upscaler.finalCTA.pix')}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Shield className="h-3 w-3" />
-                      {t('tools:upscaler.finalCTA.secure')}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </AnimatedSection>
+          {/* SEÇÃO DE PREÇO E CTA - 4 Cards */}
+          <UpscalerPricingSection isPremium={isPremium} tool={tool} handlePurchaseLegacy={handlePurchase} t={t} />
 
           {/* BENEFÍCIOS (O QUE FAZ) */}
           <AnimatedSection className="px-4 py-20 bg-black/30">
