@@ -301,7 +301,7 @@ const PlanosUpscalerArcano = () => {
   // Loading state removido do Hero para otimizar LCP
   // O loading agora é usado apenas nas seções que dependem dos dados (preço)
 
-  const price = tool?.price_vitalicio || 2990;
+  const price = 9990;
   const originalPrice = 9700;
   const installmentPrice = Math.ceil(price / 3);
 
@@ -312,6 +312,69 @@ const PlanosUpscalerArcano = () => {
     { icon: ImagePlus, text: t('tools:upscaler.benefits.removeBackground') },
     { icon: Infinity, text: t('tools:upscaler.benefits.lifetimeAccess') },
     { icon: Zap, text: t('tools:upscaler.benefits.futureUpdates') },
+  ];
+
+  const pricingPlans = [
+    {
+      key: "starter",
+      name: "Starter",
+      price: "24,90",
+      credits: "25 imagens",
+      creditsCount: "1.500 créditos",
+      tagline: "Para começar",
+      productSlug: "landing-starter-avulso",
+      features: [
+        { text: "Atualizações diárias", included: true },
+        { text: "Acesso às Ferramentas de IA", included: true },
+        { text: "Suporte exclusivo via WhatsApp", included: true },
+        { text: "Prompts premium ilimitados", included: true },
+        { text: "Geração de Imagem com NanoBanana Pro", included: false },
+        { text: "Geração de Vídeo com Veo 3", included: false },
+      ],
+    },
+    {
+      key: "pro",
+      name: "Pro",
+      price: "37,00",
+      credits: "70 imagens",
+      creditsCount: "4.200 créditos",
+      tagline: "3x mais créditos por mais R$12",
+      productSlug: "landing-pro-avulso",
+      bestSeller: true,
+      features: [
+        { text: "Atualizações diárias", included: true },
+        { text: "Acesso às Ferramentas de IA", included: true },
+        { text: "Suporte exclusivo via WhatsApp", included: true },
+        { text: "Prompts premium ilimitados", included: true },
+        { text: "Geração de Imagem com NanoBanana Pro", included: true },
+        { text: "Geração de Vídeo com Veo 3", included: true },
+      ],
+    },
+    {
+      key: "ultimate",
+      name: "Ultimate",
+      price: "79,90",
+      credits: "233 imagens",
+      creditsCount: "14.000 créditos",
+      tagline: "Ideal para designers e criadores ativos",
+      productSlug: "landing-ultimate-avulso",
+      bestValue: true,
+      features: [
+        { text: "Atualizações diárias", included: true },
+        { text: "Acesso às Ferramentas de IA", included: true },
+        { text: "Suporte exclusivo via WhatsApp", included: true },
+        { text: "Prompts premium ilimitados", included: true },
+        { text: "Geração de Imagem com NanoBanana Pro", included: true },
+        { text: "Geração de Vídeo com Veo 3", included: true },
+      ],
+    },
+    {
+      key: "vitalicio",
+      name: "Vitalício",
+      productSlug: "upscaller-arcano-vitalicio",
+      isLifetime: true,
+      features: features.map((feature) => ({ text: feature.text, included: true })),
+    },
   ];
 
   const targetAudience = [
