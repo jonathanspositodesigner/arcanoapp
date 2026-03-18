@@ -28,7 +28,7 @@ export const useUpscalerCredits = (userId: string | undefined) => {
         trialCheckedRef.current = true;
         supabase.rpc('expire_landing_trial_credits', {
           _user_id: userId
-        }).catch(() => {}); // fire-and-forget
+        }).then(() => {}).catch(() => {}); // fire-and-forget
       }
 
       // Fetch breakdown
