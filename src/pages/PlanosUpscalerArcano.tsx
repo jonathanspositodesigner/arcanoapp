@@ -671,7 +671,7 @@ const PlanosUpscalerArcano = () => {
 
 
           {/* GALERIA - O que o Upscaler faz */}
-          <LazySection rootMargin="100px">
+          <LazySection rootMargin="1200px">
           {/* Fullscreen scroll-driven gallery - all devices */}
           <div>
             <AnimatedSection className="px-4 pt-20 pb-8 bg-black/30">
@@ -685,13 +685,7 @@ const PlanosUpscalerArcano = () => {
               </div>
             </AnimatedSection>
             <Suspense fallback={<div className="h-screen bg-white/5 animate-pulse" />}>
-              <ScrollDrivenGallery items={[
-                { beforeImage: galleryBefore1, afterImage: galleryAfter1, label: "Qualidade impressionante" },
-                { beforeImage: galleryBefore2, afterImage: galleryAfter2, label: "Detalhes nítidos" },
-                { beforeImage: galleryBefore3, afterImage: galleryAfter3, label: "Cores vibrantes" },
-                { beforeImage: galleryBefore4, afterImage: galleryAfter4, label: "Alta resolução" },
-                { beforeImage: galleryBefore5, afterImage: galleryAfter5, label: "Resultado profissional" },
-              ]} />
+              <ScrollDrivenGallery items={galleryItems} />
             </Suspense>
             <div className="bg-black/30 px-4 pb-20 pt-8">
               <div className="max-w-md mx-auto">
