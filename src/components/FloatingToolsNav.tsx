@@ -24,6 +24,18 @@ const excludedPaths = [
   "/ferramenta-ia-artes",
   "/gerar-imagem",
   "/gerar-video",
+  // Landing pages
+  "/planos-upscaler-arcano",
+  "/planos-forja-selos-3d",
+  "/planos-arcanocloner",
+  "/planos-creditos",
+  "/planos-upscaler-creditos",
+  "/arcanocloner-teste",
+  "/testecloner",
+  "/combo-artes-arcanas",
+  "/prevenda-pack4",
+  "/pack-agendas",
+  "/obrigado",
 ];
 
 const showOnPaths = [
