@@ -336,6 +336,7 @@ const PlanosUpscalerArcano = () => {
       key: "starter",
       name: "Starter",
       price: "24,90",
+      originalPrice: "29,90",
       credits: "25 imagens",
       creditsCount: "1.500 créditos",
       tagline: "Para começar",
