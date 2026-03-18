@@ -898,14 +898,27 @@ const PlanosUpscalerArcano = () => {
               </AnimatedSection>
               
               <Suspense fallback={<div className="h-[400px] md:h-[600px] bg-white/5 rounded-xl animate-pulse" />}>
-                <ExpandingGallery badgeText="Melhorado com o Upscaler Arcano" items={[
-                  { imageUrl: "/images/gallery/gallery-1.webp", label: "Qualidade impressionante" },
-                  { imageUrl: "/images/gallery/gallery-2.webp", label: "Detalhes nítidos" },
-                  { imageUrl: "/images/gallery/gallery-3.webp", label: "Cores vibrantes" },
-                  { imageUrl: "/images/gallery/gallery-4.webp", label: "Alta resolução" },
-                  { imageUrl: "/images/gallery/gallery-5.webp", label: "Resultado profissional" },
-                  { imageUrl: "/images/gallery/gallery-6.webp", label: "Detalhes e texturas realistas" },
-                ]} />
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 max-w-6xl mx-auto">
+                  {[
+                    { before: "/images/gallery/gallery-1.webp", after: "/images/gallery/gallery-1.webp", label: "Qualidade impressionante", badge: "Antes & Depois" },
+                    { before: "/images/gallery/gallery-2.webp", after: "/images/gallery/gallery-2.webp", label: "Detalhes nítidos", badge: "Antes & Depois" },
+                    { before: "/images/gallery/gallery-3.webp", after: "/images/gallery/gallery-3.webp", label: "Cores vibrantes", badge: "Antes & Depois" },
+                    { before: "/images/gallery/gallery-4.webp", after: "/images/gallery/gallery-4.webp", label: "Alta resolução", badge: "Antes & Depois" },
+                    { before: "/images/gallery/gallery-5.webp", after: "/images/gallery/gallery-5.webp", label: "Resultado profissional", badge: "Antes & Depois" },
+                    { before: "/images/gallery/gallery-6.webp", after: "/images/gallery/gallery-6.webp", label: "Detalhes e texturas realistas", badge: "Antes & Depois" },
+                  ].map((item, index) => (
+                    <LazyBeforeAfterSlider
+                      key={index}
+                      beforeImage={item.before}
+                      afterImage={item.after}
+                      label={item.label}
+                      badge={item.badge}
+                      badgeColor="from-fuchsia-500 to-pink-500"
+                      aspectRatio={isMobile ? "3/5" : "4/5"}
+                      locale="pt"
+                    />
+                  ))}
+                </div>
               </Suspense>
             </div>
 
