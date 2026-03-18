@@ -9,6 +9,17 @@ import galleryBefore4 from "@/assets/upscaler/5a.webp";
 import galleryAfter4 from "@/assets/upscaler/5d.webp";
 import galleryBefore5 from "@/assets/upscaler/6a.webp";
 import galleryAfter5 from "@/assets/upscaler/6d.webp";
+// Mobile-optimized gallery images
+import galleryBefore1Cel from "@/assets/upscaler/1a_cel.webp";
+import galleryAfter1Cel from "@/assets/upscaler/1d_cel.webp";
+import galleryBefore2Cel from "@/assets/upscaler/2a_cel.webp";
+import galleryAfter2Cel from "@/assets/upscaler/2d_cel.webp";
+import galleryBefore3Cel from "@/assets/upscaler/3a_cel.webp";
+import galleryAfter3Cel from "@/assets/upscaler/3d_cel.webp";
+import galleryBefore4Cel from "@/assets/upscaler/5a_cel.webp";
+import galleryAfter4Cel from "@/assets/upscaler/5d_cel.webp";
+import galleryBefore5Cel from "@/assets/upscaler/6a_cel.webp";
+import galleryAfter5Cel from "@/assets/upscaler/6d_cel.webp";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -37,8 +48,8 @@ const BeforeAfterGalleryPT = lazy(() => import("@/components/upscaler/sections/B
 const ExpandingGallery = lazy(() => import("@/components/combo-artes/ExpandingGallery"));
 const ScrollDrivenGallery = lazy(() => import("@/components/upscaler/ScrollDrivenGallery"));
 
-// Stable gallery items - defined outside component to prevent re-creation on re-renders
-const galleryItems = [
+// Desktop gallery items
+const galleryItemsDesktop = [
   { beforeImage: galleryBefore1, afterImage: galleryAfter1, label: "Qualidade impressionante" },
   { beforeImage: galleryBefore2, afterImage: galleryAfter2, label: "Detalhes nítidos" },
   { beforeImage: galleryBefore3, afterImage: galleryAfter3, label: "Cores vibrantes" },
@@ -46,6 +57,14 @@ const galleryItems = [
   { beforeImage: galleryBefore5, afterImage: galleryAfter5, label: "Resultado profissional" },
 ];
 
+// Mobile gallery items (optimized for phone screens)
+const galleryItemsMobile = [
+  { beforeImage: galleryBefore1Cel, afterImage: galleryAfter1Cel, label: "Qualidade impressionante" },
+  { beforeImage: galleryBefore2Cel, afterImage: galleryAfter2Cel, label: "Detalhes nítidos" },
+  { beforeImage: galleryBefore3Cel, afterImage: galleryAfter3Cel, label: "Cores vibrantes" },
+  { beforeImage: galleryBefore4Cel, afterImage: galleryAfter4Cel, label: "Alta resolução" },
+  { beforeImage: galleryBefore5Cel, afterImage: galleryAfter5Cel, label: "Resultado profissional" },
+];
 interface ToolData {
   id: string;
   name: string;
@@ -694,7 +713,7 @@ const PlanosUpscalerArcano = () => {
               </div>
             </AnimatedSection>
             <Suspense fallback={<div className="h-screen bg-white/5 animate-pulse" />}>
-              <ScrollDrivenGallery items={galleryItems} />
+              <ScrollDrivenGallery items={isMobile ? galleryItemsMobile : galleryItemsDesktop} />
             </Suspense>
             <div className="bg-black/30 px-4 pb-20 pt-8">
               <div className="max-w-md mx-auto">
