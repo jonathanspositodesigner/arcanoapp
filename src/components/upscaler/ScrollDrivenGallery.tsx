@@ -23,9 +23,11 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
       rafRef.current = requestAnimationFrame(() => {
         const container = containerRef.current;
         if (!container) return;
+
         const rect = container.getBoundingClientRect();
         const scrollableHeight = container.offsetHeight - window.innerHeight;
         if (scrollableHeight <= 0) return;
+
         const rawProgress = -rect.top / scrollableHeight;
         const clamped = Math.max(0, Math.min(1, rawProgress));
         setScrollProgress(clamped * totalItems);
@@ -34,60 +36,80 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
+
     return () => {
       window.removeEventListener("scroll", handleScroll);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [totalItems]);
 
+  useEffect(() => {
+    const uniqueUrls = Array.from(
+      new Set(items.flatMap(({ beforeImage, afterImage }) => [beforeImage, afterImage]).filter(Boolean))
+    );
+
+    uniqueUrls.forEach((src, index) => {
+      const img = new Image();
+      img.loading = "eager";
+      img.decoding = "async";
+      img.fetchPriority = index < 4 ? "high" : "auto";
+      img.src = src;
+      img.decode?.().catch(() => undefined);
+    });
+  }, [items]);
+
+  if (totalItems === 0) return null;
+
   const currentIndex = Math.min(Math.floor(scrollProgress), totalItems - 1);
   const sliderPosition = (1 - (scrollProgress - currentIndex)) * 100;
   const clampedSlider = scrollProgress >= totalItems ? 0 : Math.max(0, Math.min(100, sliderPosition));
 
-  const currentItem = items[currentIndex] || items[0];
-
   return (
-    <div
-      ref={containerRef}
-      style={{ height: `${totalItems * 100}vh` }}
-    >
-      {/* Hidden preload: all images rendered eagerly in DOM */}
-      <div className="sr-only" aria-hidden="true">
-        {items.map((item, i) => (
-          <div key={i}>
-            <img src={item.beforeImage} alt="" loading="eager" decoding="async" />
-            <img src={item.afterImage} alt="" loading="eager" decoding="async" />
-          </div>
-        ))}
-      </div>
+    <div ref={containerRef} style={{ height: `${totalItems * 100}vh` }}>
+      <div className="sticky top-0 h-screen w-screen overflow-hidden">
+        <div className="relative h-full w-full">
+          {items.map((item, i) => {
+            const isActive = i === currentIndex;
+            const beforeVisibility = i < currentIndex ? 0 : i > currentIndex ? 100 : clampedSlider;
 
-      <div className="sticky top-0 h-screen flex flex-col items-center justify-center">
-        <div className="relative w-full h-full overflow-hidden">
-          {/* After image (background) */}
-          <img
-            src={currentItem.afterImage}
-            alt="Depois"
-            className="absolute inset-0 w-full h-full object-cover"
-            draggable={false}
-          />
+            return (
+              <div
+                key={`${item.beforeImage}-${item.afterImage}-${i}`}
+                className={`absolute inset-0 ${isActive ? "opacity-100" : "opacity-0"}`}
+                style={{ willChange: "opacity" }}
+                aria-hidden={!isActive}
+              >
+                <img
+                  src={item.afterImage}
+                  alt="Depois"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  draggable={false}
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority={i < 2 ? "high" : "auto"}
+                />
 
-          {/* Before image (clipped) */}
-          <div
-            className="absolute inset-0 overflow-hidden"
-            style={{
-              clipPath: `inset(0 ${100 - clampedSlider}% 0 0)`,
-              willChange: "clip-path",
-            }}
-          >
-            <img
-              src={currentItem.beforeImage}
-              alt="Antes"
-              className="absolute inset-0 w-full h-full object-cover"
-              draggable={false}
-            />
-          </div>
+                <div
+                  className="absolute inset-0 overflow-hidden"
+                  style={{
+                    clipPath: `inset(0 ${100 - beforeVisibility}% 0 0)`,
+                    willChange: "clip-path",
+                  }}
+                >
+                  <img
+                    src={item.beforeImage}
+                    alt="Antes"
+                    className="absolute inset-0 h-full w-full object-cover"
+                    draggable={false}
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority={i < 2 ? "high" : "auto"}
+                  />
+                </div>
+              </div>
+            );
+          })}
 
-          {/* Slider line */}
           <div
             className="absolute top-0 bottom-0 w-[2px] bg-white/80 pointer-events-none"
             style={{ left: `${clampedSlider}%`, transform: "translateX(-50%)" }}
@@ -101,7 +123,6 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
           </div>
         </div>
 
-        {/* Progress dots */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
           <div className="flex items-center gap-2">
             {items.map((_, i) => (
@@ -111,15 +132,13 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
                   i === currentIndex
                     ? "w-8 h-2 bg-fuchsia-500"
                     : i < currentIndex
-                    ? "w-2 h-2 bg-fuchsia-500/50"
-                    : "w-2 h-2 bg-white/20"
+                      ? "w-2 h-2 bg-fuchsia-500/50"
+                      : "w-2 h-2 bg-white/20"
                 }`}
               />
             ))}
           </div>
-          <p className="text-white/30 text-xs animate-pulse">
-            Role para comparar ↕
-          </p>
+          <p className="text-white/30 text-xs animate-pulse">Role para comparar ↕</p>
         </div>
       </div>
     </div>
