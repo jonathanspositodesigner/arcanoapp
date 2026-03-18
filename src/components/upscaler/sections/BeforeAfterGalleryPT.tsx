@@ -41,7 +41,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: "Render 3D em alta definição",
       badge: "Render 3D",
       badgeColor: "from-purple-500 to-violet-600",
-      aspectRatio: "5/3"
+      aspectRatio: "3/5"
     },
     {
       before: upscalerLogoAntes,
