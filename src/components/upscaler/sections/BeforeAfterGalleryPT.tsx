@@ -49,7 +49,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.logoHD'),
       badge: "Logo",
       badgeColor: "from-blue-500 to-cyan-500",
-      aspectRatio: "5/3"
+      aspectRatio: "3/5"
     },
     {
       before: isMobile ? "/images/upscaler-produto-antes-mobile.webp" : upscalerProdutoAntes,
