@@ -327,7 +327,7 @@ const PlanosUpscalerArcano = () => {
   ];
 
   const pricingPlans: Array<{
-    key: string; name: string; price: string; credits: string; creditsCount: string;
+    key: string; name: string; price: string; originalPrice: string; credits: string; creditsCount: string;
     tagline: string; productSlug: string; desktopOrder: string;
     features: Array<{ text: string; included: boolean }>;
     isLifetime?: boolean; bestSeller?: boolean; bestValue?: boolean;
@@ -336,6 +336,7 @@ const PlanosUpscalerArcano = () => {
       key: "starter",
       name: "Starter",
       price: "24,90",
+      originalPrice: "29,90",
       credits: "25 imagens",
       creditsCount: "1.500 créditos",
       tagline: "Para começar",
@@ -354,6 +355,7 @@ const PlanosUpscalerArcano = () => {
       key: "pro",
       name: "Pro",
       price: "37,00",
+      originalPrice: "49,90",
       credits: "70 imagens",
       creditsCount: "4.200 créditos",
       tagline: "3x mais créditos por mais R$12",
@@ -373,6 +375,7 @@ const PlanosUpscalerArcano = () => {
       key: "ultimate",
       name: "Ultimate",
       price: "79,90",
+      originalPrice: "109,90",
       credits: "233 imagens",
       creditsCount: "14.000 créditos",
       tagline: "Ideal para designers e criadores ativos",
@@ -392,6 +395,7 @@ const PlanosUpscalerArcano = () => {
       key: "vitalicio",
       name: "Vitalício",
       price: "99,90",
+      originalPrice: "149,90",
       credits: "Acesso vitalício",
       creditsCount: "Uso ilimitado para sempre",
       tagline: "Pague uma vez, use para sempre",
@@ -817,6 +821,7 @@ const PlanosUpscalerArcano = () => {
                     </div>
 
                     <div className="text-center mb-5 lg:mb-6">
+                      <span className="text-white/40 text-sm line-through">R$ {plan.originalPrice}</span>
                       <div className="flex items-baseline justify-center gap-0.5">
                         <span className="text-fuchsia-400 text-base lg:text-lg">R$</span>
                         <span className="text-4xl lg:text-5xl font-bold text-white">{plan.price}</span>
