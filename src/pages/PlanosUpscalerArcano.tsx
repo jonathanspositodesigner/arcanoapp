@@ -900,7 +900,24 @@ const PlanosUpscalerArcano = () => {
           </AnimatedSection>
           </LazySection>
 
-          {/* COMO FUNCIONA */}
+          {/* ==================== GARANTIA ==================== */}
+          <AnimatedSection className="px-4 py-16 md:py-20">
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-gradient-to-br from-green-500/10 to-emerald-600/10 border border-green-500/30 rounded-3xl p-8 md:p-12 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-green-500/20 flex items-center justify-center mx-auto mb-6">
+                  <Shield className="h-8 w-8 text-green-400" />
+                </div>
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-white mb-4">
+                  Garantia incondicional de{" "}
+                  <span className="text-green-400">7 dias</span>
+                </h2>
+                <p className="text-white/60 max-w-md mx-auto">
+                  Se dentro de 7 dias você não gostar por qualquer motivo, basta nos enviar uma mensagem e devolveremos 100% do seu dinheiro. Sem perguntas, sem burocracia.
+                </p>
+              </div>
+            </div>
+          </AnimatedSection>
+
           <LazySection rootMargin="100px">
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-4xl mx-auto">
