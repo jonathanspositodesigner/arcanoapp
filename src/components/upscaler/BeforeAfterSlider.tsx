@@ -8,6 +8,7 @@ interface BeforeAfterSliderProps {
   afterImage: string;
   label?: string;
   size?: "default" | "large";
+  compact?: boolean;
   onZoomClick?: () => void;
   locale?: 'pt' | 'es';
   aspectRatio?: string;
