@@ -551,7 +551,8 @@ const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { 
 };
 
 
-  const PlanosUpscalerArcano69v2 = () => {
+const PlanosUpscalerArcano69v2 = () => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const { user, isPremium, hasAccessToPack, isLoading: authLoading } = usePremiumArtesStatus();
   const isMobile = useIsMobile();
