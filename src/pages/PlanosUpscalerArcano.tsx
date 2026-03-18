@@ -672,15 +672,15 @@ const PlanosUpscalerArcano = () => {
 
           {/* GALERIA - O que o Upscaler faz */}
           <LazySection rootMargin="100px">
-          {/* Desktop: Scroll-driven gallery */}
-          <div className="hidden md:block">
+          {/* Fullscreen scroll-driven gallery - all devices */}
+          <div>
             <AnimatedSection className="px-4 pt-20 pb-8 bg-black/30">
               <div className="max-w-5xl mx-auto">
                 <AnimatedSection as="div" delay={100}>
-                  <h2 className="font-space-grotesk font-bold text-3xl lg:text-4xl text-white text-center mb-3">
+                  <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
                     Melhorado com o <span className="text-fuchsia-400">Upscaler Arcano</span>
                   </h2>
-                  <p className="text-white/50 text-lg text-center mb-4">Veja o poder da nossa ferramenta</p>
+                  <p className="text-white/50 text-base md:text-lg text-center mb-4">Veja o poder da nossa ferramenta</p>
                 </AnimatedSection>
               </div>
             </AnimatedSection>
@@ -698,34 +698,6 @@ const PlanosUpscalerArcano = () => {
                 <CTAButton onClick={() => handlePurchase('upscaller-arcano-vitalicio')} isPremium={isPremium} t={t} />
               </div>
             </div>
-          </div>
-
-          {/* Mobile: Original ExpandingGallery */}
-          <div className="md:hidden">
-            <AnimatedSection className="px-4 py-20 bg-black/30">
-              <div className="max-w-5xl mx-auto">
-                <AnimatedSection as="div" delay={100}>
-                  <h2 className="font-space-grotesk font-bold text-2xl text-white text-center mb-3">
-                    Melhorado com o <span className="text-fuchsia-400">Upscaler Arcano</span>
-                  </h2>
-                  <p className="text-white/50 text-base text-center mb-12">Veja o poder da nossa ferramenta</p>
-                </AnimatedSection>
-                
-                <Suspense fallback={<div className="h-[400px] bg-white/5 rounded-xl animate-pulse" />}>
-                  <ExpandingGallery badgeText="Melhorado com o Upscaler Arcano" items={[
-                    { beforeImage: galleryBefore1, afterImage: galleryAfter1, label: "Qualidade impressionante" },
-                    { beforeImage: galleryBefore2, afterImage: galleryAfter2, label: "Detalhes nítidos" },
-                    { beforeImage: galleryBefore3, afterImage: galleryAfter3, label: "Cores vibrantes" },
-                    { beforeImage: galleryBefore4, afterImage: galleryAfter4, label: "Alta resolução" },
-                    { beforeImage: galleryBefore5, afterImage: galleryAfter5, label: "Resultado profissional" },
-                  ]} />
-                </Suspense>
-              </div>
-
-              <div className="max-w-md mx-auto mt-10">
-                <CTAButton onClick={() => handlePurchase('upscaller-arcano-vitalicio')} isPremium={isPremium} t={t} />
-              </div>
-            </AnimatedSection>
           </div>
           </LazySection>
 
