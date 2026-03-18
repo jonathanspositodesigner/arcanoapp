@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 
 interface GalleryItem {
   beforeImage: string;
@@ -16,6 +16,10 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
   const rafRef = useRef<number>(0);
 
   const totalItems = items.length;
+  const imageSources = useMemo(
+    () => items.flatMap((item) => [item.beforeImage, item.afterImage]),
+    [items]
+  );
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,6 +30,7 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
         const rect = container.getBoundingClientRect();
         const scrollableHeight = container.offsetHeight - window.innerHeight;
         if (scrollableHeight <= 0) return;
+
         const rawProgress = -rect.top / scrollableHeight;
         const clamped = Math.max(0, Math.min(1, rawProgress));
         setScrollProgress(clamped * totalItems);
@@ -34,44 +39,49 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
+
     return () => {
       window.removeEventListener("scroll", handleScroll);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [totalItems]);
 
+  useEffect(() => {
+    imageSources.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+      img.decoding = "async";
+      void img.decode?.().catch(() => undefined);
+    });
+  }, [imageSources]);
+
+  if (totalItems === 0) return null;
+
   const currentIndex = Math.min(Math.floor(scrollProgress), totalItems - 1);
   const sliderPosition = (1 - (scrollProgress - currentIndex)) * 100;
   const clampedSlider = scrollProgress >= totalItems ? 0 : Math.max(0, Math.min(100, sliderPosition));
-
   const currentItem = items[currentIndex] || items[0];
 
   return (
-    <div
-      ref={containerRef}
-      style={{ height: `${totalItems * 100}vh` }}
-    >
-      {/* Hidden preload: all images rendered eagerly in DOM */}
-      <div className="sr-only" aria-hidden="true">
-        {items.map((item, i) => (
-          <div key={i}>
-            <img src={item.beforeImage} alt="" loading="eager" decoding="async" />
-            <img src={item.afterImage} alt="" loading="eager" decoding="async" />
-          </div>
+    <div ref={containerRef} style={{ height: `${totalItems * 100}vh` }}>
+      {/* Hidden preload in DOM for instant transition between images */}
+      <div className="pointer-events-none absolute opacity-0 w-0 h-0 overflow-hidden" aria-hidden="true">
+        {imageSources.map((src, i) => (
+          <img key={`${src}-${i}`} src={src} alt="" loading="eager" decoding="async" />
         ))}
       </div>
 
-      <div className="sticky top-0 h-screen flex flex-col items-center justify-center">
-        <div className="relative w-full h-full overflow-hidden">
-          {/* After image (background) */}
+      <div className="sticky top-0 h-screen flex items-center justify-center bg-black/30 px-2 md:px-4">
+        <div className="relative h-[94vh] aspect-[4/5] w-auto overflow-hidden">
           <img
             src={currentItem.afterImage}
             alt="Depois"
             className="absolute inset-0 w-full h-full object-cover"
+            loading="eager"
+            decoding="async"
             draggable={false}
           />
 
-          {/* Before image (clipped) */}
           <div
             className="absolute inset-0 overflow-hidden"
             style={{
@@ -83,13 +93,14 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
               src={currentItem.beforeImage}
               alt="Antes"
               className="absolute inset-0 w-full h-full object-cover"
+              loading="eager"
+              decoding="async"
               draggable={false}
             />
           </div>
 
-          {/* Slider line */}
           <div
-            className="absolute top-0 bottom-0 w-[2px] bg-white/80 pointer-events-none"
+            className="absolute top-0 bottom-0 w-[2px] bg-white/80 pointer-events-none z-30"
             style={{ left: `${clampedSlider}%`, transform: "translateX(-50%)" }}
           >
             <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center">
@@ -101,13 +112,12 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
           </div>
         </div>
 
-        {/* Progress dots */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
           <div className="flex items-center gap-2">
             {items.map((_, i) => (
               <div
                 key={i}
-                className={`rounded-full transition-all duration-300 ${
+                className={`rounded-full ${
                   i === currentIndex
                     ? "w-8 h-2 bg-fuchsia-500"
                     : i < currentIndex
@@ -117,9 +127,7 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
               />
             ))}
           </div>
-          <p className="text-white/30 text-xs animate-pulse">
-            Role para comparar ↕
-          </p>
+          <p className="text-white/30 text-xs">Role para comparar ↕</p>
         </div>
       </div>
     </div>
