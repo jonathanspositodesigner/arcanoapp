@@ -150,6 +150,8 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       setShowFullForm(false);
+      // Pre-warm checkout on modal open to reduce cold-start latency
+      preWarmCheckout();
     } else {
       document.body.style.overflow = 'unset';
     }
