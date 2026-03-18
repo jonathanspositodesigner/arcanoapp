@@ -573,69 +573,36 @@ const PlanosUpscalerArcano = () => {
             </div>
           </section>
 
-          {/* SEÇÃO DA DOR */}
+          {/* COMO FUNCIONA - Logo após o Hero */}
           <LazySection rootMargin="100px">
-          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
-            <div className="max-w-5xl mx-auto">
-              <AnimatedSection as="div" className="text-center" delay={100}>
-                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-8 md:mb-12">
-                  {t('tools:upscaler.pain.title')}
+          <AnimatedSection className="px-4 py-20">
+            <div className="max-w-4xl mx-auto">
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
+                  {t('tools:upscaler.howItWorks.title')} <span className="text-fuchsia-400">{t('tools:upscaler.howItWorks.subtitle')}</span>
                 </h2>
               </AnimatedSection>
               
-              {/* Grid responsivo: 1 coluna mobile, 2 tablet, 3 cards em cima + 2 centralizados embaixo no desktop */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 md:gap-6 items-stretch">
-                <AnimatedElement className="h-full lg:col-span-2" delay={0}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
-                    <div className="text-4xl md:text-5xl mb-4 md:mb-6">📱</div>
-                    <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.phone')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.bad')}</span>?
-                    </p>
-                  </div>
-                </AnimatedElement>
-
-                <AnimatedElement className="h-full lg:col-span-2" delay={100}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
-                    <div className="text-4xl md:text-5xl mb-4 md:mb-6">😤</div>
-                    <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.client')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.lowQuality')}</span>?
-                    </p>
-                  </div>
-                </AnimatedElement>
-
-                <AnimatedElement className="h-full lg:col-span-2" delay={200}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
-                    <div className="text-4xl md:text-5xl mb-4 md:mb-6">📷</div>
-                    <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.aiGenerated')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.notGood')}</span>?
-                    </p>
-                  </div>
-                </AnimatedElement>
-
-                <AnimatedElement className="h-full lg:col-span-2 lg:col-start-2" delay={300}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
-                    <div className="text-4xl md:text-5xl mb-4 md:mb-6">🤖</div>
-                    <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.aiImage')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.aiNotGood')}</span>?
-                    </p>
-                  </div>
-                </AnimatedElement>
-
-                <AnimatedElement className="h-full lg:col-span-2 lg:col-start-4" delay={400}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
-                    <div className="text-4xl md:text-5xl mb-4 md:mb-6">🎸</div>
-                    <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.lostContract')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.noProPhotos')}</span>?
-                    </p>
-                  </div>
-                </AnimatedElement>
-              </div>
-              
-              <AnimatedSection as="div" delay={400}>
-                <p className="text-center text-xl md:text-2xl text-white mt-10 md:mt-12">
-                  {t('tools:upscaler.pain.solution')}
-                </p>
-              </AnimatedSection>
+              <StaggeredAnimation className="flex flex-col md:flex-row md:justify-center gap-8 md:gap-12 max-w-3xl mx-auto" staggerDelay={200}>
+                {steps.map((step, index) => {
+                  const IconComponent = step.icon;
+                  return (
+                    <div key={index} className="text-center flex flex-col items-center relative">
+                      {index < steps.length - 1 && (
+                        <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-fuchsia-500/50 to-transparent" />
+                      )}
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-fuchsia-500/30">
+                        {index + 1}
+                      </div>
+                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/30 flex items-center justify-center mb-5">
+                        <IconComponent className="h-10 w-10 text-fuchsia-400" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
+                      <p className="text-white/60 max-w-[180px]">{step.description}</p>
+                    </div>
+                  );
+                })}
+              </StaggeredAnimation>
             </div>
           </AnimatedSection>
           </LazySection>
