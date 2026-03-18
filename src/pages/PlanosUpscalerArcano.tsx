@@ -340,7 +340,7 @@ const PlanosUpscalerArcano = () => {
       credits: "25 imagens",
       creditsCount: "1.500 créditos",
       tagline: "Para começar",
-      productSlug: "landing-starter-avulso",
+      productSlug: "upscaler-arcano-starter",
       desktopOrder: "xl:order-1",
       features: [
         { text: "Atualizações diárias", included: true },
