@@ -821,6 +821,7 @@ const PlanosUpscalerArcano = () => {
                     </div>
 
                     <div className="text-center mb-5 lg:mb-6">
+                      <span className="text-white/40 text-sm line-through">R$ {plan.originalPrice}</span>
                       <div className="flex items-baseline justify-center gap-0.5">
                         <span className="text-fuchsia-400 text-base lg:text-lg">R$</span>
                         <span className="text-4xl lg:text-5xl font-bold text-white">{plan.price}</span>
