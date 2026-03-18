@@ -37,6 +37,15 @@ const BeforeAfterGalleryPT = lazy(() => import("@/components/upscaler/sections/B
 const ExpandingGallery = lazy(() => import("@/components/combo-artes/ExpandingGallery"));
 const ScrollDrivenGallery = lazy(() => import("@/components/upscaler/ScrollDrivenGallery"));
 
+// Stable gallery items - defined outside component to prevent re-creation on re-renders
+const galleryItems = [
+  { beforeImage: galleryBefore1, afterImage: galleryAfter1, label: "Qualidade impressionante" },
+  { beforeImage: galleryBefore2, afterImage: galleryAfter2, label: "Detalhes nítidos" },
+  { beforeImage: galleryBefore3, afterImage: galleryAfter3, label: "Cores vibrantes" },
+  { beforeImage: galleryBefore4, afterImage: galleryAfter4, label: "Alta resolução" },
+  { beforeImage: galleryBefore5, afterImage: galleryAfter5, label: "Resultado profissional" },
+];
+
 interface ToolData {
   id: string;
   name: string;

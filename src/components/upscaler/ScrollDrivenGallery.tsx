@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 interface GalleryItem {
   beforeImage: string;
@@ -14,8 +14,13 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const rafRef = useRef<number>(0);
+  const preloadedRef = useRef<Set<string>>(new Set());
+  const [readySlides, setReadySlides] = useState<Set<number>>(new Set());
 
   const totalItems = items.length;
+
+  // Stable URL signature to prevent re-running preload on parent re-renders
+  const urlSignature = items.map(i => `${i.beforeImage}|${i.afterImage}`).join(",");
 
   useEffect(() => {
     const handleScroll = () => {
@@ -43,24 +48,59 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
     };
   }, [totalItems]);
 
+  // One-shot preload: only runs when URL signature changes, tracks per-URL
   useEffect(() => {
-    const uniqueUrls = Array.from(
-      new Set(items.flatMap(({ beforeImage, afterImage }) => [beforeImage, afterImage]).filter(Boolean))
-    );
+    items.forEach((item, index) => {
+      const urls = [item.beforeImage, item.afterImage];
+      const pending: Promise<void>[] = [];
 
-    uniqueUrls.forEach((src, index) => {
-      const img = new Image();
-      img.loading = "eager";
-      img.decoding = "async";
-      img.fetchPriority = index < 4 ? "high" : "auto";
-      img.src = src;
-      img.decode?.().catch(() => undefined);
+      urls.forEach((src) => {
+        if (!src || preloadedRef.current.has(src)) return;
+        preloadedRef.current.add(src);
+
+        const img = new Image();
+        img.loading = "eager";
+        img.decoding = "async";
+        img.fetchPriority = index < 2 ? "high" : "auto";
+        img.src = src;
+
+        pending.push(
+          (img.decode?.() ?? Promise.resolve()).catch(() => undefined)
+        );
+      });
+
+      // Mark slide as ready when both images are decoded
+      if (pending.length > 0) {
+        Promise.all(pending).then(() => {
+          setReadySlides((prev) => {
+            const next = new Set(prev);
+            next.add(index);
+            return next;
+          });
+        });
+      } else {
+        // Already preloaded
+        setReadySlides((prev) => {
+          if (prev.has(index)) return prev;
+          const next = new Set(prev);
+          next.add(index);
+          return next;
+        });
+      }
     });
-  }, [items]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlSignature]);
 
   if (totalItems === 0) return null;
 
-  const currentIndex = Math.min(Math.floor(scrollProgress), totalItems - 1);
+  const rawIndex = Math.min(Math.floor(scrollProgress), totalItems - 1);
+  // Use readiness: if target slide isn't ready, show last ready slide
+  const currentIndex = readySlides.has(rawIndex)
+    ? rawIndex
+    : Array.from(readySlides)
+        .filter((i) => i <= rawIndex)
+        .sort((a, b) => b - a)[0] ?? 0;
+
   const sliderPosition = (1 - (scrollProgress - currentIndex)) * 100;
   const clampedSlider = scrollProgress >= totalItems ? 0 : Math.max(0, Math.min(100, sliderPosition));
 
@@ -76,7 +116,7 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
               <div
                 key={`${item.beforeImage}-${item.afterImage}-${i}`}
                 className={`absolute inset-0 ${isActive ? "opacity-100" : "opacity-0"}`}
-                style={{ willChange: "opacity" }}
+                style={{ willChange: isActive ? "opacity" : undefined }}
                 aria-hidden={!isActive}
               >
                 <img
@@ -93,7 +133,7 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
                   className="absolute inset-0 overflow-hidden"
                   style={{
                     clipPath: `inset(0 ${100 - beforeVisibility}% 0 0)`,
-                    willChange: "clip-path",
+                    willChange: isActive ? "clip-path" : undefined,
                   }}
                 >
                   <img
