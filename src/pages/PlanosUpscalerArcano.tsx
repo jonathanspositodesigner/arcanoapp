@@ -758,11 +758,11 @@ const PlanosUpscalerArcano = () => {
               </div>
             </div>
 
-            <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 items-stretch pt-5">
+            <div className="max-w-6xl mx-auto grid grid-cols-1 xl:grid-cols-4 gap-6 items-stretch pt-5 max-w-md xl:max-w-6xl mx-auto">
               {pricingPlans.map((plan) => (
                 <Card
                   key={plan.key}
-                  className={`relative rounded-3xl overflow-visible shadow-2xl ${
+                  className={`relative rounded-3xl overflow-visible shadow-2xl ${plan.desktopOrder} ${
                     plan.isLifetime
                       ? "bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 shadow-fuchsia-500/10"
                       : plan.bestSeller
