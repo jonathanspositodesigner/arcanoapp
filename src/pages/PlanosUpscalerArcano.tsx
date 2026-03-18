@@ -697,7 +697,7 @@ const PlanosUpscalerArcano = () => {
             {/* CTA abaixo da galeria */}
             <div className="max-w-md mx-auto mt-10">
               <div className="px-0 md:px-2">
-                <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
+                <CTAButton onClick={() => handlePurchase('upscaller-arcano-vitalicio')} isPremium={isPremium} t={t} />
               </div>
             </div>
           </AnimatedSection>
