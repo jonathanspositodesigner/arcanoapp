@@ -149,24 +149,32 @@ export const BeforeAfterSlider = ({
           />
         </div>
 
-        {/* Slider line - identical to Hero */}
+        {/* Slider line */}
         <div 
-          className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
+          className={`absolute top-0 bottom-0 bg-white shadow-lg ${compact ? 'w-[2px]' : 'w-1'}`}
           style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
         >
-          <div className="absolute left-1/2 -translate-x-1/2 bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-12 h-12 bg-white rounded-full shadow-xl flex items-center justify-center">
-            <div className="flex gap-0.5">
-              <div className="w-0.5 h-5 bg-gray-400 rounded-full" />
-              <div className="w-0.5 h-5 bg-gray-400 rounded-full" />
+          <div className={`absolute left-1/2 -translate-x-1/2 bg-white rounded-full shadow-xl flex items-center justify-center ${
+            compact 
+              ? 'top-1/3 -translate-y-1/2 w-7 h-7' 
+              : 'bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-12 h-12'
+          }`}>
+            <div className={`flex ${compact ? 'gap-[1px]' : 'gap-0.5'}`}>
+              <div className={`bg-gray-400 rounded-full ${compact ? 'w-[1.5px] h-3' : 'w-0.5 h-5'}`} />
+              <div className={`bg-gray-400 rounded-full ${compact ? 'w-[1.5px] h-3' : 'w-0.5 h-5'}`} />
             </div>
           </div>
         </div>
 
-        {/* Labels - identical to Hero */}
-        <div className="absolute top-4 left-4 bg-black/80 text-white text-sm font-semibold px-4 py-2 rounded-full">
+        {/* Labels */}
+        <div className={`absolute left-3 bg-black/80 text-white font-semibold rounded-full ${
+          compact ? 'top-2 text-[9px] px-2 py-0.5' : 'top-4 text-sm px-4 py-2'
+        }`}>
           {t('tools:upscaler.beforeAfter.before')}
         </div>
-        <div className="absolute top-4 right-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-sm font-semibold px-4 py-2 rounded-full">
+        <div className={`absolute right-3 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white font-semibold rounded-full ${
+          compact ? 'top-2 text-[9px] px-2 py-0.5' : 'top-4 text-sm px-4 py-2'
+        }`}>
           {t('tools:upscaler.beforeAfter.after')}
         </div>
 
