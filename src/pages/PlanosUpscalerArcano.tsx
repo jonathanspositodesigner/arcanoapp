@@ -9,6 +9,8 @@ import upscalerBefore4 from "@/assets/upscaler-before-4.webp";
 import upscalerAfter4 from "@/assets/upscaler-after-4.webp";
 import upscalerBefore5 from "@/assets/upscaler-before-5.webp";
 import upscalerAfter5 from "@/assets/upscaler-after-5.webp";
+import upscalerBefore6 from "@/assets/upscaler-before-6.webp";
+import upscalerAfter6 from "@/assets/upscaler-after-6.webp";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
