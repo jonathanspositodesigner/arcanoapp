@@ -340,7 +340,7 @@ const PlanosUpscalerArcano = () => {
       credits: "25 imagens",
       creditsCount: "1.500 créditos",
       tagline: "Para começar",
-      productSlug: "landing-starter-avulso",
+      productSlug: "upscaler-arcano-starter",
       desktopOrder: "xl:order-1",
       features: [
         { text: "Atualizações diárias", included: true },
@@ -359,7 +359,7 @@ const PlanosUpscalerArcano = () => {
       credits: "70 imagens",
       creditsCount: "4.200 créditos",
       tagline: "3x mais créditos por mais R$12",
-      productSlug: "landing-pro-avulso",
+      productSlug: "upscaler-arcano-pro",
       bestSeller: true,
       desktopOrder: "xl:order-2",
       features: [
@@ -379,7 +379,7 @@ const PlanosUpscalerArcano = () => {
       credits: "233 imagens",
       creditsCount: "14.000 créditos",
       tagline: "Ideal para designers e criadores ativos",
-      productSlug: "landing-ultimate-avulso",
+      productSlug: "upscaler-arcano-ultimate",
       bestValue: true,
       desktopOrder: "xl:order-3",
       features: [
