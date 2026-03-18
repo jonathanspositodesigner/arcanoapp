@@ -1,8 +1,11 @@
 import { useState, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { BeforeAfterSlider } from "@/components/upscaler/BeforeAfterSlider";
 
 interface GalleryItem {
-  imageUrl: string;
+  imageUrl?: string;
+  beforeImage?: string;
+  afterImage?: string;
   label?: string;
 }
 
@@ -46,6 +49,13 @@ const ExpandingGallery = ({ items, badgeText = "Feito com o Arcano Cloner" }: Ex
     touchStartX.current = null;
   };
 
+  const hasBeforeAfter = (item: GalleryItem) => Boolean(item.beforeImage && item.afterImage);
+
+  const getPreviewImage = (item: GalleryItem) => item.afterImage || item.imageUrl || item.beforeImage || "";
+
+  const currentMobileItem = items[mobileIndex];
+  const canSwipeMobile = currentMobileItem ? !hasBeforeAfter(currentMobileItem) : true;
+
   return (
     <div className="relative">
       {/* Desktop navigation arrows */}
@@ -70,8 +80,8 @@ const ExpandingGallery = ({ items, badgeText = "Feito com o Arcano Cloner" }: Ex
       <div className="md:hidden relative">
         <div
           className="overflow-hidden rounded-xl"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
+          onTouchStart={canSwipeMobile ? handleTouchStart : undefined}
+          onTouchEnd={canSwipeMobile ? handleTouchEnd : undefined}
         >
           {/* aspect ratio 3:5 = padding-top: 166.67% */}
           <div className="relative w-full" style={{ paddingTop: "166.67%" }}>
@@ -81,7 +91,11 @@ const ExpandingGallery = ({ items, badgeText = "Feito com o Arcano Cloner" }: Ex
                 index === mobileIndex ||
                 index === (mobileIndex - 1 + items.length) % items.length ||
                 index === (mobileIndex + 1) % items.length;
-              if (!isAdjacent) return null;
+
+              const previewImage = getPreviewImage(item);
+              const itemHasBeforeAfter = hasBeforeAfter(item);
+
+              if (!isAdjacent || !previewImage) return null;
 
               return (
                 <div
@@ -89,14 +103,26 @@ const ExpandingGallery = ({ items, badgeText = "Feito com o Arcano Cloner" }: Ex
                   className="absolute inset-0 transition-opacity duration-500"
                   style={{ opacity: index === mobileIndex ? 1 : 0, pointerEvents: index === mobileIndex ? "auto" : "none" }}
                 >
-                  <img
-                    src={item.imageUrl}
-                    alt={item.label}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent">
+                  {itemHasBeforeAfter ? (
+                    <div className="absolute inset-0 [&>div]:h-full [&>div]:space-y-0 [&>div>div]:h-full">
+                      <BeforeAfterSlider
+                        beforeImage={item.beforeImage!}
+                        afterImage={item.afterImage!}
+                        locale="pt"
+                        aspectRatio="3/5"
+                      />
+                    </div>
+                  ) : (
+                    <img
+                      src={previewImage}
+                      alt={item.label}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
+
+                  <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-transparent to-transparent">
                     <div className="absolute bottom-5 left-5 right-5">
                       <span className="inline-block px-2.5 py-0.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-[10px] font-medium tracking-wide uppercase mb-1.5">
                         {badgeText}
@@ -147,6 +173,10 @@ const ExpandingGallery = ({ items, badgeText = "Feito com o Arcano Cloner" }: Ex
       <div className="hidden md:flex gap-2 md:h-[500px] lg:h-[600px]">
         {items.map((item, index) => {
           const isActive = index === activeIndex;
+          const itemHasBeforeAfter = hasBeforeAfter(item);
+          const previewImage = getPreviewImage(item);
+
+          if (!previewImage) return null;
 
           return (
             <div
@@ -159,16 +189,27 @@ const ExpandingGallery = ({ items, badgeText = "Feito com o Arcano Cloner" }: Ex
                   : "flex-[0.8] grayscale brightness-50 hover:flex-[1.2] cursor-pointer",
               ].join(" ")}
             >
-              <img
-                src={item.imageUrl}
-                alt={item.label}
-                className="absolute inset-0 w-full h-full object-cover"
-                loading="lazy"
-                decoding="async"
-              />
+              {isActive && itemHasBeforeAfter ? (
+                <div className="absolute inset-0 [&>div]:h-full [&>div]:space-y-0 [&>div>div]:h-full">
+                  <BeforeAfterSlider
+                    beforeImage={item.beforeImage!}
+                    afterImage={item.afterImage!}
+                    locale="pt"
+                    aspectRatio="4/5"
+                  />
+                </div>
+              ) : (
+                <img
+                  src={previewImage}
+                  alt={item.label}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
 
               {isActive && (
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent">
+                <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-transparent to-transparent">
                   <div className="absolute bottom-6 left-6 right-6">
                     <span className="inline-block px-2.5 py-0.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-[10px] font-medium tracking-wide uppercase mb-1.5">
                       {badgeText}
