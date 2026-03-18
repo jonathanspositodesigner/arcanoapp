@@ -73,7 +73,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.foodPhotos'),
       badge: "Foto de Alimento",
       badgeColor: "from-red-500 to-orange-500",
-      aspectRatio: "1/1"
+      aspectRatio: "5/3"
     }
   ];
 
