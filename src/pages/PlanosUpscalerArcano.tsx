@@ -371,9 +371,20 @@ const PlanosUpscalerArcano = () => {
     {
       key: "vitalicio",
       name: "Vitalício",
+      price: "99,90",
+      credits: "Acesso vitalício",
+      creditsCount: "Uso ilimitado para sempre",
+      tagline: "Pague uma vez, use para sempre",
       productSlug: "upscaller-arcano-vitalicio",
       isLifetime: true,
-      features: features.map((feature) => ({ text: feature.text, included: true })),
+      features: [
+        { text: "Atualizações diárias", included: true },
+        { text: "Acesso às Ferramentas de IA", included: true },
+        { text: "Suporte exclusivo via WhatsApp", included: true },
+        { text: "Prompts premium ilimitados", included: true },
+        { text: "Geração de Imagem com NanoBanana Pro", included: true },
+        { text: "Geração de Vídeo com Veo 3", included: true },
+      ],
     },
   ];
 
