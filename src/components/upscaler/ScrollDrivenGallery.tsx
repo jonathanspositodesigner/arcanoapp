@@ -43,6 +43,21 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
     };
   }, [totalItems]);
 
+  useEffect(() => {
+    const uniqueUrls = Array.from(
+      new Set(items.flatMap(({ beforeImage, afterImage }) => [beforeImage, afterImage]).filter(Boolean))
+    );
+
+    uniqueUrls.forEach((src, index) => {
+      const img = new Image();
+      img.loading = "eager";
+      img.decoding = "async";
+      img.fetchPriority = index < 4 ? "high" : "auto";
+      img.src = src;
+      img.decode?.().catch(() => undefined);
+    });
+  }, [items]);
+
   if (totalItems === 0) return null;
 
   const currentIndex = Math.min(Math.floor(scrollProgress), totalItems - 1);
