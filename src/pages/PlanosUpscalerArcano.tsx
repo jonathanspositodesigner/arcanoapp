@@ -664,9 +664,36 @@ const PlanosUpscalerArcano = () => {
           </LazySection>
 
 
-          {/* PROVA SOCIAL - Lazy loaded with Intersection Observer */}
+          {/* GALERIA - O que o Upscaler faz */}
           <LazySection rootMargin="100px">
-          <LazySocialProofWrapper locale="pt" onZoomClick={openModal} isMobile={isMobile} />
+          <AnimatedSection className="px-4 py-20 bg-black/30">
+            <div className="max-w-5xl mx-auto">
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
+                  Melhorado com o <span className="text-fuchsia-400">Upscaler Arcano</span>
+                </h2>
+                <p className="text-white/50 text-base md:text-lg text-center mb-12">Veja o poder da nossa ferramenta</p>
+              </AnimatedSection>
+              
+              <Suspense fallback={<div className="h-[400px] md:h-[600px] bg-white/5 rounded-xl animate-pulse" />}>
+                <ExpandingGallery badgeText="Melhorado com o Upscaler Arcano" items={[
+                  { beforeImage: upscalerBefore2, afterImage: upscalerAfter2, label: "Detalhes nítidos" },
+                  { beforeImage: upscalerBefore1, afterImage: upscalerAfter1, label: "Qualidade impressionante" },
+                  { beforeImage: upscalerBefore3, afterImage: upscalerAfter3, label: "Cores vibrantes" },
+                  { beforeImage: upscalerBefore4, afterImage: upscalerAfter4, label: "Alta resolução" },
+                  { beforeImage: upscalerBefore5, afterImage: upscalerAfter5, label: "Resultado profissional" },
+                  { beforeImage: upscalerBefore6, afterImage: upscalerAfter6, label: "Detalhes e texturas realistas" },
+                ]} />
+              </Suspense>
+            </div>
+
+            {/* CTA abaixo da galeria */}
+            <div className="max-w-md mx-auto mt-10">
+              <div className="px-0 md:px-2">
+                <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
+              </div>
+            </div>
+          </AnimatedSection>
           </LazySection>
 
           {/* SEÇÃO DE PREÇO E CTA - Com Card + Garantia */}
@@ -903,36 +930,9 @@ const PlanosUpscalerArcano = () => {
           </AnimatedSection>
 
 
-          {/* GALERIA - O que o Upscaler faz */}
+          {/* PROVA SOCIAL - Lazy loaded with Intersection Observer */}
           <LazySection rootMargin="100px">
-          <AnimatedSection className="px-4 py-20 bg-black/30">
-            <div className="max-w-5xl mx-auto">
-              <AnimatedSection as="div" delay={100}>
-                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
-                  Melhorado com o <span className="text-fuchsia-400">Upscaler Arcano</span>
-                </h2>
-                <p className="text-white/50 text-base md:text-lg text-center mb-12">Veja o poder da nossa ferramenta</p>
-              </AnimatedSection>
-              
-              <Suspense fallback={<div className="h-[400px] md:h-[600px] bg-white/5 rounded-xl animate-pulse" />}>
-                <ExpandingGallery badgeText="Melhorado com o Upscaler Arcano" items={[
-                  { beforeImage: upscalerBefore2, afterImage: upscalerAfter2, label: "Detalhes nítidos" },
-                  { beforeImage: upscalerBefore1, afterImage: upscalerAfter1, label: "Qualidade impressionante" },
-                  { beforeImage: upscalerBefore3, afterImage: upscalerAfter3, label: "Cores vibrantes" },
-                  { beforeImage: upscalerBefore4, afterImage: upscalerAfter4, label: "Alta resolução" },
-                  { beforeImage: upscalerBefore5, afterImage: upscalerAfter5, label: "Resultado profissional" },
-                  { beforeImage: upscalerBefore6, afterImage: upscalerAfter6, label: "Detalhes e texturas realistas" },
-                ]} />
-              </Suspense>
-            </div>
-
-            {/* CTA abaixo da galeria */}
-            <div className="max-w-md mx-auto mt-10">
-              <div className="px-0 md:px-2">
-                <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
-              </div>
-            </div>
-          </AnimatedSection>
+          <LazySocialProofWrapper locale="pt" onZoomClick={openModal} isMobile={isMobile} />
           </LazySection>
 
           {/* FAQ SECTION - Depois do preço */}
