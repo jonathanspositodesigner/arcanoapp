@@ -911,11 +911,12 @@ const PlanosUpscalerArcano = () => {
               
               <Suspense fallback={<div className="h-[400px] md:h-[600px] bg-white/5 rounded-xl animate-pulse" />}>
                 <ExpandingGallery badgeText="Melhorado com o Upscaler Arcano" items={[
-                  { beforeImage: upscalerBefore1, afterImage: upscalerAfter1, label: "Qualidade impressionante" },
                   { beforeImage: upscalerBefore2, afterImage: upscalerAfter2, label: "Detalhes nítidos" },
+                  { beforeImage: upscalerBefore1, afterImage: upscalerAfter1, label: "Qualidade impressionante" },
                   { beforeImage: upscalerBefore3, afterImage: upscalerAfter3, label: "Cores vibrantes" },
                   { beforeImage: upscalerBefore4, afterImage: upscalerAfter4, label: "Alta resolução" },
                   { beforeImage: upscalerBefore5, afterImage: upscalerAfter5, label: "Resultado profissional" },
+                  { beforeImage: upscalerBefore6, afterImage: upscalerAfter6, label: "Detalhes e texturas realistas" },
                 ]} />
               </Suspense>
             </div>
