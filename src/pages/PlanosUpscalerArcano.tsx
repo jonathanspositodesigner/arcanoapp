@@ -379,7 +379,7 @@ const PlanosUpscalerArcano = () => {
       credits: "233 imagens",
       creditsCount: "14.000 créditos",
       tagline: "Ideal para designers e criadores ativos",
-      productSlug: "landing-ultimate-avulso",
+      productSlug: "upscaler-arcano-ultimate",
       bestValue: true,
       desktopOrder: "xl:order-3",
       features: [
