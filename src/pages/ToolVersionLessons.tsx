@@ -71,9 +71,13 @@ const getVideoEmbedUrl = (videoUrl: string): string | null => {
   
   // Convert YouTube watch URL to embed URL
   if (videoUrl.includes('youtube.com/watch')) {
-    const videoId = new URL(videoUrl).searchParams.get('v');
-    if (videoId) {
-      return `https://www.youtube.com/embed/${videoId}`;
+    try {
+      const videoId = new URL(videoUrl).searchParams.get('v');
+      if (videoId) {
+        return `https://www.youtube.com/embed/${videoId}`;
+      }
+    } catch {
+      return null;
     }
   }
   
