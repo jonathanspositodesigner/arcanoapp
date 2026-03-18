@@ -267,8 +267,11 @@ const PlanosUpscalerArcano = () => {
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [checkoutProductSlug, setCheckoutProductSlug] = useState("upscaller-arcano-vitalicio");
 
-  const handlePurchase = (productSlug = "upscaller-arcano-vitalicio") => {
-    setCheckoutProductSlug(productSlug);
+  const handlePurchase = (productSlug?: string | unknown) => {
+    const slug = typeof productSlug === 'string' && productSlug.trim().length > 0
+      ? productSlug
+      : 'upscaller-arcano-vitalicio';
+    setCheckoutProductSlug(slug);
     setCheckoutModalOpen(true);
   };
 
@@ -694,7 +697,7 @@ const PlanosUpscalerArcano = () => {
             {/* CTA abaixo da galeria */}
             <div className="max-w-md mx-auto mt-10">
               <div className="px-0 md:px-2">
-                <CTAButton onClick={handlePurchase} isPremium={isPremium} t={t} />
+                <CTAButton onClick={() => handlePurchase('upscaller-arcano-vitalicio')} isPremium={isPremium} t={t} />
               </div>
             </div>
           </AnimatedSection>

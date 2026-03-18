@@ -1,70 +1,88 @@
+# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
-Objetivo: corrigir o checkout normal (sem mexer no fluxo de 1 clique), garantir que o botão da seção “Melhorado com Upscaler Arcano” gere o checkout vitalício sem erro, e acelerar a abertura dos checkouts em geral.
+## Resumo
+Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
 
-1) Diagnóstico já confirmado
-- O erro de “circular JSON” vem do botão da galeria em `PlanosUpscalerArcano.tsx`:
-  - Hoje está `CTAButton onClick={handlePurchase}`.
-  - `handlePurchase` aceita parâmetro opcional (`productSlug`), então o evento de clique acaba sendo passado como argumento.
-  - Esse objeto de evento cai no payload e quebra no `JSON.stringify` em `invokeCheckout`.
-- Os slugs no banco estão corretos (Starter/Pro/Ultimate exclusivos + Vitalício 99,90).
-- O backend de checkout está respondendo rápido em execuções normais (~500ms nos logs); a lentidão percebida está concentrada no lado cliente/cold-start/retries.
+## O que foi feito
 
-2) Plano de correção (escopo exato que você pediu)
-- Sem inventar fluxo novo, sem alterar compra 1 clique.
+### 1. Tabela `subscription_billing_reminders` (migration)
+- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
+- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
+- Campo `checkout_url` para evitar checkouts duplicados
+- Constraint UNIQUE em (subscription_id, day_offset, due_date)
 
-A. Corrigir o botão vitalício da seção “Melhorado com Upscaler Arcano”
-- Arquivo: `src/pages/PlanosUpscalerArcano.tsx`
-- Trocar a CTA da galeria para chamada explícita do slug vitalício:
-  - de `onClick={handlePurchase}`
-  - para `onClick={() => handlePurchase("upscaller-arcano-vitalicio")}`
-- Tipar/blindar `handlePurchase` para aceitar apenas slug string válido (com fallback seguro para vitalício se vier algo inválido).
+### 2. Edge Function `process-billing-reminders`
+- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
+- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
+- Para cada assinatura, verifica:
+  - Se já enviou email para esse `day_offset`
+  - Se a sequência foi parada (pagou ou descadastrou)
+  - Se o email está na blacklist
+  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
+- Gera checkout Pagar.me somente PIX com validade de 3 dias
+- Monta HTML personalizado com dados reais do plano
+- Envia via SendPulse SMTP API
+- Registra na tabela de controle
 
-B. Blindagem do checkout normal contra payload inválido
-- Arquivo: `src/components/upscaler/PreCheckoutModal.tsx`
-- Antes de enviar, validar slug com regra forte:
-  - `typeof productSlug === "string" && productSlug.trim().length > 0`
-- Se inválido, bloquear envio com erro amigável (sem crash).
+### 3. Mapeamento de benefícios por plano
+- Starter: 1.800 créditos, 5 prompts/dia
+- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
+- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
+- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
 
-C. Aceleração da abertura de checkout (para todos os fluxos que usam `invokeCheckout`)
-- Arquivo: `src/lib/checkoutFetch.ts`
-- Adicionar:
-  - `AbortController` com timeout configurável (padrão global),
-  - `try/catch` no `JSON.stringify(body)` para erro controlado,
-  - parse robusto de resposta (inclusive quando backend não devolver JSON perfeito).
-- Manter contrato `{ data, error }` para não quebrar páginas existentes.
+### 4. Templates dos 6 emails
+- Dia 0: Lembrete leve ("Seu plano vence hoje")
+- Dia 1: Reforço pendência ("Pagamento ainda pendente")
+- Dia 2: Dor da perda ("Risco de perda de acesso")
+- Dia 3: Prejuízo prático ("O custo de não renovar")
+- Dia 4: FOMO ("Não fique para trás")
+- Dia 5: Último aviso ("Último aviso: regularize hoje")
+- Todos com link de descadastro no rodapé
 
-D. Reduzir espera desnecessária no PreCheckout (normal)
-- Arquivo: `src/components/upscaler/PreCheckoutModal.tsx`
-- Ajustar estratégia full → lightweight:
-  - só executar fallback quando fizer sentido (timeout/rede/erro recuperável),
-  - evitar “dupla tentativa” em erros que não se beneficiam de fallback.
-- Resultado esperado: menos casos de espera longa antes do redirecionamento.
+### 5. Cron job
+- pg_cron agendado: `0 12 * * *` (09:00 BRT)
+- Chama a Edge Function automaticamente
 
-E. Pré-aquecimento orientado à intenção (sem custo excessivo)
-- Arquivos: `src/pages/PlanosUpscalerArcano.tsx` e/ou `src/components/upscaler/PreCheckoutModal.tsx`
-- Manter prewarm de 3s já existente e adicionar prewarm ao abrir o modal/ao clicar em comprar (fire-and-forget), para reduzir cold start quando o usuário clica rápido.
+## Detecção de pagamento (para de enviar)
+- `planos2_subscriptions.expires_at` estendido para data futura
+- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
+- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
 
-3) Detalhes técnicos (seção dedicada)
-```text
-Fluxo corrigido:
+# Auditoria Completa de Emails — Robustez Unificada (CONCLUÍDA)
 
-CTA galeria (vitalício) -> handlePurchase("upscaller-arcano-vitalicio")
--> setCheckoutProductSlug
--> PreCheckoutModal valida slug estritamente
--> invokeCheckout(full, timeout curto)
-   -> sucesso: redirect imediato
-   -> timeout/erro recuperável: tenta lightweight
-   -> erro não recuperável: mostra erro sem duplicar espera
-```
+## O que foi feito
 
-4) Validação após implementar
-- Vitalício (seção “Melhorado com Upscaler Arcano”):
-  - clicar CTA, abrir modal, finalizar checkout sem erro de JSON circular.
-  - request deve sair com `product_slug: "upscaller-arcano-vitalicio"`.
-- Starter:
-  - abrir, preencher, finalizar.
-  - request com `product_slug: "upscaler-arcano-starter"`.
-  - tempo de abertura melhor e sem “travamento”.
-- Regressão:
-  - sem alteração no fluxo de 1 clique.
-  - sem mudança de preços/slugs já aplicados.
+### Padrão unificado aplicado em todos os 6 webhooks:
+
+1. **webhook-mercadopago** — `sendPurchaseEmail` refatorado:
+   - 3 retries com exponential backoff (2s, 5s, 10s)
+   - Removida lógica de DELETE de logs de falha (preserva auditoria)
+   - Cada tentativa registrada separadamente
+
+2. **webhook-greenn-creditos** — `sendWelcomeEmail` e `sendArcanoClonnerEmail`:
+   - Adicionado INSERT em `welcome_email_logs` (antes não tinha NENHUM log)
+   - Deduplicação via `dedup_key` unique constraint
+   - Blacklist check antes do envio
+   - 3 retries com exponential backoff
+   - Caller simplificado (retry agora é interno)
+
+3. **webhook-greenn** — Callers de `sendWelcomeEmail` e `sendPlanos2WelcomeEmail`:
+   - Retry loop 3x com exponential backoff (2s, 5s, 10s)
+   - Funções internas já tinham dedup + logging
+
+4. **webhook-greenn-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
+
+5. **webhook-greenn-musicos** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
+
+6. **webhook-hotmart-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup por transaction + logging
+
+### Sem mudanças (já robustos):
+- `webhook-pagarme` — 3 retries, dedup_key, logging completo
+- `resend-purchase-email` — robusto
+- `send-single-email` — utilitária independente

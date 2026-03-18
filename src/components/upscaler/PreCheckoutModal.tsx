@@ -5,7 +5,7 @@ import { X, CreditCard, QrCode, ArrowRight, Shield, Zap, Trash2, CheckCircle2, X
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { invokeCheckout } from "@/lib/checkoutFetch";
+import { invokeCheckout, preWarmCheckout } from "@/lib/checkoutFetch";
 import { getMetaCookies } from "@/lib/metaCookies";
 import { getSanitizedUtms } from "@/lib/utmUtils";
 
@@ -150,6 +150,8 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       setShowFullForm(false);
+      // Pre-warm checkout on modal open to reduce cold-start latency
+      preWarmCheckout();
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -276,8 +278,8 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
   const handleSubmit = async () => {
     if (!validate()) return;
-    if (!productSlug) {
-      console.error('[PreCheckoutModal] productSlug inválido:', productSlug);
+    if (!productSlug || typeof productSlug !== 'string' || !productSlug.trim()) {
+      console.error('[PreCheckoutModal] productSlug inválido:', typeof productSlug, productSlug);
       toast({ title: "Erro", description: "Produto não identificado. Feche e tente novamente.", variant: "destructive" });
       return;
     }
