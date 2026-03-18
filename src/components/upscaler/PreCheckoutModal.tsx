@@ -5,7 +5,7 @@ import { X, CreditCard, QrCode, ArrowRight, Shield, Zap, Trash2, CheckCircle2, X
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { invokeCheckout } from "@/lib/checkoutFetch";
+import { invokeCheckout, preWarmCheckout } from "@/lib/checkoutFetch";
 import { getMetaCookies } from "@/lib/metaCookies";
 import { getSanitizedUtms } from "@/lib/utmUtils";
 
