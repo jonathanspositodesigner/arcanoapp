@@ -1,4 +1,14 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import upscalerBefore1 from "@/assets/upscaler-before-1.webp";
+import upscalerAfter1 from "@/assets/upscaler-after-1.webp";
+import upscalerBefore2 from "@/assets/upscaler-before-2.webp";
+import upscalerAfter2 from "@/assets/upscaler-after-2.webp";
+import upscalerBefore3 from "@/assets/upscaler-before-3.webp";
+import upscalerAfter3 from "@/assets/upscaler-after-3.webp";
+import upscalerBefore4 from "@/assets/upscaler-before-4.webp";
+import upscalerAfter4 from "@/assets/upscaler-after-4.webp";
+import upscalerBefore5 from "@/assets/upscaler-before-5.webp";
+import upscalerAfter5 from "@/assets/upscaler-after-5.webp";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -899,12 +909,11 @@ const PlanosUpscalerArcano = () => {
               
               <Suspense fallback={<div className="h-[400px] md:h-[600px] bg-white/5 rounded-xl animate-pulse" />}>
                 <ExpandingGallery badgeText="Melhorado com o Upscaler Arcano" items={[
-                  { beforeImage: "/images/gallery/gallery-1.webp", afterImage: "/images/gallery/gallery-1.webp", label: "Qualidade impressionante" },
-                  { beforeImage: "/images/gallery/gallery-2.webp", afterImage: "/images/gallery/gallery-2.webp", label: "Detalhes nítidos" },
-                  { beforeImage: "/images/gallery/gallery-3.webp", afterImage: "/images/gallery/gallery-3.webp", label: "Cores vibrantes" },
-                  { beforeImage: "/images/gallery/gallery-4.webp", afterImage: "/images/gallery/gallery-4.webp", label: "Alta resolução" },
-                  { beforeImage: "/images/gallery/gallery-5.webp", afterImage: "/images/gallery/gallery-5.webp", label: "Resultado profissional" },
-                  { beforeImage: "/images/gallery/gallery-6.webp", afterImage: "/images/gallery/gallery-6.webp", label: "Detalhes e texturas realistas" },
+                  { beforeImage: upscalerBefore1, afterImage: upscalerAfter1, label: "Qualidade impressionante" },
+                  { beforeImage: upscalerBefore2, afterImage: upscalerAfter2, label: "Detalhes nítidos" },
+                  { beforeImage: upscalerBefore3, afterImage: upscalerAfter3, label: "Cores vibrantes" },
+                  { beforeImage: upscalerBefore4, afterImage: upscalerAfter4, label: "Alta resolução" },
+                  { beforeImage: upscalerBefore5, afterImage: upscalerAfter5, label: "Resultado profissional" },
                 ]} />
               </Suspense>
             </div>
