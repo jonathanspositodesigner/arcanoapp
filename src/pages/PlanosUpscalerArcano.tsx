@@ -909,12 +909,11 @@ const PlanosUpscalerArcano = () => {
               
               <Suspense fallback={<div className="h-[400px] md:h-[600px] bg-white/5 rounded-xl animate-pulse" />}>
                 <ExpandingGallery badgeText="Melhorado com o Upscaler Arcano" items={[
-                  { beforeImage: "/images/gallery/gallery-1.webp", afterImage: "/images/gallery/gallery-1.webp", label: "Qualidade impressionante" },
-                  { beforeImage: "/images/gallery/gallery-2.webp", afterImage: "/images/gallery/gallery-2.webp", label: "Detalhes nítidos" },
-                  { beforeImage: "/images/gallery/gallery-3.webp", afterImage: "/images/gallery/gallery-3.webp", label: "Cores vibrantes" },
-                  { beforeImage: "/images/gallery/gallery-4.webp", afterImage: "/images/gallery/gallery-4.webp", label: "Alta resolução" },
-                  { beforeImage: "/images/gallery/gallery-5.webp", afterImage: "/images/gallery/gallery-5.webp", label: "Resultado profissional" },
-                  { beforeImage: "/images/gallery/gallery-6.webp", afterImage: "/images/gallery/gallery-6.webp", label: "Detalhes e texturas realistas" },
+                  { beforeImage: upscalerBefore1, afterImage: upscalerAfter1, label: "Qualidade impressionante" },
+                  { beforeImage: upscalerBefore2, afterImage: upscalerAfter2, label: "Detalhes nítidos" },
+                  { beforeImage: upscalerBefore3, afterImage: upscalerAfter3, label: "Cores vibrantes" },
+                  { beforeImage: upscalerBefore4, afterImage: upscalerAfter4, label: "Alta resolução" },
+                  { beforeImage: upscalerBefore5, afterImage: upscalerAfter5, label: "Resultado profissional" },
                 ]} />
               </Suspense>
             </div>
