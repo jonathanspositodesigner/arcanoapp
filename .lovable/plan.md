@@ -1,64 +1,88 @@
+# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
+## Resumo
+Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
 
-## Reprocessar automaticamente cobranças recusadas pelo antifraude
+## O que foi feito
 
-### Dados reais do Pagar.me (confirmados nos logs)
+### 1. Tabela `subscription_billing_reminders` (migration)
+- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
+- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
+- Campo `checkout_url` para evitar checkouts duplicados
+- Constraint UNIQUE em (subscription_id, day_offset, due_date)
 
-Sequência de eventos quando antifraude reprova:
-```text
-charge.created (status: failed)
-charge.antifraud_reproved (status: failed)   ← INTERCEPTAR AQUI
-charge.payment_failed (status: failed)       ← vem logo depois
-```
+### 2. Edge Function `process-billing-reminders`
+- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
+- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
+- Para cada assinatura, verifica:
+  - Se já enviou email para esse `day_offset`
+  - Se a sequência foi parada (pagou ou descadastrou)
+  - Se o email está na blacklist
+  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
+- Gera checkout Pagar.me somente PIX com validade de 3 dias
+- Monta HTML personalizado com dados reais do plano
+- Envia via SendPulse SMTP API
+- Registra na tabela de controle
 
-Payload real do `charge.antifraud_reproved`:
-- `body.type` = `charge.antifraud_reproved`
-- `body.data.id` = charge ID (ex: `ch_x2LqG4r3HruklNEb`)
-- `body.data.last_transaction.antifraud_response.status` = `reproved`
-- `body.data.order.metadata.order_id` = UUID da ordem interna
-- `body.data.last_transaction.acquirer_message` = `"Transação aprovada com sucesso"` (gateway aprovou, antifraude barrou)
+### 3. Mapeamento de benefícios por plano
+- Starter: 1.800 créditos, 5 prompts/dia
+- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
+- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
+- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
 
-API de retry: `POST https://api.pagar.me/core/v5/charges/{charge_id}/retry` (Basic auth com secret key)
+### 4. Templates dos 6 emails
+- Dia 0: Lembrete leve ("Seu plano vence hoje")
+- Dia 1: Reforço pendência ("Pagamento ainda pendente")
+- Dia 2: Dor da perda ("Risco de perda de acesso")
+- Dia 3: Prejuízo prático ("O custo de não renovar")
+- Dia 4: FOMO ("Não fique para trás")
+- Dia 5: Último aviso ("Último aviso: regularize hoje")
+- Todos com link de descadastro no rodapé
 
-Temos 12 ocorrências de `charge.antifraud_reproved` nos logs.
+### 5. Cron job
+- pg_cron agendado: `0 12 * * *` (09:00 BRT)
+- Chama a Edge Function automaticamente
 
-### Alterações
+## Detecção de pagamento (para de enviar)
+- `planos2_subscriptions.expires_at` estendido para data futura
+- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
+- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
 
-**1. Migration — coluna de controle**
+# Auditoria Completa de Emails — Robustez Unificada (CONCLUÍDA)
 
-```sql
-ALTER TABLE public.asaas_orders ADD COLUMN antifraud_retry_done boolean DEFAULT false;
-```
+## O que foi feito
 
-**2. Edge Function `webhook-pagarme/index.ts`**
+### Padrão unificado aplicado em todos os 6 webhooks:
 
-Adicionar um bloco **antes** do `else` final (linha ~1436), tratando `charge.antifraud_reproved`:
+1. **webhook-mercadopago** — `sendPurchaseEmail` refatorado:
+   - 3 retries com exponential backoff (2s, 5s, 10s)
+   - Removida lógica de DELETE de logs de falha (preserva auditoria)
+   - Cada tentativa registrada separadamente
 
-```text
-if eventType === 'charge.antifraud_reproved':
-  1. Verificar order.antifraud_retry_done === true → se sim, logar e ignorar
-  2. Marcar order.antifraud_retry_done = true (ANTES do retry, evita race)
-  3. Extrair charge_id = eventData.id
-  4. Chamar POST /charges/{charge_id}/retry com Basic auth (PAGARME_SECRET_KEY)
-  5. Logar resultado no webhook_logs (status: 'antifraud_retry_sent' ou 'antifraud_retry_failed')
-  6. Se retry for aceito → Pagar.me enviará charge.paid como novo webhook
-     → processado normalmente pelo fluxo existente
-  7. Se retry falhar (gateway recusar) → Pagar.me enviará charge.payment_failed
-     → como antifraud_retry_done=true, não retenta de novo
-```
+2. **webhook-greenn-creditos** — `sendWelcomeEmail` e `sendArcanoClonnerEmail`:
+   - Adicionado INSERT em `welcome_email_logs` (antes não tinha NENHUM log)
+   - Deduplicação via `dedup_key` unique constraint
+   - Blacklist check antes do envio
+   - 3 retries com exponential backoff
+   - Caller simplificado (retry agora é interno)
 
-A secret `PAGARME_SECRET_KEY` já está configurada.
+3. **webhook-greenn** — Callers de `sendWelcomeEmail` e `sendPlanos2WelcomeEmail`:
+   - Retry loop 3x com exponential backoff (2s, 5s, 10s)
+   - Funções internas já tinham dedup + logging
 
-### Proteção contra loop
+4. **webhook-greenn-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
 
-- `antifraud_retry_done = true` é gravado ANTES de chamar a API
-- Se o retry também falhar por qualquer motivo, o próximo `charge.antifraud_reproved` ou `charge.payment_failed` encontra a flag `true` e para
-- Máximo absoluto: 1 retry por ordem
+5. **webhook-greenn-musicos** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup + logging
 
-### Sem alterações em
+6. **webhook-hotmart-artes** — Caller de `sendWelcomeEmail`:
+   - Retry loop 3x com exponential backoff
+   - Função interna já tinha dedup por transaction + logging
 
-- Frontend (nenhuma)
-- Outros webhooks
-- create-pagarme-checkout
-- Fluxo de pagamento normal
-
+### Sem mudanças (já robustos):
+- `webhook-pagarme` — 3 retries, dedup_key, logging completo
+- `resend-purchase-email` — robusto
+- `send-single-email` — utilitária independente

@@ -1016,6 +1016,7 @@ export type Database = {
       asaas_orders: {
         Row: {
           amount: number
+          antifraud_retry_done: boolean | null
           asaas_customer_id: string | null
           asaas_payment_id: string | null
           checkout_request_id: string | null
@@ -1048,6 +1049,7 @@ export type Database = {
         }
         Insert: {
           amount: number
+          antifraud_retry_done?: boolean | null
           asaas_customer_id?: string | null
           asaas_payment_id?: string | null
           checkout_request_id?: string | null
@@ -1080,6 +1082,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          antifraud_retry_done?: boolean | null
           asaas_customer_id?: string | null
           asaas_payment_id?: string | null
           checkout_request_id?: string | null
