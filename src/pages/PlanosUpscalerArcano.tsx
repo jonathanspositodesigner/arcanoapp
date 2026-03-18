@@ -686,12 +686,11 @@ const PlanosUpscalerArcano = () => {
             </AnimatedSection>
             <Suspense fallback={<div className="h-screen bg-white/5 animate-pulse" />}>
               <ScrollDrivenGallery items={[
-                { beforeImage: upscalerBefore2, afterImage: upscalerAfter2, label: "Detalhes nítidos" },
-                { beforeImage: upscalerBefore1, afterImage: upscalerAfter1, label: "Qualidade impressionante" },
-                { beforeImage: upscalerBefore3, afterImage: upscalerAfter3, label: "Cores vibrantes" },
-                { beforeImage: upscalerBefore4, afterImage: upscalerAfter4, label: "Alta resolução" },
-                { beforeImage: upscalerBefore5, afterImage: upscalerAfter5, label: "Resultado profissional" },
-                { beforeImage: upscalerBefore6, afterImage: upscalerAfter6, label: "Detalhes e texturas realistas" },
+                { beforeImage: galleryBefore1, afterImage: galleryAfter1, label: "Qualidade impressionante" },
+                { beforeImage: galleryBefore2, afterImage: galleryAfter2, label: "Detalhes nítidos" },
+                { beforeImage: galleryBefore3, afterImage: galleryAfter3, label: "Cores vibrantes" },
+                { beforeImage: galleryBefore4, afterImage: galleryAfter4, label: "Alta resolução" },
+                { beforeImage: galleryBefore5, afterImage: galleryAfter5, label: "Resultado profissional" },
               ]} />
             </Suspense>
             <div className="bg-black/30 px-4 pb-20 pt-8">
