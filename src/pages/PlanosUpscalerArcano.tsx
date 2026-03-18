@@ -395,6 +395,7 @@ const PlanosUpscalerArcano = () => {
       key: "vitalicio",
       name: "Vitalício",
       price: "99,90",
+      originalPrice: "149,90",
       credits: "Acesso vitalício",
       creditsCount: "Uso ilimitado para sempre",
       tagline: "Pague uma vez, use para sempre",
