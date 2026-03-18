@@ -1,0 +1,1 @@
+ALTER TABLE public.asaas_orders ADD COLUMN antifraud_retry_done boolean DEFAULT false;
