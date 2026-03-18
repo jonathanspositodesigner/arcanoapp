@@ -168,22 +168,22 @@ export const FullscreenModal = ({
 
                   {/* Slider line */}
                   <div 
-                    className="absolute top-0 bottom-0 w-1 bg-white shadow-lg"
+                    className="absolute top-0 bottom-0 w-[2px] bg-white/70"
                     style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
                   >
-                    <div className="absolute left-1/2 -translate-x-1/2 bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center">
-                      <div className="flex gap-0.5">
-                        <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
-                        <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
+                    <div className="absolute left-1/2 -translate-x-1/2 bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center">
+                      <div className="flex gap-[1px]">
+                        <div className="w-[1px] h-4 bg-gray-400 rounded-full" />
+                        <div className="w-[1px] h-4 bg-gray-400 rounded-full" />
                       </div>
                     </div>
                   </div>
 
                   {/* Labels */}
-                  <div className="absolute top-4 left-4 bg-black/80 text-white text-base font-semibold px-5 py-2.5 rounded-full">
+                  <div className="absolute top-3 left-3 bg-black/60 text-white/80 text-xs font-medium px-3 py-1.5 rounded-full">
                     {t('tools:upscaler.beforeAfter.before')}
                   </div>
-                  <div className="absolute top-4 right-4 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-base font-semibold px-5 py-2.5 rounded-full">
+                  <div className="absolute top-3 right-3 bg-white/15 text-white/80 text-xs font-medium px-3 py-1.5 rounded-full">
                     {t('tools:upscaler.beforeAfter.after')}
                   </div>
                 </div>
