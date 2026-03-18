@@ -220,24 +220,6 @@ const PlanosUpscalerArcano = () => {
     ["/images/upscaler-hero-antes.webp", "/images/upscaler-hero-depois.webp"],
     !isMobile
   );
-  // Desktop: preload all gallery pairs as soon as session starts to avoid lag between slides
-  useImagesPreload(
-    [
-      upscalerBefore1,
-      upscalerAfter1,
-      upscalerBefore2,
-      upscalerAfter2,
-      upscalerBefore3,
-      upscalerAfter3,
-      upscalerBefore4,
-      upscalerAfter4,
-      upscalerBefore5,
-      upscalerAfter5,
-      upscalerBefore6,
-      upscalerAfter6,
-    ],
-    !isMobile
-  );
 
   const openModal = (before: string, after: string) => {
     setModalImages({ before, after });
