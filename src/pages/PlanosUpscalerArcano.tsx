@@ -713,7 +713,7 @@ const PlanosUpscalerArcano = () => {
               </div>
             </AnimatedSection>
             <Suspense fallback={<div className="h-screen bg-white/5 animate-pulse" />}>
-              <ScrollDrivenGallery items={galleryItems} />
+              <ScrollDrivenGallery items={isMobile ? galleryItemsMobile : galleryItemsDesktop} />
             </Suspense>
             <div className="bg-black/30 px-4 pb-20 pt-8">
               <div className="max-w-md mx-auto">
