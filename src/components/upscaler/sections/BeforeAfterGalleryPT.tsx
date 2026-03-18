@@ -33,7 +33,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.photoImproved4K'),
       badge: "Fotos de Ensaio",
       badgeColor: "from-fuchsia-500 to-pink-500",
-      aspectRatio: "5/3"
+      aspectRatio: "3/5"
     },
     {
       before: render3dAntes,
@@ -41,7 +41,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: "Render 3D em alta definição",
       badge: "Render 3D",
       badgeColor: "from-purple-500 to-violet-600",
-      aspectRatio: "5/3"
+      aspectRatio: "3/5"
     },
     {
       before: upscalerLogoAntes,
@@ -49,7 +49,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.logoHD'),
       badge: "Logo",
       badgeColor: "from-blue-500 to-cyan-500",
-      aspectRatio: "5/3"
+      aspectRatio: "3/5"
     },
     {
       before: isMobile ? "/images/upscaler-produto-antes-mobile.webp" : upscalerProdutoAntes,
@@ -57,7 +57,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.mockupSharp'),
       badge: "Fotos de Produto",
       badgeColor: "from-emerald-500 to-green-500",
-      aspectRatio: "5/3"
+      aspectRatio: "3/5"
     },
     {
       before: isMobile ? "/images/upscaler-antiga-antes-mobile.webp" : upscalerAntigaAntes,
@@ -65,7 +65,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.oldPhotoRestored'),
       badge: "Foto Antiga",
       badgeColor: "from-amber-500 to-orange-500",
-      aspectRatio: "5/3"
+      aspectRatio: "3/5"
     },
     {
       before: isMobile ? "/images/upscaler-food-antes-mobile.webp" : upscalerFoodAntes,
@@ -73,7 +73,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.foodPhotos'),
       badge: "Foto de Alimento",
       badgeColor: "from-red-500 to-orange-500",
-      aspectRatio: "5/3"
+      aspectRatio: "3/5"
     }
   ];
 
