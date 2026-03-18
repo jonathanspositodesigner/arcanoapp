@@ -24,7 +24,7 @@ const upscalerHeroDepoisMobile = "/images/upscaler-hero-depois-mobile.webp";
 
 // Lazy load heavy gallery sections - images will only load when user scrolls to section
 const BeforeAfterGalleryPT = lazy(() => import("@/components/upscaler/sections/BeforeAfterGalleryPT"));
-const ExpandingGallery = lazy(() => import("@/components/combo-artes/ExpandingGallery"));
+const LazyBeforeAfterSlider = lazy(() => import("@/components/upscaler/LazyBeforeAfterSlider"));
 
 interface ToolData {
   id: string;
