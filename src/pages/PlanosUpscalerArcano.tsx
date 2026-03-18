@@ -326,7 +326,12 @@ const PlanosUpscalerArcano = () => {
     { icon: Zap, text: t('tools:upscaler.benefits.futureUpdates') },
   ];
 
-  const pricingPlans = [
+  const pricingPlans: Array<{
+    key: string; name: string; price: string; credits: string; creditsCount: string;
+    tagline: string; productSlug: string; desktopOrder: string;
+    features: Array<{ text: string; included: boolean }>;
+    isLifetime?: boolean; bestSeller?: boolean; bestValue?: boolean;
+  }> = [
     {
       key: "starter",
       name: "Starter",
@@ -343,6 +348,63 @@ const PlanosUpscalerArcano = () => {
         { text: "Prompts premium ilimitados", included: true },
         { text: "Geração de Imagem com NanoBanana Pro", included: false },
         { text: "Geração de Vídeo com Veo 3", included: false },
+      ],
+    },
+    {
+      key: "pro",
+      name: "Pro",
+      price: "37,00",
+      credits: "70 imagens",
+      creditsCount: "4.200 créditos",
+      tagline: "3x mais créditos por mais R$12",
+      productSlug: "landing-pro-avulso",
+      bestSeller: true,
+      desktopOrder: "xl:order-2",
+      features: [
+        { text: "Atualizações diárias", included: true },
+        { text: "Acesso às Ferramentas de IA", included: true },
+        { text: "Suporte exclusivo via WhatsApp", included: true },
+        { text: "Prompts premium ilimitados", included: true },
+        { text: "Geração de Imagem com NanoBanana Pro", included: true },
+        { text: "Geração de Vídeo com Veo 3", included: true },
+      ],
+    },
+    {
+      key: "ultimate",
+      name: "Ultimate",
+      price: "79,90",
+      credits: "233 imagens",
+      creditsCount: "14.000 créditos",
+      tagline: "Ideal para designers e criadores ativos",
+      productSlug: "landing-ultimate-avulso",
+      bestValue: true,
+      desktopOrder: "xl:order-3",
+      features: [
+        { text: "Atualizações diárias", included: true },
+        { text: "Acesso às Ferramentas de IA", included: true },
+        { text: "Suporte exclusivo via WhatsApp", included: true },
+        { text: "Prompts premium ilimitados", included: true },
+        { text: "Geração de Imagem com NanoBanana Pro", included: true },
+        { text: "Geração de Vídeo com Veo 3", included: true },
+      ],
+    },
+    {
+      key: "vitalicio",
+      name: "Vitalício",
+      price: "99,90",
+      credits: "Acesso vitalício",
+      creditsCount: "Uso ilimitado para sempre",
+      tagline: "Pague uma vez, use para sempre",
+      productSlug: "upscaller-arcano-vitalicio",
+      isLifetime: true,
+      desktopOrder: "xl:order-4",
+      features: [
+        { text: "Atualizações diárias", included: true },
+        { text: "Acesso às Ferramentas de IA", included: true },
+        { text: "Suporte exclusivo via WhatsApp", included: true },
+        { text: "Prompts premium ilimitados", included: true },
+        { text: "Geração de Imagem com NanoBanana Pro", included: true },
+        { text: "Geração de Vídeo com Veo 3", included: true },
       ],
     },
   ];
