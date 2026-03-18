@@ -359,7 +359,7 @@ const PlanosUpscalerArcano = () => {
       credits: "70 imagens",
       creditsCount: "4.200 créditos",
       tagline: "3x mais créditos por mais R$12",
-      productSlug: "landing-pro-avulso",
+      productSlug: "upscaler-arcano-pro",
       bestSeller: true,
       desktopOrder: "xl:order-2",
       features: [
