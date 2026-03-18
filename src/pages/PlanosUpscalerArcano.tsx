@@ -9,6 +9,8 @@ import upscalerBefore4 from "@/assets/upscaler-before-4.webp";
 import upscalerAfter4 from "@/assets/upscaler-after-4.webp";
 import upscalerBefore5 from "@/assets/upscaler-before-5.webp";
 import upscalerAfter5 from "@/assets/upscaler-after-5.webp";
+import upscalerBefore6 from "@/assets/upscaler-before-6.webp";
+import upscalerAfter6 from "@/assets/upscaler-after-6.webp";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -909,11 +911,12 @@ const PlanosUpscalerArcano = () => {
               
               <Suspense fallback={<div className="h-[400px] md:h-[600px] bg-white/5 rounded-xl animate-pulse" />}>
                 <ExpandingGallery badgeText="Melhorado com o Upscaler Arcano" items={[
-                  { beforeImage: upscalerBefore1, afterImage: upscalerAfter1, label: "Qualidade impressionante" },
                   { beforeImage: upscalerBefore2, afterImage: upscalerAfter2, label: "Detalhes nítidos" },
+                  { beforeImage: upscalerBefore1, afterImage: upscalerAfter1, label: "Qualidade impressionante" },
                   { beforeImage: upscalerBefore3, afterImage: upscalerAfter3, label: "Cores vibrantes" },
                   { beforeImage: upscalerBefore4, afterImage: upscalerAfter4, label: "Alta resolução" },
                   { beforeImage: upscalerBefore5, afterImage: upscalerAfter5, label: "Resultado profissional" },
+                  { beforeImage: upscalerBefore6, afterImage: upscalerAfter6, label: "Detalhes e texturas realistas" },
                 ]} />
               </Suspense>
             </div>
