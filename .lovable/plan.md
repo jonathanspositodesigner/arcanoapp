@@ -1,88 +1,48 @@
-# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
-## Resumo
-Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
 
-## O que foi feito
+# Plano: Email de Recuperação — Intercorrência PIX Pagar.me
 
-### 1. Tabela `subscription_billing_reminders` (migration)
-- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
-- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
-- Campo `checkout_url` para evitar checkouts duplicados
-- Constraint UNIQUE em (subscription_id, day_offset, due_date)
+## Dados Levantados
 
-### 2. Edge Function `process-billing-reminders`
-- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
-- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
-- Para cada assinatura, verifica:
-  - Se já enviou email para esse `day_offset`
-  - Se a sequência foi parada (pagou ou descadastrou)
-  - Se o email está na blacklist
-  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
-- Gera checkout Pagar.me somente PIX com validade de 3 dias
-- Monta HTML personalizado com dados reais do plano
+6 ordens pendentes de hoje, 4 produtos distintos:
+
+| # | Cliente | Produto | Valor | Página de Checkout |
+|---|---------|---------|-------|--------------------|
+| 1 | Sidney Gomes | Upscaler Arcano Vitalício | R$29,90 | /planos-upscaler-arcano |
+| 2 | Fabiane Gouvêa | 1.500 Créditos Avulsos | R$19,90 | /planos-upscaler-creditos |
+| 3 | Italo Gutierrez | Plano Pro Mensal | R$39,90 | /planos-2 |
+| 4 | Filipe | Upscaler Arcano Vitalício | R$29,90 | /planos-upscaler-arcano |
+| 5 | Flávio | Upscaler Arcano Vitalício | R$29,90 | /planos-upscaler-arcano |
+| 6 | Dener Dias | Pro - Arcano Cloner | R$37,00 | /planos-arcano-cloner |
+
+## O que será feito
+
+### 1. Edge Function `send-pix-recovery-email`
+- Recebe lista de ordens pendentes (ou busca automaticamente as de hoje)
+- Para cada ordem, gera um checkout Pagar.me fresco (somente PIX) usando a mesma lógica do `create-pagarme-checkout`, com o `product_slug` correto
+- Monta um email HTML personalizado por pessoa com:
+  - Nome do cliente
+  - Nome do produto que tentou comprar
+  - Explicação breve sobre a intercorrência no gateway
+  - Botão CTA com link direto para o checkout Pagar.me gerado
+  - Rodapé com link de descadastro
 - Envia via SendPulse SMTP API
-- Registra na tabela de controle
 
-### 3. Mapeamento de benefícios por plano
-- Starter: 1.800 créditos, 5 prompts/dia
-- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
-- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
-- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
+### 2. Layout do Email (Preview)
+Antes de enviar, vou montar o HTML do email e mostrar o layout completo para aprovação. O tom será:
 
-### 4. Templates dos 6 emails
-- Dia 0: Lembrete leve ("Seu plano vence hoje")
-- Dia 1: Reforço pendência ("Pagamento ainda pendente")
-- Dia 2: Dor da perda ("Risco de perda de acesso")
-- Dia 3: Prejuízo prático ("O custo de não renovar")
-- Dia 4: FOMO ("Não fique para trás")
-- Dia 5: Último aviso ("Último aviso: regularize hoje")
-- Todos com link de descadastro no rodapé
+- **Assunto:** "⚠️ Seu pagamento não foi processado — já resolvemos!"
+- **Corpo:** Pedido de desculpas pela falha técnica no gateway, explicação que já foi resolvido, botão para tentar novamente com link direto do checkout do produto específico
+- **Visual:** Estilo consistente com os emails existentes do sistema (fundo cinza, card branco, botão dourado #d4af37)
 
-### 5. Cron job
-- pg_cron agendado: `0 12 * * *` (09:00 BRT)
-- Chama a Edge Function automaticamente
+### 3. Fluxo de execução
+1. Crio a edge function
+2. Mostro o layout do email para aprovação
+3. Só após aprovação, executo o envio via `curl_edge_functions`
 
-## Detecção de pagamento (para de enviar)
-- `planos2_subscriptions.expires_at` estendido para data futura
-- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
-- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
+### Detalhes técnicos
+- Reutiliza autenticação SendPulse (OAuth com `SENDPULSE_CLIENT_ID` / `SENDPULSE_CLIENT_SECRET`)
+- Gera checkout Pagar.me individual por ordem para cada cliente receber seu link correto
+- Registra envios para auditoria
+- `verify_jwt = false` para poder invocar manualmente
 
-# Auditoria Completa de Emails — Robustez Unificada (CONCLUÍDA)
-
-## O que foi feito
-
-### Padrão unificado aplicado em todos os 6 webhooks:
-
-1. **webhook-mercadopago** — `sendPurchaseEmail` refatorado:
-   - 3 retries com exponential backoff (2s, 5s, 10s)
-   - Removida lógica de DELETE de logs de falha (preserva auditoria)
-   - Cada tentativa registrada separadamente
-
-2. **webhook-greenn-creditos** — `sendWelcomeEmail` e `sendArcanoClonnerEmail`:
-   - Adicionado INSERT em `welcome_email_logs` (antes não tinha NENHUM log)
-   - Deduplicação via `dedup_key` unique constraint
-   - Blacklist check antes do envio
-   - 3 retries com exponential backoff
-   - Caller simplificado (retry agora é interno)
-
-3. **webhook-greenn** — Callers de `sendWelcomeEmail` e `sendPlanos2WelcomeEmail`:
-   - Retry loop 3x com exponential backoff (2s, 5s, 10s)
-   - Funções internas já tinham dedup + logging
-
-4. **webhook-greenn-artes** — Caller de `sendWelcomeEmail`:
-   - Retry loop 3x com exponential backoff
-   - Função interna já tinha dedup + logging
-
-5. **webhook-greenn-musicos** — Caller de `sendWelcomeEmail`:
-   - Retry loop 3x com exponential backoff
-   - Função interna já tinha dedup + logging
-
-6. **webhook-hotmart-artes** — Caller de `sendWelcomeEmail`:
-   - Retry loop 3x com exponential backoff
-   - Função interna já tinha dedup por transaction + logging
-
-### Sem mudanças (já robustos):
-- `webhook-pagarme` — 3 retries, dedup_key, logging completo
-- `resend-purchase-email` — robusto
-- `send-single-email` — utilitária independente
