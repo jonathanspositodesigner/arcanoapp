@@ -57,7 +57,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       label: t('tools:upscaler.beforeAfter.mockupSharp'),
       badge: "Fotos de Produto",
       badgeColor: "from-emerald-500 to-green-500",
-      aspectRatio: "1/1"
+      aspectRatio: "5/3"
     },
     {
       before: isMobile ? "/images/upscaler-antiga-antes-mobile.webp" : upscalerAntigaAntes,
