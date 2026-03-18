@@ -37,6 +37,7 @@ const upscalerHeroDepoisMobile = "/images/upscaler-hero-depois-mobile.webp";
 // Lazy load heavy gallery sections - images will only load when user scrolls to section
 const BeforeAfterGalleryPT = lazy(() => import("@/components/upscaler/sections/BeforeAfterGalleryPT"));
 const ExpandingGallery = lazy(() => import("@/components/combo-artes/ExpandingGallery"));
+const ScrollDrivenGallery = lazy(() => import("@/components/upscaler/ScrollDrivenGallery"));
 
 interface ToolData {
   id: string;
@@ -673,34 +674,63 @@ const PlanosUpscalerArcano = () => {
 
           {/* GALERIA - O que o Upscaler faz */}
           <LazySection rootMargin="100px">
-          <AnimatedSection className="px-4 py-20 bg-black/30">
-            <div className="max-w-5xl mx-auto">
-              <AnimatedSection as="div" delay={100}>
-                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
-                  Melhorado com o <span className="text-fuchsia-400">Upscaler Arcano</span>
-                </h2>
-                <p className="text-white/50 text-base md:text-lg text-center mb-12">Veja o poder da nossa ferramenta</p>
-              </AnimatedSection>
-              
-              <Suspense fallback={<div className="h-[400px] md:h-[600px] bg-white/5 rounded-xl animate-pulse" />}>
-                <ExpandingGallery badgeText="Melhorado com o Upscaler Arcano" items={[
-                  { beforeImage: upscalerBefore2, afterImage: upscalerAfter2, label: "Detalhes nítidos" },
-                  { beforeImage: upscalerBefore1, afterImage: upscalerAfter1, label: "Qualidade impressionante" },
-                  { beforeImage: upscalerBefore3, afterImage: upscalerAfter3, label: "Cores vibrantes" },
-                  { beforeImage: upscalerBefore4, afterImage: upscalerAfter4, label: "Alta resolução" },
-                  { beforeImage: upscalerBefore5, afterImage: upscalerAfter5, label: "Resultado profissional" },
-                  { beforeImage: upscalerBefore6, afterImage: upscalerAfter6, label: "Detalhes e texturas realistas" },
-                ]} />
-              </Suspense>
-            </div>
-
-            {/* CTA abaixo da galeria */}
-            <div className="max-w-md mx-auto mt-10">
-              <div className="px-0 md:px-2">
+          {/* Desktop: Scroll-driven gallery */}
+          <div className="hidden md:block">
+            <AnimatedSection className="px-4 pt-20 pb-8 bg-black/30">
+              <div className="max-w-5xl mx-auto">
+                <AnimatedSection as="div" delay={100}>
+                  <h2 className="font-space-grotesk font-bold text-3xl lg:text-4xl text-white text-center mb-3">
+                    Melhorado com o <span className="text-fuchsia-400">Upscaler Arcano</span>
+                  </h2>
+                  <p className="text-white/50 text-lg text-center mb-4">Veja o poder da nossa ferramenta</p>
+                </AnimatedSection>
+              </div>
+            </AnimatedSection>
+            <Suspense fallback={<div className="h-screen bg-white/5 animate-pulse" />}>
+              <ScrollDrivenGallery items={[
+                { beforeImage: upscalerBefore2, afterImage: upscalerAfter2, label: "Detalhes nítidos" },
+                { beforeImage: upscalerBefore1, afterImage: upscalerAfter1, label: "Qualidade impressionante" },
+                { beforeImage: upscalerBefore3, afterImage: upscalerAfter3, label: "Cores vibrantes" },
+                { beforeImage: upscalerBefore4, afterImage: upscalerAfter4, label: "Alta resolução" },
+                { beforeImage: upscalerBefore5, afterImage: upscalerAfter5, label: "Resultado profissional" },
+                { beforeImage: upscalerBefore6, afterImage: upscalerAfter6, label: "Detalhes e texturas realistas" },
+              ]} />
+            </Suspense>
+            <div className="bg-black/30 px-4 pb-20 pt-8">
+              <div className="max-w-md mx-auto">
                 <CTAButton onClick={() => handlePurchase('upscaller-arcano-vitalicio')} isPremium={isPremium} t={t} />
               </div>
             </div>
-          </AnimatedSection>
+          </div>
+
+          {/* Mobile: Original ExpandingGallery */}
+          <div className="md:hidden">
+            <AnimatedSection className="px-4 py-20 bg-black/30">
+              <div className="max-w-5xl mx-auto">
+                <AnimatedSection as="div" delay={100}>
+                  <h2 className="font-space-grotesk font-bold text-2xl text-white text-center mb-3">
+                    Melhorado com o <span className="text-fuchsia-400">Upscaler Arcano</span>
+                  </h2>
+                  <p className="text-white/50 text-base text-center mb-12">Veja o poder da nossa ferramenta</p>
+                </AnimatedSection>
+                
+                <Suspense fallback={<div className="h-[400px] bg-white/5 rounded-xl animate-pulse" />}>
+                  <ExpandingGallery badgeText="Melhorado com o Upscaler Arcano" items={[
+                    { beforeImage: upscalerBefore2, afterImage: upscalerAfter2, label: "Detalhes nítidos" },
+                    { beforeImage: upscalerBefore1, afterImage: upscalerAfter1, label: "Qualidade impressionante" },
+                    { beforeImage: upscalerBefore3, afterImage: upscalerAfter3, label: "Cores vibrantes" },
+                    { beforeImage: upscalerBefore4, afterImage: upscalerAfter4, label: "Alta resolução" },
+                    { beforeImage: upscalerBefore5, afterImage: upscalerAfter5, label: "Resultado profissional" },
+                    { beforeImage: upscalerBefore6, afterImage: upscalerAfter6, label: "Detalhes e texturas realistas" },
+                  ]} />
+                </Suspense>
+              </div>
+
+              <div className="max-w-md mx-auto mt-10">
+                <CTAButton onClick={() => handlePurchase('upscaller-arcano-vitalicio')} isPremium={isPremium} t={t} />
+              </div>
+            </AnimatedSection>
+          </div>
           </LazySection>
 
           {/* SEÇÃO DE PREÇO E CTA - Com Card + Garantia */}
