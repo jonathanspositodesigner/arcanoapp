@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
 import galleryBefore1 from "@/assets/upscaler/1a.png";
 import galleryAfter1 from "@/assets/upscaler/1d.png";
 import galleryBefore2 from "@/assets/upscaler/2a.png";
