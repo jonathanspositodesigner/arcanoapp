@@ -12,8 +12,6 @@ import galleryBefore3Cel from "@/assets/upscaler/3a_cel.webp";
 import galleryAfter3Cel from "@/assets/upscaler/3d_cel.webp";
 import galleryBefore4Cel from "@/assets/upscaler/5a_cel.webp";
 import galleryAfter4Cel from "@/assets/upscaler/5d_cel.webp";
-import galleryBefore5Cel from "@/assets/upscaler/6a_cel.webp";
-import galleryAfter5Cel from "@/assets/upscaler/6d_cel.webp";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
