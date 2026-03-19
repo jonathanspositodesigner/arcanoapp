@@ -5,11 +5,7 @@ import galleryBefore3 from "@/assets/upscaler/3a.webp";
 import galleryAfter3 from "@/assets/upscaler/3d.webp";
 import galleryBefore4 from "@/assets/upscaler/5a.webp";
 import galleryAfter4 from "@/assets/upscaler/5d.webp";
-import galleryBefore5 from "@/assets/upscaler/6a.webp";
-import galleryAfter5 from "@/assets/upscaler/6d.webp";
 // Mobile-optimized gallery images
-import galleryBefore1Cel from "@/assets/upscaler/1a_cel.webp";
-import galleryAfter1Cel from "@/assets/upscaler/1d_cel.webp";
 import galleryBefore2Cel from "@/assets/upscaler/2a_cel.webp";
 import galleryAfter2Cel from "@/assets/upscaler/2d_cel.webp";
 import galleryBefore3Cel from "@/assets/upscaler/3a_cel.webp";
