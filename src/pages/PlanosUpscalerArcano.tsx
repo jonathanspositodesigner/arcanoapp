@@ -716,6 +716,9 @@ const PlanosUpscalerArcano = () => {
               <ScrollDrivenGallery items={isMobile ? galleryItemsMobile : galleryItemsDesktop} />
             </Suspense>
             <div className="bg-black/30 px-4 pb-20 pt-8">
+              <h3 className="font-space-grotesk font-bold text-xl md:text-2xl lg:text-3xl text-white text-center mb-6">
+                Comece agora mesmo a entregar imagens que <span className="text-fuchsia-400">impressionam</span>
+              </h3>
               <div className="max-w-md mx-auto">
                 <CTAButton onClick={() => handlePurchase('upscaller-arcano-vitalicio')} isPremium={isPremium} t={t} />
               </div>
