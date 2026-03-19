@@ -49,11 +49,9 @@ const galleryItemsDesktop = [
 
 // Mobile gallery items (optimized for phone screens)
 const galleryItemsMobile = [
-  { beforeImage: galleryBefore1Cel, afterImage: galleryAfter1Cel, label: "Qualidade impressionante" },
   { beforeImage: galleryBefore2Cel, afterImage: galleryAfter2Cel, label: "Detalhes nítidos" },
   { beforeImage: galleryBefore3Cel, afterImage: galleryAfter3Cel, label: "Cores vibrantes" },
   { beforeImage: galleryBefore4Cel, afterImage: galleryAfter4Cel, label: "Alta resolução" },
-  { beforeImage: galleryBefore5Cel, afterImage: galleryAfter5Cel, label: "Resultado profissional" },
 ];
 interface ToolData {
   id: string;
