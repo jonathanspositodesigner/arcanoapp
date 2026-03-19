@@ -917,7 +917,7 @@ const PlanosUpscalerArcano = () => {
           <div className="flex justify-center px-4 md:px-6 pt-6 pb-14 md:pb-12">
             <Button
               onClick={() => document.getElementById("planos")?.scrollIntoView({ behavior: "smooth" })}
-              className="w-full max-w-[90%] md:max-w-md py-5 md:py-6 text-base md:text-lg font-bold rounded-2xl md:rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40 active:scale-95"
+              className="w-full max-w-[90%] md:max-w-md h-auto px-5 md:px-8 py-4 md:py-6 text-sm sm:text-base md:text-lg leading-snug text-center whitespace-normal break-words font-bold rounded-2xl md:rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40 active:scale-95"
             >
               🚀 Quero melhorar minhas imagens agora
             </Button>
