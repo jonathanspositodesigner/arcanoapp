@@ -560,12 +560,14 @@ serve(async (req) => {
         const subIdToSearch = eventData?.subscription?.id || subscriptionId
         const { data: subData } = await supabase
           .from('planos2_subscriptions')
-          .select('user_id')
+          .select('user_id, pagarme_subscription_id')
           .eq('pagarme_subscription_id', subIdToSearch)
           .maybeSingle()
 
-        if (subData?.user_id) {
-          console.log(`   ├─ 🔄 Revogando plano do user ${subData.user_id} (subscription canceled)`)
+        // CRITICAL: Only revoke if the subscription_id in DB matches the event's subscription_id.
+        // This prevents an old canceled subscription from revoking a newer active plan.
+        if (subData?.user_id && subData?.pagarme_subscription_id === subIdToSearch) {
+          console.log(`   ├─ 🔄 Revogando plano do user ${subData.user_id} (subscription canceled, sub_id match confirmed)`)
           await supabase.from('planos2_subscriptions').upsert({
             user_id: subData.user_id,
             plan_slug: 'free',
@@ -596,6 +598,17 @@ serve(async (req) => {
           })
 
           console.log(`   ├─ ✅ Plano revogado → free (subscription canceled)`)
+          return new Response('OK', { status: 200, headers: corsHeaders })
+        } else if (subData?.user_id) {
+          console.log(`   ├─ ⚠️ subscription.canceled ignorado: sub_id ${subIdToSearch} não corresponde ao plano ativo (${subData?.pagarme_subscription_id})`)
+          await supabase.from('webhook_logs').insert({
+            platform: 'pagarme',
+            event_type: eventType,
+            transaction_id: idempotencyKey,
+            status: 'ignored_old_subscription',
+            email: null,
+            payload: body,
+          })
           return new Response('OK', { status: 200, headers: corsHeaders })
         }
       }
