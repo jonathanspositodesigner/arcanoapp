@@ -605,7 +605,12 @@ const ArcanoClonerTool: React.FC = () => {
 
   // Handle refine submission
   const handleRefine = async () => {
-    if (!outputImage || !refinePrompt.trim() || !user?.id) return;
+    if (!startSubmit()) return; // Synchronous guard against double-clicks
+    
+    if (!outputImage || !refinePrompt.trim() || !user?.id) {
+      endSubmit();
+      return;
+    }
 
     const REFINE_COST = 30;
 
@@ -613,6 +618,7 @@ const ArcanoClonerTool: React.FC = () => {
     if (freshCredits < REFINE_COST) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
+      endSubmit();
       return;
     }
 
@@ -687,6 +693,7 @@ const ArcanoClonerTool: React.FC = () => {
       toast.error(err.message || 'Erro ao refinar imagem');
     } finally {
       setIsRefining(false);
+      endSubmit();
     }
   };
 

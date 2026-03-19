@@ -373,14 +373,18 @@ const GeradorPersonagemTool: React.FC = () => {
   };
 
   const handleRefine = async (selectedNumbers: string) => {
+    if (!startSubmit()) return; // Synchronous guard against double-clicks
+    
     if (!user?.id) {
       setNoCreditsReason('not_logged');
       setShowNoCreditsModal(true);
+      endSubmit();
       return;
     }
 
     if (!latestResultImage || !frontStorageUrl || !profileStorageUrl || !semiProfileStorageUrl || !lowAngleStorageUrl) {
       toast.error('Dados insuficientes para refinar. Gere um avatar primeiro.');
+      endSubmit();
       return;
     }
 
@@ -390,6 +394,7 @@ const GeradorPersonagemTool: React.FC = () => {
       setActiveJobId(activeCheck.activeJobId);
       setActiveStatus(activeCheck.activeStatus);
       setShowActiveJobModal(true);
+      endSubmit();
       return;
     }
 
@@ -397,6 +402,7 @@ const GeradorPersonagemTool: React.FC = () => {
     if (freshCredits < refineCreditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
+      endSubmit();
       return;
     }
 
@@ -459,6 +465,7 @@ const GeradorPersonagemTool: React.FC = () => {
         setIsRefining(false);
         setNoCreditsReason('insufficient');
         setShowNoCreditsModal(true);
+        endSubmit();
         return;
       }
 
@@ -466,6 +473,7 @@ const GeradorPersonagemTool: React.FC = () => {
         toast.error('Muitas requisições. Aguarde 1 minuto.');
         setStatus('error');
         setIsRefining(false);
+        endSubmit();
         return;
       }
 

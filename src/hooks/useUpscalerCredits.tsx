@@ -11,14 +11,17 @@ export const useUpscalerCredits = (userId: string | undefined) => {
   const [balance, setBalance] = useState<number>(0);
   const [breakdown, setBreakdown] = useState<CreditsBreakdown>({ total: 0, monthly: 0, lifetime: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const trialCheckedRef = useRef(false);
+  const hasLoadedOnceRef = useRef(false);
 
   const fetchBalance = useCallback(async (attempt = 0) => {
     if (!userId) {
       setBalance(0);
       setBreakdown({ total: 0, monthly: 0, lifetime: 0 });
       setIsLoading(false);
+      setHasError(false);
       return;
     }
 
@@ -44,6 +47,8 @@ export const useUpscalerCredits = (userId: string | undefined) => {
           monthly: result.monthly,
           lifetime: result.lifetime
         });
+        setHasError(false);
+        hasLoadedOnceRef.current = true;
       } else {
         // Fallback to simple balance
         const { data, error } = await supabase.rpc('get_upscaler_credits', {
@@ -53,6 +58,11 @@ export const useUpscalerCredits = (userId: string | undefined) => {
         if (!error && data !== null) {
           setBalance(data);
           setBreakdown({ total: data, monthly: data, lifetime: 0 });
+          setHasError(false);
+          hasLoadedOnceRef.current = true;
+        } else if (!hasLoadedOnceRef.current) {
+          // Only set error if we never loaded successfully — preserve last known balance
+          setHasError(true);
         }
       }
     } catch (err) {
@@ -62,6 +72,10 @@ export const useUpscalerCredits = (userId: string | undefined) => {
         const delay = 1000 * Math.pow(2, attempt) + Math.random() * 500;
         setTimeout(() => fetchBalance(attempt + 1), delay);
         return;
+      }
+      // After all retries failed: preserve last known balance, mark error
+      if (!hasLoadedOnceRef.current) {
+        setHasError(true);
       }
     } finally {
       setIsLoading(false);
@@ -157,7 +171,8 @@ export const useUpscalerCredits = (userId: string | undefined) => {
   return { 
     balance, 
     breakdown,
-    isLoading, 
+    isLoading,
+    hasError,
     refetch: fetchBalance, 
     consumeCredits,
     checkBalance

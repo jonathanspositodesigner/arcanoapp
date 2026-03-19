@@ -463,13 +463,19 @@ const FlyerMakerTool: React.FC = () => {
   };
 
   const handleRefine = async () => {
-    if (!outputImage || !refinePrompt.trim() || !user?.id) return;
+    if (!startSubmit()) return; // Synchronous guard against double-clicks
+    
+    if (!outputImage || !refinePrompt.trim() || !user?.id) {
+      endSubmit();
+      return;
+    }
 
     const REFINE_COST = 30;
     const freshCredits = await checkBalance();
     if (freshCredits < REFINE_COST) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
+      endSubmit();
       return;
     }
 
@@ -540,6 +546,7 @@ const FlyerMakerTool: React.FC = () => {
       toast.error(err.message || 'Erro ao alterar imagem');
     } finally {
       setIsRefining(false);
+      endSubmit();
     }
   };
 
