@@ -1,42 +1,30 @@
 
 
-## Diagnóstico
+## Problema Identificado
 
-As imagens dos 2 avatares do Jonathan estão quebradas porque o `SaveCharacterDialog` salva diretamente a URL temporária do RunningHub (`rh-images-1252422369.cos.ap-beijing.myqcloud.com/...`). Essas URLs expiram após alguns dias/semanas, quebrando todas as imagens salvas.
+O usuário `djcristianorangel@gmail.com` tem `password_changed: false` no perfil desde a criação da conta (Dez 2025). O fluxo de login em `useUnifiedAuth.ts` (linha 301) verifica esse campo e, se for `false`, redireciona para a página de "Primeiro Acesso" (troca de senha), impedindo o login normal.
 
-**Evidência no banco:**
-- MARIA CLARA - AVATAR → `https://rh-images-1252422369.cos.ap-beijing.myqcloud.com/.../ComfyUI_00001_ycgug_1771855792.png`
-- Jonathan → `https://rh-images-1252422369.cos.ap-beijing.myqcloud.com/.../ComfyUI_00003_uftvr_1770670311.png`
+Esse é o **mesmo problema sistêmico** que pode afetar outros usuários antigos que nunca passaram pelo fluxo de troca de senha.
 
-Ambas são URLs temporárias que já expiraram. As imagens **não foram deletadas do banco** — o registro está lá, mas o link externo morreu.
+## Causa Raiz
 
----
+O usuário provavelmente sempre fez login via link de recuperação ou o sistema não exigia essa verificação quando ele criou a conta. Agora que o check `password_changed` está ativo no fluxo de login, ele fica preso num loop: tenta logar → é redirecionado para trocar senha → recebe email de recovery → mas o fluxo de recovery não funciona corretamente para desbloquear.
 
-## Plano de Correção
+## Correção Imediata
 
-### 1. Criar bucket `saved-avatars` (público)
-Migration SQL para criar o bucket com RLS permitindo upload/select/delete apenas pelo próprio usuário.
+1. **Atualizar o perfil do usuário** via migração SQL:
+   - Setar `password_changed = true` para `djcristianorangel@gmail.com`
 
-### 2. Corrigir `SaveCharacterDialog.tsx` — upload permanente ao salvar
-Ao clicar "Salvar", o componente vai:
-1. Fazer fetch da imagem (URL temporária ainda válida naquele momento)
-2. Fazer upload para `saved-avatars/{userId}/{uuid}.png`
-3. Salvar a URL pública permanente no `image_url` do banco
+## Correção Sistêmica (prevenir reincidência)
 
-### 3. Migrar os 2 avatares existentes do Jonathan
-Como as URLs já expiraram, **não é possível recuperar as imagens originais**. As opções são:
-- Marcar os registros como "imagem indisponível" com fallback visual
-- Ou deletar os registros quebrados para o usuário recriar
+2. **Atualizar todos os perfis antigos** que têm `password_changed = false` mas já logaram com senha antes (contas com mais de 30 dias):
+   - Migração SQL para setar `password_changed = true` em perfis criados antes de 2026-02-01 que ainda têm `password_changed = false`
+   - Isso evita que outros usuários antigos caiam no mesmo problema
 
-Vou implementar um fallback visual (imagem quebrada mostra placeholder com nome) para que registros antigos não causem confusão, e os novos salvamentos sempre usem storage permanente.
+## Detalhes Técnicos
 
-### 4. Adicionar fallback visual nos componentes que exibem avatares
-- `SavedCharactersPanel.tsx` — `onError` no `<img>` para mostrar placeholder
-- `PersonInputSwitch.tsx` — mesmo tratamento
-
-### Arquivos a alterar
-- **Migration SQL** — criar bucket `saved-avatars` + políticas RLS
-- **`src/components/character-generator/SaveCharacterDialog.tsx`** — upload para storage antes de salvar
-- **`src/components/character-generator/SavedCharactersPanel.tsx`** — fallback de imagem quebrada
-- **`src/components/ai-tools/PersonInputSwitch.tsx`** — fallback de imagem quebrada
+- **Tabela afetada**: `profiles`
+- **Campo**: `password_changed` (boolean, atualmente `false` para este usuário)
+- **Arquivo de lógica**: `src/hooks/useUnifiedAuth.ts` linha 301 — `if (!profile || !profile.password_changed)` redireciona para change-password
+- A migração será um `UPDATE` simples, sem alteração de schema
 
