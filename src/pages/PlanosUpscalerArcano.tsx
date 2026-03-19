@@ -662,27 +662,9 @@ const PlanosUpscalerArcano = () => {
           <LazySection rootMargin="1200px">
           {/* Fullscreen scroll-driven gallery - all devices */}
           <div>
-            <AnimatedSection className="px-4 pt-20 pb-8 bg-black/30">
-              <div className="max-w-5xl mx-auto">
-                <AnimatedSection as="div" delay={100}>
-                  <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
-                    Melhorado com o <span className="text-fuchsia-400">Upscaler Arcano</span>
-                  </h2>
-                  <p className="text-white/50 text-base md:text-lg text-center mb-4">Veja o poder da nossa ferramenta</p>
-                </AnimatedSection>
-              </div>
-            </AnimatedSection>
             <Suspense fallback={<div className="h-screen bg-white/5 animate-pulse" />}>
               <ScrollDrivenGallery items={isMobile ? galleryItemsMobile : galleryItemsDesktop} />
             </Suspense>
-            <div className="bg-black/30 px-4 pb-20 pt-8">
-              <h3 className="font-space-grotesk font-bold text-xl md:text-2xl lg:text-3xl text-white text-center mb-6">
-                Comece agora mesmo a entregar imagens que <span className="text-fuchsia-400">impressionam</span>
-              </h3>
-              <div className="max-w-md mx-auto">
-                <CTAButton onClick={() => handlePurchase('upscaller-arcano-vitalicio')} isPremium={isPremium} t={t} />
-              </div>
-            </div>
           </div>
           </LazySection>
 
