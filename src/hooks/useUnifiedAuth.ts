@@ -155,7 +155,15 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       }
       
       const profileExists = profileCheck?.[0]?.exists_in_db || false;
-      const passwordChanged = profileCheck?.[0]?.password_changed || false;
+      let passwordChanged = profileCheck?.[0]?.password_changed || false;
+      const profileCreatedAt = profileCheck?.[0]?.created_at;
+      
+      // Legacy accounts created before 2026-03-12 should skip first-access flow
+      const LEGACY_CUTOFF = new Date('2026-03-12T00:00:00Z');
+      if (profileExists && !passwordChanged && profileCreatedAt && new Date(profileCreatedAt) < LEGACY_CUTOFF) {
+        console.log('[UnifiedAuth] Legacy account pre-cutoff, skipping first-access flow');
+        passwordChanged = true;
+      }
       
       console.log('[UnifiedAuth] Profile check:', { profileExists, passwordChanged });
       
@@ -285,7 +293,7 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       // Check if user needs to change password AND if email is verified
       const { data: profile } = await supabase
         .from('profiles')
-        .select('password_changed, email_verified')
+        .select('password_changed, email_verified, created_at')
         .eq('id', data.user.id)
         .maybeSingle();
       
@@ -306,12 +314,26 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
             email: data.user.email,
             password_changed: false,
           }, { onConflict: 'id' });
+          toast.success(t('errors.firstAccessSetPassword'));
+          config.onNeedPasswordChange?.();
+          navigate(`${config.changePasswordRoute}?redirect=${encodeURIComponent(config.defaultRedirect)}`);
+          setState(prev => ({ ...prev, isLoading: false }));
+          return;
         }
-        toast.success(t('errors.firstAccessSetPassword'));
-        config.onNeedPasswordChange?.();
-        navigate(`${config.changePasswordRoute}?redirect=${encodeURIComponent(config.defaultRedirect)}`);
-        setState(prev => ({ ...prev, isLoading: false }));
-        return;
+        
+        // Legacy account created before 2026-03-12: auto-fix and let through
+        const LEGACY_CUTOFF = new Date('2026-03-12T00:00:00Z');
+        if (profile.created_at && new Date(profile.created_at) < LEGACY_CUTOFF) {
+          console.log('[UnifiedAuth] Legacy account, auto-fixing password_changed');
+          await supabase.from('profiles').update({ password_changed: true }).eq('id', data.user.id);
+          // Continue login normally - don't redirect
+        } else {
+          toast.success(t('errors.firstAccessSetPassword'));
+          config.onNeedPasswordChange?.();
+          navigate(`${config.changePasswordRoute}?redirect=${encodeURIComponent(config.defaultRedirect)}`);
+          setState(prev => ({ ...prev, isLoading: false }));
+          return;
+        }
       }
       
       // Process pending referral on login (retry from signup)

@@ -32,13 +32,20 @@ const UserLogin = () => {
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('password_changed')
+          .select('password_changed, created_at')
           .eq('id', user.id)
           .maybeSingle();
 
-        if (!profile || !profile.password_changed) {
+        const LEGACY_CUTOFF = new Date('2026-03-12T00:00:00Z');
+        const isLegacy = profile?.created_at && new Date(profile.created_at) < LEGACY_CUTOFF;
+
+        if (!profile || (!profile.password_changed && !isLegacy)) {
           navigate(`/change-password?redirect=${redirectTo}`);
         } else {
+          if (!profile.password_changed && isLegacy) {
+            // Auto-fix legacy account
+            await supabase.from('profiles').update({ password_changed: true }).eq('id', user.id);
+          }
           navigate(redirectTo);
         }
       }

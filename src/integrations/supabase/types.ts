@@ -4639,6 +4639,7 @@ export type Database = {
       check_profile_exists: {
         Args: { check_email: string }
         Returns: {
+          created_at: string
           exists_in_db: boolean
           password_changed: boolean
         }[]
