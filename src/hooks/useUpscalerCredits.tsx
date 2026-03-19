@@ -171,7 +171,8 @@ export const useUpscalerCredits = (userId: string | undefined) => {
   return { 
     balance, 
     breakdown,
-    isLoading, 
+    isLoading,
+    hasError,
     refetch: fetchBalance, 
     consumeCredits,
     checkBalance

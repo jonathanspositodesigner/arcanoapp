@@ -473,6 +473,7 @@ const GeradorPersonagemTool: React.FC = () => {
         toast.error('Muitas requisições. Aguarde 1 minuto.');
         setStatus('error');
         setIsRefining(false);
+        endSubmit();
         return;
       }
 

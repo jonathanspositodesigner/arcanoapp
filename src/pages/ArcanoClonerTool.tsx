@@ -693,6 +693,7 @@ const ArcanoClonerTool: React.FC = () => {
       toast.error(err.message || 'Erro ao refinar imagem');
     } finally {
       setIsRefining(false);
+      endSubmit();
     }
   };
 

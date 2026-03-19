@@ -546,6 +546,7 @@ const FlyerMakerTool: React.FC = () => {
       toast.error(err.message || 'Erro ao alterar imagem');
     } finally {
       setIsRefining(false);
+      endSubmit();
     }
   };
 
