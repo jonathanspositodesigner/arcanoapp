@@ -761,10 +761,9 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
         
         // Determinar se o contrato do webhook corresponde ao plano ativo
         const hasActivePlanos2 = planos2Sub && planos2Sub.plan_slug !== 'free'
-        const contractMatches = hasActivePlanos2 && (
-          !webhookContractId || 
+        const contractMatches = hasActivePlanos2 && 
+          webhookContractId && 
           String(planos2Sub.greenn_contract_id) === String(webhookContractId)
-        )
 
         if (hasActivePlanos2) {
           if (contractMatches) {
