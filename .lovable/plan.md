@@ -1,57 +1,82 @@
 
 
-## Fix: Usuários antigos marcados como "primeiro acesso"
+## Auditoria Completa: Sistema de Créditos — Bugs e Vulnerabilidades
 
-### Problema
-Contas criadas antes de 12/03/2026 com `password_changed = false` são forçadas ao fluxo de "primeiro acesso" mesmo que o usuário já saiba a senha e consiga autenticar normalmente.
+### Resumo dos vetores de risco analisados
 
-### Locais afetados (4 pontos no código)
+Analisei todos os webhooks (Greenn, Greenn-Creditos, Pagar.me), RPCs de créditos, cron jobs e fluxos de ativação. Segue o diagnóstico:
 
-1. `src/hooks/useUnifiedAuth.ts` linha 176 — `checkEmail()`: se `!passwordChanged`, entra no fluxo de primeiro acesso (auto-login com email como senha)
-2. `src/hooks/useUnifiedAuth.ts` linha 301 — `loginWithPassword()`: após login com sucesso, se `!profile.password_changed`, redireciona para `/change-password`
-3. `src/pages/UserLogin.tsx` linha 39 — `checkLoginStatus`: se já logado e `!password_changed`, redireciona para `/change-password`
-4. `src/components/arcano-cloner/ArcanoClonerAuthModal.tsx` linha 224 — se `!passwordChanged`, auto-login com email como senha
+---
 
-### Correções
+### BUG 1 — webhook-pagarme: `subscription.canceled` sem ordem zera créditos indiscriminadamente (CRÍTICO)
 
-**1. useUnifiedAuth.ts — `checkEmail()` (linha 176)**
-Antes de entrar no fluxo de primeiro acesso, buscar `created_at` do perfil. Se `created_at < '2026-03-12'`, pular o fluxo de primeiro acesso e ir direto para o step de senha (password). Isso requer alterar a função `check_profile_exists` para retornar `created_at` também, OU fazer um select separado.
+**Arquivo:** `supabase/functions/webhook-pagarme/index.ts` linhas 558-601
 
-Abordagem mais simples: alterar a RPC `check_profile_exists` para retornar `created_at` junto.
+Quando chega `subscription.canceled` sem ordem associada, o sistema busca por `pagarme_subscription_id` e, se encontra, zera créditos e revoga para Free **sem verificar se o subscription_id corresponde ao plano ativo atual**. 
 
-**2. useUnifiedAuth.ts — `loginWithPassword()` (linha 301)**
-Após login com sucesso e `!profile.password_changed`, adicionar `created_at` ao select da linha 288. Se `created_at < '2026-03-12'`, auto-corrigir `password_changed = true` e continuar login normalmente sem redirecionar.
+Cenário de bug: Usuário faz upgrade (sub_id=AAA → sub_id=BBB). Pagar.me cancela AAA. Mas `planos2_subscriptions` pode já estar com sub_id=BBB. O código busca por AAA, mas como faz `eq('pagarme_subscription_id', subIdToSearch)`, **só encontra se AAA ainda estiver lá**. Na prática, após upgrade, o campo já foi substituído por BBB, então esse caso específico é SEGURO por acidente. Porém, se o sub_id não foi atualizado (race condition), pode zerar o plano errado.
 
-**3. UserLogin.tsx — `checkLoginStatus` (linha 33-43)**
-Adicionar `created_at` ao select. Se `created_at < '2026-03-12'` e `!password_changed`, auto-corrigir e navegar direto para `redirectTo`.
+**Fix:** Adicionar verificação explícita: só revogar se o `pagarme_subscription_id` ativo no banco == o subscription_id do evento.
 
-**4. ArcanoClonerAuthModal.tsx — `handleCheckEmail` (linha 224)**
-Mesmo fix: se conta é pré-corte, tratar como se tivesse senha e ir para password step.
+### BUG 2 — webhook-greenn-creditos: SEM optimistic lock (CRÍTICO)
 
-### Alteração na RPC `check_profile_exists`
-Adicionar `created_at` ao retorno:
-```sql
-CREATE OR REPLACE FUNCTION public.check_profile_exists(check_email TEXT)
-RETURNS TABLE(exists_in_db BOOLEAN, password_changed BOOLEAN, created_at TIMESTAMPTZ)
+**Arquivo:** `supabase/functions/webhook-greenn-creditos/index.ts`
+
+O webhook de créditos avulsos da Greenn **não tem lock otimista**. A única proteção é a verificação de `greenn_contract_id` + `result=success` (linhas 742-761), mas isso tem janela de race condition: se dois webhooks chegam simultaneamente, ambos verificam antes de qualquer um marcar `success`, e os dois passam → **créditos em dobro**.
+
+**Fix:** Adicionar optimistic lock (`update result='processing' where result='received'`) antes de processar, igual ao que já existe no webhook-greenn principal.
+
+### BUG 3 — webhook-greenn-creditos: sem dedup quando não há contractId
+
+Quando o webhook não envia `contractId`, não há nenhuma verificação de duplicidade. Qualquer retry da Greenn vai adicionar créditos novamente.
+
+**Fix:** Quando não há contractId, usar `transaction_id` do log como chave de dedup, ou verificar se já existe um log `success` com mesmo `product_id` + `email` nos últimos 5 minutos.
+
+### BUG 4 — confirm-email: créditos iniciais se balance=0 (BAIXO)
+
+**Arquivo:** `supabase/functions/confirm-email/index.ts` linhas 170-185
+
+Se o usuário consumir todos os créditos e de alguma forma re-confirmar email, ganha 300 créditos novamente. Na prática isso é improvável (confirmação é one-time), mas não está protegido.
+
+**Fix:** Verificar se o registro de créditos já existe (`existingCredits` != null), independente do balance.
+
+### BUG 5 — RPCs não têm proteção contra saldo negativo em edge cases
+
+As RPCs `reset_upscaler_credits` e `add_lifetime_credits` não verificam se já estão sendo executadas para o mesmo user_id simultaneamente. A RPC `consume_upscaler_credits` usa `FOR UPDATE` (correto), mas as de reset/add não.
+
+**Fix:** Adicionar `FOR UPDATE` (row-level lock) nas RPCs `reset_upscaler_credits` e `add_lifetime_credits` para evitar race conditions entre webhooks simultâneos que tentam resetar/adicionar créditos ao mesmo tempo.
+
+---
+
+### Correções Propostas
+
+#### 1. webhook-greenn-creditos — Adicionar optimistic lock
+Antes de processar créditos, adicionar lock atômico:
+```typescript
+const { data: lockResult } = await supabase
+  .from('webhook_logs')
+  .update({ result: 'processing' })
+  .eq('id', logId)
+  .eq('result', 'received')
+  .select('id')
+if (!lockResult || lockResult.length === 0) return // duplicata
 ```
 
-### Backfill no banco (SQL migration)
-Marcar `password_changed = true` para perfis criados antes de `2026-03-12` que já fizeram login (evidência: `last_sign_in_at IS NOT NULL` na `auth.users` ou existe algum job/transaction no nome deles).
+#### 2. webhook-greenn-creditos — Fallback dedup sem contractId
+Quando não há contractId, verificar logs recentes com mesmo email + product_id + result=success nos últimos 10 minutos.
 
-Como não temos acesso direto a `auth.users` em migrations normais, usamos um critério alternativo: perfis que têm `created_at < '2026-03-12'` E já possuem registros em `upscaler_credit_transactions` (indica uso ativo da plataforma).
+#### 3. webhook-pagarme — Proteger subscription.canceled
+Verificar que o `pagarme_subscription_id` no banco bate com o do evento antes de revogar.
 
-```sql
-UPDATE profiles SET password_changed = true
-WHERE created_at < '2026-03-12'
-AND password_changed IS NOT TRUE
-AND id IN (
-  SELECT DISTINCT user_id FROM upscaler_credit_transactions
-);
-```
+#### 4. confirm-email — Corrigir check de créditos iniciais
+Mudar de `!existingCredits || balance === 0` para `!existingCredits` apenas.
 
-### Resumo de arquivos
-- `supabase/migrations/` — nova migration para alterar RPC + backfill
-- `src/hooks/useUnifiedAuth.ts` — auto-fix para contas pré-corte nos 2 fluxos
-- `src/pages/UserLogin.tsx` — auto-fix no check de login
-- `src/components/arcano-cloner/ArcanoClonerAuthModal.tsx` — auto-fix no check de email
+#### 5. RPCs — Adicionar FOR UPDATE em reset e add
+Garantir que `reset_upscaler_credits` e `add_lifetime_credits` fazem `SELECT ... FOR UPDATE` antes de modificar saldos.
+
+### Arquivos a editar
+- `supabase/functions/webhook-greenn-creditos/index.ts` — lock + dedup
+- `supabase/functions/webhook-pagarme/index.ts` — subscription.canceled check
+- `supabase/functions/confirm-email/index.ts` — fix check créditos
+- `supabase/migrations/` — RPCs com FOR UPDATE
 
