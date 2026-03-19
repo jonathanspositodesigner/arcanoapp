@@ -5,6 +5,7 @@ interface CreditsContextType {
   balance: number;
   breakdown: { total: number; monthly: number; lifetime: number };
   isLoading: boolean;
+  hasError: boolean;
   refetch: () => Promise<void>;
   consumeCredits: (amount: number, description?: string) => Promise<{ success: boolean; error?: string; newBalance?: number; currentBalance?: number }>;
   checkBalance: () => Promise<number>;
