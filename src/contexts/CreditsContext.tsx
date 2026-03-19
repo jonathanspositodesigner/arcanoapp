@@ -30,6 +30,7 @@ export const useCredits = (): CreditsContextType => {
       balance: 0,
       breakdown: { total: 0, monthly: 0, lifetime: 0 },
       isLoading: true,
+      hasError: false,
       refetch: async () => {},
       consumeCredits: async () => ({ success: false, error: 'No CreditsProvider' }),
       checkBalance: async () => 0,
