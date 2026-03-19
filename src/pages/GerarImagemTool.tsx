@@ -181,12 +181,15 @@ const GerarImagemTool = () => {
 
       const data = await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || data.error) {
         if (data.error === 'INSUFFICIENT_CREDITS') {
           setNoCreditsReason('insufficient');
           setShowNoCreditsModal(true);
         } else {
           toast.error(data.error || 'Erro ao gerar imagem');
+          if (data.refunded) {
+            await refetchCredits();
+          }
         }
         setIsGenerating(false);
         return;
