@@ -583,6 +583,36 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
         return
       }
 
+      // === LEGACY: Idempotency check — optimistic lock ===
+      const { data: legacyLock } = await supabase
+        .from('webhook_logs')
+        .update({ result: 'processing' })
+        .eq('id', logId)
+        .eq('result', 'received')
+        .select('id')
+
+      if (!legacyLock || legacyLock.length === 0) {
+        console.log(`   └─ [${requestId}] ⏭️ Legacy: lock não obtido — duplicata`)
+        return
+      }
+
+      // Double-check contractId
+      if (contractId) {
+        const { data: existingLegacy } = await supabase
+          .from('webhook_logs')
+          .select('id')
+          .eq('greenn_contract_id', String(contractId))
+          .eq('result', 'success')
+          .neq('id', logId)
+          .maybeSingle()
+
+        if (existingLegacy) {
+          console.log(`   └─ [${requestId}] ⏭️ Legacy: contrato já processado: ${contractId}`)
+          await supabase.from('webhook_logs').update({ result: 'ignored', error_message: 'Contrato legacy já processado', payload: {} }).eq('id', logId)
+          return
+        }
+      }
+
       const planType = detectPlanFromProductId(productId, requestId)
       let billingPeriod = 'monthly'
       if (offerName.toLowerCase().includes('anual') || productPeriod >= 365) billingPeriod = 'yearly'
