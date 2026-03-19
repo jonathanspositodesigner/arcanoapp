@@ -402,6 +402,7 @@ const GeradorPersonagemTool: React.FC = () => {
     if (freshCredits < refineCreditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
+      endSubmit();
       return;
     }
 
