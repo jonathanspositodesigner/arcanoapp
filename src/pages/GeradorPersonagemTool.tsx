@@ -394,6 +394,7 @@ const GeradorPersonagemTool: React.FC = () => {
       setActiveJobId(activeCheck.activeJobId);
       setActiveStatus(activeCheck.activeStatus);
       setShowActiveJobModal(true);
+      endSubmit();
       return;
     }
 
