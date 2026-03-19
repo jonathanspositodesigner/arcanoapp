@@ -899,6 +899,7 @@ const PlanosUpscalerArcano = () => {
             </div>
           </AnimatedSection>
           </LazySection>
+          </div>
 
           {/* ==================== GARANTIA ==================== */}
           <AnimatedSection className="px-4 py-16 md:py-20">
