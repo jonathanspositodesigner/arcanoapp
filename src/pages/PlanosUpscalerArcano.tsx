@@ -42,11 +42,9 @@ const ScrollDrivenGallery = lazy(() => import("@/components/upscaler/ScrollDrive
 
 // Desktop gallery items
 const galleryItemsDesktop = [
-  { beforeImage: galleryBefore1, afterImage: galleryAfter1, label: "Qualidade impressionante" },
   { beforeImage: galleryBefore2, afterImage: galleryAfter2, label: "Detalhes nítidos" },
   { beforeImage: galleryBefore3, afterImage: galleryAfter3, label: "Cores vibrantes" },
   { beforeImage: galleryBefore4, afterImage: galleryAfter4, label: "Alta resolução" },
-  { beforeImage: galleryBefore5, afterImage: galleryAfter5, label: "Resultado profissional" },
 ];
 
 // Mobile gallery items (optimized for phone screens)
