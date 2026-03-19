@@ -678,6 +678,9 @@ const PlanosUpscalerArcano = () => {
           {/* SEÇÃO DE PREÇO E CTA - Com Card + Garantia */}
           <LazySection rootMargin="100px">
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-8">
+              Comece agora mesmo a entregar imagens que <span className="text-fuchsia-400">impressionam</span>
+            </h2>
             {/* Banner promo com countdown */}
             <div className="max-w-5xl mx-auto mb-6 rounded-xl overflow-hidden border border-red-500/30 bg-gradient-to-r from-red-950/80 via-purple-950/60 to-red-950/80">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3">
