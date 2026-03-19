@@ -1,28 +1,47 @@
 
 
-## ✅ Correções Aplicadas — Race Condition + Cancelamento Inteligente
+## Problema
 
-### 1. Créditos restaurados (djcristianorangel@gmail.com)
-- Plano Pro reativado: `plan_slug = 'pro'`, `is_active = true`, 5.000 créditos/mês
-- Saldo atual: 5.020 (5.000 monthly + 20 lifetime)
+Ainda existem **430 usuários legados** (criados antes de março 2026) com `password_changed = false`, sendo que 22 deles já fizeram login com senha depois da criação. O fix anterior só cobriu contas antes de 2026-02-01 — sobrou o período fevereiro-março.
 
-### 2. Race condition corrigida (webhook-greenn)
-**Optimistic lock** implementado em ambos os fluxos (Planos2 + Legacy):
-- Antes de processar, o webhook faz `UPDATE webhook_logs SET result = 'processing' WHERE id = logId AND result = 'received'`
-- Se retorna 0 rows → outro webhook já está processando → ignora
-- Double-check adicional via `greenn_contract_id` + `result = 'success'`
+A lógica na linha 301 do `useUnifiedAuth.ts` continua bloqueando esses usuários como "primeiro acesso" mesmo que eles já saibam a senha e consigam autenticar.
 
-### 3. Cancelamento inteligente (v2)
-- Verifica se o `contractId` do webhook corresponde ao `greenn_contract_id` da subscription ativa
-- **Créditos só são zerados se o contrato bater** (movido para dentro do `if (contractMatches)`)
-- Se não bater, NÃO cancela E NÃO zera créditos (protege upgrades Pro→Ultimate)
-- Fallback legacy: só zera créditos se não houver planos2 ativo E não houver contractId
-- Premium legacy: filtra desativação por `greenn_contract_id` quando disponível
+## Correções
 
-### Cenário protegido: Upgrade
-1. Usuário Pro (contract AAA, 5.000 créditos) → Upgrade Ultimate (contract BBB, 14.000 créditos)
-2. Greenn cancela contract AAA → webhook chega com contractId=AAA
-3. Sistema verifica: AAA ≠ BBB → **NÃO reseta planos2, NÃO zera créditos** ✅
+### 1. Fix no código — auto-corrigir contas antigas no login (useUnifiedAuth.ts)
 
-### Arquivos alterados
-- `supabase/functions/webhook-greenn/index.ts` — idempotência + cancelamento inteligente v2
+Na linha 301, antes de redirecionar para troca de senha, verificar se a conta tem mais de 7 dias. Se sim, o usuário claramente já sabe a senha (acabou de autenticar com sucesso) — atualizar `password_changed = true` automaticamente e deixar passar, sem redirecionar.
+
+```typescript
+if (!profile || !profile.password_changed) {
+  if (!profile) {
+    // Novo perfil - criar e redirecionar para trocar senha
+    await supabase.from('profiles').upsert({ ... });
+    // redirecionar...
+  } else {
+    // Perfil existe mas password_changed = false
+    // Se conta tem mais de 7 dias, auto-corrigir
+    const createdAt = new Date(profile.created_at || 0);
+    const daysSinceCreation = (Date.now() - createdAt.getTime()) / (1000*60*60*24);
+    if (daysSinceCreation > 7) {
+      await supabase.from('profiles').update({ password_changed: true }).eq('id', user.id);
+      // Continuar login normalmente (não redirecionar)
+    } else {
+      // Conta recente - redirecionar para trocar senha
+    }
+  }
+}
+```
+
+Isso requer adicionar `created_at` ao select do perfil na linha 288.
+
+### 2. Fix no banco — corrigir todos os legados restantes agora
+
+SQL migration para setar `password_changed = true` em todos os perfis com `created_at < '2026-03-12'` que ainda têm `password_changed = false`. Isso cobre os 430 restantes de uma vez.
+
+### Resultado
+
+- Usuários antigos que já sabem a senha vão logar normalmente
+- Contas novas (< 7 dias) criadas por webhook ainda passam pelo fluxo de primeiro acesso
+- Os 430 perfis legados são corrigidos imediatamente no banco
+
