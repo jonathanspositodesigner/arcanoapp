@@ -465,6 +465,7 @@ const GeradorPersonagemTool: React.FC = () => {
         setIsRefining(false);
         setNoCreditsReason('insufficient');
         setShowNoCreditsModal(true);
+        endSubmit();
         return;
       }
 
