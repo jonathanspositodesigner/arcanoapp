@@ -708,6 +708,7 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
       // Mark success BEFORE email + limpar payload
       await supabase.from('webhook_logs').update({ 
         result: 'success',
+        greenn_contract_id: contractId ? String(contractId) : null,
         payload: {} // Limpar payload para sucesso
       }).eq('id', logId)
 
