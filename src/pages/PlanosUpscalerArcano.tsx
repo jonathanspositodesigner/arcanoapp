@@ -1,25 +1,17 @@
 import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
-import galleryBefore1 from "@/assets/upscaler/1a.webp";
-import galleryAfter1 from "@/assets/upscaler/1d.webp";
 import galleryBefore2 from "@/assets/upscaler/2a.webp";
 import galleryAfter2 from "@/assets/upscaler/2d.webp";
 import galleryBefore3 from "@/assets/upscaler/3a.webp";
 import galleryAfter3 from "@/assets/upscaler/3d.webp";
 import galleryBefore4 from "@/assets/upscaler/5a.webp";
 import galleryAfter4 from "@/assets/upscaler/5d.webp";
-import galleryBefore5 from "@/assets/upscaler/6a.webp";
-import galleryAfter5 from "@/assets/upscaler/6d.webp";
 // Mobile-optimized gallery images
-import galleryBefore1Cel from "@/assets/upscaler/1a_cel.webp";
-import galleryAfter1Cel from "@/assets/upscaler/1d_cel.webp";
 import galleryBefore2Cel from "@/assets/upscaler/2a_cel.webp";
 import galleryAfter2Cel from "@/assets/upscaler/2d_cel.webp";
 import galleryBefore3Cel from "@/assets/upscaler/3a_cel.webp";
 import galleryAfter3Cel from "@/assets/upscaler/3d_cel.webp";
 import galleryBefore4Cel from "@/assets/upscaler/5a_cel.webp";
 import galleryAfter4Cel from "@/assets/upscaler/5d_cel.webp";
-import galleryBefore5Cel from "@/assets/upscaler/6a_cel.webp";
-import galleryAfter5Cel from "@/assets/upscaler/6d_cel.webp";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -50,20 +42,16 @@ const ScrollDrivenGallery = lazy(() => import("@/components/upscaler/ScrollDrive
 
 // Desktop gallery items
 const galleryItemsDesktop = [
-  { beforeImage: galleryBefore1, afterImage: galleryAfter1, label: "Qualidade impressionante" },
   { beforeImage: galleryBefore2, afterImage: galleryAfter2, label: "Detalhes nítidos" },
   { beforeImage: galleryBefore3, afterImage: galleryAfter3, label: "Cores vibrantes" },
   { beforeImage: galleryBefore4, afterImage: galleryAfter4, label: "Alta resolução" },
-  { beforeImage: galleryBefore5, afterImage: galleryAfter5, label: "Resultado profissional" },
 ];
 
 // Mobile gallery items (optimized for phone screens)
 const galleryItemsMobile = [
-  { beforeImage: galleryBefore1Cel, afterImage: galleryAfter1Cel, label: "Qualidade impressionante" },
   { beforeImage: galleryBefore2Cel, afterImage: galleryAfter2Cel, label: "Detalhes nítidos" },
   { beforeImage: galleryBefore3Cel, afterImage: galleryAfter3Cel, label: "Cores vibrantes" },
   { beforeImage: galleryBefore4Cel, afterImage: galleryAfter4Cel, label: "Alta resolução" },
-  { beforeImage: galleryBefore5Cel, afterImage: galleryAfter5Cel, label: "Resultado profissional" },
 ];
 interface ToolData {
   id: string;
@@ -662,6 +650,9 @@ const PlanosUpscalerArcano = () => {
           <LazySection rootMargin="1200px">
           {/* Fullscreen scroll-driven gallery - all devices */}
           <div>
+            <h2 className="text-center text-3xl md:text-5xl font-black py-12 bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-500 to-purple-600 uppercase tracking-tight">
+              Melhorado com o Upscaler Arcano
+            </h2>
             <Suspense fallback={<div className="h-screen bg-white/5 animate-pulse" />}>
               <ScrollDrivenGallery items={isMobile ? galleryItemsMobile : galleryItemsDesktop} />
             </Suspense>
