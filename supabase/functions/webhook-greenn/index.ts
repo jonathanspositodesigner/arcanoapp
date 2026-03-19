@@ -394,7 +394,21 @@ async function processPlanos2Webhook(
 
     console.log(`   ├─ [${requestId}] 📋 Planos2: ${planConfig.slug}, ${isAnual ? 'ANUAL' : 'MENSAL'}, expira em ${daysToAdd}d`)
 
-    // Idempotency check
+    // Idempotency check — optimistic lock: mark as 'processing' atomically
+    // If another webhook already grabbed this log, result won't be null anymore
+    const { data: lockResult } = await supabase
+      .from('webhook_logs')
+      .update({ result: 'processing' })
+      .eq('id', logId)
+      .eq('result', 'received')
+      .select('id')
+
+    if (!lockResult || lockResult.length === 0) {
+      console.log(`   └─ [${requestId}] ⏭️ Lock não obtido — outro webhook já está processando`)
+      return
+    }
+
+    // Double-check: verify contractId wasn't already processed successfully
     if (contractId) {
       const { data: existingLog } = await supabase
         .from('webhook_logs')
