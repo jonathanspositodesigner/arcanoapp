@@ -1,42 +1,22 @@
 
 
-## Diagnóstico
+## ✅ Correções Aplicadas — djcristianorangel@gmail.com + Race Condition
 
-As imagens dos 2 avatares do Jonathan estão quebradas porque o `SaveCharacterDialog` salva diretamente a URL temporária do RunningHub (`rh-images-1252422369.cos.ap-beijing.myqcloud.com/...`). Essas URLs expiram após alguns dias/semanas, quebrando todas as imagens salvas.
+### 1. Créditos restaurados
+- Plano Pro reativado: `plan_slug = 'pro'`, `is_active = true`, 5.000 créditos/mês
+- Saldo atual: 5.020 (5.000 monthly + 20 lifetime)
 
-**Evidência no banco:**
-- MARIA CLARA - AVATAR → `https://rh-images-1252422369.cos.ap-beijing.myqcloud.com/.../ComfyUI_00001_ycgug_1771855792.png`
-- Jonathan → `https://rh-images-1252422369.cos.ap-beijing.myqcloud.com/.../ComfyUI_00003_uftvr_1770670311.png`
+### 2. Race condition corrigida (webhook-greenn)
+**Optimistic lock** implementado em ambos os fluxos (Planos2 + Legacy):
+- Antes de processar, o webhook faz `UPDATE webhook_logs SET result = 'processing' WHERE id = logId AND result = 'received'`
+- Se retorna 0 rows → outro webhook já está processando → ignora
+- Double-check adicional via `greenn_contract_id` + `result = 'success'`
 
-Ambas são URLs temporárias que já expiraram. As imagens **não foram deletadas do banco** — o registro está lá, mas o link externo morreu.
+### 3. Cancelamento inteligente
+- Agora verifica se o `contractId` do webhook de cancelamento corresponde ao `greenn_contract_id` da subscription ativa
+- Se não bater, NÃO cancela (evita cancelamentos cruzados)
+- Fallback: se webhook não enviar contractId, mantém comportamento antigo
 
----
-
-## Plano de Correção
-
-### 1. Criar bucket `saved-avatars` (público)
-Migration SQL para criar o bucket com RLS permitindo upload/select/delete apenas pelo próprio usuário.
-
-### 2. Corrigir `SaveCharacterDialog.tsx` — upload permanente ao salvar
-Ao clicar "Salvar", o componente vai:
-1. Fazer fetch da imagem (URL temporária ainda válida naquele momento)
-2. Fazer upload para `saved-avatars/{userId}/{uuid}.png`
-3. Salvar a URL pública permanente no `image_url` do banco
-
-### 3. Migrar os 2 avatares existentes do Jonathan
-Como as URLs já expiraram, **não é possível recuperar as imagens originais**. As opções são:
-- Marcar os registros como "imagem indisponível" com fallback visual
-- Ou deletar os registros quebrados para o usuário recriar
-
-Vou implementar um fallback visual (imagem quebrada mostra placeholder com nome) para que registros antigos não causem confusão, e os novos salvamentos sempre usem storage permanente.
-
-### 4. Adicionar fallback visual nos componentes que exibem avatares
-- `SavedCharactersPanel.tsx` — `onError` no `<img>` para mostrar placeholder
-- `PersonInputSwitch.tsx` — mesmo tratamento
-
-### Arquivos a alterar
-- **Migration SQL** — criar bucket `saved-avatars` + políticas RLS
-- **`src/components/character-generator/SaveCharacterDialog.tsx`** — upload para storage antes de salvar
-- **`src/components/character-generator/SavedCharactersPanel.tsx`** — fallback de imagem quebrada
-- **`src/components/ai-tools/PersonInputSwitch.tsx`** — fallback de imagem quebrada
-
+### Arquivos alterados
+- `supabase/functions/webhook-greenn/index.ts` — idempotência + cancelamento
+- Edge function redeployada ✅
