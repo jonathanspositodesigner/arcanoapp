@@ -759,13 +759,16 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
         
         const { data: planos2Sub } = await planos2Query
         
-        if (planos2Sub && planos2Sub.plan_slug !== 'free') {
-          // Só cancelar se o contractId do webhook bater com o da subscription, 
-          // OU se não houver contractId no webhook (fallback)
-          const contractMatches = !webhookContractId || 
-            String(planos2Sub.greenn_contract_id) === String(webhookContractId)
-          
+        // Determinar se o contrato do webhook corresponde ao plano ativo
+        const hasActivePlanos2 = planos2Sub && planos2Sub.plan_slug !== 'free'
+        const contractMatches = hasActivePlanos2 && (
+          !webhookContractId || 
+          String(planos2Sub.greenn_contract_id) === String(webhookContractId)
+        )
+
+        if (hasActivePlanos2) {
           if (contractMatches) {
+            // Contract matches → reset planos2 para Free E zerar créditos
             await supabase.from('planos2_subscriptions').update({
               plan_slug: 'free',
               credits_per_month: 100,
@@ -779,22 +782,35 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
               last_credit_reset_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             }).eq('user_id', userId)
-            console.log(`   ├─ ✅ Planos2 resetado para Free (contract match)`)
+
+            try {
+              await supabase.rpc('reset_upscaler_credits', {
+                _user_id: userId,
+                _amount: 0,
+                _description: `Créditos zerados - ${status} (contract ${webhookContractId || 'fallback'})`
+              })
+              console.log(`   ├─ ✅ Planos2 resetado para Free + créditos zerados (contract match)`)
+            } catch (creditError) {
+              console.log(`   ├─ ✅ Planos2 resetado para Free (falha ao zerar créditos)`)
+            }
           } else {
-            console.log(`   ├─ ⏭️ Planos2 NÃO resetado: contractId ${webhookContractId} ≠ ${planos2Sub.greenn_contract_id}`)
+            // Contract NÃO bate → NÃO zerar créditos (ex: upgrade de Pro→Ultimate, cancelamento do Pro antigo)
+            console.log(`   ├─ ⏭️ Planos2 NÃO resetado e créditos PRESERVADOS: contractId ${webhookContractId} ≠ ${planos2Sub.greenn_contract_id} (plano ativo: ${planos2Sub.plan_slug})`)
           }
-        }
-        
-        // Zero out credits when subscription ends
-        try {
-          await supabase.rpc('reset_upscaler_credits', {
-            _user_id: userId,
-            _amount: 0,
-            _description: `Créditos zerados - ${status}`
-          })
-          console.log(`   ├─ ✅ Premium desativado + créditos zerados`)
-        } catch (creditError) {
-          console.log(`   ├─ ✅ Premium desativado (falha ao zerar créditos)`)
+        } else if (!hasActivePlanos2 && !webhookContractId) {
+          // Sem planos2 ativo e sem contractId → fallback legacy: zerar créditos
+          try {
+            await supabase.rpc('reset_upscaler_credits', {
+              _user_id: userId,
+              _amount: 0,
+              _description: `Créditos zerados - ${status} (legacy fallback)`
+            })
+            console.log(`   ├─ ✅ Créditos zerados (legacy fallback, sem planos2 ativo)`)
+          } catch (creditError) {
+            console.log(`   ├─ ⚠️ Falha ao zerar créditos (legacy fallback)`)
+          }
+        } else {
+          console.log(`   ├─ ⏭️ Créditos PRESERVADOS: plano ativo=${planos2Sub?.plan_slug || 'nenhum'}, webhookContract=${webhookContractId}`)
         }
         
         if (status === 'chargeback') {
