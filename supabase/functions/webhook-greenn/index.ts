@@ -394,7 +394,21 @@ async function processPlanos2Webhook(
 
     console.log(`   ├─ [${requestId}] 📋 Planos2: ${planConfig.slug}, ${isAnual ? 'ANUAL' : 'MENSAL'}, expira em ${daysToAdd}d`)
 
-    // Idempotency check
+    // Idempotency check — optimistic lock: mark as 'processing' atomically
+    // If another webhook already grabbed this log, result won't be null anymore
+    const { data: lockResult } = await supabase
+      .from('webhook_logs')
+      .update({ result: 'processing' })
+      .eq('id', logId)
+      .eq('result', 'received')
+      .select('id')
+
+    if (!lockResult || lockResult.length === 0) {
+      console.log(`   └─ [${requestId}] ⏭️ Lock não obtido — outro webhook já está processando`)
+      return
+    }
+
+    // Double-check: verify contractId wasn't already processed successfully
     if (contractId) {
       const { data: existingLog } = await supabase
         .from('webhook_logs')
@@ -569,6 +583,36 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
         return
       }
 
+      // === LEGACY: Idempotency check — optimistic lock ===
+      const { data: legacyLock } = await supabase
+        .from('webhook_logs')
+        .update({ result: 'processing' })
+        .eq('id', logId)
+        .eq('result', 'received')
+        .select('id')
+
+      if (!legacyLock || legacyLock.length === 0) {
+        console.log(`   └─ [${requestId}] ⏭️ Legacy: lock não obtido — duplicata`)
+        return
+      }
+
+      // Double-check contractId
+      if (contractId) {
+        const { data: existingLegacy } = await supabase
+          .from('webhook_logs')
+          .select('id')
+          .eq('greenn_contract_id', String(contractId))
+          .eq('result', 'success')
+          .neq('id', logId)
+          .maybeSingle()
+
+        if (existingLegacy) {
+          console.log(`   └─ [${requestId}] ⏭️ Legacy: contrato já processado: ${contractId}`)
+          await supabase.from('webhook_logs').update({ result: 'ignored', error_message: 'Contrato legacy já processado', payload: {} }).eq('id', logId)
+          return
+        }
+      }
+
       const planType = detectPlanFromProductId(productId, requestId)
       let billingPeriod = 'monthly'
       if (offerName.toLowerCase().includes('anual') || productPeriod >= 365) billingPeriod = 'yearly'
@@ -664,6 +708,7 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
       // Mark success BEFORE email + limpar payload
       await supabase.from('webhook_logs').update({ 
         result: 'success',
+        greenn_contract_id: contractId ? String(contractId) : null,
         payload: {} // Limpar payload para sucesso
       }).eq('id', logId)
 
@@ -692,33 +737,52 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
     // Handle deactivation
     if (status === 'canceled' || status === 'unpaid' || status === 'refunded' || status === 'chargeback') {
       const userId = await findUserByEmail(supabase, email, requestId)
+      const webhookContractId = payload.contract?.id || payload.sale?.id
 
       if (userId) {
-        // Desativar premium legado
-        await supabase.from('premium_users').update({ is_active: false }).eq('user_id', userId)
+        // Desativar premium legado — apenas se o contractId bater
+        if (webhookContractId) {
+          await supabase.from('premium_users').update({ is_active: false })
+            .eq('user_id', userId)
+            .eq('greenn_contract_id', String(webhookContractId))
+        } else {
+          // Sem contractId no webhook → fallback: desativar todos (comportamento antigo)
+          await supabase.from('premium_users').update({ is_active: false }).eq('user_id', userId)
+        }
         
-        // Verificar e resetar planos2 se necessário
-        const { data: planos2Sub } = await supabase
+        // Verificar e resetar planos2 — apenas se o contractId bater
+        const planos2Query = supabase
           .from('planos2_subscriptions')
-          .select('plan_slug')
+          .select('plan_slug, greenn_contract_id')
           .eq('user_id', userId)
           .maybeSingle()
         
+        const { data: planos2Sub } = await planos2Query
+        
         if (planos2Sub && planos2Sub.plan_slug !== 'free') {
-          await supabase.from('planos2_subscriptions').update({
-            plan_slug: 'free',
-            credits_per_month: 100,
-            daily_prompt_limit: null,
-            has_image_generation: false,
-            has_video_generation: false,
-            cost_multiplier: 1.0,
-            expires_at: null,
-            greenn_product_id: null,
-            greenn_contract_id: null,
-            last_credit_reset_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }).eq('user_id', userId)
-          console.log(`   ├─ ✅ Planos2 resetado para Free`)
+          // Só cancelar se o contractId do webhook bater com o da subscription, 
+          // OU se não houver contractId no webhook (fallback)
+          const contractMatches = !webhookContractId || 
+            String(planos2Sub.greenn_contract_id) === String(webhookContractId)
+          
+          if (contractMatches) {
+            await supabase.from('planos2_subscriptions').update({
+              plan_slug: 'free',
+              credits_per_month: 100,
+              daily_prompt_limit: null,
+              has_image_generation: false,
+              has_video_generation: false,
+              cost_multiplier: 1.0,
+              expires_at: null,
+              greenn_product_id: null,
+              greenn_contract_id: null,
+              last_credit_reset_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }).eq('user_id', userId)
+            console.log(`   ├─ ✅ Planos2 resetado para Free (contract match)`)
+          } else {
+            console.log(`   ├─ ⏭️ Planos2 NÃO resetado: contractId ${webhookContractId} ≠ ${planos2Sub.greenn_contract_id}`)
+          }
         }
         
         // Zero out credits when subscription ends
