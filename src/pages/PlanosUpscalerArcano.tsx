@@ -914,6 +914,15 @@ const PlanosUpscalerArcano = () => {
           <LazySocialProofWrapper locale="pt" onZoomClick={openModal} isMobile={isMobile} />
           </LazySection>
 
+          <div className="flex justify-center px-4 pb-12">
+            <Button
+              onClick={() => document.getElementById("planos")?.scrollIntoView({ behavior: "smooth" })}
+              className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40"
+            >
+              Quero melhorar minhas imagens agora
+            </Button>
+          </div>
+
           {/* FAQ SECTION - Depois do preço */}
           <LazySection rootMargin="100px">
           <AnimatedSection className="px-4 py-20">
