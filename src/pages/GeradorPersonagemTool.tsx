@@ -384,6 +384,7 @@ const GeradorPersonagemTool: React.FC = () => {
 
     if (!latestResultImage || !frontStorageUrl || !profileStorageUrl || !semiProfileStorageUrl || !lowAngleStorageUrl) {
       toast.error('Dados insuficientes para refinar. Gere um avatar primeiro.');
+      endSubmit();
       return;
     }
 
