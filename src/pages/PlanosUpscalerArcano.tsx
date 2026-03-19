@@ -662,27 +662,9 @@ const PlanosUpscalerArcano = () => {
           <LazySection rootMargin="1200px">
           {/* Fullscreen scroll-driven gallery - all devices */}
           <div>
-            <AnimatedSection className="px-4 pt-20 pb-8 bg-black/30">
-              <div className="max-w-5xl mx-auto">
-                <AnimatedSection as="div" delay={100}>
-                  <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
-                    Melhorado com o <span className="text-fuchsia-400">Upscaler Arcano</span>
-                  </h2>
-                  <p className="text-white/50 text-base md:text-lg text-center mb-4">Veja o poder da nossa ferramenta</p>
-                </AnimatedSection>
-              </div>
-            </AnimatedSection>
             <Suspense fallback={<div className="h-screen bg-white/5 animate-pulse" />}>
               <ScrollDrivenGallery items={isMobile ? galleryItemsMobile : galleryItemsDesktop} />
             </Suspense>
-            <div className="bg-black/30 px-4 pb-20 pt-8">
-              <h3 className="font-space-grotesk font-bold text-xl md:text-2xl lg:text-3xl text-white text-center mb-6">
-                Comece agora mesmo a entregar imagens que <span className="text-fuchsia-400">impressionam</span>
-              </h3>
-              <div className="max-w-md mx-auto">
-                <CTAButton onClick={() => handlePurchase('upscaller-arcano-vitalicio')} isPremium={isPremium} t={t} />
-              </div>
-            </div>
           </div>
           </LazySection>
 
@@ -696,6 +678,9 @@ const PlanosUpscalerArcano = () => {
           {/* SEÇÃO DE PREÇO E CTA - Com Card + Garantia */}
           <LazySection rootMargin="100px">
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-8">
+              Comece agora mesmo a entregar imagens que <span className="text-fuchsia-400">impressionam</span>
+            </h2>
             {/* Banner promo com countdown */}
             <div className="max-w-5xl mx-auto mb-6 rounded-xl overflow-hidden border border-red-500/30 bg-gradient-to-r from-red-950/80 via-purple-950/60 to-red-950/80">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3">
