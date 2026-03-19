@@ -373,9 +373,12 @@ const GeradorPersonagemTool: React.FC = () => {
   };
 
   const handleRefine = async (selectedNumbers: string) => {
+    if (!startSubmit()) return; // Synchronous guard against double-clicks
+    
     if (!user?.id) {
       setNoCreditsReason('not_logged');
       setShowNoCreditsModal(true);
+      endSubmit();
       return;
     }
 
