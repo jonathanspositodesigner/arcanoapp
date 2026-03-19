@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
-import galleryBefore1 from "@/assets/upscaler/1a.webp";
-import galleryAfter1 from "@/assets/upscaler/1d.webp";
 import galleryBefore2 from "@/assets/upscaler/2a.webp";
 import galleryAfter2 from "@/assets/upscaler/2d.webp";
 import galleryBefore3 from "@/assets/upscaler/3a.webp";
