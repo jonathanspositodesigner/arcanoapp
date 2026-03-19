@@ -705,19 +705,8 @@ const PlanosUpscalerArcano = () => {
           </Suspense>
           </LazySection>
 
-          {/* CTA Button after user results */}
-          <div className="flex justify-center py-10 bg-black/30">
-            <a
-              href="#planos"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold text-base md:text-lg px-8 py-4 shadow-lg shadow-fuchsia-500/25 transition-all duration-300 hover:scale-105 hover:shadow-fuchsia-500/40"
-              onClick={(e) => {
-                e.preventDefault();
-                document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              🚀 Quero melhorar minhas imagens agora
-            </a>
-          </div>
+
+
 
           {/* SEÇÃO DE PREÇO E CTA - Com Card + Garantia */}
           <div id="planos">
