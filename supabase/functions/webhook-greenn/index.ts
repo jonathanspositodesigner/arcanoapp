@@ -736,10 +736,18 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
     // Handle deactivation
     if (status === 'canceled' || status === 'unpaid' || status === 'refunded' || status === 'chargeback') {
       const userId = await findUserByEmail(supabase, email, requestId)
+      const webhookContractId = payload.contract?.id || payload.sale?.id
 
       if (userId) {
-        // Desativar premium legado
-        await supabase.from('premium_users').update({ is_active: false }).eq('user_id', userId)
+        // Desativar premium legado — apenas se o contractId bater
+        if (webhookContractId) {
+          await supabase.from('premium_users').update({ is_active: false })
+            .eq('user_id', userId)
+            .eq('greenn_contract_id', String(webhookContractId))
+        } else {
+          // Sem contractId no webhook → fallback: desativar todos (comportamento antigo)
+          await supabase.from('premium_users').update({ is_active: false }).eq('user_id', userId)
+        }
         
         // Verificar e resetar planos2 se necessário
         const { data: planos2Sub } = await supabase
