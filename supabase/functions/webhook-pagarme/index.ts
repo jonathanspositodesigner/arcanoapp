@@ -998,6 +998,7 @@ serve(async (req) => {
             cost_multiplier: config.cost_multiplier,
             expires_at: expiresAt,
             pagarme_subscription_id: subId,
+            last_credit_reset_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' })
 
