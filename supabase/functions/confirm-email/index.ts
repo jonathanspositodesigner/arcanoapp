@@ -166,14 +166,15 @@ serve(async (req) => {
             has_video_generation: false,
           });
 
-        // Grant 300 monthly credits only if user has no credits yet
+        // Grant 300 monthly credits only if user has NO credit record yet
+        // (checking existence, not balance, to prevent re-grant if user spent all credits)
         const { data: existingCredits } = await supabaseAdmin
           .from("upscaler_credits")
-          .select("balance")
+          .select("user_id")
           .eq("user_id", tokenData.user_id)
           .maybeSingle();
 
-        if (!existingCredits || existingCredits.balance === 0) {
+        if (!existingCredits) {
           await supabaseAdmin.rpc("reset_upscaler_credits", {
             _user_id: tokenData.user_id,
             _amount: 300,
@@ -181,7 +182,7 @@ serve(async (req) => {
           });
           console.log(`[confirm-email] Granted 300 free monthly credits to user: ${tokenData.user_id}`);
         } else {
-          console.log(`[confirm-email] User already has credits, skipping free grant: ${tokenData.user_id}`);
+          console.log(`[confirm-email] User already has credit record, skipping free grant: ${tokenData.user_id}`);
         }
       } else {
         console.log(`[confirm-email] User already has planos2 subscription, skipping: ${tokenData.user_id}`);

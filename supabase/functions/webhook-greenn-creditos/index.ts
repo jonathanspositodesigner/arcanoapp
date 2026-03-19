@@ -706,6 +706,21 @@ async function processGreennCreditosWebhook(
     console.log(`   ├─ Produto: ${productName} (ID: ${productId})`)
     console.log(`   ├─ Contract: ${contractId}`)
 
+    // ── OPTIMISTIC LOCK ──────────────────────────────────────────────────
+    // Atomically claim this log for processing to prevent race conditions
+    const { data: lockResult } = await supabase
+      .from('webhook_logs')
+      .update({ result: 'processing' })
+      .eq('id', logId)
+      .eq('result', 'received')
+      .select('id')
+    
+    if (!lockResult || lockResult.length === 0) {
+      console.log(`   ├─ [${requestId}] 🔒 Lock falhou — webhook já está sendo processado. Ignorando.`)
+      return
+    }
+    console.log(`   ├─ [${requestId}] 🔒 Lock otimista adquirido`)
+
     // Validar email
     if (!email) {
       console.log(`   ├─ [${requestId}] ❌ Email não fornecido`)
@@ -739,7 +754,7 @@ async function processGreennCreditosWebhook(
     
     console.log(`   ├─ [${requestId}] 💰 Créditos a adicionar: ${creditAmount.toLocaleString('pt-BR')}`)
 
-    // Verificar duplicidade por greenn_contract_id (coluna indexada)
+    // ── DEDUPLICATION ────────────────────────────────────────────────────
     if (contractId) {
       const { data: existingLog } = await supabase
         .from('webhook_logs')
@@ -755,6 +770,28 @@ async function processGreennCreditosWebhook(
         await supabase.from('webhook_logs').update({ 
           result: 'duplicate',
           error_message: `Webhook duplicado - contract ${contractId} já processado`
+        }).eq('id', logId)
+        return
+      }
+    } else {
+      // Fallback dedup: same email + product_id with result=success in last 10 min
+      const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString()
+      const { data: recentSuccess } = await supabase
+        .from('webhook_logs')
+        .select('id')
+        .eq('email', email)
+        .eq('product_id', productId)
+        .eq('result', 'success')
+        .gte('received_at', tenMinAgo)
+        .neq('id', logId)
+        .limit(1)
+        .maybeSingle()
+      
+      if (recentSuccess) {
+        console.log(`   ├─ [${requestId}] ⏭️ DUPLICATA (fallback): mesmo email+produto nos últimos 10min. Ignorando.`)
+        await supabase.from('webhook_logs').update({ 
+          result: 'duplicate',
+          error_message: `Webhook duplicado (fallback) - mesmo email+produto processado recentemente`
         }).eq('id', logId)
         return
       }
