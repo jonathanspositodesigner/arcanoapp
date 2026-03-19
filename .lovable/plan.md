@@ -1,52 +1,42 @@
 
 
-## Diagnóstico completo
+## Diagnóstico
 
-### O que o banco diz
-- **Saldo real da Dayane agora**: 2.685 créditos (lifetime_balance=2685, monthly=0)
-- Última transação: 19/mar 11:41 UTC (-80, Gerador de Personagem)
-- Não houve zeragem real — o saldo está correto no banco
+As imagens dos 2 avatares do Jonathan estão quebradas porque o `SaveCharacterDialog` salva diretamente a URL temporária do RunningHub (`rh-images-1252422369.cos.ap-beijing.myqcloud.com/...`). Essas URLs expiram após alguns dias/semanas, quebrando todas as imagens salvas.
 
-### Por que ela vê "0" na tela
-Bug no hook `useUpscalerCredits.tsx`:
-1. O estado inicial de `balance` é `useState(0)`
-2. `fetchBalance` chama 2 RPCs sequenciais (`expire_landing_trial_credits` + `get_upscaler_credits_breakdown`)
-3. Se **qualquer um falhar** (timeout, rede instável no celular, pool de conexões esgotado), o `catch` faz retry até 2x
-4. Se todos os retries falharem, o `finally` marca `isLoading = false` — mas `balance` continua no valor inicial **0**
-5. A UI mostra "0" com confiança total, sem indicar erro
+**Evidência no banco:**
+- MARIA CLARA - AVATAR → `https://rh-images-1252422369.cos.ap-beijing.myqcloud.com/.../ComfyUI_00001_ycgug_1771855792.png`
+- Jonathan → `https://rh-images-1252422369.cos.ap-beijing.myqcloud.com/.../ComfyUI_00003_uftvr_1770670311.png`
 
-Isso é especialmente comum no celular com rede 4G instável.
-
-### Bug secundário: cliques duplos no Refinar (confirmado)
-- `handleRefine` no `GeradorPersonagemTool.tsx` não usa `startSubmit()` no início
-- Usa apenas `setIsRefining(true)` que é assíncrono
-- Dayane perdeu 225 créditos com 3 episódios de clique duplo (05:02, 05:05x2)
-- Nenhum outro usuário afetado nos últimos 30 dias
-- Mesmo padrão vulnerável existe em `ArcanoClonerTool.tsx` e `FlyerMakerTool.tsx`
+Ambas são URLs temporárias que já expiraram. As imagens **não foram deletadas do banco** — o registro está lá, mas o link externo morreu.
 
 ---
 
-## Plano de correção
+## Plano de Correção
 
-### 1. Corrigir exibição de saldo 0 falso (`useUpscalerCredits.tsx`)
-- Não sobrescrever `balance` com 0 quando o fetch falha
-- Adicionar estado `hasError` para saber se o último fetch falhou
-- Se falhou: manter o último saldo conhecido e mostrar indicador visual de erro/retry
-- Se `isLoading` terminar sem dados bem-sucedidos, manter valor anterior (não 0)
+### 1. Criar bucket `saved-avatars` (público)
+Migration SQL para criar o bucket com RLS permitindo upload/select/delete apenas pelo próprio usuário.
 
-### 2. Proteção anti-clique-duplo no `handleRefine` (3 arquivos)
-- **`GeradorPersonagemTool.tsx`**: Adicionar `if (!startSubmit()) return;` no início de `handleRefine` + `endSubmit()` nos pontos de saída
-- **`ArcanoClonerTool.tsx`**: Mesma correção
-- **`FlyerMakerTool.tsx`**: Mesma correção
+### 2. Corrigir `SaveCharacterDialog.tsx` — upload permanente ao salvar
+Ao clicar "Salvar", o componente vai:
+1. Fazer fetch da imagem (URL temporária ainda válida naquele momento)
+2. Fazer upload para `saved-avatars/{userId}/{uuid}.png`
+3. Salvar a URL pública permanente no `image_url` do banco
 
-### 3. Estornar 225 créditos para Dayane
-- Executar `refund_upscaler_credits` com 225 créditos vitalícios
-- Descrição: "Estorno: cobranças duplicadas por clique múltiplo em Refinar Avatar"
+### 3. Migrar os 2 avatares existentes do Jonathan
+Como as URLs já expiraram, **não é possível recuperar as imagens originais**. As opções são:
+- Marcar os registros como "imagem indisponível" com fallback visual
+- Ou deletar os registros quebrados para o usuário recriar
+
+Vou implementar um fallback visual (imagem quebrada mostra placeholder com nome) para que registros antigos não causem confusão, e os novos salvamentos sempre usem storage permanente.
+
+### 4. Adicionar fallback visual nos componentes que exibem avatares
+- `SavedCharactersPanel.tsx` — `onError` no `<img>` para mostrar placeholder
+- `PersonInputSwitch.tsx` — mesmo tratamento
 
 ### Arquivos a alterar
-- `src/hooks/useUpscalerCredits.tsx` — lógica de fallback quando fetch falha
-- `src/pages/GeradorPersonagemTool.tsx` — guard em `handleRefine`
-- `src/pages/ArcanoClonerTool.tsx` — guard em `handleRefine`
-- `src/pages/FlyerMakerTool.tsx` — guard em `handleRefine`
-- Migration SQL para estorno da Dayane
+- **Migration SQL** — criar bucket `saved-avatars` + políticas RLS
+- **`src/components/character-generator/SaveCharacterDialog.tsx`** — upload para storage antes de salvar
+- **`src/components/character-generator/SavedCharactersPanel.tsx`** — fallback de imagem quebrada
+- **`src/components/ai-tools/PersonInputSwitch.tsx`** — fallback de imagem quebrada
 
