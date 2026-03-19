@@ -1,88 +1,52 @@
-# Automação de Cobrança Pix — Emails de Vencimento (6 dias) (CONCLUÍDA)
 
-## Resumo
-Sistema automatizado de lembretes de renovação para assinaturas Pix, com 6 emails escalonados (dia do vencimento até 5 dias após) enviados via SendPulse com links de pagamento Pagar.me gerados dinamicamente.
 
-## O que foi feito
+## Diagnóstico completo
 
-### 1. Tabela `subscription_billing_reminders` (migration)
-- Controle de envios por `subscription_id`, `day_offset` (0-5) e `due_date`
-- Campo `stopped_reason` ('paid', 'unsubscribed') para interromper a sequência
-- Campo `checkout_url` para evitar checkouts duplicados
-- Constraint UNIQUE em (subscription_id, day_offset, due_date)
+### O que o banco diz
+- **Saldo real da Dayane agora**: 2.685 créditos (lifetime_balance=2685, monthly=0)
+- Última transação: 19/mar 11:41 UTC (-80, Gerador de Personagem)
+- Não houve zeragem real — o saldo está correto no banco
 
-### 2. Edge Function `process-billing-reminders`
-- Executada diariamente às 12:00 UTC (09:00 BRT) via pg_cron
-- Busca assinaturas Pix (sem `pagarme_subscription_id`) com `expires_at` entre hoje e 5 dias atrás
-- Para cada assinatura, verifica:
-  - Se já enviou email para esse `day_offset`
-  - Se a sequência foi parada (pagou ou descadastrou)
-  - Se o email está na blacklist
-  - Se o usuário renovou (expires_at estendido ou nova ordem paga)
-- Gera checkout Pagar.me somente PIX com validade de 3 dias
-- Monta HTML personalizado com dados reais do plano
-- Envia via SendPulse SMTP API
-- Registra na tabela de controle
+### Por que ela vê "0" na tela
+Bug no hook `useUpscalerCredits.tsx`:
+1. O estado inicial de `balance` é `useState(0)`
+2. `fetchBalance` chama 2 RPCs sequenciais (`expire_landing_trial_credits` + `get_upscaler_credits_breakdown`)
+3. Se **qualquer um falhar** (timeout, rede instável no celular, pool de conexões esgotado), o `catch` faz retry até 2x
+4. Se todos os retries falharem, o `finally` marca `isLoading = false` — mas `balance` continua no valor inicial **0**
+5. A UI mostra "0" com confiança total, sem indicar erro
 
-### 3. Mapeamento de benefícios por plano
-- Starter: 1.800 créditos, 5 prompts/dia
-- Pro: 4.200 créditos, 10 prompts/dia, imagem + vídeo IA
-- Ultimate: 10.800 créditos, 24 prompts/dia, imagem + vídeo IA
-- Unlimited: créditos ilimitados, prompts ilimitados, fila prioritária
+Isso é especialmente comum no celular com rede 4G instável.
 
-### 4. Templates dos 6 emails
-- Dia 0: Lembrete leve ("Seu plano vence hoje")
-- Dia 1: Reforço pendência ("Pagamento ainda pendente")
-- Dia 2: Dor da perda ("Risco de perda de acesso")
-- Dia 3: Prejuízo prático ("O custo de não renovar")
-- Dia 4: FOMO ("Não fique para trás")
-- Dia 5: Último aviso ("Último aviso: regularize hoje")
-- Todos com link de descadastro no rodapé
+### Bug secundário: cliques duplos no Refinar (confirmado)
+- `handleRefine` no `GeradorPersonagemTool.tsx` não usa `startSubmit()` no início
+- Usa apenas `setIsRefining(true)` que é assíncrono
+- Dayane perdeu 225 créditos com 3 episódios de clique duplo (05:02, 05:05x2)
+- Nenhum outro usuário afetado nos últimos 30 dias
+- Mesmo padrão vulnerável existe em `ArcanoClonerTool.tsx` e `FlyerMakerTool.tsx`
 
-### 5. Cron job
-- pg_cron agendado: `0 12 * * *` (09:00 BRT)
-- Chama a Edge Function automaticamente
+---
 
-## Detecção de pagamento (para de enviar)
-- `planos2_subscriptions.expires_at` estendido para data futura
-- Nova ordem `asaas_orders` com `status = 'confirmed'` e `paid_at` > vencimento
-- Email na `blacklisted_emails` → registra como `stopped_reason = 'unsubscribed'`
+## Plano de correção
 
-# Auditoria Completa de Emails — Robustez Unificada (CONCLUÍDA)
+### 1. Corrigir exibição de saldo 0 falso (`useUpscalerCredits.tsx`)
+- Não sobrescrever `balance` com 0 quando o fetch falha
+- Adicionar estado `hasError` para saber se o último fetch falhou
+- Se falhou: manter o último saldo conhecido e mostrar indicador visual de erro/retry
+- Se `isLoading` terminar sem dados bem-sucedidos, manter valor anterior (não 0)
 
-## O que foi feito
+### 2. Proteção anti-clique-duplo no `handleRefine` (3 arquivos)
+- **`GeradorPersonagemTool.tsx`**: Adicionar `if (!startSubmit()) return;` no início de `handleRefine` + `endSubmit()` nos pontos de saída
+- **`ArcanoClonerTool.tsx`**: Mesma correção
+- **`FlyerMakerTool.tsx`**: Mesma correção
 
-### Padrão unificado aplicado em todos os 6 webhooks:
+### 3. Estornar 225 créditos para Dayane
+- Executar `refund_upscaler_credits` com 225 créditos vitalícios
+- Descrição: "Estorno: cobranças duplicadas por clique múltiplo em Refinar Avatar"
 
-1. **webhook-mercadopago** — `sendPurchaseEmail` refatorado:
-   - 3 retries com exponential backoff (2s, 5s, 10s)
-   - Removida lógica de DELETE de logs de falha (preserva auditoria)
-   - Cada tentativa registrada separadamente
+### Arquivos a alterar
+- `src/hooks/useUpscalerCredits.tsx` — lógica de fallback quando fetch falha
+- `src/pages/GeradorPersonagemTool.tsx` — guard em `handleRefine`
+- `src/pages/ArcanoClonerTool.tsx` — guard em `handleRefine`
+- `src/pages/FlyerMakerTool.tsx` — guard em `handleRefine`
+- Migration SQL para estorno da Dayane
 
-2. **webhook-greenn-creditos** — `sendWelcomeEmail` e `sendArcanoClonnerEmail`:
-   - Adicionado INSERT em `welcome_email_logs` (antes não tinha NENHUM log)
-   - Deduplicação via `dedup_key` unique constraint
-   - Blacklist check antes do envio
-   - 3 retries com exponential backoff
-   - Caller simplificado (retry agora é interno)
-
-3. **webhook-greenn** — Callers de `sendWelcomeEmail` e `sendPlanos2WelcomeEmail`:
-   - Retry loop 3x com exponential backoff (2s, 5s, 10s)
-   - Funções internas já tinham dedup + logging
-
-4. **webhook-greenn-artes** — Caller de `sendWelcomeEmail`:
-   - Retry loop 3x com exponential backoff
-   - Função interna já tinha dedup + logging
-
-5. **webhook-greenn-musicos** — Caller de `sendWelcomeEmail`:
-   - Retry loop 3x com exponential backoff
-   - Função interna já tinha dedup + logging
-
-6. **webhook-hotmart-artes** — Caller de `sendWelcomeEmail`:
-   - Retry loop 3x com exponential backoff
-   - Função interna já tinha dedup por transaction + logging
-
-### Sem mudanças (já robustos):
-- `webhook-pagarme` — 3 retries, dedup_key, logging completo
-- `resend-purchase-email` — robusto
-- `send-single-email` — utilitária independente
