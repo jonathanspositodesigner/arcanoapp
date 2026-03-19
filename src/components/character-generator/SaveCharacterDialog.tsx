@@ -34,6 +34,31 @@ const SaveCharacterDialog: React.FC<SaveCharacterDialogProps> = ({
   const [name, setName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  const uploadImageToStorage = async (url: string): Promise<string> => {
+    // Fetch the image from the temporary URL
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Falha ao baixar imagem');
+    const blob = await response.blob();
+
+    const fileExt = blob.type === 'image/webp' ? 'webp' : 'png';
+    const fileName = `${userId}/${crypto.randomUUID()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('saved-avatars')
+      .upload(fileName, blob, {
+        contentType: blob.type,
+        upsert: false,
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data: publicUrlData } = supabase.storage
+      .from('saved-avatars')
+      .getPublicUrl(fileName);
+
+    return publicUrlData.publicUrl;
+  };
+
   const handleSave = async () => {
     if (!name.trim()) {
       toast.error('Digite um nome para o avatar');
@@ -42,12 +67,15 @@ const SaveCharacterDialog: React.FC<SaveCharacterDialogProps> = ({
 
     setIsSaving(true);
     try {
+      // Upload to permanent storage first
+      const permanentUrl = await uploadImageToStorage(imageUrl);
+
       const { error } = await supabase
         .from('saved_characters' as any)
         .insert({
           user_id: userId,
           name: name.trim(),
-          image_url: imageUrl,
+          image_url: permanentUrl,
           job_id: jobId,
         });
 
