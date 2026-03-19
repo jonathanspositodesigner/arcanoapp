@@ -108,7 +108,22 @@ const SavedCharactersPanel: React.FC<SavedCharactersPanelProps> = ({ userId, ref
               {characters.map((char) => (
                 <Card key={char.id} className="relative overflow-hidden border-purple-500/20 bg-purple-900/10 group">
                   <div className="aspect-square">
-                    <img src={char.image_url} alt={char.name} className="w-full h-full object-cover" />
+                    <img
+                      src={char.image_url}
+                      alt={char.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.currentTarget;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent && !parent.querySelector('.avatar-fallback')) {
+                          const fallback = document.createElement('div');
+                          fallback.className = 'avatar-fallback w-full h-full flex items-center justify-center bg-purple-900/40 text-purple-300 text-[10px] text-center p-1';
+                          fallback.textContent = char.name;
+                          parent.appendChild(fallback);
+                        }
+                      }}
+                    />
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-1.5">
                     <p className="text-[10px] font-medium text-white truncate">{char.name}</p>
