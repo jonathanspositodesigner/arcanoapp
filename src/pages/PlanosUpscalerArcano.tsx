@@ -668,7 +668,37 @@ const PlanosUpscalerArcano = () => {
           </div>
           </LazySection>
 
-          {/* SEÇÃO ANTES/DEPOIS - Lazy loaded */}
+          {/* PARA QUEM É */}
+          <LazySection rootMargin="100px">
+          <AnimatedSection className="px-4 py-20 bg-black/30">
+            <div className="max-w-4xl mx-auto">
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
+                  {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">{t('tools:upscaler.targetAudience.titlePart2')}</span>
+                </h2>
+              </AnimatedSection>
+              
+              <StaggeredAnimation className="grid md:grid-cols-3 gap-6" staggerDelay={150}>
+                {targetAudience.map((item, index) => {
+                  const IconComponent = item.icon;
+                  return (
+                    <div 
+                      key={index}
+                      className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-fuchsia-500/50 transition-all duration-300 hover:transform hover:scale-[1.02] h-full flex flex-col"
+                    >
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 flex items-center justify-center mx-auto mb-6">
+                        <IconComponent className="h-8 w-8 text-fuchsia-400" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
+                      <p className="text-white/60 flex-1">{item.description}</p>
+                    </div>
+                  );
+                })}
+              </StaggeredAnimation>
+            </div>
+          </AnimatedSection>
+          </LazySection>
+
           <LazySection rootMargin="100px">
           <Suspense fallback={<SectionSkeleton height="600px" />}>
             <BeforeAfterGalleryPT onZoomClick={openModal} isMobile={isMobile} />
