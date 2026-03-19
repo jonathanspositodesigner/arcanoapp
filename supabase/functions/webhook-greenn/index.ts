@@ -749,28 +749,39 @@ async function processGreennWebhook(supabase: any, payload: any, logId: string, 
           await supabase.from('premium_users').update({ is_active: false }).eq('user_id', userId)
         }
         
-        // Verificar e resetar planos2 se necessário
-        const { data: planos2Sub } = await supabase
+        // Verificar e resetar planos2 — apenas se o contractId bater
+        const planos2Query = supabase
           .from('planos2_subscriptions')
-          .select('plan_slug')
+          .select('plan_slug, greenn_contract_id')
           .eq('user_id', userId)
           .maybeSingle()
         
+        const { data: planos2Sub } = await planos2Query
+        
         if (planos2Sub && planos2Sub.plan_slug !== 'free') {
-          await supabase.from('planos2_subscriptions').update({
-            plan_slug: 'free',
-            credits_per_month: 100,
-            daily_prompt_limit: null,
-            has_image_generation: false,
-            has_video_generation: false,
-            cost_multiplier: 1.0,
-            expires_at: null,
-            greenn_product_id: null,
-            greenn_contract_id: null,
-            last_credit_reset_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }).eq('user_id', userId)
-          console.log(`   ├─ ✅ Planos2 resetado para Free`)
+          // Só cancelar se o contractId do webhook bater com o da subscription, 
+          // OU se não houver contractId no webhook (fallback)
+          const contractMatches = !webhookContractId || 
+            String(planos2Sub.greenn_contract_id) === String(webhookContractId)
+          
+          if (contractMatches) {
+            await supabase.from('planos2_subscriptions').update({
+              plan_slug: 'free',
+              credits_per_month: 100,
+              daily_prompt_limit: null,
+              has_image_generation: false,
+              has_video_generation: false,
+              cost_multiplier: 1.0,
+              expires_at: null,
+              greenn_product_id: null,
+              greenn_contract_id: null,
+              last_credit_reset_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }).eq('user_id', userId)
+            console.log(`   ├─ ✅ Planos2 resetado para Free (contract match)`)
+          } else {
+            console.log(`   ├─ ⏭️ Planos2 NÃO resetado: contractId ${webhookContractId} ≠ ${planos2Sub.greenn_contract_id}`)
+          }
         }
         
         // Zero out credits when subscription ends
