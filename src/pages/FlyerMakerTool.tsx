@@ -431,20 +431,28 @@ const FlyerMakerTool: React.FC = () => {
     } catch (e) { console.error(e); toast.error('Erro ao cancelar'); }
   };
 
-  // Convert image URL to base64
+  // Convert image URL to base64 using canvas to avoid CORS fetch issues
   const imageUrlToBase64 = async (url: string): Promise<{ base64: string; mimeType: string }> => {
-    const response = await fetch(url);
-    const blob = await response.blob();
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
-        const [header, base64] = dataUrl.split(',');
-        const mimeType = header.match(/:(.*?);/)?.[1] || 'image/png';
-        resolve({ base64, mimeType });
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return reject(new Error('Canvas context failed'));
+          ctx.drawImage(img, 0, 0);
+          const dataUrl = canvas.toDataURL('image/png');
+          const base64 = dataUrl.split(',')[1];
+          resolve({ base64, mimeType: 'image/png' });
+        } catch (e) {
+          reject(e);
+        }
       };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
+      img.onerror = () => reject(new Error('Falha ao carregar imagem para refinamento'));
+      img.src = url;
     });
   };
 
