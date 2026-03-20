@@ -189,17 +189,40 @@ serve(async (req) => {
 
     console.log(`[generate-video] Calling Veo 3.1 Fast for user ${userId}`);
 
-    const veoResponse = await fetch(veoUrl, {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": GEMINI_API_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        instances: [instance],
-        parameters,
-      }),
-    });
+    // Timeout de 60s para a chamada inicial (apenas recebe operation_name, não gera o vídeo)
+    const veoController = new AbortController();
+    const veoTimeoutId = setTimeout(() => veoController.abort(), 60_000);
+
+    let veoResponse: Response;
+    try {
+      veoResponse = await fetch(veoUrl, {
+        method: "POST",
+        headers: {
+          "x-goog-api-key": GEMINI_API_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          instances: [instance],
+          parameters,
+        }),
+        signal: veoController.signal,
+      });
+    } catch (fetchErr: any) {
+      clearTimeout(veoTimeoutId);
+      if (fetchErr.name === "AbortError") {
+        console.error(`[generate-video] Veo API timed out after 60s`);
+        await serviceClient.rpc("refund_upscaler_credits", {
+          _user_id: userId,
+          _amount: creditCost,
+          _description: "Estorno: timeout na API Veo",
+        });
+        return new Response(JSON.stringify({ error: "API de vídeo não respondeu. Seus créditos foram estornados. Tente novamente." }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      throw fetchErr;
+    }
+    clearTimeout(veoTimeoutId);
 
     if (!veoResponse.ok) {
       const errText = await veoResponse.text();
