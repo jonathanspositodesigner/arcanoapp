@@ -297,7 +297,7 @@ Deno.serve(async (req) => {
         }
 
         // Fetch adset-level insights
-        const insightsUrl = `https://graph.facebook.com/v21.0/act_${trimmedId}/insights?fields=spend,impressions,clicks,cpm,cpc,actions,adset_id,adset_name,campaign_id,campaign_name&time_range=${encodeURIComponent(timeRange)}&level=adset&time_increment=1&limit=500${filterParam}`;
+        const insightsUrl = `https://graph.facebook.com/v21.0/act_${trimmedId}/insights?fields=spend,impressions,clicks,cpm,cpc,actions,action_values,adset_id,adset_name,campaign_id,campaign_name&time_range=${encodeURIComponent(timeRange)}&level=adset&time_increment=1&limit=500${filterParam}`;
 
         try {
           const rows = await fetchAllPages(insightsUrl, accessToken);
