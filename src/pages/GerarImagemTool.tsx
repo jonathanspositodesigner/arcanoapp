@@ -333,28 +333,27 @@ const GerarImagemTool = () => {
           )}
         </div>
 
-        {/* Reference images preview strip */}
-        {referenceImages.length > 0 && (
-          <div className="sticky bottom-[110px] z-20 px-4">
-            <div className="max-w-3xl mx-auto flex gap-2 items-center bg-[#1a1525]/90 backdrop-blur-md rounded-xl p-2 border border-purple-500/20 overflow-x-auto">
-              {referenceImages.map((img, idx) => (
-                <div key={idx} className="relative w-14 h-14 rounded-lg overflow-visible flex-shrink-0">
-                  <img src={img.preview} alt="" className="w-full h-full object-cover rounded-lg border border-purple-500/30" />
-                  <button
-                    onClick={() => removeReferenceImage(idx)}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-600 hover:bg-red-500 rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
-                  >
-                    <X className="h-3 w-3 text-white" />
-                  </button>
-                </div>
-              ))}
-              <span className="text-[10px] text-purple-400 ml-1 flex-shrink-0">{referenceImages.length}/5</span>
-            </div>
-          </div>
-        )}
-
-        {/* Bottom bar */}
+        {/* Bottom bar — includes reference images + prompt + controls */}
         <div className="sticky bottom-0 z-20 bg-[#120e1a]/95 backdrop-blur-xl border-t border-purple-500/15 w-full">
+          {/* Reference images preview strip */}
+          {referenceImages.length > 0 && (
+            <div className="px-3 pt-2">
+              <div className="max-w-3xl mx-auto flex gap-2 items-center bg-[#1a1525]/90 rounded-xl p-2 border border-purple-500/20 overflow-x-auto">
+                {referenceImages.map((img, idx) => (
+                  <div key={idx} className="relative w-14 h-14 rounded-lg overflow-visible flex-shrink-0">
+                    <img src={img.preview} alt="" className="w-full h-full object-cover rounded-lg border border-purple-500/30" />
+                    <button
+                      onClick={() => removeReferenceImage(idx)}
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-600 hover:bg-red-500 rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
+                    >
+                      <X className="h-3 w-3 text-white" />
+                    </button>
+                  </div>
+                ))}
+                <span className="text-[10px] text-purple-400 ml-1 flex-shrink-0">{referenceImages.length}/5</span>
+              </div>
+            </div>
+          )}
           <div className="max-w-3xl mx-auto px-3 py-3 space-y-2">
             {/* Prompt input row */}
             <div className="flex items-center gap-2">
