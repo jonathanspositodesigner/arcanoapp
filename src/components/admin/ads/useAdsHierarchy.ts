@@ -44,6 +44,7 @@ function aggregate(rows: any[], idField: string, nameField: string, statusField:
     const lpv = row.landing_page_views || 0;
     const ic = row.initiated_checkouts || 0;
     const mp = row.meta_purchases || 0;
+    const mpv = Number(row.meta_purchase_value) || 0;
 
     if (existing) {
       existing.total_spend += spend;
@@ -52,6 +53,7 @@ function aggregate(rows: any[], idField: string, nameField: string, statusField:
       existing.total_landing_page_views += lpv;
       existing.total_initiated_checkouts += ic;
       existing.total_meta_purchases += mp;
+      existing.total_meta_purchase_value += mpv;
       existing.name = row[nameField] || existing.name;
       existing.status = row[statusField] || existing.status;
       existing.daily_budget = Number(row.daily_budget) || existing.daily_budget;
@@ -72,6 +74,7 @@ function aggregate(rows: any[], idField: string, nameField: string, statusField:
         total_landing_page_views: lpv,
         total_initiated_checkouts: ic,
         total_meta_purchases: mp,
+        total_meta_purchase_value: mpv,
         sales_count: 0,
         utm_sales_count: 0,
         meta_sales_count: 0,
