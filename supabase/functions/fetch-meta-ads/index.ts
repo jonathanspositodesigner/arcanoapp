@@ -373,7 +373,7 @@ Deno.serve(async (req) => {
         }
 
         // Fetch ad-level insights
-        const insightsUrl = `https://graph.facebook.com/v21.0/act_${trimmedId}/insights?fields=spend,impressions,clicks,cpm,cpc,actions,ad_id,ad_name,adset_id,campaign_id&time_range=${encodeURIComponent(timeRange)}&level=ad&time_increment=1&limit=500${filterParam}`;
+        const insightsUrl = `https://graph.facebook.com/v21.0/act_${trimmedId}/insights?fields=spend,impressions,clicks,cpm,cpc,actions,action_values,ad_id,ad_name,adset_id,campaign_id&time_range=${encodeURIComponent(timeRange)}&level=ad&time_increment=1&limit=500${filterParam}`;
 
         try {
           const rows = await fetchAllPages(insightsUrl, accessToken);
