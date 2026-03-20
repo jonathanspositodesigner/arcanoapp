@@ -300,7 +300,8 @@ export function useAdsCampaigns(
   const untrackedSales = useMemo(() => {
     return sales.filter((s) => {
       const utmSource = s.utm_data?.utm_source || s.utm_data?.source || "";
-      return typeof utmSource !== "string" || !utmSource.toUpperCase().startsWith("FB");
+      const upper = typeof utmSource === "string" ? utmSource.toUpperCase() : "";
+      return !(upper.startsWith("FB") || upper.startsWith("IG") || upper === "INSTAGRAM" || upper === "FACEBOOK" || upper === "META");
     });
   }, [sales]);
 
