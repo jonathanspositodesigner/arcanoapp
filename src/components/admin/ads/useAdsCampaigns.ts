@@ -18,6 +18,7 @@ interface CampaignInsight {
   total_landing_page_views: number;
   total_initiated_checkouts: number;
   total_meta_purchases: number;
+  total_meta_purchase_value: number;
 }
 
 export interface CampaignWithSales extends CampaignInsight {
@@ -122,6 +123,7 @@ export function useAdsCampaigns(
           existing.total_landing_page_views += row.landing_page_views || 0;
           existing.total_initiated_checkouts += row.initiated_checkouts || 0;
           existing.total_meta_purchases += (row as any).meta_purchases || 0;
+          existing.total_meta_purchase_value += Number((row as any).meta_purchase_value) || 0;
           // Keep latest status/name/budget
           existing.campaign_name = row.campaign_name;
           existing.campaign_status = row.campaign_status || existing.campaign_status;
@@ -141,6 +143,7 @@ export function useAdsCampaigns(
             total_landing_page_views: row.landing_page_views || 0,
             total_initiated_checkouts: row.initiated_checkouts || 0,
             total_meta_purchases: (row as any).meta_purchases || 0,
+            total_meta_purchase_value: Number((row as any).meta_purchase_value) || 0,
           });
         }
       }
@@ -216,7 +219,8 @@ export function useAdsCampaigns(
 
     for (const sale of sales) {
       const utmSource = sale.utm_data?.utm_source || sale.utm_data?.source || "";
-      const isFb = typeof utmSource === "string" && utmSource.toUpperCase().startsWith("FB");
+      const upperSource = typeof utmSource === "string" ? utmSource.toUpperCase() : "";
+      const isFb = upperSource.startsWith("FB") || upperSource.startsWith("IG") || upperSource === "INSTAGRAM" || upperSource === "FACEBOOK" || upperSource === "META";
       if (!isFb) continue;
 
       const utmCampaign = sale.utm_data?.utm_campaign || "";
@@ -275,7 +279,11 @@ export function useAdsCampaigns(
         const utmSalesCount = matchedSales.length;
         const metaSalesCount = c.total_meta_purchases;
         const salesCount = Math.max(utmSalesCount, metaSalesCount);
-        const revenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+        const utmRevenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+        // Combine: UTM revenue + extra from Meta (deduped)
+        const metaPurchaseValue = c.total_meta_purchase_value || 0;
+        const metaExtra = Math.max(0, metaPurchaseValue - utmRevenue);
+        const revenue = utmRevenue + metaExtra;
 
         const spend = c.total_spend;
         const profit = revenue - spend;
@@ -292,7 +300,8 @@ export function useAdsCampaigns(
   const untrackedSales = useMemo(() => {
     return sales.filter((s) => {
       const utmSource = s.utm_data?.utm_source || s.utm_data?.source || "";
-      return typeof utmSource !== "string" || !utmSource.toUpperCase().startsWith("FB");
+      const upper = typeof utmSource === "string" ? utmSource.toUpperCase() : "";
+      return !(upper.startsWith("FB") || upper.startsWith("IG") || upper === "INSTAGRAM" || upper === "FACEBOOK" || upper === "META");
     });
   }, [sales]);
 

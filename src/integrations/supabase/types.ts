@@ -2233,6 +2233,7 @@ export type Database = {
           impressions: number | null
           initiated_checkouts: number | null
           landing_page_views: number | null
+          meta_purchase_value: number
           meta_purchases: number
           spend: number | null
         }
@@ -2252,6 +2253,7 @@ export type Database = {
           impressions?: number | null
           initiated_checkouts?: number | null
           landing_page_views?: number | null
+          meta_purchase_value?: number
           meta_purchases?: number
           spend?: number | null
         }
@@ -2271,6 +2273,7 @@ export type Database = {
           impressions?: number | null
           initiated_checkouts?: number | null
           landing_page_views?: number | null
+          meta_purchase_value?: number
           meta_purchases?: number
           spend?: number | null
         }
@@ -2336,6 +2339,7 @@ export type Database = {
           impressions: number | null
           initiated_checkouts: number | null
           landing_page_views: number | null
+          meta_purchase_value: number
           meta_purchases: number
           spend: number | null
         }
@@ -2356,6 +2360,7 @@ export type Database = {
           impressions?: number | null
           initiated_checkouts?: number | null
           landing_page_views?: number | null
+          meta_purchase_value?: number
           meta_purchases?: number
           spend?: number | null
         }
@@ -2376,6 +2381,7 @@ export type Database = {
           impressions?: number | null
           initiated_checkouts?: number | null
           landing_page_views?: number | null
+          meta_purchase_value?: number
           meta_purchases?: number
           spend?: number | null
         }
@@ -2397,6 +2403,7 @@ export type Database = {
           impressions: number | null
           initiated_checkouts: number | null
           landing_page_views: number | null
+          meta_purchase_value: number
           meta_purchases: number
           spend: number | null
         }
@@ -2415,6 +2422,7 @@ export type Database = {
           impressions?: number | null
           initiated_checkouts?: number | null
           landing_page_views?: number | null
+          meta_purchase_value?: number
           meta_purchases?: number
           spend?: number | null
         }
@@ -2433,6 +2441,7 @@ export type Database = {
           impressions?: number | null
           initiated_checkouts?: number | null
           landing_page_views?: number | null
+          meta_purchase_value?: number
           meta_purchases?: number
           spend?: number | null
         }

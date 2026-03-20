@@ -21,6 +21,7 @@ export interface AggregatedItem {
   total_landing_page_views: number;
   total_initiated_checkouts: number;
   total_meta_purchases: number;
+  total_meta_purchase_value: number;
   sales_count: number;
   utm_sales_count: number;
   meta_sales_count: number;
@@ -43,6 +44,7 @@ function aggregate(rows: any[], idField: string, nameField: string, statusField:
     const lpv = row.landing_page_views || 0;
     const ic = row.initiated_checkouts || 0;
     const mp = row.meta_purchases || 0;
+    const mpv = Number(row.meta_purchase_value) || 0;
 
     if (existing) {
       existing.total_spend += spend;
@@ -51,6 +53,7 @@ function aggregate(rows: any[], idField: string, nameField: string, statusField:
       existing.total_landing_page_views += lpv;
       existing.total_initiated_checkouts += ic;
       existing.total_meta_purchases += mp;
+      existing.total_meta_purchase_value += mpv;
       existing.name = row[nameField] || existing.name;
       existing.status = row[statusField] || existing.status;
       existing.daily_budget = Number(row.daily_budget) || existing.daily_budget;
@@ -71,6 +74,7 @@ function aggregate(rows: any[], idField: string, nameField: string, statusField:
         total_landing_page_views: lpv,
         total_initiated_checkouts: ic,
         total_meta_purchases: mp,
+        total_meta_purchase_value: mpv,
         sales_count: 0,
         utm_sales_count: 0,
         meta_sales_count: 0,
@@ -116,7 +120,8 @@ function attributeSalesToItems(
 
   for (const sale of sales) {
     const utmSource = sale.utm_data?.utm_source || sale.utm_data?.source || "";
-    const isFb = typeof utmSource === "string" && utmSource.toUpperCase().startsWith("FB");
+    const upperSource = typeof utmSource === "string" ? utmSource.toUpperCase() : "";
+    const isFb = upperSource.startsWith("FB") || upperSource.startsWith("IG") || upperSource === "INSTAGRAM" || upperSource === "FACEBOOK" || upperSource === "META";
     if (!isFb) continue;
 
     // Collect candidate IDs from multiple UTM fields
@@ -142,7 +147,11 @@ function attributeSalesToItems(
     const utmSalesCount = matchedSales.length;
     const metaSalesCount = item.total_meta_purchases;
     const salesCount = Math.max(utmSalesCount, metaSalesCount);
-    const revenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+    const utmRevenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+    // Combine: UTM revenue + extra from Meta (deduped)
+    const metaPurchaseValue = item.total_meta_purchase_value || 0;
+    const metaExtra = Math.max(0, metaPurchaseValue - utmRevenue);
+    const revenue = utmRevenue + metaExtra;
 
     const spend = item.total_spend;
     const profit = revenue - spend;
