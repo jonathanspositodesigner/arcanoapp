@@ -230,7 +230,7 @@ Deno.serve(async (req) => {
           const rows = await fetchAllPages(insightsUrl, accessToken);
 
           for (const row of rows) {
-            const { landingPageViews, initiatedCheckouts, purchases } = extractMetrics(row);
+            const { landingPageViews, initiatedCheckouts, purchases, purchaseValue } = extractMetrics(row);
             const campaignId = row.campaign_id;
             const budgetInfo = campaignBudgets[campaignId];
 
@@ -249,6 +249,7 @@ Deno.serve(async (req) => {
               landing_page_views: landingPageViews,
               initiated_checkouts: initiatedCheckouts,
               meta_purchases: purchases,
+              meta_purchase_value: purchaseValue,
             }, { onConflict: "campaign_id,date" });
           }
 
