@@ -219,7 +219,8 @@ export function useAdsCampaigns(
 
     for (const sale of sales) {
       const utmSource = sale.utm_data?.utm_source || sale.utm_data?.source || "";
-      const isFb = typeof utmSource === "string" && utmSource.toUpperCase().startsWith("FB");
+      const upperSource = typeof utmSource === "string" ? utmSource.toUpperCase() : "";
+      const isFb = upperSource.startsWith("FB") || upperSource.startsWith("IG") || upperSource === "INSTAGRAM" || upperSource === "FACEBOOK" || upperSource === "META";
       if (!isFb) continue;
 
       const utmCampaign = sale.utm_data?.utm_campaign || "";
