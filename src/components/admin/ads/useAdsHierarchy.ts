@@ -21,6 +21,7 @@ export interface AggregatedItem {
   total_landing_page_views: number;
   total_initiated_checkouts: number;
   total_meta_purchases: number;
+  total_meta_purchase_value: number;
   sales_count: number;
   utm_sales_count: number;
   meta_sales_count: number;
