@@ -123,6 +123,7 @@ export function useAdsCampaigns(
           existing.total_landing_page_views += row.landing_page_views || 0;
           existing.total_initiated_checkouts += row.initiated_checkouts || 0;
           existing.total_meta_purchases += (row as any).meta_purchases || 0;
+          existing.total_meta_purchase_value += Number((row as any).meta_purchase_value) || 0;
           // Keep latest status/name/budget
           existing.campaign_name = row.campaign_name;
           existing.campaign_status = row.campaign_status || existing.campaign_status;
@@ -142,6 +143,7 @@ export function useAdsCampaigns(
             total_landing_page_views: row.landing_page_views || 0,
             total_initiated_checkouts: row.initiated_checkouts || 0,
             total_meta_purchases: (row as any).meta_purchases || 0,
+            total_meta_purchase_value: Number((row as any).meta_purchase_value) || 0,
           });
         }
       }
