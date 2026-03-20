@@ -279,7 +279,11 @@ export function useAdsCampaigns(
         const utmSalesCount = matchedSales.length;
         const metaSalesCount = c.total_meta_purchases;
         const salesCount = Math.max(utmSalesCount, metaSalesCount);
-        const revenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+        const utmRevenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+        // Combine: UTM revenue + extra from Meta (deduped)
+        const metaPurchaseValue = c.total_meta_purchase_value || 0;
+        const metaExtra = Math.max(0, metaPurchaseValue - utmRevenue);
+        const revenue = utmRevenue + metaExtra;
 
         const spend = c.total_spend;
         const profit = revenue - spend;
