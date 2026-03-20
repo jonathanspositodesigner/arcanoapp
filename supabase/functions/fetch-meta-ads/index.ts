@@ -26,8 +26,14 @@ function getActionValue(actions: any[], actionType: string): number {
   return found ? parseInt(found.value || "0") : 0;
 }
 
+function getActionMoneyValue(actionValues: any[], actionType: string): number {
+  const found = actionValues.find((a: any) => a.action_type === actionType);
+  return found ? parseFloat(found.value || "0") : 0;
+}
+
 function extractMetrics(row: any) {
   const actions = row.actions || [];
+  const actionValues = row.action_values || [];
   const landingPageViews = getActionValue(actions, "landing_page_view");
   const initiatedCheckouts = getActionValue(actions, "offsite_conversion.fb_pixel_initiate_checkout")
     || getActionValue(actions, "initiate_checkout")
@@ -35,7 +41,10 @@ function extractMetrics(row: any) {
   const purchases = getActionValue(actions, "offsite_conversion.fb_pixel_purchase")
     || getActionValue(actions, "purchase")
     || getActionValue(actions, "omni_purchase");
-  return { landingPageViews, initiatedCheckouts, purchases };
+  const purchaseValue = getActionMoneyValue(actionValues, "offsite_conversion.fb_pixel_purchase")
+    || getActionMoneyValue(actionValues, "purchase")
+    || getActionMoneyValue(actionValues, "omni_purchase");
+  return { landingPageViews, initiatedCheckouts, purchases, purchaseValue };
 }
 
 async function fetchAllPages(url: string, accessToken: string): Promise<any[]> {
