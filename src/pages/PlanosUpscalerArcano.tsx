@@ -365,8 +365,6 @@ const PlanosUpscalerArcano = () => {
         { text: "Acesso às Ferramentas de IA", included: true },
         { text: "Suporte exclusivo via WhatsApp", included: true },
         { text: "Prompts premium ilimitados", included: true },
-        { text: "Geração de Imagem com NanoBanana Pro", included: false },
-        { text: "Geração de Vídeo com Veo 3", included: false },
       ],
     },
     {
