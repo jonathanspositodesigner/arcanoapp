@@ -268,30 +268,14 @@ export function useAdsCampaigns(
       return true;
     });
 
-    // 3. Calculate global average ticket from ALL approved sales for fallback
-    const allSalesTotal = sales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
-    const globalAvgTicket = sales.length > 0 ? allSalesTotal / sales.length : 0;
-
-    // 4. Direct attribution: each campaign gets its matched sales + estimated revenue for Meta-only sales
+    // 3. Direct attribution: each campaign gets only real matched sales revenue
     return filtered
       .map((c) => {
         const matchedSales = campaignSalesMap.get(c.campaign_id) || [];
         const utmSalesCount = matchedSales.length;
         const metaSalesCount = c.total_meta_purchases;
         const salesCount = Math.max(utmSalesCount, metaSalesCount);
-        const utmRevenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
-
-        // When Meta reports more sales than UTM can match, estimate the gap
-        let revenue = utmRevenue;
-        if (metaSalesCount > utmSalesCount && utmSalesCount > 0) {
-          // Use this campaign's average ticket for better accuracy
-          const campaignAvgTicket = utmRevenue / utmSalesCount;
-          const extraSales = metaSalesCount - utmSalesCount;
-          revenue = utmRevenue + (extraSales * campaignAvgTicket);
-        } else if (metaSalesCount > 0 && utmSalesCount === 0) {
-          // No UTM sales at all — use global average ticket
-          revenue = metaSalesCount * globalAvgTicket;
-        }
+        const revenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
 
         const spend = c.total_spend;
         const profit = revenue - spend;
