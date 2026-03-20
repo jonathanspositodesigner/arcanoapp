@@ -26,14 +26,28 @@ async function callVeoApi(geminiKey: string, payload: any): Promise<{ ok: boolea
 
   const veoUrl = `https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning`;
 
-  const veoResponse = await fetch(veoUrl, {
-    method: "POST",
-    headers: {
-      "x-goog-api-key": geminiKey,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ instances: [instance], parameters }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60_000);
+
+  let veoResponse: Response;
+  try {
+    veoResponse = await fetch(veoUrl, {
+      method: "POST",
+      headers: {
+        "x-goog-api-key": geminiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ instances: [instance], parameters }),
+      signal: controller.signal,
+    });
+  } catch (fetchErr: any) {
+    clearTimeout(timeoutId);
+    if (fetchErr.name === "AbortError") {
+      return { ok: false, error: "Timeout: API não respondeu em 60s" };
+    }
+    throw fetchErr;
+  }
+  clearTimeout(timeoutId);
 
   if (!veoResponse.ok) {
     const errText = await veoResponse.text();
