@@ -137,26 +137,12 @@ function attributeSalesToItems(
     }
   }
 
-  // Calculate global average ticket for fallback
-  const allSalesTotal = sales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
-  const globalAvgTicket = sales.length > 0 ? allSalesTotal / sales.length : 0;
-
   return items.map((item) => {
     const matchedSales = salesMap.get(item.id) || [];
     const utmSalesCount = matchedSales.length;
     const metaSalesCount = item.total_meta_purchases;
     const salesCount = Math.max(utmSalesCount, metaSalesCount);
-    const utmRevenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
-
-    // Estimate revenue for Meta-only sales that have no UTM match
-    let revenue = utmRevenue;
-    if (metaSalesCount > utmSalesCount && utmSalesCount > 0) {
-      const itemAvgTicket = utmRevenue / utmSalesCount;
-      const extraSales = metaSalesCount - utmSalesCount;
-      revenue = utmRevenue + (extraSales * itemAvgTicket);
-    } else if (metaSalesCount > 0 && utmSalesCount === 0) {
-      revenue = metaSalesCount * globalAvgTicket;
-    }
+    const revenue = matchedSales.reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
 
     const spend = item.total_spend;
     const profit = revenue - spend;
