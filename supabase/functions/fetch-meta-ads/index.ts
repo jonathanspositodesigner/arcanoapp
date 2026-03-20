@@ -224,7 +224,7 @@ Deno.serve(async (req) => {
           }
         }
 
-        const insightsUrl = `https://graph.facebook.com/v21.0/act_${trimmedId}/insights?fields=spend,impressions,clicks,cpm,cpc,actions,campaign_id,campaign_name&time_range=${encodeURIComponent(timeRange)}&level=campaign&time_increment=1&limit=500`;
+        const insightsUrl = `https://graph.facebook.com/v21.0/act_${trimmedId}/insights?fields=spend,impressions,clicks,cpm,cpc,actions,action_values,campaign_id,campaign_name&time_range=${encodeURIComponent(timeRange)}&level=campaign&time_increment=1&limit=500`;
 
         try {
           const rows = await fetchAllPages(insightsUrl, accessToken);
