@@ -27,19 +27,39 @@ async function callGeminiWithRetry(
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
-    const resp = await fetch(geminiUrl, {
-      method: "POST",
-      headers: {
-        "x-goog-api-key": apiKey,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [{ parts }],
-        generationConfig: {
-          responseModalities: ["IMAGE", "TEXT"],
+    // Timeout de 120s para evitar que a edge function trave se a API não responder
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120_000);
+
+    let resp: Response;
+    try {
+      resp = await fetch(geminiUrl, {
+        method: "POST",
+        headers: {
+          "x-goog-api-key": apiKey,
+          "Content-Type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: {
+            responseModalities: ["IMAGE", "TEXT"],
+          },
+        }),
+        signal: controller.signal,
+      });
+    } catch (fetchErr: any) {
+      clearTimeout(timeoutId);
+      if (fetchErr.name === "AbortError") {
+        console.error(`[generate-image] ${model} attempt ${attempt}/${maxRetries} timed out after 120s`);
+        // Create a fake 504 response so the caller handles it as a failure
+        lastErr = new Response(JSON.stringify({ error: "Timeout: API não respondeu em 120s" }), { status: 504 });
+        if (attempt === maxRetries) break;
+        await sleep(3000);
+        continue;
+      }
+      throw fetchErr;
+    }
+    clearTimeout(timeoutId);
 
     if (resp.ok) return resp;
 
