@@ -376,7 +376,11 @@ const UpscalerArcanoTool: React.FC = () => {
       setInputImage(e.target?.result as string);
       setInputFileName(processedFile.name || file.name);
       setOutputImage(null);
+      setJobId(null);
+      setIsWaitingInQueue(false);
+      setQueuePosition(0);
       setStatus('idle');
+      setProgress(0);
     };
     reader.readAsDataURL(processedFile);
   }, []);
