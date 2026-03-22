@@ -113,7 +113,10 @@ serve(async (req) => {
     }
 
     if (taskStatus === 'FAILED') {
-      errorMessage = eventData.errorMessage || eventData.errorCode || 'Processing failed';
+      // Prefer the real exception_message from failedReason over the generic Chinese errorMessage
+      const realError = eventData.failedReason?.exception_message;
+      const genericError = eventData.errorMessage || eventData.errorCode || 'Processing failed';
+      errorMessage = realError || genericError;
     }
 
     // Encontrar job - minimal select that works for ALL tables
