@@ -94,6 +94,12 @@ export default function ClonerTrialSection() {
   // Process file with optimizeForAI
   const processFile = useCallback(async (file: File, target: 'user' | 'reference') => {
     try {
+      // Reset processing state when user picks a new image
+      setStatus('idle');
+      setProgress(0);
+      setResultUrl(null);
+      setJobId(null);
+
       toast.info('Otimizando imagem...');
       const result = await optimizeForAI(file);
       const url = URL.createObjectURL(result.file);
