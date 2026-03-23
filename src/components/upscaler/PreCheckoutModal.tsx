@@ -245,6 +245,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       const data = await res.json();
       if (!data.erro) {
         setStreet(data.logradouro || '');
+        setNeighborhood(data.bairro || '');
         setCity(data.localidade || '');
         setAddressState(data.uf || '');
         setAddressError('');
