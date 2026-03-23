@@ -1,38 +1,27 @@
 
 
-# Plano: Substituir galeria scroll-driven por galeria manual no mobile
+# Plano: Reescrever MobileBeforeAfterGallery usando a mesma lógica do HeroBeforeAfterSlider
 
-## O que muda
+## Problema
 
-No mobile, o `ScrollDrivenGallery` atual ocupa `N * 100vh` de altura e usa o scroll da página para mover o slider automaticamente. Isso será substituído por uma galeria compacta com:
+O `MobileBeforeAfterGallery` usa uma lógica de touch diferente do `HeroBeforeAfterSlider` da hero:
+- Usa `touch-pan-y` no CSS + checagem de proximidade ao slider (40px) — isso causa travamento
+- O slider e a navegação entre imagens conflitam com o scroll da página
 
-- **Setas esquerda/direita** para navegar entre as imagens
-- **Slider antes/depois manual** (arraste com o dedo) em cada imagem
-- **Scroll normal da página** — sem sequestro do scroll
+O `HeroBeforeAfterSlider` da hero funciona perfeitamente porque usa `touchStartRef` para detectar a **direção do gesto** (horizontal = slider, vertical = scroll) e só chama `preventDefault` quando é arraste horizontal.
 
-No desktop, tudo permanece igual (ScrollDrivenGallery funciona como está).
+## Correção
 
-## Alterações
+Reescrever `MobileBeforeAfterGallery.tsx` aplicando a mesma lógica de touch do Hero:
 
-### 1. Criar `MobileBeforeAfterGallery.tsx`
+1. **Slider antes/depois**: Copiar exatamente a lógica de `handleTouchStart` / `handleTouchMove` / `handleTouchEnd` do `HeroBeforeAfterSlider` — com `touchStartRef`, `isHorizontalDrag`, e `preventDefault` condicional
+2. **Navegação entre imagens**: Usar as setas e dots (manter como está), remover `touch-pan-y` do CSS
+3. **Imagens**: Usar `ResilientImage` (mesmo componente do Hero) em vez de `<img>` direto, para evitar travamento de carregamento
+4. **Remover**: A checagem de proximidade ao slider (`Math.abs(touchX - sliderX) < 40`) que causa o travamento
 
-Novo componente com:
-- Estado `currentIndex` para navegar entre os items
-- Duas setas (← →) nos lados da imagem para trocar de slide
-- Cada slide é um before/after com slider **manual por toque/arraste** (o usuário controla o slider arrastando com o dedo, usando `onTouchMove` / `onMouseMove`)
-- Dots de progresso embaixo
-- Altura fixa (~70vh) sem ocupar múltiplas telas
-
-### 2. Atualizar `PlanosUpscalerArcano.tsx` (linhas 641-651)
-
-Condicionar pelo `isMobile`:
-- **Mobile**: renderizar `MobileBeforeAfterGallery` com `galleryItemsMobile`
-- **Desktop**: manter `ScrollDrivenGallery` com `galleryItemsDesktop`
-
-## Arquivos
+## Arquivo
 
 | Arquivo | Alteração |
 |---|---|
-| `src/components/upscaler/MobileBeforeAfterGallery.tsx` | Criar — galeria com setas e slider manual |
-| `src/pages/PlanosUpscalerArcano.tsx` | Condicionar mobile vs desktop na seção da galeria |
+| `src/components/upscaler/MobileBeforeAfterGallery.tsx` | Reescrever touch handling usando lógica do Hero + usar ResilientImage |
 
