@@ -254,6 +254,85 @@ const PlanosUpscalerArcano = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // SEO meta tags for this specific page
+  useEffect(() => {
+    document.title = "Upscaler Arcano — Melhore Qualquer Imagem com IA em 1 Clique | ArcanoApp";
+    
+    const metaTags: Record<string, string> = {
+      'description': 'Transforme fotos desfocadas em imagens 4K profissionais com IA. Mais de 3.200 fotógrafos, designers e criadores já usam. Acesso vitalício por R$99,90.',
+      'robots': 'index, follow',
+    };
+    const ogTags: Record<string, string> = {
+      'og:title': 'Upscaler Arcano — Melhore Qualquer Imagem com IA',
+      'og:description': 'De amador para profissional em 1 clique. Upscale até 4K, remoção de fundo e muito mais.',
+      'og:type': 'website',
+      'og:url': 'https://arcanoapp.voxvisual.com.br/planos-upscaler-arcano',
+      'twitter:card': 'summary_large_image',
+      'twitter:title': 'Upscaler Arcano — Melhore Qualquer Imagem com IA',
+    };
+
+    const createdElements: HTMLElement[] = [];
+
+    // Set name-based meta tags
+    Object.entries(metaTags).forEach(([name, content]) => {
+      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement;
+      if (!el) {
+        el = document.createElement('meta');
+        el.name = name;
+        document.head.appendChild(el);
+        createdElements.push(el);
+      }
+      el.content = content;
+    });
+
+    // Set property-based meta tags (OG, Twitter)
+    Object.entries(ogTags).forEach(([property, content]) => {
+      let el = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement;
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute('property', property);
+        document.head.appendChild(el);
+        createdElements.push(el);
+      }
+      el.content = content;
+    });
+
+    // Canonical link
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+      createdElements.push(canonical);
+    }
+    canonical.href = 'https://arcanoapp.voxvisual.com.br/planos-upscaler-arcano';
+
+    // Schema.org JSON-LD
+    const jsonLd = document.createElement('script');
+    jsonLd.type = 'application/ld+json';
+    jsonLd.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": "Upscaler Arcano",
+      "description": "Ferramenta de IA para melhorar qualidade de imagens até 4K",
+      "brand": { "@type": "Brand", "name": "ArcanoApp" },
+      "offers": [
+        { "@type": "Offer", "name": "Plano Starter", "price": "24.90", "priceCurrency": "BRL" },
+        { "@type": "Offer", "name": "Plano Pro", "price": "37.00", "priceCurrency": "BRL" },
+        { "@type": "Offer", "name": "Plano Ultimate", "price": "57.00", "priceCurrency": "BRL" },
+        { "@type": "Offer", "name": "Plano Vitalício", "price": "99.90", "priceCurrency": "BRL" },
+      ],
+      "aggregateRating": { "@type": "AggregateRating", "ratingValue": "5", "reviewCount": "3200" }
+    });
+    document.head.appendChild(jsonLd);
+    createdElements.push(jsonLd);
+
+    return () => {
+      createdElements.forEach(el => el.remove());
+      document.title = "ArcanoApp - Primeira Plataforma de IA para Designers do Brasil";
+    };
+  }, []);
+
   useEffect(() => {
     fetchToolData();
   }, []);

@@ -266,6 +266,10 @@ export const ResilientImage = ({
         src={currentSrc}
         alt={alt}
         className="object-cover"
+        loading={loading}
+        {...(fetchPriority ? { fetchPriority } : {})}
+        {...(width ? { width } : {})}
+        {...(height ? { height } : {})}
         style={{
           width: '100%',
           height: '100%',
