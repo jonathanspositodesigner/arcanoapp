@@ -126,7 +126,7 @@ serve(async (req) => {
     for (const table of IMAGE_JOB_TABLES) {
       const { data: job, error: lookupError } = await supabase
         .from(table)
-        .select('id, started_at, user_credit_cost')
+        .select('id, started_at, user_credit_cost, status')
         .eq('task_id', taskId)
         .maybeSingle();
 
