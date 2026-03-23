@@ -1,60 +1,60 @@
 
 
-# Plano: Corrigir billing_address obrigatório para assinaturas com cartão
+# Plano: Remover CreditCardForm e usar checkout hospedado para assinaturas
 
-## Diagnóstico
+## Problema
+O CreditCardForm coleta dados do cartão no nosso modal, causando erros de validação. O usuário quer que dados do cartão sejam preenchidos na página do Pagar.me (checkout hospedado), e que no nosso modal só colete dados pessoais (nome, CPF, celular, endereço).
 
-**Não há defeito específico no plano Ultimate** — todos os planos usam exatamente o mesmo código e configuração. O erro `billing | "value" is required` acontece porque o Pagar.me exige um `billing_address` dentro do objeto `card` no payload da subscription, e o código atual envia o `card_token` solto na raiz do payload, sem `billing_address`.
-
-O usuário `osbatista@gmail.com` **tem** endereço no perfil (Serra/ES), mas o endereço só é enviado dentro de `customer.address` — o Pagar.me ignora isso para cobranças recorrentes e exige especificamente no nível do `card`.
+## Limitação técnica
+O Pagar.me não oferece checkout hospedado para `/subscriptions`. A solução é usar o checkout hospedado para a **primeira cobrança** e depois criar a assinatura com o `card_id` da cobrança paga.
 
 ## Correções
 
-### 1. Adicionar campos de endereço ao CreditCardForm
+### 1. Remover CreditCardForm do fluxo de assinaturas (Planos2.tsx)
+Quando o usuário escolhe Cartão de Crédito para um plano de assinatura, em vez de abrir o CreditCardForm, redirecionar para o checkout hospedado do Pagar.me (mesma lógica do PIX/créditos avulsos via `create-pagarme-checkout`).
 
-Adicionar seção de endereço obrigatório no modal do cartão com os campos:
-- **CEP** (busca automática via ViaCEP)
-- **Rua + Número** (line_1)
-- **Cidade**
-- **Estado** (dropdown UFs)
+O `handlePaymentMethodSelected` para subscription + CREDIT_CARD passa a funcionar igual ao fluxo de créditos: monta o body com dados do perfil e redireciona pro checkout hospedado.
 
-O callback `onTokenGenerated` passa a retornar também os dados de endereço: `onTokenGenerated(token, addressData)`.
+### 2. Adicionar campos de endereço ao PreCheckoutModal
+Para usuários sem perfil completo (que abrem o PreCheckoutModal), adicionar campos de endereço (CEP com busca ViaCEP, Rua+Número, Cidade, Estado) ao formulário existente que já coleta nome, email, CPF e celular.
 
-Validação: se qualquer campo de endereço estiver vazio, exibe erro "Preencha o endereço para continuar".
+Os dados de endereço são enviados junto no payload para `create-pagarme-checkout`, que já suporta `user_address`.
 
-### 2. Atualizar Planos2.tsx
+### 3. Criar assinatura recorrente no webhook após primeira cobrança
+No `webhook-pagarme`, quando detectar que o produto pago é do tipo `subscription` e a cobrança veio de um checkout hospedado (sem `subscription_id`):
+1. Extrair o `card_id` da charge paga
+2. Buscar dados do cliente (endereço, CPF, etc.) da ordem
+3. Criar a assinatura via API `/subscriptions` do Pagar.me usando `card.card_id` + `billing_address`, com `start_at` na data da próxima cobrança (30 dias ou 1 ano depois)
+4. Salvar o `subscription_id` na ordem
 
-Modificar `handleCardTokenGenerated` para receber o endereço do CreditCardForm e usá-lo como `user_address` no payload enviado à edge function — priorizando o endereço digitado no momento do checkout sobre o do perfil.
+Assim a primeira cobrança é via checkout hospedado (usuário preenche cartão lá) e as seguintes são automáticas via assinatura real.
 
-### 3. Corrigir payload na Edge Function `create-pagarme-subscription`
+### 4. Atualizar verificação de perfil completo (Planos2.tsx)
+Na função `handleSubscriptionPurchase`, incluir endereço na validação de perfil completo. Se o perfil não tiver endereço, abrir PreCheckoutModal (que agora coleta endereço).
 
-Reestruturar o payload para incluir `billing_address` dentro de um objeto `card`:
+Para o fluxo direto (perfil completo), enviar o endereço do perfil no payload do checkout.
+
+## Fluxo final
 
 ```text
-Antes:
-  card_token: "tok_xxx"     ← solto na raiz
-  customer.address: {...}   ← Pagar.me ignora para recorrência
-
-Depois:
-  card: {
-    card_token: "tok_xxx",
-    billing_address: {
-      line_1: "Rua X, 123",
-      zip_code: "29168680",
-      city: "Serra",
-      state: "ES",
-      country: "BR"
-    }
-  }
+Usuário clica "Assinar" (qualquer plano)
+    ↓
+Tem perfil completo (nome+CPF+cel+endereço)?
+    ├── NÃO → PreCheckoutModal (coleta tudo incluindo endereço)
+    │         → Escolhe PIX ou Cartão → Vai pro checkout hospedado Pagar.me
+    │
+    └── SIM → PaymentMethodModal (PIX ou Cartão)
+              → Ambos vão pro checkout hospedado Pagar.me
+              → Usuário preenche cartão NA PÁGINA DO PAGAR.ME
+              → Pagamento confirmado → Webhook cria subscription p/ recorrência
 ```
-
-Se o endereço não for fornecido, a edge function retorna erro 400 com mensagem clara.
 
 ## Arquivos modificados
 
 | Arquivo | Alteração |
 |---|---|
-| `src/components/checkout/CreditCardForm.tsx` | Adicionar campos de endereço, alterar interface do callback |
-| `src/pages/Planos2.tsx` | Ajustar `handleCardTokenGenerated` para receber endereço |
-| `supabase/functions/create-pagarme-subscription/index.ts` | Reestruturar payload com `card.billing_address` |
+| `src/pages/Planos2.tsx` | Remover abertura do CreditCardForm; subscription+cartão vai pro checkout hospedado; enviar endereço no payload |
+| `src/components/upscaler/PreCheckoutModal.tsx` | Adicionar campos de endereço (CEP, rua, número, cidade, estado) |
+| `supabase/functions/webhook-pagarme/index.ts` | Após pagamento de produto subscription via checkout, criar assinatura com card_id |
+| `src/components/checkout/CreditCardForm.tsx` | Manter arquivo (pode ser usado em outros lugares), mas remover do fluxo de Planos2 |
 
