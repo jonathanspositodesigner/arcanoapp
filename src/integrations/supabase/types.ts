@@ -4053,6 +4053,36 @@ export type Database = {
           },
         ]
       }
+      user_google_api_keys: {
+        Row: {
+          api_key: string
+          created_at: string | null
+          id: string
+          total_credits: number | null
+          updated_at: string | null
+          used_credits: number | null
+          user_id: string
+        }
+        Insert: {
+          api_key: string
+          created_at?: string | null
+          id?: string
+          total_credits?: number | null
+          updated_at?: string | null
+          used_credits?: number | null
+          user_id: string
+        }
+        Update: {
+          api_key?: string
+          created_at?: string | null
+          id?: string
+          total_credits?: number | null
+          updated_at?: string | null
+          used_credits?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_pack_purchases: {
         Row: {
           access_type: Database["public"]["Enums"]["artes_access_type"]

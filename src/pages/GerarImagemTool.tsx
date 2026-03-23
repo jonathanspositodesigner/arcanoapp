@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { ArrowLeft, Download, ImagePlus, Sparkles, X, Loader2, Paperclip, ChevronDown, Coins } from 'lucide-react';
+import { ArrowLeft, Download, ImagePlus, Sparkles, X, Loader2, Paperclip, ChevronDown, Coins, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,6 +10,9 @@ import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { useAuth } from '@/contexts/AuthContext';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import AppLayout from '@/components/layout/AppLayout';
+import GoogleApiKeyModal from '@/components/GoogleApiKeyModal';
+import GoogleCreditsProgressBar from '@/components/GoogleCreditsProgressBar';
+import { useGoogleApiKey } from '@/hooks/useGoogleApiKey';
 
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import {
@@ -35,6 +38,8 @@ const GerarImagemTool = () => {
   const { isPlanos2User, hasImageGeneration, costMultiplier } = useAuth();
   
   const { getCreditCost } = useAIToolSettings();
+  const { hasKey, refetch: refetchApiKey } = useGoogleApiKey();
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
 
   const [prompt, setPrompt] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
@@ -142,14 +147,6 @@ const GerarImagemTool = () => {
     setIsGenerating(true);
 
     try {
-      const freshCredits = await checkBalance();
-      if (freshCredits < currentCreditCost) {
-        setNoCreditsReason('insufficient');
-        setShowNoCreditsModal(true);
-        setIsGenerating(false);
-        return;
-      }
-
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
 
@@ -164,42 +161,84 @@ const GerarImagemTool = () => {
         mimeType: img.mimeType,
       }));
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify({
-          prompt: prompt.trim(),
-          model,
-          aspect_ratio: aspectRatio,
-          reference_images: refImgs.length > 0 ? refImgs : undefined,
-        }),
-      });
+      // Use user's own key if available
+      if (hasKey) {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-with-user-key`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            type: 'image',
+            prompt: prompt.trim(),
+            model,
+            aspect_ratio: aspectRatio,
+            reference_images: refImgs.length > 0 ? refImgs : undefined,
+          }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!response.ok || data.error) {
-        if (data.error === 'INSUFFICIENT_CREDITS') {
+        if (!response.ok || data.error) {
+          toast.error(data.error || 'Erro ao gerar imagem');
+          setIsGenerating(false);
+          return;
+        }
+
+        setResultUrl(data.output_url);
+        setResultBase64(null);
+        setResultMimeType(data.mime_type || 'image/png');
+        await refetchApiKey();
+        toast.success('Imagem gerada com sucesso! (usando sua chave API)');
+      } else {
+        // Standard flow with platform credits
+        const freshCredits = await checkBalance();
+        if (freshCredits < currentCreditCost) {
           setNoCreditsReason('insufficient');
           setShowNoCreditsModal(true);
-        } else {
-          toast.error(data.error || 'Erro ao gerar imagem');
-          if (data.refunded) {
-            await refetchCredits();
-          }
+          setIsGenerating(false);
+          return;
         }
-        setIsGenerating(false);
-        return;
-      }
 
-      setResultUrl(data.output_url);
-      setResultBase64(null);
-      setResultMimeType(data.mime_type || 'image/png');
-      await refetchCredits();
-      toast.success('Imagem gerada com sucesso!');
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            prompt: prompt.trim(),
+            model,
+            aspect_ratio: aspectRatio,
+            reference_images: refImgs.length > 0 ? refImgs : undefined,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+          if (data.error === 'INSUFFICIENT_CREDITS') {
+            setNoCreditsReason('insufficient');
+            setShowNoCreditsModal(true);
+          } else {
+            toast.error(data.error || 'Erro ao gerar imagem');
+            if (data.refunded) {
+              await refetchCredits();
+            }
+          }
+          setIsGenerating(false);
+          return;
+        }
+
+        setResultUrl(data.output_url);
+        setResultBase64(null);
+        setResultMimeType(data.mime_type || 'image/png');
+        await refetchCredits();
+        toast.success('Imagem gerada com sucesso!');
+      }
     } catch (err) {
       console.error('[GerarImagem] Error:', err);
       toast.error('Erro ao gerar imagem');
@@ -273,9 +312,22 @@ const GerarImagemTool = () => {
           </div>
         </div>
 
+        {/* Free generation button */}
+        <div className="mx-4 mt-3 mb-0 max-w-4xl self-center w-full">
+          <button
+            onClick={() => setShowApiKeyModal(true)}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-green-600/80 to-emerald-600/80 hover:from-green-500 hover:to-emerald-500 border border-green-500/30 text-white text-sm font-semibold transition-all"
+          >
+            <Gift className="h-4 w-4" />
+            {hasKey ? 'Gerenciar Chave API — Gerando grátis ✅' : '🎁 Gere imagens e vídeos free'}
+          </button>
+        </div>
+
+        {/* Credits progress bar */}
+        {hasKey && <div className="mt-2"><GoogleCreditsProgressBar onManageKey={() => setShowApiKeyModal(true)} /></div>}
 
         {/* Beta warning */}
-        <div className="mx-4 mt-3 mb-0 max-w-4xl self-center w-full">
+        <div className="mx-4 mt-2 mb-0 max-w-4xl self-center w-full">
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 text-xs">
             <span className="text-yellow-400 text-sm">⚠️</span>
             <span>Ferramenta em fase de teste — podem ocorrer erros ou resultados inesperados.</span>
@@ -502,10 +554,14 @@ const GerarImagemTool = () => {
                   <>
                     <Sparkles className="w-3.5 h-3.5 mr-1" />
                     Gerar
-                    <span className="ml-1.5 flex items-center gap-0.5 text-xs opacity-90">
-                      <Coins className="w-3 h-3" />
-                      {currentCreditCost}
-                    </span>
+                    {hasKey ? (
+                      <span className="ml-1.5 text-[10px] text-green-300">FREE</span>
+                    ) : (
+                      <span className="ml-1.5 flex items-center gap-0.5 text-xs opacity-90">
+                        <Coins className="w-3 h-3" />
+                        {currentCreditCost}
+                      </span>
+                    )}
                   </>
                 )}
               </Button>
@@ -518,6 +574,7 @@ const GerarImagemTool = () => {
           onClose={() => setShowNoCreditsModal(false)}
           reason={noCreditsReason}
         />
+        <GoogleApiKeyModal open={showApiKeyModal} onOpenChange={setShowApiKeyModal} />
       </div>
     </AppLayout>
   );

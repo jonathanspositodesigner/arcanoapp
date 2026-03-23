@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock } from 'lucide-react';
+import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,6 +10,9 @@ import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { useAuth } from '@/contexts/AuthContext';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import AppLayout from '@/components/layout/AppLayout';
+import GoogleApiKeyModal from '@/components/GoogleApiKeyModal';
+import GoogleCreditsProgressBar from '@/components/GoogleCreditsProgressBar';
+import { useGoogleApiKey } from '@/hooks/useGoogleApiKey';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +37,8 @@ const GerarVideoTool = () => {
   const { isPlanos2User, hasVideoGeneration, costMultiplier } = useAuth();
   
   const { getCreditCost } = useAIToolSettings();
+  const { hasKey, refetch: refetchApiKey } = useGoogleApiKey();
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
 
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState<string>('16:9');
@@ -175,14 +180,6 @@ const GerarVideoTool = () => {
     setQueuePosition(0);
 
     try {
-      const freshCredits = await checkBalance();
-      if (freshCredits < creditCost) {
-        setNoCreditsReason('insufficient');
-        setShowNoCreditsModal(true);
-        setIsGenerating(false);
-        return;
-      }
-
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
 
@@ -192,50 +189,87 @@ const GerarVideoTool = () => {
         return;
       }
 
-      const body: any = {
+      const bodyData: any = {
         prompt: prompt.trim(),
         aspect_ratio: aspectRatio,
         duration_seconds: duration,
       };
 
       if (startFrame) {
-        body.start_frame = { base64: startFrame.base64, mimeType: startFrame.mimeType };
+        bodyData.start_frame = { base64: startFrame.base64, mimeType: startFrame.mimeType };
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify(body),
-      });
+      // Use user's own key if available
+      if (hasKey) {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-with-user-key`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ ...bodyData, type: 'video' }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!response.ok) {
-        if (data.error === 'INSUFFICIENT_CREDITS') {
-          setNoCreditsReason('insufficient');
-          setShowNoCreditsModal(true);
-        } else {
+        if (!response.ok || data.error) {
           toast.error(data.error || 'Erro ao iniciar geração');
           setErrorMessage(data.error || 'Erro ao iniciar geração');
+          setIsGenerating(false);
+          return;
         }
-        setIsGenerating(false);
-        return;
-      }
 
-      setJobId(data.job_id);
-      setIsPolling(true);
-      pollingStartRef.current = Date.now();
-
-      if (data.queued) {
-        setIsQueued(true);
-        setQueuePosition(data.position || 1);
-        toast.info(`Você está na fila (posição ${data.position || 1}). Aguarde...`);
+        setJobId(data.job_id);
+        setIsPolling(true);
+        pollingStartRef.current = Date.now();
+        await refetchApiKey();
+        toast.success('Geração de vídeo iniciada! (usando sua chave API)');
       } else {
-        toast.success('Geração de vídeo iniciada! Aguarde...');
+        // Standard flow with platform credits
+        const freshCredits = await checkBalance();
+        if (freshCredits < creditCost) {
+          setNoCreditsReason('insufficient');
+          setShowNoCreditsModal(true);
+          setIsGenerating(false);
+          return;
+        }
+
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify(bodyData),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (data.error === 'INSUFFICIENT_CREDITS') {
+            setNoCreditsReason('insufficient');
+            setShowNoCreditsModal(true);
+          } else {
+            toast.error(data.error || 'Erro ao iniciar geração');
+            setErrorMessage(data.error || 'Erro ao iniciar geração');
+          }
+          setIsGenerating(false);
+          return;
+        }
+
+        setJobId(data.job_id);
+        setIsPolling(true);
+        pollingStartRef.current = Date.now();
+
+        if (data.queued) {
+          setIsQueued(true);
+          setQueuePosition(data.position || 1);
+          toast.info(`Você está na fila (posição ${data.position || 1}). Aguarde...`);
+        } else {
+          toast.success('Geração de vídeo iniciada! Aguarde...');
+        }
       }
     } catch (err) {
       console.error('[GerarVideo] Error:', err);
@@ -311,8 +345,22 @@ const GerarVideoTool = () => {
           </div>
         </div>
 
-        {/* Beta warning */}
+        {/* Free generation button */}
         <div className="mx-4 mt-3 mb-0 max-w-4xl self-center w-full">
+          <button
+            onClick={() => setShowApiKeyModal(true)}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-green-600/80 to-emerald-600/80 hover:from-green-500 hover:to-emerald-500 border border-green-500/30 text-white text-sm font-semibold transition-all"
+          >
+            <Gift className="h-4 w-4" />
+            {hasKey ? 'Gerenciar Chave API — Gerando grátis ✅' : '🎁 Gere imagens e vídeos free'}
+          </button>
+        </div>
+
+        {/* Credits progress bar */}
+        {hasKey && <div className="mt-2"><GoogleCreditsProgressBar onManageKey={() => setShowApiKeyModal(true)} /></div>}
+
+        {/* Beta warning */}
+        <div className="mx-4 mt-2 mb-0 max-w-4xl self-center w-full">
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 text-xs">
             <span className="text-yellow-400 text-sm">⚠️</span>
             <span>Ferramenta em fase de teste — podem ocorrer erros ou resultados inesperados.</span>
@@ -523,10 +571,14 @@ const GerarVideoTool = () => {
                   <>
                     <Sparkles className="w-3.5 h-3.5 mr-1.5" />
                     Gerar Vídeo
-                    <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
-                      <Coins className="w-3.5 h-3.5" />
-                      {creditCost}
-                    </span>
+                    {hasKey ? (
+                      <span className="ml-1.5 text-[10px] text-green-300">FREE</span>
+                    ) : (
+                      <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                        <Coins className="w-3.5 h-3.5" />
+                        {creditCost}
+                      </span>
+                    )}
                   </>
                 )}
               </Button>
@@ -539,6 +591,7 @@ const GerarVideoTool = () => {
           onClose={() => setShowNoCreditsModal(false)}
           reason={noCreditsReason}
         />
+        <GoogleApiKeyModal open={showApiKeyModal} onOpenChange={setShowApiKeyModal} />
       </div>
     </AppLayout>
   );
