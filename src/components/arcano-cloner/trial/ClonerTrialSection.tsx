@@ -54,7 +54,8 @@ export default function ClonerTrialSection() {
   const statusCallbackRef = useRef<(update: any) => void>();
   statusCallbackRef.current = (update: any) => {
     if (update.status === 'completed' && update.outputUrl) {
-      setResultUrl(update.outputUrl);
+      const previewUrl = update.thumbnailUrl || update.outputUrl;
+      setResultUrl(previewUrl);
       setStatus('completed');
       setProgress(100);
       setJobId(null);
