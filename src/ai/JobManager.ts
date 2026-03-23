@@ -49,6 +49,7 @@ export interface CancelResult {
 export interface JobUpdate {
   status: JobStatus;
   outputUrl?: string;
+  thumbnailUrl?: string;
   errorMessage?: string;
   position?: number;
   currentStep?: string;
