@@ -336,7 +336,8 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       const normalizedEmail = (email || userEmail || '').trim().toLowerCase();
 
       // Envia dados completos para todos os métodos (antifraude)
-      const addressLine = `${street.trim()}, ${number.trim()}`;
+      // Pagar.me line_1 format: "número, rua, bairro"
+      const addressLine1 = `${number.trim()}, ${street.trim()}, ${neighborhood.trim()}`;
       const fullPayload = {
         product_slug: productSlug,
         user_email: normalizedEmail,
@@ -348,7 +349,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         fbp,
         fbc,
         user_address: {
-          line_1: addressLine,
+          line_1: addressLine1,
           zip_code: cep.replace(/\D/g, ''),
           city: city.trim(),
           state: addressState.trim(),
