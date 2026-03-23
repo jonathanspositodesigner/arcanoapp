@@ -312,9 +312,22 @@ const GerarImagemTool = () => {
           </div>
         </div>
 
+        {/* Free generation button */}
+        <div className="mx-4 mt-3 mb-0 max-w-4xl self-center w-full">
+          <button
+            onClick={() => setShowApiKeyModal(true)}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-green-600/80 to-emerald-600/80 hover:from-green-500 hover:to-emerald-500 border border-green-500/30 text-white text-sm font-semibold transition-all"
+          >
+            <Gift className="h-4 w-4" />
+            {hasKey ? 'Gerenciar Chave API — Gerando grátis ✅' : '🎁 Gere imagens e vídeos free'}
+          </button>
+        </div>
+
+        {/* Credits progress bar */}
+        {hasKey && <div className="mt-2"><GoogleCreditsProgressBar onManageKey={() => setShowApiKeyModal(true)} /></div>}
 
         {/* Beta warning */}
-        <div className="mx-4 mt-3 mb-0 max-w-4xl self-center w-full">
+        <div className="mx-4 mt-2 mb-0 max-w-4xl self-center w-full">
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 text-xs">
             <span className="text-yellow-400 text-sm">⚠️</span>
             <span>Ferramenta em fase de teste — podem ocorrer erros ou resultados inesperados.</span>
