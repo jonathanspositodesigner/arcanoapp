@@ -161,14 +161,7 @@ const Planos2 = () => {
   const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
     if (!pendingSlug || !pendingProfile) return;
 
-    // For subscriptions with credit card: open card form for tokenization
-    if (isSubscriptionFlow && method === 'CREDIT_CARD') {
-      setShowPaymentMethodModal(false);
-      setShowCardForm(true);
-      return;
-    }
-
-    // For PIX (subscription or credits) and credit card (credits only): use hosted checkout
+    // ALL payment methods go to hosted checkout (card data filled on Pagar.me page)
     if (!startCheckout()) return;
     
     setPixLoading(pendingSlug);
@@ -189,8 +182,8 @@ const Planos2 = () => {
         fbc,
       };
 
-      // PIX: send address pre-filled; Credit card: omit address for antifraude form
-      if (method === 'PIX') {
+      // Always send address for hosted checkout
+      if (pendingProfile.address_line) {
         body.user_address = {
           line_1: pendingProfile.address_line,
           zip_code: pendingProfile.address_zip,
@@ -212,13 +205,11 @@ const Planos2 = () => {
       }
 
       const { checkout_url, event_id } = response.data;
-      // Fire InitiateCheckout with event_id for deduplication with server-side CAPI
       if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
         (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
       }
       if (checkout_url) {
         window.location.href = checkout_url;
-        // Don't close modal — let the page navigate away naturally
         return;
       } else {
         toast.error('Erro ao gerar link de pagamento.');
@@ -227,68 +218,9 @@ const Planos2 = () => {
       console.error('Erro checkout direto:', error);
       toast.error('Erro ao processar. Tente novamente.');
     }
-    // Only reaches here on error — reset everything
     endCheckout();
     setPixLoading(null);
     setShowPaymentMethodModal(false);
-  };
-
-  // Handler for card token from CreditCardForm (subscription with real recurrence)
-  const handleCardTokenGenerated = async (cardToken: string, addressData?: { line_1: string; zip_code: string; city: string; state: string; country: string }) => {
-    if (!pendingSlug || !pendingProfile) return;
-    if (!startCheckout()) return;
-
-    try {
-      const utmData = getSanitizedUtms();
-
-      // Priorizar endereço digitado no checkout sobre o do perfil
-      const userAddress = addressData || {
-        line_1: pendingProfile.address_line,
-        zip_code: pendingProfile.address_zip,
-        city: pendingProfile.address_city,
-        state: pendingProfile.address_state,
-        country: pendingProfile.address_country || 'BR'
-      };
-
-      const response = await supabase.functions.invoke('create-pagarme-subscription', {
-        body: {
-          product_slug: pendingSlug,
-          card_token: cardToken,
-          user_email: userEmail,
-          user_phone: pendingProfile.phone,
-          user_name: pendingProfile.name,
-          user_cpf: pendingProfile.cpf,
-          utm_data: utmData,
-          user_address: userAddress
-        }
-      });
-
-      if (response.error) {
-        const errorMsg = response.error?.message || 'Erro ao criar assinatura';
-        console.error('Erro ao criar subscription:', response.error);
-        toast.error(errorMsg);
-        endCheckout();
-        setShowCardForm(false);
-        return;
-      }
-
-      const data = response.data;
-      if (data?.success) {
-        toast.success('Assinatura criada com sucesso! Seu plano será ativado em instantes.');
-        setShowCardForm(false);
-        // Redirect to success page
-        window.location.href = 'https://arcanoapp.voxvisual.com.br/sucesso-compra';
-        return;
-      } else {
-        toast.error(data?.error || 'Erro ao criar assinatura');
-      }
-    } catch (error: any) {
-      console.error('Erro subscription:', error);
-      toast.error('Erro ao processar assinatura. Tente novamente.');
-    }
-
-    endCheckout();
-    setShowCardForm(false);
   };
 
   const countdown = formatTime(timeLeft);
