@@ -1,35 +1,60 @@
 
 
-# Plano: Reconfigurar Chave API Google e Reativar Gerar Imagem/Vídeo
+# Plano: Corrigir billing_address obrigatório para assinaturas com cartão
 
-## Resumo
-Atualizar o secret `GOOGLE_GEMINI_API_KEY` com a nova chave e reativar as páginas Gerar Imagem e Gerar Vídeo que foram desabilitadas temporariamente.
+## Diagnóstico
 
-## O que já está certo no código
-As edge functions `generate-image`, `generate-video` e `poll-video-status` já usam os endpoints corretos:
-- **Imagen**: `generativelanguage.googleapis.com/v1beta/models/{model}:generateContent` com `x-goog-api-key`
-- **Veo 3.1**: `generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning` com `x-goog-api-key`
-- **Poll**: `generativelanguage.googleapis.com/v1beta/{operation_name}` com `x-goog-api-key`
+**Não há defeito específico no plano Ultimate** — todos os planos usam exatamente o mesmo código e configuração. O erro `billing | "value" is required` acontece porque o Pagar.me exige um `billing_address` dentro do objeto `card` no payload da subscription, e o código atual envia o `card_token` solto na raiz do payload, sem `billing_address`.
 
-Nenhuma alteração de código nas edge functions é necessária — a estrutura está correta.
+O usuário `osbatista@gmail.com` **tem** endereço no perfil (Serra/ES), mas o endereço só é enviado dentro de `customer.address` — o Pagar.me ignora isso para cobranças recorrentes e exige especificamente no nível do `card`.
 
-## Passos
+## Correções
 
-### 1. Atualizar o secret `GOOGLE_GEMINI_API_KEY`
-Vou pedir a nova chave via ferramenta segura de secrets (caixinha). Você cola a chave lá.
+### 1. Adicionar campos de endereço ao CreditCardForm
 
-### 2. Reativar as rotas no App.tsx
-Descomentar as rotas `/gerar-imagem` e `/gerar-video` que foram desabilitadas.
+Adicionar seção de endereço obrigatório no modal do cartão com os campos:
+- **CEP** (busca automática via ViaCEP)
+- **Rua + Número** (line_1)
+- **Cidade**
+- **Estado** (dropdown UFs)
 
-### 3. Reativar os botões na navegação
-- **FloatingToolsNav.tsx**: Descomentar `/gerar-imagem` e `/gerar-video` no array de rotas
-- **AppSidebar.tsx**: Readicionar os itens "Gerar Imagem" e "Gerar Vídeo" no menu lateral
+O callback `onTokenGenerated` passa a retornar também os dados de endereço: `onTokenGenerated(token, addressData)`.
 
-### 4. Testar a geração
-Após a chave ser inserida, testar com uma chamada real para confirmar que funciona.
+Validação: se qualquer campo de endereço estiver vazio, exibe erro "Preencha o endereço para continuar".
+
+### 2. Atualizar Planos2.tsx
+
+Modificar `handleCardTokenGenerated` para receber o endereço do CreditCardForm e usá-lo como `user_address` no payload enviado à edge function — priorizando o endereço digitado no momento do checkout sobre o do perfil.
+
+### 3. Corrigir payload na Edge Function `create-pagarme-subscription`
+
+Reestruturar o payload para incluir `billing_address` dentro de um objeto `card`:
+
+```text
+Antes:
+  card_token: "tok_xxx"     ← solto na raiz
+  customer.address: {...}   ← Pagar.me ignora para recorrência
+
+Depois:
+  card: {
+    card_token: "tok_xxx",
+    billing_address: {
+      line_1: "Rua X, 123",
+      zip_code: "29168680",
+      city: "Serra",
+      state: "ES",
+      country: "BR"
+    }
+  }
+```
+
+Se o endereço não for fornecido, a edge function retorna erro 400 com mensagem clara.
 
 ## Arquivos modificados
-- `src/App.tsx` — descomentar 2 linhas de Route
-- `src/components/FloatingToolsNav.tsx` — descomentar 2 linhas
-- `src/components/layout/AppSidebar.tsx` — readicionar itens do menu
+
+| Arquivo | Alteração |
+|---|---|
+| `src/components/checkout/CreditCardForm.tsx` | Adicionar campos de endereço, alterar interface do callback |
+| `src/pages/Planos2.tsx` | Ajustar `handleCardTokenGenerated` para receber endereço |
+| `supabase/functions/create-pagarme-subscription/index.ts` | Reestruturar payload com `card.billing_address` |
 
