@@ -118,6 +118,17 @@ Deno.serve(async (req) => {
       userId = newUser.user.id;
     }
 
+    // Check if profile already exists to preserve password_changed status
+    const { data: existingProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("id, password_changed")
+      .eq("id", userId)
+      .maybeSingle();
+
+    // Only set password_changed = true if this is a NEW profile being created
+    // For existing profiles, preserve their current password_changed status
+    const passwordChangedValue = existingProfile ? existingProfile.password_changed : false;
+
     // Upsert profile
     await supabaseAdmin
       .from("profiles")
@@ -126,7 +137,7 @@ Deno.serve(async (req) => {
           id: userId,
           email: trimmedEmail,
           email_verified: true,
-          password_changed: true,
+          password_changed: passwordChangedValue,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "id" }
