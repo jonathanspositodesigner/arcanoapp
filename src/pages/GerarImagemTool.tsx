@@ -554,10 +554,14 @@ const GerarImagemTool = () => {
                   <>
                     <Sparkles className="w-3.5 h-3.5 mr-1" />
                     Gerar
-                    <span className="ml-1.5 flex items-center gap-0.5 text-xs opacity-90">
-                      <Coins className="w-3 h-3" />
-                      {currentCreditCost}
-                    </span>
+                    {hasKey ? (
+                      <span className="ml-1.5 text-[10px] text-green-300">FREE</span>
+                    ) : (
+                      <span className="ml-1.5 flex items-center gap-0.5 text-xs opacity-90">
+                        <Coins className="w-3 h-3" />
+                        {currentCreditCost}
+                      </span>
+                    )}
                   </>
                 )}
               </Button>
