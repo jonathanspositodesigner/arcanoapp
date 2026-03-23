@@ -216,11 +216,13 @@ export default function ArcanoClonerAuthModal({
       const profileExists = profileCheck?.[0]?.exists_in_db || false;
       let passwordChanged = profileCheck?.[0]?.password_changed || false;
       const profileCreatedAt = profileCheck?.[0]?.created_at;
+      const hasLoggedIn = profileCheck?.[0]?.has_logged_in || false;
       
       // Legacy accounts created before 2026-03-12 should skip first-access flow
+      // BUT only if they have actually logged in before
       const LEGACY_CUTOFF = new Date('2026-03-12T00:00:00Z');
-      if (profileExists && !passwordChanged && profileCreatedAt && new Date(profileCreatedAt) < LEGACY_CUTOFF) {
-        console.log('[ArcanoClonerAuth] Legacy account pre-cutoff, skipping first-access flow');
+      if (profileExists && !passwordChanged && profileCreatedAt && new Date(profileCreatedAt) < LEGACY_CUTOFF && hasLoggedIn) {
+        console.log('[ArcanoClonerAuth] Legacy account pre-cutoff WITH login history, skipping first-access flow');
         passwordChanged = true;
       }
 
@@ -229,6 +231,41 @@ export default function ArcanoClonerAuthModal({
         toast.info('Email não encontrado. Crie sua conta.');
         setVerifiedEmail(emailToCheck);
         setStep('signup');
+      } else if (profileExists && passwordChanged && !hasLoggedIn) {
+        // User created by webhook, never logged in - try auto-login with email as password
+        console.log('[ArcanoClonerAuth] User never logged in despite password_changed=true, trying auto-login');
+        const { error: autoLoginError } = await supabase.auth.signInWithPassword({
+          email: emailToCheck,
+          password: emailToCheck,
+        });
+
+        if (!autoLoginError) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('email_verified')
+              .eq('id', user.id)
+              .maybeSingle();
+
+            if (profile?.email_verified !== true) {
+              await supabase.auth.signOut();
+              setVerifiedEmail(emailToCheck);
+              setPendingUserId(user.id);
+              setStep('verify-email');
+              toast.error('Confirme seu email antes de entrar.');
+              setIsLoading(false);
+              return;
+            }
+          }
+          toast.success('Primeiro acesso! Cadastre sua senha.');
+          onAuthSuccess();
+        } else {
+          // Auto-login failed → go to password step
+          toast.info('Digite sua senha para continuar.');
+          setVerifiedEmail(emailToCheck);
+          setStep('password');
+        }
       } else if (!passwordChanged) {
         // First access - try auto-login with email as password
         const { error: autoLoginError } = await supabase.auth.signInWithPassword({

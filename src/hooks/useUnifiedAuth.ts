@@ -157,15 +157,17 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       const profileExists = profileCheck?.[0]?.exists_in_db || false;
       let passwordChanged = profileCheck?.[0]?.password_changed || false;
       const profileCreatedAt = profileCheck?.[0]?.created_at;
+      const hasLoggedIn = profileCheck?.[0]?.has_logged_in || false;
       
       // Legacy accounts created before 2026-03-12 should skip first-access flow
+      // BUT only if they have actually logged in before
       const LEGACY_CUTOFF = new Date('2026-03-12T00:00:00Z');
-      if (profileExists && !passwordChanged && profileCreatedAt && new Date(profileCreatedAt) < LEGACY_CUTOFF) {
-        console.log('[UnifiedAuth] Legacy account pre-cutoff, skipping first-access flow');
+      if (profileExists && !passwordChanged && profileCreatedAt && new Date(profileCreatedAt) < LEGACY_CUTOFF && hasLoggedIn) {
+        console.log('[UnifiedAuth] Legacy account pre-cutoff WITH login history, skipping first-access flow');
         passwordChanged = true;
       }
       
-      console.log('[UnifiedAuth] Profile check:', { profileExists, passwordChanged });
+      console.log('[UnifiedAuth] Profile check:', { profileExists, passwordChanged, hasLoggedIn });
       
       // Case 1: Email not found → go to signup
       if (!profileExists) {
@@ -180,7 +182,37 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
         return;
       }
       
-      // Case 2: First access (no password set) → try auto-login or send link
+      // Case 2a: Has password_changed=true but never logged in → treat as first access
+      // This catches users created by webhook with password=email and password_changed=true incorrectly
+      if (profileExists && passwordChanged && !hasLoggedIn) {
+        console.log('[UnifiedAuth] User never logged in despite password_changed=true, trying auto-login');
+        
+        const { error: autoLoginError } = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password: normalizedEmail,
+        });
+        
+        if (!autoLoginError) {
+          console.log('[UnifiedAuth] Auto-login successful for never-logged-in user');
+          toast.success(t('errors.firstAccessSetPassword'));
+          config.onNeedPasswordChange?.();
+          navigate(`${config.changePasswordRoute}?redirect=${encodeURIComponent(config.defaultRedirect)}`);
+          setState(prev => ({ ...prev, isLoading: false }));
+          return;
+        }
+        
+        // Auto-login failed → password was changed by someone else or different, go to password step
+        console.log('[UnifiedAuth] Auto-login failed for never-logged-in user, going to password step');
+        setState(prev => ({
+          ...prev,
+          step: 'password',
+          verifiedEmail: normalizedEmail,
+          isLoading: false,
+        }));
+        return;
+      }
+      
+      // Case 2b: First access (no password set) → try auto-login or send link
       if (profileExists && !passwordChanged) {
         console.log('[UnifiedAuth] First access flow');
         
