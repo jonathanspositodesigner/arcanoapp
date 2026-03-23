@@ -14,9 +14,19 @@ const ASPECT_RATIO_MAP: Record<string, string> = {
   "3:4":  "vertical portrait 3:4 aspect ratio",
 };
 
-// Configurable costs in BRL
-const IMAGE_COST_BRL = 1.00;
-const VIDEO_COST_BRL = 5.00;
+// Real Google API costs in USD (source: ai.google.dev/gemini-api/docs/pricing - March 2026)
+// Image costs per image (USD)
+const IMAGE_COST_USD: Record<string, number> = {
+  "gemini-2.5-flash-image":           0.039,  // $0.039/image (1290 output tokens @ $30/1M)
+  "gemini-3-pro-image-preview":       0.134,  // ~$0.134/image (higher quality model)
+  "gemini-3.1-flash-image-preview":   0.039,  // same tier as flash image
+};
+
+// Video costs per second (USD) - Veo 3.1 Standard pricing
+const VEO_COST_PER_SECOND_USD = 0.40; // $0.40/second for 720p/1080p
+
+// BRL exchange rate (approximate, configurable)
+const USD_TO_BRL = 5.80;
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -116,13 +126,18 @@ serve(async (req) => {
     }
 
     const userApiKey = keyData.api_key;
-    const costBrl = type === "video" ? VIDEO_COST_BRL : IMAGE_COST_BRL;
+    // Calculate real cost based on model and type
+    let costBrl: number;
 
     if (type === "image") {
       // ========== IMAGE GENERATION ==========
       const isProModel = model === "pro";
       const isNano2Model = model === "nano2";
       const selectedModel = isNano2Model ? "gemini-3.1-flash-image-preview" : isProModel ? "gemini-3-pro-image-preview" : "gemini-2.5-flash-image";
+
+      // Real cost based on selected model
+      const imageUsd = IMAGE_COST_USD[selectedModel] || 0.039;
+      costBrl = Number((imageUsd * USD_TO_BRL).toFixed(2));
 
       // Build parts
       const parts: any[] = [];
@@ -232,6 +247,9 @@ serve(async (req) => {
       const ratio = ["16:9", "9:16"].includes(aspect_ratio) ? aspect_ratio : "16:9";
       const validDurations = [4, 6, 8];
       const duration = validDurations.includes(duration_seconds) ? duration_seconds : 8;
+
+      // Real cost: Veo 3.1 Standard = $0.40/second × duration
+      costBrl = Number((VEO_COST_PER_SECOND_USD * duration * USD_TO_BRL).toFixed(2));
 
       const instance: any = { prompt: prompt.trim() };
       if (start_frame?.base64 && start_frame?.mimeType) {
