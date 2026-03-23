@@ -135,6 +135,10 @@ serve(async (req) => {
       const isNano2Model = model === "nano2";
       const selectedModel = isNano2Model ? "gemini-3.1-flash-image-preview" : isProModel ? "gemini-3-pro-image-preview" : "gemini-2.5-flash-image";
 
+      // Real cost based on selected model
+      const imageUsd = IMAGE_COST_USD[selectedModel] || 0.039;
+      costBrl = Number((imageUsd * USD_TO_BRL).toFixed(2));
+
       // Build parts
       const parts: any[] = [];
       if (reference_images && Array.isArray(reference_images)) {
