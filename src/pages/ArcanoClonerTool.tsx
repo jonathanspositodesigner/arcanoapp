@@ -972,11 +972,14 @@ const ArcanoClonerTool: React.FC = () => {
                         justifyContent: 'center',
                       }}
                     >
-                      <img
+                      <ResilientImage
                         src={outputImage}
                         alt="Resultado"
                         className="w-full h-full object-contain"
-                        draggable={false}
+                        maxRetries={4}
+                        compressOnFailure={true}
+                        locale="pt"
+                        objectFit="contain"
                       />
                     </TransformComponent>
                   </TransformWrapper>
