@@ -96,6 +96,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const [cep, setCep] = useState('');
   const [street, setStreet] = useState('');
   const [number, setNumber] = useState('');
+  const [neighborhood, setNeighborhood] = useState('');
   const [city, setCity] = useState('');
   const [addressState, setAddressState] = useState('');
   const [cepLoading, setCepLoading] = useState(false);
