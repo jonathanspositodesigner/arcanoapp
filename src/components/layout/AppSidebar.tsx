@@ -170,7 +170,21 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
             PromptClub
           </button>
 
-          {/* Gerar Imagem e Gerar Vídeo removidos temporariamente */}
+          {/* Gerar Imagem e Gerar Vídeo */}
+          <button
+            onClick={() => handleNavAndClose("/gerar-imagem")}
+            className="w-full flex items-center text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+          >
+            <ImagePlus className="h-3.5 w-3.5 mr-1.5" />
+            Gerar Imagem
+          </button>
+          <button
+            onClick={() => handleNavAndClose("/gerar-video")}
+            className="w-full flex items-center text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+          >
+            <Video className="h-3.5 w-3.5 mr-1.5" />
+            Gerar Vídeo
+          </button>
 
           {/* Sites de IA - Hidden for now, links preserved in externalLinks array above */}
 

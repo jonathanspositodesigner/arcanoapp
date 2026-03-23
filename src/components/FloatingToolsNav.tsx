@@ -25,8 +25,8 @@ const excludedPaths = [
   "/mudar-pose",
   "/forja-selos-3d",
   "/ferramenta-ia-artes",
-  // "/gerar-imagem", // temporariamente removido
-  // "/gerar-video", // temporariamente removido
+  "/gerar-imagem",
+  "/gerar-video",
   // Landing pages
   "/planos-upscaler-arcano",
   "/planos-forja-selos-3d",
