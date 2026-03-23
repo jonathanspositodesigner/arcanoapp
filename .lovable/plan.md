@@ -1,60 +1,60 @@
 
 
-# Plano: Remover CreditCardForm e usar checkout hospedado para assinaturas
+# Plano: Corrigir fluxo de login para clientes que nunca definiram senha
 
-## Problema
-O CreditCardForm coleta dados do cartão no nosso modal, causando erros de validação. O usuário quer que dados do cartão sejam preenchidos na página do Pagar.me (checkout hospedado), e que no nosso modal só colete dados pessoais (nome, CPF, celular, endereço).
+## Diagnóstico
 
-## Limitação técnica
-O Pagar.me não oferece checkout hospedado para `/subscriptions`. A solução é usar o checkout hospedado para a **primeira cobrança** e depois criar a assinatura com o `card_id` da cobrança paga.
+O cliente `assessoriaraybelmonte@gmail.com`:
+- Conta criada em Dez/2025 pelo webhook (senha = email)
+- `password_changed = true` no perfil (setado incorretamente pelo webhook)
+- `last_sign_in_at = NULL` no auth — **nunca fez login**
+- Quando tenta fazer login, vai direto para a tela de senha, digita algo errado e recebe "Email ou senha incorretos"
+- O cliente interpreta isso como "cadastro não encontrado"
+
+**Causa raiz**: O webhook cria o usuário com `password = email` e marca `password_changed = true`. Quando o usuário tenta logar depois, ele não sabe que a senha é o próprio email. O sistema pula o fluxo de "primeiro acesso" porque:
+1. `password_changed = true` (setado incorretamente)
+2. Conta é anterior a 2026-03-12 (cutoff de legacy), que auto-fixa `password_changed = true`
+
+Resultado: o usuário fica preso na tela de senha sem saber qual é.
 
 ## Correções
 
-### 1. Remover CreditCardForm do fluxo de assinaturas (Planos2.tsx)
-Quando o usuário escolhe Cartão de Crédito para um plano de assinatura, em vez de abrir o CreditCardForm, redirecionar para o checkout hospedado do Pagar.me (mesma lógica do PIX/créditos avulsos via `create-pagarme-checkout`).
+### 1. Adicionar verificação de `last_sign_in_at` no `useUnifiedAuth`
 
-O `handlePaymentMethodSelected` para subscription + CREDIT_CARD passa a funcionar igual ao fluxo de créditos: monta o body com dados do perfil e redireciona pro checkout hospedado.
+Quando o perfil existe com `password_changed = true` mas o usuário **nunca fez login** (`last_sign_in_at = null` no auth.users), tratar como primeiro acesso:
+- Tentar auto-login com `email como senha` (a senha padrão do webhook)
+- Se funcionar: redirecionar para troca de senha obrigatória
+- Se falhar: mostrar tela de senha normalmente
 
-### 2. Adicionar campos de endereço ao PreCheckoutModal
-Para usuários sem perfil completo (que abrem o PreCheckoutModal), adicionar campos de endereço (CEP com busca ViaCEP, Rua+Número, Cidade, Estado) ao formulário existente que já coleta nome, email, CPF e celular.
+Para isso, criar uma nova RPC `check_user_login_history` (SECURITY DEFINER) que retorna se o user já fez login alguma vez, consultando `auth.users.last_sign_in_at`.
 
-Os dados de endereço são enviados junto no payload para `create-pagarme-checkout`, que já suporta `user_address`.
+### 2. Atualizar `check_profile_exists` para retornar `has_logged_in`
 
-### 3. Criar assinatura recorrente no webhook após primeira cobrança
-No `webhook-pagarme`, quando detectar que o produto pago é do tipo `subscription` e a cobrança veio de um checkout hospedado (sem `subscription_id`):
-1. Extrair o `card_id` da charge paga
-2. Buscar dados do cliente (endereço, CPF, etc.) da ordem
-3. Criar a assinatura via API `/subscriptions` do Pagar.me usando `card.card_id` + `billing_address`, com `start_at` na data da próxima cobrança (30 dias ou 1 ano depois)
-4. Salvar o `subscription_id` na ordem
+Adicionar campo `has_logged_in` no retorno da RPC, que consulta `auth.users.last_sign_in_at IS NOT NULL`. Assim o frontend sabe se a pessoa realmente já acessou a plataforma.
 
-Assim a primeira cobrança é via checkout hospedado (usuário preenche cartão lá) e as seguintes são automáticas via assinatura real.
-
-### 4. Atualizar verificação de perfil completo (Planos2.tsx)
-Na função `handleSubscriptionPurchase`, incluir endereço na validação de perfil completo. Se o perfil não tiver endereço, abrir PreCheckoutModal (que agora coleta endereço).
-
-Para o fluxo direto (perfil completo), enviar o endereço do perfil no payload do checkout.
-
-## Fluxo final
+### 3. Ajustar o fluxo no `useUnifiedAuth.checkEmail`
 
 ```text
-Usuário clica "Assinar" (qualquer plano)
-    ↓
-Tem perfil completo (nome+CPF+cel+endereço)?
-    ├── NÃO → PreCheckoutModal (coleta tudo incluindo endereço)
-    │         → Escolhe PIX ou Cartão → Vai pro checkout hospedado Pagar.me
-    │
-    └── SIM → PaymentMethodModal (PIX ou Cartão)
-              → Ambos vão pro checkout hospedado Pagar.me
-              → Usuário preenche cartão NA PÁGINA DO PAGAR.ME
-              → Pagamento confirmado → Webhook cria subscription p/ recorrência
+Email encontrado + password_changed + has_logged_in = false
+  → Tentar auto-login (senha = email)
+  → Se ok: redirecionar para troca de senha
+  → Se falhar: mostrar tela de senha com hint "Sua senha inicial é seu email"
 ```
+
+### 4. Ajustar o mesmo fluxo no `ArcanoClonerAuthModal`
+
+Mesma lógica do item 3 para o modal do Arcano Cloner.
+
+### 5. Corrigir `complete-purchase-onboarding` para não setar `password_changed = true`
+
+Quando a edge function cria ou atualiza o perfil durante o onboarding pós-compra, ela deve setar `password_changed = true` **apenas** quando o usuário efetivamente define uma senha naquele momento. Atualmente ela sempre seta `true`.
 
 ## Arquivos modificados
 
-| Arquivo | Alteração |
+| Arquivo | Alteracao |
 |---|---|
-| `src/pages/Planos2.tsx` | Remover abertura do CreditCardForm; subscription+cartão vai pro checkout hospedado; enviar endereço no payload |
-| `src/components/upscaler/PreCheckoutModal.tsx` | Adicionar campos de endereço (CEP, rua, número, cidade, estado) |
-| `supabase/functions/webhook-pagarme/index.ts` | Após pagamento de produto subscription via checkout, criar assinatura com card_id |
-| `src/components/checkout/CreditCardForm.tsx` | Manter arquivo (pode ser usado em outros lugares), mas remover do fluxo de Planos2 |
+| Migration SQL | Atualizar `check_profile_exists` para retornar `has_logged_in` via `auth.users.last_sign_in_at` |
+| `src/hooks/useUnifiedAuth.ts` | Usar `has_logged_in` para detectar primeiro acesso real e tentar auto-login |
+| `src/components/arcano-cloner/ArcanoClonerAuthModal.tsx` | Mesma logica de primeiro acesso |
+| `supabase/functions/complete-purchase-onboarding/index.ts` | Setar `password_changed` corretamente |
 
