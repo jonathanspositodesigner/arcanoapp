@@ -130,6 +130,7 @@ export function useJobStatusSync({
           processUpdate({
             status: update.status,
             output_url: update.outputUrl,
+            thumbnail_url: update.thumbnailUrl,
             error_message: update.errorMessage,
             position: update.position,
           }, 'polling');
