@@ -856,12 +856,17 @@ async function handleFinish(req: Request): Promise<Response> {
       }
     }
     
-    // Processar próximo da fila
-    try {
-      await handleProcessNext();
-    } catch (e) {
-      console.error('[QueueManager] Error processing next:', e);
-    }
+    // Processar próximo da fila (async, don't block response)
+    // Use fire-and-forget pattern to reduce webhook response time
+    const processNextUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/process-next`;
+    fetch(processNextUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      },
+      body: JSON.stringify({}),
+    }).catch(e => console.error('[QueueManager] Error triggering process-next:', e));
     
     return new Response(JSON.stringify({
       success: true,
