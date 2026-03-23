@@ -14,9 +14,19 @@ const ASPECT_RATIO_MAP: Record<string, string> = {
   "3:4":  "vertical portrait 3:4 aspect ratio",
 };
 
-// Configurable costs in BRL
-const IMAGE_COST_BRL = 1.00;
-const VIDEO_COST_BRL = 5.00;
+// Real Google API costs in USD (source: ai.google.dev/gemini-api/docs/pricing - March 2026)
+// Image costs per image (USD)
+const IMAGE_COST_USD: Record<string, number> = {
+  "gemini-2.5-flash-image":           0.039,  // $0.039/image (1290 output tokens @ $30/1M)
+  "gemini-3-pro-image-preview":       0.134,  // ~$0.134/image (higher quality model)
+  "gemini-3.1-flash-image-preview":   0.039,  // same tier as flash image
+};
+
+// Video costs per second (USD) - Veo 3.1 Standard pricing
+const VEO_COST_PER_SECOND_USD = 0.40; // $0.40/second for 720p/1080p
+
+// BRL exchange rate (approximate, configurable)
+const USD_TO_BRL = 5.80;
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
