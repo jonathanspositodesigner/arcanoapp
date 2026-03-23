@@ -19,6 +19,10 @@ interface ResilientImageProps {
   onDownloadClick?: () => void;
   locale?: 'pt' | 'es';
   objectFit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
+  loading?: 'eager' | 'lazy';
+  fetchPriority?: 'high' | 'low' | 'auto';
+  width?: number | string;
+  height?: number | string;
 }
 
 /**
