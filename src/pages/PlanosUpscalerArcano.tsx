@@ -647,7 +647,11 @@ const PlanosUpscalerArcano = () => {
               Melhorado com o Upscaler Arcano
             </h2>
             <Suspense fallback={<div className="h-screen bg-white/5 animate-pulse" />}>
-              <ScrollDrivenGallery items={isMobile ? galleryItemsMobile : galleryItemsDesktop} />
+              {isMobile ? (
+                <MobileBeforeAfterGallery items={galleryItemsMobile} />
+              ) : (
+                <ScrollDrivenGallery items={galleryItemsDesktop} />
+              )}
             </Suspense>
           </div>
           </LazySection>
