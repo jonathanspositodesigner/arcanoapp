@@ -587,6 +587,7 @@ const GerarVideoTool = () => {
           onClose={() => setShowNoCreditsModal(false)}
           reason={noCreditsReason}
         />
+        <GoogleApiKeyModal open={showApiKeyModal} onOpenChange={setShowApiKeyModal} />
       </div>
     </AppLayout>
   );
