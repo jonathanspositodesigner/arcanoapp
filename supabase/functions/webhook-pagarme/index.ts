@@ -880,6 +880,56 @@ serve(async (req) => {
             console.log(`   ├─ ℹ️ Bundle: acesso extra já existente: ${extra.pack_slug}`)
           }
         }
+
+        // === BÔNUS VITALÍCIO UPSCALER ARCANO: 10.000 créditos + gerar-imagem/gerar-video ===
+        if (product.slug === 'upscaller-arcano-vitalicio') {
+          console.log(`   ├─ 🎁 Bônus vitalício Upscaler Arcano: +10.000 créditos + image/video generation`)
+          
+          // 1. Add 10,000 lifetime credits
+          const { error: bonusCreditsError } = await supabase.rpc('add_lifetime_credits', {
+            _user_id: userId,
+            _amount: 10000,
+            _description: 'Bônus Upscaler Arcano Vitalício: 10.000 créditos para NanoBanana e Veo 3'
+          })
+          if (bonusCreditsError) {
+            console.error(`   ├─ ❌ Erro ao adicionar créditos bônus:`, bonusCreditsError)
+          } else {
+            console.log(`   ├─ ✅ +10.000 créditos bônus adicionados`)
+          }
+
+          // 2. Enable image/video generation in planos2_subscriptions
+          const { data: existingSub } = await supabase
+            .from('planos2_subscriptions')
+            .select('id, has_image_generation, has_video_generation')
+            .eq('user_id', userId)
+            .maybeSingle()
+
+          if (existingSub) {
+            await supabase
+              .from('planos2_subscriptions')
+              .update({
+                has_image_generation: true,
+                has_video_generation: true,
+                updated_at: new Date().toISOString()
+              })
+              .eq('user_id', userId)
+            console.log(`   ├─ ✅ Ferramentas gerar-imagem e gerar-video habilitadas`)
+          } else {
+            // Create subscription entry if none exists
+            await supabase.from('planos2_subscriptions').insert({
+              user_id: userId,
+              plan_slug: 'free',
+              is_active: true,
+              credits_per_month: 0,
+              daily_prompt_limit: null,
+              has_image_generation: true,
+              has_video_generation: true,
+              cost_multiplier: 1.0,
+              expires_at: null
+            })
+            console.log(`   ├─ ✅ Subscription criada com image/video generation habilitado`)
+          }
+        }
       }
 
       if (product.type === 'credits' && product.credits_amount > 0) {
@@ -1335,6 +1385,34 @@ serve(async (req) => {
               .eq('pack_slug', extraSlug)
             console.log(`   ├─ ✅ Bundle: acesso extra revogado: ${extraSlug}`)
           }
+        }
+
+        // === REFUND: Revogar bônus vitalício Upscaler Arcano ===
+        if (order.user_id && product.slug === 'upscaller-arcano-vitalicio') {
+          console.log(`   ├─ 📋 Revogando bônus vitalício Upscaler Arcano...`)
+          
+          // Revoke 10,000 lifetime credits
+          const { error: revokeError } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
+            _user_id: order.user_id,
+            _amount: 10000,
+            _description: 'Reembolso: revogação dos 10.000 créditos bônus Upscaler Arcano Vitalício'
+          })
+          if (revokeError) {
+            console.error(`   ├─ ❌ Erro ao revogar créditos bônus:`, revokeError)
+          } else {
+            console.log(`   ├─ ✅ 10.000 créditos bônus revogados`)
+          }
+
+          // Disable image/video generation
+          await supabase
+            .from('planos2_subscriptions')
+            .update({
+              has_image_generation: false,
+              has_video_generation: false,
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', order.user_id)
+          console.log(`   ├─ ✅ Ferramentas gerar-imagem e gerar-video desabilitadas`)
         }
 
         if (order.user_id && product.type === 'credits' && product.credits_amount > 0) {
