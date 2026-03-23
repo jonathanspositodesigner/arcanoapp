@@ -748,9 +748,6 @@ async function handleProcessNext(): Promise<Response> {
 
 async function handleFinish(req: Request): Promise<Response> {
   try {
-    // Limpeza oportunística: qualquer finish limpa jobs presos de todos
-    await cleanupStaleJobs();
-    
     const { table, jobId, status, outputUrl, errorMessage, taskId, rhCost, webhookPayload } = await req.json();
     
     if (!table || !jobId) {
@@ -762,16 +759,24 @@ async function handleFinish(req: Request): Promise<Response> {
     
     console.log(`[QueueManager] /finish: ${table}/${jobId} status=${status}`);
     
-    // Buscar dados do job
+    // Buscar dados do job INCLUDING current status for idempotency check
     const { data: job } = await supabase
       .from(table)
-      .select('user_id, user_credit_cost, credits_charged, credits_refunded')
+      .select('user_id, user_credit_cost, credits_charged, credits_refunded, status')
       .eq('id', jobId)
       .maybeSingle();
     
     if (!job) {
       return new Response(JSON.stringify({ error: 'Job not found' }), {
         status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // IDEMPOTENCY: If job is already terminal, return success without side effects
+    if (['completed', 'failed', 'cancelled'].includes(job.status)) {
+      console.log(`[QueueManager] /finish: Job ${jobId} already terminal (${job.status}), skipping duplicate`);
+      return new Response(JSON.stringify({ success: true, skipped: true, reason: 'already_terminal' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
