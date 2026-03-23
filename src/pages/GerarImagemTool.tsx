@@ -147,14 +147,6 @@ const GerarImagemTool = () => {
     setIsGenerating(true);
 
     try {
-      const freshCredits = await checkBalance();
-      if (freshCredits < currentCreditCost) {
-        setNoCreditsReason('insufficient');
-        setShowNoCreditsModal(true);
-        setIsGenerating(false);
-        return;
-      }
-
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
 
@@ -169,42 +161,84 @@ const GerarImagemTool = () => {
         mimeType: img.mimeType,
       }));
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify({
-          prompt: prompt.trim(),
-          model,
-          aspect_ratio: aspectRatio,
-          reference_images: refImgs.length > 0 ? refImgs : undefined,
-        }),
-      });
+      // Use user's own key if available
+      if (hasKey) {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-with-user-key`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            type: 'image',
+            prompt: prompt.trim(),
+            model,
+            aspect_ratio: aspectRatio,
+            reference_images: refImgs.length > 0 ? refImgs : undefined,
+          }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!response.ok || data.error) {
-        if (data.error === 'INSUFFICIENT_CREDITS') {
+        if (!response.ok || data.error) {
+          toast.error(data.error || 'Erro ao gerar imagem');
+          setIsGenerating(false);
+          return;
+        }
+
+        setResultUrl(data.output_url);
+        setResultBase64(null);
+        setResultMimeType(data.mime_type || 'image/png');
+        await refetchApiKey();
+        toast.success('Imagem gerada com sucesso! (usando sua chave API)');
+      } else {
+        // Standard flow with platform credits
+        const freshCredits = await checkBalance();
+        if (freshCredits < currentCreditCost) {
           setNoCreditsReason('insufficient');
           setShowNoCreditsModal(true);
-        } else {
-          toast.error(data.error || 'Erro ao gerar imagem');
-          if (data.refunded) {
-            await refetchCredits();
-          }
+          setIsGenerating(false);
+          return;
         }
-        setIsGenerating(false);
-        return;
-      }
 
-      setResultUrl(data.output_url);
-      setResultBase64(null);
-      setResultMimeType(data.mime_type || 'image/png');
-      await refetchCredits();
-      toast.success('Imagem gerada com sucesso!');
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            prompt: prompt.trim(),
+            model,
+            aspect_ratio: aspectRatio,
+            reference_images: refImgs.length > 0 ? refImgs : undefined,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+          if (data.error === 'INSUFFICIENT_CREDITS') {
+            setNoCreditsReason('insufficient');
+            setShowNoCreditsModal(true);
+          } else {
+            toast.error(data.error || 'Erro ao gerar imagem');
+            if (data.refunded) {
+              await refetchCredits();
+            }
+          }
+          setIsGenerating(false);
+          return;
+        }
+
+        setResultUrl(data.output_url);
+        setResultBase64(null);
+        setResultMimeType(data.mime_type || 'image/png');
+        await refetchCredits();
+        toast.success('Imagem gerada com sucesso!');
+      }
     } catch (err) {
       console.error('[GerarImagem] Error:', err);
       toast.error('Erro ao gerar imagem');
