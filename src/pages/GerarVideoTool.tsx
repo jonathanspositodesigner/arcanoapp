@@ -37,6 +37,8 @@ const GerarVideoTool = () => {
   const { isPlanos2User, hasVideoGeneration, costMultiplier } = useAuth();
   
   const { getCreditCost } = useAIToolSettings();
+  const { hasKey, refetch: refetchApiKey } = useGoogleApiKey();
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
 
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState<string>('16:9');
