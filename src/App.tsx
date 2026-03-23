@@ -347,9 +347,8 @@ const AppContent = () => {
            <Route path="/force-update" element={<ForceUpdate />} />
            <Route path="/resgatar-creditos" element={<ResgatarCreditos />} />
            <Route path="/teste-gratis" element={<TesteGratis />} />
-            {/* Temporariamente removidos */}
-            {/* <Route path="/gerar-imagem" element={<GerarImagemTool />} /> */}
-            {/* <Route path="/gerar-video" element={<GerarVideoTool />} /> */}
+             <Route path="/gerar-imagem" element={<GerarImagemTool />} />
+             <Route path="/gerar-video" element={<GerarVideoTool />} />
             <Route path="/planos-arcanocloner" element={<PlanosArcanoCloner />} />
             <Route path="/arcanocloner-teste" element={<ArcanoClonerTeste />} />
             <Route path="/testecloner" element={<TesteCloner />} />
