@@ -91,6 +91,7 @@ export function useJobStatusSync({
       const update: JobUpdate = {
         status,
         outputUrl: data.output_url,
+        thumbnailUrl: data.thumbnail_url,
         errorMessage: data.error_message,
         position: data.position,
       };
@@ -129,6 +130,7 @@ export function useJobStatusSync({
           processUpdate({
             status: update.status,
             output_url: update.outputUrl,
+            thumbnail_url: update.thumbnailUrl,
             error_message: update.errorMessage,
             position: update.position,
           }, 'polling');

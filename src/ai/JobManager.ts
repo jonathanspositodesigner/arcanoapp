@@ -49,6 +49,7 @@ export interface CancelResult {
 export interface JobUpdate {
   status: JobStatus;
   outputUrl?: string;
+  thumbnailUrl?: string;
   errorMessage?: string;
   position?: number;
   currentStep?: string;
@@ -521,7 +522,7 @@ export async function queryJobStatus(
   try {
     const { data, error } = await supabase
       .from(tableName as any)
-      .select('status, output_url, error_message, position, current_step')
+      .select('status, output_url, thumbnail_url, error_message, position, current_step')
       .eq('id', jobId)
       .maybeSingle();
     
@@ -534,6 +535,7 @@ export async function queryJobStatus(
     return {
       status: record.status,
       outputUrl: record.output_url,
+      thumbnailUrl: record.thumbnail_url,
       errorMessage: record.error_message,
       position: record.position,
       currentStep: record.current_step,

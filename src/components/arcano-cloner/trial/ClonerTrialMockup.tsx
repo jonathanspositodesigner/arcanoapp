@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Upload, ImageIcon, Loader2, ZoomIn, ZoomOut } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import { ResilientImage } from '@/components/upscaler/ResilientImage';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import AspectRatioSelector, { AspectRatio } from '@/components/arcano-cloner/AspectRatioSelector';
@@ -90,7 +91,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
                   </button>
                 </div>
                 <TransformComponent wrapperClass="!w-full !h-full" contentClass="!w-full !h-full">
-                  <img src={resultUrl} alt="Resultado" className="w-full h-full object-contain" />
+                  <ResilientImage src={resultUrl} alt="Resultado" className="w-full h-full object-contain" maxRetries={4} compressOnFailure={true} locale="pt" objectFit="contain" />
                 </TransformComponent>
               </>
             )}

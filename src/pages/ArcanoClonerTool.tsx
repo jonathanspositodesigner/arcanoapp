@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { ResilientImage } from '@/components/upscaler/ResilientImage';
 import { useLocation } from 'react-router-dom';
 import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Wand2 } from 'lucide-react';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
@@ -151,7 +152,9 @@ const ArcanoClonerTool: React.FC = () => {
       console.log('[ArcanoCloner] Job status update:', update);
       
       if (update.status === 'completed' && update.outputUrl) {
-        setOutputImage(update.outputUrl);
+        // Prefer thumbnail_url (local Storage) over output_url (external CDN) for preview
+        const previewUrl = update.thumbnailUrl || update.outputUrl;
+        setOutputImage(previewUrl);
         setStatus('completed');
         setProgress(100);
         endSubmit();
@@ -971,11 +974,14 @@ const ArcanoClonerTool: React.FC = () => {
                         justifyContent: 'center',
                       }}
                     >
-                      <img
+                      <ResilientImage
                         src={outputImage}
                         alt="Resultado"
                         className="w-full h-full object-contain"
-                        draggable={false}
+                        maxRetries={4}
+                        compressOnFailure={true}
+                        locale="pt"
+                        objectFit="contain"
                       />
                     </TransformComponent>
                   </TransformWrapper>

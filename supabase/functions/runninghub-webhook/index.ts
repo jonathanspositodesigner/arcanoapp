@@ -126,7 +126,7 @@ serve(async (req) => {
     for (const table of IMAGE_JOB_TABLES) {
       const { data: job, error: lookupError } = await supabase
         .from(table)
-        .select('id, started_at, user_credit_cost')
+        .select('id, started_at, user_credit_cost, status')
         .eq('task_id', taskId)
         .maybeSingle();
 
@@ -138,7 +138,16 @@ serve(async (req) => {
       if (job) {
         jobTable = table;
         jobData = job;
-        console.log(`[Webhook] Found job in ${table}: ${job.id}`);
+        console.log(`[Webhook] Found job in ${table}: ${job.id}, status: ${job.status}`);
+        
+        // IDEMPOTENCY: If job is already terminal, return 200 immediately
+        if (['completed', 'failed', 'cancelled'].includes(job.status)) {
+          console.log(`[Webhook] Job ${job.id} already terminal (${job.status}), skipping duplicate webhook`);
+          return new Response(JSON.stringify({ success: true, message: 'Job already finalized (duplicate webhook ignored)' }), {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
         
         // Enrich with upscaler-specific columns only for upscaler_jobs (fallback logic)
         if (table === 'upscaler_jobs') {
