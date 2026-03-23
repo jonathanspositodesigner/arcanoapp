@@ -38,6 +38,8 @@ const GerarImagemTool = () => {
   const { isPlanos2User, hasImageGeneration, costMultiplier } = useAuth();
   
   const { getCreditCost } = useAIToolSettings();
+  const { hasKey, refetch: refetchApiKey } = useGoogleApiKey();
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
 
   const [prompt, setPrompt] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
