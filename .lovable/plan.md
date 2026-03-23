@@ -1,51 +1,56 @@
 
 
-# Plano: Otimizar performance da página /planos-upscaler-arcano (sem mexer nos pixels)
+# Plano: Otimização PageSpeed da /planos-upscaler-arcano (sem mexer nos pixels/clarity)
 
-Mantendo Facebook Pixel e Microsoft Clarity exatamente como estão.
+## Análise do que é viável vs. não viável
 
-## 1. Lazy load de imagens + dimensões (PlanosUpscalerArcano.tsx)
+**Já está feito (não precisa mexer):**
+- Cache de assets: o `_headers` já tem `/assets/*` com `max-age=31536000, immutable` e `/images/*` com cache de 30 dias. `/sounds/*` não tem regra — adicionar.
+- `PreCheckoutModal` já é `React.lazy` (linha 30)
+- `ScrollDrivenGallery`, `MobileBeforeAfterGallery`, `BeforeAfterGalleryPT` já são lazy (linhas 39-42)
+- `ResilientImage` já suporta `loading`, `fetchPriority`, `width`, `height`
+- Fontes já carregam com preload async (linhas 35-41)
+- Lucide icons já importa individualmente (linha 21)
+- CSS purge do Tailwind já está configurado via `content` no config
 
-- Avatars do hero social proof (linhas 539-541): já têm `width`/`height`, adicionar `loading="lazy"`
-- Avatars da seção de stats (linha 863): adicionar `loading="lazy"`
-- Adicionar `fetchpriority="high"` nas imagens do hero via `ResilientImage`
+**Não vou mexer (por instrução do usuário):**
+- Facebook Pixel e Microsoft Clarity — manter como estão
 
-## 2. Adicionar prop `loading` ao ResilientImage
+**Não é viável sem risco de quebra:**
+- Remover Supabase do bundle — a página usa `supabase` para `fetchToolData` e `usePremiumArtesStatus`
+- CSS code splitting por rota — Vite SPA não suporta CSS splitting automático por rota sem mudança arquitetural significativa
 
-O componente `ResilientImage` renderiza um `<img>` interno sem atributo `loading`. Adicionar prop opcional `loading?: 'eager' | 'lazy'` que é passada ao `<img>`.
+## Correções a implementar
 
-## 3. Lazy load de avatars no SocialProofSectionPT
+### 1. Cache para `/sounds/*` no `_headers`
+Adicionar regra de cache para arquivos de áudio (notification.mp3 sem cache atualmente).
 
-Na `TestimonialCard` (linha 42): adicionar `loading="lazy"` e `width="40" height="40"` no `<img>` do avatar.
+### 2. Viewport meta — permitir zoom (acessibilidade)
+Remover `maximum-scale=1.0, user-scalable=no` do `index.html` — melhora score de Práticas Recomendadas.
 
-## 4. Lazy load do PreCheckoutModal e FullscreenModal
+### 3. Limpar preconnects desnecessários
+- **Remover**: `images.unsplash.com` (não é usado na página)
+- **Remover**: `api.pagar.me` (só usado se o usuário clicar em comprar, preconnect desperdiça conexão)
+- **Manter**: Supabase, Google Fonts
 
-- `PreCheckoutModal` (importado na linha 30): mover para `React.lazy` — só é necessário quando o usuário clica "Comprar"
-- `FullscreenModal` (definido inline nas linhas 68-186): extrair para componente lazy ou renderizar condicionalmente (já é condicional com `modalImages`)
+### 4. Headers de segurança no `_headers`
+Adicionar ao `_headers`:
+- `X-Frame-Options: SAMEORIGIN`
+- `Cross-Origin-Opener-Policy: same-origin`
+- `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload`
 
-## 5. SEO: meta tags específicas para a página
+### 5. Corrigir URL da fonte com 404
+A URL `https://fonts.gstatic.com/s/bebasneue/v14/JTUSjIg69CK48gW7PXooxW5rygbi49c.woff2` pode estar desatualizada. Atualizar o preload para a versão correta consultando o Google Fonts atual.
 
-Adicionar `useEffect` em `PlanosUpscalerArcano` para injetar:
-- `<meta name="robots" content="index, follow">`
-- `<link rel="canonical" href="https://arcanoapp.voxvisual.com.br/planos-upscaler-arcano">`
-- Atualizar `document.title` e meta description com keywords de upscaler
-- Schema.org JSON-LD com os 4 planos de preço
-
-## 6. Otimizar Google Fonts (index.html)
-
-Adicionar `&subset=latin` na URL do Google Fonts para reduzir payload.
-
-## 7. Preconnect para Pagar.me (index.html)
-
-Adicionar `<link rel="preconnect" href="https://api.pagar.me">` para o checkout.
+### 6. FullscreenModal para lazy load
+O `FullscreenModal` (definido inline nas linhas 68-186) é renderizado condicionalmente mas está no bundle principal. Extrair para arquivo separado e usar `React.lazy`.
 
 ## Arquivos modificados
 
 | Arquivo | Alteração |
 |---|---|
-| `index.html` | Adicionar `&subset=latin` nas fontes; preconnect pagar.me |
-| `src/components/upscaler/ResilientImage.tsx` | Adicionar prop `loading` |
-| `src/pages/PlanosUpscalerArcano.tsx` | Lazy load PreCheckoutModal; `loading="lazy"` nos avatars; SEO meta tags + JSON-LD via useEffect |
-| `src/components/upscaler/sections/SocialProofSectionPT.tsx` | `loading="lazy"` + dimensões nos avatars |
-| `src/components/upscaler/HeroBeforeAfterSlider.tsx` | Passar `loading="eager"` ao ResilientImage do hero |
+| `index.html` | Corrigir viewport meta; remover preconnects não usados; atualizar URL preload da fonte |
+| `public/_headers` | Adicionar cache para `/sounds/*`; adicionar headers de segurança globais |
+| `src/components/upscaler/FullscreenModal.tsx` | Extrair componente do PlanosUpscalerArcano |
+| `src/pages/PlanosUpscalerArcano.tsx` | Importar FullscreenModal via React.lazy |
 
