@@ -96,6 +96,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const [cep, setCep] = useState('');
   const [street, setStreet] = useState('');
   const [number, setNumber] = useState('');
+  const [neighborhood, setNeighborhood] = useState('');
   const [city, setCity] = useState('');
   const [addressState, setAddressState] = useState('');
   const [cepLoading, setCepLoading] = useState(false);
@@ -227,7 +228,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     if (!cepDigits || cepDigits.length !== 8) {
       setAddressError('Preencha o CEP');
       valid = false;
-    } else if (!street.trim() || !number.trim() || !city.trim() || !addressState.trim()) {
+    } else if (!street.trim() || !number.trim() || !neighborhood.trim() || !city.trim() || !addressState.trim()) {
       setAddressError('Preencha o endereço completo para continuar');
       valid = false;
     }
@@ -244,6 +245,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       const data = await res.json();
       if (!data.erro) {
         setStreet(data.logradouro || '');
+        setNeighborhood(data.bairro || '');
         setCity(data.localidade || '');
         setAddressState(data.uf || '');
         setAddressError('');
@@ -334,7 +336,8 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       const normalizedEmail = (email || userEmail || '').trim().toLowerCase();
 
       // Envia dados completos para todos os métodos (antifraude)
-      const addressLine = `${street.trim()}, ${number.trim()}`;
+      // Pagar.me line_1 format: "número, rua, bairro"
+      const addressLine1 = `${number.trim()}, ${street.trim()}, ${neighborhood.trim()}`;
       const fullPayload = {
         product_slug: productSlug,
         user_email: normalizedEmail,
@@ -346,7 +349,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         fbp,
         fbc,
         user_address: {
-          line_1: addressLine,
+          line_1: addressLine1,
           zip_code: cep.replace(/\D/g, ''),
           city: city.trim(),
           state: addressState.trim(),
@@ -641,6 +644,14 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     placeholder={cepLoading ? 'Buscando endereço...' : 'Rua / Avenida'}
                     value={street}
                     onChange={(e) => { setStreet(e.target.value); setAddressError(''); }}
+                    disabled={cepLoading}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Bairro"
+                    value={neighborhood}
+                    onChange={(e) => { setNeighborhood(e.target.value); setAddressError(''); }}
                     disabled={cepLoading}
                     className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
                   />
