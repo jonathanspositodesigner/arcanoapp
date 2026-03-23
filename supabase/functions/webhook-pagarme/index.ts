@@ -1326,6 +1326,117 @@ serve(async (req) => {
         console.error(`   ├─ ⚠️ Erro ao salvar cartão: ${cardSaveErr.message}`)
       }
 
+      // 10. Auto-create Pagar.me subscription for subscription products paid via hosted checkout
+      // (No subscription_id means it came from hosted checkout, not from create-pagarme-subscription)
+      if (product.type === 'subscription' && !order.pagarme_subscription_id && paymentMethod === 'credit_card') {
+        try {
+          const chargeData = eventData?.charges?.[0] || eventData
+          const transaction = chargeData?.last_transaction
+          const cardData = transaction?.card
+          const cardId = cardData?.id
+
+          if (cardId) {
+            console.log(`   ├─ 🔄 Criando assinatura recorrente a partir do checkout hospedado...`)
+            
+            const interval = product.billing_period === 'anual' ? 'year' : 'month'
+            const amountInCents = Math.round(Number(product.price) * 100)
+            const customerName = profileName || email.split('@')[0]
+
+            // Calculate start_at for next billing cycle
+            const periodDays = product.billing_period === 'anual' ? 365 : 30
+            const startAt = new Date(Date.now() + periodDays * 24 * 60 * 60 * 1000)
+            const startAtStr = startAt.toISOString()
+
+            // Build billing address from order or profile
+            const billingAddr = {
+              line_1: profileAddressLine || 'Não informado, 0',
+              zip_code: (profileAddressZip || '00000000').replace(/\D/g, ''),
+              city: profileAddressCity || 'Não informada',
+              state: profileAddressState || 'SP',
+              country: profileAddressCountry || 'BR'
+            }
+
+            const phoneForSub = profilePhone || order.user_phone || ''
+            const areaCodeSub = phoneForSub.slice(0, 2) || '11'
+            const phoneNumberSub = phoneForSub.slice(2) || '999999999'
+
+            const subscriptionPayload = {
+              payment_method: 'credit_card',
+              interval: interval,
+              interval_count: 1,
+              billing_type: 'prepaid',
+              minimum_price: amountInCents,
+              start_at: startAtStr,
+              currency: 'BRL',
+              card: {
+                card_id: cardId,
+                billing_address: billingAddr
+              },
+              customer: {
+                name: customerName,
+                email: email,
+                type: 'individual',
+                document: profileCpf || undefined,
+                document_type: profileCpf ? 'CPF' : undefined,
+                phones: {
+                  mobile_phone: {
+                    country_code: '55',
+                    area_code: areaCodeSub,
+                    number: phoneNumberSub
+                  }
+                },
+                address: billingAddr
+              },
+              items: [{
+                description: product.title,
+                quantity: 1,
+                pricing_scheme: { price: amountInCents }
+              }],
+              metadata: {
+                order_id: order.id,
+                product_slug: product.slug
+              }
+            }
+
+            const pagarmeSecretKeyForSub = Deno.env.get('PAGARME_SECRET_KEY')
+            if (pagarmeSecretKeyForSub) {
+              const authHeader = 'Basic ' + btoa(pagarmeSecretKeyForSub + ':')
+              const subResponse = await fetch('https://api.pagar.me/core/v5/subscriptions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+                body: JSON.stringify(subscriptionPayload)
+              })
+
+              const subText = await subResponse.text()
+              if (subResponse.ok) {
+                const subData = JSON.parse(subText)
+                const newSubId = subData.id
+                console.log(`   ├─ ✅ Assinatura recorrente criada: ${newSubId} (start_at: ${startAtStr})`)
+
+                // Save subscription_id to order and planos2_subscriptions
+                await supabase.from('asaas_orders').update({
+                  pagarme_subscription_id: newSubId,
+                  updated_at: new Date().toISOString()
+                }).eq('id', order.id)
+
+                if (userId) {
+                  await supabase.from('planos2_subscriptions').update({
+                    pagarme_subscription_id: newSubId,
+                    updated_at: new Date().toISOString()
+                  }).eq('user_id', userId)
+                }
+              } else {
+                console.error(`   ├─ ❌ Erro ao criar assinatura recorrente: ${subResponse.status} ${subText.slice(0, 500)}`)
+              }
+            }
+          } else {
+            console.log(`   ├─ ⚠️ Sem card_id disponível — assinatura recorrente não criada`)
+          }
+        } catch (subErr: any) {
+          console.error(`   ├─ ❌ Erro ao criar assinatura recorrente (não-crítico): ${subErr.message}`)
+        }
+      }
+
       console.log(`\n✅ [${requestId}] PROCESSAMENTO PAGAR.ME CONCLUÍDO COM SUCESSO`)
     }
 

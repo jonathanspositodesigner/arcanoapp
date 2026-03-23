@@ -93,6 +93,12 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const [emailConfirm, setEmailConfirm] = useState('');
   const [phone, setPhone] = useState('');
   const [cpf, setCpf] = useState('');
+  const [cep, setCep] = useState('');
+  const [street, setStreet] = useState('');
+  const [number, setNumber] = useState('');
+  const [city, setCity] = useState('');
+  const [addressState, setAddressState] = useState('');
+  const [cepLoading, setCepLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'PIX' | 'CREDIT_CARD'>('PIX');
   const [loading, setLoading] = useState(false);
   const { isSubmitting: isFormSubmitting, startSubmit: startFormSubmit, endSubmit: endFormSubmit } = useProcessingButton();
@@ -103,6 +109,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const [emailConfirmError, setEmailConfirmError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [cpfError, setCpfError] = useState('');
+  const [addressError, setAddressError] = useState('');
 
   // One-click state
   const [savedCards, setSavedCards] = useState<SavedCard[]>([]);
@@ -172,7 +179,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
   const validate = () => {
     let valid = true;
-    setNameError(''); setEmailError(''); setEmailConfirmError(''); setPhoneError(''); setCpfError('');
+    setNameError(''); setEmailError(''); setEmailConfirmError(''); setPhoneError(''); setCpfError(''); setAddressError('');
 
     if (!name.trim() || name.trim().length < 3) {
       setNameError('Digite seu nome completo');
@@ -215,7 +222,40 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       valid = false;
     }
 
+    // Endereço obrigatório
+    const cepDigits = cep.replace(/\D/g, '');
+    if (!cepDigits || cepDigits.length !== 8) {
+      setAddressError('Preencha o CEP');
+      valid = false;
+    } else if (!street.trim() || !number.trim() || !city.trim() || !addressState.trim()) {
+      setAddressError('Preencha o endereço completo para continuar');
+      valid = false;
+    }
+
     return valid;
+  };
+
+  const handleCepLookup = async (cepValue: string) => {
+    const digits = cepValue.replace(/\D/g, '');
+    if (digits.length !== 8) return;
+    setCepLoading(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data = await res.json();
+      if (!data.erro) {
+        setStreet(data.logradouro || '');
+        setCity(data.localidade || '');
+        setAddressState(data.uf || '');
+        setAddressError('');
+      }
+    } catch {}
+    setCepLoading(false);
+  };
+
+  const formatCep = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 8);
+    if (digits.length <= 5) return digits;
+    return `${digits.slice(0, 5)}-${digits.slice(5)}`;
   };
 
   const handleOneClickBuy = async () => {
@@ -294,6 +334,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       const normalizedEmail = (email || userEmail || '').trim().toLowerCase();
 
       // Envia dados completos para todos os métodos (antifraude)
+      const addressLine = `${street.trim()}, ${number.trim()}`;
       const fullPayload = {
         product_slug: productSlug,
         user_email: normalizedEmail,
@@ -304,6 +345,13 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
         utm_data: utmData,
         fbp,
         fbc,
+        user_address: {
+          line_1: addressLine,
+          zip_code: cep.replace(/\D/g, ''),
+          city: city.trim(),
+          state: addressState.trim(),
+          country: 'BR'
+        },
       };
 
       // PIX: tenta full primeiro, fallback lightweight se necessário
@@ -559,7 +607,66 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
                 </div>
 
-                {/* Payment Method */}
+                {/* Endereço */}
+                <div className="space-y-2.5">
+                  <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Endereço</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        placeholder="CEP"
+                        value={cep}
+                        onChange={(e) => {
+                          const formatted = formatCep(e.target.value);
+                          setCep(formatted);
+                          setAddressError('');
+                          if (formatted.replace(/\D/g, '').length === 8) handleCepLookup(formatted);
+                        }}
+                        className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Número"
+                        value={number}
+                        onChange={(e) => { setNumber(e.target.value); setAddressError(''); }}
+                        className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                      />
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder={cepLoading ? 'Buscando endereço...' : 'Rua / Avenida'}
+                    value={street}
+                    onChange={(e) => { setStreet(e.target.value); setAddressError(''); }}
+                    disabled={cepLoading}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Cidade"
+                      value={city}
+                      onChange={(e) => { setCity(e.target.value); setAddressError(''); }}
+                      disabled={cepLoading}
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                    />
+                    <input
+                      type="text"
+                      placeholder="UF"
+                      maxLength={2}
+                      value={addressState}
+                      onChange={(e) => { setAddressState(e.target.value.toUpperCase()); setAddressError(''); }}
+                      disabled={cepLoading}
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                    />
+                  </div>
+                  {addressError && <p className="text-red-400 text-xs mt-1">{addressError}</p>}
+                </div>
+
+
                 <div>
                   <label className="text-white/70 text-xs md:text-sm mb-1.5 md:mb-2 block">Forma de pagamento</label>
                   <div className="grid grid-cols-2 gap-2 md:gap-3">
