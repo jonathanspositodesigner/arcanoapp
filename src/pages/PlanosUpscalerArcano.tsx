@@ -823,6 +823,27 @@ const PlanosUpscalerArcano = () => {
                         </li>
                       ))}
                     </ul>
+
+                    {plan.isLifetime && (
+                      <div className="mt-4 pt-4 border-t border-fuchsia-500/20">
+                        <div className="flex items-center gap-2 mb-2.5">
+                          <span className="text-sm">🎁</span>
+                          <span className="text-xs lg:text-sm font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+                            BÔNUS EXCLUSIVO
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-2 text-xs lg:text-sm bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-xl px-3 py-2.5 border border-amber-500/20">
+                          <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="text-amber-300 font-semibold">10.000 créditos</span>
+                            <span className="text-white/60"> para usar no </span>
+                            <span className="text-fuchsia-400 font-semibold">NanoBanana</span>
+                            <span className="text-white/60"> e </span>
+                            <span className="text-fuchsia-400 font-semibold">Veo 3</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}
