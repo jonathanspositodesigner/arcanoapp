@@ -40,6 +40,7 @@ const BeforeAfterGalleryPT = lazy(() => import("@/components/upscaler/sections/B
 const ExpandingGallery = lazy(() => import("@/components/combo-artes/ExpandingGallery"));
 const ScrollDrivenGallery = lazy(() => import("@/components/upscaler/ScrollDrivenGallery"));
 const MobileBeforeAfterGallery = lazy(() => import("@/components/upscaler/MobileBeforeAfterGallery"));
+const FullscreenModal = lazy(() => import("@/components/upscaler/FullscreenModal"));
 
 // Desktop gallery items
 const galleryItemsDesktop = [
