@@ -179,7 +179,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
   const validate = () => {
     let valid = true;
-    setNameError(''); setEmailError(''); setEmailConfirmError(''); setPhoneError(''); setCpfError('');
+    setNameError(''); setEmailError(''); setEmailConfirmError(''); setPhoneError(''); setCpfError(''); setAddressError('');
 
     if (!name.trim() || name.trim().length < 3) {
       setNameError('Digite seu nome completo');
@@ -222,7 +222,40 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
       valid = false;
     }
 
+    // Endereço obrigatório
+    const cepDigits = cep.replace(/\D/g, '');
+    if (!cepDigits || cepDigits.length !== 8) {
+      setAddressError('Preencha o CEP');
+      valid = false;
+    } else if (!street.trim() || !number.trim() || !city.trim() || !addressState.trim()) {
+      setAddressError('Preencha o endereço completo para continuar');
+      valid = false;
+    }
+
     return valid;
+  };
+
+  const handleCepLookup = async (cepValue: string) => {
+    const digits = cepValue.replace(/\D/g, '');
+    if (digits.length !== 8) return;
+    setCepLoading(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data = await res.json();
+      if (!data.erro) {
+        setStreet(data.logradouro || '');
+        setCity(data.localidade || '');
+        setAddressState(data.uf || '');
+        setAddressError('');
+      }
+    } catch {}
+    setCepLoading(false);
+  };
+
+  const formatCep = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 8);
+    if (digits.length <= 5) return digits;
+    return `${digits.slice(0, 5)}-${digits.slice(5)}`;
   };
 
   const handleOneClickBuy = async () => {
