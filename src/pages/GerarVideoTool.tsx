@@ -180,14 +180,6 @@ const GerarVideoTool = () => {
     setQueuePosition(0);
 
     try {
-      const freshCredits = await checkBalance();
-      if (freshCredits < creditCost) {
-        setNoCreditsReason('insufficient');
-        setShowNoCreditsModal(true);
-        setIsGenerating(false);
-        return;
-      }
-
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
 
@@ -197,50 +189,87 @@ const GerarVideoTool = () => {
         return;
       }
 
-      const body: any = {
+      const bodyData: any = {
         prompt: prompt.trim(),
         aspect_ratio: aspectRatio,
         duration_seconds: duration,
       };
 
       if (startFrame) {
-        body.start_frame = { base64: startFrame.base64, mimeType: startFrame.mimeType };
+        bodyData.start_frame = { base64: startFrame.base64, mimeType: startFrame.mimeType };
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify(body),
-      });
+      // Use user's own key if available
+      if (hasKey) {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-with-user-key`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ ...bodyData, type: 'video' }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!response.ok) {
-        if (data.error === 'INSUFFICIENT_CREDITS') {
-          setNoCreditsReason('insufficient');
-          setShowNoCreditsModal(true);
-        } else {
+        if (!response.ok || data.error) {
           toast.error(data.error || 'Erro ao iniciar geração');
           setErrorMessage(data.error || 'Erro ao iniciar geração');
+          setIsGenerating(false);
+          return;
         }
-        setIsGenerating(false);
-        return;
-      }
 
-      setJobId(data.job_id);
-      setIsPolling(true);
-      pollingStartRef.current = Date.now();
-
-      if (data.queued) {
-        setIsQueued(true);
-        setQueuePosition(data.position || 1);
-        toast.info(`Você está na fila (posição ${data.position || 1}). Aguarde...`);
+        setJobId(data.job_id);
+        setIsPolling(true);
+        pollingStartRef.current = Date.now();
+        await refetchApiKey();
+        toast.success('Geração de vídeo iniciada! (usando sua chave API)');
       } else {
-        toast.success('Geração de vídeo iniciada! Aguarde...');
+        // Standard flow with platform credits
+        const freshCredits = await checkBalance();
+        if (freshCredits < creditCost) {
+          setNoCreditsReason('insufficient');
+          setShowNoCreditsModal(true);
+          setIsGenerating(false);
+          return;
+        }
+
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify(bodyData),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (data.error === 'INSUFFICIENT_CREDITS') {
+            setNoCreditsReason('insufficient');
+            setShowNoCreditsModal(true);
+          } else {
+            toast.error(data.error || 'Erro ao iniciar geração');
+            setErrorMessage(data.error || 'Erro ao iniciar geração');
+          }
+          setIsGenerating(false);
+          return;
+        }
+
+        setJobId(data.job_id);
+        setIsPolling(true);
+        pollingStartRef.current = Date.now();
+
+        if (data.queued) {
+          setIsQueued(true);
+          setQueuePosition(data.position || 1);
+          toast.info(`Você está na fila (posição ${data.position || 1}). Aguarde...`);
+        } else {
+          toast.success('Geração de vídeo iniciada! Aguarde...');
+        }
       }
     } catch (err) {
       console.error('[GerarVideo] Error:', err);
