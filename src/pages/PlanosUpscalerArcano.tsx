@@ -39,6 +39,7 @@ const upscalerHeroDepoisMobile = "/images/upscaler-hero-depois-mobile.webp";
 const BeforeAfterGalleryPT = lazy(() => import("@/components/upscaler/sections/BeforeAfterGalleryPT"));
 const ExpandingGallery = lazy(() => import("@/components/combo-artes/ExpandingGallery"));
 const ScrollDrivenGallery = lazy(() => import("@/components/upscaler/ScrollDrivenGallery"));
+const MobileBeforeAfterGallery = lazy(() => import("@/components/upscaler/MobileBeforeAfterGallery"));
 
 // Desktop gallery items
 const galleryItemsDesktop = [
