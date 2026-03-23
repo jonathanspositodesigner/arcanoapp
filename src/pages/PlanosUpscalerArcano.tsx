@@ -27,7 +27,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton, LazySocialProofWrapper } from "@/components/upscaler";
 import { LazySection } from "@/components/combo-artes/LazySection";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
-import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
+const PreCheckoutModal = lazy(() => import("@/components/upscaler/PreCheckoutModal"));
 
 // Hero images - Desktop uses high-res, Mobile uses optimized 600x900 versions
 const upscalerHeroAntesDesktop = "/images/upscaler-hero-antes.webp";
@@ -252,6 +252,85 @@ const PlanosUpscalerArcano = () => {
   useEffect(() => {
     const timer = setTimeout(() => preWarmCheckout(), 3000);
     return () => clearTimeout(timer);
+  }, []);
+
+  // SEO meta tags for this specific page
+  useEffect(() => {
+    document.title = "Upscaler Arcano — Melhore Qualquer Imagem com IA em 1 Clique | ArcanoApp";
+    
+    const metaTags: Record<string, string> = {
+      'description': 'Transforme fotos desfocadas em imagens 4K profissionais com IA. Mais de 3.200 fotógrafos, designers e criadores já usam. Acesso vitalício por R$99,90.',
+      'robots': 'index, follow',
+    };
+    const ogTags: Record<string, string> = {
+      'og:title': 'Upscaler Arcano — Melhore Qualquer Imagem com IA',
+      'og:description': 'De amador para profissional em 1 clique. Upscale até 4K, remoção de fundo e muito mais.',
+      'og:type': 'website',
+      'og:url': 'https://arcanoapp.voxvisual.com.br/planos-upscaler-arcano',
+      'twitter:card': 'summary_large_image',
+      'twitter:title': 'Upscaler Arcano — Melhore Qualquer Imagem com IA',
+    };
+
+    const createdElements: HTMLElement[] = [];
+
+    // Set name-based meta tags
+    Object.entries(metaTags).forEach(([name, content]) => {
+      let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement;
+      if (!el) {
+        el = document.createElement('meta');
+        el.name = name;
+        document.head.appendChild(el);
+        createdElements.push(el);
+      }
+      el.content = content;
+    });
+
+    // Set property-based meta tags (OG, Twitter)
+    Object.entries(ogTags).forEach(([property, content]) => {
+      let el = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement;
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute('property', property);
+        document.head.appendChild(el);
+        createdElements.push(el);
+      }
+      el.content = content;
+    });
+
+    // Canonical link
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+      createdElements.push(canonical);
+    }
+    canonical.href = 'https://arcanoapp.voxvisual.com.br/planos-upscaler-arcano';
+
+    // Schema.org JSON-LD
+    const jsonLd = document.createElement('script');
+    jsonLd.type = 'application/ld+json';
+    jsonLd.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": "Upscaler Arcano",
+      "description": "Ferramenta de IA para melhorar qualidade de imagens até 4K",
+      "brand": { "@type": "Brand", "name": "ArcanoApp" },
+      "offers": [
+        { "@type": "Offer", "name": "Plano Starter", "price": "24.90", "priceCurrency": "BRL" },
+        { "@type": "Offer", "name": "Plano Pro", "price": "37.00", "priceCurrency": "BRL" },
+        { "@type": "Offer", "name": "Plano Ultimate", "price": "57.00", "priceCurrency": "BRL" },
+        { "@type": "Offer", "name": "Plano Vitalício", "price": "99.90", "priceCurrency": "BRL" },
+      ],
+      "aggregateRating": { "@type": "AggregateRating", "ratingValue": "5", "reviewCount": "3200" }
+    });
+    document.head.appendChild(jsonLd);
+    createdElements.push(jsonLd);
+
+    return () => {
+      createdElements.forEach(el => el.remove());
+      document.title = "ArcanoApp - Primeira Plataforma de IA para Designers do Brasil";
+    };
   }, []);
 
   useEffect(() => {
@@ -536,9 +615,9 @@ const PlanosUpscalerArcano = () => {
               <FadeIn delay={0} duration={400}>
                 <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-5 md:mb-6 scale-[0.84] md:scale-100 origin-center">
                   <div className="flex -space-x-2">
-                    <img src="/images/social-proof-1.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
-                    <img src="/images/social-proof-2.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
-                    <img src="/images/social-proof-3.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                    <img src="/images/social-proof-1.webp" alt="" width="24" height="24" loading="lazy" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                    <img src="/images/social-proof-2.webp" alt="" width="24" height="24" loading="lazy" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                    <img src="/images/social-proof-3.webp" alt="" width="24" height="24" loading="lazy" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                   </div>
                   <span className="text-white/80 text-xs font-medium">+3.200 profissionais já estão usando</span>
                 </div>
@@ -860,7 +939,7 @@ const PlanosUpscalerArcano = () => {
                 <div className="flex items-center gap-3 sm:flex-1 min-w-0">
                   <div className="flex -space-x-2 shrink-0">
                     {["/images/social-proof-1.webp", "/images/social-proof-2.webp", "/images/social-proof-3.webp"].map((src, i) => (
-                      <img key={i} src={src} alt="" width="32" height="32" decoding="async" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-[#0d0b1a] object-cover" />
+                      <img key={i} src={src} alt="" width="32" height="32" loading="lazy" decoding="async" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-[#0d0b1a] object-cover" />
                     ))}
                   </div>
                   <span className="text-white/80 text-xs sm:text-sm font-medium leading-tight">
@@ -968,13 +1047,17 @@ const PlanosUpscalerArcano = () => {
       )}
 
       {/* Pre-checkout Modal */}
-      <PreCheckoutModal
-        isOpen={checkoutModalOpen}
-        onClose={() => setCheckoutModalOpen(false)}
-        userEmail={user?.email}
-        userId={user?.id}
-        productSlug={checkoutProductSlug}
-      />
+      {checkoutModalOpen && (
+        <Suspense fallback={null}>
+          <PreCheckoutModal
+            isOpen={checkoutModalOpen}
+            onClose={() => setCheckoutModalOpen(false)}
+            userEmail={user?.email}
+            userId={user?.id}
+            productSlug={checkoutProductSlug}
+          />
+        </Suspense>
+      )}
 
       {/* Modal Fullscreen */}
       {modalImages && (

@@ -108,6 +108,8 @@ export const HeroBeforeAfterSlider = ({
           compressOnFailure={true}
           showDownloadOnFail={false}
           locale={locale}
+          loading="eager"
+          fetchPriority="high"
         />
         
         {/* Before Image (clipped) - Using ResilientImage */}
@@ -129,6 +131,8 @@ export const HeroBeforeAfterSlider = ({
             compressOnFailure={true}
             showDownloadOnFail={false}
             locale={locale}
+            loading="eager"
+            fetchPriority="high"
           />
         </div>
 

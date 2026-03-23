@@ -19,6 +19,10 @@ interface ResilientImageProps {
   onDownloadClick?: () => void;
   locale?: 'pt' | 'es';
   objectFit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
+  loading?: 'eager' | 'lazy';
+  fetchPriority?: 'high' | 'low' | 'auto';
+  width?: number | string;
+  height?: number | string;
 }
 
 /**
@@ -44,7 +48,11 @@ export const ResilientImage = ({
   onLoadSuccess,
   onDownloadClick,
   locale = 'pt',
-  objectFit = 'cover'
+  objectFit = 'cover',
+  loading,
+  fetchPriority,
+  width,
+  height
 }: ResilientImageProps) => {
   const [attempt, setAttempt] = useState(1);
   const [currentSrc, setCurrentSrc] = useState(src);
@@ -258,6 +266,10 @@ export const ResilientImage = ({
         src={currentSrc}
         alt={alt}
         className="object-cover"
+        loading={loading}
+        {...(fetchPriority ? { fetchPriority } : {})}
+        {...(width ? { width } : {})}
+        {...(height ? { height } : {})}
         style={{
           width: '100%',
           height: '100%',
