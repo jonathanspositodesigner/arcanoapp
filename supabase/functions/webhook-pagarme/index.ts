@@ -1415,6 +1415,7 @@ serve(async (req) => {
           console.log(`   ├─ ✅ Ferramentas gerar-imagem e gerar-video desabilitadas`)
         }
 
+        if (order.user_id && product.type === 'credits' && product.credits_amount > 0) {
           const { data: revokeData, error: revokeError } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
             _user_id: order.user_id,
             _amount: product.credits_amount,
