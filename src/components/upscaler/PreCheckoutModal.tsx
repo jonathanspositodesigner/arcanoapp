@@ -228,7 +228,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
     if (!cepDigits || cepDigits.length !== 8) {
       setAddressError('Preencha o CEP');
       valid = false;
-    } else if (!street.trim() || !number.trim() || !city.trim() || !addressState.trim()) {
+    } else if (!street.trim() || !number.trim() || !neighborhood.trim() || !city.trim() || !addressState.trim()) {
       setAddressError('Preencha o endereço completo para continuar');
       valid = false;
     }
