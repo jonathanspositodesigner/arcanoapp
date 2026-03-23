@@ -607,7 +607,66 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                   {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
                 </div>
 
-                {/* Payment Method */}
+                {/* Endereço */}
+                <div className="space-y-2.5">
+                  <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Endereço</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        placeholder="CEP"
+                        value={cep}
+                        onChange={(e) => {
+                          const formatted = formatCep(e.target.value);
+                          setCep(formatted);
+                          setAddressError('');
+                          if (formatted.replace(/\D/g, '').length === 8) handleCepLookup(formatted);
+                        }}
+                        className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                      />
+                    </div>
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Número"
+                        value={number}
+                        onChange={(e) => { setNumber(e.target.value); setAddressError(''); }}
+                        className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                      />
+                    </div>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder={cepLoading ? 'Buscando endereço...' : 'Rua / Avenida'}
+                    value={street}
+                    onChange={(e) => { setStreet(e.target.value); setAddressError(''); }}
+                    disabled={cepLoading}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Cidade"
+                      value={city}
+                      onChange={(e) => { setCity(e.target.value); setAddressError(''); }}
+                      disabled={cepLoading}
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                    />
+                    <input
+                      type="text"
+                      placeholder="UF"
+                      maxLength={2}
+                      value={addressState}
+                      onChange={(e) => { setAddressState(e.target.value.toUpperCase()); setAddressError(''); }}
+                      disabled={cepLoading}
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                    />
+                  </div>
+                  {addressError && <p className="text-red-400 text-xs mt-1">{addressError}</p>}
+                </div>
+
+
                 <div>
                   <label className="text-white/70 text-xs md:text-sm mb-1.5 md:mb-2 block">Forma de pagamento</label>
                   <div className="grid grid-cols-2 gap-2 md:gap-3">
