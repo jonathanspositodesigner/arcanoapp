@@ -248,6 +248,9 @@ serve(async (req) => {
       const validDurations = [4, 6, 8];
       const duration = validDurations.includes(duration_seconds) ? duration_seconds : 8;
 
+      // Real cost: Veo 3.1 Standard = $0.40/second × duration
+      costBrl = Number((VEO_COST_PER_SECOND_USD * duration * USD_TO_BRL).toFixed(2));
+
       const instance: any = { prompt: prompt.trim() };
       if (start_frame?.base64 && start_frame?.mimeType) {
         instance.image = { bytesBase64Encoded: start_frame.base64, mimeType: start_frame.mimeType };
