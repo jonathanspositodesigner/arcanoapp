@@ -1387,7 +1387,34 @@ serve(async (req) => {
           }
         }
 
-        if (order.user_id && product.type === 'credits' && product.credits_amount > 0) {
+        // === REFUND: Revogar bônus vitalício Upscaler Arcano ===
+        if (order.user_id && product.slug === 'upscaller-arcano-vitalicio') {
+          console.log(`   ├─ 📋 Revogando bônus vitalício Upscaler Arcano...`)
+          
+          // Revoke 10,000 lifetime credits
+          const { error: revokeError } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
+            _user_id: order.user_id,
+            _amount: 10000,
+            _description: 'Reembolso: revogação dos 10.000 créditos bônus Upscaler Arcano Vitalício'
+          })
+          if (revokeError) {
+            console.error(`   ├─ ❌ Erro ao revogar créditos bônus:`, revokeError)
+          } else {
+            console.log(`   ├─ ✅ 10.000 créditos bônus revogados`)
+          }
+
+          // Disable image/video generation
+          await supabase
+            .from('planos2_subscriptions')
+            .update({
+              has_image_generation: false,
+              has_video_generation: false,
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', order.user_id)
+          console.log(`   ├─ ✅ Ferramentas gerar-imagem e gerar-video desabilitadas`)
+        }
+
           const { data: revokeData, error: revokeError } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
             _user_id: order.user_id,
             _amount: product.credits_amount,
