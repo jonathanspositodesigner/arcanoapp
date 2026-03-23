@@ -647,6 +647,14 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     disabled={cepLoading}
                     className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
                   />
+                  <input
+                    type="text"
+                    placeholder="Bairro"
+                    value={neighborhood}
+                    onChange={(e) => { setNeighborhood(e.target.value); setAddressError(''); }}
+                    disabled={cepLoading}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                  />
                   <div className="grid grid-cols-2 gap-2">
                     <input
                       type="text"
