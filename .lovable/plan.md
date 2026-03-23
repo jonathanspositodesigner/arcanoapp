@@ -1,72 +1,51 @@
 
-Diagnóstico resumido (com base no código + logs + banco)
 
-- O job do Arcano Cloner está concluindo no backend: últimos registros em `arcano_cloner_jobs` estão `status=completed` com `output_url` preenchida.
-- O problema do “resultado quebrado” é no carregamento da imagem final no frontend:
-  - `ArcanoClonerTool.tsx` e `ClonerTrialMockup.tsx` renderizam `<img src={outputUrl}>` direto, sem fallback resiliente.
-  - A URL final vem do CDN externo do RunningHub (`rh-images...ap-beijing...`), que pode ficar lenta/instável para parte dos usuários (latência/região/bloqueio intermitente), gerando imagem quebrada.
-- A lentidão sistêmica foi identificada no fluxo de webhook:
-  - O mesmo `taskId` está chegando várias vezes no `runninghub-webhook` em intervalos ~20s.
-  - O webhook está demorando ~17s para responder porque aguarda `/finish` completo.
-  - `/finish` faz operações pesadas síncronas (cleanup global, process-next, push, etc.), o que aumenta tempo de resposta e provoca retries do provedor, criando efeito cascata de lentidão.
+# Plano: Otimizar performance da página /planos-upscaler-arcano (sem mexer nos pixels)
 
-Do I know what the issue is?
-- Sim. São 2 causas combinadas:
-  1) Preview final dependente de CDN externo lento/instável sem fallback robusto.
-  2) Webhook não idempotente/rápido o suficiente, gerando retries duplicados e sobrecarga.
+Mantendo Facebook Pixel e Microsoft Clarity exatamente como estão.
 
-Plano de correção permanente
+## 1. Lazy load de imagens + dimensões (PlanosUpscalerArcano.tsx)
 
-1) Tornar webhook idempotente e rápido (eliminar duplicações)
-- Arquivo: `supabase/functions/runninghub-webhook/index.ts`
-- Ajustes:
-  - Buscar também `status` do job no lookup.
-  - Se job já estiver terminal (`completed/failed/cancelled`), retornar `200` imediatamente sem chamar `/finish` novamente.
-  - Manter processamento mínimo e resposta curta para evitar timeout do provedor.
+- Avatars do hero social proof (linhas 539-541): já têm `width`/`height`, adicionar `loading="lazy"`
+- Avatars da seção de stats (linha 863): adicionar `loading="lazy"`
+- Adicionar `fetchpriority="high"` nas imagens do hero via `ResilientImage`
 
-2) Blindar `/finish` contra retrabalho e reduzir latência
-- Arquivo: `supabase/functions/runninghub-queue-manager/index.ts`
-- Ajustes:
-  - No início do `handleFinish`, checar estado atual do job; se já terminal, retornar sucesso sem side effects (idempotência real).
-  - Tirar `cleanupStaleJobs()` do caminho crítico de `/finish` (rodar em endpoint/cron dedicado).
-  - Não bloquear resposta com tarefas secundárias (push/process-next) — executar de forma assíncrona após persistir estado principal.
-  - Garantir que só a primeira finalização dispara thumbnail/push/process-next.
+## 2. Adicionar prop `loading` ao ResilientImage
 
-3) Usar preview estável local no Arcano Cloner (não depender do CDN externo para render principal)
-- Arquivos:
-  - `src/pages/ArcanoClonerTool.tsx`
-  - `src/components/arcano-cloner/trial/ClonerTrialSection.tsx`
-  - `src/components/arcano-cloner/trial/ClonerTrialMockup.tsx`
-- Ajustes:
-  - Introduzir estado de `previewUrl` separado de `outputUrl`.
-  - Fallback de preview: `thumbnail_url` (Storage local) → proxy interno (`download-proxy`) → `output_url` original.
-  - Substituir `<img>` simples por `ResilientImage` no resultado (com retry e fallback visual).
-  - Manter `output_url` original para “Baixar HD”, sem perder qualidade.
+O componente `ResilientImage` renderiza um `<img>` interno sem atributo `loading`. Adicionar prop opcional `loading?: 'eager' | 'lazy'` que é passada ao `<img>`.
 
-4) Garantir atualização do preview após conclusão
-- Arquivos:
-  - `src/pages/ArcanoClonerTool.tsx`
-  - `src/hooks/useJobStatusSync.ts` (se necessário)
-- Ajustes:
-  - Ao receber `status=completed`, fazer fetch pontual do job para capturar `thumbnail_url` já gerada.
-  - Se thumbnail ainda não existir, tentar novamente uma vez após curto delay.
-  - Evitar depender só de mudança de status para atualizar URL de preview.
+## 3. Lazy load de avatars no SocialProofSectionPT
 
-5) Observabilidade e validação final
-- Validação técnica:
-  - Confirmar 1 único `/finish` efetivo por `taskId`.
-  - Confirmar fim dos retries repetidos no `runninghub-webhook`.
-  - Confirmar tempo de resposta do webhook abaixo do limiar de retry.
-- Validação funcional:
-  - Gerar imagem no Arcano Cloner (desktop + mobile), verificar preview sem quebrar.
-  - Confirmar download HD funcionando.
-  - Confirmar que, mesmo com falha de CDN externo, preview local continua abrindo.
+Na `TestimonialCard` (linha 42): adicionar `loading="lazy"` e `width="40" height="40"` no `<img>` do avatar.
 
-Arquivos previstos para alteração
+## 4. Lazy load do PreCheckoutModal e FullscreenModal
 
-- `supabase/functions/runninghub-webhook/index.ts`
-- `supabase/functions/runninghub-queue-manager/index.ts`
-- `src/pages/ArcanoClonerTool.tsx`
-- `src/components/arcano-cloner/trial/ClonerTrialSection.tsx`
-- `src/components/arcano-cloner/trial/ClonerTrialMockup.tsx`
-- (opcional) `src/utils/getPreviewUrl.ts` para centralizar lógica de fallback
+- `PreCheckoutModal` (importado na linha 30): mover para `React.lazy` — só é necessário quando o usuário clica "Comprar"
+- `FullscreenModal` (definido inline nas linhas 68-186): extrair para componente lazy ou renderizar condicionalmente (já é condicional com `modalImages`)
+
+## 5. SEO: meta tags específicas para a página
+
+Adicionar `useEffect` em `PlanosUpscalerArcano` para injetar:
+- `<meta name="robots" content="index, follow">`
+- `<link rel="canonical" href="https://arcanoapp.voxvisual.com.br/planos-upscaler-arcano">`
+- Atualizar `document.title` e meta description com keywords de upscaler
+- Schema.org JSON-LD com os 4 planos de preço
+
+## 6. Otimizar Google Fonts (index.html)
+
+Adicionar `&subset=latin` na URL do Google Fonts para reduzir payload.
+
+## 7. Preconnect para Pagar.me (index.html)
+
+Adicionar `<link rel="preconnect" href="https://api.pagar.me">` para o checkout.
+
+## Arquivos modificados
+
+| Arquivo | Alteração |
+|---|---|
+| `index.html` | Adicionar `&subset=latin` nas fontes; preconnect pagar.me |
+| `src/components/upscaler/ResilientImage.tsx` | Adicionar prop `loading` |
+| `src/pages/PlanosUpscalerArcano.tsx` | Lazy load PreCheckoutModal; `loading="lazy"` nos avatars; SEO meta tags + JSON-LD via useEffect |
+| `src/components/upscaler/sections/SocialProofSectionPT.tsx` | `loading="lazy"` + dimensões nos avatars |
+| `src/components/upscaler/HeroBeforeAfterSlider.tsx` | Passar `loading="eager"` ao ResilientImage do hero |
+
