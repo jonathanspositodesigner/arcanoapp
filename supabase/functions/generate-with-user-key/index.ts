@@ -126,7 +126,8 @@ serve(async (req) => {
     }
 
     const userApiKey = keyData.api_key;
-    const costBrl = type === "video" ? VIDEO_COST_BRL : IMAGE_COST_BRL;
+    // Calculate real cost based on model and type
+    let costBrl: number;
 
     if (type === "image") {
       // ========== IMAGE GENERATION ==========
