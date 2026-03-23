@@ -1,3 +1,9 @@
+# Security headers — all pages
+/*
+  X-Frame-Options: SAMEORIGIN
+  Cross-Origin-Opener-Policy: same-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
 # index.html - sempre revalidar (iOS PWA cache fix)
 /index.html
   Cache-Control: no-cache, no-store, must-revalidate
@@ -32,3 +38,7 @@
 # Cache para vídeos - 7 dias
 /videos/*
   Cache-Control: public, max-age=604800
+
+# Cache para sons/áudio - 30 dias
+/sounds/*
+  Cache-Control: public, max-age=2592000
