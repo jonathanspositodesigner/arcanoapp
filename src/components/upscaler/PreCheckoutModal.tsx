@@ -93,6 +93,12 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const [emailConfirm, setEmailConfirm] = useState('');
   const [phone, setPhone] = useState('');
   const [cpf, setCpf] = useState('');
+  const [cep, setCep] = useState('');
+  const [street, setStreet] = useState('');
+  const [number, setNumber] = useState('');
+  const [city, setCity] = useState('');
+  const [addressState, setAddressState] = useState('');
+  const [cepLoading, setCepLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'PIX' | 'CREDIT_CARD'>('PIX');
   const [loading, setLoading] = useState(false);
   const { isSubmitting: isFormSubmitting, startSubmit: startFormSubmit, endSubmit: endFormSubmit } = useProcessingButton();
@@ -103,6 +109,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const [emailConfirmError, setEmailConfirmError] = useState('');
   const [phoneError, setPhoneError] = useState('');
   const [cpfError, setCpfError] = useState('');
+  const [addressError, setAddressError] = useState('');
 
   // One-click state
   const [savedCards, setSavedCards] = useState<SavedCard[]>([]);
