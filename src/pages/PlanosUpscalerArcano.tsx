@@ -940,12 +940,14 @@ const PlanosUpscalerArcano = () => {
 
       {/* Modal Fullscreen */}
       {modalImages && (
-        <FullscreenModal
-          isOpen={modalOpen}
-          onClose={closeModal}
-          beforeImage={modalImages.before}
-          afterImage={modalImages.after}
-        />
+        <Suspense fallback={null}>
+          <FullscreenModal
+            isOpen={modalOpen}
+            onClose={closeModal}
+            beforeImage={modalImages.before}
+            afterImage={modalImages.after}
+          />
+        </Suspense>
       )}
     </div>
   );
