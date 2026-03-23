@@ -91,6 +91,7 @@ export function useJobStatusSync({
       const update: JobUpdate = {
         status,
         outputUrl: data.output_url,
+        thumbnailUrl: data.thumbnail_url,
         errorMessage: data.error_message,
         position: data.position,
       };
