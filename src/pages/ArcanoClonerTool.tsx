@@ -152,7 +152,9 @@ const ArcanoClonerTool: React.FC = () => {
       console.log('[ArcanoCloner] Job status update:', update);
       
       if (update.status === 'completed' && update.outputUrl) {
-        setOutputImage(update.outputUrl);
+        // Prefer thumbnail_url (local Storage) over output_url (external CDN) for preview
+        const previewUrl = update.thumbnailUrl || update.outputUrl;
+        setOutputImage(previewUrl);
         setStatus('completed');
         setProgress(100);
         endSubmit();
