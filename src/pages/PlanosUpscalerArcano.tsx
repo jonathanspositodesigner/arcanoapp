@@ -860,7 +860,7 @@ const PlanosUpscalerArcano = () => {
                 <div className="flex items-center gap-3 sm:flex-1 min-w-0">
                   <div className="flex -space-x-2 shrink-0">
                     {["/images/social-proof-1.webp", "/images/social-proof-2.webp", "/images/social-proof-3.webp"].map((src, i) => (
-                      <img key={i} src={src} alt="" width="32" height="32" decoding="async" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-[#0d0b1a] object-cover" />
+                      <img key={i} src={src} alt="" width="32" height="32" loading="lazy" decoding="async" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-[#0d0b1a] object-cover" />
                     ))}
                   </div>
                   <span className="text-white/80 text-xs sm:text-sm font-medium leading-tight">
