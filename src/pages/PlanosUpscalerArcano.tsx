@@ -39,6 +39,7 @@ const upscalerHeroDepoisMobile = "/images/upscaler-hero-depois-mobile.webp";
 const BeforeAfterGalleryPT = lazy(() => import("@/components/upscaler/sections/BeforeAfterGalleryPT"));
 const ExpandingGallery = lazy(() => import("@/components/combo-artes/ExpandingGallery"));
 const ScrollDrivenGallery = lazy(() => import("@/components/upscaler/ScrollDrivenGallery"));
+const MobileBeforeAfterGallery = lazy(() => import("@/components/upscaler/MobileBeforeAfterGallery"));
 
 // Desktop gallery items
 const galleryItemsDesktop = [
@@ -646,7 +647,11 @@ const PlanosUpscalerArcano = () => {
               Melhorado com o Upscaler Arcano
             </h2>
             <Suspense fallback={<div className="h-screen bg-white/5 animate-pulse" />}>
-              <ScrollDrivenGallery items={isMobile ? galleryItemsMobile : galleryItemsDesktop} />
+              {isMobile ? (
+                <MobileBeforeAfterGallery items={galleryItemsMobile} />
+              ) : (
+                <ScrollDrivenGallery items={galleryItemsDesktop} />
+              )}
             </Suspense>
           </div>
           </LazySection>
