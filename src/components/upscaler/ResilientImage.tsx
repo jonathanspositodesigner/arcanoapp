@@ -48,7 +48,11 @@ export const ResilientImage = ({
   onLoadSuccess,
   onDownloadClick,
   locale = 'pt',
-  objectFit = 'cover'
+  objectFit = 'cover',
+  loading,
+  fetchPriority,
+  width,
+  height
 }: ResilientImageProps) => {
   const [attempt, setAttempt] = useState(1);
   const [currentSrc, setCurrentSrc] = useState(src);
