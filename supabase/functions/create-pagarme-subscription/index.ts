@@ -193,7 +193,24 @@ serve(async (req) => {
     const amountInCents = Math.round(Number(product.price) * 100)
     const customerName = user_name?.trim() || email.split('@')[0]
 
-    // 4. Montar payload de subscription do Pagar.me
+    // 4. Validar endereço obrigatório para billing_address
+    if (!user_address?.line_1 || !user_address?.zip_code || !user_address?.city || !user_address?.state) {
+      console.error(`[${requestId}] Endereço de cobrança ausente — obrigatório para assinatura com cartão`)
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Endereço de cobrança é obrigatório para pagamento com cartão de crédito.'
+      }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    const billingAddress = {
+      line_1: user_address.line_1,
+      zip_code: user_address.zip_code.replace(/\D/g, ''),
+      city: user_address.city,
+      state: user_address.state,
+      country: user_address.country || 'BR'
+    }
+
+    // 5. Montar payload de subscription do Pagar.me
     const subscriptionPayload: Record<string, unknown> = {
       payment_method: 'credit_card',
       interval: interval,
@@ -201,7 +218,10 @@ serve(async (req) => {
       billing_type: 'prepaid',
       minimum_price: amountInCents,
       currency: 'BRL',
-      card_token: card_token,
+      card: {
+        card_token: card_token,
+        billing_address: billingAddress
+      },
       customer: {
         name: customerName,
         email: email,
@@ -215,15 +235,7 @@ serve(async (req) => {
             number: phoneNumber
           }
         },
-        ...((user_address?.line_1 && user_address?.zip_code && user_address?.city && user_address?.state) ? {
-          address: {
-            line_1: user_address.line_1,
-            zip_code: user_address.zip_code,
-            city: user_address.city,
-            state: user_address.state,
-            country: user_address.country || 'BR'
-          }
-        } : {})
+        address: billingAddress
       },
       items: [
         {

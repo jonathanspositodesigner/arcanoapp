@@ -235,12 +235,21 @@ const Planos2 = () => {
   };
 
   // Handler for card token from CreditCardForm (subscription with real recurrence)
-  const handleCardTokenGenerated = async (cardToken: string) => {
+  const handleCardTokenGenerated = async (cardToken: string, addressData?: { line_1: string; zip_code: string; city: string; state: string; country: string }) => {
     if (!pendingSlug || !pendingProfile) return;
     if (!startCheckout()) return;
 
     try {
       const utmData = getSanitizedUtms();
+
+      // Priorizar endereço digitado no checkout sobre o do perfil
+      const userAddress = addressData || {
+        line_1: pendingProfile.address_line,
+        zip_code: pendingProfile.address_zip,
+        city: pendingProfile.address_city,
+        state: pendingProfile.address_state,
+        country: pendingProfile.address_country || 'BR'
+      };
 
       const response = await supabase.functions.invoke('create-pagarme-subscription', {
         body: {
@@ -251,13 +260,7 @@ const Planos2 = () => {
           user_name: pendingProfile.name,
           user_cpf: pendingProfile.cpf,
           utm_data: utmData,
-          user_address: {
-            line_1: pendingProfile.address_line,
-            zip_code: pendingProfile.address_zip,
-            city: pendingProfile.address_city,
-            state: pendingProfile.address_state,
-            country: pendingProfile.address_country || 'BR'
-          }
+          user_address: userAddress
         }
       });
 

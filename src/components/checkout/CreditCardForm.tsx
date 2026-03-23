@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { CreditCard, Lock, Loader2, X } from "lucide-react";
+import { CreditCard, Lock, Loader2, X, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,13 +13,26 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
+export interface CardAddressData {
+  line_1: string;
+  zip_code: string;
+  city: string;
+  state: string;
+  country: string;
+}
+
 interface CreditCardFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onTokenGenerated: (cardToken: string) => void;
+  onTokenGenerated: (cardToken: string, addressData: CardAddressData) => void;
   isProcessing: boolean;
   planName?: string;
 }
+
+const UF_OPTIONS = [
+  "AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA",
+  "PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"
+];
 
 const CreditCardForm = ({
   open,
@@ -36,6 +49,14 @@ const CreditCardForm = ({
   const [tokenizing, setTokenizing] = useState(false);
   const publicKeyRef = useRef<string | null>(null);
 
+  // Address fields
+  const [cep, setCep] = useState("");
+  const [street, setStreet] = useState("");
+  const [number, setNumber] = useState("");
+  const [city, setCity] = useState("");
+  const [uf, setUf] = useState("");
+  const [cepLoading, setCepLoading] = useState(false);
+
   useEffect(() => {
     if (open && !publicKeyRef.current) {
       supabase.functions.invoke("get-pagarme-public-key").then(({ data, error }) => {
@@ -49,6 +70,29 @@ const CreditCardForm = ({
   const formatCardNumber = (value: string) => {
     const digits = value.replace(/\D/g, "").slice(0, 16);
     return digits.replace(/(\d{4})(?=\d)/g, "$1 ");
+  };
+
+  const handleCepChange = async (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, 8);
+    const formatted = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits;
+    setCep(formatted);
+
+    if (digits.length === 8) {
+      setCepLoading(true);
+      try {
+        const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+        const data = await res.json();
+        if (!data.erro) {
+          setStreet(data.logradouro || "");
+          setCity(data.localidade || "");
+          setUf(data.uf || "");
+        }
+      } catch {
+        // silently fail
+      } finally {
+        setCepLoading(false);
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,6 +119,25 @@ const CreditCardForm = ({
     }
     if (cvv.length < 3 || cvv.length > 4) {
       toast.error("CVV inválido");
+      return;
+    }
+
+    // Address validation
+    const cleanCep = cep.replace(/\D/g, "");
+    if (cleanCep.length !== 8) {
+      toast.error("Preencha o CEP para continuar");
+      return;
+    }
+    if (!street.trim() || !number.trim()) {
+      toast.error("Preencha o endereço e número para continuar");
+      return;
+    }
+    if (!city.trim()) {
+      toast.error("Preencha a cidade para continuar");
+      return;
+    }
+    if (!uf) {
+      toast.error("Selecione o estado para continuar");
       return;
     }
 
@@ -123,7 +186,16 @@ const CreditCardForm = ({
         return;
       }
 
-      onTokenGenerated(token);
+      const line1 = `${street.trim()}, ${number.trim()}`;
+      const addressData: CardAddressData = {
+        line_1: line1,
+        zip_code: cleanCep,
+        city: city.trim(),
+        state: uf,
+        country: "BR",
+      };
+
+      onTokenGenerated(token, addressData);
     } catch (err: any) {
       console.error("Erro na tokenização:", err);
       toast.error("Erro ao processar cartão. Tente novamente.");
@@ -135,7 +207,7 @@ const CreditCardForm = ({
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!busy) onOpenChange(v); }}>
-      <DialogContent className="sm:max-w-md bg-[#1A0A2E] border-purple-500/30">
+      <DialogContent className="sm:max-w-md bg-[#1A0A2E] border-purple-500/30 max-h-[90vh] overflow-y-auto">
         {busy ? (
           <div className="flex flex-col items-center justify-center py-12 gap-4">
             <div className="relative">
@@ -228,6 +300,76 @@ const CreditCardForm = ({
                     type="password"
                     autoComplete="cc-csc"
                   />
+                </div>
+              </div>
+
+              {/* Address Section */}
+              <div className="border-t border-purple-500/20 pt-4 mt-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <MapPin className="w-4 h-4 text-purple-400" />
+                  <span className="text-purple-200 text-sm font-medium">Endereço de Cobrança</span>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-purple-200 text-xs">CEP *</Label>
+                      <Input
+                        value={cep}
+                        onChange={(e) => handleCepChange(e.target.value)}
+                        placeholder="00000-000"
+                        className="bg-purple-900/20 border-purple-500/30 text-white placeholder:text-purple-500/50 text-sm"
+                        maxLength={9}
+                        inputMode="numeric"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-purple-200 text-xs">Estado *</Label>
+                      <select
+                        value={uf}
+                        onChange={(e) => setUf(e.target.value)}
+                        className="flex h-10 w-full rounded-md border border-purple-500/30 bg-purple-900/20 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <option value="" className="bg-[#1A0A2E]">UF</option>
+                        {UF_OPTIONS.map(u => (
+                          <option key={u} value={u} className="bg-[#1A0A2E]">{u}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="col-span-2 space-y-1">
+                      <Label className="text-purple-200 text-xs">Rua *</Label>
+                      <Input
+                        value={street}
+                        onChange={(e) => setStreet(e.target.value)}
+                        placeholder="Rua / Av."
+                        className="bg-purple-900/20 border-purple-500/30 text-white placeholder:text-purple-500/50 text-sm"
+                        disabled={cepLoading}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-purple-200 text-xs">Nº *</Label>
+                      <Input
+                        value={number}
+                        onChange={(e) => setNumber(e.target.value)}
+                        placeholder="123"
+                        className="bg-purple-900/20 border-purple-500/30 text-white placeholder:text-purple-500/50 text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-purple-200 text-xs">Cidade *</Label>
+                    <Input
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="Cidade"
+                      className="bg-purple-900/20 border-purple-500/30 text-white placeholder:text-purple-500/50 text-sm"
+                      disabled={cepLoading}
+                    />
+                  </div>
                 </div>
               </div>
 
