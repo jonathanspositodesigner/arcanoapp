@@ -445,7 +445,35 @@ const ArcanoClonerTool: React.FC = () => {
         .single();
 
       if (jobError || !job) {
-        throw new Error(jobError?.message || 'Falha ao criar job');
+        // If RLS error, try session refresh + retry once
+        if (jobError?.message?.includes('row-level security') || jobError?.message?.includes('security policy')) {
+          console.warn('[ArcanoCloner] RLS error on job insert, attempting session refresh...');
+          const { error: refreshErr } = await supabase.auth.refreshSession();
+          if (refreshErr) throw new Error('Sessão expirada. Faça login novamente.');
+          
+          const { data: retryJob, error: retryErr } = await supabase
+            .from('arcano_cloner_jobs')
+            .insert({
+              session_id: sessionIdRef.current,
+              user_id: verifiedUserId,
+              status: 'pending',
+              user_image_url: userUrl,
+              reference_image_url: referenceUrl,
+              aspect_ratio: aspectRatio,
+              creativity: creativity,
+              custom_prompt: customPromptEnabled ? customPrompt : null,
+            } as any)
+            .select()
+            .single();
+          
+          if (retryErr || !retryJob) {
+            throw new Error(retryErr?.message || 'Falha ao criar job após refresh');
+          }
+          // Use retry result
+          Object.assign(job || {}, retryJob);
+        } else {
+          throw new Error(jobError?.message || 'Falha ao criar job');
+        }
       }
 
       setJobId(job.id);
