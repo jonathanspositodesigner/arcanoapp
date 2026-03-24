@@ -389,12 +389,26 @@ const ArcanoClonerTool: React.FC = () => {
     setFailedAtStep(null);
 
     try {
+      // Step 0: Revalidate auth - get fresh user ID from server (not React state)
+      setCurrentStep('validating_auth');
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      const verifiedUserId = authData?.user?.id;
+      
+      if (authError || !verifiedUserId) {
+        console.error('[ArcanoCloner] Auth revalidation failed:', authError);
+        toast.error('Sua sessão expirou. Faça login novamente.');
+        endSubmit();
+        setStatus('idle');
+        return;
+      }
+      console.log('[ArcanoCloner] Auth verified, userId:', verifiedUserId);
+
       // Step 1: Compress and upload user image
       setProgress(10);
       setCurrentStep('compressing_user_image');
       console.log('[ArcanoCloner] Compressing user image...');
       const compressedUser = await compressImage(userFile);
-      const userUrl = await uploadToStorage(compressedUser, 'user');
+      const userUrl = await uploadToStorage(compressedUser, 'user', verifiedUserId);
       console.log('[ArcanoCloner] User image uploaded:', userUrl);
 
       // Step 2: Compress and upload reference image
@@ -405,7 +419,7 @@ const ArcanoClonerTool: React.FC = () => {
       if (referenceFile) {
         console.log('[ArcanoCloner] Compressing reference image...');
         const compressedRef = await compressImage(referenceFile);
-        referenceUrl = await uploadToStorage(compressedRef, 'reference');
+        referenceUrl = await uploadToStorage(compressedRef, 'reference', verifiedUserId);
       } else {
         referenceUrl = referenceImage;
       }
@@ -419,7 +433,7 @@ const ArcanoClonerTool: React.FC = () => {
         .from('arcano_cloner_jobs')
         .insert({
           session_id: sessionIdRef.current,
-          user_id: user.id,
+          user_id: verifiedUserId,
           status: 'pending',
           user_image_url: userUrl,
           reference_image_url: referenceUrl,
