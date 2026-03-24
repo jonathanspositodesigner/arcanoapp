@@ -2,6 +2,61 @@ import { useEffect, useState } from "react";
 import { Zap, Layers, Check, X, Shield, Star, ChevronDown, Rocket, Sparkles, Clock, ArrowRight, Timer } from "lucide-react";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
 
+// Countdown to March 27, 2026 23:59:59 BRT (UTC-3)
+const DEADLINE = new Date("2026-03-28T02:59:59Z").getTime();
+
+const CountdownTimer = () => {
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const diff = DEADLINE - Date.now();
+    return diff > 0 ? diff : 0;
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const diff = DEADLINE - Date.now();
+      setTimeLeft(diff > 0 ? diff : 0);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+  const seconds = Math.floor((timeLeft / 1000) % 60);
+
+  if (timeLeft <= 0) return null;
+
+  const units = [
+    { label: "dias", value: days },
+    { label: "hrs", value: hours },
+    { label: "min", value: minutes },
+    { label: "seg", value: seconds },
+  ];
+
+  return (
+    <div className="mb-8 bg-red-500/10 border border-red-500/30 rounded-2xl p-4 md:p-5">
+      <div className="flex items-center justify-center gap-2 mb-2">
+        <Timer className="h-4 w-4 text-red-400" />
+        <p className="text-red-400 text-xs md:text-sm font-bold uppercase tracking-wider">
+          Promoção válida até 27/03 às 23h59
+        </p>
+      </div>
+      <div className="flex justify-center gap-3">
+        {units.map((u, i) => (
+          <div key={i} className="text-center">
+            <div className="bg-white/10 rounded-lg px-3 py-2 min-w-[48px]">
+              <span className="text-xl md:text-2xl font-black text-white tabular-nums">
+                {String(u.value).padStart(2, "0")}
+              </span>
+            </div>
+            <span className="text-[10px] text-white/40 mt-1 block">{u.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const UpgradeUpscalerV3 = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
