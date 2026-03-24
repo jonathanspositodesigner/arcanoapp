@@ -19,8 +19,17 @@ const UpscalerSelectionPage = () => {
       navigate('/ferramenta-ia-artes/upscaller-arcano', { replace: true });
     }
   }, [isLoading, hasV3Pack, navigate]);
+  const handleSelectImage = () => navigate("/upscaler-arcano-tool");
+  const handleSelectVideo = () => navigate("/video-upscaler-tool");
 
-  return (
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
+
     <AppLayout>
 
       <main className="container mx-auto px-4 py-4 sm:py-8 md:py-16">
