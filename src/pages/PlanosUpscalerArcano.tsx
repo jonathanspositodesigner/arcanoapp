@@ -21,6 +21,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MousePointerClick, MessageCircle, ZoomIn, X, User, Rocket, PenTool, Image as ImageIcon, Award, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { redirectToCheckout } from "@/lib/pagarmeCheckout";
+import { CheckoutCustomerModal, type CheckoutCustomerData } from "@/components/checkout/CheckoutCustomerModal";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -234,14 +235,21 @@ const PlanosUpscalerArcano = () => {
   };
 
   const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null);
+  const [checkoutSlug, setCheckoutSlug] = useState<string | null>(null);
 
-  const handlePurchase = async (productSlug?: string | unknown) => {
+  const handlePurchase = (productSlug?: string | unknown) => {
     const slug = typeof productSlug === 'string' && productSlug.trim().length > 0
       ? productSlug
       : 'upscaller-arcano-vitalicio';
-    setPurchaseLoading(slug);
-    await redirectToCheckout(slug);
+    setCheckoutSlug(slug);
+  };
+
+  const handleCheckoutConfirm = async (customerData: CheckoutCustomerData) => {
+    if (!checkoutSlug) return;
+    setPurchaseLoading(checkoutSlug);
+    await redirectToCheckout(checkoutSlug, customerData);
     setPurchaseLoading(null);
+    setCheckoutSlug(null);
   };
 
   // Countdown timer - 48 minutes
@@ -920,6 +928,14 @@ const PlanosUpscalerArcano = () => {
         </>
       )}
 
+
+      {/* Modal Checkout Customer */}
+      <CheckoutCustomerModal
+        open={!!checkoutSlug}
+        onClose={() => setCheckoutSlug(null)}
+        onConfirm={handleCheckoutConfirm}
+        loading={!!purchaseLoading}
+      />
 
       {/* Modal Fullscreen */}
       {modalImages && (
