@@ -299,7 +299,7 @@ const UpgradeUpscalerV3 = () => {
       </AnimatedSection>
 
       {/* CTA + PREÇO */}
-      <AnimatedSection id="planos" className="px-4 py-20 md:py-24">
+      <section id="planos" className="px-4 py-20 md:py-24">
         <div className="max-w-lg mx-auto text-center">
           <FadeIn delay={0} duration={400}>
             <div className="inline-flex items-center gap-2 bg-amber-500/15 border border-amber-500/30 rounded-full px-4 py-1.5 mb-6">
