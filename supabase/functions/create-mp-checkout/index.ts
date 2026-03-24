@@ -68,6 +68,20 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+    // Rate limiting: 5 checkouts por minuto por email
+    const { data: rateCheck } = await supabase.rpc('check_rate_limit', {
+      _ip_address: email,
+      _endpoint: 'mp-checkout',
+      _max_requests: 5,
+      _window_seconds: 60,
+    })
+    if (rateCheck && rateCheck[0] && !rateCheck[0].allowed) {
+      return new Response(JSON.stringify({ error: 'Muitas tentativas. Aguarde 1 minuto.' }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
     // 1. Buscar produto
     const { data: product, error: productError } = await supabase
       .from('mp_products')
