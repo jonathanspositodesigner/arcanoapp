@@ -1,48 +1,65 @@
 
-Diagnóstico confirmado (com dados reais do backend):
-- A compra teste do email `fotosarmazemmoc@gmail.com` gerou **2 créditos +1500** para o mesmo pagamento (`payment_id 151733322494`), totalizando +3000.
-- Existem **2 registros de `webhook_logs`** para o mesmo `transaction_id` (mesmo pagamento), e os logs da função mostram **duas execuções completas em paralelo**.
-- Causa raiz: idempotência atual não é atômica (duas execuções passam juntas antes do insert de log).
-- O CTA do email em `webhook-mercadopago` está apontando para `/upscaler-arcano`, não para Home.
-- Bug adicional crítico encontrado: gravação em `welcome_email_logs` no webhook MP está incompleta (campos obrigatórios não enviados), então o dedup de email falha silenciosamente.
+Objetivo: corrigir definitivamente a inconsistência do primeiro acesso para compras (sem link por e-mail), garantindo que `password_changed` só vire `true` quando a pessoa realmente cadastrar nova senha.
 
-Plano de correção (completo e direto):
-1) Correção de dados já afetados
-- Aplicar ajuste único no usuário afetado removendo os **1500 créditos duplicados** (com trilha de auditoria em transação de estorno/correção).
-- Remover duplicata técnica de log de webhook do mesmo pagamento (manter 1 registro canônico).
+## Diagnóstico (baseado na varredura do código)
+1. Há escrita indevida de `password_changed=true` fora da troca real de senha:
+- `src/hooks/useUnifiedAuth.ts` (auto-fix de legado no login)
+- `src/pages/UserLogin.tsx` (auto-fix de legado no mount)
 
-2) Blindagem anti-duplicidade no webhook MP
-- Refatorar `webhook-mercadopago` para “claim” atômico do processamento por pagamento (antes de conceder crédito/acesso).
-- Trocar dedup frágil por chave forte de evento (payment + tipo do evento).
-- Garantir que replay do mesmo webhook não execute concessão de novo.
+2. Fluxo de sucesso está inconsistente entre páginas:
+- `src/pages/SucessoCompra.tsx` decide com `exists + password_changed`, mas não usa `has_logged_in`.
+- `src/pages/SucessoUpscalerArcano.tsx` está pior: redireciona só com `exists` (ignora `password_changed`).
 
-3) Constraints de banco para impedir repetição mesmo sob corrida
-- Migração SQL:
-  - deduplicar linhas antigas conflitantes;
-  - criar índice único para evento MP em `webhook_logs` (por `platform + transaction_id + event_type`);
-  - criar índice único em `mp_orders.mp_payment_id` quando não nulo.
+3. Após cadastro de senha direto na página de sucesso, o flag não é marcado:
+- `SucessoCompra.tsx` e `SucessoUpscalerArcano.tsx` fazem login, mas não atualizam `profiles.password_changed = true`.
 
-4) Garantia extra no crédito (idempotência de negócio)
-- Incluir `order_id` na descrição de crédito MP (`Compra MP [order_id]: ...`) e bloquear segunda aplicação da mesma ordem.
-- Se webhook reentrar, crédito da mesma ordem não reaplica.
+## Plano de implementação
+1) Remover qualquer “auto-marcação” de `password_changed=true` fora de troca real de senha
+- Em `useUnifiedAuth.ts`: remover update legado que grava `true`.
+- Em `UserLogin.tsx`: remover update legado que grava `true`.
+- Manter legado apenas como regra de navegação (sem gravar no banco).
 
-5) CTA dos emails MP para Home (como você pediu)
-- Em `supabase/functions/webhook-mercadopago/index.ts`, forçar CTA de compra MP para:
-  - `https://arcanoapp.voxvisual.com.br/`
-- Aplicar para qualquer produto vindo de checkout Mercado Pago.
+2) Padronizar decisão de primeiro acesso nas páginas de sucesso
+- Em `SucessoCompra.tsx`: usar retorno completo de `check_profile_exists` (`exists_in_db`, `password_changed`, `has_logged_in`).
+- Em `SucessoUpscalerArcano.tsx`: mesma lógica (igual à de `SucessoCompra`).
+- Regra final:
+  - Só redireciona Home se: `exists && password_changed && has_logged_in`.
+  - Caso contrário, vai para etapa “criar senha”.
 
-6) Confiabilidade de email e dedup
-- Corrigir insert em `welcome_email_logs` no webhook MP com todos campos obrigatórios (`platform`, `sent_at`, etc.).
-- Usar dedup key por pedido MP (ex.: `mp_order_<order_id>`) para impedir envio duplicado sob corrida.
+3) Marcar `password_changed=true` apenas após sucesso real da nova senha
+- Em `SucessoCompra.tsx` e `SucessoUpscalerArcano.tsx`:
+  - depois de `complete-purchase-onboarding` + `signInWithPassword` bem-sucedidos, atualizar `profiles.password_changed = true`.
+- Em `ChangePassword.tsx`: manter como está (já marca `true` no ponto correto).
 
-Arquivos a alterar:
-- `supabase/functions/webhook-mercadopago/index.ts`
-- `supabase/migrations/<nova_migracao>.sql`
+4) Blindagem opcional no backend (consistência extra)
+- Em `supabase/functions/complete-purchase-onboarding/index.ts`:
+  - preservar comportamento atual de criação com `password_changed=false` para novos perfis.
+  - não forçar `true` em nenhum ponto dessa função.
 
-Validação pós-fix (obrigatória):
-- Repetir teste de compra MP do Starter e confirmar:
-  - apenas 1 transação de crédito (+1500),
-  - apenas 1 log de purchase para o payment_id,
-  - apenas 1 envio de email registrado,
-  - botão “Acessar Agora” abrindo Home,
-  - sem duplicidade mesmo com múltiplos webhooks do mesmo pagamento.
+5) Correção de dados do(s) usuário(s) afetado(s) pelo ajuste manual anterior
+- Aplicar update pontual para voltar `password_changed=false` no usuário de teste impactado antes do novo teste.
+- Sem migration (operação de dados, não de schema).
+
+## Validação (obrigatória)
+1. Compra nova (usuário novo):
+- entra com e-mail de compra → cai em “criar senha” (sem enviar link),
+- define senha → login automático,
+- `password_changed` vira `true` somente aqui.
+
+2. Usuário existente que já trocou senha:
+- entra com e-mail → vai para senha/login normal (não volta para onboarding).
+
+3. Usuário com flag inconsistente:
+- não deve ser jogado para Home automaticamente;
+- deve cair em criação/troca de senha.
+
+4. Verificação técnica:
+- nenhuma chamada automática para `send-recovery-email` no primeiro acesso pós-compra.
+- sem regressão em reset de senha tradicional (`/forgot-password` e `/reset-password`).
+
+## Arquivos a alterar
+- `src/hooks/useUnifiedAuth.ts`
+- `src/pages/UserLogin.tsx`
+- `src/pages/SucessoCompra.tsx`
+- `src/pages/SucessoUpscalerArcano.tsx`
+- `supabase/functions/complete-purchase-onboarding/index.ts` (blindagem/consistência)
