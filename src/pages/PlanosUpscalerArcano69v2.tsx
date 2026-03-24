@@ -274,7 +274,7 @@ const upscalerPlans: UpscalerPlan[] = [
     creditsCount: "1.500 créditos",
     images: 25,
     tagline: "Para começar",
-    productSlug: "landing-starter-avulso",
+    productSlug: "upscaler-arcano-starter",
     features: [
       { text: "Atualizações diárias", included: true },
       { text: "Acesso às Ferramentas de IA", included: true },
@@ -293,7 +293,7 @@ const upscalerPlans: UpscalerPlan[] = [
     images: 70,
     tagline: "3x mais créditos por mais R$12",
     bestSeller: true,
-    productSlug: "landing-pro-avulso",
+    productSlug: "upscaler-arcano-pro",
     features: [
       { text: "Atualizações diárias", included: true },
       { text: "Acesso às Ferramentas de IA", included: true },
@@ -312,7 +312,7 @@ const upscalerPlans: UpscalerPlan[] = [
     images: 233,
     tagline: "Ideal para designers e criadores ativos",
     hasCountdown: true,
-    productSlug: "landing-ultimate-avulso",
+    productSlug: "upscaler-arcano-ultimate",
     features: [
       { text: "Atualizações diárias", included: true },
       { text: "Acesso às Ferramentas de IA", included: true },
