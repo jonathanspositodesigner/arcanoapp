@@ -430,7 +430,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
                 {/* CTA */}
                 <Button
                   onClick={() => handlePurchase(plan)}
-                  disabled={mpLoading}
+                  disabled={false}
                   className={`w-full mb-2 text-sm lg:text-base h-10 lg:h-12 ${
                     plan.isLifetime ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold" :
                     plan.bestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" :
