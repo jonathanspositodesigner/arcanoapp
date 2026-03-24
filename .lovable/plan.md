@@ -1,56 +1,66 @@
 
+Diagnóstico (10:01 São Paulo)
 
-# Plano: Otimização PageSpeed da /planos-upscaler-arcano (sem mexer nos pixels/clarity)
+- Convertendo horário: **10:01 BRT = ~13:01 UTC**.
+- No banco, nesse intervalo (**12:55–13:05 UTC**) encontrei:
+  - apenas **1 job Arcano Cloner às 13:04:48 UTC** (sucesso),
+  - e os uploads de storage correspondentes também só às **13:04:47/13:04:48 UTC**.
+- Não há evidência de execução do processamento (fila/webhook) exatamente em 13:01 UTC.
+- Isso indica falha **antes** de iniciar o job (fase de upload/insert), compatível com o erro do print:  
+  **“new row violates row-level security policy”**.
 
-## Análise do que é viável vs. não viável
+Causa mais provável
 
-**Já está feito (não precisa mexer):**
-- Cache de assets: o `_headers` já tem `/assets/*` com `max-age=31536000, immutable` e `/images/*` com cache de 30 dias. `/sounds/*` não tem regra — adicionar.
-- `PreCheckoutModal` já é `React.lazy` (linha 30)
-- `ScrollDrivenGallery`, `MobileBeforeAfterGallery`, `BeforeAfterGalleryPT` já são lazy (linhas 39-42)
-- `ResilientImage` já suporta `loading`, `fetchPriority`, `width`, `height`
-- Fontes já carregam com preload async (linhas 35-41)
-- Lucide icons já importa individualmente (linha 21)
-- CSS purge do Tailwind já está configurado via `content` no config
+- O Arcano Cloner usa RLS estrita:
+  - `storage.objects` (bucket `artes-cloudinary`) só aceita upload se o caminho tiver o `auth.uid()` correto.
+  - `arcano_cloner_jobs` só aceita insert se `user_id = auth.uid()`.
+- Se a UI tiver `user.id` em memória, mas o token real da sessão estiver ausente/expirado/dessincronizado, o backend enxerga como anônimo ou UID diferente e bloqueia com RLS.
+- Portanto, o erro não é do modelo de IA; é de **estado de autenticação vs RLS** na criação do processamento.
 
-**Não vou mexer (por instrução do usuário):**
-- Facebook Pixel e Microsoft Clarity — manter como estão
+Plano de correção (definitivo, sem afrouxar segurança)
 
-**Não é viável sem risco de quebra:**
-- Remover Supabase do bundle — a página usa `supabase` para `fetchToolData` e `usePremiumArtesStatus`
-- CSS code splitting por rota — Vite SPA não suporta CSS splitting automático por rota sem mudança arquitetural significativa
+1) Revalidar autenticação imediatamente antes de processar (Arcano Cloner)
+- Em `handleProcess`, buscar `supabase.auth.getUser()` na hora do clique.
+- Usar **somente** esse `authUser.id` validado (não o `user.id` do estado React) para:
+  - path do upload no storage,
+  - `user_id` do insert em `arcano_cloner_jobs`,
+  - payload enviado para a função de processamento.
+- Se não houver `authUser`, bloquear execução e abrir fluxo “faça login novamente”.
 
-## Correções a implementar
+2) Retry controlado de sessão (1 tentativa)
+- Quando erro de upload/insert for de RLS/401/403:
+  - tentar `supabase.auth.refreshSession()` uma vez,
+  - repetir a operação uma única vez.
+- Se falhar de novo, abortar com mensagem amigável (sem loop infinito).
 
-### 1. Cache para `/sounds/*` no `_headers`
-Adicionar regra de cache para arquivos de áudio (notification.mp3 sem cache atualmente).
+3) Mensagem de erro clara para usuário final
+- Mapear erro de RLS em `getAIErrorMessage` para algo tipo:
+  - “Sua sessão expirou. Faça login novamente para gerar a imagem.”
+- Evitar exibir mensagem técnica crua no toast.
 
-### 2. Viewport meta — permitir zoom (acessibilidade)
-Remover `maximum-scale=1.0, user-scalable=no` do `index.html` — melhora score de Práticas Recomendadas.
+4) Blindagem adicional no trial (preventivo)
+- Em `ClonerTrialSection`, antes do insert:
+  - se houver usuário autenticado, não inserir `user_id: null`; usar fluxo compatível com sessão atual (ou redirecionar para fluxo normal).
+- Isso evita outro cenário clássico de RLS quando usuário logado cai no trial.
 
-### 3. Limpar preconnects desnecessários
-- **Remover**: `images.unsplash.com` (não é usado na página)
-- **Remover**: `api.pagar.me` (só usado se o usuário clicar em comprar, preconnect desperdiça conexão)
-- **Manter**: Supabase, Google Fonts
+5) Observabilidade para não ficar no escuro
+- Adicionar logs estruturados no frontend por etapa (`upload_user`, `upload_reference`, `insert_job`) com `error.code/message`.
+- Assim fica claro se a falha aconteceu no storage ou no insert do job.
 
-### 4. Headers de segurança no `_headers`
-Adicionar ao `_headers`:
-- `X-Frame-Options: SAMEORIGIN`
-- `Cross-Origin-Opener-Policy: same-origin`
-- `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload`
+Arquivos para ajustar
 
-### 5. Corrigir URL da fonte com 404
-A URL `https://fonts.gstatic.com/s/bebasneue/v14/JTUSjIg69CK48gW7PXooxW5rygbi49c.woff2` pode estar desatualizada. Atualizar o preload para a versão correta consultando o Google Fonts atual.
+- `src/pages/ArcanoClonerTool.tsx`  
+  (revalidação auth em tempo real, uso de `authUser.id`, retry de sessão)
+- `src/components/arcano-cloner/trial/ClonerTrialSection.tsx`  
+  (compatibilizar insert com usuário autenticado)
+- `src/utils/errorMessages.ts`  
+  (mapa específico para erro de RLS/sessão expirada)
 
-### 6. FullscreenModal para lazy load
-O `FullscreenModal` (definido inline nas linhas 68-186) é renderizado condicionalmente mas está no bundle principal. Extrair para arquivo separado e usar `React.lazy`.
+Detalhes técnicos
 
-## Arquivos modificados
-
-| Arquivo | Alteração |
-|---|---|
-| `index.html` | Corrigir viewport meta; remover preconnects não usados; atualizar URL preload da fonte |
-| `public/_headers` | Adicionar cache para `/sounds/*`; adicionar headers de segurança globais |
-| `src/components/upscaler/FullscreenModal.tsx` | Extrair componente do PlanosUpscalerArcano |
-| `src/pages/PlanosUpscalerArcano.tsx` | Importar FullscreenModal via React.lazy |
-
+- Manter as políticas RLS atuais (estão corretas e seguras); o problema é de fluxo/sessão no cliente.
+- Não abrir policy para permitir `user_id` divergente ou nulo em fluxo autenticado.
+- Critério de sucesso após correção:
+  1) com sessão válida: upload + insert sempre passam;
+  2) com sessão expirada: usuário recebe orientação de relogin (sem erro técnico cru);
+  3) nenhum caso volta a mostrar “new row violates row-level security policy” no fluxo normal.
