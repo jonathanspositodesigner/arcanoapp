@@ -491,7 +491,7 @@ const ArcanoClonerTool: React.FC = () => {
         'runninghub-arcano-cloner/run',
         {
           body: {
-            jobId: job.id,
+            jobId: createdJob.id,
             userImageUrl: userUrl,
             referenceImageUrl: referenceUrl,
             aspectRatio: aspectRatio,
