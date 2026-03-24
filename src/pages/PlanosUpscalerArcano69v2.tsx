@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,17 @@ import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 
 import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton, LazySocialProofWrapper } from "@/components/upscaler";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+// Gallery images for hero carousel (first 2 from ScrollDrivenGallery)
+import galleryBefore2 from "@/assets/upscaler/2a.webp";
+import galleryAfter2 from "@/assets/upscaler/2d.webp";
+import galleryBefore3 from "@/assets/upscaler/3a.webp";
+import galleryAfter3 from "@/assets/upscaler/3d.webp";
+import galleryBefore2Cel from "@/assets/upscaler/2a_cel.webp";
+import galleryAfter2Cel from "@/assets/upscaler/2d_cel.webp";
+import galleryBefore3Cel from "@/assets/upscaler/3a_cel.webp";
+import galleryAfter3Cel from "@/assets/upscaler/3d_cel.webp";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
 
@@ -515,6 +526,76 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
 };
 
 
+// Hero Carousel with 3 before/after slides
+const heroSlides = [
+  {
+    beforeDesktop: upscalerHeroAntesDesktop,
+    afterDesktop: upscalerHeroDepoisDesktop,
+    beforeMobile: upscalerHeroAntesMobile,
+    afterMobile: upscalerHeroDepoisMobile,
+  },
+  {
+    beforeDesktop: galleryBefore2,
+    afterDesktop: galleryAfter2,
+    beforeMobile: galleryBefore2Cel,
+    afterMobile: galleryAfter2Cel,
+  },
+  {
+    beforeDesktop: galleryBefore3,
+    afterDesktop: galleryAfter3,
+    beforeMobile: galleryBefore3Cel,
+    afterMobile: galleryAfter3Cel,
+  },
+];
+
+const HeroCarousel = ({ isMobile, locale, label }: { isMobile: boolean; locale: "pt" | "es"; label: string }) => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const goTo = useCallback((dir: 1 | -1) => {
+    setCurrentSlide(prev => (prev + dir + heroSlides.length) % heroSlides.length);
+  }, []);
+
+  const slide = heroSlides[currentSlide];
+
+  return (
+    <div className="relative">
+      <HeroBeforeAfterSlider
+        key={currentSlide}
+        beforeImage={isMobile ? slide.beforeMobile : slide.beforeDesktop}
+        afterImage={isMobile ? slide.afterMobile : slide.afterDesktop}
+        label={label}
+        locale={locale}
+      />
+      {/* Arrows */}
+      <button
+        onClick={() => goTo(-1)}
+        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 backdrop-blur-sm transition-colors"
+        aria-label="Anterior"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+      <button
+        onClick={() => goTo(1)}
+        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 backdrop-blur-sm transition-colors"
+        aria-label="Próximo"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </button>
+      {/* Dots */}
+      <div className="flex justify-center gap-1.5 mt-3">
+        {heroSlides.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentSlide(i)}
+            className={`w-2 h-2 rounded-full transition-all ${i === currentSlide ? 'bg-fuchsia-400 w-5' : 'bg-white/30 hover:bg-white/50'}`}
+            aria-label={`Slide ${i + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const PlanosUpscalerArcano69v2 = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -733,9 +814,9 @@ const PlanosUpscalerArcano69v2 = () => {
                 </p>
               </FadeIn>
 
-              {/* Before/After Slider - menos largo */}
+              {/* Before/After Carousel */}
               <FadeIn delay={0} duration={400}>
-                <div className="w-[90vw] md:w-[50vw] lg:w-[42vw] md:[&_.space-y-3>div:first-child]:!aspect-[5/3] [&_.space-y-3>div:first-child]:!h-auto mb-5 md:mb-6">
+                <div className="w-[90vw] md:w-[50vw] lg:w-[42vw] md:[&_.space-y-3>div:first-child]:!aspect-[5/3] [&_.space-y-3>div:first-child]:!h-auto mb-5 md:mb-6 relative">
                   {isMobile && !heroRevealed ? (
                     <HeroPlaceholder
                       onReveal={() => setHeroRevealed(true)}
@@ -743,12 +824,7 @@ const PlanosUpscalerArcano69v2 = () => {
                       locale="pt"
                     />
                   ) : (
-                    <HeroBeforeAfterSlider
-                      beforeImage={isMobile ? upscalerHeroAntesMobile : upscalerHeroAntesDesktop}
-                      afterImage={isMobile ? upscalerHeroDepoisMobile : upscalerHeroDepoisDesktop}
-                      label={t('tools:upscaler.hero.dragToCompare')}
-                      locale="pt"
-                    />
+                    <HeroCarousel isMobile={isMobile} locale="pt" label={t('tools:upscaler.hero.dragToCompare')} />
                   )}
                 </div>
               </FadeIn>
