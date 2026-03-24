@@ -62,7 +62,7 @@ const UpgradeUpscalerV3 = () => {
               {[
                 { icon: Zap, text: "Resultado em < 1 min" },
                 { icon: Layers, text: "10 imagens de uma vez" },
-                { icon: Shield, text: "Créditos intactos" },
+                { icon: Shield, text: "Acesso V2 mantido" },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
                   <item.icon className="h-3.5 w-3.5 text-fuchsia-400" />
