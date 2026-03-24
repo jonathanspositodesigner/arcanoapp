@@ -31,6 +31,7 @@ const UpscalerChoiceModal = ({
 
   const handleUnlimitedClick = () => {
     onClose();
+    // Go to version select page (V2 versions + V3 card)
     navigate("/ferramenta-ia-artes/upscaller-arcano");
   };
 
