@@ -522,14 +522,11 @@ const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { 
       </div>
 
       {/* PreCheckout Modal */}
-      <PreCheckoutModal
-        isOpen={showPreCheckout}
-        onClose={() => { setShowPreCheckout(false); setPreCheckoutSlug(null); }}
-        userEmail={userEmail}
-        userId={userId}
-        productSlug={preCheckoutSlug || undefined}
-        modalTitle="Finalizar Compra"
-        colorScheme="fuchsia"
+      <MPEmailModal
+        open={!!mpEmailSlug}
+        onClose={() => setMpEmailSlug(null)}
+        onConfirm={handleEmailConfirm}
+        loading={mpLoading}
       />
     </AnimatedSection>
   );
