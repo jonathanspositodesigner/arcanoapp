@@ -176,7 +176,7 @@ const UpgradeUpscalerV3 = () => {
 
           <StaggeredAnimation className="grid grid-cols-1 md:grid-cols-2 gap-6 md:items-stretch" staggerDelay={150}>
             {/* MODO TURBO */}
-            <div className="text-left bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/10 rounded-3xl p-7 md:p-8 hover:border-fuchsia-500/40 transition-all duration-300 hover:transform hover:scale-[1.01]">
+            <div className="text-left bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/10 rounded-3xl p-7 md:p-8 hover:border-fuchsia-500/40 transition-all duration-300 hover:transform hover:scale-[1.01] flex flex-col">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/20 flex items-center justify-center">
                   <Zap className="h-6 w-6 text-amber-400" />
