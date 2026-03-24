@@ -633,7 +633,7 @@ serve(async (req) => {
         ? 'https://arcanoapp.voxvisual.com.br/upscaler-arcano'
         : 'https://arcanoapp.voxvisual.com.br/'
       
-      await sendPurchaseEmail(supabase, email, product.title, ctaLink, requestId, product.type, product.credits_amount)
+      await sendPurchaseEmail(supabase, email, product.title, ctaLink, order.id, product.type, product.credits_amount)
 
       // 7. Notificar admin
       try {
