@@ -306,14 +306,10 @@ const ArcanoClonerTool: React.FC = () => {
   };
 
   // Upload image to Supabase storage
-  const uploadToStorage = async (file: File | Blob, prefix: string): Promise<string> => {
-    if (!user?.id) {
-      throw new Error('User not authenticated');
-    }
-    
+  const uploadToStorage = async (file: File | Blob, prefix: string, verifiedUserId: string): Promise<string> => {
     const timestamp = Date.now();
     const fileName = `${prefix}-${timestamp}.jpg`;
-    const filePath = `arcano-cloner/${user.id}/${fileName}`;
+    const filePath = `arcano-cloner/${verifiedUserId}/${fileName}`;
 
     const { data, error } = await supabase.storage
       .from('artes-cloudinary')
@@ -322,7 +318,22 @@ const ArcanoClonerTool: React.FC = () => {
         upsert: true,
       });
 
-    if (error) throw error;
+    if (error) {
+      // If RLS/auth error, try refreshing session once
+      if (error.message?.includes('row-level security') || error.message?.includes('security policy') || (error as any).statusCode === 403) {
+        console.warn('[ArcanoCloner] RLS error on upload, attempting session refresh...');
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) throw new Error('Sessão expirada. Faça login novamente.');
+        
+        // Retry upload once
+        const { error: retryError } = await supabase.storage
+          .from('artes-cloudinary')
+          .upload(filePath, file, { contentType: 'image/jpeg', upsert: true });
+        if (retryError) throw retryError;
+      } else {
+        throw error;
+      }
+    }
 
     const { data: urlData } = supabase.storage
       .from('artes-cloudinary')
