@@ -80,7 +80,7 @@ const ChangePassword = () => {
           return;
         }
 
-        const { error: loginError } = await supabase.auth.signInWithPassword({
+        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
           email: normalizedEmail,
           password: newPassword,
         });
@@ -88,6 +88,13 @@ const ChangePassword = () => {
         if (loginError) {
           toast.error("Senha cadastrada, mas não foi possível entrar automaticamente.");
           return;
+        }
+
+        if (loginData?.user?.id) {
+          await supabase
+            .from("profiles")
+            .update({ password_changed: true })
+            .eq("id", loginData.user.id);
         }
 
         toast.success("Senha cadastrada com sucesso!");

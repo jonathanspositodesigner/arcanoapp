@@ -232,35 +232,8 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
         }
         
         // Auto-login failed
-        // Main checkout flow: do not send recovery email, go directly to first-access password setup page
-        if (config.changePasswordRoute === '/change-password') {
-          const waitingUrl = `${config.changePasswordRoute}?redirect=${encodeURIComponent(config.defaultRedirect)}&sent=1&email=${encodeURIComponent(normalizedEmail)}`;
-          navigate(waitingUrl);
-          config.onClose?.();
-          setState(prev => ({ ...prev, isLoading: false }));
-          return;
-        }
-
-        // Other legacy flows keep email-link behavior
-        console.log('[UnifiedAuth] Auto-login failed, sending link via send-recovery-email');
-        const redirectUrl = `${window.location.origin}${config.changePasswordRoute}?redirect=${encodeURIComponent(config.defaultRedirect)}`;
-
-        const { data: recoveryData, error: recoveryError } = await supabase.functions.invoke('send-recovery-email', {
-          body: { email: normalizedEmail, redirect_url: redirectUrl }
-        });
-
-        if (recoveryError || (recoveryData && !recoveryData.success)) {
-          console.error('[UnifiedAuth] Recovery email error:', recoveryError || recoveryData?.error);
-          toast.info('Problema ao enviar link. Tente com sua senha.');
-          setState(prev => ({
-            ...prev,
-            step: 'password',
-            verifiedEmail: normalizedEmail,
-            isLoading: false,
-          }));
-          return;
-        }
-
+        // Primeiro acesso: NUNCA enviar link por email.
+        // Sempre levar direto para cadastro de senha na tela de troca.
         const waitingUrl = `${config.changePasswordRoute}?redirect=${encodeURIComponent(config.defaultRedirect)}&sent=1&email=${encodeURIComponent(normalizedEmail)}`;
         navigate(waitingUrl);
         config.onClose?.();
