@@ -546,12 +546,10 @@ const PlanosUpscalerArcano69v2 = () => {
   useEffect(() => {
     const mpStatus = searchParams.get("mp_status");
     if (mpStatus === "failure") {
-      const { toast } = await import("sonner");
       toast.error("Pagamento não concluído. Tente novamente.");
       searchParams.delete("mp_status");
       setSearchParams(searchParams, { replace: true });
     } else if (mpStatus === "pending") {
-      const { toast } = await import("sonner");
       toast.info("Pagamento pendente. Aguarde a confirmação e você receberá um e-mail.");
       searchParams.delete("mp_status");
       setSearchParams(searchParams, { replace: true });
