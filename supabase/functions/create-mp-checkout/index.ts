@@ -84,15 +84,19 @@ serve(async (req) => {
       })
     }
 
-    // 2. Criar ordem interna
+    // 2. Criar ordem interna (com dados de atribuição Meta)
     const { data: order, error: orderError } = await supabase
       .from('mp_orders')
       .insert({
         user_email: email,
+        user_name: payerName || null,
         product_id: product.id,
         amount: product.price,
         status: 'pending',
-        utm_data: sanitizeUtmData(utm_data)
+        utm_data: sanitizeUtmData(utm_data),
+        meta_fbp: fbp || null,
+        meta_fbc: fbc || null,
+        meta_user_agent: clientUA || null,
       })
       .select('id')
       .single()
@@ -137,9 +141,9 @@ serve(async (req) => {
         installments: 12
       },
       back_urls: {
-        success: 'https://arcanoapp.lovable.app/ferramentas-ia?mp_status=success',
-        failure: 'https://arcanoapp.lovable.app/ferramentas-ia?mp_status=failure',
-        pending: 'https://arcanoapp.lovable.app/ferramentas-ia?mp_status=pending'
+        success: 'https://arcanoapp.lovable.app/sucesso-compra?gateway=mercadopago',
+        failure: 'https://arcanoapp.lovable.app/planos-upscaler-arcano-69?mp_status=failure',
+        pending: 'https://arcanoapp.lovable.app/planos-upscaler-arcano-69?mp_status=pending'
       },
       auto_return: 'approved',
       notification_url: `${supabaseUrl}/functions/v1/webhook-mercadopago`
