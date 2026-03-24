@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Validate that an order exists for this email
+    // === STEP 1: Find order in asaas_orders ===
     const isUUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(order_id);
 
     let orderQuery = supabaseAdmin
@@ -70,26 +70,48 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (!orders || orders.length === 0) {
+    let order = orders && orders.length > 0 ? orders[0] : null;
+    let isMpOrder = false;
+
+    // === STEP 2: Fallback to mp_orders if not found in asaas_orders ===
+    if (!order) {
+      const { data: mpOrders, error: mpError } = await supabaseAdmin
+        .from("mp_orders")
+        .select("id, user_email, user_id, status")
+        .eq("user_email", trimmedEmail)
+        .eq("status", "paid")
+        .limit(1);
+
+      if (mpError) {
+        console.error("MP order lookup error:", mpError);
+      }
+
+      if (mpOrders && mpOrders.length > 0) {
+        order = mpOrders[0];
+        isMpOrder = true;
+        console.log("Order found in mp_orders:", order.id);
+      }
+    }
+
+    if (!order) {
       return new Response(
         JSON.stringify({ error: "Nenhum pedido encontrado para este email. Verifique se digitou o email correto." }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const order = orders[0];
-
-    // Check if user already exists in auth
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const existingUser = existingUsers?.users?.find(
-      (u) => u.email?.toLowerCase() === trimmedEmail
-    );
-
+    // === STEP 3: Find existing user via profiles (avoids listUsers pagination issue) ===
     let userId: string;
 
-    if (existingUser) {
-      // User exists in auth - just update password
-      userId = existingUser.id;
+    const { data: existingProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("id, password_changed")
+      .eq("email", trimmedEmail)
+      .maybeSingle();
+
+    if (existingProfile) {
+      // User exists - update password
+      userId = existingProfile.id;
       const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
         password: password,
         email_confirm: true,
@@ -101,52 +123,99 @@ Deno.serve(async (req) => {
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-    } else {
-      // Create new user with confirmed email
-      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-        email: trimmedEmail,
-        password: password,
-        email_confirm: true,
-      });
-      if (createError || !newUser?.user) {
-        console.error("Create user error:", createError);
-        return new Response(
-          JSON.stringify({ error: "Erro ao criar conta" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+
+      // Preserve password_changed status for existing profiles
+      const passwordChangedValue = existingProfile.password_changed;
+
+      await supabaseAdmin
+        .from("profiles")
+        .upsert(
+          {
+            id: userId,
+            email: trimmedEmail,
+            email_verified: true,
+            password_changed: passwordChangedValue,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "id" }
         );
+    } else {
+      // No profile found - check auth as fallback (edge case: user in auth but no profile)
+      let existingAuthUser = null;
+      try {
+        // Search auth users with pagination to find by email
+        let page = 1;
+        const perPage = 1000;
+        while (page <= 5) {
+          const { data: usersPage } = await supabaseAdmin.auth.admin.listUsers({
+            page,
+            perPage,
+          });
+          if (!usersPage?.users || usersPage.users.length === 0) break;
+          const found = usersPage.users.find(
+            (u) => u.email?.toLowerCase() === trimmedEmail
+          );
+          if (found) {
+            existingAuthUser = found;
+            break;
+          }
+          if (usersPage.users.length < perPage) break;
+          page++;
+        }
+      } catch (e) {
+        console.error("Auth user search error:", e);
       }
-      userId = newUser.user.id;
+
+      if (existingAuthUser) {
+        userId = existingAuthUser.id;
+        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+          password: password,
+          email_confirm: true,
+        });
+        if (updateError) {
+          console.error("Update user error:", updateError);
+          return new Response(
+            JSON.stringify({ error: "Erro ao atualizar senha" }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      } else {
+        // Create new user
+        const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+          email: trimmedEmail,
+          password: password,
+          email_confirm: true,
+        });
+        if (createError || !newUser?.user) {
+          console.error("Create user error:", createError);
+          return new Response(
+            JSON.stringify({ error: "Erro ao criar conta" }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        userId = newUser.user.id;
+      }
+
+      // Create profile for new user
+      await supabaseAdmin
+        .from("profiles")
+        .upsert(
+          {
+            id: userId,
+            email: trimmedEmail,
+            email_verified: true,
+            password_changed: false,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "id" }
+        );
     }
 
-    // Check if profile already exists to preserve password_changed status
-    const { data: existingProfile } = await supabaseAdmin
-      .from("profiles")
-      .select("id, password_changed")
-      .eq("id", userId)
-      .maybeSingle();
-
-    // Only set password_changed = true if this is a NEW profile being created
-    // For existing profiles, preserve their current password_changed status
-    const passwordChangedValue = existingProfile ? existingProfile.password_changed : false;
-
-    // Upsert profile
-    await supabaseAdmin
-      .from("profiles")
-      .upsert(
-        {
-          id: userId,
-          email: trimmedEmail,
-          email_verified: true,
-          password_changed: passwordChangedValue,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "id" }
-      );
-
-    // Link order to user if not linked
+    // === STEP 4: Link order to user if not linked ===
     if (!order.user_id) {
+      const orderTable = isMpOrder ? "mp_orders" : "asaas_orders";
       await supabaseAdmin
-        .from("asaas_orders")
+        .from(orderTable)
         .update({ user_id: userId })
         .eq("id", order.id);
     }
