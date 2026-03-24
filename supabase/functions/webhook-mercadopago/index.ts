@@ -662,10 +662,8 @@ serve(async (req) => {
       .eq('event_type', 'purchase')
       console.log(`   ├─ ✅ webhook_logs atualizado`)
 
-      // 6. Enviar email de compra
-      const ctaLink = product.pack_slug === 'upscaler-arcano' || product.pack_slug === 'upscaller-arcano' || product.type === 'credits'
-        ? 'https://arcanoapp.voxvisual.com.br/upscaler-arcano'
-        : 'https://arcanoapp.voxvisual.com.br/'
+      // 6. Enviar email de compra — CTA sempre para a Home
+      const ctaLink = 'https://arcanoapp.voxvisual.com.br/'
       
       await sendPurchaseEmail(supabase, email, product.title, ctaLink, order.id, product.type, product.credits_amount)
 
