@@ -639,7 +639,7 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
-      // 5. Inserir em webhook_logs (visibilidade no painel admin)
+      // 5. Atualizar webhook_log (já inserido no claim atômico) com dados finais
       const hashCode = (s: string) => {
         let h = 0
         for (let i = 0; i < s.length; i++) {
@@ -648,24 +648,19 @@ serve(async (req) => {
         return Math.abs(h)
       }
 
-      await supabase.from('webhook_logs').insert({
-        platform: 'mercadopago',
+      await supabase.from('webhook_logs').update({
         status: 'paid',
         email,
-        amount: paymentAmount,
-        amount_brl: paymentAmount,
-        currency: 'BRL',
         net_amount: payment.transaction_details?.net_received_amount ?? paymentAmount,
         product_name: product.title,
         product_id: hashCode(product.id) + 900000,
-        transaction_id: String(paymentId),
-        event_type: 'purchase',
-        payment_method: payment.payment_method_id || null,
-        utm_data: order.utm_data || null,
         result: 'success',
         payload: { order_id: order.id, mp_payment_id: paymentId, customer_name: customerName },
       })
-      console.log(`   ├─ ✅ webhook_logs inserido`)
+      .eq('platform', 'mercadopago')
+      .eq('transaction_id', String(paymentId))
+      .eq('event_type', 'purchase')
+      console.log(`   ├─ ✅ webhook_logs atualizado`)
 
       // 6. Enviar email de compra
       const ctaLink = product.pack_slug === 'upscaler-arcano' || product.pack_slug === 'upscaller-arcano' || product.type === 'credits'
