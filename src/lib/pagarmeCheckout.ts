@@ -39,6 +39,11 @@ export async function redirectToCheckout(
         utm_data: utmData,
         fbp,
         fbc,
+        ...(customer ? {
+          customer_name: customer.name,
+          customer_email: customer.email,
+          customer_document: customer.document,
+        } : {}),
       }),
       signal: controller.signal,
     });
