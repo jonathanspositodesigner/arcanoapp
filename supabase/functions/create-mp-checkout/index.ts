@@ -171,6 +171,7 @@ serve(async (req) => {
       notification_url: `${supabaseUrl}/functions/v1/webhook-mercadopago`
     }
 
+    console.log(`🔑 Token prefix: ${mpAccessToken.substring(0, 8)}...`)
     console.log(`🔄 Enviando preferência ao MP com payer:`, JSON.stringify(payer))
 
     const mpResponse = await fetch('https://api.mercadopago.com/checkout/preferences', {
