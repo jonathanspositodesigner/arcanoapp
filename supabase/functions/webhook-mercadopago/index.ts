@@ -407,8 +407,8 @@ serve(async (req) => {
     console.log(`   ├─ type: ${notificationType}`)
     console.log(`   ├─ payment_id: ${paymentId}`)
 
-    // Só processar notificações de pagamento
-    if (notificationType !== 'payment' && notificationType !== 'merchant_order') {
+    // Só processar notificações de pagamento (ignorar merchant_order — usa endpoint diferente)
+    if (notificationType !== 'payment') {
       console.log(`   ├─ ⏭️ Tipo ignorado: ${notificationType}`)
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
