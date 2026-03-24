@@ -509,12 +509,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
       </div>
 
       {/* PreCheckout Modal */}
-      <MPEmailModal
-        open={!!mpEmailSlug}
-        onClose={() => setMpEmailSlug(null)}
-        onConfirm={handleCustomerConfirm}
-        loading={mpLoading}
-      />
+      <MPCheckoutModal />
     </AnimatedSection>
   );
 };
