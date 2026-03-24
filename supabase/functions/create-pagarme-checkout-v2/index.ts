@@ -147,8 +147,6 @@ serve(async (req) => {
     const idempotencyKey = `v2_${orderId}_${Date.now()}`
     const itemCode = product.slug || product.id || 'PROD001'
 
-    const temporaryCustomerEmail = `checkout+${orderId.slice(0, 8)}@arcanoapp.com`
-
     const checkoutPayload = {
       items: [{
         amount: amountInCents,
@@ -156,11 +154,6 @@ serve(async (req) => {
         quantity: 1,
         code: itemCode,
       }],
-      customer: {
-        name: 'Cliente Arcano',
-        email: temporaryCustomerEmail,
-        type: 'individual',
-      },
       payments: [{
         payment_method: 'checkout',
         checkout: {
