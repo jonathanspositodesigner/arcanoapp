@@ -771,14 +771,28 @@ serve(async (req) => {
           }
         }
 
-        // Revogar acesso ao pack que foi concedido na compra de créditos
-        await supabase
-          .from('user_pack_purchases')
-          .update({ is_active: false, updated_at: new Date().toISOString() })
+        // Verificar se há outras ordens pagas de créditos antes de revogar o pack
+        const { data: otherCreditOrders } = await supabase
+          .from('mp_orders')
+          .select('id, product_slug, mp_products!inner(type)')
           .eq('user_id', order.user_id)
-          .eq('pack_slug', 'upscaller-arcano')
-          .eq('access_type', 'credits')
-        console.log(`   ├─ ✅ Acesso ao pack upscaller-arcano (credits) revogado`)
+          .eq('status', 'paid')
+          .neq('id', order.id)
+
+        const hasOtherCredits = otherCreditOrders?.some((o: any) => o.mp_products?.type === 'credits')
+
+        if (!hasOtherCredits) {
+          // Só revogar o pack se não houver outras compras de créditos ativas
+          await supabase
+            .from('user_pack_purchases')
+            .update({ is_active: false, updated_at: new Date().toISOString() })
+            .eq('user_id', order.user_id)
+            .eq('pack_slug', 'upscaller-arcano')
+            .eq('access_type', 'credits')
+          console.log(`   ├─ ✅ Acesso ao pack upscaller-arcano (credits) revogado`)
+        } else {
+          console.log(`   ├─ ⚠️ Pack mantido: usuário tem ${otherCreditOrders?.filter((o: any) => o.mp_products?.type === 'credits').length} outra(s) compra(s) de créditos ativa(s)`)
+        }
       }
 
       await supabase.from('mp_orders').update({
