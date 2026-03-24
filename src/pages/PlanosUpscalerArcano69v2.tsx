@@ -14,6 +14,17 @@ import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 
 import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton, LazySocialProofWrapper } from "@/components/upscaler";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+// Gallery images for hero carousel (first 2 from ScrollDrivenGallery)
+import galleryBefore2 from "@/assets/upscaler/2a.webp";
+import galleryAfter2 from "@/assets/upscaler/2d.webp";
+import galleryBefore3 from "@/assets/upscaler/3a.webp";
+import galleryAfter3 from "@/assets/upscaler/3d.webp";
+import galleryBefore2Cel from "@/assets/upscaler/2a_cel.webp";
+import galleryAfter2Cel from "@/assets/upscaler/2d_cel.webp";
+import galleryBefore3Cel from "@/assets/upscaler/3a_cel.webp";
+import galleryAfter3Cel from "@/assets/upscaler/3d_cel.webp";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
 
