@@ -931,7 +931,7 @@ serve(async (req) => {
       }
 
       // === REFUND: Revogar bônus vitalício Upscaler Arcano ===
-      if (order.user_id && product.slug === 'upscaller-arcano-vitalicio') {
+      if (order.user_id && (product.slug === 'upscaller-arcano-vitalicio' || product.slug === 'upscaler-arcano-v3')) {
         console.log(`   ├─ 📋 Revogando bônus vitalício Upscaler Arcano...`)
         
         // Revogar 10.000 créditos bônus
