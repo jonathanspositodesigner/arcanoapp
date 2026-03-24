@@ -98,7 +98,7 @@ const UpgradeUpscalerV3 = () => {
             </div>
           </FadeIn>
 
-          <h1 className="font-space-grotesk font-bold md:text-4xl lg:text-5xl xl:text-6xl text-white mb-5 leading-[1.15] text-5xl">
+          <h1 className="font-space-grotesk font-bold text-5xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-5 leading-[1.15]">
             Você já sabe que funciona.
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
