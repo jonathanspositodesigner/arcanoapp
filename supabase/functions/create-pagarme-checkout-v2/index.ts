@@ -140,12 +140,14 @@ serve(async (req) => {
     }
 
     orderId = order.id
-    console.log(`[${requestId}] 📦 Ordem criada: ${orderId} | ${product.title} | R$${(product.price / 100).toFixed(2)}`)
+    console.log(`[${requestId}] 📦 Ordem criada: ${orderId} | ${product.title} | R$${Number(product.price).toFixed(2)}`)
 
     // Montar payload Pagar.me — checkout totalmente hospedado
     const amountInCents = Math.round(Number(product.price) * 100)
     const idempotencyKey = `v2_${orderId}_${Date.now()}`
     const itemCode = product.slug || product.id || 'PROD001'
+
+    const temporaryCustomerEmail = `checkout+${orderId.slice(0, 8)}@arcanoapp.com`
 
     const checkoutPayload = {
       items: [{
@@ -154,6 +156,11 @@ serve(async (req) => {
         quantity: 1,
         code: itemCode,
       }],
+      customer: {
+        name: 'Cliente Arcano',
+        email: temporaryCustomerEmail,
+        type: 'individual',
+      },
       payments: [{
         payment_method: 'checkout',
         checkout: {
@@ -162,6 +169,17 @@ serve(async (req) => {
           success_url: 'https://arcanoapp.voxvisual.com.br/sucesso-compra',
           customer_editable: true,
           billing_address_editable: true,
+          credit_card: {
+            capture: true,
+            installments: [
+              { number: 1, total: amountInCents },
+              { number: 2, total: amountInCents },
+              { number: 3, total: amountInCents },
+            ],
+          },
+          pix: {
+            expires_in: 259200,
+          },
         }
       }],
       metadata: {
@@ -186,8 +204,8 @@ serve(async (req) => {
     )
 
     if (!response.ok) {
-      console.error(`[${requestId}] ❌ Pagar.me ${response.status}: ${responseText.substring(0, 500)}`)
-      // Mark order as failed
+      console.error(`[${requestId}] ❌ Pagar.me ${response.status}: ${responseText.substring(0, 800)}`)
+
       supabase.from('asaas_orders').update({
         status: 'failed',
         gateway_error_code: String(response.status),
@@ -195,17 +213,38 @@ serve(async (req) => {
         last_attempt_at: new Date().toISOString(),
       }).eq('id', orderId).then(() => {}).catch(() => {})
 
+      if (response.status >= 400 && response.status < 500) {
+        try {
+          const errData = JSON.parse(responseText)
+          const friendly = errData?.message || 'Erro de validação ao criar checkout'
+          return errorResponse(friendly, 422, 'PAGARME_VALIDATION')
+        } catch {
+          return errorResponse('Erro de validação ao criar checkout', 422, 'PAGARME_VALIDATION')
+        }
+      }
+
       return errorResponse('Erro ao criar checkout', 500, 'PAGARME_ERROR');
     }
 
     let pagarmeData: any
-    try { pagarmeData = JSON.parse(responseText) } catch {
+    try {
+      pagarmeData = JSON.parse(responseText)
+    } catch {
       return errorResponse('Resposta inválida do gateway', 500, 'PARSE_ERROR');
     }
 
-    const checkoutUrl = pagarmeData?.checkouts?.[0]?.payment_url
+    const lastTransaction = pagarmeData?.charges?.[0]?.last_transaction
+    const checkoutUrl =
+      lastTransaction?.url ||
+      lastTransaction?.payment_url ||
+      lastTransaction?.checkout_url ||
+      pagarmeData?.checkouts?.[0]?.payment_url ||
+      pagarmeData?.checkouts?.[0]?.url ||
+      pagarmeData?.charges?.[0]?.url ||
+      null
+
     if (!checkoutUrl) {
-      console.error(`[${requestId}] Sem checkout URL na resposta:`, responseText.substring(0, 300))
+      console.error(`[${requestId}] Sem checkout URL na resposta:`, responseText.substring(0, 600))
       return errorResponse('URL de checkout não encontrada', 500, 'NO_CHECKOUT_URL');
     }
 
@@ -231,7 +270,7 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             event_name: 'InitiateCheckout',
-            value: product.price / 100,
+            value: Number(product.price),
             currency: 'BRL',
             utm_data: sanitizedUtm,
             fbp, fbc,
