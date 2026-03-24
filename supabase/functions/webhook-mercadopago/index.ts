@@ -208,7 +208,7 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
 }
 
 async function sendPurchaseEmailAttempt(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, productType: string, creditsAmount?: number): Promise<boolean> {
-  const dedupKey = `mp_purchase_${productName}`
+  const dedupKey = `mp_purchase_${requestId}`
   const { data: existing } = await supabase
     .from('welcome_email_logs')
     .select('id')
@@ -407,8 +407,8 @@ serve(async (req) => {
     console.log(`   ├─ type: ${notificationType}`)
     console.log(`   ├─ payment_id: ${paymentId}`)
 
-    // Só processar notificações de pagamento
-    if (notificationType !== 'payment' && notificationType !== 'merchant_order') {
+    // Só processar notificações de pagamento (ignorar merchant_order — usa endpoint diferente)
+    if (notificationType !== 'payment') {
       console.log(`   ├─ ⏭️ Tipo ignorado: ${notificationType}`)
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
@@ -633,7 +633,7 @@ serve(async (req) => {
         ? 'https://arcanoapp.voxvisual.com.br/upscaler-arcano'
         : 'https://arcanoapp.voxvisual.com.br/'
       
-      await sendPurchaseEmail(supabase, email, product.title, ctaLink, requestId, product.type, product.credits_amount)
+      await sendPurchaseEmail(supabase, email, product.title, ctaLink, order.id, product.type, product.credits_amount)
 
       // 7. Notificar admin
       try {

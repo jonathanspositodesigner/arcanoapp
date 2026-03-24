@@ -33,7 +33,7 @@ serve(async (req) => {
   }
 
   try {
-    const { product_slug, user_email, user_name, user_document, utm_data, fbp, fbc, user_agent: clientUA } = await req.json()
+    const { product_slug, user_email, user_name, user_document, utm_data, fbp, fbc, user_agent: clientUA, event_id: clientEventId } = await req.json()
 
     if (!product_slug || !user_email) {
       return new Response(JSON.stringify({ error: 'product_slug e user_email são obrigatórios' }), {
@@ -67,6 +67,20 @@ serve(async (req) => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+    // Rate limiting: 5 checkouts por minuto por email
+    const { data: rateCheck } = await supabase.rpc('check_rate_limit', {
+      _ip_address: email,
+      _endpoint: 'mp-checkout',
+      _max_requests: 5,
+      _window_seconds: 60,
+    })
+    if (rateCheck && rateCheck[0] && !rateCheck[0].allowed) {
+      return new Response(JSON.stringify({ error: 'Muitas tentativas. Aguarde 1 minuto.' }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
 
     // 1. Buscar produto
     const { data: product, error: productError } = await supabase
@@ -184,7 +198,7 @@ serve(async (req) => {
       const metaPixelId = '1162356848586894'
       const metaAccessToken = Deno.env.get('META_ACCESS_TOKEN')
       if (metaAccessToken) {
-        const eventId = `ic_mp_${Date.now()}`
+        const eventId = clientEventId || `ic_mp_${Date.now()}`
         const capiPayload = {
           data: [{
             event_name: 'InitiateCheckout',

@@ -76,8 +76,28 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Se encontrou na asaas_orders, retorna true
+    if (data && data.length > 0) {
+      return new Response(
+        JSON.stringify({ exists: true }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Fallback: verificar mp_orders (Mercado Pago)
+    const { data: mpData, error: mpError } = await supabaseAdmin
+      .from("mp_orders")
+      .select("id")
+      .eq("user_email", trimmedEmail)
+      .eq("status", "paid")
+      .limit(1);
+
+    if (mpError) {
+      console.error("Check mp_orders error:", mpError);
+    }
+
     return new Response(
-      JSON.stringify({ exists: (data && data.length > 0) }),
+      JSON.stringify({ exists: (mpData && mpData.length > 0) }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {

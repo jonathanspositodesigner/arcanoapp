@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X, User, Rocket, PenTool, Flame, ShieldCheck, Headset, Image, Video, Award } from "lucide-react";
 import { redirectToMPCheckout } from "@/lib/mpCheckout";
+import { toast } from "sonner";
 import { MPEmailModal, type MPCustomerData } from "@/components/checkout/MPEmailModal";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { supabase } from "@/integrations/supabase/client";
@@ -531,6 +532,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
 
 const PlanosUpscalerArcano69v2 = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
   const { user, isPremium, hasAccessToPack, isLoading: authLoading } = usePremiumArtesStatus();
   const isMobile = useIsMobile();
@@ -539,6 +541,20 @@ const PlanosUpscalerArcano69v2 = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImages, setModalImages] = useState<{ before: string; after: string } | null>(null);
   const [heroRevealed, setHeroRevealed] = useState(false);
+
+  // Feedback de status do Mercado Pago após redirecionamento
+  useEffect(() => {
+    const mpStatus = searchParams.get("mp_status");
+    if (mpStatus === "failure") {
+      toast.error("Pagamento não concluído. Tente novamente.");
+      searchParams.delete("mp_status");
+      setSearchParams(searchParams, { replace: true });
+    } else if (mpStatus === "pending") {
+      toast.info("Pagamento pendente. Aguarde a confirmação e você receberá um e-mail.");
+      searchParams.delete("mp_status");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, []);
 
   // Preload: Mobile loads preview + antes/depois mobile, Desktop loads high-res versions
   useImagesPreload(
