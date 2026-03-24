@@ -118,13 +118,16 @@ const UpgradeUpscalerV3 = () => {
               <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                 <video
                   className="absolute inset-0 w-full h-full object-cover"
-                  src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
                   autoPlay
                   muted
                   playsInline
                   controls
                   preload="auto"
-                />
+                  poster="/images/upscaler-v3-cover.webp"
+                >
+                  <source src="/videos/upscaler-promo-mobile.mp4" media="(max-width: 767px)" type="video/mp4" />
+                  <source src="/videos/upscaler-promo-desktop.mp4" type="video/mp4" />
+                </video>
               </div>
             </div>
           </FadeIn>
