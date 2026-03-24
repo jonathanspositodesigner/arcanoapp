@@ -11,12 +11,6 @@ const UpgradeUpscalerV3 = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Arcano V3 Upgrade — Modo Turbo + Upscale em Lote</title>
-        <meta name="description" content="Faça upgrade do seu Upscaler Arcano V2 para V3. Modo Turbo com resultado em menos de 1 minuto e processamento de até 10 imagens de uma vez." />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-      </Helmet>
-
       <div className="min-h-screen font-['Inter',sans-serif]" style={{ background: "#0D0B14", color: "#F8F8F8" }}>
 
         {/* SEÇÃO 0 — BARRA STICKY */}
