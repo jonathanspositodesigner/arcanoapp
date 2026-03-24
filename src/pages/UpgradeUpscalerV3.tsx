@@ -112,7 +112,25 @@ const UpgradeUpscalerV3 = () => {
             </p>
           </FadeIn>
 
-          <FadeIn delay={200} duration={400}>
+          {/* VSL VIDEO */}
+          <FadeIn delay={150} duration={400}>
+            <div className="w-full max-w-3xl mx-auto mb-10 rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-fuchsia-500/10">
+              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                <video
+                  className="absolute inset-0 w-full h-full object-cover"
+                  src="https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/assets/placeholder-vsl.mp4"
+                  autoPlay
+                  muted
+                  playsInline
+                  controls
+                  preload="auto"
+                  poster=""
+                />
+              </div>
+            </div>
+          </FadeIn>
+
+          <FadeIn delay={250} duration={400}>
             <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10 mb-10">
               {[
                 { icon: Zap, text: "Resultado em < 1 min" },
