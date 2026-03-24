@@ -93,7 +93,7 @@ const UpgradeUpscalerV3 = () => {
             <div className="inline-flex items-center gap-2 bg-amber-500/15 border border-amber-500/30 rounded-full px-4 py-1.5 mb-6 md:mb-8">
               <Sparkles className="h-3.5 w-3.5 text-amber-400" />
               <span className="text-amber-400 text-xs font-bold uppercase tracking-wider">
-                Exclusivo para clientes Arcano
+                Exclusivo para clientes da v2.0
               </span>
             </div>
           </FadeIn>
@@ -108,55 +108,27 @@ const UpgradeUpscalerV3 = () => {
 
           <FadeIn delay={100} duration={400}>
             <p className="text-sm md:text-base text-white/50 mb-8 max-w-[580px] leading-relaxed mx-auto">
-              O Arcano V2 transformou sua forma de trabalhar com imagens. O V3 transforma seu fluxo de trabalho inteiro. Dois recursos novos. Impacto real. Acesso imediato.
+              O V3 transforma seu fluxo de trabalho inteiro. Dois recursos novos. Impacto real. Acesso imediato.
             </p>
           </FadeIn>
 
           {/* VSL VIDEO */}
-          <div className="w-full max-w-3xl mx-auto mb-10 rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-fuchsia-500/10 bg-black">
-            <div className="relative w-full aspect-video">
-              <video
-                className="absolute inset-0 w-full h-full object-cover"
-                autoPlay
-                muted
-                playsInline
-                loop
-                controls
-                preload="auto"
-                poster="/images/upscaler-hero-preview.webp"
-              >
-                <source src="/videos/upscaler-promo-mobile.mp4" media="(max-width: 767px)" type="video/mp4" />
-                <source src="/videos/upscaler-promo-desktop.mp4" type="video/mp4" />
-                Seu navegador não suporta vídeo HTML5.
-              </video>
-            </div>
-          </div>
-
+...
           <FadeIn delay={250} duration={400}>
-            <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10 mb-10">
+            <div className="flex flex-wrap justify-center items-center md:gap-0 md:divide-x md:divide-white/10 mb-10 gap-[5px]">
               {[
                 { icon: Zap, text: "Resultado em < 1 min" },
-                { icon: Layers, text: "10 imagens de uma vez" },
-                { icon: Shield, text: "Acesso V2 mantido" },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                  <item.icon className="h-3.5 w-3.5 text-fuchsia-400" />
-                  <span>{item.text}</span>
-                </div>
-              ))}
-            </div>
-          </FadeIn>
-
+...
           <FadeIn delay={300} duration={400}>
             <button
               onClick={scrollToPlanos}
-              className="group px-8 py-4 rounded-full text-base md:text-lg font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/25 cursor-pointer bg-gradient-to-r from-amber-400 to-amber-500 text-[#0f0a15]"
+              className="group px-8 py-4 rounded-full md:text-lg font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/25 cursor-pointer bg-gradient-to-r from-amber-400 to-amber-500 text-[#0f0a15] text-sm"
             >
               🚀 Quero o Arcano V3 — Ver upgrade
               <ArrowRight className="inline h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </button>
             <p className="mt-4 text-xs text-white/40">
-              Você mantém tudo que já tem. O upgrade é aditivo, não substitutivo.
+              Faça o upgrade e obtenha + qualidade e velocidade!
             </p>
           </FadeIn>
         </div>
