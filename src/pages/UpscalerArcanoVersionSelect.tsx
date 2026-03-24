@@ -218,11 +218,7 @@ const UpscalerArcanoVersionSelect = () => {
                 }`}
                 onClick={() => {
                   if (hasVersionAccess) {
-                    if (isV3) {
-                      navigate('/upscaler-selection');
-                    } else {
-                      handleVersionClick(version);
-                    }
+                    handleVersionClick(version);
                   }
                 }}
               >
@@ -295,11 +291,7 @@ const UpscalerArcanoVersionSelect = () => {
                     onClick={(e) => {
                       e.stopPropagation();
                       if (!hasVersionAccess) return;
-                      if (isV3) {
-                        navigate('/upscaler-selection');
-                      } else {
-                        navigate(`/ferramenta-ia-artes/upscaller-arcano/${version.slug}`);
-                      }
+                      navigate(`/ferramenta-ia-artes/upscaller-arcano/${version.slug}`);
                     }}
                   >
                     {hasVersionAccess ? (
