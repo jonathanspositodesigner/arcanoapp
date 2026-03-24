@@ -78,6 +78,7 @@ const MudarPose = lazy(() => import("./pages/MudarPose"));
 
 const SucessoCompra = lazy(() => import("./pages/SucessoCompra"));
 
+const UpgradeUpscalerV3 = lazy(() => import("./pages/UpgradeUpscalerV3"));
 // Artes system pages
 const UserLoginArtes = lazy(() => import("./pages/UserLoginArtes"));
 const UserLoginArtesMusicos = lazy(() => import("./pages/UserLoginArtesMusicos"));
