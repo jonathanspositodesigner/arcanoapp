@@ -299,9 +299,12 @@ async function sendPurchaseEmail(supabase: any, email: string, productName: stri
       try {
         await supabase.from('welcome_email_logs').insert({
           email,
+          platform: 'mercadopago',
           template_used: `mp_purchase_${requestId}`,
+          dedup_key: `mp_purchase_${requestId}`,
           tracking_id: crypto.randomUUID(),
           status: 'failed',
+          sent_at: new Date().toISOString(),
           error_message: `Tentativa ${attempt + 1}: ${err.message}`,
         })
       } catch (_) {}
