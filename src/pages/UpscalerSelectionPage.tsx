@@ -30,6 +30,7 @@ const UpscalerSelectionPage = () => {
     );
   }
 
+  return (
     <AppLayout>
 
       <main className="container mx-auto px-4 py-4 sm:py-8 md:py-16">
