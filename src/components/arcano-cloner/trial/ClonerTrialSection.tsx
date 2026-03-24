@@ -188,12 +188,15 @@ export default function ClonerTrialSection() {
       const refUrl = supabase.storage.from('upscaler-uploads').getPublicUrl(refPath).data.publicUrl;
       setProgress(40);
 
-      // 3. Create job in arcano_cloner_jobs with user_id: null
+      // 3. Create job - use authenticated user_id if available (prevents RLS errors)
+      const { data: authData } = await supabase.auth.getUser();
+      const trialUserId = authData?.user?.id || null;
+      
       const { data: job, error: jobError } = await supabase
         .from('arcano_cloner_jobs')
         .insert({
           session_id: sessionIdRef.current,
-          user_id: null,
+          user_id: trialUserId,
           status: 'pending',
           user_image_url: userUrl,
           reference_image_url: refUrl,
@@ -225,7 +228,7 @@ export default function ClonerTrialSection() {
           userImageUrl: userUrl,
           referenceImageUrl: refUrl,
           aspectRatio: aspectRatio,
-          userId: null,
+          userId: trialUserId,
           creditCost: 0,
           creativity: creativity,
           customPrompt: '',

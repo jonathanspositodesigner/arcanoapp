@@ -306,14 +306,10 @@ const ArcanoClonerTool: React.FC = () => {
   };
 
   // Upload image to Supabase storage
-  const uploadToStorage = async (file: File | Blob, prefix: string): Promise<string> => {
-    if (!user?.id) {
-      throw new Error('User not authenticated');
-    }
-    
+  const uploadToStorage = async (file: File | Blob, prefix: string, verifiedUserId: string): Promise<string> => {
     const timestamp = Date.now();
     const fileName = `${prefix}-${timestamp}.jpg`;
-    const filePath = `arcano-cloner/${user.id}/${fileName}`;
+    const filePath = `arcano-cloner/${verifiedUserId}/${fileName}`;
 
     const { data, error } = await supabase.storage
       .from('artes-cloudinary')
@@ -322,7 +318,22 @@ const ArcanoClonerTool: React.FC = () => {
         upsert: true,
       });
 
-    if (error) throw error;
+    if (error) {
+      // If RLS/auth error, try refreshing session once
+      if (error.message?.includes('row-level security') || error.message?.includes('security policy') || (error as any).statusCode === 403) {
+        console.warn('[ArcanoCloner] RLS error on upload, attempting session refresh...');
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) throw new Error('Sessão expirada. Faça login novamente.');
+        
+        // Retry upload once
+        const { error: retryError } = await supabase.storage
+          .from('artes-cloudinary')
+          .upload(filePath, file, { contentType: 'image/jpeg', upsert: true });
+        if (retryError) throw retryError;
+      } else {
+        throw error;
+      }
+    }
 
     const { data: urlData } = supabase.storage
       .from('artes-cloudinary')
@@ -378,12 +389,26 @@ const ArcanoClonerTool: React.FC = () => {
     setFailedAtStep(null);
 
     try {
+      // Step 0: Revalidate auth - get fresh user ID from server (not React state)
+      setCurrentStep('validating_auth');
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      const verifiedUserId = authData?.user?.id;
+      
+      if (authError || !verifiedUserId) {
+        console.error('[ArcanoCloner] Auth revalidation failed:', authError);
+        toast.error('Sua sessão expirou. Faça login novamente.');
+        endSubmit();
+        setStatus('idle');
+        return;
+      }
+      console.log('[ArcanoCloner] Auth verified, userId:', verifiedUserId);
+
       // Step 1: Compress and upload user image
       setProgress(10);
       setCurrentStep('compressing_user_image');
       console.log('[ArcanoCloner] Compressing user image...');
       const compressedUser = await compressImage(userFile);
-      const userUrl = await uploadToStorage(compressedUser, 'user');
+      const userUrl = await uploadToStorage(compressedUser, 'user', verifiedUserId);
       console.log('[ArcanoCloner] User image uploaded:', userUrl);
 
       // Step 2: Compress and upload reference image
@@ -394,7 +419,7 @@ const ArcanoClonerTool: React.FC = () => {
       if (referenceFile) {
         console.log('[ArcanoCloner] Compressing reference image...');
         const compressedRef = await compressImage(referenceFile);
-        referenceUrl = await uploadToStorage(compressedRef, 'reference');
+        referenceUrl = await uploadToStorage(compressedRef, 'reference', verifiedUserId);
       } else {
         referenceUrl = referenceImage;
       }
@@ -404,11 +429,12 @@ const ArcanoClonerTool: React.FC = () => {
       setProgress(50);
       setCurrentStep('creating_job');
       
+      let createdJob: any;
       const { data: job, error: jobError } = await supabase
         .from('arcano_cloner_jobs')
         .insert({
           session_id: sessionIdRef.current,
-          user_id: user.id,
+          user_id: verifiedUserId,
           status: 'pending',
           user_image_url: userUrl,
           reference_image_url: referenceUrl,
@@ -420,12 +446,41 @@ const ArcanoClonerTool: React.FC = () => {
         .single();
 
       if (jobError || !job) {
-        throw new Error(jobError?.message || 'Falha ao criar job');
+        // If RLS error, try session refresh + retry once
+        if (jobError?.message?.includes('row-level security') || jobError?.message?.includes('security policy')) {
+          console.warn('[ArcanoCloner] RLS error on job insert, attempting session refresh...');
+          const { error: refreshErr } = await supabase.auth.refreshSession();
+          if (refreshErr) throw new Error('Sessão expirada. Faça login novamente.');
+          
+          const { data: retryJob, error: retryErr } = await supabase
+            .from('arcano_cloner_jobs')
+            .insert({
+              session_id: sessionIdRef.current,
+              user_id: verifiedUserId,
+              status: 'pending',
+              user_image_url: userUrl,
+              reference_image_url: referenceUrl,
+              aspect_ratio: aspectRatio,
+              creativity: creativity,
+              custom_prompt: customPromptEnabled ? customPrompt : null,
+            } as any)
+            .select()
+            .single();
+          
+          if (retryErr || !retryJob) {
+            throw new Error(retryErr?.message || 'Falha ao criar job após refresh');
+          }
+          createdJob = retryJob;
+        } else {
+          throw new Error(jobError?.message || 'Falha ao criar job');
+        }
+      } else {
+        createdJob = job;
       }
 
-      setJobId(job.id);
-      registerJob(job.id, 'Arcano Cloner', 'pending');
-      console.log('[ArcanoCloner] Job created:', job.id);
+      setJobId(createdJob.id);
+      registerJob(createdJob.id, 'Arcano Cloner', 'pending');
+      console.log('[ArcanoCloner] Job created:', createdJob.id);
 
       // Step 4: Call edge function to start processing
       setProgress(60);
@@ -436,11 +491,11 @@ const ArcanoClonerTool: React.FC = () => {
         'runninghub-arcano-cloner/run',
         {
           body: {
-            jobId: job.id,
+            jobId: createdJob.id,
             userImageUrl: userUrl,
             referenceImageUrl: referenceUrl,
             aspectRatio: aspectRatio,
-            userId: user.id,
+            userId: verifiedUserId,
             creditCost: creditCost,
             creativity: creativity,
             customPrompt: customPromptEnabled ? customPrompt : '',
