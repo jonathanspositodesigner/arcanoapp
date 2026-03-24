@@ -262,11 +262,14 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
 
   await supabase.from('welcome_email_logs').insert({
     email,
+    platform: 'mercadopago',
     template_used: dedupKey,
+    dedup_key: dedupKey,
     tracking_id: trackingId,
     status: response.ok ? 'sent' : 'failed',
-    sent_at: response.ok ? new Date().toISOString() : null,
+    sent_at: response.ok ? new Date().toISOString() : new Date().toISOString(),
     error_message: response.ok ? null : responseText,
+    product_info: productName,
   })
 
   return response.ok
@@ -296,9 +299,12 @@ async function sendPurchaseEmail(supabase: any, email: string, productName: stri
       try {
         await supabase.from('welcome_email_logs').insert({
           email,
+          platform: 'mercadopago',
           template_used: `mp_purchase_${requestId}`,
+          dedup_key: `mp_purchase_${requestId}`,
           tracking_id: crypto.randomUUID(),
           status: 'failed',
+          sent_at: new Date().toISOString(),
           error_message: `Tentativa ${attempt + 1}: ${err.message}`,
         })
       } catch (_) {}
@@ -418,19 +424,10 @@ serve(async (req) => {
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
 
-    // ===== IDEMPOTÊNCIA: Verificar se já processou esse paymentId =====
-    const { data: existingLog } = await supabase
-      .from('webhook_logs')
-      .select('id')
-      .eq('transaction_id', String(paymentId))
-      .eq('platform', 'mercadopago')
-      .in('status', ['paid', 'approved', 'refunded'])
-      .maybeSingle()
-
-    if (existingLog) {
-      console.log(`   ├─ ⏭️ Já processado (idempotência): paymentId=${paymentId}`)
-      return new Response('OK', { status: 200, headers: corsHeaders })
-    }
+    // ===== IDEMPOTÊNCIA ATÔMICA: "claim" do processamento via INSERT com unique index =====
+    // O índice único idx_webhook_logs_mp_dedup (platform, transaction_id, event_type)
+    // garante que apenas UMA execução consegue inserir o log de processamento.
+    // Se duas execuções chegarem ao mesmo tempo, a segunda falha no INSERT e é ignorada.
 
     // Buscar detalhes do pagamento na API do Mercado Pago
     const paymentResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
@@ -479,7 +476,31 @@ serve(async (req) => {
     // PAGAMENTO APROVADO
     // =============================================
     if (paymentStatus === 'approved' && order.status === 'pending') {
-      console.log(`\n✅ [${requestId}] PAGAMENTO APROVADO - Processando...`)
+      // ===== CLAIM ATÔMICO: tentar inserir webhook_log ANTES de processar =====
+      const { error: claimError } = await supabase.from('webhook_logs').insert({
+        platform: 'mercadopago',
+        status: 'processing',
+        email: order.user_email,
+        amount: paymentAmount,
+        amount_brl: paymentAmount,
+        currency: 'BRL',
+        net_amount: payment.transaction_details?.net_received_amount ?? paymentAmount,
+        product_name: product.title,
+        transaction_id: String(paymentId),
+        event_type: 'purchase',
+        payment_method: payment.payment_method_id || null,
+        utm_data: order.utm_data || null,
+        result: 'processing',
+        payload: { order_id: order.id, mp_payment_id: paymentId, customer_name: order.user_name || '' },
+      })
+
+      if (claimError) {
+        // Unique index violation = outra execução já está processando
+        console.log(`   ├─ ⏭️ Já processado (claim atômico): paymentId=${paymentId}`, claimError.message)
+        return new Response('OK', { status: 200, headers: corsHeaders })
+      }
+
+      console.log(`\n✅ [${requestId}] PAGAMENTO APROVADO - Claim obtido, processando...`)
 
       const email = order.user_email
       const customerName = order.user_name || ''
@@ -577,10 +598,22 @@ serve(async (req) => {
       }
 
       if (product.type === 'credits' && product.credits_amount > 0) {
+        // Idempotência de negócio: verificar se créditos desta ordem já foram aplicados
+        const creditDesc = `Compra MP [${order.id}]: ${product.title}`
+        const { data: existingCredit } = await supabase
+          .from('upscaler_credit_transactions')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('description', creditDesc)
+          .maybeSingle()
+
+        if (existingCredit) {
+          console.log(`   ├─ ℹ️ Créditos já aplicados para ordem ${order.id}`)
+        } else {
         const { error: creditsError } = await supabase.rpc('add_lifetime_credits', {
           _user_id: userId,
           _amount: product.credits_amount,
-          _description: `Compra MP: ${product.title}`
+          _description: creditDesc
         })
         if (creditsError) {
           console.error(`   ├─ ❌ Erro ao adicionar créditos:`, creditsError)
@@ -611,6 +644,7 @@ serve(async (req) => {
         } else {
           console.log(`   ├─ ℹ️ Acesso ao pack upscaller-arcano já existente`)
         }
+        } // close else (créditos não duplicados)
       }
 
       // 4. Atualizar ordem
@@ -624,7 +658,7 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
-      // 5. Inserir em webhook_logs (visibilidade no painel admin)
+      // 5. Atualizar webhook_log (já inserido no claim atômico) com dados finais
       const hashCode = (s: string) => {
         let h = 0
         for (let i = 0; i < s.length; i++) {
@@ -633,29 +667,22 @@ serve(async (req) => {
         return Math.abs(h)
       }
 
-      await supabase.from('webhook_logs').insert({
-        platform: 'mercadopago',
+      await supabase.from('webhook_logs').update({
         status: 'paid',
         email,
-        amount: paymentAmount,
-        amount_brl: paymentAmount,
-        currency: 'BRL',
         net_amount: payment.transaction_details?.net_received_amount ?? paymentAmount,
         product_name: product.title,
         product_id: hashCode(product.id) + 900000,
-        transaction_id: String(paymentId),
-        event_type: 'purchase',
-        payment_method: payment.payment_method_id || null,
-        utm_data: order.utm_data || null,
         result: 'success',
         payload: { order_id: order.id, mp_payment_id: paymentId, customer_name: customerName },
       })
-      console.log(`   ├─ ✅ webhook_logs inserido`)
+      .eq('platform', 'mercadopago')
+      .eq('transaction_id', String(paymentId))
+      .eq('event_type', 'purchase')
+      console.log(`   ├─ ✅ webhook_logs atualizado`)
 
-      // 6. Enviar email de compra
-      const ctaLink = product.pack_slug === 'upscaler-arcano' || product.pack_slug === 'upscaller-arcano' || product.type === 'credits'
-        ? 'https://arcanoapp.voxvisual.com.br/upscaler-arcano'
-        : 'https://arcanoapp.voxvisual.com.br/'
+      // 6. Enviar email de compra — CTA sempre para a Home
+      const ctaLink = 'https://arcanoapp.voxvisual.com.br/'
       
       await sendPurchaseEmail(supabase, email, product.title, ctaLink, order.id, product.type, product.credits_amount)
 
@@ -742,7 +769,28 @@ serve(async (req) => {
     // REEMBOLSO
     // =============================================
     else if ((paymentStatus === 'refunded' || paymentStatus === 'cancelled' || paymentStatus === 'charged_back') && order.status === 'paid') {
-      console.log(`\n🚫 [${requestId}] REEMBOLSO/CHARGEBACK - Revogando acesso...`)
+      // Claim atômico para refund
+      const { error: refundClaimError } = await supabase.from('webhook_logs').insert({
+        platform: 'mercadopago',
+        status: 'refunded',
+        email: order.user_email,
+        amount: paymentAmount,
+        amount_brl: paymentAmount,
+        currency: 'BRL',
+        product_name: product.title,
+        transaction_id: String(paymentId),
+        event_type: 'refund',
+        payment_method: payment.payment_method_id || null,
+        result: 'processing',
+        payload: { order_id: order.id, mp_payment_id: paymentId, reason: paymentStatus },
+      })
+
+      if (refundClaimError) {
+        console.log(`   ├─ ⏭️ Refund já processado (claim atômico): paymentId=${paymentId}`)
+        return new Response('OK', { status: 200, headers: corsHeaders })
+      }
+
+      console.log(`\n🚫 [${requestId}] REEMBOLSO/CHARGEBACK - Claim obtido, revogando acesso...`)
 
       if (order.user_id && product.pack_slug) {
         await supabase
@@ -800,22 +848,15 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
-      // Inserir reembolso em webhook_logs
-      await supabase.from('webhook_logs').insert({
-        platform: 'mercadopago',
+      // Atualizar webhook_log do claim com status final
+      await supabase.from('webhook_logs').update({
         status: 'refunded',
-        email: order.user_email,
-        amount: paymentAmount,
-        amount_brl: paymentAmount,
-        currency: 'BRL',
-        product_name: product.title,
-        transaction_id: String(paymentId),
-        event_type: 'refund',
-        payment_method: payment.payment_method_id || null,
         result: 'success',
-        payload: { order_id: order.id, mp_payment_id: paymentId, reason: paymentStatus },
       })
-      console.log(`   ├─ ✅ webhook_logs refund inserido`)
+      .eq('platform', 'mercadopago')
+      .eq('transaction_id', String(paymentId))
+      .eq('event_type', 'refund')
+      console.log(`   ├─ ✅ webhook_logs refund atualizado`)
     }
 
     // Outros status
