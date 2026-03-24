@@ -218,11 +218,7 @@ const UpscalerArcanoVersionSelect = () => {
                 }`}
                 onClick={() => {
                   if (hasVersionAccess) {
-                    if (isV3) {
-                      navigate('/upscaler-selection');
-                    } else {
-                      handleVersionClick(version);
-                    }
+                    handleVersionClick(version);
                   }
                 }}
               >
