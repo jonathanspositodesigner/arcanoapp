@@ -262,11 +262,14 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
 
   await supabase.from('welcome_email_logs').insert({
     email,
+    platform: 'mercadopago',
     template_used: dedupKey,
+    dedup_key: dedupKey,
     tracking_id: trackingId,
     status: response.ok ? 'sent' : 'failed',
-    sent_at: response.ok ? new Date().toISOString() : null,
+    sent_at: response.ok ? new Date().toISOString() : new Date().toISOString(),
     error_message: response.ok ? null : responseText,
+    product_info: productName,
   })
 
   return response.ok
