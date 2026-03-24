@@ -57,8 +57,9 @@ const SucessoCompra = () => {
       if (error) throw error;
 
       const exists = data?.[0]?.exists_in_db || false;
+      const passwordChanged = data?.[0]?.password_changed || false;
 
-      if (exists) {
+      if (exists && passwordChanged) {
         toast.success("Conta encontrada! Redirecionando...");
         navigate("/");
         return;
