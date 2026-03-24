@@ -1,17 +1,24 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { ArrowLeft, Image, Video, Sparkles, Zap } from "lucide-react";
+import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import AppLayout from "@/components/layout/AppLayout";
 
 const UpscalerSelectionPage = () => {
   const navigate = useNavigate();
+  const { hasAccessToPack, isLoading: premiumLoading } = usePremiumArtesStatus();
+  const { planType, isLoading: promptsLoading } = usePremiumStatus();
 
-  const handleSelectImage = () => {
-    navigate("/upscaler-arcano-tool");
-  };
+  const hasV3Pack = hasAccessToPack('upscaller-arcano-v3');
+  const isLoading = premiumLoading || promptsLoading;
 
-  const handleSelectVideo = () => {
-    navigate("/video-upscaler-tool");
-  };
+  // Gate: redirect if no V3 access
+  useEffect(() => {
+    if (!isLoading && !hasV3Pack) {
+      navigate('/ferramenta-ia-artes/upscaller-arcano', { replace: true });
+    }
+  }, [isLoading, hasV3Pack, navigate]);
 
   return (
     <AppLayout>

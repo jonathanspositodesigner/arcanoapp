@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lock, Unlock, Sparkles, Zap, Target, Star, ChevronRight } from "lucide-react";
+import { Lock, Unlock, Sparkles, Zap, Target, Star, ChevronRight, ShoppingCart } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { supabase } from "@/integrations/supabase/client";
@@ -100,7 +100,8 @@ const UpscalerArcanoVersionSelect = () => {
 
   const hasUnlimitedAccess = planType === "arcano_unlimited";
   const hasUpscalerPack = hasAccessToPack('upscaller-arcano');
-  const hasAccess = hasUnlimitedAccess || hasUpscalerPack;
+  const hasV3Pack = hasAccessToPack('upscaller-arcano-v3');
+  const hasAccess = hasUnlimitedAccess || hasUpscalerPack || hasV3Pack;
   const isArcanoUnlimitedOnly = hasUnlimitedAccess && !hasUpscalerPack;
 
   // Fetch versions from database
@@ -173,20 +174,6 @@ const UpscalerArcanoVersionSelect = () => {
     );
   }
 
-  // Helper functions
-  const isVersionUnlocked = (_version: ToolVersion) => {
-    // Todas as versões são desbloqueadas imediatamente para quem tem o pack
-    return true;
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString(locale === 'es' ? 'es-ES' : 'pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  };
-
   // Get localized version name
   const getVersionName = (version: ToolVersion) => {
     if (locale === 'es' && version.localized?.es?.name) {
@@ -196,7 +183,6 @@ const UpscalerArcanoVersionSelect = () => {
   };
 
   const handleVersionClick = (version: ToolVersion) => {
-    // Sempre navega - todas as versões estão desbloqueadas
     navigate(`/ferramenta-ia-artes/upscaller-arcano/${version.slug}`);
   };
 
@@ -207,7 +193,6 @@ const UpscalerArcanoVersionSelect = () => {
   };
 
   const getVersionColors = (_version: ToolVersion, _isUnlocked: boolean) => {
-    // Todas as versões usam o mesmo estilo - desbloqueadas
     return 'bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-purple-500/30 hover:border-purple-400/50';
   };
 
@@ -215,22 +200,18 @@ const UpscalerArcanoVersionSelect = () => {
     <AppLayout>
       <div className="container mx-auto px-4 py-8 max-w-4xl">
 
-        {/* Version Cards */}
+        {/* V2 Version Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
            {versions.map((version) => {
-            const isUnlocked = true; // Todas desbloqueadas
-             // Check if this is the legacy/deprecated version (v1 or v1.5)
-             const isLegacyVersion = version.slug === 'v1' || version.name.toLowerCase().includes('1.5') || version.name.toLowerCase().includes('1.0');
+              const isLegacyVersion = version.slug === 'v1' || version.name.toLowerCase().includes('1.5') || version.name.toLowerCase().includes('1.0');
 
             return (
               <Card 
                 key={version.id}
-                className={`relative overflow-hidden transition-all ${
-                  'cursor-pointer group'
-                } ${getVersionColors(version, isUnlocked)}`}
+                className={`relative overflow-hidden transition-all cursor-pointer group ${getVersionColors(version, true)}`}
                 onClick={() => handleVersionClick(version)}
               >
-                {/* Image with overlay if locked */}
+                {/* Image */}
                 <div className="aspect-[3/4] overflow-hidden relative">
                   <img 
                      src={getVersionImage(version)} 
@@ -258,7 +239,7 @@ const UpscalerArcanoVersionSelect = () => {
                   )}
                 </div>
 
-                 {/* Status Badge - top right (or "defasada" badge) */}
+                 {/* Status Badge - top right */}
                  <div className="absolute top-4 right-4 flex flex-col gap-2">
                    {isLegacyVersion ? (
                      <div className="flex items-center gap-1.5 bg-gray-600/80 backdrop-blur-sm text-gray-200 px-3 py-1 rounded-full text-xs font-medium">
@@ -285,7 +266,6 @@ const UpscalerArcanoVersionSelect = () => {
                     {t('upscaler.title')}
                   </h2>
 
-                  {/* Button - sempre disponível */}
                   <Button 
                     className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white group-hover:scale-[1.02] transition-transform"
                     onClick={(e) => {
@@ -299,6 +279,97 @@ const UpscalerArcanoVersionSelect = () => {
               </Card>
             );
           })}
+
+          {/* V3 Card */}
+          <Card 
+            className={`relative overflow-hidden transition-all ${
+              hasV3Pack 
+                ? 'cursor-pointer group bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-purple-500/30 hover:border-purple-400/50' 
+                : 'bg-gradient-to-br from-gray-900/50 to-gray-800/30 border-gray-500/30'
+            }`}
+            onClick={() => {
+              if (hasV3Pack) {
+                navigate('/upscaler-selection');
+              }
+            }}
+          >
+            {/* Image with grayscale if no access */}
+            <div className="aspect-[3/4] overflow-hidden relative">
+              <div className={`w-full h-full bg-gradient-to-br from-[#1A0A2E] to-[#0D0221] flex items-center justify-center ${!hasV3Pack ? 'grayscale opacity-60' : ''}`}>
+                <div className="text-center space-y-4">
+                  <Sparkles className={`w-16 h-16 mx-auto ${hasV3Pack ? 'text-purple-400' : 'text-gray-500'}`} />
+                  <p className={`text-lg font-bold ${hasV3Pack ? 'text-purple-200' : 'text-gray-400'}`}>
+                    Upscaler Arcano V3
+                  </p>
+                </div>
+              </div>
+              
+              {/* Badges */}
+              <div className="absolute bottom-0 left-0 right-0 p-3 flex flex-wrap gap-1.5 bg-gradient-to-t from-black/70 to-transparent">
+                <div className="flex items-center gap-1 bg-yellow-500/30 text-yellow-300 backdrop-blur-sm px-2 py-0.5 rounded-full text-[10px] font-medium">
+                  <Sparkles className="h-2.5 w-2.5" />
+                  NOVA VERSÃO
+                </div>
+                <div className="flex items-center gap-1 bg-blue-500/30 text-blue-300 backdrop-blur-sm px-2 py-0.5 rounded-full text-[10px] font-medium">
+                  <Zap className="h-2.5 w-2.5" />
+                  IMAGEM + VÍDEO
+                </div>
+              </div>
+            </div>
+
+            {/* Status Badge - top right */}
+            <div className="absolute top-4 right-4 flex flex-col gap-2">
+              {hasV3Pack ? (
+                <div className="flex items-center gap-1.5 bg-green-500/20 backdrop-blur-sm text-green-400 px-3 py-1 rounded-full text-xs font-medium">
+                  <Unlock className="h-3 w-3" />
+                  Disponível
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 bg-yellow-500/20 backdrop-blur-sm text-yellow-300 px-3 py-1 rounded-full text-xs font-medium">
+                  <Lock className="h-3 w-3" />
+                  Em Breve
+                </div>
+              )}
+            </div>
+
+            {/* Version Badge - top left */}
+            <div className="absolute top-4 left-4">
+              <div className={`px-4 py-1.5 rounded-full text-sm font-black shadow-lg ${hasV3Pack ? 'bg-white text-purple-900' : 'bg-gray-300 text-gray-700'}`}>
+                V3
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-4">
+              <h2 className={`text-lg md:text-xl font-bold mb-3 ${hasV3Pack ? 'text-foreground' : 'text-gray-400'}`}>
+                Upscaler Arcano V3
+              </h2>
+
+              {hasV3Pack ? (
+                <Button 
+                  className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate('/upscaler-selection');
+                  }}
+                >
+                  Acessar V3 <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              ) : (
+                <Button 
+                  className="w-full bg-gradient-to-r from-yellow-600 to-orange-500 hover:from-yellow-500 hover:to-orange-400 text-white"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    // TODO: link para página de compra V3 quando definida
+                    navigate(upscalerPlansPath);
+                  }}
+                >
+                  <ShoppingCart className="h-4 w-4 mr-1" />
+                  Adquirir com Desconto
+                </Button>
+              )}
+            </div>
+          </Card>
         </div>
       </div>
     </AppLayout>
