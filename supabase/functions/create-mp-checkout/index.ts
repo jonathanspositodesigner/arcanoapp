@@ -157,7 +157,8 @@ serve(async (req) => {
       external_reference: order.id,
       payer,
       payment_methods: {
-        installments: 12
+        installments: 12,
+        excluded_payment_types: []
       },
       back_urls: {
         success: 'https://arcanoapp.lovable.app/sucesso-compra?gateway=mercadopago',
