@@ -548,7 +548,7 @@ const heroSlides = [
   },
 ];
 
-const HeroCarousel = ({ isMobile, locale, label }: { isMobile: boolean; locale: string; label: string }) => {
+const HeroCarousel = ({ isMobile, locale, label }: { isMobile: boolean; locale: "pt" | "es"; label: string }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const goTo = useCallback((dir: 1 | -1) => {
