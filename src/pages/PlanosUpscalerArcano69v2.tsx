@@ -344,8 +344,7 @@ const upscalerPlans: UpscalerPlan[] = [
 ];
 
 const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; tool: ToolData | null; t: (key: string) => string }) => {
-  const [mpEmailSlug, setMpEmailSlug] = useState<string | null>(null);
-  const [mpLoading, setMpLoading] = useState(false);
+  const { openCheckout, MPCheckoutModal } = useMPCheckout();
 
   const handlePurchase = (plan: UpscalerPlan) => {
     if (typeof window !== "undefined" && (window as any).fbq) {
@@ -356,15 +355,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
         currency: "BRL",
       });
     }
-    setMpEmailSlug(plan.productSlug);
-  };
-
-  const handleCustomerConfirm = async (data: MPCustomerData) => {
-    if (!mpEmailSlug) return;
-    setMpLoading(true);
-    await redirectToMPCheckout(mpEmailSlug, data);
-    setMpLoading(false);
-    setMpEmailSlug(null);
+    openCheckout(plan.productSlug);
   };
 
   return (
