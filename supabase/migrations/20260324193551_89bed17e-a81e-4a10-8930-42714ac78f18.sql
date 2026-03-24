@@ -1,0 +1,1 @@
+UPDATE profiles SET password_changed = false WHERE LOWER(email) = 'testuser5636385845579752622@gmail.com';

@@ -42,10 +42,7 @@ const UserLogin = () => {
         if (!profile || (!profile.password_changed && !isLegacy)) {
           navigate(`/change-password?redirect=${redirectTo}`);
         } else {
-          if (!profile.password_changed && isLegacy) {
-            // Auto-fix legacy account
-            await supabase.from('profiles').update({ password_changed: true }).eq('id', user.id);
-          }
+          // Legacy accounts skip first-access but do NOT write password_changed=true
           navigate(redirectTo);
         }
       }
