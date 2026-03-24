@@ -20,14 +20,14 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MousePointerClick, MessageCircle, ZoomIn, X, User, Rocket, PenTool, Image as ImageIcon, Award, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { preWarmCheckout } from "@/lib/checkoutFetch";
+import { redirectToCheckout } from "@/lib/pagarmeCheckout";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { HeroBeforeAfterSlider, HeroPlaceholder, SectionSkeleton, LazySocialProofWrapper } from "@/components/upscaler";
 import { LazySection } from "@/components/combo-artes/LazySection";
 import { useImagePreload, useImagesPreload } from "@/hooks/useImagePreload";
-const PreCheckoutModal = lazy(() => import("@/components/upscaler/PreCheckoutModal"));
+
 
 // Hero images - Desktop uses high-res, Mobile uses optimized 600x900 versions
 const upscalerHeroAntesDesktop = "/images/upscaler-hero-antes.webp";
@@ -127,11 +127,6 @@ const PlanosUpscalerArcano = () => {
 
   const TOOL_SLUG = "upscaller-arcano";
 
-  // Pre-warm checkout edge function after 3s
-  useEffect(() => {
-    const timer = setTimeout(() => preWarmCheckout(), 3000);
-    return () => clearTimeout(timer);
-  }, []);
 
   // SEO meta tags for this specific page
   useEffect(() => {
@@ -238,15 +233,15 @@ const PlanosUpscalerArcano = () => {
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
-  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
-  const [checkoutProductSlug, setCheckoutProductSlug] = useState("upscaller-arcano-vitalicio");
+  const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null);
 
-  const handlePurchase = (productSlug?: string | unknown) => {
+  const handlePurchase = async (productSlug?: string | unknown) => {
     const slug = typeof productSlug === 'string' && productSlug.trim().length > 0
       ? productSlug
       : 'upscaller-arcano-vitalicio';
-    setCheckoutProductSlug(slug);
-    setCheckoutModalOpen(true);
+    setPurchaseLoading(slug);
+    await redirectToCheckout(slug);
+    setPurchaseLoading(null);
   };
 
   // Countdown timer - 48 minutes
@@ -925,18 +920,6 @@ const PlanosUpscalerArcano = () => {
         </>
       )}
 
-      {/* Pre-checkout Modal */}
-      {checkoutModalOpen && (
-        <Suspense fallback={null}>
-          <PreCheckoutModal
-            isOpen={checkoutModalOpen}
-            onClose={() => setCheckoutModalOpen(false)}
-            userEmail={user?.email}
-            userId={user?.id}
-            productSlug={checkoutProductSlug}
-          />
-        </Suspense>
-      )}
 
       {/* Modal Fullscreen */}
       {modalImages && (

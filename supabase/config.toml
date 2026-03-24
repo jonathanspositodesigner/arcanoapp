@@ -151,6 +151,9 @@ verify_jwt = false
 [functions.webhook-mercadopago]
 verify_jwt = false
 
+[functions.create-pagarme-checkout-v2]
+verify_jwt = false
+
 [functions.create-pagarme-checkout]
 verify_jwt = false
 
