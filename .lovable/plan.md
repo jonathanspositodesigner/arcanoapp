@@ -1,100 +1,126 @@
 
 
-# Auditoria Completa v5: Fluxo Mercado Pago — Bugs Restantes
+# Auditoria v6: Fluxo Completo Mercado Pago — Bugs Restantes
 
-## Status Geral
-
-O fluxo está **90% correto**. A maioria dos bugs críticos anteriores foi resolvida. Restam 2 bugs que afetam cenários específicos.
-
----
-
-## 🔴 BUG 1: Reembolso de plano de créditos NÃO revoga acesso ao pack
-
-**Onde**: `webhook-mercadopago/index.ts`, linhas 744-773
-
-**Problema**: Quando um plano de créditos (Starter/Pro/Ultimate) é reembolsado, o webhook:
-- ✅ Revoga os créditos via `revoke_lifetime_credits_on_refund`
-- ❌ **NÃO revoga** o `user_pack_purchases` com `pack_slug = 'upscaller-arcano'`
-
-Isso acontece porque a condição de revogação do pack (linha 747) verifica `product.pack_slug`, mas os produtos de créditos têm `pack_slug = null` no banco. A inserção do pack `upscaller-arcano` para créditos foi adicionada no webhook (linhas 592-613), mas a revogação correspondente **não foi**.
-
-**Resultado**: O cliente pede reembolso do Starter, perde os créditos, mas **mantém acesso** ao pack `upscaller-arcano` para sempre.
-
-**Correção**: Na seção de reembolso, após revogar créditos, também desativar o `user_pack_purchases` com `pack_slug = 'upscaller-arcano'` para o `user_id`.
-
----
-
-## 🟡 BUG 2: CTA do email aponta para pack_slug errado
-
-**Onde**: `webhook-mercadopago/index.ts`, linha 656
-
-**Problema**: A condição para definir o link CTA no email é:
-```typescript
-product.pack_slug === 'upscaler-arcano' || product.type === 'credits'
-```
-
-O pack_slug real do vitalício é `upscaller-arcano` (com dois `l`), não `upscaler-arcano`. Então para o vitalício, a condição `product.pack_slug === 'upscaler-arcano'` é **false**. Cai no fallback `https://arcanoapp.voxvisual.com.br/` em vez de apontar para o Upscaler.
-
-O email do vitalício manda o cliente para a home em vez da ferramenta.
-
-**Correção**: Adicionar `upscaller-arcano` na condição:
-```typescript
-product.pack_slug === 'upscaler-arcano' || product.pack_slug === 'upscaller-arcano' || product.type === 'credits'
-```
-
----
-
-## ✅ O que está correto (confirmado)
+## ✅ O que está correto
 
 | Item | Status |
 |---|---|
-| Slugs dos 4 produtos no frontend batem com o banco | ✅ |
-| Starter/Pro/Ultimate = type `credits` no banco | ✅ |
-| Vitalício existe no banco com pack_slug correto | ✅ |
-| Créditos adicionados via `add_lifetime_credits` | ✅ |
+| Criação de checkout com payer completo (nome/email/CPF) | ✅ |
+| Rate limiting (5/min por email) | ✅ |
+| Idempotência via `webhook_logs.transaction_id` | ✅ |
+| Créditos adicionados via `add_lifetime_credits` com lock | ✅ |
 | Pack `upscaller-arcano` inserido para planos de créditos | ✅ |
 | Vitalício insere pack com `access_type: vitalicio` | ✅ |
-| Idempotência via `webhook_logs.transaction_id` | ✅ |
-| `check-purchase-exists` verifica `mp_orders` | ✅ |
-| Meta CAPI Purchase enviado com dados reais | ✅ |
-| InitiateCheckout event_id sincronizado Pixel/CAPI | ✅ |
-| Rate limiting no create-checkout | ✅ |
+| Reembolso revoga créditos E pack (inclusive `access_type: credits`) | ✅ |
+| Meta CAPI Purchase com `event_id` sincronizado | ✅ |
+| Meta CAPI InitiateCheckout com `event_id` sincronizado Pixel/CAPI | ✅ |
+| Email de compra com template por tipo (créditos vs vitalício) | ✅ |
 | Dedup email usa `order.id` | ✅ |
-| Modal reseta campos ao reabrir | ✅ |
-| Feedback mp_status na página 69 | ✅ |
-| UTMify recebe dados de venda | ✅ |
 | Admin notificado | ✅ |
-| Back URLs corretas | ✅ |
-| Reembolso revoga créditos | ✅ |
-| Reembolso revoga pack (vitalício) | ✅ |
-| merchant_order ignorado | ✅ |
-| UI do Starter mostra ✅ em todas as features | ✅ |
+| UTMify recebe dados de venda | ✅ |
+| `check-purchase-exists` verifica `mp_orders` como fallback | ✅ |
+| Back URLs corretas (`/sucesso-compra` e `/planos-upscaler-arcano-69`) | ✅ |
+| Feedback `mp_status` na página 69 (toast de failure/pending) | ✅ |
+| CTA link do email corrigido para ambos os slugs | ✅ |
+| merchant_order ignorado no webhook | ✅ |
+| Auto-cleanup de ordens pending duplicadas | ✅ |
+| UI Starter mostra ✅ em todas as features | ✅ |
+| `webhook_logs` inserido para vendas e reembolsos | ✅ |
+
+---
+
+## 🔴 BUG CRÍTICO: Onboarding pós-compra falha para clientes Mercado Pago
+
+**Onde**: `supabase/functions/complete-purchase-onboarding/index.ts`, linhas 42-78
+
+**Problema**: Quando o cliente do Mercado Pago chega na página `/sucesso-compra`, digita seu email e o sistema confirma que a compra existe (via `check-purchase-exists` que já verifica `mp_orders`). Se o cliente ainda não tem conta, vai para a etapa de criar senha. Ao submeter, a função `complete-purchase-onboarding` é chamada — mas ela **só consulta `asaas_orders`** para validar o pedido (linha 42-61). Como a compra está em `mp_orders`, retorna **"Nenhum pedido encontrado"** e o onboarding falha.
+
+O cliente pagou, mas não consegue criar sua conta/senha na plataforma.
+
+**Correção**: Adicionar fallback para `mp_orders` na função `complete-purchase-onboarding`, idêntico ao que já existe em `check-purchase-exists`. Se não encontrar em `asaas_orders`, buscar em `mp_orders` com `status = 'paid'`.
+
+---
+
+## 🟡 BUG MÉDIO: `listUsers()` sem paginação no onboarding
+
+**Onde**: `complete-purchase-onboarding/index.ts`, linha 83
+
+**Problema**: `listUsers()` sem parâmetros retorna no máximo 50 usuários (default). Se o email do cliente não estiver nos primeiros 50, o sistema assume que ele não existe e tenta criar um novo — o que falhará com "email_exists". O webhook do MP já usa paginação correta (até 10 páginas de 1000), mas o onboarding não.
+
+**Correção**: Buscar primeiro em `profiles` por email (como o webhook faz). Se não encontrar, usar `listUsers` com paginação. Ou melhor: usar `supabase.auth.admin.getUserByEmail()` se disponível na versão do SDK.
+
+---
+
+## ✅ Resumo — Fluxo Completo Auditado
+
+```text
+FRONTEND                  CREATE-CHECKOUT           WEBHOOK-MP              SUCESSO-COMPRA
+────────                  ───────────────           ──────────              ──────────────
+Modal (nome/email/CPF)    Valida dados              Recebe notificação      check-purchase ✅ (mp_orders)
+  ↓                       Rate limit ✅              Idempotência ✅          onboarding ❌ (só asaas_orders)
+redirectToMPCheckout()    Busca mp_products ✅       Busca payment API MP     listUsers ⚠️ (sem paginação)
+  ↓                       Cria mp_orders ✅          Cria/busca user ✅
+Pixel InitiateCheckout    CAPI InitiateCheckout ✅   Upsert profile ✅
+  ↓                       Cria preference MP ✅      Concede pack/créditos ✅
+Redireciona para MP       Retorna checkout_url ✅    Email compra ✅
+                                                    Admin email ✅
+                                                    CAPI Purchase ✅
+                                                    UTMify ✅
+                                                    webhook_logs ✅
+```
 
 ---
 
 ## Plano de Correção
 
-### 1. Revogar pack `upscaller-arcano` no reembolso de créditos
+### 1. Adicionar `mp_orders` ao `complete-purchase-onboarding` (CRÍTICO)
 
-No `webhook-mercadopago/index.ts`, dentro do bloco de reembolso para `product.type === 'credits'`, adicionar:
+Após a busca em `asaas_orders` retornar vazia, fazer fallback:
 
 ```typescript
-// Revogar acesso ao pack que foi concedido na compra de créditos
-await supabase
-  .from('user_pack_purchases')
-  .update({ is_active: false, updated_at: new Date().toISOString() })
-  .eq('user_id', order.user_id)
-  .eq('pack_slug', 'upscaller-arcano')
-  .eq('access_type', 'credits')
+// Se não encontrou em asaas_orders, verificar mp_orders
+if (!orders || orders.length === 0) {
+  const { data: mpOrders } = await supabaseAdmin
+    .from("mp_orders")
+    .select("id, user_email, user_id, status")
+    .eq("user_email", trimmedEmail)
+    .eq("status", "paid")
+    .limit(1);
+  
+  if (mpOrders && mpOrders.length > 0) {
+    order = mpOrders[0];
+    isMpOrder = true;
+  } else {
+    // retorna 404
+  }
+}
 ```
 
-### 2. Corrigir CTA link do email do vitalício
+E no final, atualizar `mp_orders` em vez de `asaas_orders` quando `isMpOrder = true`.
 
-Na linha 656, trocar a condição para incluir o slug correto.
+### 2. Corrigir busca de usuário existente no onboarding (MÉDIO)
+
+Trocar `listUsers()` por busca em `profiles` + paginação como fallback:
+
+```typescript
+const { data: profile } = await supabaseAdmin
+  .from('profiles')
+  .select('id')
+  .ilike('email', trimmedEmail)
+  .maybeSingle();
+
+if (profile) {
+  userId = profile.id;
+  // atualizar senha
+} else {
+  // criar novo usuário
+}
+```
 
 ## Arquivos a alterar
 
 | Arquivo | Alteração |
 |---|---|
-| `supabase/functions/webhook-mercadopago/index.ts` | Revogar pack no reembolso de créditos + corrigir CTA link |
+| `supabase/functions/complete-purchase-onboarding/index.ts` | Fallback `mp_orders` + corrigir busca de usuário |
 
