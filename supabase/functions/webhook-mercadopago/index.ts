@@ -470,7 +470,31 @@ serve(async (req) => {
     // PAGAMENTO APROVADO
     // =============================================
     if (paymentStatus === 'approved' && order.status === 'pending') {
-      console.log(`\n✅ [${requestId}] PAGAMENTO APROVADO - Processando...`)
+      // ===== CLAIM ATÔMICO: tentar inserir webhook_log ANTES de processar =====
+      const { error: claimError } = await supabase.from('webhook_logs').insert({
+        platform: 'mercadopago',
+        status: 'processing',
+        email: order.user_email,
+        amount: paymentAmount,
+        amount_brl: paymentAmount,
+        currency: 'BRL',
+        net_amount: payment.transaction_details?.net_received_amount ?? paymentAmount,
+        product_name: product.title,
+        transaction_id: String(paymentId),
+        event_type: 'purchase',
+        payment_method: payment.payment_method_id || null,
+        utm_data: order.utm_data || null,
+        result: 'processing',
+        payload: { order_id: order.id, mp_payment_id: paymentId, customer_name: order.user_name || '' },
+      })
+
+      if (claimError) {
+        // Unique index violation = outra execução já está processando
+        console.log(`   ├─ ⏭️ Já processado (claim atômico): paymentId=${paymentId}`, claimError.message)
+        return new Response('OK', { status: 200, headers: corsHeaders })
+      }
+
+      console.log(`\n✅ [${requestId}] PAGAMENTO APROVADO - Claim obtido, processando...`)
 
       const email = order.user_email
       const customerName = order.user_name || ''
