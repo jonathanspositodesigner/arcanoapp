@@ -1,7 +1,7 @@
 /**
  * Edge Function: create-mp-checkout
  * Cria uma preferência de pagamento no Mercado Pago e retorna a URL do checkout.
- * Recebe: { product_slug, user_email }
+ * Recebe: { product_slug, user_email, user_name, user_document }
  * Retorna: { checkout_url, order_id }
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
@@ -33,7 +33,7 @@ serve(async (req) => {
   }
 
   try {
-    const { product_slug, user_email, utm_data, fbp, fbc, user_agent: clientUA } = await req.json()
+    const { product_slug, user_email, user_name, user_document, utm_data, fbp, fbc, user_agent: clientUA } = await req.json()
 
     if (!product_slug || !user_email) {
       return new Response(JSON.stringify({ error: 'product_slug e user_email são obrigatórios' }), {
@@ -43,6 +43,8 @@ serve(async (req) => {
     }
 
     const email = user_email.toLowerCase().trim()
+    const payerName = (user_name || '').trim()
+    const payerDocument = (user_document || '').replace(/\D/g, '')
 
     // Validação básica de email
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -105,7 +107,20 @@ serve(async (req) => {
 
     console.log(`📦 Ordem criada: ${order.id} | Produto: ${product.title} | Email: ${email}`)
 
-    // 3. Criar preferência no Mercado Pago
+    // 3. Criar preferência no Mercado Pago com payer completo
+    const payer: any = { email }
+    if (payerName) {
+      const nameParts = payerName.split(' ')
+      payer.name = nameParts[0]
+      payer.surname = nameParts.slice(1).join(' ') || nameParts[0]
+    }
+    if (payerDocument && payerDocument.length === 11) {
+      payer.identification = {
+        type: 'CPF',
+        number: payerDocument,
+      }
+    }
+
     const preferenceBody = {
       items: [
         {
@@ -117,13 +132,8 @@ serve(async (req) => {
         }
       ],
       external_reference: order.id,
-      payer: {
-        email: email
-      },
+      payer,
       payment_methods: {
-        excluded_payment_types: [
-          { id: "ticket" }
-        ],
         installments: 12
       },
       back_urls: {
@@ -134,6 +144,8 @@ serve(async (req) => {
       auto_return: 'approved',
       notification_url: `${supabaseUrl}/functions/v1/webhook-mercadopago`
     }
+
+    console.log(`🔄 Enviando preferência ao MP com payer:`, JSON.stringify(payer))
 
     const mpResponse = await fetch('https://api.mercadopago.com/checkout/preferences', {
       method: 'POST',
@@ -147,7 +159,7 @@ serve(async (req) => {
     if (!mpResponse.ok) {
       const errorText = await mpResponse.text()
       console.error('Erro Mercado Pago:', mpResponse.status, errorText)
-      return new Response(JSON.stringify({ error: 'Erro ao criar checkout' }), {
+      return new Response(JSON.stringify({ error: `Erro ao criar checkout (${mpResponse.status}): ${errorText}` }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })

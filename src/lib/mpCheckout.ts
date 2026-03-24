@@ -11,14 +11,23 @@ const TIMEOUT_MS = 20_000;
 
 export async function redirectToMPCheckout(
   productSlug: string,
-  userEmail: string
+  customerData: { name: string; email: string; document: string }
 ): Promise<void> {
   if (!productSlug?.trim()) {
     toast.error("Produto inválido. Tente novamente.");
     return;
   }
-  if (!userEmail?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userEmail.trim())) {
+  const { name, email, document } = customerData;
+  if (!name?.trim() || name.trim().length < 3) {
+    toast.error("Nome inválido.");
+    return;
+  }
+  if (!email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
     toast.error("E-mail inválido.");
+    return;
+  }
+  if (!document?.trim() || document.replace(/\D/g, "").length !== 11) {
+    toast.error("CPF inválido.");
     return;
   }
 
@@ -40,7 +49,9 @@ export async function redirectToMPCheckout(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         product_slug: productSlug.trim(),
-        user_email: userEmail.trim().toLowerCase(),
+        user_email: email.trim().toLowerCase(),
+        user_name: name.trim(),
+        user_document: document.replace(/\D/g, ""),
         utm_data: utmData,
         fbp,
         fbc,

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X, User, Rocket, PenTool, Flame, ShieldCheck, Headset, Image, Video, Award } from "lucide-react";
 import { redirectToMPCheckout } from "@/lib/mpCheckout";
-import { MPEmailModal } from "@/components/checkout/MPEmailModal";
+import { MPEmailModal, type MPCustomerData } from "@/components/checkout/MPEmailModal";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
@@ -331,7 +331,7 @@ const upscalerPlans: UpscalerPlan[] = [
     images: "∞",
     tagline: "Acesso permanente a tudo",
     isLifetime: true,
-    productSlug: "",
+    productSlug: "upscaler-arcano-vitalicio",
     features: [
       { text: "Melhore imagens com IA", included: true },
       { text: "Remova fundos automaticamente", included: true },
@@ -343,15 +343,11 @@ const upscalerPlans: UpscalerPlan[] = [
   },
 ];
 
-const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { isPremium: boolean; tool: ToolData | null; handlePurchaseLegacy: () => void; t: (key: string) => string }) => {
+const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; tool: ToolData | null; t: (key: string) => string }) => {
   const [mpEmailSlug, setMpEmailSlug] = useState<string | null>(null);
   const [mpLoading, setMpLoading] = useState(false);
 
   const handlePurchase = (plan: UpscalerPlan) => {
-    if (plan.isLifetime) {
-      handlePurchaseLegacy();
-      return;
-    }
     if (typeof window !== "undefined" && (window as any).fbq) {
       (window as any).fbq("track", "InitiateCheckout", {
         content_name: plan.productSlug,
@@ -363,10 +359,10 @@ const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { 
     setMpEmailSlug(plan.productSlug);
   };
 
-  const handleEmailConfirm = async (email: string) => {
+  const handleCustomerConfirm = async (data: MPCustomerData) => {
     if (!mpEmailSlug) return;
     setMpLoading(true);
-    await redirectToMPCheckout(mpEmailSlug, email);
+    await redirectToMPCheckout(mpEmailSlug, data);
     setMpLoading(false);
     setMpEmailSlug(null);
   };
@@ -525,7 +521,7 @@ const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { 
       <MPEmailModal
         open={!!mpEmailSlug}
         onClose={() => setMpEmailSlug(null)}
-        onConfirm={handleEmailConfirm}
+        onConfirm={handleCustomerConfirm}
         loading={mpLoading}
       />
     </AnimatedSection>
@@ -908,7 +904,7 @@ const PlanosUpscalerArcano69v2 = () => {
           <LazySocialProofWrapper locale="pt" onZoomClick={openModal} isMobile={isMobile} />
 
           {/* SEÇÃO DE PREÇO E CTA - 4 Cards */}
-          <UpscalerPricingSection isPremium={isPremium} tool={tool} handlePurchaseLegacy={handlePurchase} t={t} />
+          <UpscalerPricingSection isPremium={isPremium} tool={tool} t={t} />
 
           {/* BENEFÍCIOS (O QUE FAZ) */}
           <AnimatedSection className="px-4 py-20 bg-black/30">
