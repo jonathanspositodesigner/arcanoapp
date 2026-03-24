@@ -332,7 +332,7 @@ const upscalerPlans: UpscalerPlan[] = [
     images: "∞",
     tagline: "Acesso permanente a tudo",
     isLifetime: true,
-    productSlug: "upscaler-arcano-vitalicio",
+    productSlug: "upscaller-arcano-vitalicio",
     features: [
       { text: "Melhore imagens com IA", included: true },
       { text: "Remova fundos automaticamente", included: true },
