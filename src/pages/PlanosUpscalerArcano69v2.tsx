@@ -744,9 +744,9 @@ const PlanosUpscalerArcano69v2 = () => {
                 </p>
               </FadeIn>
 
-              {/* Before/After Slider - menos largo */}
+              {/* Before/After Carousel */}
               <FadeIn delay={0} duration={400}>
-                <div className="w-[90vw] md:w-[50vw] lg:w-[42vw] md:[&_.space-y-3>div:first-child]:!aspect-[5/3] [&_.space-y-3>div:first-child]:!h-auto mb-5 md:mb-6">
+                <div className="w-[90vw] md:w-[50vw] lg:w-[42vw] md:[&_.space-y-3>div:first-child]:!aspect-[5/3] [&_.space-y-3>div:first-child]:!h-auto mb-5 md:mb-6 relative">
                   {isMobile && !heroRevealed ? (
                     <HeroPlaceholder
                       onReveal={() => setHeroRevealed(true)}
@@ -754,12 +754,7 @@ const PlanosUpscalerArcano69v2 = () => {
                       locale="pt"
                     />
                   ) : (
-                    <HeroBeforeAfterSlider
-                      beforeImage={isMobile ? upscalerHeroAntesMobile : upscalerHeroAntesDesktop}
-                      afterImage={isMobile ? upscalerHeroDepoisMobile : upscalerHeroDepoisDesktop}
-                      label={t('tools:upscaler.hero.dragToCompare')}
-                      locale="pt"
-                    />
+                    <HeroCarousel isMobile={isMobile} locale="pt" label={t('tools:upscaler.hero.dragToCompare')} />
                   )}
                 </div>
               </FadeIn>
