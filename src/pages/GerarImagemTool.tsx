@@ -293,6 +293,27 @@ const GerarImagemTool = () => {
 
   return (
     <AppLayout>
+      <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center p-6">
+        <div className="max-w-md text-center space-y-4">
+          <div className="text-6xl">🔧</div>
+          <h1 className="text-xl font-bold text-white">Temporariamente Indisponível</h1>
+          <p className="text-purple-300 text-sm">
+            A geração de imagens está em manutenção. Voltaremos em breve!
+          </p>
+          <button
+            onClick={goBack}
+            className="mt-4 px-6 py-2.5 rounded-full bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-colors"
+          >
+            Voltar
+          </button>
+        </div>
+      </div>
+    </AppLayout>
+  );
+
+  /* === CONTEÚDO ORIGINAL DESABILITADO TEMPORARIAMENTE ===
+  return (
+    <AppLayout>
       <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-[#0f0a15]/90 backdrop-blur-md border-b border-purple-500/20 px-4 py-3">
