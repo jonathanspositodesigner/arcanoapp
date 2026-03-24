@@ -200,7 +200,7 @@ serve(async (req) => {
       .update({ preference_id: mpData.id })
       .eq('id', order.id)
 
-    console.log(`✅ Checkout criado: ${mpData.id} | init_point: ${mpData.init_point?.substring(0, 60)}...`)
+    console.log(`✅ Checkout criado: ${mpData.id} | collector: ${mpData.collector_id} | live: ${mpData.live_mode} | init_point: ${mpData.init_point?.substring(0, 60)}...`)
 
     // Meta Conversions API - InitiateCheckout (fire-and-forget)
     try {
