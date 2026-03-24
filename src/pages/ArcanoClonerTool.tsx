@@ -493,7 +493,7 @@ const ArcanoClonerTool: React.FC = () => {
             userImageUrl: userUrl,
             referenceImageUrl: referenceUrl,
             aspectRatio: aspectRatio,
-            userId: user.id,
+            userId: verifiedUserId,
             creditCost: creditCost,
             creativity: creativity,
             customPrompt: customPromptEnabled ? customPrompt : '',

@@ -228,7 +228,7 @@ export default function ClonerTrialSection() {
           userImageUrl: userUrl,
           referenceImageUrl: refUrl,
           aspectRatio: aspectRatio,
-          userId: null,
+          userId: trialUserId,
           creditCost: 0,
           creativity: creativity,
           customPrompt: '',

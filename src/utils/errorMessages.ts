@@ -76,11 +76,19 @@ export function getAIErrorMessage(errorMessage: string | null): {
     };
   }
   
-  // Erros de API/autenticação
-  if (error.includes('unauthorized') || error.includes('forbidden') || error.includes('401') || error.includes('403')) {
+  // Erros de RLS / sessão expirada
+  if (error.includes('row-level security') || error.includes('security policy') || error.includes('rls')) {
     return {
-      message: 'Erro de autenticação no servidor',
-      solution: 'Atualize a página e tente novamente.'
+      message: 'Sua sessão expirou',
+      solution: 'Faça login novamente para continuar usando a ferramenta.'
+    };
+  }
+  
+  // Erros de API/autenticação
+  if (error.includes('unauthorized') || error.includes('forbidden') || error.includes('401') || error.includes('403') || error.includes('sessão expirou')) {
+    return {
+      message: 'Sua sessão expirou',
+      solution: 'Atualize a página e faça login novamente.'
     };
   }
   
