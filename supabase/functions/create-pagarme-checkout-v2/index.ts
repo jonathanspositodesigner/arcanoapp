@@ -263,7 +263,7 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             event_name: 'InitiateCheckout',
-            value: product.price / 100,
+            value: Number(product.price),
             currency: 'BRL',
             utm_data: sanitizedUtm,
             fbp, fbc,
