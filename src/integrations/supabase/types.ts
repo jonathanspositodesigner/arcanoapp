@@ -2509,6 +2509,9 @@ export type Database = {
           amount: number
           created_at: string | null
           id: string
+          meta_fbc: string | null
+          meta_fbp: string | null
+          meta_user_agent: string | null
           mp_payment_id: string | null
           net_amount: number | null
           paid_at: string | null
@@ -2519,12 +2522,16 @@ export type Database = {
           updated_at: string | null
           user_email: string
           user_id: string | null
+          user_name: string | null
           utm_data: Json | null
         }
         Insert: {
           amount: number
           created_at?: string | null
           id?: string
+          meta_fbc?: string | null
+          meta_fbp?: string | null
+          meta_user_agent?: string | null
           mp_payment_id?: string | null
           net_amount?: number | null
           paid_at?: string | null
@@ -2535,12 +2542,16 @@ export type Database = {
           updated_at?: string | null
           user_email: string
           user_id?: string | null
+          user_name?: string | null
           utm_data?: Json | null
         }
         Update: {
           amount?: number
           created_at?: string | null
           id?: string
+          meta_fbc?: string | null
+          meta_fbp?: string | null
+          meta_user_agent?: string | null
           mp_payment_id?: string | null
           net_amount?: number | null
           paid_at?: string | null
@@ -2551,6 +2562,7 @@ export type Database = {
           updated_at?: string | null
           user_email?: string
           user_id?: string | null
+          user_name?: string | null
           utm_data?: Json | null
         }
         Relationships: [

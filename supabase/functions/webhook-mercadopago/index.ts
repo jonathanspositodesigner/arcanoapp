@@ -1,7 +1,7 @@
 /**
  * Edge Function: webhook-mercadopago
  * Recebe notificações do Mercado Pago, valida o pagamento e libera acesso.
- * Reutiliza a mesma lógica do webhook-greenn-artes para criação de usuário e acesso.
+ * Inclui: Meta CAPI Purchase, webhook_logs, idempotência, email por tipo de produto.
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2'
@@ -31,6 +31,12 @@ async function getSendPulseToken(): Promise<string> {
   const data = await response.json()
   cachedToken = { token: data.access_token, expiresAt: Date.now() + 3300000 }
   return data.access_token
+}
+
+// ===== SHA-256 hash helper =====
+async function sha256(value: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value.toLowerCase().trim()))
+  return [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2, '0')).join('')
 }
 
 // ===== Admin Sale Notification =====
@@ -121,9 +127,24 @@ function getUnsubscribeLink(email: string): string {
   return `${baseUrl}/functions/v1/email-unsubscribe?email=${encodeURIComponent(email)}`
 }
 
-function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: string): string {
+function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: string, productType: string, creditsAmount?: number): string {
   const unsubscribeLink = getUnsubscribeLink(email)
-  const trackingBaseUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/welcome-email-tracking`
+
+  // Bloco dinâmico baseado no tipo de produto
+  let accessBlock = ''
+  if (productType === 'credits') {
+    accessBlock = `
+    <div style="background:linear-gradient(135deg,rgba(96,165,250,0.12) 0%,rgba(59,130,246,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(96,165,250,0.3);text-align:center;">
+      <p style="color:#60a5fa;font-size:15px;font-weight:700;margin:0 0 8px;">🎯 ${creditsAmount || ''} Créditos Adicionados!</p>
+      <p style="color:#bfdbfe;font-size:13px;margin:0;line-height:1.6;">Seus créditos já estão disponíveis. Use-os no Upscaler Arcano e outras ferramentas IA!</p>
+    </div>`
+  } else {
+    accessBlock = `
+    <div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">
+      <p style="color:#4ade80;font-size:15px;font-weight:700;margin:0 0 8px;">🎉 Acesso Vitalício Ativado!</p>
+      <p style="color:#bbf7d0;font-size:13px;margin:0;line-height:1.6;">Você <strong>NÃO precisa comprar créditos</strong> para usar o Upscaler Arcano. Seu acesso vitalício já inclui uso ilimitado da ferramenta!</p>
+    </div>`
+  }
 
   return `<!DOCTYPE html>
 <html>
@@ -161,11 +182,8 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
       </div>
     </div>
 
-    <!-- Aviso Vitalício -->
-    <div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">
-      <p style="color:#4ade80;font-size:15px;font-weight:700;margin:0 0 8px;">🎉 Acesso Vitalício Ativado!</p>
-      <p style="color:#bbf7d0;font-size:13px;margin:0;line-height:1.6;">Você <strong>NÃO precisa comprar créditos</strong> para usar o Upscaler Arcano. Seu acesso vitalício já inclui uso ilimitado da ferramenta!</p>
-    </div>
+    <!-- Access Block (dynamic) -->
+    ${accessBlock}
 
     <!-- CTA Button -->
     <div style="text-align:center;padding-bottom:8px;">
@@ -189,12 +207,13 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
 </html>`
 }
 
-async function sendPurchaseEmailAttempt(supabase: any, email: string, productName: string, ctaLink: string, requestId: string): Promise<boolean> {
+async function sendPurchaseEmailAttempt(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, productType: string, creditsAmount?: number): Promise<boolean> {
+  const dedupKey = `mp_purchase_${productName}`
   const { data: existing } = await supabase
     .from('welcome_email_logs')
     .select('id')
     .eq('email', email)
-    .eq('template_used', `mp_purchase_${productName}`)
+    .eq('template_used', dedupKey)
     .maybeSingle()
 
   if (existing) {
@@ -214,7 +233,7 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
   }
 
   const trackingId = crypto.randomUUID()
-  const html = buildPurchaseEmailHtml(email, productName, ctaLink)
+  const html = buildPurchaseEmailHtml(email, productName, ctaLink, productType, creditsAmount)
   const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
 
   const token = await getSendPulseToken()
@@ -243,7 +262,7 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
 
   await supabase.from('welcome_email_logs').insert({
     email,
-    template_used: `mp_purchase_${productName}`,
+    template_used: dedupKey,
     tracking_id: trackingId,
     status: response.ok ? 'sent' : 'failed',
     sent_at: response.ok ? new Date().toISOString() : null,
@@ -253,18 +272,17 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
   return response.ok
 }
 
-async function sendPurchaseEmail(supabase: any, email: string, productName: string, ctaLink: string, requestId: string) {
-  const backoffDelays = [2000, 5000, 10000] // 2s, 5s, 10s
+async function sendPurchaseEmail(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, productType: string, creditsAmount?: number) {
+  const backoffDelays = [2000, 5000, 10000]
   
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const success = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId)
+      const success = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId, productType, creditsAmount)
       if (success) {
         console.log(`   ├─ ✅ Email de compra enviado para ${email} (tentativa ${attempt + 1})`)
         return
       }
       
-      // Failed but no exception - log and retry
       console.log(`   ├─ ⚠️ Tentativa ${attempt + 1}/3 falhou para ${email}`)
       
       if (attempt < 2) {
@@ -275,7 +293,6 @@ async function sendPurchaseEmail(supabase: any, email: string, productName: stri
     } catch (err: any) {
       console.error(`   ├─ ❌ Erro tentativa ${attempt + 1}/3: ${err.message}`)
       
-      // Log failure (don't delete previous logs!)
       try {
         await supabase.from('welcome_email_logs').insert({
           email,
@@ -297,6 +314,57 @@ async function sendPurchaseEmail(supabase: any, email: string, productName: stri
   console.error(`   ├─ ❌ Email falhou após 3 tentativas para ${email}`)
 }
 
+// ===== Meta CAPI Purchase =====
+async function sendMetaCAPIPurchase(order: any, product: any, payment: any): Promise<void> {
+  const metaPixelId = '1162356848586894'
+  const metaAccessToken = Deno.env.get('META_ACCESS_TOKEN')
+  if (!metaAccessToken) {
+    console.log(`   ├─ ⚠️ META_ACCESS_TOKEN não configurado, pulando CAPI Purchase`)
+    return
+  }
+
+  const email = order.user_email
+  const paidAt = payment.date_approved || new Date().toISOString()
+  const eventId = `purchase_mp_${order.id}`
+
+  const userData: any = {
+    em: [await sha256(email)],
+  }
+  if (order.meta_fbp) userData.fbp = order.meta_fbp
+  if (order.meta_fbc) userData.fbc = order.meta_fbc
+  if (order.meta_user_agent) userData.client_user_agent = order.meta_user_agent
+
+  const capiPayload = {
+    data: [{
+      event_name: 'Purchase',
+      event_time: Math.floor(new Date(paidAt).getTime() / 1000),
+      event_id: eventId,
+      event_source_url: 'https://arcanoapp.lovable.app/planos-upscaler-arcano-69',
+      action_source: 'website',
+      user_data: userData,
+      custom_data: {
+        content_name: product.title,
+        content_ids: [product.slug],
+        content_type: 'product',
+        value: Number(payment.transaction_amount),
+        currency: 'BRL',
+      }
+    }]
+  }
+
+  try {
+    const resp = await fetch(`https://graph.facebook.com/v21.0/${metaPixelId}/events?access_token=${metaAccessToken}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(capiPayload)
+    })
+    const body = await resp.text()
+    console.log(`   ├─ 📊 Meta CAPI Purchase: ${resp.status} - ${body}`)
+  } catch (err: any) {
+    console.error(`   ├─ ⚠️ Meta CAPI Purchase falhou (não-bloqueante): ${err.message}`)
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -316,7 +384,7 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Parse do body - MP pode enviar como query params ou JSON
+    // Parse do body
     let body: any = {}
     const contentType = req.headers.get('content-type') || ''
     
@@ -327,7 +395,7 @@ serve(async (req) => {
       try { body = JSON.parse(text) } catch { body = {} }
     }
 
-    // Também checar query params (MP às vezes envia assim)
+    // Também checar query params
     const url = new URL(req.url)
     const queryType = url.searchParams.get('type') || url.searchParams.get('topic')
     const queryDataId = url.searchParams.get('data.id') || url.searchParams.get('id')
@@ -350,6 +418,20 @@ serve(async (req) => {
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
 
+    // ===== IDEMPOTÊNCIA: Verificar se já processou esse paymentId =====
+    const { data: existingLog } = await supabase
+      .from('webhook_logs')
+      .select('id')
+      .eq('transaction_id', String(paymentId))
+      .eq('platform', 'mercadopago')
+      .in('status', ['paid', 'approved', 'refunded'])
+      .maybeSingle()
+
+    if (existingLog) {
+      console.log(`   ├─ ⏭️ Já processado (idempotência): paymentId=${paymentId}`)
+      return new Response('OK', { status: 200, headers: corsHeaders })
+    }
+
     // Buscar detalhes do pagamento na API do Mercado Pago
     const paymentResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
       headers: { 'Authorization': `Bearer ${mpAccessToken}` }
@@ -362,8 +444,8 @@ serve(async (req) => {
 
     const payment = await paymentResponse.json()
 
-    const paymentStatus = payment.status // approved, pending, rejected, refunded, etc
-    const externalReference = payment.external_reference // = mp_orders.id
+    const paymentStatus = payment.status
+    const externalReference = payment.external_reference
     const payerEmail = payment.payer?.email?.toLowerCase().trim()
     const paymentAmount = payment.transaction_amount
 
@@ -400,8 +482,18 @@ serve(async (req) => {
       console.log(`\n✅ [${requestId}] PAGAMENTO APROVADO - Processando...`)
 
       const email = order.user_email
+      const customerName = order.user_name || ''
 
-      // 1. Criar ou buscar usuário (mesma lógica do webhook-greenn-artes)
+      // Auto-cleanup: marcar outras ordens pending do mesmo email como failed
+      await supabase
+        .from('mp_orders')
+        .update({ status: 'failed', updated_at: new Date().toISOString() })
+        .eq('user_email', email)
+        .eq('status', 'pending')
+        .neq('id', order.id)
+        .gte('created_at', new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString())
+
+      // 1. Criar ou buscar usuário
       let userId: string | null = null
 
       const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
@@ -410,7 +502,6 @@ serve(async (req) => {
 
       if (createError) {
         if (createError.message?.includes('email') || createError.code === 'email_exists') {
-          // Buscar existente via profile
           const { data: profile } = await supabase
             .from('profiles')
             .select('id')
@@ -421,7 +512,6 @@ serve(async (req) => {
             userId = profile.id
             console.log(`   ├─ 👤 Usuário existente (profile): ${userId}`)
           } else {
-            // Busca paginada em auth.users
             let page = 1
             while (!userId && page <= 10) {
               const { data: usersPage } = await supabase.auth.admin.listUsers({ page, perPage: 1000 })
@@ -451,7 +541,7 @@ serve(async (req) => {
         console.log(`   ├─ ✅ Novo usuário criado: ${userId}`)
       }
 
-      // 2. Upsert profile — check if profile exists to avoid resetting password_changed
+      // 2. Upsert profile
       const { data: existingProfileMp } = await supabase.from('profiles').select('id').eq('id', userId).maybeSingle()
       const profileDataMp: Record<string, unknown> = {
         id: userId, email, email_verified: true, updated_at: new Date().toISOString()
@@ -462,7 +552,6 @@ serve(async (req) => {
 
       // 3. Processar de acordo com o tipo do produto
       if (product.type === 'pack' && product.pack_slug) {
-        // Verificar se já tem acesso
         const { data: existingPurchase } = await supabase
           .from('user_pack_purchases')
           .select('id')
@@ -500,7 +589,7 @@ serve(async (req) => {
         }
       }
 
-      // 4. Atualizar ordem (incluindo novos campos de analytics)
+      // 4. Atualizar ordem
       await supabase.from('mp_orders').update({
         status: 'paid',
         user_id: userId,
@@ -511,21 +600,49 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
-      // 5. Enviar email de compra via SendPulse
+      // 5. Inserir em webhook_logs (visibilidade no painel admin)
+      const hashCode = (s: string) => {
+        let h = 0
+        for (let i = 0; i < s.length; i++) {
+          h = ((h << 5) - h + s.charCodeAt(i)) | 0
+        }
+        return Math.abs(h)
+      }
+
+      await supabase.from('webhook_logs').insert({
+        platform: 'mercadopago',
+        status: 'paid',
+        email,
+        amount: paymentAmount,
+        amount_brl: paymentAmount,
+        currency: 'BRL',
+        net_amount: payment.transaction_details?.net_received_amount ?? paymentAmount,
+        product_name: product.title,
+        product_id: hashCode(product.id) + 900000,
+        transaction_id: String(paymentId),
+        event_type: 'purchase',
+        payment_method: payment.payment_method_id || null,
+        utm_data: order.utm_data || null,
+        result: 'success',
+        payload: { order_id: order.id, mp_payment_id: paymentId, customer_name: customerName },
+      })
+      console.log(`   ├─ ✅ webhook_logs inserido`)
+
+      // 6. Enviar email de compra
       const ctaLink = product.pack_slug === 'upscaler-arcano' || product.type === 'credits'
         ? 'https://arcanoapp.voxvisual.com.br/upscaler-arcano'
         : 'https://arcanoapp.voxvisual.com.br/'
       
-      await sendPurchaseEmail(supabase, email, product.title, ctaLink, requestId)
+      await sendPurchaseEmail(supabase, email, product.title, ctaLink, requestId, product.type, product.credits_amount)
 
-      // 5.1 Notificar admin
+      // 7. Notificar admin
       try {
         await sendAdminSaleNotification({
           productName: product.title,
           amount: payment.transaction_amount,
           paymentMethod: payment.payment_method_id || 'unknown',
           customerEmail: email,
-          customerName: '',
+          customerName,
           platform: 'Mercado Pago',
           requestId,
         })
@@ -533,7 +650,14 @@ serve(async (req) => {
         console.error(`   ├─ ⚠️ Erro ao enviar email admin (não-crítico):`, adminErr)
       }
 
-      // 6. Enviar webhook para UTMify (formato EXATO da Greenn)
+      // 8. Meta CAPI Purchase
+      try {
+        await sendMetaCAPIPurchase(order, product, payment)
+      } catch (capiErr: any) {
+        console.error(`   ├─ ⚠️ Meta CAPI Purchase falhou (não-bloqueante): ${capiErr.message}`)
+      }
+
+      // 9. Enviar webhook para UTMify
       try {
         const utmData = order.utm_data as Record<string, string> | null
         const saleMetas: { meta_key: string; meta_value: string }[] = []
@@ -543,14 +667,6 @@ serve(async (req) => {
           }
         }
 
-        // Gerar IDs numéricos consistentes a partir do UUID da ordem
-        const hashCode = (s: string) => {
-          let h = 0
-          for (let i = 0; i < s.length; i++) {
-            h = ((h << 5) - h + s.charCodeAt(i)) | 0
-          }
-          return Math.abs(h)
-        }
         const numericOrderId = hashCode(order.id)
         const numericProductId = hashCode(product.id) + 900000
 
@@ -559,7 +675,7 @@ serve(async (req) => {
           currentStatus: 'paid',
           contract: { id: numericOrderId },
           client: {
-            name: '',
+            name: customerName,
             email: email
           },
           product: {
@@ -614,7 +730,6 @@ serve(async (req) => {
         console.log(`   ├─ ✅ Acesso revogado: ${product.pack_slug}`)
       }
 
-      // Revogar créditos se produto for do tipo credits
       if (order.user_id && product.type === 'credits' && product.credits_amount > 0) {
         const { data: revokeData, error: revokeError } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
           _user_id: order.user_id,
@@ -637,9 +752,26 @@ serve(async (req) => {
         status: 'refunded',
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
+
+      // Inserir reembolso em webhook_logs
+      await supabase.from('webhook_logs').insert({
+        platform: 'mercadopago',
+        status: 'refunded',
+        email: order.user_email,
+        amount: paymentAmount,
+        amount_brl: paymentAmount,
+        currency: 'BRL',
+        product_name: product.title,
+        transaction_id: String(paymentId),
+        event_type: 'refund',
+        payment_method: payment.payment_method_id || null,
+        result: 'success',
+        payload: { order_id: order.id, mp_payment_id: paymentId, reason: paymentStatus },
+      })
+      console.log(`   ├─ ✅ webhook_logs refund inserido`)
     }
 
-    // Outros status (pending, in_process, rejected)
+    // Outros status
     else {
       console.log(`   ├─ ℹ️ Status ${paymentStatus} / ordem ${order.status} - sem ação`)
     }
