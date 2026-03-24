@@ -653,7 +653,7 @@ serve(async (req) => {
       console.log(`   ├─ ✅ webhook_logs inserido`)
 
       // 6. Enviar email de compra
-      const ctaLink = product.pack_slug === 'upscaler-arcano' || product.type === 'credits'
+      const ctaLink = product.pack_slug === 'upscaler-arcano' || product.pack_slug === 'upscaller-arcano' || product.type === 'credits'
         ? 'https://arcanoapp.voxvisual.com.br/upscaler-arcano'
         : 'https://arcanoapp.voxvisual.com.br/'
       
