@@ -9,7 +9,10 @@ import { getMetaCookies } from "@/lib/metaCookies";
 const CHECKOUT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-pagarme-checkout-v2`;
 const TIMEOUT_MS = 20_000;
 
-export async function redirectToCheckout(productSlug: string): Promise<void> {
+export async function redirectToCheckout(
+  productSlug: string,
+  customer?: { name: string; email: string; document: string }
+): Promise<void> {
   if (!productSlug || typeof productSlug !== 'string' || !productSlug.trim()) {
     toast.error("Produto inválido. Tente novamente.");
     return;
