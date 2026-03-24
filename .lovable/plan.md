@@ -1,29 +1,59 @@
 
 
-## Diagnóstico
+## Entendimento
 
-Sim, o webhook do Mercado Pago **tem** a forma de pagamento (`payment.payment_method_id` — ex: `pix`, `credit_card`) e o nome do comprador (`payment.payer.first_name` / `last_name`). O webhook já salva `payment_method` na `mp_orders` quando o pagamento é confirmado (linha 655 do webhook). Porém, para ordens **pendentes**, o `payment_method` é `null` porque o MP só envia webhook quando o pagamento é processado, não quando o checkout é criado.
+Você quer separar o Upscaler Arcano em dois produtos independentes:
+- **V2** (produto atual `upscaller-arcano-vitalicio`): quem já comprou continua com acesso apenas à V2
+- **V3** (novo produto `upscaler-arcano-v3`): será um produto separado. Quem comprar V3 ganha acesso à V3 **e** à V2. Quem tem só V2 **não** ganha V3 automaticamente
 
-Quanto ao **nome**: o `user_name` já é salvo na `mp_orders` no momento da criação do checkout (linha 106 do `create-mp-checkout`). Mas a RPC `get_unified_dashboard_orders` **não retorna** esse campo, e o frontend busca o nome apenas na tabela `profiles`.
+Na tela de ferramentas e na seleção de versão, quem tem V2 verá o card da V3 com visual "em breve" (preto e branco) e botão para adquirir com desconto. A V3 fica bloqueada até que o usuário compre ou você conceda acesso manualmente.
 
-## Plano
+---
 
-### 1. Alterar a RPC `get_unified_dashboard_orders` (migration SQL)
-- Adicionar `user_name text` ao `RETURNS TABLE`
-- Na seção `mp_orders`: retornar `o.user_name`
-- Na seção `webhook_logs`: retornar `NULL::text` como `user_name`
+## Plano de Implementação
 
-### 2. Atualizar o frontend `SalesManagementContent.tsx`
-- Adicionar `user_name` ao tipo `SaleRecord`
-- Na lógica de enriquecimento de nomes (linha ~177-180): usar `user_name` como fallback: `s.name = profile?.name || s.user_name || undefined`
+### 1. Criar produto V3 no banco (`mp_products`)
+- Inserir novo registro: slug `upscaler-arcano-v3`, title "Upscaler Arcano V3", type `pack`, pack_slug `upscaller-arcano-v3`, price (a definir por você), access_type `vitalicio`
 
-### 3. Sobre o `payment_method` em ordens pendentes
-- Para ordens **pendentes** do MP, não há como saber o método de pagamento — o MP só informa quando processa o pagamento via webhook
-- Isso é comportamento esperado (diferente da Greenn que informa no momento da compra)
-- Quando o pagamento é confirmado, o webhook já atualiza corretamente o `payment_method`
+### 2. Atualizar Webhooks (Mercado Pago + Pagar.me)
+- Adicionar lógica para o slug `upscaler-arcano-v3`:
+  - Conceder acesso ao pack `upscaller-arcano-v3` (novo pack)
+  - **Também** conceder acesso ao pack `upscaller-arcano` (V2) como bônus
+  - Aplicar bônus de créditos se necessário (mesma lógica do vitalício atual ou diferente, conforme sua decisão)
+- Adicionar lógica de estorno para revogar ambos os packs
 
-### Arquivos a alterar
-- Migration SQL: `get_unified_dashboard_orders` (adicionar `user_name`)
-- `src/components/admin/SalesManagementContent.tsx` (usar `user_name` como fallback)
-- `src/components/admin/sales-dashboard/useSalesDashboard.ts` (adicionar `user_name` ao tipo `DashboardOrder`)
+### 3. Atualizar `UpscalerArcanoVersionSelect` (página de seleção de versão)
+- Verificar acesso V3 via `hasAccessToPack('upscaller-arcano-v3')`
+- Para V2 (versões v1 e v2): manter acesso normal para quem tem pack `upscaller-arcano`
+- Adicionar **card da V3**:
+  - Se tem acesso V3: card colorido com botão "Acessar"
+  - Se **não** tem V3: card em preto e branco, badge "Em Breve", botão "Adquirir com Desconto" que leva à página de compra
+
+### 4. Atualizar `UpscalerSelectionPage` (página Imagem/Vídeo da V3)
+- Adicionar verificação de acesso ao pack `upscaller-arcano-v3`
+- Se não tem acesso: redirecionar para planos ou mostrar bloqueio
+
+### 5. Atualizar `FerramentasIAAplicativo` (página inicial de ferramentas)
+- Quando o usuário clica no card Upscaler Arcano com pack V2:
+  - Navegar para `UpscalerArcanoVersionSelect` (que agora mostrará V2 ativa e V3 para comprar)
+- O modal `UpscalerChoiceModal` no fluxo "Versão Ilimitada" deve levar para a seleção de versão em vez de direto à ferramenta
+
+### 6. Atualizar `usePremiumArtesStatus` / verificações de acesso
+- As verificações em `UpscalerArcanoTool` e `UpscalerSelectionPage` devem checar `upscaller-arcano-v3` para a V3
+- As verificações em `UpscalerArcanoV1/V2` continuam checando `upscaller-arcano` para a V2
+
+---
+
+## Arquivos a Alterar
+- **Migration SQL**: inserir produto `upscaler-arcano-v3` na `mp_products`
+- **`supabase/functions/webhook-mercadopago/index.ts`**: lógica V3 (conceder V3 + V2, estorno)
+- **`supabase/functions/webhook-pagarme/index.ts`**: mesma lógica V3
+- **`src/pages/UpscalerArcanoVersionSelect.tsx`**: adicionar card V3 com estado bloqueado/em breve
+- **`src/pages/UpscalerSelectionPage.tsx`**: verificar acesso V3 antes de permitir uso
+- **`src/pages/FerramentasIAAplicativo.tsx`**: ajustar navegação do card upscaler
+- **`src/components/ferramentas/UpscalerChoiceModal.tsx`**: ajustar navegação "Versão Ilimitada" para ir à seleção de versão
+
+## Dados
+- O produto V3 será inserido com preço que você definir (posso deixar um placeholder)
+- A concessão de acesso manual será feita por você via interface do banco, inserindo `user_pack_purchases` com `pack_slug = 'upscaller-arcano-v3'`
 
