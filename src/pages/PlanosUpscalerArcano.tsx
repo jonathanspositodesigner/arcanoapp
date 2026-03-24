@@ -929,6 +929,14 @@ const PlanosUpscalerArcano = () => {
       )}
 
 
+      {/* Modal Checkout Customer */}
+      <CheckoutCustomerModal
+        open={!!checkoutSlug}
+        onClose={() => setCheckoutSlug(null)}
+        onConfirm={handleCheckoutConfirm}
+        loading={!!purchaseLoading}
+      />
+
       {/* Modal Fullscreen */}
       {modalImages && (
         <Suspense fallback={null}>
