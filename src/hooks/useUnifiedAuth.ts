@@ -337,9 +337,8 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
         // Legacy account created before 2026-03-12: auto-fix and let through
         const LEGACY_CUTOFF = new Date('2026-03-12T00:00:00Z');
         if (profile.created_at && new Date(profile.created_at) < LEGACY_CUTOFF) {
-          console.log('[UnifiedAuth] Legacy account, auto-fixing password_changed');
-          await supabase.from('profiles').update({ password_changed: true }).eq('id', data.user.id);
-          // Continue login normally - don't redirect
+          console.log('[UnifiedAuth] Legacy account, skipping first-access flow (no DB write)');
+          // Continue login normally - don't write password_changed to DB
         } else {
           toast.success(t('errors.firstAccessSetPassword'));
           config.onNeedPasswordChange?.();
