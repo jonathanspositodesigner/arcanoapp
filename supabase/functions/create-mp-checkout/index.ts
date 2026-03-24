@@ -184,7 +184,7 @@ serve(async (req) => {
       const metaPixelId = '1162356848586894'
       const metaAccessToken = Deno.env.get('META_ACCESS_TOKEN')
       if (metaAccessToken) {
-        const eventId = `ic_mp_${Date.now()}`
+        const eventId = clientEventId || `ic_mp_${Date.now()}`
         const capiPayload = {
           data: [{
             event_name: 'InitiateCheckout',

@@ -208,7 +208,7 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
 }
 
 async function sendPurchaseEmailAttempt(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, productType: string, creditsAmount?: number): Promise<boolean> {
-  const dedupKey = `mp_purchase_${productName}`
+  const dedupKey = `mp_purchase_${requestId}`
   const { data: existing } = await supabase
     .from('welcome_email_logs')
     .select('id')

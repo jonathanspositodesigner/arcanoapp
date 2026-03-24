@@ -38,8 +38,8 @@ export async function redirectToMPCheckout(
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    // Fire Meta Pixel event (browser-side)
-    const eventId = `ic_mp_${Date.now()}`;
+    // Gerar eventId único e usar no Pixel E no CAPI (sincronizados)
+    const eventId = `ic_mp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     if (typeof window !== "undefined" && (window as any).fbq) {
       (window as any).fbq("track", "InitiateCheckout", {}, { eventID: eventId });
     }
@@ -56,6 +56,7 @@ export async function redirectToMPCheckout(
         fbp,
         fbc,
         user_agent: navigator.userAgent,
+        event_id: eventId,
       }),
       signal: controller.signal,
     });
