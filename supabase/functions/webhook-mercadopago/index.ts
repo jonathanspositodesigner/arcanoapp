@@ -418,19 +418,10 @@ serve(async (req) => {
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
 
-    // ===== IDEMPOTÊNCIA: Verificar se já processou esse paymentId =====
-    const { data: existingLog } = await supabase
-      .from('webhook_logs')
-      .select('id')
-      .eq('transaction_id', String(paymentId))
-      .eq('platform', 'mercadopago')
-      .in('status', ['paid', 'approved', 'refunded'])
-      .maybeSingle()
-
-    if (existingLog) {
-      console.log(`   ├─ ⏭️ Já processado (idempotência): paymentId=${paymentId}`)
-      return new Response('OK', { status: 200, headers: corsHeaders })
-    }
+    // ===== IDEMPOTÊNCIA ATÔMICA: "claim" do processamento via INSERT com unique index =====
+    // O índice único idx_webhook_logs_mp_dedup (platform, transaction_id, event_type)
+    // garante que apenas UMA execução consegue inserir o log de processamento.
+    // Se duas execuções chegarem ao mesmo tempo, a segunda falha no INSERT e é ignorada.
 
     // Buscar detalhes do pagamento na API do Mercado Pago
     const paymentResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
