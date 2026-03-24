@@ -1,92 +1,77 @@
-# Auditoria v7: Fluxo Mercado Pago — Resultado Final
-
-## ✅ Tudo Funcionando Corretamente
 
 
-| Item                                                                | Status |
-| ------------------------------------------------------------------- | ------ |
-| Checkout com payer completo (nome/email/CPF)                        | ✅      |
-| Rate limiting (5/min por email)                                     | ✅      |
-| Idempotência via `webhook_logs.transaction_id`                      | ✅      |
-| Créditos adicionados via `add_lifetime_credits` com lock            | ✅      |
-| Pack `upscaller-arcano` inserido para planos de créditos            | ✅      |
-| Vitalício insere pack com `access_type: vitalicio`                  | ✅      |
-| Reembolso revoga créditos E pack (inclusive `access_type: credits`) | ✅      |
-| Meta CAPI Purchase + InitiateCheckout com event_id                  | ✅      |
-| Email de compra com template por tipo (créditos vs vitalício)       | ✅      |
-| Dedup email usa `order.id`                                          | ✅      |
-| Admin notificado com nome do cliente                                | ✅      |
-| UTMify recebe dados de venda                                        | ✅      |
-| `check-purchase-exists` verifica `mp_orders`                        | ✅      |
-| `complete-purchase-onboarding` verifica `mp_orders`                 | ✅      |
-| Back URLs corretas (`/sucesso-compra`)                              | ✅      |
-| Feedback `mp_status` na página 69                                   | ✅      |
-| CTA link corrigido para ambos os slugs                              | ✅      |
-| merchant_order ignorado                                             | ✅      |
-| Auto-cleanup de ordens pending duplicadas                           | ✅      |
-| UI Starter mostra ✅ em todas as features                            | ✅      |
-| webhook_logs inserido para vendas e reembolsos                      | ✅      |
-| Onboarding (profile + listUsers paginado)                           | ✅      |
-| Página de sucesso reconhece compras MP                              | ✅      |
+# Plano: Criar sistema reutilizável de Checkout Mercado Pago
 
+## O que será criado
 
----
+Um **hook React** (`useMPCheckout`) que encapsula toda a lógica do checkout Mercado Pago (modal, validação, redirect, loading, feedback) em uma única chamada. Qualquer página do app poderá usar checkout do Mercado Pago com **3 linhas de código**.
 
-## 🟡 BUG MÉDIO 1: Reembolso de créditos revoga acesso de TODAS as compras
+## Como vai funcionar (exemplo de uso)
 
-**Onde**: `webhook-mercadopago/index.ts`, linhas 774-781
+```tsx
+// Em
 
-**Problema**: Quando um plano de créditos é reembolsado, a revogação do pack faz:
+<lov-plan>
 
-```typescript
-.eq('user_id', order.user_id)
-.eq('pack_slug', 'upscaller-arcano')
-.eq('access_type', 'credits')
+# Plano: Criar sistema reutilizável de Checkout Mercado Pago
+
+## O que será criado
+
+Um **hook React** (`useMPCheckout`) que encapsula toda a lógica do checkout Mercado Pago (modal, validação, redirect, loading, feedback) em uma única chamada. Qualquer página do app poderá usar checkout do Mercado Pago com **3 linhas de código**.
+
+## Como vai funcionar (exemplo de uso)
+
+```text
+// Em QUALQUER página:
+const { openCheckout, MPCheckoutModal } = useMPCheckout();
+
+// Botão de compra:
+<Button onClick={() => openCheckout("slug-do-produto")}>Comprar</Button>
+
+// Modal (colocar no JSX uma vez):
+<MPCheckoutModal />
 ```
 
-Se o cliente comprou **Starter** e depois **Pro** separadamente, ele tem **uma** entrada `user_pack_purchases` com `access_type: 'credits'` (porque a inserção usa `maybeSingle` e não duplica). Se o Starter for reembolsado, o sistema revoga essa única entrada — e o cliente perde acesso mesmo tendo o Pro ativo.
+Pronto. O hook cuida de tudo: abre modal, coleta nome/email/CPF, valida, chama a edge function, faz tracking do Pixel, redireciona para o Mercado Pago.
 
-A raiz do problema: não há vínculo entre a entrada em `user_pack_purchases` e a ordem específica (`mp_orders.id`). Ao revogar, não tem como saber se há outra compra de créditos ativa.
+## Arquivos a criar/alterar
 
-**Correção**: Antes de revogar o pack `access_type: 'credits'`, verificar se existem **outras** ordens pagas do mesmo usuário com produtos de créditos. Se sim, manter o acesso.
+| Arquivo | Ação |
+|---|---|
+| `src/hooks/useMPCheckout.tsx` | **CRIAR** — Hook reutilizável com toda a lógica |
+| `src/components/checkout/MPEmailModal.tsx` | Manter como está (já funciona perfeitamente) |
+| `src/lib/mpCheckout.ts` | Manter como está (função de redirect já corrigida) |
+| `src/pages/PlanosUpscalerArcano69v2.tsx` | Refatorar para usar o novo hook (remover lógica duplicada) |
 
----
+## O que o hook `useMPCheckout` vai conter
 
----
+1. Estado interno: `selectedSlug`, `loading`, `modalOpen`
+2. Função `openCheckout(slug)` — abre o modal com o slug do produto
+3. Função `closeCheckout()` — fecha e reseta tudo
+4. Handler `onConfirm` — chama `redirectToMPCheckout` com os dados do cliente
+5. Componente `MPCheckoutModal` — renderiza o `MPEmailModal` já conectado a tudo
+6. Leitura automática de `mp_status` da URL (toast de falha/pendência)
 
-## Resumo
+## Detalhes técnicos
 
-O fluxo está **95%+ correto**. O único bug funcional é o cenário de reembolso quando o cliente tem múltiplas compras de créditos (cenário raro, mas real). Os demais pontos são de segurança/UX já conhecidos.
-
-## Plano de Correção (1 item)
-
-### Proteger reembolso de créditos contra revogação indevida
-
-No `webhook-mercadopago/index.ts`, na seção de reembolso para `product.type === 'credits'`, antes de revogar o pack:
-
-```typescript
-// Verificar se há outras ordens pagas de créditos para este usuário
-const { data: otherCreditOrders } = await supabase
-  .from('mp_orders')
-  .select('id, mp_products!inner(type)')
-  .eq('user_id', order.user_id)
-  .eq('status', 'paid')
-  .neq('id', order.id)
-
-const hasOtherCredits = otherCreditOrders?.some(o => o.mp_products?.type === 'credits')
-
-if (!hasOtherCredits) {
-  // Só revogar o pack se não houver outras compras de créditos ativas
-  await supabase
-    .from('user_pack_purchases')
-    .update({ is_active: false, updated_at: new Date().toISOString() })
-    .eq('user_id', order.user_id)
-    .eq('pack_slug', 'upscaller-arcano')
-    .eq('access_type', 'credits')
-}
+```text
+useMPCheckout()
+  ├── openCheckout(slug) → seta slug + abre modal
+  ├── MPCheckoutModal    → renderiza MPEmailModal com props automáticas
+  ├── mp_status listener → useEffect que lê ?mp_status=failure|pending da URL
+  └── internamente usa   → redirectToMPCheckout (já existente, já corrigido)
+                          → MPEmailModal (já existente, já corrigido)
+                          → Meta Pixel tracking (InitiateCheckout)
 ```
 
+O `MPEmailModal` e o `mpCheckout.ts` **não serão alterados** — toda a lógica corrigida nas auditorias anteriores permanece intacta. O hook apenas orquestra esses componentes prontos.
 
-| Arquivo                                           | Alteração                                                       |
-| ------------------------------------------------- | --------------------------------------------------------------- |
-| `supabase/functions/webhook-mercadopago/index.ts` | Proteger revogação de pack contra múltiplas compras de créditos |
+## Resultado
+
+Quando precisar trocar qualquer produto para checkout do Mercado Pago, basta:
+1. Importar `useMPCheckout`
+2. Chamar `openCheckout("slug-do-produto-no-banco")`
+3. Colocar `<MPCheckoutModal />` no JSX
+
+Toda a validação, coleta de dados, tracking, rate limiting, idempotência, ativação de plano, email, CAPI — tudo já funciona automaticamente pela infraestrutura existente (edge functions + webhook).
+
