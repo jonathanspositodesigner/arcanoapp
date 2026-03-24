@@ -113,24 +113,24 @@ const UpgradeUpscalerV3 = () => {
           </FadeIn>
 
           {/* VSL VIDEO */}
-          <FadeIn delay={150} duration={400}>
-            <div className="w-full max-w-3xl mx-auto mb-10 rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-fuchsia-500/10 bg-black">
-              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                <video
-                  className="absolute inset-0 w-full h-full object-cover"
-                  autoPlay
-                  muted
-                  playsInline
-                  controls
-                  preload="auto"
-                  poster="/images/upscaler-v3-cover.webp"
-                >
-                  <source src="/videos/upscaler-promo-mobile.mp4" media="(max-width: 767px)" type="video/mp4" />
-                  <source src="/videos/upscaler-promo-desktop.mp4" type="video/mp4" />
-                </video>
-              </div>
+          <div className="w-full max-w-3xl mx-auto mb-10 rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-fuchsia-500/10 bg-black">
+            <div className="relative w-full aspect-video">
+              <video
+                className="absolute inset-0 w-full h-full object-cover"
+                autoPlay
+                muted
+                playsInline
+                loop
+                controls
+                preload="auto"
+                poster="/images/upscaler-hero-preview.webp"
+              >
+                <source src="/videos/upscaler-promo-mobile.mp4" media="(max-width: 767px)" type="video/mp4" />
+                <source src="/videos/upscaler-promo-desktop.mp4" type="video/mp4" />
+                Seu navegador não suporta vídeo HTML5.
+              </video>
             </div>
-          </FadeIn>
+          </div>
 
           <FadeIn delay={250} duration={400}>
             <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10 mb-10">
