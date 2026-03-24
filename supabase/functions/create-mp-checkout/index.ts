@@ -127,10 +127,15 @@ serve(async (req) => {
 
     // 3. Criar preferência no Mercado Pago com payer completo
     const payer: any = { email }
-    if (payerName) {
-      const nameParts = payerName.split(' ')
-      payer.name = nameParts[0]
-      payer.surname = nameParts.slice(1).join(' ') || nameParts[0]
+    if (payerName && payerName.length > 0) {
+      const nameParts = payerName.split(' ').filter(p => p.length > 0)
+      payer.name = nameParts[0] || payerName
+      payer.surname = nameParts.length > 1 ? nameParts.slice(1).join(' ') : nameParts[0]
+    } else {
+      // Fallback: usar parte do email como nome se o campo veio vazio
+      const fallbackName = email.split('@')[0].replace(/[^a-zA-Z]/g, ' ').trim() || 'Cliente'
+      payer.name = fallbackName
+      payer.surname = fallbackName
     }
     if (payerDocument && payerDocument.length === 11) {
       payer.identification = {
