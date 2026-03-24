@@ -932,7 +932,7 @@ serve(async (req) => {
           .eq('user_id', order.user_id)
         console.log(`   ├─ ✅ Ferramentas gerar-imagem e gerar-video desabilitadas`)
       }
-
+      await supabase.from('mp_orders').update({
         status: 'refunded',
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
