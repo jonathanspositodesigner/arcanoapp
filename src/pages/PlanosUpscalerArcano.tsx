@@ -235,14 +235,21 @@ const PlanosUpscalerArcano = () => {
   };
 
   const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null);
+  const [checkoutSlug, setCheckoutSlug] = useState<string | null>(null);
 
-  const handlePurchase = async (productSlug?: string | unknown) => {
+  const handlePurchase = (productSlug?: string | unknown) => {
     const slug = typeof productSlug === 'string' && productSlug.trim().length > 0
       ? productSlug
       : 'upscaller-arcano-vitalicio';
-    setPurchaseLoading(slug);
-    await redirectToCheckout(slug);
+    setCheckoutSlug(slug);
+  };
+
+  const handleCheckoutConfirm = async (customerData: CheckoutCustomerData) => {
+    if (!checkoutSlug) return;
+    setPurchaseLoading(checkoutSlug);
+    await redirectToCheckout(checkoutSlug, customerData);
     setPurchaseLoading(null);
+    setCheckoutSlug(null);
   };
 
   // Countdown timer - 48 minutes

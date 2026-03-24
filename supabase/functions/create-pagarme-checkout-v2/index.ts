@@ -147,7 +147,15 @@ serve(async (req) => {
     const idempotencyKey = `v2_${orderId}_${Date.now()}`
     const itemCode = product.slug || product.id || 'PROD001'
 
-    const checkoutPayload = {
+    const customerObj = (customer_name && customer_email && customer_document) ? {
+      name: customer_name,
+      email: customer_email,
+      type: 'individual',
+      document: customer_document.replace(/\D/g, ''),
+      document_type: 'CPF',
+    } : undefined;
+
+    const checkoutPayload: any = {
       items: [{
         amount: amountInCents,
         description: product.title,
@@ -181,6 +189,10 @@ serve(async (req) => {
         source: 'checkout-v2',
       },
       closed: false,
+    }
+
+    if (customerObj) {
+      checkoutPayload.customer = customerObj;
     }
 
     console.log(`[${requestId}] 🚀 Chamando Pagar.me /orders`)
