@@ -517,7 +517,6 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
 
 const PlanosUpscalerArcano69v2 = () => {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
   const { user, isPremium, hasAccessToPack, isLoading: authLoading } = usePremiumArtesStatus();
   const isMobile = useIsMobile();
@@ -526,20 +525,6 @@ const PlanosUpscalerArcano69v2 = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImages, setModalImages] = useState<{ before: string; after: string } | null>(null);
   const [heroRevealed, setHeroRevealed] = useState(false);
-
-  // Feedback de status do Mercado Pago após redirecionamento
-  useEffect(() => {
-    const mpStatus = searchParams.get("mp_status");
-    if (mpStatus === "failure") {
-      toast.error("Pagamento não concluído. Tente novamente.");
-      searchParams.delete("mp_status");
-      setSearchParams(searchParams, { replace: true });
-    } else if (mpStatus === "pending") {
-      toast.info("Pagamento pendente. Aguarde a confirmação e você receberá um e-mail.");
-      searchParams.delete("mp_status");
-      setSearchParams(searchParams, { replace: true });
-    }
-  }, []);
 
   // Preload: Mobile loads preview + antes/depois mobile, Desktop loads high-res versions
   useImagesPreload(
