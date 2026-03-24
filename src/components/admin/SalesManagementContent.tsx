@@ -176,8 +176,10 @@ const SalesManagementContent = () => {
           const profileMap = new Map(allProfiles.map((p) => [p.email?.toLowerCase(), p]));
           sorted.forEach((s) => {
             const profile = profileMap.get(s.user_email?.toLowerCase());
-            if (profile) {
-              s.name = profile.name || undefined;
+            if (profile?.name) {
+              s.name = profile.name;
+            } else if (s.user_name) {
+              s.name = s.user_name;
             }
           });
         }
