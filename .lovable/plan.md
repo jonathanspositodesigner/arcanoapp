@@ -2,29 +2,28 @@
 
 ## Diagnóstico
 
-O código NÃO remove PIX. A configuração `excluded_payment_types: [{ id: 'ticket' }]` só bloqueia boleto. PIX deveria aparecer normalmente.
+Sim, o webhook do Mercado Pago **tem** a forma de pagamento (`payment.payment_method_id` — ex: `pix`, `credit_card`) e o nome do comprador (`payment.payer.first_name` / `last_name`). O webhook já salva `payment_method` na `mp_orders` quando o pagamento é confirmado (linha 655 do webhook). Porém, para ordens **pendentes**, o `payment_method` é `null` porque o MP só envia webhook quando o pagamento é processado, não quando o checkout é criado.
 
-O problema é a **credencial armazenada em `MERCADOPAGO_ACCESS_TOKEN`**. Quando PIX funcionava, era outra credencial/conta. Após a troca, PIX sumiu. Isso significa que:
+Quanto ao **nome**: o `user_name` já é salvo na `mp_orders` no momento da criação do checkout (linha 106 do `create-mp-checkout`). Mas a RPC `get_unified_dashboard_orders` **não retorna** esse campo, e o frontend busca o nome apenas na tabela `profiles`.
 
-1. A credencial atual pode ser de **teste** (começa com `TEST-`), onde PIX não aparece no checkout.
-2. Ou a conta MP da credencial atual **não tem PIX habilitado**.
+## Plano
 
-## Plano (simples e direto)
+### 1. Alterar a RPC `get_unified_dashboard_orders` (migration SQL)
+- Adicionar `user_name text` ao `RETURNS TABLE`
+- Na seção `mp_orders`: retornar `o.user_name`
+- Na seção `webhook_logs`: retornar `NULL::text` como `user_name`
 
-### 1. Verificar/trocar a credencial
-- Vou pedir para você inserir novamente a credencial de **PRODUÇÃO** do Mercado Pago (começa com `APP_USR-`).
-- Ela será salva em `MERCADOPAGO_ACCESS_TOKEN`.
+### 2. Atualizar o frontend `SalesManagementContent.tsx`
+- Adicionar `user_name` ao tipo `SaleRecord`
+- Na lógica de enriquecimento de nomes (linha ~177-180): usar `user_name` como fallback: `s.name = profile?.name || s.user_name || undefined`
 
-### 2. Adicionar log de diagnóstico na função
-- Logar os primeiros 8 caracteres do token usado (sem expor o segredo) para confirmar se é `APP_USR-` (produção) ou `TEST-` (teste).
-- Logar o `collector_id` retornado pelo MP na resposta da preferência para confirmar qual conta está sendo usada.
+### 3. Sobre o `payment_method` em ordens pendentes
+- Para ordens **pendentes** do MP, não há como saber o método de pagamento — o MP só informa quando processa o pagamento via webhook
+- Isso é comportamento esperado (diferente da Greenn que informa no momento da compra)
+- Quando o pagamento é confirmado, o webhook já atualiza corretamente o `payment_method`
 
-### 3. Re-deploy da edge function
-- Após trocar o secret e adicionar o log, fazer re-deploy para aplicar.
-
-## Arquivos a alterar
-- `supabase/functions/create-mp-checkout/index.ts` — adicionar 2 linhas de log diagnóstico (prefixo do token + collector_id da resposta)
-
-## Ação do usuário necessária
-- Confirmar/inserir a credencial de produção correta (a que começa com `APP_USR-`) no secret `MERCADOPAGO_ACCESS_TOKEN`.
+### Arquivos a alterar
+- Migration SQL: `get_unified_dashboard_orders` (adicionar `user_name`)
+- `src/components/admin/SalesManagementContent.tsx` (usar `user_name` como fallback)
+- `src/components/admin/sales-dashboard/useSalesDashboard.ts` (adicionar `user_name` ao tipo `DashboardOrder`)
 
