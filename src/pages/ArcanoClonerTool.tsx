@@ -478,9 +478,9 @@ const ArcanoClonerTool: React.FC = () => {
         createdJob = job;
       }
 
-      setJobId(job.id);
-      registerJob(job.id, 'Arcano Cloner', 'pending');
-      console.log('[ArcanoCloner] Job created:', job.id);
+      setJobId(createdJob.id);
+      registerJob(createdJob.id, 'Arcano Cloner', 'pending');
+      console.log('[ArcanoCloner] Job created:', createdJob.id);
 
       // Step 4: Call edge function to start processing
       setProgress(60);
