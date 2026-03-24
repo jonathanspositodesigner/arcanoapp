@@ -19,6 +19,7 @@ export interface DashboardOrder {
   product_id: string | null;
   utm_data: Record<string, string> | null;
   source_platform?: string;
+  user_name?: string;
 }
 
 export function getDateRange(preset: PeriodPreset, customStart?: Date, customEnd?: Date): { start: Date; end: Date } {
