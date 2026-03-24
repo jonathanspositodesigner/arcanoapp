@@ -343,7 +343,7 @@ const upscalerPlans: UpscalerPlan[] = [
   },
 ];
 
-const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { isPremium: boolean; tool: ToolData | null; handlePurchaseLegacy: () => void; t: (key: string) => string }) => {
+const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; tool: ToolData | null; t: (key: string) => string }) => {
   const [mpEmailSlug, setMpEmailSlug] = useState<string | null>(null);
   const [mpLoading, setMpLoading] = useState(false);
 
