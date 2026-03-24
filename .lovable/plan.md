@@ -1,24 +1,63 @@
 
 
-# Plano: Remover dados fictícios do checkout Pagar.me v2
+# Plano: Modal mínimo com campos obrigatórios do Pagar.me antes do checkout
 
-## Problema
+## Contexto
 
-O checkout está chegando com "Cliente Arcano" e email fake `checkout+xxx@arcanoapp.com` preenchidos. O usuário quer que chegue **tudo em branco** para o cliente preencher do zero.
+A API do Pagar.me exige `customer` com `name`, `email`, `document` (CPF) e `document_type` para criar a ordem. Sem esses campos, retorna erro 422. Então vamos coletar **apenas esses 3 campos** num modal simples antes de redirecionar.
 
-## Correção
+## Alterações
 
-No `supabase/functions/create-pagarme-checkout-v2/index.ts`:
+### 1. Criar `src/components/checkout/CheckoutCustomerModal.tsx`
 
-1. **Remover o objeto `customer` inteiro** do payload enviado ao Pagar.me (linhas 159-163)
-2. **Remover a variável `temporaryCustomerEmail`** (linha 150)
-3. Manter `customer_editable: true` e `billing_address_editable: true` — o Pagar.me vai exibir todos os campos em branco para preenchimento
+Modal simples com 3 campos:
+- **Nome completo** (text)
+- **E-mail** (email)
+- **CPF** (text, com máscara `000.000.000-00`)
 
-Se a API do Pagar.me exigir o campo `customer` como obrigatório (rejeitar sem ele), usar campos vazios mínimos em vez de dados inventados.
+Botão "Ir para pagamento" que valida os 3 campos e chama `onConfirm({ name, email, document })`.
 
-## Arquivo
+Sem campo de endereço, telefone, ou qualquer outra coisa — o Pagar.me coleta o resto no checkout hospedado.
+
+### 2. Atualizar `src/lib/pagarmeCheckout.ts`
+
+Adicionar parâmetro opcional `customer` na função `redirectToCheckout`:
+```typescript
+export async function redirectToCheckout(
+  productSlug: string,
+  customer?: { name: string; email: string; document: string }
+): Promise<void>
+```
+
+Enviar `customer_name`, `customer_email`, `customer_document` no body do fetch.
+
+### 3. Atualizar edge function `create-pagarme-checkout-v2/index.ts`
+
+Receber `customer_name`, `customer_email`, `customer_document` do body. Montar o objeto `customer` com esses dados reais:
+```typescript
+customer: {
+  name: customer_name,
+  email: customer_email,
+  type: 'individual',
+  document: customer_document,
+  document_type: 'CPF',
+}
+```
+
+### 4. Atualizar `PlanosUpscalerArcano.tsx`
+
+- Importar `CheckoutCustomerModal`
+- Estado: `checkoutSlug` (string | null)
+- `handlePurchase` → abre o modal setando `checkoutSlug`
+- `onConfirm` do modal → chama `redirectToCheckout(checkoutSlug, customerData)`
+- Fechar modal ao cancelar
+
+## Arquivos
 
 | Arquivo | Alteração |
 |---|---|
-| `supabase/functions/create-pagarme-checkout-v2/index.ts` | Remover `customer` com dados fake do payload |
+| `src/components/checkout/CheckoutCustomerModal.tsx` | Criar — modal com Nome, Email, CPF |
+| `src/lib/pagarmeCheckout.ts` | Aceitar `customer` opcional e enviar no body |
+| `supabase/functions/create-pagarme-checkout-v2/index.ts` | Receber dados do customer do body e montar objeto real |
+| `src/pages/PlanosUpscalerArcano.tsx` | Abrir modal antes de redirecionar |
 
