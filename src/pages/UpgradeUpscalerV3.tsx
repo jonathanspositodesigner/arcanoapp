@@ -368,7 +368,7 @@ const UpgradeUpscalerV3 = () => {
             </div>
           </AnimatedElement>
         </div>
-      </AnimatedSection>
+      </section>
 
       {/* FAQ */}
       <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
