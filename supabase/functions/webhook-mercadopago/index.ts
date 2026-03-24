@@ -763,7 +763,28 @@ serve(async (req) => {
     // REEMBOLSO
     // =============================================
     else if ((paymentStatus === 'refunded' || paymentStatus === 'cancelled' || paymentStatus === 'charged_back') && order.status === 'paid') {
-      console.log(`\n🚫 [${requestId}] REEMBOLSO/CHARGEBACK - Revogando acesso...`)
+      // Claim atômico para refund
+      const { error: refundClaimError } = await supabase.from('webhook_logs').insert({
+        platform: 'mercadopago',
+        status: 'refunded',
+        email: order.user_email,
+        amount: paymentAmount,
+        amount_brl: paymentAmount,
+        currency: 'BRL',
+        product_name: product.title,
+        transaction_id: String(paymentId),
+        event_type: 'refund',
+        payment_method: payment.payment_method_id || null,
+        result: 'processing',
+        payload: { order_id: order.id, mp_payment_id: paymentId, reason: paymentStatus },
+      })
+
+      if (refundClaimError) {
+        console.log(`   ├─ ⏭️ Refund já processado (claim atômico): paymentId=${paymentId}`)
+        return new Response('OK', { status: 200, headers: corsHeaders })
+      }
+
+      console.log(`\n🚫 [${requestId}] REEMBOLSO/CHARGEBACK - Claim obtido, revogando acesso...`)
 
       if (order.user_id && product.pack_slug) {
         await supabase
