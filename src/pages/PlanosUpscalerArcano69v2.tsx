@@ -312,7 +312,7 @@ const upscalerPlans: UpscalerPlan[] = [
     images: 233,
     tagline: "Ideal para designers e criadores ativos",
     hasCountdown: true,
-    productSlug: "landing-ultimate-avulso",
+    productSlug: "upscaler-arcano-ultimate",
     features: [
       { text: "Atualizações diárias", included: true },
       { text: "Acesso às Ferramentas de IA", included: true },
