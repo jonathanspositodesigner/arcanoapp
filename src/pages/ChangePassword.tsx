@@ -4,32 +4,20 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, Eye, EyeOff, Loader2, Mail, RefreshCw, ArrowLeft } from "lucide-react";
+import { Lock, Eye, EyeOff, Loader2, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
-// Inline resend function via SendPulse edge function
-const resendPasswordLink = async (
-  email: string,
-  changePasswordRoute: string,
-  redirectAfterPassword: string = '/'
-): Promise<{ success: boolean; error?: string }> => {
-  const redirectUrl = `${window.location.origin}${changePasswordRoute}?redirect=${encodeURIComponent(redirectAfterPassword)}`;
-  const { data, error } = await supabase.functions.invoke('send-recovery-email', {
-    body: { email: email.trim().toLowerCase(), redirect_url: redirectUrl }
-  });
-  if (error || (data && !data.success)) return { success: false, error: 'Erro ao reenviar link' };
-  return { success: true };
-};
 
 const ChangePassword = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get('redirect') || '/';
-  const sentParam = searchParams.get('sent');
-  const emailParam = searchParams.get('email');
-  const { t } = useTranslation('auth');
-  
+  const redirectTo = searchParams.get("redirect") || "/";
+  const sentParam = searchParams.get("sent");
+  const emailParam = searchParams.get("email");
+  const orderIdParam = searchParams.get("order_id") || "";
+  const { t } = useTranslation("auth");
+
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -37,98 +25,94 @@ const ChangePassword = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
   const [hasSession, setHasSession] = useState(false);
-  
-  // Resend cooldown
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [isResending, setIsResending] = useState(false);
+
+  const isFirstAccessWithoutSession = sentParam === "1" && !!emailParam && !hasSession;
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (session) {
         setHasSession(true);
       } else if (!sentParam || !emailParam) {
-        // No session and no sent param - redirect to login
-        toast.info(t('errors.needLogin') || 'Você precisa estar logado para alterar a senha.');
-        navigate(`/login?redirect=${encodeURIComponent('/change-password?redirect=' + redirectTo)}`);
+        toast.info(t("errors.needLogin") || "Você precisa estar logado para alterar a senha.");
+        navigate(`/login?redirect=${encodeURIComponent("/change-password?redirect=" + redirectTo)}`);
         return;
       }
-      
+
       setIsCheckingSession(false);
     };
-    
+
     checkSession();
   }, [navigate, redirectTo, t, sentParam, emailParam]);
 
-  // Cooldown timer
-  useEffect(() => {
-    if (resendCooldown > 0) {
-      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendCooldown]);
-
-  const handleResendLink = async () => {
-    if (!emailParam || resendCooldown > 0) return;
-    
-    setIsResending(true);
-    const result = await resendPasswordLink(emailParam, '/change-password', redirectTo);
-    setIsResending(false);
-    
-    if (result.success) {
-      toast.success('Link reenviado! Verifique seu email.');
-      setResendCooldown(60);
-    } else {
-      toast.error(result.error || 'Erro ao reenviar link');
-    }
-  };
-
-  const handleRefreshSession = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      setHasSession(true);
-      toast.success('Sessão detectada! Você pode criar sua senha agora.');
-    } else {
-      toast.info('Ainda não detectamos sua sessão. Clique no link do email.');
-    }
-  };
-
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (newPassword.length < 6) {
-      toast.error(t('errors.passwordMinLength'));
+      toast.error(t("errors.passwordMinLength"));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error(t('errors.passwordsDoNotMatch'));
+      toast.error(t("errors.passwordsDoNotMatch"));
       return;
     }
 
     setIsLoading(true);
 
     try {
+      if (isFirstAccessWithoutSession && emailParam) {
+        const normalizedEmail = emailParam.trim().toLowerCase();
+
+        const { data, error } = await supabase.functions.invoke("complete-purchase-onboarding", {
+          body: {
+            email: normalizedEmail,
+            password: newPassword,
+            order_id: orderIdParam || undefined,
+          },
+        });
+
+        if (error || !data?.success) {
+          toast.error(data?.error || "Não foi possível validar sua compra para liberar o acesso.");
+          return;
+        }
+
+        const { error: loginError } = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password: newPassword,
+        });
+
+        if (loginError) {
+          toast.error("Senha cadastrada, mas não foi possível entrar automaticamente.");
+          return;
+        }
+
+        toast.success("Senha cadastrada com sucesso!");
+        navigate(redirectTo);
+        return;
+      }
+
       const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword
+        password: newPassword,
       });
 
       if (updateError) throw updateError;
 
-      // Mark password as changed in profile
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (user) {
-        await supabase
-          .from('profiles')
-          .update({ password_changed: true })
-          .eq('id', user.id);
+        await supabase.from("profiles").update({ password_changed: true }).eq("id", user.id);
       }
 
-      toast.success(t('success.passwordChanged'));
+      toast.success(t("success.passwordChanged"));
       navigate(redirectTo);
     } catch (error: any) {
-      toast.error(error.message || t('errors.passwordChangeError'));
+      toast.error(error.message || t("errors.passwordChangeError"));
     } finally {
       setIsLoading(false);
     }
@@ -142,68 +126,6 @@ const ChangePassword = () => {
     );
   }
 
-  // Show "waiting for link" state when sent=1 and no session
-  if (sentParam === '1' && emailParam && !hasSession) {
-    return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-purple-500/20">
-          <div className="mb-8 text-center">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Mail className="h-8 w-8 text-purple-400" />
-              <h1 className="text-2xl font-bold text-white">
-                Primeiro Acesso
-              </h1>
-            </div>
-            <p className="text-purple-300 mb-4">
-              Enviamos um link para criar sua senha para:
-            </p>
-            <p className="text-white font-medium bg-purple-500/20 py-2 px-4 rounded-lg inline-block mb-4">
-              {emailParam}
-            </p>
-            <p className="text-purple-300/70 text-sm">
-              Clique no link do email para voltar aqui e cadastrar sua senha.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <Button
-              onClick={handleRefreshSession}
-              variant="outline"
-              className="w-full border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Já cliquei no link
-            </Button>
-            
-            <Button
-              onClick={handleResendLink}
-              disabled={resendCooldown > 0 || isResending}
-              variant="ghost"
-              className="w-full text-purple-400 hover:text-purple-300"
-            >
-              {isResending ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : null}
-              {resendCooldown > 0 
-                ? `Reenviar em ${resendCooldown}s` 
-                : 'Reenviar link'}
-            </Button>
-            
-            <Button
-              onClick={() => navigate(-1)}
-              variant="ghost"
-              className="w-full text-purple-400/70 hover:text-purple-300"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Usar outro email
-            </Button>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
-  // Show password form when session exists
   return (
     <div className="min-h-screen bg-[#0D0221] flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-purple-500/20">
@@ -211,17 +133,27 @@ const ChangePassword = () => {
           <div className="flex items-center justify-center gap-2 mb-4">
             <Lock className="h-8 w-8 text-purple-400" />
             <h1 className="text-2xl font-bold text-white">
-              {t('createNewPassword')}
+              {isFirstAccessWithoutSession ? "Primeiro Acesso" : t("createNewPassword")}
             </h1>
           </div>
-          <p className="text-purple-300">
-            {t('createNewPasswordDescription')}
-          </p>
+
+          {isFirstAccessWithoutSession ? (
+            <>
+              <p className="text-purple-300 mb-3">Cadastre sua senha agora para liberar seu acesso.</p>
+              <p className="text-white font-medium bg-purple-500/20 py-2 px-4 rounded-lg inline-block mb-2">
+                {emailParam}
+              </p>
+            </>
+          ) : (
+            <p className="text-purple-300">{t("createNewPasswordDescription")}</p>
+          )}
         </div>
 
         <form onSubmit={handleChangePassword} className="space-y-6">
           <div>
-            <Label htmlFor="newPassword" className="text-purple-200">{t('newPassword')}</Label>
+            <Label htmlFor="newPassword" className="text-purple-200">
+              {t("newPassword")}
+            </Label>
             <div className="relative mt-2">
               <Input
                 id="newPassword"
@@ -244,7 +176,9 @@ const ChangePassword = () => {
           </div>
 
           <div>
-            <Label htmlFor="confirmPassword" className="text-purple-200">{t('confirmNewPassword')}</Label>
+            <Label htmlFor="confirmPassword" className="text-purple-200">
+              {t("confirmNewPassword")}
+            </Label>
             <div className="relative mt-2">
               <Input
                 id="confirmPassword"
@@ -271,8 +205,24 @@ const ChangePassword = () => {
             disabled={isLoading}
             className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
           >
-            {isLoading ? t('saving') : t('saveNewPassword')}
+            {isLoading
+              ? "Salvando..."
+              : isFirstAccessWithoutSession
+                ? "Cadastrar senha e entrar"
+                : t("saveNewPassword")}
           </Button>
+
+          {isFirstAccessWithoutSession && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => navigate(-1)}
+              className="w-full text-purple-400/70 hover:text-purple-300"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Usar outro email
+            </Button>
+          )}
         </form>
       </Card>
     </div>
