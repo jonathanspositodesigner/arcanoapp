@@ -57,8 +57,10 @@ const SucessoUpscalerArcano = () => {
       if (error) throw error;
 
       const exists = data?.[0]?.exists_in_db || false;
+      const passwordChanged = data?.[0]?.password_changed || false;
+      const hasLoggedIn = data?.[0]?.has_logged_in || false;
 
-      if (exists) {
+      if (exists && passwordChanged && hasLoggedIn) {
         toast.success("Conta encontrada! Redirecionando...");
         navigate("/");
         return;
