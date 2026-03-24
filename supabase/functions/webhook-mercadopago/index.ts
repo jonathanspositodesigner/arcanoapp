@@ -638,6 +638,7 @@ serve(async (req) => {
         } else {
           console.log(`   ├─ ℹ️ Acesso ao pack upscaller-arcano já existente`)
         }
+        } // close else (créditos não duplicados)
       }
 
       // 4. Atualizar ordem
