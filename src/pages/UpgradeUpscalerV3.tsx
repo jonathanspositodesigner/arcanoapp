@@ -1,6 +1,61 @@
-import { useEffect } from "react";
-import { Zap, Layers, Check, X, Shield, Star, ChevronDown, Rocket, Sparkles, Clock, ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Zap, Layers, Check, X, Shield, Star, ChevronDown, Rocket, Sparkles, Clock, ArrowRight, Timer } from "lucide-react";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
+
+// Countdown to March 27, 2026 23:59:59 BRT (UTC-3)
+const DEADLINE = new Date("2026-03-28T02:59:59Z").getTime();
+
+const CountdownTimer = () => {
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const diff = DEADLINE - Date.now();
+    return diff > 0 ? diff : 0;
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const diff = DEADLINE - Date.now();
+      setTimeLeft(diff > 0 ? diff : 0);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+  const seconds = Math.floor((timeLeft / 1000) % 60);
+
+  if (timeLeft <= 0) return null;
+
+  const units = [
+    { label: "dias", value: days },
+    { label: "hrs", value: hours },
+    { label: "min", value: minutes },
+    { label: "seg", value: seconds },
+  ];
+
+  return (
+    <div className="mb-8 bg-red-500/10 border border-red-500/30 rounded-2xl p-4 md:p-5">
+      <div className="flex items-center justify-center gap-2 mb-2">
+        <Timer className="h-4 w-4 text-red-400" />
+        <p className="text-red-400 text-xs md:text-sm font-bold uppercase tracking-wider">
+          Promoção válida até 27/03 às 23h59
+        </p>
+      </div>
+      <div className="flex justify-center gap-3">
+        {units.map((u, i) => (
+          <div key={i} className="text-center">
+            <div className="bg-white/10 rounded-lg px-3 py-2 min-w-[48px]">
+              <span className="text-xl md:text-2xl font-black text-white tabular-nums">
+                {String(u.value).padStart(2, "0")}
+              </span>
+            </div>
+            <span className="text-[10px] text-white/40 mt-1 block">{u.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const UpgradeUpscalerV3 = () => {
   useEffect(() => {
@@ -62,7 +117,7 @@ const UpgradeUpscalerV3 = () => {
               {[
                 { icon: Zap, text: "Resultado em < 1 min" },
                 { icon: Layers, text: "10 imagens de uma vez" },
-                { icon: Shield, text: "Créditos intactos" },
+                { icon: Shield, text: "Acesso V2 mantido" },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
                   <item.icon className="h-3.5 w-3.5 text-fuchsia-400" />
@@ -243,12 +298,12 @@ const UpgradeUpscalerV3 = () => {
               <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto mb-5">
                 <Shield className="h-8 w-8 text-emerald-400" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Seus créditos e acessos estão protegidos</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Seu acesso está protegido</h2>
               <p className="text-white/50 text-sm md:text-base leading-relaxed max-w-[520px] mx-auto">
-                O upgrade para V3 é <strong className="text-white">aditivo</strong>. Você não perde nada do que já tem. Seus créditos do V2 continuam intactos. Seu acesso ao V2 permanece ativo. O V3 adiciona dois novos recursos ao que você já possui.
+                O upgrade para V3 é <strong className="text-white">aditivo</strong>. Você não perde nada do que já tem. Seu acesso ao V2 permanece ativo. O V3 adiciona dois novos recursos ao que você já possui.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-4 text-xs md:text-sm font-semibold">
-                {["Créditos preservados", "Acesso V2 mantido", "Acesso imediato ao V3"].map((text, i) => (
+                {["Acesso V2 mantido", "Acesso imediato ao V3", "Upgrade aditivo"].map((text, i) => (
                   <span key={i} className="flex items-center gap-1.5 text-white/70">
                     <Check className="h-3.5 w-3.5 text-emerald-400" />
                     {text}
@@ -314,8 +369,11 @@ const UpgradeUpscalerV3 = () => {
             Faça o <span className="text-fuchsia-400">upgrade</span> agora
           </h2>
           <p className="text-white/50 text-sm mb-10">
-            Acesso imediato ao Modo Turbo + Upscale em Lote. Seus créditos continuam intactos.
+            Acesso imediato ao Modo Turbo + Upscale em Lote.
           </p>
+
+          {/* Countdown urgency */}
+          <CountdownTimer />
 
           <AnimatedElement delay={200}>
             <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.03] border-2 border-fuchsia-500/40 rounded-3xl p-8 md:p-10 text-center relative overflow-hidden">
@@ -324,17 +382,22 @@ const UpgradeUpscalerV3 = () => {
               <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 
               <div className="relative z-10">
+                {/* 50% OFF badge */}
+                <div className="inline-flex items-center gap-1.5 bg-red-500/20 border border-red-500/40 rounded-full px-3 py-1 mb-4">
+                  <span className="text-red-400 text-xs font-bold uppercase">🔥 50% OFF</span>
+                </div>
+
                 <h3 className="text-xl font-bold text-white mb-1">Arcano V3 — Upgrade Vitalício</h3>
                 <p className="text-xs text-white/40 mb-6">Pagamento único. Acesso para sempre.</p>
 
                 <div className="mb-8">
-                  <span className="text-sm line-through text-white/30">R$ 97,00</span>
+                  <span className="text-sm line-through text-white/30">R$ 99,90</span>
                   <div className="text-5xl md:text-6xl font-black mt-1">
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">
-                      R$ 67<span className="text-2xl md:text-3xl">,00</span>
+                      R$ 49<span className="text-2xl md:text-3xl">,90</span>
                     </span>
                   </div>
-                  <p className="text-xs text-white/40 mt-1">ou 12x de R$ 6,73</p>
+                  <p className="text-xs text-white/40 mt-1">ou 12x de R$ 4,99</p>
                 </div>
 
                 <ul className="text-left max-w-xs mx-auto space-y-3 mb-8">
@@ -342,7 +405,6 @@ const UpgradeUpscalerV3 = () => {
                     "Modo Turbo (resultado em < 60s)",
                     "Upscale em Lote (até 10 imgs)",
                     "Acesso à V2 incluso",
-                    "Créditos preservados",
                     "Acesso vitalício",
                     "Suporte prioritário",
                   ].map((item, i) => (
