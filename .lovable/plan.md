@@ -1,77 +1,48 @@
 
+Diagnóstico confirmado (com dados reais do backend):
+- A compra teste do email `fotosarmazemmoc@gmail.com` gerou **2 créditos +1500** para o mesmo pagamento (`payment_id 151733322494`), totalizando +3000.
+- Existem **2 registros de `webhook_logs`** para o mesmo `transaction_id` (mesmo pagamento), e os logs da função mostram **duas execuções completas em paralelo**.
+- Causa raiz: idempotência atual não é atômica (duas execuções passam juntas antes do insert de log).
+- O CTA do email em `webhook-mercadopago` está apontando para `/upscaler-arcano`, não para Home.
+- Bug adicional crítico encontrado: gravação em `welcome_email_logs` no webhook MP está incompleta (campos obrigatórios não enviados), então o dedup de email falha silenciosamente.
 
-# Plano: Criar sistema reutilizável de Checkout Mercado Pago
+Plano de correção (completo e direto):
+1) Correção de dados já afetados
+- Aplicar ajuste único no usuário afetado removendo os **1500 créditos duplicados** (com trilha de auditoria em transação de estorno/correção).
+- Remover duplicata técnica de log de webhook do mesmo pagamento (manter 1 registro canônico).
 
-## O que será criado
+2) Blindagem anti-duplicidade no webhook MP
+- Refatorar `webhook-mercadopago` para “claim” atômico do processamento por pagamento (antes de conceder crédito/acesso).
+- Trocar dedup frágil por chave forte de evento (payment + tipo do evento).
+- Garantir que replay do mesmo webhook não execute concessão de novo.
 
-Um **hook React** (`useMPCheckout`) que encapsula toda a lógica do checkout Mercado Pago (modal, validação, redirect, loading, feedback) em uma única chamada. Qualquer página do app poderá usar checkout do Mercado Pago com **3 linhas de código**.
+3) Constraints de banco para impedir repetição mesmo sob corrida
+- Migração SQL:
+  - deduplicar linhas antigas conflitantes;
+  - criar índice único para evento MP em `webhook_logs` (por `platform + transaction_id + event_type`);
+  - criar índice único em `mp_orders.mp_payment_id` quando não nulo.
 
-## Como vai funcionar (exemplo de uso)
+4) Garantia extra no crédito (idempotência de negócio)
+- Incluir `order_id` na descrição de crédito MP (`Compra MP [order_id]: ...`) e bloquear segunda aplicação da mesma ordem.
+- Se webhook reentrar, crédito da mesma ordem não reaplica.
 
-```tsx
-// Em
+5) CTA dos emails MP para Home (como você pediu)
+- Em `supabase/functions/webhook-mercadopago/index.ts`, forçar CTA de compra MP para:
+  - `https://arcanoapp.voxvisual.com.br/`
+- Aplicar para qualquer produto vindo de checkout Mercado Pago.
 
-<lov-plan>
+6) Confiabilidade de email e dedup
+- Corrigir insert em `welcome_email_logs` no webhook MP com todos campos obrigatórios (`platform`, `sent_at`, etc.).
+- Usar dedup key por pedido MP (ex.: `mp_order_<order_id>`) para impedir envio duplicado sob corrida.
 
-# Plano: Criar sistema reutilizável de Checkout Mercado Pago
+Arquivos a alterar:
+- `supabase/functions/webhook-mercadopago/index.ts`
+- `supabase/migrations/<nova_migracao>.sql`
 
-## O que será criado
-
-Um **hook React** (`useMPCheckout`) que encapsula toda a lógica do checkout Mercado Pago (modal, validação, redirect, loading, feedback) em uma única chamada. Qualquer página do app poderá usar checkout do Mercado Pago com **3 linhas de código**.
-
-## Como vai funcionar (exemplo de uso)
-
-```text
-// Em QUALQUER página:
-const { openCheckout, MPCheckoutModal } = useMPCheckout();
-
-// Botão de compra:
-<Button onClick={() => openCheckout("slug-do-produto")}>Comprar</Button>
-
-// Modal (colocar no JSX uma vez):
-<MPCheckoutModal />
-```
-
-Pronto. O hook cuida de tudo: abre modal, coleta nome/email/CPF, valida, chama a edge function, faz tracking do Pixel, redireciona para o Mercado Pago.
-
-## Arquivos a criar/alterar
-
-| Arquivo | Ação |
-|---|---|
-| `src/hooks/useMPCheckout.tsx` | **CRIAR** — Hook reutilizável com toda a lógica |
-| `src/components/checkout/MPEmailModal.tsx` | Manter como está (já funciona perfeitamente) |
-| `src/lib/mpCheckout.ts` | Manter como está (função de redirect já corrigida) |
-| `src/pages/PlanosUpscalerArcano69v2.tsx` | Refatorar para usar o novo hook (remover lógica duplicada) |
-
-## O que o hook `useMPCheckout` vai conter
-
-1. Estado interno: `selectedSlug`, `loading`, `modalOpen`
-2. Função `openCheckout(slug)` — abre o modal com o slug do produto
-3. Função `closeCheckout()` — fecha e reseta tudo
-4. Handler `onConfirm` — chama `redirectToMPCheckout` com os dados do cliente
-5. Componente `MPCheckoutModal` — renderiza o `MPEmailModal` já conectado a tudo
-6. Leitura automática de `mp_status` da URL (toast de falha/pendência)
-
-## Detalhes técnicos
-
-```text
-useMPCheckout()
-  ├── openCheckout(slug) → seta slug + abre modal
-  ├── MPCheckoutModal    → renderiza MPEmailModal com props automáticas
-  ├── mp_status listener → useEffect que lê ?mp_status=failure|pending da URL
-  └── internamente usa   → redirectToMPCheckout (já existente, já corrigido)
-                          → MPEmailModal (já existente, já corrigido)
-                          → Meta Pixel tracking (InitiateCheckout)
-```
-
-O `MPEmailModal` e o `mpCheckout.ts` **não serão alterados** — toda a lógica corrigida nas auditorias anteriores permanece intacta. O hook apenas orquestra esses componentes prontos.
-
-## Resultado
-
-Quando precisar trocar qualquer produto para checkout do Mercado Pago, basta:
-1. Importar `useMPCheckout`
-2. Chamar `openCheckout("slug-do-produto-no-banco")`
-3. Colocar `<MPCheckoutModal />` no JSX
-
-Toda a validação, coleta de dados, tracking, rate limiting, idempotência, ativação de plano, email, CAPI — tudo já funciona automaticamente pela infraestrutura existente (edge functions + webhook).
-
+Validação pós-fix (obrigatória):
+- Repetir teste de compra MP do Starter e confirmar:
+  - apenas 1 transação de crédito (+1500),
+  - apenas 1 log de purchase para o payment_id,
+  - apenas 1 envio de email registrado,
+  - botão “Acessar Agora” abrindo Home,
+  - sem duplicidade mesmo com múltiplos webhooks do mesmo pagamento.
