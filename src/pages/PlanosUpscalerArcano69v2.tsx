@@ -521,7 +521,7 @@ const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { 
       <MPEmailModal
         open={!!mpEmailSlug}
         onClose={() => setMpEmailSlug(null)}
-        onConfirm={handleEmailConfirm}
+        onConfirm={handleCustomerConfirm}
         loading={mpLoading}
       />
     </AnimatedSection>
