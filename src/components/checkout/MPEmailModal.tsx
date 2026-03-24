@@ -48,6 +48,16 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
   const [cpf, setCpf] = useState("");
   const [errors, setErrors] = useState<{ name?: string; email?: string; cpf?: string }>({});
 
+  // Reset campos ao reabrir o modal
+  useEffect(() => {
+    if (open) {
+      setName("");
+      setEmail("");
+      setCpf("");
+      setErrors({});
+    }
+  }, [open]);
+
   const validate = () => {
     const e: typeof errors = {};
     if (!name.trim() || name.trim().length < 3) e.name = "Preencha seu nome completo";
