@@ -653,7 +653,7 @@ serve(async (req) => {
       console.log(`   ├─ ✅ webhook_logs inserido`)
 
       // 6. Enviar email de compra
-      const ctaLink = product.pack_slug === 'upscaler-arcano' || product.type === 'credits'
+      const ctaLink = product.pack_slug === 'upscaler-arcano' || product.pack_slug === 'upscaller-arcano' || product.type === 'credits'
         ? 'https://arcanoapp.voxvisual.com.br/upscaler-arcano'
         : 'https://arcanoapp.voxvisual.com.br/'
       
@@ -770,6 +770,15 @@ serve(async (req) => {
             console.log(`   ├─ ✅ ${revokeResult.amount_revoked} créditos revogados (novo saldo: ${revokeResult.new_balance})`)
           }
         }
+
+        // Revogar acesso ao pack que foi concedido na compra de créditos
+        await supabase
+          .from('user_pack_purchases')
+          .update({ is_active: false, updated_at: new Date().toISOString() })
+          .eq('user_id', order.user_id)
+          .eq('pack_slug', 'upscaller-arcano')
+          .eq('access_type', 'credits')
+        console.log(`   ├─ ✅ Acesso ao pack upscaller-arcano (credits) revogado`)
       }
 
       await supabase.from('mp_orders').update({
