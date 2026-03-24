@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X, User, Rocket, PenTool, Flame, ShieldCheck, Headset, Image, Video, Award } from "lucide-react";
 import { redirectToMPCheckout } from "@/lib/mpCheckout";
-import { MPEmailModal } from "@/components/checkout/MPEmailModal";
+import { MPEmailModal, type MPCustomerData } from "@/components/checkout/MPEmailModal";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
