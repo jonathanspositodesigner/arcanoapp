@@ -1550,6 +1550,24 @@ serve(async (req) => {
             })
             .eq('user_id', order.user_id)
           console.log(`   ├─ ✅ Ferramentas gerar-imagem e gerar-video desabilitadas`)
+
+          // Se V3, revogar também o pack V2 concedido como bônus
+          if (product.slug === 'upscaler-arcano-v3') {
+            await supabase
+              .from('user_pack_purchases')
+              .update({ is_active: false, updated_at: new Date().toISOString() })
+              .eq('user_id', order.user_id)
+              .eq('pack_slug', 'upscaller-arcano')
+              .eq('product_name', 'Bônus V3: acesso V2')
+            console.log(`   ├─ ✅ Pack V2 bônus revogado`)
+
+            await supabase
+              .from('user_pack_purchases')
+              .update({ is_active: false, updated_at: new Date().toISOString() })
+              .eq('user_id', order.user_id)
+              .eq('pack_slug', 'upscaller-arcano-v3')
+            console.log(`   ├─ ✅ Pack V3 revogado`)
+          }
         }
 
         if (order.user_id && product.type === 'credits' && product.credits_amount > 0) {
