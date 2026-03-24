@@ -648,7 +648,33 @@ serve(async (req) => {
       }
 
       // === BÔNUS VITALÍCIO UPSCALER ARCANO: 10.000 créditos + gerar-imagem/gerar-video ===
-      if (product.slug === 'upscaller-arcano-vitalicio') {
+      if (product.slug === 'upscaller-arcano-vitalicio' || product.slug === 'upscaler-arcano-v3') {
+
+        // Se é V3, conceder também acesso ao pack V2 como bônus
+        if (product.slug === 'upscaler-arcano-v3') {
+          const { data: existingV2Pack } = await supabase
+            .from('user_pack_purchases')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('pack_slug', 'upscaller-arcano')
+            .eq('is_active', true)
+            .maybeSingle()
+
+          if (!existingV2Pack) {
+            await supabase.from('user_pack_purchases').insert({
+              user_id: userId,
+              pack_slug: 'upscaller-arcano',
+              access_type: 'vitalicio',
+              is_active: true,
+              has_bonus_access: false,
+              product_name: 'Bônus V3: acesso V2',
+              platform: 'mercadopago'
+            })
+            console.log(`   ├─ ✅ Bônus V3: acesso ao pack V2 (upscaller-arcano) concedido`)
+          } else {
+            console.log(`   ├─ ℹ️ Bônus V3: pack V2 já existente`)
+          }
+        }
         console.log(`   ├─ 🎁 Bônus vitalício Upscaler Arcano: +10.000 créditos + image/video generation`)
         
         // 1. Add 10,000 lifetime credits
