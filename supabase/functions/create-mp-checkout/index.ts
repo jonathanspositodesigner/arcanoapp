@@ -32,16 +32,8 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
-  // 🚫 CHECKOUT MERCADO PAGO DESATIVADO - Bloqueia compras de páginas cacheadas
-  return new Response(JSON.stringify({ 
-    error: 'Checkout Mercado Pago desativado temporariamente' 
-  }), {
-    status: 403,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-  })
-
   try {
-    const { product_slug, user_email, utm_data } = await req.json()
+    const { product_slug, user_email, utm_data, fbp, fbc, user_agent: clientUA } = await req.json()
 
     if (!product_slug || !user_email) {
       return new Response(JSON.stringify({ error: 'product_slug e user_email são obrigatórios' }), {
@@ -170,6 +162,44 @@ serve(async (req) => {
       .eq('id', order.id)
 
     console.log(`✅ Checkout criado: ${mpData.id} | init_point: ${mpData.init_point?.substring(0, 60)}...`)
+
+    // Meta Conversions API - InitiateCheckout (fire-and-forget)
+    try {
+      const metaPixelId = '1162356848586894'
+      const metaAccessToken = Deno.env.get('META_ACCESS_TOKEN')
+      if (metaAccessToken) {
+        const eventId = `ic_mp_${Date.now()}`
+        const capiPayload = {
+          data: [{
+            event_name: 'InitiateCheckout',
+            event_time: Math.floor(Date.now() / 1000),
+            event_id: eventId,
+            event_source_url: 'https://arcanoapp.lovable.app/planos-upscaler-arcano-69',
+            action_source: 'website',
+            user_data: {
+              em: [email ? await crypto.subtle.digest('SHA-256', new TextEncoder().encode(email)).then(b => [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('')) : null].filter(Boolean),
+              ...(fbp ? { fbp } : {}),
+              ...(fbc ? { fbc } : {}),
+              client_user_agent: clientUA || null,
+            },
+            custom_data: {
+              content_name: product.title,
+              content_ids: [product.slug],
+              content_type: 'product',
+              value: Number(product.price),
+              currency: 'BRL',
+            }
+          }]
+        }
+        fetch(`https://graph.facebook.com/v21.0/${metaPixelId}/events?access_token=${metaAccessToken}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(capiPayload)
+        }).then(r => r.text()).then(t => console.log(`📊 Meta CAPI InitiateCheckout: ${t}`)).catch(() => {})
+      }
+    } catch (capiErr) {
+      console.error('Meta CAPI error (non-blocking):', capiErr)
+    }
 
     return new Response(JSON.stringify({
       checkout_url: mpData.init_point,

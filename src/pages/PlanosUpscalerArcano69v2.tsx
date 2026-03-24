@@ -6,9 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X, User, Rocket, PenTool, Flame, ShieldCheck, Headset, Image, Video, Award } from "lucide-react";
-import { invokeCheckout, preWarmCheckout } from "@/lib/checkoutFetch";
-import { useProcessingButton } from "@/hooks/useProcessingButton";
-import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
+import { redirectToMPCheckout } from "@/lib/mpCheckout";
+import { MPEmailModal } from "@/components/checkout/MPEmailModal";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
@@ -345,34 +344,14 @@ const upscalerPlans: UpscalerPlan[] = [
 ];
 
 const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { isPremium: boolean; tool: ToolData | null; handlePurchaseLegacy: () => void; t: (key: string) => string }) => {
-  const [userId, setUserId] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [showPreCheckout, setShowPreCheckout] = useState(false);
-  const [preCheckoutSlug, setPreCheckoutSlug] = useState<string | null>(null);
-  const { isSubmitting: isProcessing, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
-
-  useEffect(() => {
-    const timer = setTimeout(() => preWarmCheckout(), 3000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-        setUserEmail(user.email ?? null);
-      }
-    };
-    getUser();
-  }, []);
+  const [mpEmailSlug, setMpEmailSlug] = useState<string | null>(null);
+  const [mpLoading, setMpLoading] = useState(false);
 
   const handlePurchase = (plan: UpscalerPlan) => {
     if (plan.isLifetime) {
       handlePurchaseLegacy();
       return;
     }
-    if (!startCheckout()) return;
     if (typeof window !== "undefined" && (window as any).fbq) {
       (window as any).fbq("track", "InitiateCheckout", {
         content_name: plan.productSlug,
@@ -381,9 +360,15 @@ const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { 
         currency: "BRL",
       });
     }
-    setPreCheckoutSlug(plan.productSlug);
-    setShowPreCheckout(true);
-    endCheckout();
+    setMpEmailSlug(plan.productSlug);
+  };
+
+  const handleEmailConfirm = async (email: string) => {
+    if (!mpEmailSlug) return;
+    setMpLoading(true);
+    await redirectToMPCheckout(mpEmailSlug, email);
+    setMpLoading(false);
+    setMpEmailSlug(null);
   };
 
   return (
@@ -458,7 +443,7 @@ const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { 
                 {/* CTA */}
                 <Button
                   onClick={() => handlePurchase(plan)}
-                  disabled={isProcessing}
+                  disabled={mpLoading}
                   className={`w-full mb-2 text-sm lg:text-base h-10 lg:h-12 ${
                     plan.isLifetime ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold" :
                     plan.bestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" :
@@ -537,14 +522,11 @@ const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { 
       </div>
 
       {/* PreCheckout Modal */}
-      <PreCheckoutModal
-        isOpen={showPreCheckout}
-        onClose={() => { setShowPreCheckout(false); setPreCheckoutSlug(null); }}
-        userEmail={userEmail}
-        userId={userId}
-        productSlug={preCheckoutSlug || undefined}
-        modalTitle="Finalizar Compra"
-        colorScheme="fuchsia"
+      <MPEmailModal
+        open={!!mpEmailSlug}
+        onClose={() => setMpEmailSlug(null)}
+        onConfirm={handleEmailConfirm}
+        loading={mpLoading}
       />
     </AnimatedSection>
   );
