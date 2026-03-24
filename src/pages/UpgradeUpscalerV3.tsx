@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { Zap, Layers, Check, X, Shield, Star, ChevronDown, Rocket, Sparkles, Clock, ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Zap, Layers, Check, X, Shield, Star, ChevronDown, Rocket, Sparkles, Clock, ArrowRight, Timer } from "lucide-react";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
 
 const UpgradeUpscalerV3 = () => {
