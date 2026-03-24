@@ -592,10 +592,22 @@ serve(async (req) => {
       }
 
       if (product.type === 'credits' && product.credits_amount > 0) {
+        // Idempotência de negócio: verificar se créditos desta ordem já foram aplicados
+        const creditDesc = `Compra MP [${order.id}]: ${product.title}`
+        const { data: existingCredit } = await supabase
+          .from('upscaler_credit_transactions')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('description', creditDesc)
+          .maybeSingle()
+
+        if (existingCredit) {
+          console.log(`   ├─ ℹ️ Créditos já aplicados para ordem ${order.id}`)
+        } else {
         const { error: creditsError } = await supabase.rpc('add_lifetime_credits', {
           _user_id: userId,
           _amount: product.credits_amount,
-          _description: `Compra MP: ${product.title}`
+          _description: creditDesc
         })
         if (creditsError) {
           console.error(`   ├─ ❌ Erro ao adicionar créditos:`, creditsError)
