@@ -210,7 +210,7 @@ const Index = () => {
       title: 'Upscaler Arcano Vitalício',
       description: 'Acesso vitalício ao Upscaler Arcano',
       image: cardUpscalerVitalicio,
-      route: '/ferramenta-ia-artes/upscaller-arcano/v2',
+      route: '/ferramenta-ia-artes/upscaller-arcano',
       imagePosition: 'center center',
     }] : []),
   ] : [];
