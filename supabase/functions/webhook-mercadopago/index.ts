@@ -842,22 +842,15 @@ serve(async (req) => {
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
-      // Inserir reembolso em webhook_logs
-      await supabase.from('webhook_logs').insert({
-        platform: 'mercadopago',
+      // Atualizar webhook_log do claim com status final
+      await supabase.from('webhook_logs').update({
         status: 'refunded',
-        email: order.user_email,
-        amount: paymentAmount,
-        amount_brl: paymentAmount,
-        currency: 'BRL',
-        product_name: product.title,
-        transaction_id: String(paymentId),
-        event_type: 'refund',
-        payment_method: payment.payment_method_id || null,
         result: 'success',
-        payload: { order_id: order.id, mp_payment_id: paymentId, reason: paymentStatus },
       })
-      console.log(`   ├─ ✅ webhook_logs refund inserido`)
+      .eq('platform', 'mercadopago')
+      .eq('transaction_id', String(paymentId))
+      .eq('event_type', 'refund')
+      console.log(`   ├─ ✅ webhook_logs refund atualizado`)
     }
 
     // Outros status
