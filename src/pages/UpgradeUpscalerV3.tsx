@@ -314,8 +314,11 @@ const UpgradeUpscalerV3 = () => {
             Faça o <span className="text-fuchsia-400">upgrade</span> agora
           </h2>
           <p className="text-white/50 text-sm mb-10">
-            Acesso imediato ao Modo Turbo + Upscale em Lote. Seus créditos continuam intactos.
+            Acesso imediato ao Modo Turbo + Upscale em Lote.
           </p>
+
+          {/* Countdown urgency */}
+          <CountdownTimer />
 
           <AnimatedElement delay={200}>
             <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.03] border-2 border-fuchsia-500/40 rounded-3xl p-8 md:p-10 text-center relative overflow-hidden">
@@ -324,17 +327,22 @@ const UpgradeUpscalerV3 = () => {
               <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 
               <div className="relative z-10">
+                {/* 50% OFF badge */}
+                <div className="inline-flex items-center gap-1.5 bg-red-500/20 border border-red-500/40 rounded-full px-3 py-1 mb-4">
+                  <span className="text-red-400 text-xs font-bold uppercase">🔥 50% OFF</span>
+                </div>
+
                 <h3 className="text-xl font-bold text-white mb-1">Arcano V3 — Upgrade Vitalício</h3>
                 <p className="text-xs text-white/40 mb-6">Pagamento único. Acesso para sempre.</p>
 
                 <div className="mb-8">
-                  <span className="text-sm line-through text-white/30">R$ 97,00</span>
+                  <span className="text-sm line-through text-white/30">R$ 99,90</span>
                   <div className="text-5xl md:text-6xl font-black mt-1">
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">
-                      R$ 67<span className="text-2xl md:text-3xl">,00</span>
+                      R$ 49<span className="text-2xl md:text-3xl">,90</span>
                     </span>
                   </div>
-                  <p className="text-xs text-white/40 mt-1">ou 12x de R$ 6,73</p>
+                  <p className="text-xs text-white/40 mt-1">ou 12x de R$ 4,99</p>
                 </div>
 
                 <ul className="text-left max-w-xs mx-auto space-y-3 mb-8">
@@ -342,7 +350,6 @@ const UpgradeUpscalerV3 = () => {
                     "Modo Turbo (resultado em < 60s)",
                     "Upscale em Lote (até 10 imgs)",
                     "Acesso à V2 incluso",
-                    "Créditos preservados",
                     "Acesso vitalício",
                     "Suporte prioritário",
                   ].map((item, i) => (
