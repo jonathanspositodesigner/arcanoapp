@@ -429,6 +429,7 @@ const ArcanoClonerTool: React.FC = () => {
       setProgress(50);
       setCurrentStep('creating_job');
       
+      let createdJob: any;
       const { data: job, error: jobError } = await supabase
         .from('arcano_cloner_jobs')
         .insert({
@@ -469,11 +470,12 @@ const ArcanoClonerTool: React.FC = () => {
           if (retryErr || !retryJob) {
             throw new Error(retryErr?.message || 'Falha ao criar job após refresh');
           }
-          // Use retry result
-          Object.assign(job || {}, retryJob);
+          createdJob = retryJob;
         } else {
           throw new Error(jobError?.message || 'Falha ao criar job');
         }
+      } else {
+        createdJob = job;
       }
 
       setJobId(job.id);
