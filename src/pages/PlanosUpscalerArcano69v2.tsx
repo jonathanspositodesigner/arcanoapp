@@ -344,34 +344,14 @@ const upscalerPlans: UpscalerPlan[] = [
 ];
 
 const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { isPremium: boolean; tool: ToolData | null; handlePurchaseLegacy: () => void; t: (key: string) => string }) => {
-  const [userId, setUserId] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [showPreCheckout, setShowPreCheckout] = useState(false);
-  const [preCheckoutSlug, setPreCheckoutSlug] = useState<string | null>(null);
-  const { isSubmitting: isProcessing, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
-
-  useEffect(() => {
-    const timer = setTimeout(() => preWarmCheckout(), 3000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-        setUserEmail(user.email ?? null);
-      }
-    };
-    getUser();
-  }, []);
+  const [mpEmailSlug, setMpEmailSlug] = useState<string | null>(null);
+  const [mpLoading, setMpLoading] = useState(false);
 
   const handlePurchase = (plan: UpscalerPlan) => {
     if (plan.isLifetime) {
       handlePurchaseLegacy();
       return;
     }
-    if (!startCheckout()) return;
     if (typeof window !== "undefined" && (window as any).fbq) {
       (window as any).fbq("track", "InitiateCheckout", {
         content_name: plan.productSlug,
@@ -380,9 +360,15 @@ const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { 
         currency: "BRL",
       });
     }
-    setPreCheckoutSlug(plan.productSlug);
-    setShowPreCheckout(true);
-    endCheckout();
+    setMpEmailSlug(plan.productSlug);
+  };
+
+  const handleEmailConfirm = async (email: string) => {
+    if (!mpEmailSlug) return;
+    setMpLoading(true);
+    await redirectToMPCheckout(mpEmailSlug, email);
+    setMpLoading(false);
+    setMpEmailSlug(null);
   };
 
   return (
