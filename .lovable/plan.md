@@ -1,82 +1,146 @@
-# Auditoria Completa v2: Bugs e Melhorias no Fluxo Mercado Pago
+# Varredura Final: O que cada plano ativa e problemas encontrados
 
-## Bugs Encontrados
+## Dados reais da tabela `mp_products`
 
-### 🔴 CRÍTICO 1: Página de sucesso NÃO reconhece compras do Mercado Pago
 
-A edge function `check-purchase-exists` (usada na página `/sucesso-compra`) consulta **apenas a tabela `asaas_orders**` (Pagar.me). Ela nunca verifica `mp_orders`. Quando o cliente paga via Mercado Pago e é redirecionado para `/sucesso-compra`, o sistema diz que a compra **não existe**, mostrando a tela de erro "Compra não encontrada". O onboarding (criação de senha) nunca acontece para clientes MP.
+| Slug                         | Tipo    | Créditos | Pack Slug          | Preço   |
+| ---------------------------- | ------- | -------- | ------------------ | ------- |
+| `upscaler-arcano-starter`    | credits | 1.500    | null               | R$24,90 |
+| `upscaler-arcano-pro`        | credits | 4.200    | null               | R$37,00 |
+| `upscaler-arcano-ultimate`   | credits | 14.000   | null               | R$79,90 |
+| `upscaller-arcano-vitalicio` | pack    | 0        | `upscaller-arcano` | R$99,90 |
 
-**Correção**: Adicionar fallback para `mp_orders` na função `check-purchase-exists`.
 
----
+## O que cada plano ativa HOJE no webhook
 
-### 🔴 CRÍTICO 2: Sem tratamento de falha/pendência no redirecionamento
+### Starter / Pro / Ultimate (type = `credits`)
 
-O `back_urls` envia para `/planos-upscaler-arcano-69?mp_status=failure` e `?mp_status=pending`, mas **não existe nenhum código** na página 69 que leia esse parâmetro e mostre feedback ao usuário. O cliente volta para a página de planos sem saber o que aconteceu.
+- Cria/busca usuário via auth
+- Upsert no profile
+- Chama RPC `add_lifetime_credits` → adiciona créditos vitalícios ao saldo
+- **NÃO** cria `user_pack_purchases` (correto, são avulsos)
+- **NÃO** cria `planos2_subscriptions` (ver bug abaixo)
 
-**Correção**: Ler `mp_status` da URL na página 69 e exibir toast/alerta ("Pagamento não concluído" ou "Pagamento pendente, aguarde confirmação").
+### Vitalício (type = `pack`, pack_slug = `upscaller-arcano`)
 
----
+- Cria/busca usuário
+- Insere em `user_pack_purchases` com `access_type: vitalicio`, `has_bonus_access: true`, `expires_at: null`
+- **NÃO** adiciona créditos (correto — acesso é ilimitado via pack)
+- **NÃO** cria `planos2_subscriptions`
 
-### 🟡 MÉDIO 3: Dashboard duplica vendas MP
+### Email de compra
 
-A função `get_unified_dashboard_orders` puxa vendas da `mp_orders` diretamente **E** exclui `mercadopago` do `webhook_logs`. Isso está correto. Porém, o webhook agora insere em `webhook_logs` com `platform = 'mercadopago'`, e a cláusula `NOT IN ('pagarme', 'mercadopago')` filtra isso. Está OK — sem duplicação. Validado.
-
----
-
----
-
-### 🟡 MÉDIO 5: Dedup do email de compra usa `productName` em vez de `orderId`
-
-A `dedupKey` é `mp_purchase_${productName}`. Se o mesmo cliente comprar o mesmo produto 2 vezes (ex: pacote de créditos Starter), o segundo email **não será enviado** porque a dedup key é idêntica. Deveria usar o `order.id` como parte da chave.
-
-**Correção**: Mudar para `mp_purchase_${order.id}`.
-
----
-
-### 🟡 MÉDIO 6: Modal não reseta campos ao fechar
-
-O `MPEmailModal` não limpa `name`, `email`, `cpf` e `errors` quando é fechado. Se o cliente abre o modal, preenche parcialmente, fecha e reabre, os dados antigos permanecem.
-
-**Correção**: Adicionar `useEffect` que reseta os estados quando `open` muda para `true`.
+- Starter/Pro/Ultimate → template "X Créditos Adicionados!" (correto)
+- Vitalício → template "Acesso Vitalício Ativado!" (correto)
+- Senha no email = email do cliente (funciona mas expõe a senha)
 
 ---
 
-### 🟢 MENOR 7: Sem rate limiting no create-mp-checkout
+## 🔴 BUG CRÍTICO 1: Créditos comprados SEM acesso às ferramentas
 
-O `create-mp-checkout` não tem nenhuma proteção contra spam. Um usuário pode clicar 100 vezes e criar 100 ordens pendentes + 100 preferências no MP. Os outros checkouts (Pagar.me) têm rate limiting via RPC `check_rate_limit`.
+A página 69 promete para Starter/Pro/Ultimate:
 
-**Correção**: Adicionar `check_rate_limit` (5 req/min por email) antes de criar a ordem.
+- "Acesso às Ferramentas de IA"
+- "Prompts premium ilimitados"
+- Pro/Ultimate: "Geração de Imagem com NanoBanana Pro" e "Geração de Vídeo com Veo 3"
+
+Porém o webhook **só adiciona créditos** via `add_lifetime_credits`. Ele **não cria** nenhuma entrada em `planos2_subscriptions`. O sistema de acesso (`is_premium()`, `useUnifiedAuth`) verifica:
+
+1. `premium_users` → nada inserido
+2. `planos2_subscriptions` com `plan_slug != 'free'` → nada inserido
+
+**Resultado**: O cliente compra Starter (R$24,90), recebe 1.500 créditos, mas quando tenta acessar `/ferramentas-ia` ou usar o Upscaler, o sistema diz que ele **não é premium** e bloqueia o acesso. Os créditos ficam lá parados sem poder usar.
+
+O plano Vitalício funciona porque o sistema verifica `user_pack_purchases` com `pack_slug = 'upscaller-arcano'` separadamente.
+
+**Correção**: Ao processar planos de créditos (Starter/Pro/Ultimate), o webhook precisa também criar/atualizar uma entrada em `planos2_subscriptions` para dar acesso premium. Sugestão:
+
+- Starter → plan_slug `starter`, credits_per_month 0 (já tem lifetime), expires_at null
+- Pro → plan_slug `pro`, mesma lógica
+- Ultimate → plan_slug `ultimate`, mesma lógica
+
+Ou, alternativamente, inserir em `user_pack_purchases` com `pack_slug: 'upscaller-arcano'` para todos os planos de créditos também.
 
 ---
 
-### 🟢 MENOR 8: `event_id` do InitiateCheckout não é sincronizado browser/server
+## 🔴 BUG CRÍTICO 2: RPC `add_lifetime_credits` bloqueia chamadas do webhook
 
-No frontend (`mpCheckout.ts`), o `eventId` é `ic_mp_${Date.now()}`. No backend (`create-mp-checkout`), outro `eventId` é gerado com `ic_mp_${Date.now()}` — mas são timestamps diferentes. A Meta precisa do **mesmo `event_id**` no Pixel e no CAPI para deduplicar. Atualmente, a Meta conta como 2 eventos separados.
+A RPC tem esta validação:
 
-**Correção**: Gerar o `eventId` no frontend e enviá-lo no body para o backend usar o mesmo.
+```sql
+IF auth.uid() IS NOT NULL AND NOT public.has_role(auth.uid(), 'admin') THEN
+  RAISE EXCEPTION 'Access denied: admin role required';
+END IF;
+```
+
+O webhook usa `SUPABASE_SERVICE_ROLE_KEY`, que faz `auth.uid()` retornar **NULL**. Nesse caso a condição é `NULL IS NOT NULL` = false, então **passa**. Isso funciona, mas é frágil — se alguém mudar a lógica para exigir admin explicitamente, quebra.
+
+**Status**: Funciona hoje. Monitorar.
 
 ---
 
-### 🟢 MENOR 9: Webhook não trata `merchant_order` corretamente
+## 🟡 BUG MÉDIO 3: Página promete features que créditos não dão
 
-O webhook aceita `type === 'merchant_order'` mas tenta buscar como payment (`/v1/payments/${paymentId}`). Merchant orders usam outro endpoint (`/v1/merchant_orders/`). Isso causa erro 404 silencioso.
+A UI da página 69 lista para o plano **Pro** e **Ultimate**:
 
-**Correção**: Ignorar `merchant_order` ou tratar com o endpoint correto.
+- "Geração de Imagem com NanoBanana Pro" ✅ (incluído)
+- "Geração de Vídeo com Veo 3" ✅ (incluído)
+
+Mas para o **Starter**:
+
+- "Geração de Imagem com NanoBanana Pro" ❌ (marcado como `included: false`)
+- "Geração de Vídeo com Veo 3" ❌ (marcado como `included: false`)
+
+Se o Bug 1 for corrigido dando acesso premium a todos, o Starter com acesso premium **teria** acesso a geração de imagem/vídeo, contradizendo o UI que mostra ❌. Precisa decidir: ou o Starter não dá acesso a essas features (plan_slug diferenciado), ou o UI está errado.
 
 ---
 
-## Resumo de Ações
+---
+
+## ✅ O que está correto
 
 
-| #   | Severidade | Ação                                             | Arquivo                                             | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; |
-| --- | ---------- | ------------------------------------------------ | --------------------------------------------------- | ------ | ------ | ------ | ------ | ------ | ------ |
-| 1   | CRÍTICO    | Adicionar `mp_orders` ao `check-purchase-exists` | `supabase/functions/check-purchase-exists/index.ts` | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; |
-| 2   | CRÍTICO    | Ler `mp_status` e mostrar feedback na página 69  | `src/pages/PlanosUpscalerArcano69v2.tsx`            | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; |
-| 3   | —          | Validado, sem ação                               | —                                                   | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; |
-| 4   | &nbsp;     | &nbsp;                                           | &nbsp;                                              | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; |
-| 5   | MÉDIO      | Usar `order.id` na dedup key do email            | `supabase/functions/webhook-mercadopago/index.ts`   | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; |
-| 6   | MÉDIO      | Reset de campos ao reabrir modal                 | `src/components/checkout/MPEmailModal.tsx`          | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; |
-| 7   | MENOR      | Adicionar rate limiting                          | `supabase/functions/create-mp-checkout/index.ts`    | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; |
-| 8   | MENOR      | Sincronizar `event_id` entre Pixel e CAPI        | `src/lib/mpCheckout.ts` + `create-mp-checkout`      | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; |
-| 9   | MENOR      | Ignorar `merchant_order` no webhook              | `supabase/functions/webhook-mercadopago/index.ts`   | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; | &nbsp; |
+| Item                                                   | Status |
+| ------------------------------------------------------ | ------ |
+| Vitalício ativa `user_pack_purchases` corretamente     | ✅      |
+| Créditos são adicionados via RPC com lock (FOR UPDATE) | ✅      |
+| Dedup de email usa `order.id`                          | ✅      |
+| Idempotência via `webhook_logs.transaction_id`         | ✅      |
+| Reembolso revoga pack E créditos                       | ✅      |
+| Meta CAPI Purchase enviado                             | ✅      |
+| Admin notificado com nome do cliente                   | ✅      |
+| `check-purchase-exists` verifica `mp_orders`           | ✅      |
+| UTMify recebe dados de venda                           | ✅      |
+| Back URLs redirecionam para `/sucesso-compra`          | ✅      |
+
+
+---
+
+## Plano de Correção
+
+### 1. Corrigir ativação de acesso premium para planos de créditos (BUG 1)
+
+No webhook-mercadopago, após adicionar créditos via `add_lifetime_credits`, também inserir em `user_pack_purchases`:
+
+```
+pack_slug: 'upscaller-arcano'
+access_type: 'credits'
+has_bonus_access: true
+expires_at: null
+```
+
+Isso garante que o `hasAccessToPack('upscaller-arcano')` retorne true e o usuário consiga usar as ferramentas. A lógica de consumo de créditos continua funcionando via `consume_upscaler_credits`.
+
+### 2. Revisar features do Starter vs Pro/Ultimate (BUG 3)
+
+Se Starter NÃO deve ter geração de imagem/vídeo, o acesso precisa ser diferenciado (plan_slug diferente em `planos2_subscriptions`). Se deve ter, corrigir o UI.
+
+**Recomendação**: Manter simples — todos os planos de créditos dão acesso ao pack `upscaller-arcano`. A diferença é só a quantidade de créditos. Geração de imagem/vídeo consome créditos, então o Starter com poucos créditos naturalmente usará menos. Corrigir o UI do Starter para mostrar ✅ em todas as features.
+
+## Arquivos a alterar
+
+
+| Arquivo                                           | Alteração                                                           |
+| ------------------------------------------------- | ------------------------------------------------------------------- |
+| `supabase/functions/webhook-mercadopago/index.ts` | Adicionar `user_pack_purchases` para planos de créditos             |
+| `src/pages/PlanosUpscalerArcano69v2.tsx`          | Corrigir features do Starter (mostrar ✅ em geração de imagem/vídeo) |
