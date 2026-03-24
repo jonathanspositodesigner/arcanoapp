@@ -4929,6 +4929,7 @@ export type Database = {
           source_platform: string
           status: string
           user_email: string
+          user_name: string
           utm_data: Json
         }[]
       }
