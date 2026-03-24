@@ -108,7 +108,7 @@ const UpscalerArcanoVersionSelect = () => {
   useEffect(() => {
     const fetchVersions = async () => {
       try {
-        const { data, error } = await supabase
+         const { data, error } = await supabase
           .from('artes_packs')
           .select('tool_versions')
           .eq('slug', 'upscaller-arcano')
@@ -117,7 +117,8 @@ const UpscalerArcanoVersionSelect = () => {
         if (!error && data?.tool_versions) {
           const dbVersions = data.tool_versions as unknown as ToolVersion[];
           if (dbVersions && dbVersions.length > 0) {
-            setVersions(dbVersions.filter(v => v.is_visible).sort((a, b) => a.display_order - b.display_order));
+            // Show ALL versions including V3 (don't filter is_visible)
+            setVersions(dbVersions.sort((a, b) => a.display_order - b.display_order));
           } else {
             setVersions(FALLBACK_VERSIONS);
           }
