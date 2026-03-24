@@ -348,10 +348,6 @@ const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { 
   const [mpLoading, setMpLoading] = useState(false);
 
   const handlePurchase = (plan: UpscalerPlan) => {
-    if (plan.isLifetime) {
-      handlePurchaseLegacy();
-      return;
-    }
     if (typeof window !== "undefined" && (window as any).fbq) {
       (window as any).fbq("track", "InitiateCheckout", {
         content_name: plan.productSlug,
@@ -363,10 +359,10 @@ const UpscalerPricingSection = ({ isPremium, tool, handlePurchaseLegacy, t }: { 
     setMpEmailSlug(plan.productSlug);
   };
 
-  const handleEmailConfirm = async (email: string) => {
+  const handleCustomerConfirm = async (data: MPCustomerData) => {
     if (!mpEmailSlug) return;
     setMpLoading(true);
-    await redirectToMPCheckout(mpEmailSlug, email);
+    await redirectToMPCheckout(mpEmailSlug, data);
     setMpLoading(false);
     setMpEmailSlug(null);
   };
