@@ -243,12 +243,12 @@ const UpgradeUpscalerV3 = () => {
               <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto mb-5">
                 <Shield className="h-8 w-8 text-emerald-400" />
               </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Seus créditos e acessos estão protegidos</h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Seu acesso está protegido</h2>
               <p className="text-white/50 text-sm md:text-base leading-relaxed max-w-[520px] mx-auto">
-                O upgrade para V3 é <strong className="text-white">aditivo</strong>. Você não perde nada do que já tem. Seus créditos do V2 continuam intactos. Seu acesso ao V2 permanece ativo. O V3 adiciona dois novos recursos ao que você já possui.
+                O upgrade para V3 é <strong className="text-white">aditivo</strong>. Você não perde nada do que já tem. Seu acesso ao V2 permanece ativo. O V3 adiciona dois novos recursos ao que você já possui.
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-4 text-xs md:text-sm font-semibold">
-                {["Créditos preservados", "Acesso V2 mantido", "Acesso imediato ao V3"].map((text, i) => (
+                {["Acesso V2 mantido", "Acesso imediato ao V3", "Upgrade aditivo"].map((text, i) => (
                   <span key={i} className="flex items-center gap-1.5 text-white/70">
                     <Check className="h-3.5 w-3.5 text-emerald-400" />
                     {text}
