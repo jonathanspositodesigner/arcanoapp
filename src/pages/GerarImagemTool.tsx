@@ -311,7 +311,7 @@ const GerarImagemTool = () => {
     </AppLayout>
   );
 
-  /* === CONTEÚDO ORIGINAL DESABILITADO TEMPORARIAMENTE ===
+  // eslint-disable-next-line no-unreachable
   return (
     <AppLayout>
       <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col">
@@ -332,7 +332,6 @@ const GerarImagemTool = () => {
             </div>
           </div>
         </div>
-
 
         {/* Beta warning */}
         <div className="mx-4 mt-2 mb-0 max-w-4xl self-center w-full">
