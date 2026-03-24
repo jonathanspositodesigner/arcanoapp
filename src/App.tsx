@@ -78,6 +78,7 @@ const MudarPose = lazy(() => import("./pages/MudarPose"));
 
 const SucessoCompra = lazy(() => import("./pages/SucessoCompra"));
 
+const UpgradeUpscalerV3 = lazy(() => import("./pages/UpgradeUpscalerV3"));
 // Artes system pages
 const UserLoginArtes = lazy(() => import("./pages/UserLoginArtes"));
 const UserLoginArtesMusicos = lazy(() => import("./pages/UserLoginArtesMusicos"));
@@ -329,6 +330,7 @@ const AppContent = () => {
           <Route path="/planos-upscaler-arcano-590-es" element={<PlanosUpscalerArcano590ES />} />
           <Route path="/planos-forja-selos-3d" element={<PlanosForjaSelos3D />} />
           <Route path="/planos-upscaler-creditos" element={<PlanosUpscalerCreditos />} />
+          <Route path="/upgrade-upscaler-v3" element={<UpgradeUpscalerV3 />} />
           <Route path="/upscaler-arcano-tool" element={<UpscalerArcanoTool />} />
           <Route path="/pose-changer-tool" element={<PoseChangerTool />} />
           <Route path="/veste-ai-tool" element={<VesteAITool />} />
