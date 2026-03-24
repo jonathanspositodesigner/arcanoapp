@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import { Helmet } from "react-helmet-async";
 
 const UpgradeUpscalerV3 = () => {
   useEffect(() => {
