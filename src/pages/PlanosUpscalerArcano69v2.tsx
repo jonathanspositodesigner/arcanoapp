@@ -274,7 +274,7 @@ const upscalerPlans: UpscalerPlan[] = [
     creditsCount: "1.500 créditos",
     images: 25,
     tagline: "Para começar",
-    productSlug: "landing-starter-avulso",
+    productSlug: "upscaler-arcano-starter",
     features: [
       { text: "Atualizações diárias", included: true },
       { text: "Acesso às Ferramentas de IA", included: true },
