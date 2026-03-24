@@ -85,7 +85,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { product_slug, utm_data, fbp, fbc } = body
+    const { product_slug, utm_data, fbp, fbc, customer_name, customer_email, customer_document } = body
 
     if (!product_slug || typeof product_slug !== 'string' || !product_slug.trim()) {
       return errorResponse('product_slug é obrigatório', 400, 'MISSING_FIELDS');
