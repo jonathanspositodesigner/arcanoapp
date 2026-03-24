@@ -904,7 +904,7 @@ const PlanosUpscalerArcano69v2 = () => {
           <LazySocialProofWrapper locale="pt" onZoomClick={openModal} isMobile={isMobile} />
 
           {/* SEÇÃO DE PREÇO E CTA - 4 Cards */}
-          <UpscalerPricingSection isPremium={isPremium} tool={tool} handlePurchaseLegacy={handlePurchase} t={t} />
+          <UpscalerPricingSection isPremium={isPremium} tool={tool} t={t} />
 
           {/* BENEFÍCIOS (O QUE FAZ) */}
           <AnimatedSection className="px-4 py-20 bg-black/30">
