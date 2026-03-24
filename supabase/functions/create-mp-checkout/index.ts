@@ -33,7 +33,7 @@ serve(async (req) => {
   }
 
   try {
-    const { product_slug, user_email, user_name, user_document, utm_data, fbp, fbc, user_agent: clientUA } = await req.json()
+    const { product_slug, user_email, user_name, user_document, utm_data, fbp, fbc, user_agent: clientUA, event_id: clientEventId } = await req.json()
 
     if (!product_slug || !user_email) {
       return new Response(JSON.stringify({ error: 'product_slug e user_email são obrigatórios' }), {
