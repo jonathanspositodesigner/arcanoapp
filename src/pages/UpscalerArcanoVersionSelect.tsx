@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lock, Unlock, Sparkles, Zap, Target, Star, ChevronRight, ShoppingCart } from "lucide-react";
+import { Lock, Unlock, Sparkles, Zap, Target, Star, ChevronRight } from "lucide-react";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { supabase } from "@/integrations/supabase/client";
