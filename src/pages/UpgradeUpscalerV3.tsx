@@ -57,6 +57,45 @@ const CountdownTimer = () => {
   );
 };
 
+const SocialProofCounter = () => {
+  const [count, setCount] = useState(0);
+  const [phase, setPhase] = useState<'animating' | 'incrementing'>('animating');
+
+  useEffect(() => {
+    if (phase === 'animating') {
+      const duration = 1500;
+      const target = 30;
+      const start = performance.now();
+      let raf: number;
+      const step = (now: number) => {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setCount(Math.floor(eased * target));
+        if (progress < 1) {
+          raf = requestAnimationFrame(step);
+        } else {
+          setCount(target);
+          setPhase('incrementing');
+        }
+      };
+      raf = requestAnimationFrame(step);
+      return () => cancelAnimationFrame(raf);
+    }
+    if (phase === 'incrementing') {
+      const interval = setInterval(() => {
+        setCount(prev => prev + 1);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [phase]);
+
+  return (
+    <span className="text-white/70 text-xs font-medium">
+      +{count} profissionais já fizeram o upgrade
+    </span>
+  );
+};
+
 const YouTubeFacade = ({ videoId }: { videoId: string }) => {
   const [showIframe, setShowIframe] = useState(false);
 
