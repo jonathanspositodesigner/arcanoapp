@@ -128,18 +128,6 @@ const LazyFakePurchaseNotifications = () => {
 
 // ── Sticky Footer Bar with Countdown ──
 const StickyFooterBar = () => {
-  const [secondsLeft, setSecondsLeft] = useState(40 * 60); // 40 minutes
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSecondsLeft(prev => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const minutes = Math.floor(secondsLeft / 60);
-  const seconds = secondsLeft % 60;
-
   const scrollToPlanos = () => {
     document.getElementById("planos")?.scrollIntoView({ behavior: "smooth" });
   };
@@ -148,11 +136,7 @@ const StickyFooterBar = () => {
     <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-fuchsia-600 to-purple-700 border-b border-white/10 shadow-[0_4px_20px_rgba(217,70,239,0.3)]">
       <div className="max-w-7xl mx-auto px-3 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-3">
         <div className="flex items-center gap-1.5 sm:gap-2 text-white text-[11px] sm:text-sm font-medium min-w-0">
-          <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-400 shrink-0" />
           <span className="truncate">🔥Deixe suas imagens em qualidade cinematográfica</span>
-          <span className="font-bold tabular-nums bg-black/20 rounded px-1.5 sm:px-2 py-0.5 shrink-0">
-            {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
-          </span>
         </div>
         <button
           onClick={scrollToPlanos}
