@@ -28,6 +28,7 @@ const TABLE_NAME_MAP: Record<ToolType, string> = {
   character_generator: 'character_generator_jobs',
   flyer_maker: 'flyer_maker_jobs',
   bg_remover: 'bg_remover_jobs',
+  image_generator: 'image_generator_jobs',
 };
 
 interface UseJobPendingWatchdogOptions {
