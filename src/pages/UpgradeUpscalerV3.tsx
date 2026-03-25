@@ -1,8 +1,29 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
 import { Zap, Layers, Check, X, Shield, ChevronDown, Rocket, Sparkles, Clock, ArrowRight, Timer, Play, ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
 import { useMPCheckout } from "@/hooks/useMPCheckout";
+
+/**
+ * Hook: lazy-render a section only when near viewport.
+ */
+const useLazySection = (rootMargin = "300px") => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [shouldRender, setShouldRender] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) { setShouldRender(true); observer.disconnect(); }
+      },
+      { rootMargin }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [rootMargin]);
+  return [ref, shouldRender] as const;
+};
 
 // Countdown to March 27, 2026 23:59:59 BRT (UTC-3)
 const DEADLINE = new Date("2026-03-28T02:59:59Z").getTime();
@@ -307,8 +328,24 @@ const TestimonialsGallery = () => {
   );
 };
 
+const LazyFakePurchaseNotifications = () => {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setShow(true), 3000);
+    return () => clearTimeout(t);
+  }, []);
+  if (!show) return null;
+  return <FakePurchaseNotifications />;
+};
+
 const UpgradeUpscalerV3 = () => {
   const { openCheckout, MPCheckoutModal } = useMPCheckout({ source_page: 'upgrade-v3' });
+
+  // Lazy section refs for below-the-fold content
+  const [comparativoRef, showComparativo] = useLazySection("400px");
+  const [garantiaRef, showGarantia] = useLazySection("400px");
+  const [socialProofRef, showSocialProof] = useLazySection("400px");
+  const [faqRef, showFaq] = useLazySection("400px");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -321,7 +358,7 @@ const UpgradeUpscalerV3 = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510]">
 
-      <FakePurchaseNotifications />
+      <LazyFakePurchaseNotifications />
 
       {/* BARRA STICKY */}
       <div className="sticky top-0 z-50 w-full bg-gradient-to-r from-fuchsia-600 to-purple-700 backdrop-blur-md border-b border-white/10">
@@ -484,116 +521,133 @@ const UpgradeUpscalerV3 = () => {
         </div>
       </AnimatedSection>
 
-      {/* COMPARATIVO V2 vs V3 */}
-      <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
-        <div className="max-w-3xl mx-auto text-center">
-          <AnimatedSection as="div" delay={100}>
-            <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
-              V2 vs V3 — <span className="text-fuchsia-400">O que muda pra você</span>
-            </h2>
-            <p className="text-white/50 text-sm md:text-base mb-10">Tudo que você já tem, mais duas funcionalidades poderosas.</p>
-          </AnimatedSection>
+      {/* COMPARATIVO V2 vs V3 - Lazy */}
+      <div ref={comparativoRef}>
+        {showComparativo ? (
+          <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+            <div className="max-w-3xl mx-auto text-center">
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
+                  V2 vs V3 — <span className="text-fuchsia-400">O que muda pra você</span>
+                </h2>
+                <p className="text-white/50 text-sm md:text-base mb-10">Tudo que você já tem, mais duas funcionalidades poderosas.</p>
+              </AnimatedSection>
 
-          <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="py-4 px-5 text-xs font-bold uppercase tracking-wider text-white/40">Recurso</th>
-                  <th className="py-4 px-4 text-xs font-bold uppercase tracking-wider text-white/40 text-center">V2</th>
-                  <th className="py-4 px-4 text-xs font-bold uppercase tracking-wider text-center">
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500 font-extrabold">V3</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ["Upscale 4K com IA", true, true],
-                  ["Acesso vitalício ilimitado", true, true],
-                  ["Suporte a múltiplos formatos", true, true],
-                  ["Modo Turbo (< 60s)", false, true],
-                  ["Upscale em Lote (10 imgs)", false, true],
-                  ["Acesso à V2 incluso", "—", true],
-                ].map(([feature, v2, v3], i) => (
-                  <tr key={i} className="border-b border-white/5 last:border-b-0 hover:bg-white/[0.02] transition-colors">
-                    <td className="py-3.5 px-5 text-sm font-medium text-white/80">{feature as string}</td>
-                    <td className="py-3.5 px-4 text-center">
-                      {v2 === true ? (
-                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto">
-                          <Check className="h-3 w-3 text-emerald-400" />
-                        </div>
-                      ) : v2 === false ? (
-                        <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center mx-auto">
-                          <X className="h-3 w-3 text-red-400" />
-                        </div>
-                      ) : (
-                        <span className="text-white/30">—</span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      {v3 === true ? (
-                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto">
-                          <Check className="h-3 w-3 text-emerald-400" />
-                        </div>
-                      ) : (
-                        <span className="text-white/30">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </AnimatedSection>
-
-      {/* GARANTIA DE CONTINUIDADE */}
-      <AnimatedSection className="px-4 py-16 md:py-20">
-        <div className="max-w-3xl mx-auto">
-          <AnimatedElement delay={100}>
-            <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-900/5 border border-emerald-500/30 rounded-3xl p-8 md:p-10 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto mb-5">
-                <Shield className="h-8 w-8 text-emerald-400" />
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Seu acesso está protegido</h2>
-              <p className="text-white/50 text-sm md:text-base leading-relaxed max-w-[520px] mx-auto">
-                O upgrade para V3 é <strong className="text-white">aditivo</strong>. Você não perde nada do que já tem. Seu acesso ao V2 permanece ativo. O V3 adiciona dois novos recursos ao que você já possui.
-              </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-4 text-xs md:text-sm font-semibold">
-                {["Acesso V2 mantido", "Acesso imediato ao V3", "Upgrade aditivo"].map((text, i) => (
-                  <span key={i} className="flex items-center gap-1.5 text-white/70">
-                    <Check className="h-3.5 w-3.5 text-emerald-400" />
-                    {text}
-                  </span>
-                ))}
+              <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/10">
+                      <th className="py-4 px-5 text-xs font-bold uppercase tracking-wider text-white/40">Recurso</th>
+                      <th className="py-4 px-4 text-xs font-bold uppercase tracking-wider text-white/40 text-center">V2</th>
+                      <th className="py-4 px-4 text-xs font-bold uppercase tracking-wider text-center">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500 font-extrabold">V3</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ["Upscale 4K com IA", true, true],
+                      ["Acesso vitalício ilimitado", true, true],
+                      ["Suporte a múltiplos formatos", true, true],
+                      ["Modo Turbo (< 60s)", false, true],
+                      ["Upscale em Lote (10 imgs)", false, true],
+                      ["Acesso à V2 incluso", "—", true],
+                    ].map(([feature, v2, v3], i) => (
+                      <tr key={i} className="border-b border-white/5 last:border-b-0 hover:bg-white/[0.02] transition-colors">
+                        <td className="py-3.5 px-5 text-sm font-medium text-white/80">{feature as string}</td>
+                        <td className="py-3.5 px-4 text-center">
+                          {v2 === true ? (
+                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto">
+                              <Check className="h-3 w-3 text-emerald-400" />
+                            </div>
+                          ) : v2 === false ? (
+                            <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center mx-auto">
+                              <X className="h-3 w-3 text-red-400" />
+                            </div>
+                          ) : (
+                            <span className="text-white/30">—</span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          {v3 === true ? (
+                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto">
+                              <Check className="h-3 w-3 text-emerald-400" />
+                            </div>
+                          ) : (
+                            <span className="text-white/30">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
-          </AnimatedElement>
-        </div>
-      </AnimatedSection>
-
-      {/* SOCIAL PROOF */}
-      <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
-        <div className="max-w-4xl mx-auto text-center">
-          <AnimatedSection as="div" delay={100}>
-            <div className="inline-flex items-center gap-2 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-6">
-              <div className="flex -space-x-2">
-                <img src="/images/social-proof-1.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
-                <img src="/images/social-proof-2.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
-                <img src="/images/social-proof-3.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
-              </div>
-              <SocialProofCounter />
-            </div>
-
-            <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
-              O que estão dizendo do <span className="text-fuchsia-400">V3</span>
-            </h2>
-            <p className="text-white/50 text-sm mb-10">Os primeiros a testar o V3 já estão falando.</p>
           </AnimatedSection>
+        ) : (
+          <div className="min-h-[400px]" />
+        )}
+      </div>
 
-          {/* Mosaico de depoimentos reais */}
-          <TestimonialsGallery />
-        </div>
-      </AnimatedSection>
+      {/* GARANTIA DE CONTINUIDADE - Lazy */}
+      <div ref={garantiaRef}>
+        {showGarantia ? (
+          <AnimatedSection className="px-4 py-16 md:py-20">
+            <div className="max-w-3xl mx-auto">
+              <AnimatedElement delay={100}>
+                <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-900/5 border border-emerald-500/30 rounded-3xl p-8 md:p-10 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto mb-5">
+                    <Shield className="h-8 w-8 text-emerald-400" />
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Seu acesso está protegido</h2>
+                  <p className="text-white/50 text-sm md:text-base leading-relaxed max-w-[520px] mx-auto">
+                    O upgrade para V3 é <strong className="text-white">aditivo</strong>. Você não perde nada do que já tem. Seu acesso ao V2 permanece ativo. O V3 adiciona dois novos recursos ao que você já possui.
+                  </p>
+                  <div className="mt-6 flex flex-wrap justify-center gap-4 text-xs md:text-sm font-semibold">
+                    {["Acesso V2 mantido", "Acesso imediato ao V3", "Upgrade aditivo"].map((text, i) => (
+                      <span key={i} className="flex items-center gap-1.5 text-white/70">
+                        <Check className="h-3.5 w-3.5 text-emerald-400" />
+                        {text}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </AnimatedElement>
+            </div>
+          </AnimatedSection>
+        ) : (
+          <div className="min-h-[300px]" />
+        )}
+      </div>
+
+      {/* SOCIAL PROOF - Lazy */}
+      <div ref={socialProofRef}>
+        {showSocialProof ? (
+          <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+            <div className="max-w-4xl mx-auto text-center">
+              <AnimatedSection as="div" delay={100}>
+                <div className="inline-flex items-center gap-2 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-6">
+                  <div className="flex -space-x-2">
+                    <img src="/images/social-proof-1.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                    <img src="/images/social-proof-2.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                    <img src="/images/social-proof-3.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                  </div>
+                  <SocialProofCounter />
+                </div>
+
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
+                  O que estão dizendo do <span className="text-fuchsia-400">V3</span>
+                </h2>
+                <p className="text-white/50 text-sm mb-10">Os primeiros a testar o V3 já estão falando.</p>
+              </AnimatedSection>
+
+              <TestimonialsGallery />
+            </div>
+          </AnimatedSection>
+        ) : (
+          <div className="min-h-[600px]" />
+        )}
+      </div>
 
       {/* CTA + PREÇO */}
       <section id="planos" className="px-4 py-20 md:py-24">
@@ -675,39 +729,45 @@ const UpgradeUpscalerV3 = () => {
         </div>
       </section>
 
-      {/* FAQ */}
-      <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
-        <div className="max-w-3xl mx-auto">
-          <AnimatedSection as="div" delay={100}>
-            <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-10 tracking-wide">
-              Perguntas <span className="text-fuchsia-400">frequentes</span>
-            </h2>
-          </AnimatedSection>
+      {/* FAQ - Lazy */}
+      <div ref={faqRef}>
+        {showFaq ? (
+          <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+            <div className="max-w-3xl mx-auto">
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-10 tracking-wide">
+                  Perguntas <span className="text-fuchsia-400">frequentes</span>
+                </h2>
+              </AnimatedSection>
 
-          <StaggeredAnimation className="space-y-3" staggerDelay={100}>
-            {[
-              { q: "O que muda do V2 para o V3?", a: "O V3 traz o Modo Turbo (resultados em menos de 60 segundos) e o Upscale em Lote, que permite melhorar até 10 imagens de uma vez. Tudo com a mesma qualidade do V2." },
-              { q: "Preciso pagar de novo pelo V2?", a: "Não. Quem compra o V3 recebe acesso ao V2 automaticamente. Você mantém tudo." },
-              { q: "Posso usar o V2 e o V3 ao mesmo tempo?", a: "Sim. Você terá acesso às duas versões e pode alternar entre elas a qualquer momento." },
-              { q: "O acesso é vitalício mesmo?", a: "Sim. Pagamento único, acesso para sempre. Sem assinaturas, sem taxas recorrentes, sem limite de uso." },
-              { q: "Funciona com qualquer tipo de imagem?", a: "Sim. O Upscaler Arcano funciona com fotos, artes digitais, logos, prints e qualquer imagem que você queira melhorar." },
-            ].map((item, i) => (
-              <details
-                key={i}
-                className="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-fuchsia-500/30 transition-all duration-300"
-              >
-                <summary className="font-semibold text-sm md:text-base text-white/90 list-none flex items-center justify-between cursor-pointer p-5 md:p-6">
-                  {item.q}
-                  <ChevronDown className="h-4 w-4 text-fuchsia-400 shrink-0 ml-3 transition-transform duration-300 group-open:rotate-180" />
-                </summary>
-                <div className="px-5 md:px-6 pb-5 md:pb-6 -mt-1">
-                  <p className="text-sm leading-relaxed text-white/50">{item.a}</p>
-                </div>
-              </details>
-            ))}
-          </StaggeredAnimation>
-        </div>
-      </AnimatedSection>
+              <StaggeredAnimation className="space-y-3" staggerDelay={100}>
+                {[
+                  { q: "O que muda do V2 para o V3?", a: "O V3 traz o Modo Turbo (resultados em menos de 60 segundos) e o Upscale em Lote, que permite melhorar até 10 imagens de uma vez. Tudo com a mesma qualidade do V2." },
+                  { q: "Preciso pagar de novo pelo V2?", a: "Não. Quem compra o V3 recebe acesso ao V2 automaticamente. Você mantém tudo." },
+                  { q: "Posso usar o V2 e o V3 ao mesmo tempo?", a: "Sim. Você terá acesso às duas versões e pode alternar entre elas a qualquer momento." },
+                  { q: "O acesso é vitalício mesmo?", a: "Sim. Pagamento único, acesso para sempre. Sem assinaturas, sem taxas recorrentes, sem limite de uso." },
+                  { q: "Funciona com qualquer tipo de imagem?", a: "Sim. O Upscaler Arcano funciona com fotos, artes digitais, logos, prints e qualquer imagem que você queira melhorar." },
+                ].map((item, i) => (
+                  <details
+                    key={i}
+                    className="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-fuchsia-500/30 transition-all duration-300"
+                  >
+                    <summary className="font-semibold text-sm md:text-base text-white/90 list-none flex items-center justify-between cursor-pointer p-5 md:p-6">
+                      {item.q}
+                      <ChevronDown className="h-4 w-4 text-fuchsia-400 shrink-0 ml-3 transition-transform duration-300 group-open:rotate-180" />
+                    </summary>
+                    <div className="px-5 md:px-6 pb-5 md:pb-6 -mt-1">
+                      <p className="text-sm leading-relaxed text-white/50">{item.a}</p>
+                    </div>
+                  </details>
+                ))}
+              </StaggeredAnimation>
+            </div>
+          </AnimatedSection>
+        ) : (
+          <div className="min-h-[400px]" />
+        )}
+      </div>
 
       {/* CTA FINAL */}
       <section className="px-4 py-20 md:py-24 text-center">
