@@ -102,6 +102,8 @@ const Planos2 = () => {
     };
   };
 
+  const countdown = formatTime(timeLeft);
+
   const handleCreditPurchase = (slug: string) => {
     openCheckout(slug);
   };
@@ -522,7 +524,7 @@ const Planos2 = () => {
                           handleSubscriptionPurchase(plan.name);
                         }
                       }}
-                      disabled={isDisabled || isCheckoutSubmitting}
+                      disabled={isDisabled || isMPLoading}
                       className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-purple-500/20 border border-purple-500/40 text-purple-300 cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
                     >
                       {buttonText}
@@ -656,7 +658,6 @@ const Planos2 = () => {
             { credits: "+14.000", description: "~233 imagens", price: "79,90", originalPrice: "149,90", savings: "57", slug: "creditos-14000", bestValue: true, icon: Star, color: "from-yellow-500 to-orange-500" },
           ].map((plan) => {
             const Icon = plan.icon;
-            const isLoading = pixLoading === plan.slug;
             return (
               <Card
                 key={plan.credits}
@@ -774,25 +775,6 @@ const Planos2 = () => {
           </Button>
         </DialogContent>
       </Dialog>
-
-      {/* Payment Method Modal for complete profiles */}
-      <PaymentMethodModal
-        open={showPaymentMethodModal}
-        onOpenChange={setShowPaymentMethodModal}
-        onSelect={handlePaymentMethodSelected}
-        isProcessing={isCheckoutSubmitting}
-        colorScheme="purple"
-      />
-
-
-      {/* PreCheckout Modal for credit purchases */}
-      <PreCheckoutModal
-        isOpen={showPreCheckout}
-        onClose={() => setShowPreCheckout(false)}
-        userEmail={userEmail}
-        userId={userId}
-        productSlug={preCheckoutSlug || undefined}
-      />
 
       <MPCheckoutModal />
 
