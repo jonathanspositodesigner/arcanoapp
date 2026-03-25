@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const PAGARME_API_URL = "https://api.pagar.me/core/v5";
+const MP_API_URL = "https://api.mercadopago.com";
 
 // ===== SendPulse OAuth =====
 let cachedToken: { token: string; expiresAt: number } | null = null;

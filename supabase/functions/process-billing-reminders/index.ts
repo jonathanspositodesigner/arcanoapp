@@ -477,18 +477,16 @@ serve(async (req) => {
 
         // 9. Create Pagar.me PIX checkout
         let checkoutUrl = ''
-        let pixCopyPaste: string | null = null
         try {
           const checkout = await createRenewalCheckout(
-            pagarmeSecretKey,
+            mpAccessToken,
             userEmail,
             profile.name || '',
             productTitle,
-            Math.round(price * 100),
-            crypto.randomUUID(), // dummy order ID for the metadata
+            price,
+            crypto.randomUUID(),
           )
           checkoutUrl = checkout.checkoutUrl
-          pixCopyPaste = checkout.pixCopyPaste
         } catch (err: any) {
           console.error(`❌ Failed to create checkout for ${userEmail}:`, err.message)
           errors++
@@ -504,7 +502,6 @@ serve(async (req) => {
           benefits: planInfo.benefits,
           losses: planInfo.losses,
           checkoutUrl,
-          pixCopyPaste,
           email: userEmail,
         }
 
