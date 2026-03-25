@@ -219,9 +219,9 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const pagarmeSecretKey = Deno.env.get("PAGARME_SECRET_KEY");
-    if (!pagarmeSecretKey) {
-      return new Response(JSON.stringify({ error: "PAGARME_SECRET_KEY missing" }), {
+    const mpAccessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
+    if (!mpAccessToken) {
+      return new Response(JSON.stringify({ error: "MERCADOPAGO_ACCESS_TOKEN missing" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -313,7 +313,7 @@ serve(async (req) => {
 
       // Generate fresh checkout
       console.log(`Generating checkout for ${email} - ${product.title}`);
-      const checkoutUrl = await generateCheckoutUrl(product, order, pagarmeSecretKey);
+      const checkoutUrl = await generateCheckoutUrl(product, order, mpAccessToken);
 
       if (!checkoutUrl) {
         results.push({ email, status: "failed", reason: "checkout_generation_failed" });
