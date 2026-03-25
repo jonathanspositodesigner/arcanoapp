@@ -1,29 +1,30 @@
 
 
-## Diagnóstico
+## Plano: Liberar Upscaler App para todos + Remover créditos vitalícios da usuária
 
-O card da V3 está **hardcoded** no código (linhas 283-372 do `UpscalerArcanoVersionSelect.tsx`) com um placeholder genérico (ícone Sparkles + texto), em vez de usar os dados que você configurou no admin (capa, badges, nome, etc.) que estão salvos no `tool_versions` do banco.
+### Contexto
+O Upscaler versão aplicativo (a ferramenta que processa imagens) está restrito por `hasAccessToPack('upscaller-arcano')` na lista de ferramentas e nas páginas de versões/aulas. Mas o Cloner, Veste AI, Pose Changer etc. são livres para todos. O objetivo é igualar — todos podem usar o Upscaler app, e as versões vitalícias com vídeo-aulas continuam restritas por pack.
 
-Os dados da V3 já existem no banco com `slug: v3`, `name: v3.0`, cover_url, badges (NOVO, EDITA EM LOTE, +RÁPIDO, + FIEL), e aulas configuradas.
+### Alterações
 
-## Plano
+**1. `src/pages/FerramentasIAAplicativo.tsx`**
+- Na função `checkToolAccess`, adicionar `if (slug === "upscaller-arcano") return true;` — igual ao cloner, flyer-maker e remover-fundo
+- Remover a lógica do modal de escolha de versão que depende de `hasUpscalerPack` — ao clicar no Upscaler, ir direto para a rota de acesso (`/ferramenta-ia-artes/upscaller-arcano` ou `/upscaler-arcano-tool`)
+- O botão sempre aparece verde "Acessar" para o Upscaler, sem verificação de pack
 
-### 1. Alterar a busca de versões para incluir V3
-- Atualmente o código filtra `is_visible` e só pega versões do pack `upscaller-arcano`
-- Mudar para buscar **todas** as versões (incluindo V3 mesmo se `is_visible: false`) e tratar a visibilidade no render
+**2. `src/pages/UpscalerArcanoVersionSelect.tsx`**
+- Remover o gate `if (!hasAccess)` que bloqueia a página inteira — todos podem ver as versões
+- Manter a distinção entre V2/V3 com pack (aulas vitalícias) vs sem pack (apenas app)
+- Cards de versões vitalícias (V1, V2, V3 com aulas) continuam restritos por pack — quem não tem pack vê "Comprar" ou "Em Breve"
+- O botão "Usar Aplicativo" (que leva ao `/upscaler-arcano-tool`) fica disponível para todos
 
-### 2. Substituir o card V3 hardcoded pela renderização dinâmica
-- Remover o bloco hardcoded do V3 (linhas 283-372)
-- No loop de versões, identificar V3 pelo `slug === 'v3'`
-- Se for V3:
-  - Usar `cover_url`, `badges`, `name` do banco (o que você configurou no admin)
-  - Se **não tem** pack `upscaller-arcano-v3`: card em grayscale, badge "Em Breve", botão **desativado** (disabled)
-  - Se **tem** pack: card colorido normal, botão "Acessar V3" que leva ao `/upscaler-selection`
+**3. Dados da usuária gs.arq@hotmail.com.br**
+- Remover 1.500 créditos vitalícios (lifetime_balance: 1500 → 0)
+- Ajustar balance total de 5.700 → 4.200
+- Registrar transação no log
 
-### 3. Botão desativado para V3 sem acesso
-- Botão com `disabled={true}`, visual cinza, texto "Em Breve"
-- Sem link para compra por enquanto (você vai definir depois)
-
-## Arquivo a alterar
+### Arquivos alterados
+- `src/pages/FerramentasIAAplicativo.tsx`
 - `src/pages/UpscalerArcanoVersionSelect.tsx`
+- Inserção de dados: update credits + transaction log
 
