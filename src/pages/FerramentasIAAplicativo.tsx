@@ -37,9 +37,6 @@ const FerramentasIAAplicativo = () => {
   const { user, hasAccessToPack, isPremium, isLoading: isPremiumLoading } = usePremiumArtesStatus();
   const { planType: promptsPlanType, isLoading: isPromptsLoading } = usePremiumStatus();
   
-  // State for Upscaler choice modal
-  const [showUpscalerModal, setShowUpscalerModal] = useState(false);
-  const hasUpscalerPack = hasAccessToPack('upscaller-arcano');
   
   
   // Check promo claim status
