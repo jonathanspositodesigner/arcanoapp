@@ -117,7 +117,7 @@ const UpgradeUpscalerV3 = () => {
             <div className="relative w-full aspect-video">
               <iframe
                 className="absolute inset-0 w-full h-full"
-                src="https://www.youtube.com/embed/0Jy8hF7OCBw?autoplay=1&mute=1&rel=0&modestbranding=1"
+                src="https://www.youtube.com/embed/0Jy8hF7OCBw?rel=0&modestbranding=1"
                 title="Upscaler Arcano V3"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
