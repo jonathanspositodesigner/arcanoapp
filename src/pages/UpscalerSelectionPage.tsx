@@ -13,12 +13,7 @@ const UpscalerSelectionPage = () => {
   const hasV3Pack = hasAccessToPack('upscaller-arcano-v3');
   const isLoading = premiumLoading || promptsLoading;
 
-  // Gate: redirect if no V3 access
-  useEffect(() => {
-    if (!isLoading && !hasV3Pack) {
-      navigate('/ferramenta-ia-artes/upscaller-arcano', { replace: true });
-    }
-  }, [isLoading, hasV3Pack, navigate]);
+  // No gate — selection page is accessible to all users
   const handleSelectImage = () => navigate("/upscaler-arcano-tool");
   const handleSelectVideo = () => navigate("/video-upscaler-tool");
 

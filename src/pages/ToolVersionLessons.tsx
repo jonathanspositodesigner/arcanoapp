@@ -359,9 +359,18 @@ const ToolVersionLessons = () => {
     );
   }
 
-  // Check access: either has Arcano Unlimited plan OR purchased the specific pack
+  // Check access: Arcano Unlimited OR specific pack
+  // V3 lessons require 'upscaller-arcano-v3' pack
+  // V1/V2 lessons require 'upscaller-arcano' OR 'upscaller-arcano-v3' (V3 inherits V2)
   const hasUnlimitedAccess = planType === 'arcano_unlimited';
-  const hasAccess = hasUnlimitedAccess || (toolSlug ? hasAccessToPack(toolSlug) : false);
+  const hasAccess = (() => {
+    if (hasUnlimitedAccess) return true;
+    if (toolSlug === 'upscaller-arcano') {
+      if (versionSlug === 'v3') return hasAccessToPack('upscaller-arcano-v3');
+      return hasAccessToPack('upscaller-arcano') || hasAccessToPack('upscaller-arcano-v3');
+    }
+    return toolSlug ? hasAccessToPack(toolSlug) : false;
+  })();
 
   if (!hasAccess) {
     return (
