@@ -193,6 +193,7 @@ const FerramentasIAAplicativo = () => {
     if (slug === "arcano-cloner") return true;
     if (slug === "flyer-maker") return true;
     if (slug === "remover-fundo") return true;
+    if (slug === "upscaller-arcano") return true;
     if (bonusTools.includes(slug)) {
       return isPremium;
     }
