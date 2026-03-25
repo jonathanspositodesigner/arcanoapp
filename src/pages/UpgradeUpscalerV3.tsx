@@ -521,67 +521,73 @@ const UpgradeUpscalerV3 = () => {
         </div>
       </AnimatedSection>
 
-      {/* COMPARATIVO V2 vs V3 */}
-      <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
-        <div className="max-w-3xl mx-auto text-center">
-          <AnimatedSection as="div" delay={100}>
-            <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
-              V2 vs V3 — <span className="text-fuchsia-400">O que muda pra você</span>
-            </h2>
-            <p className="text-white/50 text-sm md:text-base mb-10">Tudo que você já tem, mais duas funcionalidades poderosas.</p>
-          </AnimatedSection>
+      {/* COMPARATIVO V2 vs V3 - Lazy */}
+      <div ref={comparativoRef}>
+        {showComparativo ? (
+          <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+            <div className="max-w-3xl mx-auto text-center">
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
+                  V2 vs V3 — <span className="text-fuchsia-400">O que muda pra você</span>
+                </h2>
+                <p className="text-white/50 text-sm md:text-base mb-10">Tudo que você já tem, mais duas funcionalidades poderosas.</p>
+              </AnimatedSection>
 
-          <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="py-4 px-5 text-xs font-bold uppercase tracking-wider text-white/40">Recurso</th>
-                  <th className="py-4 px-4 text-xs font-bold uppercase tracking-wider text-white/40 text-center">V2</th>
-                  <th className="py-4 px-4 text-xs font-bold uppercase tracking-wider text-center">
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500 font-extrabold">V3</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ["Upscale 4K com IA", true, true],
-                  ["Acesso vitalício ilimitado", true, true],
-                  ["Suporte a múltiplos formatos", true, true],
-                  ["Modo Turbo (< 60s)", false, true],
-                  ["Upscale em Lote (10 imgs)", false, true],
-                  ["Acesso à V2 incluso", "—", true],
-                ].map(([feature, v2, v3], i) => (
-                  <tr key={i} className="border-b border-white/5 last:border-b-0 hover:bg-white/[0.02] transition-colors">
-                    <td className="py-3.5 px-5 text-sm font-medium text-white/80">{feature as string}</td>
-                    <td className="py-3.5 px-4 text-center">
-                      {v2 === true ? (
-                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto">
-                          <Check className="h-3 w-3 text-emerald-400" />
-                        </div>
-                      ) : v2 === false ? (
-                        <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center mx-auto">
-                          <X className="h-3 w-3 text-red-400" />
-                        </div>
-                      ) : (
-                        <span className="text-white/30">—</span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      {v3 === true ? (
-                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto">
-                          <Check className="h-3 w-3 text-emerald-400" />
-                        </div>
-                      ) : (
-                        <span className="text-white/30">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </AnimatedSection>
+              <div className="bg-white/5 border border-white/10 rounded-3xl overflow-hidden">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/10">
+                      <th className="py-4 px-5 text-xs font-bold uppercase tracking-wider text-white/40">Recurso</th>
+                      <th className="py-4 px-4 text-xs font-bold uppercase tracking-wider text-white/40 text-center">V2</th>
+                      <th className="py-4 px-4 text-xs font-bold uppercase tracking-wider text-center">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500 font-extrabold">V3</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ["Upscale 4K com IA", true, true],
+                      ["Acesso vitalício ilimitado", true, true],
+                      ["Suporte a múltiplos formatos", true, true],
+                      ["Modo Turbo (< 60s)", false, true],
+                      ["Upscale em Lote (10 imgs)", false, true],
+                      ["Acesso à V2 incluso", "—", true],
+                    ].map(([feature, v2, v3], i) => (
+                      <tr key={i} className="border-b border-white/5 last:border-b-0 hover:bg-white/[0.02] transition-colors">
+                        <td className="py-3.5 px-5 text-sm font-medium text-white/80">{feature as string}</td>
+                        <td className="py-3.5 px-4 text-center">
+                          {v2 === true ? (
+                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto">
+                              <Check className="h-3 w-3 text-emerald-400" />
+                            </div>
+                          ) : v2 === false ? (
+                            <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center mx-auto">
+                              <X className="h-3 w-3 text-red-400" />
+                            </div>
+                          ) : (
+                            <span className="text-white/30">—</span>
+                          )}
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          {v3 === true ? (
+                            <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto">
+                              <Check className="h-3 w-3 text-emerald-400" />
+                            </div>
+                          ) : (
+                            <span className="text-white/30">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </AnimatedSection>
+        ) : (
+          <div className="min-h-[400px]" />
+        )}
+      </div>
 
       {/* GARANTIA DE CONTINUIDADE */}
       <AnimatedSection className="px-4 py-16 md:py-20">
