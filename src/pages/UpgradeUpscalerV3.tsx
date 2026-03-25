@@ -82,7 +82,7 @@ const YouTubeFacade = ({ videoId }: { videoId: string }) => {
             aria-label="Reproduzir vídeo"
           >
             <img
-              src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+              src="/images/capa_video_apresenta.webp"
               alt="Thumbnail do vídeo"
               className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
               loading="eager"
