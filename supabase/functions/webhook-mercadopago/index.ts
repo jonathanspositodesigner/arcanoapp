@@ -936,8 +936,8 @@ serve(async (req) => {
         }
       }
 
-      // === REFUND: Revogar bônus vitalício Upscaler Arcano ===
-      if (order.user_id && (product.slug === 'upscaller-arcano-vitalicio' || product.slug === 'upscaler-arcano-v3')) {
+      // === REFUND: Revogar bônus vitalício Upscaler Arcano (SÓ vitalício, NÃO V3) ===
+      if (order.user_id && product.slug === 'upscaller-arcano-vitalicio') {
         console.log(`   ├─ 📋 Revogando bônus vitalício Upscaler Arcano...`)
         
         // Revogar 10.000 créditos bônus
@@ -963,24 +963,26 @@ serve(async (req) => {
           })
           .eq('user_id', order.user_id)
         console.log(`   ├─ ✅ Ferramentas gerar-imagem e gerar-video desabilitadas`)
+      }
 
-        // Se V3, revogar também o pack V2 concedido como bônus
-        if (product.slug === 'upscaler-arcano-v3') {
-          await supabase
-            .from('user_pack_purchases')
-            .update({ is_active: false, updated_at: new Date().toISOString() })
-            .eq('user_id', order.user_id)
-            .eq('pack_slug', 'upscaller-arcano')
-            .eq('product_name', 'Bônus V3: acesso V2')
-          console.log(`   ├─ ✅ Pack V2 bônus revogado`)
+      // === REFUND V3: Revogar pack V3 + bônus V2 (sem créditos, sem image/video) ===
+      if (order.user_id && product.slug === 'upscaler-arcano-v3') {
+        console.log(`   ├─ 📋 Revogando acesso V3...`)
+        
+        await supabase
+          .from('user_pack_purchases')
+          .update({ is_active: false, updated_at: new Date().toISOString() })
+          .eq('user_id', order.user_id)
+          .eq('pack_slug', 'upscaller-arcano')
+          .eq('product_name', 'Bônus V3: acesso V2')
+        console.log(`   ├─ ✅ Pack V2 bônus revogado`)
 
-          await supabase
-            .from('user_pack_purchases')
-            .update({ is_active: false, updated_at: new Date().toISOString() })
-            .eq('user_id', order.user_id)
-            .eq('pack_slug', 'upscaller-arcano-v3')
-          console.log(`   ├─ ✅ Pack V3 revogado`)
-        }
+        await supabase
+          .from('user_pack_purchases')
+          .update({ is_active: false, updated_at: new Date().toISOString() })
+          .eq('user_id', order.user_id)
+          .eq('pack_slug', 'upscaller-arcano-v3')
+        console.log(`   ├─ ✅ Pack V3 revogado`)
       }
       await supabase.from('mp_orders').update({
         status: 'refunded',
