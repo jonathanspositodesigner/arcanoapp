@@ -589,54 +589,65 @@ const UpgradeUpscalerV3 = () => {
         )}
       </div>
 
-      {/* GARANTIA DE CONTINUIDADE */}
-      <AnimatedSection className="px-4 py-16 md:py-20">
-        <div className="max-w-3xl mx-auto">
-          <AnimatedElement delay={100}>
-            <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-900/5 border border-emerald-500/30 rounded-3xl p-8 md:p-10 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto mb-5">
-                <Shield className="h-8 w-8 text-emerald-400" />
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Seu acesso está protegido</h2>
-              <p className="text-white/50 text-sm md:text-base leading-relaxed max-w-[520px] mx-auto">
-                O upgrade para V3 é <strong className="text-white">aditivo</strong>. Você não perde nada do que já tem. Seu acesso ao V2 permanece ativo. O V3 adiciona dois novos recursos ao que você já possui.
-              </p>
-              <div className="mt-6 flex flex-wrap justify-center gap-4 text-xs md:text-sm font-semibold">
-                {["Acesso V2 mantido", "Acesso imediato ao V3", "Upgrade aditivo"].map((text, i) => (
-                  <span key={i} className="flex items-center gap-1.5 text-white/70">
-                    <Check className="h-3.5 w-3.5 text-emerald-400" />
-                    {text}
-                  </span>
-                ))}
-              </div>
+      {/* GARANTIA DE CONTINUIDADE - Lazy */}
+      <div ref={garantiaRef}>
+        {showGarantia ? (
+          <AnimatedSection className="px-4 py-16 md:py-20">
+            <div className="max-w-3xl mx-auto">
+              <AnimatedElement delay={100}>
+                <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-900/5 border border-emerald-500/30 rounded-3xl p-8 md:p-10 text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto mb-5">
+                    <Shield className="h-8 w-8 text-emerald-400" />
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Seu acesso está protegido</h2>
+                  <p className="text-white/50 text-sm md:text-base leading-relaxed max-w-[520px] mx-auto">
+                    O upgrade para V3 é <strong className="text-white">aditivo</strong>. Você não perde nada do que já tem. Seu acesso ao V2 permanece ativo. O V3 adiciona dois novos recursos ao que você já possui.
+                  </p>
+                  <div className="mt-6 flex flex-wrap justify-center gap-4 text-xs md:text-sm font-semibold">
+                    {["Acesso V2 mantido", "Acesso imediato ao V3", "Upgrade aditivo"].map((text, i) => (
+                      <span key={i} className="flex items-center gap-1.5 text-white/70">
+                        <Check className="h-3.5 w-3.5 text-emerald-400" />
+                        {text}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </AnimatedElement>
             </div>
-          </AnimatedElement>
-        </div>
-      </AnimatedSection>
-
-      {/* SOCIAL PROOF */}
-      <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
-        <div className="max-w-4xl mx-auto text-center">
-          <AnimatedSection as="div" delay={100}>
-            <div className="inline-flex items-center gap-2 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-6">
-              <div className="flex -space-x-2">
-                <img src="/images/social-proof-1.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
-                <img src="/images/social-proof-2.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
-                <img src="/images/social-proof-3.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
-              </div>
-              <SocialProofCounter />
-            </div>
-
-            <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
-              O que estão dizendo do <span className="text-fuchsia-400">V3</span>
-            </h2>
-            <p className="text-white/50 text-sm mb-10">Os primeiros a testar o V3 já estão falando.</p>
           </AnimatedSection>
+        ) : (
+          <div className="min-h-[300px]" />
+        )}
+      </div>
 
-          {/* Mosaico de depoimentos reais */}
-          <TestimonialsGallery />
-        </div>
-      </AnimatedSection>
+      {/* SOCIAL PROOF - Lazy */}
+      <div ref={socialProofRef}>
+        {showSocialProof ? (
+          <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+            <div className="max-w-4xl mx-auto text-center">
+              <AnimatedSection as="div" delay={100}>
+                <div className="inline-flex items-center gap-2 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-6">
+                  <div className="flex -space-x-2">
+                    <img src="/images/social-proof-1.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                    <img src="/images/social-proof-2.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                    <img src="/images/social-proof-3.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
+                  </div>
+                  <SocialProofCounter />
+                </div>
+
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
+                  O que estão dizendo do <span className="text-fuchsia-400">V3</span>
+                </h2>
+                <p className="text-white/50 text-sm mb-10">Os primeiros a testar o V3 já estão falando.</p>
+              </AnimatedSection>
+
+              <TestimonialsGallery />
+            </div>
+          </AnimatedSection>
+        ) : (
+          <div className="min-h-[600px]" />
+        )}
+      </div>
 
       {/* CTA + PREÇO */}
       <section id="planos" className="px-4 py-20 md:py-24">
