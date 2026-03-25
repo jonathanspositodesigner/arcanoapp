@@ -1,46 +1,67 @@
-# Plano: Migração de Checkouts Pagar.me → Mercado Pago
+
+
+# Plano: Migrar checkouts de créditos avulsos da página Planos2 para Mercado Pago
 
 ## Resumo
 
-Substituir o fluxo complexo do Pagar.me (profile check → PreCheckoutModal → PaymentMethodModal → invokeCheckout) pelo fluxo simples e já testado do Mercado Pago (`useMPCheckout` → `openCheckout(slug)` → `MPCheckoutModal`), mantendo os mesmos slugs de produto que já existem na tabela `mp_products`.
+Substituir o fluxo Pagar.me (profile check → PreCheckoutModal → PaymentMethodModal → invokeCheckout) pelos créditos avulsos na página `Planos2.tsx`, usando o hook `useMPCheckout` já testado. Os slugs `creditos-1500`, `creditos-4200` e `creditos-14000` já existem na tabela `mp_products` com `is_active = true`.
 
-## Páginas Afetadas
+**Importante**: Nesta etapa, apenas os créditos avulsos serão migrados. Os planos de assinatura continuam usando o fluxo atual do Pagar.me.
 
+## Verificação de pré-requisitos
 
-| Página               | Arquivo                    | Fluxo Atual                                       |
-| -------------------- | -------------------------- | ------------------------------------------------- |
-| Planos de Artes      | `PlanosArtes.tsx`          | `invokeCheckout` → create-pagarme-checkout        |
-| Planos Membro        | `PlanosArtesMembro.tsx`    | `invokeCheckout` → create-pagarme-checkout        |
-| Upscaler Arcano      | `PlanosUpscalerArcano.tsx` | `redirectToCheckout` → create-pagarme-checkout-v2 |
-| Planos IA (Créditos) | `Planos2.tsx`              | `invokeCheckout` → create-pagarme-checkout        |
+| Slug | Existe em mp_products | Ativo |
+|------|----------------------|-------|
+| creditos-1500 | Sim | Sim |
+| creditos-4200 | Sim | Sim |
+| creditos-14000 | Sim | Sim |
 
+## Mudanças no arquivo `src/pages/Planos2.tsx`
 
-## O que muda em cada página
+### 1. Adicionar import do hook
+```tsx
+import { useMPCheckout } from "@/hooks/useMPCheckout";
+```
 
-Para **cada** página, a migração segue o mesmo padrão mecânico:
+### 2. Inicializar o hook dentro do componente
+```tsx
+const { openCheckout, MPCheckoutModal } = useMPCheckout({ source_page: "planos-2" });
+```
 
-1. **Remover imports** do Pagar.me: `invokeCheckout`, `preWarmCheckout`, `redirectToCheckout`, `PreCheckoutModal`, `PaymentMethodModal`, `CheckoutCustomerModal`, `useProcessingButton`, `getSanitizedUtms`, `getMetaCookies`
-2. **Adicionar import** do `useMPCheckout`
-3. **Substituir estados** (`showPreCheckout`, `pendingSlug`, `pendingProfile`, `showPaymentMethodModal`, `pixLoading`) pelo hook: `const { openCheckout, MPCheckoutModal } = useMPCheckout()`
-4. **Substituir handlers** (`handlePagarmeCheckout`, `handlePaymentMethodSelected`, etc.) por chamadas diretas a `openCheckout(slug)`
-5. **Remover modais** (`<PreCheckoutModal>`, `<PaymentMethodModal>`, `<CheckoutCustomerModal>`) e adicionar `<MPCheckoutModal />`
-6. **Manter os mesmos slugs** de produto — cada botão continua enviando o mesmo slug que já envia hoje
+### 3. Substituir `handleCreditPurchase`
+O handler complexo (linhas 125-159) que verifica perfil, abre PreCheckoutModal e PaymentMethodModal será substituído por uma chamada direta a `openCheckout(slug)`:
+```tsx
+// Antes: handleCreditPurchase(slug) → profile check → modal chain → invokeCheckout
+// Depois: openCheckout(slug) → MPEmailModal → redirectToMPCheckout
+```
+
+### 4. Atualizar botões de crédito (linha 865)
+```tsx
+// Antes:
+onClick={() => handleCreditPurchase(plan.slug)}
+disabled={isLoading || !!pixLoading || isCheckoutSubmitting}
+
+// Depois:
+onClick={() => openCheckout(plan.slug)}
+```
+Remover estado `isLoading` / `pixLoading` dos botões de crédito (o loading agora é controlado internamente pelo hook).
+
+### 5. Adicionar `<MPCheckoutModal />` no JSX
+Colocar o componente do modal antes do fechamento do `</div>` principal.
+
+### 6. Limpeza parcial
+Como os planos de assinatura ainda usam Pagar.me, **manter** os imports e estados do fluxo Pagar.me (`PreCheckoutModal`, `PaymentMethodModal`, `invokeCheckout`, etc.). Remover apenas:
+- A função `handleCreditPurchase` (substituída por `openCheckout`)
+- O estado `pixLoading` (usado apenas nos créditos)
+- O loading visual do Loader2 nos cards de crédito (o hook cuida disso internamente)
+
+Os modais `PreCheckoutModal` e `PaymentMethodModal` continuam sendo usados pelos planos de assinatura.
 
 ## O que NÃO muda
+- Slugs dos produtos (mesmos 3 slugs)
+- Webhook e ativação de créditos (já configurado no `webhook-mercadopago`)
+- Meta Pixel/CAPI (já integrado no `create-mp-checkout`)
+- UTMs (coletados automaticamente pelo hook)
+- Fluxo de assinaturas (continua Pagar.me por enquanto)
+- Todo o layout visual dos cards de crédito
 
-- **Slugs de produto** — cada botão mantém exatamente o mesmo slug
-- **Tabela `mp_products**` — os produtos já devem existir lá (será verificado antes de implementar)
-- **Webhook e ativação** — o `webhook-mercadopago` já processa pagamentos e ativa assinaturas/pacotes da mesma forma
-- **Meta Pixel / CAPI** — já integrado no `create-mp-checkout`
-- **UTMs** — já coletados automaticamente pelo `useMPCheckout` → `redirectToMPCheckout`
-- **Lógica de fallback Greenn** — links Greenn para LATAM continuam funcionando como estão
-
-## Pré-requisito: Produtos no banco
-
-Antes de implementar, preciso verificar se todos os slugs do Pagar.me (ex: `pack4-6meses`, `vol1-membro-vitalicio`, `starter-mensal`, etc.) já existem na tabela `mp_products` com preço e `is_active = true`. Se não existirem, precisarão ser criados via INSERT.
-
-## Ordem de execução
-
-Você escolhe quais páginas migrar primeiro. A implementação de cada uma é independente e leva poucos minutos — é uma substituição mecânica sem reconstrução de lógica.  
-  
-voce vai começar trocando todos os checkouts da pagina planos-upscaler-arcano para o mercado pago seguindo essa mesma logica. mas antes voce vai verificar todos os slugs do [pagar.me](http://pagar.me) e ver se ja existem na tabela do mercado pago e se nao existir criar.
