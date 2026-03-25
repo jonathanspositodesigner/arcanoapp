@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Zap, Layers, Check, X, Shield, Star, ChevronDown, Rocket, Sparkles, Clock, ArrowRight, Timer } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { Zap, Layers, Check, X, Shield, Star, ChevronDown, Rocket, Sparkles, Clock, ArrowRight, Timer, Play } from "lucide-react";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
 
 // Countdown to March 27, 2026 23:59:59 BRT (UTC-3)
@@ -113,17 +113,7 @@ const UpgradeUpscalerV3 = () => {
           </FadeIn>
 
           {/* VSL VIDEO */}
-          <div className="w-full max-w-3xl mx-auto mb-10 rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-fuchsia-500/10 bg-black">
-            <div className="relative w-full aspect-video">
-              <iframe
-                className="absolute inset-0 w-full h-full"
-                src="https://www.youtube.com/embed/0Jy8hF7OCBw?rel=0&modestbranding=1"
-                title="Upscaler Arcano V3"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </div>
+          <YouTubeFacade videoId="0Jy8hF7OCBw" />
 
           <FadeIn delay={250} duration={400}>
             <div className="flex flex-wrap justify-center items-center md:gap-0 md:divide-x md:divide-white/10 mb-10 gap-[5px]">
