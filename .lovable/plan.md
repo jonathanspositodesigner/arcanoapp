@@ -1,139 +1,102 @@
 
 
-# Plano: Migrar Checkouts de Assinaturas para Mercado Pago + Substituir Cobranças Pagar.me por MP
+# Auditoria: Fluxos de Assinatura e Emails — Mercado Pago
 
-## Contexto e Pesquisa
+## Resumo Geral
 
-### Mercado Pago Subscriptions API — Resultado da Pesquisa
+O sistema está **bem estruturado** na maior parte, mas encontrei **3 problemas** que precisam ser corrigidos antes do deploy e **2 observações** importantes.
 
-O Mercado Pago oferece **assinaturas recorrentes** via API `/preapproval`:
+---
 
-**Cartão de Crédito (Recorrência Automática):**
-- Criar assinatura com `card_token_id` + `status: "authorized"` = MP cobra automaticamente a cada ciclo
-- Suporta `frequency_type: "months"` ou `"days"`, `transaction_amount`, `start_date`, `end_date`
-- O MP gerencia tentativas de cobrança, notificações e cancelamento
-- Webhooks de pagamento chegam normalmente via `payment` notification
+## Fluxos por Tipo de Pagamento
 
-**Sem Cartão (Checkout Link — "pending"):**
-- Criar assinatura com `status: "pending"` (sem `card_token_id`) → MP retorna `init_point` (URL de checkout)
-- O cliente acessa o link, escolhe cartão ou outro método, e o MP passa a cobrar automaticamente
-- **PIX Recorrente (Pix Automático)**: Lançado em Junho/2025 pelo Banco Central. O Mercado Pago **ainda NÃO suporta** Pix Automático como método de recorrência nas suas APIs. Apenas cartão de crédito é suportado para cobrança automática recorrente.
+### 1. Créditos Avulsos (creditos-1500, creditos-4200, creditos-14000)
+**Status: ✅ OK**
+- Frontend: `openCheckout(slug)` → MPEmailModal → `redirectToMPCheckout`
+- Webhook: Adiciona créditos via `add_lifetime_credits`, concede acesso ao pack
+- Estorno: Revoga créditos via `revoke_lifetime_credits_on_refund`
+- Email de compra: Enviado via SendPulse com template correto para `type: 'credits'`
 
-### Fluxo Atual das Assinaturas (Pagar.me)
-1. **Frontend (Planos2.tsx)**: `handleSubscriptionPurchase` → verifica perfil → `PreCheckoutModal` (coleta nome/CPF/tel/endereço) → `PaymentMethodModal` (PIX ou Cartão) → `invokeCheckout` → redireciona para checkout hospedado Pagar.me
-2. **Backend**: `create-pagarme-checkout` gera order na `asaas_orders` + link checkout Pagar.me
-3. **Webhook**: `webhook-pagarme` ativa plano, cria subscription Pagar.me recorrente (para cartão)
-4. **Cobrança PIX**: `process-billing-reminders` envia sequência de 6 emails com links Pagar.me para renovação
-5. **Recovery emails**: `send-pix-recovery-email` envia emails para ordens pendentes com checkout Pagar.me
-6. **Estorno**: `refund-pagarme` cancela subscription Pagar.me e revoga acesso
+### 2. Assinaturas (starter/pro/ultimate/unlimited × mensal/anual)
+**Status: ✅ OK (com ressalvas)**
+- Frontend: `handleSubscriptionPurchase(planName)` → monta slug correto → `openCheckout(slug)`
+- Todos os 8 slugs existem na `mp_products` com preços e `is_active = true`
+- Webhook: Faz upsert em `planos2_subscriptions` com config correta (créditos, image/video, cost_multiplier)
+- Reset de créditos via `reset_upscaler_credits`
+- Expiração: 30 dias (mensal) ou 365 dias (anual)
+- Estorno: Reset para plano `free` + zera créditos
 
-### O que PRECISA mudar
+### 3. Emails de Cobrança Recorrente (process-billing-reminders)
+**Status: ✅ OK**
+- Já migrado para Mercado Pago: função `createRenewalCheckout` usa `MERCADOPAGO_ACCESS_TOKEN`
+- Gera `preferences` no MP e retorna `init_point`
+- Templates do banco (`renewal_email_templates`) com placeholders funcionando
+- Controle de dedup, blacklist, stopped_reason tudo mantido
 
-```text
-┌─────────────────────────┐     ┌──────────────────────────┐
-│   FLUXO ATUAL           │     │   FLUXO NOVO             │
-│                         │     │                          │
-│ Frontend                │     │ Frontend                 │
-│  PreCheckoutModal       │ ──▶ │  useMPCheckout (hook)    │
-│  PaymentMethodModal     │     │  MPEmailModal            │
-│  invokeCheckout         │     │  redirectToMPCheckout    │
-│                         │     │                          │
-│ Edge Functions          │     │ Edge Functions           │
-│  create-pagarme-checkout│ ──▶ │  create-mp-checkout      │
-│  webhook-pagarme (subs) │ ──▶ │  webhook-mercadopago     │
-│  process-billing-reminders│──▶│  (gera checkout MP)      │
-│  send-pix-recovery-email│ ──▶ │  (gera checkout MP)      │
-│  refund-pagarme (cancel)│ ──▶ │  (cancel via MP API)     │
-└─────────────────────────┘     └──────────────────────────┘
+### 4. Recovery Emails (send-pix-recovery-email)
+**Status: ⚠️ PROBLEMA** — veja abaixo
+
+---
+
+## Problemas Encontrados
+
+### 🔴 Problema 1: `send-pix-recovery-email` busca na tabela `asaas_orders`
+
+**Arquivo:** `supabase/functions/send-pix-recovery-email/index.ts` (linha 234)
+
+A função busca ordens pendentes na tabela **`asaas_orders`** (tabela do Pagar.me), mas as novas compras via Mercado Pago são salvas na tabela **`mp_orders`**. Isso significa que:
+- Ordens pendentes do Mercado Pago **nunca serão encontradas** por esta função
+- A função só recuperaria ordens antigas do Pagar.me (que não existem mais)
+
+**Correção necessária:** Mudar a query para buscar em `mp_orders` em vez de `asaas_orders`.
+
+### 🔴 Problema 2: `process-billing-reminders` busca produto por `plan_slug` sem filtrar `billing_period`
+
+**Arquivo:** `supabase/functions/process-billing-reminders/index.ts` (linha 460-466)
+
+```typescript
+.eq('plan_slug', sub.plan_slug)  // ex: 'pro'
+.eq('is_active', true)
+.limit(1)
+.maybeSingle()
 ```
 
----
+O `plan_slug` na `planos2_subscriptions` é armazenado como `starter`, `pro`, etc. (sem sufixo mensal/anual). A query busca na `mp_products` por `plan_slug = 'pro'`, mas existem **4 produtos** com `plan_slug = 'pro'`:
+- `plano-pro-mensal` (R$39,90)
+- `plano-pro-anual` (R$406,80)
+- `upscaler-arcano-pro` (R$37,00, tipo credits)
+- `landing-pro-avulso` (R$37,00, tipo landing_bundle)
 
-## Etapas de Implementação
+O `limit(1)` retorna **qualquer um** deles — podendo gerar o checkout com preço **errado** (ex: cobrar R$406,80 de um plano mensal, ou R$37,00 de um pack avulso).
 
-### Etapa 1: Migrar checkout de assinaturas no Frontend (Planos2.tsx)
+**Correção necessária:** Adicionar filtro `.eq('type', 'subscription')` e idealmente também filtrar por `billing_period` (armazenando o período na `planos2_subscriptions` ou deduzindo pelo valor do `expires_at`).
 
-Substituir o fluxo `handleSubscriptionPurchase` → `PreCheckoutModal` → `PaymentMethodModal` → `invokeCheckout` pelo mesmo padrão já usado nos créditos: `openCheckout(slug)` via `useMPCheckout`.
+### 🟡 Problema 3: URLs de `back_urls` inconsistentes
 
-**Mudanças:**
-- `handleSubscriptionPurchase` passa a chamar `openCheckout(slug)` diretamente
-- Remover `PreCheckoutModal`, `PaymentMethodModal`, `invokeCheckout` e todos os estados associados (`showPreCheckout`, `preCheckoutSlug`, `pendingSlug`, `pendingProfile`, `showPaymentMethodModal`, `isSubscriptionFlow`)
-- Remover import de `checkoutFetch.ts` e `PreCheckoutModal`
-- O `MPEmailModal` coleta nome/email/CPF (suficiente para o MP)
+Os `back_urls` variam entre as funções:
+- **`create-mp-checkout`**: Usa `arcanoapp.lovable.app`
+- **`process-billing-reminders`**: Usa `arcanoapp.voxvisual.com.br`
+- **`send-pix-recovery-email`**: Usa `arcanoapp.voxvisual.com.br`
 
-**Pré-requisito**: Validar que os slugs de assinatura (`plano-starter-mensal`, `plano-pro-mensal`, etc.) existem na tabela `mp_products` com `is_active = true`. Se não existirem, criar via migration.
-
-### Etapa 2: Verificar/criar produtos de assinatura na mp_products
-
-Consultar a tabela `mp_products` para confirmar que todos os 8 slugs de assinatura existem:
-- `plano-starter-mensal`, `plano-starter-anual`
-- `plano-pro-mensal`, `plano-pro-anual`
-- `plano-ultimate-mensal`, `plano-ultimate-anual`
-- `plano-unlimited-mensal`, `plano-unlimited-anual`
-
-Cada um precisa ter: `type = 'subscription'`, `plan_slug` (ex: `starter`), `billing_period` (ex: `mensal`), `price`, `is_active = true`.
-
-Se faltarem, criar via migration SQL.
-
-### Etapa 3: Expandir webhook-mercadopago para ativar assinaturas
-
-O webhook-mercadopago **já processa** packs, créditos e upgrades. Precisa ser expandido para processar `type = 'subscription'` com a mesma lógica que existe no `webhook-pagarme`:
-
-- Quando `product.type === 'subscription'` e `product.plan_slug`:
-  - Upsert em `planos2_subscriptions` com `credits_per_month`, `has_image_generation`, etc.
-  - Reset de créditos via RPC `reset_upscaler_credits`
-  - Definir `expires_at` (30 ou 365 dias)
-  - **NÃO cria subscription recorrente no MP** (primeira versão = pagamento avulso por ciclo, igual ao PIX atual)
-
-### Etapa 4: Migrar process-billing-reminders para gerar checkouts MP
-
-Substituir a função `createRenewalCheckout` (que chama Pagar.me API) por uma que chama `create-mp-checkout` ou diretamente a API de preferências do MP:
-
-- Em vez de criar ordem Pagar.me → criar preferência MP (como já faz `create-mp-checkout`)
-- A URL retornada (`init_point`) substitui o `checkoutUrl` do Pagar.me nos emails
-- Remover seção PIX copia-e-cola dos emails (MP não retorna isso no checkout hospedado)
-- Manter toda a lógica de controle (dedup, blacklist, day_offset, templates do DB)
-
-### Etapa 5: Migrar send-pix-recovery-email para checkouts MP
-
-Mesma lógica: substituir `generateCheckoutUrl` (Pagar.me) por criação de preferência MP.
-
-### Etapa 6: Expandir estorno (webhook-mercadopago) para assinaturas
-
-O refund no webhook-mercadopago **já funciona** para packs e créditos. Adicionar lógica para `type === 'subscription'`:
-- Reset para plano free em `planos2_subscriptions`
-- Remover créditos do ciclo atual
-
-### Etapa 7: Limpeza
-
-- Remover `checkoutFetch.ts` (não mais usado)
-- Remover `PreCheckoutModal` se não for usado em nenhuma outra página
-- Remover `PaymentMethodModal` se não for usado em nenhuma outra página
-- Remover referência a `PAGARME_SECRET_KEY` nas funções migradas
+Não é um erro funcional (ambos provavelmente funcionam), mas é uma inconsistência que pode confundir. Idealmente padronizar para um só domínio.
 
 ---
 
-## Sobre Recorrência Automática com Cartão (MP Preapproval)
+## Observações
 
-**Abordagem recomendada para V1**: Manter o mesmo modelo de cobrança manual via email que já funciona com PIX. O Mercado Pago Checkout Pro gera um link de pagamento por ciclo, e a sequência de emails (`process-billing-reminders`) envia os lembretes. Isso é mais simples e já está provado no sistema atual.
+### 📌 Comentário desatualizado
+`process-billing-reminders` linha 478 tem o comentário `// 9. Create Pagar.me PIX checkout`, mas a função já chama o Mercado Pago. É cosmético, não afeta funcionamento.
 
-**V2 futura (opcional)**: Implementar `POST /preapproval` do MP para criar assinatura recorrente automática no cartão. Isso eliminaria a necessidade dos emails de cobrança para pagamentos com cartão, mas requer:
-- Coletar `card_token_id` (exige integrar MP.js no frontend para tokenizar cartão)
-- Processar webhooks de subscription (`preapproval`) além dos de `payment`
-- Gerenciar ciclo de vida da subscription (pausar, cancelar, atualizar cartão)
-
-**PIX Recorrente**: O Pix Automático foi lançado pelo Banco Central em junho/2025, mas o Mercado Pago **ainda não implementou** suporte a Pix Automático nas suas APIs. Portanto, para PIX a cobrança continua sendo via email com link de checkout.
+### 📌 Email de compra para assinaturas
+O email de compra enviado pelo webhook (`buildPurchaseEmailHtml`) trata assinaturas com o bloco genérico "Acesso Vitalício Ativado" (o `else` final). Isso pode confundir o cliente que comprou um **plano mensal** — ele veria "Acesso Vitalício" quando na verdade é mensal. Idealmente adicionar um bloco específico para `type === 'subscription'`.
 
 ---
 
-## O que NÃO muda
+## Plano de Correções (para implementar)
 
-- Slugs dos produtos (mesmos nomes)
-- Tabelas `planos2_subscriptions`, `upscaler_credit_transactions`
-- RPC `reset_upscaler_credits`, `add_lifetime_credits`
-- Lógica de renovação de créditos via `cron-reset-credits`
-- Templates de email no DB (`renewal_email_templates`)
-- Meta Pixel/CAPI (já integrado no `create-mp-checkout` e `webhook-mercadopago`)
-- UTMs e UTMify
-- Todo o layout visual da página Planos2
+1. **`send-pix-recovery-email`**: Trocar query de `asaas_orders` para `mp_orders`
+2. **`process-billing-reminders`**: Adicionar `.eq('type', 'subscription')` e filtro de `billing_period` na query de produtos
+3. **Email de compra**: Adicionar bloco específico para assinaturas no `buildPurchaseEmailHtml`
+4. **Comentários**: Atualizar referências a "Pagar.me" para "Mercado Pago"
+5. **URLs**: Padronizar `back_urls` (opcional)
 
