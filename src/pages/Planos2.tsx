@@ -26,6 +26,7 @@ import { invokeCheckout, preWarmCheckout } from "@/lib/checkoutFetch";
 import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 import HomeAuthModal from "@/components/HomeAuthModal";
 import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
+import { useMPCheckout } from "@/hooks/useMPCheckout";
 
 import { usePlanos2Access } from "@/hooks/usePlanos2Access";
 import { toast } from "sonner";
@@ -55,6 +56,7 @@ const Planos2 = () => {
   const [isSubscriptionFlow, setIsSubscriptionFlow] = useState(false);
   const { planSlug: activePlanSlug } = usePlanos2Access(userId || undefined);
   const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
+  const { openCheckout, MPCheckoutModal } = useMPCheckout({ source_page: "planos-2" });
 
   // Pre-warm checkout edge function after 3s
   useEffect(() => {
@@ -122,40 +124,8 @@ const Planos2 = () => {
     };
   };
 
-  const handleCreditPurchase = async (slug: string) => {
-    if (!startCheckout()) return;
-    
-    if (!userId) {
-      setPreCheckoutSlug(slug);
-      setShowPreCheckout(true);
-      endCheckout();
-      return;
-    }
-
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
-        .eq('id', userId)
-        .single();
-
-      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf 
-        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
-
-      if (isProfileComplete) {
-        setPendingSlug(slug);
-        setPendingProfile(profile);
-        setIsSubscriptionFlow(false);
-        setShowPaymentMethodModal(true);
-        endCheckout();
-      } else {
-        setPreCheckoutSlug(slug);
-        setShowPreCheckout(true);
-        endCheckout();
-      }
-    } catch {
-      endCheckout();
-    }
+  const handleCreditPurchase = (slug: string) => {
+    openCheckout(slug);
   };
 
   const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
@@ -863,17 +833,9 @@ const Planos2 = () => {
 
                   <Button
                     onClick={() => handleCreditPurchase(plan.slug)}
-                    disabled={isLoading || !!pixLoading || isCheckoutSubmitting}
-                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5 disabled:opacity-70`}
+                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5`}
                   >
-                    {isLoading ? (
-                      <span className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Gerando pagamento...
-                      </span>
-                    ) : (
-                      'Comprar Agora'
-                    )}
+                    Comprar Agora
                   </Button>
                 </div>
               </Card>
@@ -954,6 +916,8 @@ const Planos2 = () => {
         userId={userId}
         productSlug={preCheckoutSlug || undefined}
       />
+
+      <MPCheckoutModal />
 
       {/* Signup Modal for Free plan */}
       <HomeAuthModal
