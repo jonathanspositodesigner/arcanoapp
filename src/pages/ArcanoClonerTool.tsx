@@ -121,6 +121,13 @@ const ArcanoClonerTool: React.FC = () => {
   const [isRefining, setIsRefining] = useState(false);
   const [refinementHistory, setRefinementHistory] = useState<RefinementVersion[]>([]);
   const [selectedHistoryIndex, setSelectedHistoryIndex] = useState(0);
+  const [refineJobId, setRefineJobId] = useState<string | null>(null);
+
+  // Refs for refine callback (avoid stale closures)
+  const outputImageRef = useRef<string | null>(null);
+  const refinementHistoryRef = useRef<RefinementVersion[]>([]);
+  outputImageRef.current = outputImage;
+  refinementHistoryRef.current = refinementHistory;
 
   const canProcess = userImage && referenceImage && status === 'idle';
   const isProcessing = status === 'uploading' || status === 'processing' || status === 'waiting';
@@ -179,7 +186,50 @@ const ArcanoClonerTool: React.FC = () => {
     onGlobalStatusChange: updateJobStatus,
   });
 
-  // Notification token recovery (when user clicks push notification)
+  // Refine job sync (uses image_generator table)
+  useJobStatusSync({
+    jobId: refineJobId,
+    toolType: 'image_generator',
+    enabled: isRefining && !!refineJobId,
+    onStatusChange: useCallback((update) => {
+      console.log('[ArcanoCloner] Refine job status update:', update);
+      if (update.status === 'completed' && update.outputUrl) {
+        const newUrl = update.thumbnailUrl || update.outputUrl;
+        const history = refinementHistoryRef.current;
+        const newIndex = history.length === 0 ? 1 : history.length;
+        const newVersion: RefinementVersion = { url: newUrl, label: `Refinamento ${newIndex}` };
+
+        setRefinementHistory(prev => {
+          const updated = prev.length === 0
+            ? [{ url: outputImageRef.current!, label: 'Original' }, newVersion]
+            : [...prev, newVersion];
+          setSelectedHistoryIndex(updated.length - 1);
+          return updated;
+        });
+
+        setOutputImage(newUrl);
+        setRefineMode(false);
+        setRefinePrompt('');
+        setRefineReferenceFile(null);
+        setRefineReferencePreview(null);
+        setIsRefining(false);
+        setRefineJobId(null);
+        endSubmit();
+        playNotificationSound();
+        refetchCredits();
+        toast.success('Imagem refinada com sucesso!');
+      } else if (update.status === 'failed' || update.status === 'cancelled') {
+        setIsRefining(false);
+        setRefineJobId(null);
+        endSubmit();
+        refetchCredits();
+        const friendlyError = getAIErrorMessage(update.errorMessage);
+        toast.error(friendlyError.message);
+      }
+    }, [endSubmit, playNotificationSound, refetchCredits]),
+    onGlobalStatusChange: updateJobStatus,
+  });
+
   useNotificationTokenRecovery({
     userId: user?.id,
     toolTable: 'arcano_cloner_jobs',
@@ -605,7 +655,9 @@ const ArcanoClonerTool: React.FC = () => {
     setRefineReferencePreview(null);
     setIsRefining(false);
     setRefinementHistory([]);
+    setRefinementHistory([]);
     setSelectedHistoryIndex(0);
+    setRefineJobId(null);
   };
 
   const handleNewImage = () => {
@@ -620,7 +672,6 @@ const ArcanoClonerTool: React.FC = () => {
     setFailedAtStep(null);
     setDebugErrorMessage(null);
     clearGlobalJob();
-    // Clear refine state
     setRefineMode(false);
     setRefinePrompt('');
     setRefineReferenceFile(null);
@@ -628,50 +679,12 @@ const ArcanoClonerTool: React.FC = () => {
     setIsRefining(false);
     setRefinementHistory([]);
     setSelectedHistoryIndex(0);
+    setRefineJobId(null);
   };
 
-  // Convert image URL to base64 using canvas to avoid CORS fetch issues
-  const imageUrlToBase64 = async (url: string): Promise<{ base64: string; mimeType: string }> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) return reject(new Error('Canvas context failed'));
-          ctx.drawImage(img, 0, 0);
-          const dataUrl = canvas.toDataURL('image/png');
-          const base64 = dataUrl.split(',')[1];
-          resolve({ base64, mimeType: 'image/png' });
-        } catch (e) {
-          reject(e);
-        }
-      };
-      img.onerror = () => reject(new Error('Falha ao carregar imagem para refinamento'));
-      img.src = url;
-    });
-  };
-
-  const fileToBase64 = async (file: File): Promise<{ base64: string; mimeType: string }> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
-        const [header, base64] = dataUrl.split(',');
-        const mimeType = header.match(/:(.*?);/)?.[1] || 'image/png';
-        resolve({ base64, mimeType });
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
-  // Handle refine submission
+  // Handle refine submission (via RunningHub queue)
   const handleRefine = async () => {
-    if (!startSubmit()) return; // Synchronous guard against double-clicks
+    if (!startSubmit()) return;
     
     if (!outputImage || !refinePrompt.trim() || !user?.id) {
       endSubmit();
@@ -679,6 +692,17 @@ const ArcanoClonerTool: React.FC = () => {
     }
 
     const REFINE_COST = 30;
+
+    // Check active job
+    const activeCheck = await checkActiveJob(user.id);
+    if (activeCheck.hasActiveJob && activeCheck.activeTool) {
+      setActiveToolName(activeCheck.activeTool);
+      setActiveJobId(activeCheck.activeJobId);
+      setActiveStatus(activeCheck.activeStatus);
+      setShowActiveJobModal(true);
+      endSubmit();
+      return;
+    }
 
     const freshCredits = await checkBalance();
     if (freshCredits < REFINE_COST) {
@@ -691,74 +715,74 @@ const ArcanoClonerTool: React.FC = () => {
     setIsRefining(true);
 
     try {
-      // Get current output as base64
-      const currentImage = await imageUrlToBase64(outputImage);
-      const referenceImages: { base64: string; mimeType: string }[] = [currentImage];
+      // Build reference URLs — outputImage is already a storage URL
+      const referenceImageUrls: string[] = [outputImage];
 
-      // Add extra reference if provided
+      // Upload extra reference if provided
       if (refineReferenceFile) {
-        const extraRef = await fileToBase64(refineReferenceFile);
-        referenceImages.push(extraRef);
+        const compressed = await compressImage(refineReferenceFile);
+        const extraUrl = await uploadToStorage(compressed, 'refine-ref', user.id);
+        referenceImageUrls.push(extraUrl);
       }
 
-      // If this is the first refinement, add original to history
+      // If first refinement, seed history with original
       if (refinementHistory.length === 0) {
         setRefinementHistory([{ url: outputImage, label: 'Original' }]);
       }
 
-      const { data, error } = await supabase.functions.invoke('generate-image', {
-        body: {
+      // Create job in image_generator_jobs
+      const { data: job, error: jobError } = await supabase
+        .from('image_generator_jobs')
+        .insert({
+          session_id: sessionIdRef.current,
+          user_id: user.id,
+          status: 'pending',
           prompt: refinePrompt.trim(),
-          model: 'pro',
           aspect_ratio: aspectRatio,
-          reference_images: referenceImages,
+          model: 'refine',
+        } as any)
+        .select('id')
+        .single();
+
+      if (jobError || !job) throw new Error(jobError?.message || 'Erro ao criar job de refinamento');
+
+      setRefineJobId(job.id);
+      registerJob(job.id, 'Gerar Imagem', 'pending');
+
+      // Start via edge function
+      const { data: runResult, error: runError } = await supabase.functions.invoke('runninghub-image-generator/run', {
+        body: {
+          jobId: job.id,
+          referenceImageUrls,
+          aspectRatio,
+          creditCost: REFINE_COST,
+          prompt: refinePrompt.trim(),
           source: 'arcano_cloner_refine',
         },
       });
 
-      if (error) {
-        // Try to extract real error from edge function response
-        let realMessage = 'Erro ao refinar imagem. Tente novamente.';
-        try {
-          const ctx = (error as any)?.context;
-          if (ctx && typeof ctx.json === 'function') {
-            const body = await ctx.json();
-            if (body?.error) realMessage = body.error;
-          }
-        } catch { /* ignore extraction failure */ }
-        throw new Error(realMessage);
+      if (runError) throw new Error(runError.message || 'Erro ao iniciar refinamento');
+
+      if (runResult?.code === 'INSUFFICIENT_CREDITS') {
+        setNoCreditsReason('insufficient');
+        setShowNoCreditsModal(true);
+        setIsRefining(false);
+        setRefineJobId(null);
+        endSubmit();
+        return;
       }
-      if (data?.error) throw new Error(data.error);
 
-      const newUrl = data?.output_url;
-      if (!newUrl) throw new Error('Nenhuma imagem gerada. Tente novamente.');
+      if (runResult?.error && !runResult?.success && !runResult?.queued) {
+        throw new Error(runResult.error);
+      }
 
-      const newIndex = refinementHistory.length === 0 ? 1 : refinementHistory.length;
-      const newVersion: RefinementVersion = {
-        url: newUrl,
-        label: `Refinamento ${newIndex}`,
-      };
+      // Now wait for useJobStatusSync to deliver the result via Realtime
 
-      setRefinementHistory(prev => {
-        const updated = prev.length === 0
-          ? [{ url: outputImage, label: 'Original' }, newVersion]
-          : [...prev, newVersion];
-        setSelectedHistoryIndex(updated.length - 1);
-        return updated;
-      });
-
-      setOutputImage(newUrl);
-      setRefineMode(false);
-      setRefinePrompt('');
-      setRefineReferenceFile(null);
-      setRefineReferencePreview(null);
-      refetchCredits();
-      toast.success('Imagem refinada com sucesso!');
     } catch (err: any) {
       console.error('[ArcanoCloner] Refine error:', err);
       toast.error(err.message || 'Erro ao refinar imagem');
-    } finally {
       setIsRefining(false);
+      setRefineJobId(null);
       endSubmit();
     }
   };
