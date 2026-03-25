@@ -151,7 +151,7 @@ const FerramentasIAAplicativo = () => {
 
   // Override names for display
   const toolNameOverrides: Record<string, string> = {
-    "upscaller-arcano": "Upscaler Arcano V3",
+    "upscaller-arcano": "Upscaler Arcano App",
     "upscaller-arcano-video": "Upscaler Arcano V3 (vídeo)",
     "ia-muda-pose": "Pose Changer",
     "ia-muda-roupa": "Veste AI",
