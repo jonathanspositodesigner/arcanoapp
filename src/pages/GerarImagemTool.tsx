@@ -127,7 +127,21 @@ const GerarImagemTool = () => {
   });
 
   // Notification token recovery
-  // Notification token recovery - skip for now (needs image_generator_jobs in SupportedToolTable)
+  useNotificationTokenRecovery({
+    userId: user?.id,
+    toolTable: 'image_generator_jobs',
+    onRecovery: (result) => {
+      if (result.outputUrl) {
+        setOutputUrl(result.outputUrl);
+        setStatus('completed');
+      }
+      if (result.jobId) setJobId(result.jobId);
+      if (result.status === 'failed') {
+        setStatus('failed');
+        setErrorMessage('Falha na geração');
+      }
+    },
+  });
 
   // Reconcile timer
   useEffect(() => {
