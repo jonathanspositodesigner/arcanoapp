@@ -33,7 +33,7 @@ serve(async (req) => {
   }
 
   try {
-    const { product_slug, user_email, user_name, user_document, utm_data, fbp, fbc, user_agent: clientUA, event_id: clientEventId } = await req.json()
+    const { product_slug, user_email, user_name, user_document, utm_data, fbp, fbc, user_agent: clientUA, event_id: clientEventId, source_page } = await req.json()
 
     if (!product_slug || !user_email) {
       return new Response(JSON.stringify({ error: 'product_slug e user_email são obrigatórios' }), {
@@ -164,8 +164,12 @@ serve(async (req) => {
       },
       back_urls: {
         success: 'https://arcanoapp.lovable.app/sucesso-compra?gateway=mercadopago',
-        failure: 'https://arcanoapp.lovable.app/planos-upscaler-arcano-69?mp_status=failure',
-        pending: 'https://arcanoapp.lovable.app/planos-upscaler-arcano-69?mp_status=pending'
+        failure: source_page === 'upgrade-v3'
+          ? 'https://arcanoapp.lovable.app/upgrade-upscaler-v3?mp_status=failure'
+          : 'https://arcanoapp.lovable.app/planos-upscaler-arcano-69?mp_status=failure',
+        pending: source_page === 'upgrade-v3'
+          ? 'https://arcanoapp.lovable.app/upgrade-upscaler-v3?mp_status=pending'
+          : 'https://arcanoapp.lovable.app/planos-upscaler-arcano-69?mp_status=pending'
       },
       auto_return: 'approved',
       notification_url: `${supabaseUrl}/functions/v1/webhook-mercadopago`
