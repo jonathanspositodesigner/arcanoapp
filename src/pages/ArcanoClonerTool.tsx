@@ -121,6 +121,13 @@ const ArcanoClonerTool: React.FC = () => {
   const [isRefining, setIsRefining] = useState(false);
   const [refinementHistory, setRefinementHistory] = useState<RefinementVersion[]>([]);
   const [selectedHistoryIndex, setSelectedHistoryIndex] = useState(0);
+  const [refineJobId, setRefineJobId] = useState<string | null>(null);
+
+  // Refs for refine callback (avoid stale closures)
+  const outputImageRef = useRef<string | null>(null);
+  const refinementHistoryRef = useRef<RefinementVersion[]>([]);
+  outputImageRef.current = outputImage;
+  refinementHistoryRef.current = refinementHistory;
 
   const canProcess = userImage && referenceImage && status === 'idle';
   const isProcessing = status === 'uploading' || status === 'processing' || status === 'waiting';
