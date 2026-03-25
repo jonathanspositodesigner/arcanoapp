@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Zap, Layers, Check, X, Shield, ChevronDown, Rocket, Sparkles, Clock, ArrowRight, Timer, Play, ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
 import { useMPCheckout } from "@/hooks/useMPCheckout";
