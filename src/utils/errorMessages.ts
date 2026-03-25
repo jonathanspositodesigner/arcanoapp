@@ -51,10 +51,18 @@ export function getAIErrorMessage(errorMessage: string | null): {
   }
   
   // Sem output (webhook sem resultado)
-  if (error.includes('no output') || error.includes('no result') || error.includes('empty result')) {
+  if (error.includes('no output') || error.includes('no result') || error.includes('empty result') || error.includes('generation error')) {
     return {
       message: 'Processamento não retornou resultado',
-      solution: 'Aguarde 5 minutos e tente novamente.'
+      solution: 'Seus créditos foram estornados. Tente novamente com outro prompt ou imagem.'
+    };
+  }
+
+  // Gemini 429 (legacy BYOK users)
+  if (error.includes('gemini api error 429') || error.includes('gemini api error 503')) {
+    return {
+      message: 'API do Google temporariamente indisponível',
+      solution: 'A API está com limite de uso. Aguarde 2-3 minutos e tente novamente.'
     };
   }
   
