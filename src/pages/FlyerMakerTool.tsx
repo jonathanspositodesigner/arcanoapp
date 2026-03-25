@@ -161,7 +161,50 @@ const FlyerMakerTool: React.FC = () => {
     onGlobalStatusChange: updateJobStatus,
   });
 
-  useNotificationTokenRecovery({
+  // Refine job sync (uses image_generator table)
+  useJobStatusSync({
+    jobId: refineJobId,
+    toolType: 'image_generator',
+    enabled: isRefining && !!refineJobId,
+    onStatusChange: useCallback((update) => {
+      console.log('[FlyerMaker] Refine job status update:', update);
+      if (update.status === 'completed' && update.outputUrl) {
+        const newUrl = update.thumbnailUrl || update.outputUrl;
+        const history = refinementHistoryRef.current;
+        const newIndex = history.length === 0 ? 1 : history.length;
+        const newVersion: RefinementVersion = { url: newUrl, label: `Alteração ${newIndex}` };
+
+        setRefinementHistory(prev => {
+          const updated = prev.length === 0
+            ? [{ url: outputImageRef.current!, label: 'Original' }, newVersion]
+            : [...prev, newVersion];
+          setSelectedHistoryIndex(updated.length - 1);
+          return updated;
+        });
+
+        setOutputImage(newUrl);
+        setRefineMode(false);
+        setRefinePrompt('');
+        setRefineReferenceFile(null);
+        setRefineReferencePreview(null);
+        setIsRefining(false);
+        setRefineJobId(null);
+        endSubmit();
+        playNotificationSound();
+        refetchCredits();
+        toast.success('Alteração feita com sucesso!');
+      } else if (update.status === 'failed' || update.status === 'cancelled') {
+        setIsRefining(false);
+        setRefineJobId(null);
+        endSubmit();
+        refetchCredits();
+        const friendlyError = getAIErrorMessage(update.errorMessage);
+        toast.error(friendlyError.message);
+      }
+    }, [endSubmit, playNotificationSound, refetchCredits]),
+    onGlobalStatusChange: updateJobStatus,
+  });
+
     userId: user?.id,
     toolTable: 'flyer_maker_jobs',
     onRecovery: useCallback((result) => {
