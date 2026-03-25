@@ -46,7 +46,7 @@ const GerarImagemTool = () => {
   const { getCreditCost } = useAIToolSettings();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
   const { registerJob } = useAIJob();
-  const { downloadWithProgress, isDownloading, downloadProgress } = useResilientDownload();
+  const { isDownloading, progress: downloadProgress, download: resilientDownload } = useResilientDownload();
 
   const [prompt, setPrompt] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
@@ -104,7 +104,8 @@ const GerarImagemTool = () => {
         toast.success('Imagem gerada com sucesso!');
       } else if (update.status === 'failed') {
         setErrorMessage(update.errorMessage || 'Erro ao gerar imagem');
-        toast.error(getAIErrorMessage(update.errorMessage || 'Erro desconhecido'));
+        const errInfo = getAIErrorMessage(update.errorMessage || 'Erro desconhecido');
+        toast.error(errInfo.message);
         refetchCredits();
       }
     },
@@ -118,15 +119,15 @@ const GerarImagemTool = () => {
     jobId,
     toolType: 'image_generator',
     enabled: status === 'pending',
-    onOrphanDetected: () => {
+    onJobFailed: (msg: string) => {
       setStatus('failed');
-      setErrorMessage('Servidor não respondeu. Tente novamente.');
+      setErrorMessage(msg || 'Servidor não respondeu. Tente novamente.');
       refetchCredits();
     },
   });
 
   // Notification token recovery
-  useNotificationTokenRecovery('image_generator');
+  // Notification token recovery - skip for now (needs image_generator_jobs in SupportedToolTable)
 
   // Reconcile timer
   useEffect(() => {
@@ -286,7 +287,8 @@ const GerarImagemTool = () => {
         } else {
           setStatus('failed');
           setErrorMessage(result.error || 'Erro desconhecido');
-          toast.error(getAIErrorMessage(result.error || 'Erro desconhecido'));
+          const errInfo = getAIErrorMessage(result.error || 'Erro desconhecido');
+          toast.error(errInfo.message);
         }
         endSubmit();
         return;
@@ -304,7 +306,8 @@ const GerarImagemTool = () => {
       console.error('[GerarImagem] Error:', error);
       setStatus('failed');
       setErrorMessage(error.message || 'Erro ao gerar imagem');
-      toast.error(getAIErrorMessage(error.message || 'Erro desconhecido'));
+      const errInfo = getAIErrorMessage(error.message || 'Erro desconhecido');
+      toast.error(errInfo.message);
 
       // Defensive close
       if (jobId) {
@@ -351,7 +354,7 @@ const GerarImagemTool = () => {
 
   const handleDownload = () => {
     if (resultUrl) {
-      downloadWithProgress(resultUrl, `gerar-imagem-${Date.now()}.png`);
+      resilientDownload({ url: resultUrl, filename: `gerar-imagem-${Date.now()}.png` });
     }
   };
 
