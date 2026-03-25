@@ -395,7 +395,7 @@ const UpgradeUpscalerV3 = () => {
               <tbody>
                 {[
                   ["Upscale 4K com IA", true, true],
-                  ["Créditos vitalícios", true, true],
+                  ["Acesso vitalício ilimitado", true, true],
                   ["Suporte a múltiplos formatos", true, true],
                   ["Modo Turbo (< 60s)", false, true],
                   ["Upscale em Lote (10 imgs)", false, true],
@@ -593,11 +593,11 @@ const UpgradeUpscalerV3 = () => {
 
           <StaggeredAnimation className="space-y-3" staggerDelay={100}>
             {[
-              { q: "Eu perco meus créditos do V2?", a: "Não. Seus créditos continuam exatamente como estão. O V3 é um upgrade aditivo." },
+              { q: "O que muda do V2 para o V3?", a: "O V3 traz o Modo Turbo (resultados em menos de 60 segundos) e o Upscale em Lote, que permite melhorar até 10 imagens de uma vez. Tudo com a mesma qualidade do V2." },
               { q: "Preciso pagar de novo pelo V2?", a: "Não. Quem compra o V3 recebe acesso ao V2 automaticamente. Você mantém tudo." },
-              { q: "O Modo Turbo consome mais créditos?", a: "Não. O consumo de créditos é o mesmo. Só a velocidade muda." },
               { q: "Posso usar o V2 e o V3 ao mesmo tempo?", a: "Sim. Você terá acesso às duas versões e pode alternar entre elas a qualquer momento." },
-              { q: "O acesso é vitalício mesmo?", a: "Sim. Pagamento único, acesso para sempre. Sem assinaturas ou taxas recorrentes." },
+              { q: "O acesso é vitalício mesmo?", a: "Sim. Pagamento único, acesso para sempre. Sem assinaturas, sem taxas recorrentes, sem limite de uso." },
+              { q: "Funciona com qualquer tipo de imagem?", a: "Sim. O Upscaler Arcano funciona com fotos, artes digitais, logos, prints e qualquer imagem que você queira melhorar." },
             ].map((item, i) => (
               <details
                 key={i}
@@ -628,7 +628,7 @@ const UpgradeUpscalerV3 = () => {
               </span>
             </h2>
             <p className="text-white/50 text-sm mb-8">
-              O V3 está disponível agora. Seus créditos estão esperando. Seu upgrade também.
+              O V3 está disponível agora. Acesso vitalício e ilimitado. Seu upgrade te espera.
             </p>
             <button
               onClick={scrollToPlanos}
