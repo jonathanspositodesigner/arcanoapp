@@ -187,7 +187,6 @@ interface EmailData {
   benefits: string[]
   losses: string[]
   checkoutUrl: string
-  pixCopyPaste: string | null
   email: string
 }
 
@@ -207,7 +206,6 @@ function wrapEmail(subject: string, preheader: string, bodyContent: string, emai
         Renovar agora →
       </a>
     </div>
-    \${PIX_SECTION}
   </div>
   <div style="background:#150828;border-radius:0 0 20px 20px;padding:28px 40px;border:1px solid rgba(212,175,55,0.15);border-top:none;text-align:center;">
     <p style="color:#9ca3af;font-size:12px;margin:0 0 10px;">
@@ -218,15 +216,7 @@ function wrapEmail(subject: string, preheader: string, bodyContent: string, emai
   </div>
 </div>
 </body>
-</html>`.replace('${CHECKOUT_URL}', '{{CHECKOUT_URL}}').replace('${PIX_SECTION}', '{{PIX_SECTION}}')
-}
-
-function buildPixSection(pixCopyPaste: string | null): string {
-  if (!pixCopyPaste) return ''
-  return `<div style="background:rgba(255,255,255,0.06);border-radius:14px;padding:20px;margin-top:16px;border:1px solid rgba(212,175,55,0.25);text-align:center;">
-    <p style="color:#d4af37;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 12px;">Pix Copia e Cola</p>
-    <p style="color:#e2d8f0;font-size:13px;word-break:break-all;margin:0;background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;font-family:monospace;">${pixCopyPaste}</p>
-  </div>`
+</html>`.replace('${CHECKOUT_URL}', '{{CHECKOUT_URL}}')
 }
 
 function getEmailTemplateFromDb(
