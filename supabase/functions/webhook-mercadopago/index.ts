@@ -144,6 +144,12 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
       <p style="color:#60a5fa;font-size:15px;font-weight:700;margin:0 0 8px;">🎯 ${creditsAmount || ''} Créditos Adicionados!</p>
       <p style="color:#bfdbfe;font-size:13px;margin:0;line-height:1.6;">Seus créditos já estão disponíveis. Use-os no Upscaler Arcano e outras ferramentas IA!</p>
     </div>`
+  } else if (productType === 'subscription') {
+    accessBlock = `
+    <div style="background:linear-gradient(135deg,rgba(168,85,247,0.12) 0%,rgba(139,92,246,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(168,85,247,0.3);text-align:center;">
+      <p style="color:#c084fc;font-size:15px;font-weight:700;margin:0 0 8px;">🚀 Plano Ativado com Sucesso!</p>
+      <p style="color:#e9d5ff;font-size:13px;margin:0;line-height:1.6;">Seus créditos já estão disponíveis. Aproveite todas as ferramentas de IA inclusas no seu plano!</p>
+    </div>`
   } else {
     accessBlock = `
     <div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">

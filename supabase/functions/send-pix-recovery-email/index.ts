@@ -227,13 +227,13 @@ serve(async (req) => {
       });
     }
 
-    // Buscar ordens pendentes de hoje
+    // Buscar ordens pendentes de hoje (Mercado Pago)
     const todayStart = new Date();
     todayStart.setUTCHours(0, 0, 0, 0);
 
     const { data: pendingOrders, error: ordersError } = await supabase
-      .from("asaas_orders")
-      .select("id, user_email, user_name, user_cpf, user_phone, product_id, amount, status")
+      .from("mp_orders")
+      .select("id, user_email, user_name, product_id, amount, status")
       .eq("status", "pending")
       .gte("created_at", todayStart.toISOString())
       .not("user_email", "is", null);

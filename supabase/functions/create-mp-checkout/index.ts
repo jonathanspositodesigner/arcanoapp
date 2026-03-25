@@ -163,13 +163,13 @@ serve(async (req) => {
         ]
       },
       back_urls: {
-        success: 'https://arcanoapp.lovable.app/sucesso-compra?gateway=mercadopago',
+        success: 'https://arcanoapp.voxvisual.com.br/sucesso-compra?gateway=mercadopago',
         failure: source_page === 'upgrade-v3'
-          ? 'https://arcanoapp.lovable.app/upgrade-upscaler-v3?mp_status=failure'
-          : 'https://arcanoapp.lovable.app/planos-upscaler-arcano-69?mp_status=failure',
+          ? 'https://arcanoapp.voxvisual.com.br/upgrade-upscaler-v3?mp_status=failure'
+          : 'https://arcanoapp.voxvisual.com.br/planos-upscaler-arcano-69?mp_status=failure',
         pending: source_page === 'upgrade-v3'
-          ? 'https://arcanoapp.lovable.app/upgrade-upscaler-v3?mp_status=pending'
-          : 'https://arcanoapp.lovable.app/planos-upscaler-arcano-69?mp_status=pending'
+          ? 'https://arcanoapp.voxvisual.com.br/upgrade-upscaler-v3?mp_status=pending'
+          : 'https://arcanoapp.voxvisual.com.br/planos-upscaler-arcano-69?mp_status=pending'
       },
       auto_return: 'approved',
       notification_url: `${supabaseUrl}/functions/v1/webhook-mercadopago`

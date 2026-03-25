@@ -456,11 +456,13 @@ serve(async (req) => {
           continue
         }
 
-        // 8. Get product info for price
+        // 8. Get product info for price (always use mensal for renewals)
         const { data: product } = await supabase
           .from('mp_products')
           .select('price, title')
           .eq('plan_slug', sub.plan_slug)
+          .eq('type', 'subscription')
+          .eq('billing_period', 'mensal')
           .eq('is_active', true)
           .limit(1)
           .maybeSingle()
@@ -475,7 +477,7 @@ serve(async (req) => {
           continue
         }
 
-        // 9. Create Pagar.me PIX checkout
+        // 9. Create Mercado Pago checkout for renewal
         let checkoutUrl = ''
         try {
           const checkout = await createRenewalCheckout(
