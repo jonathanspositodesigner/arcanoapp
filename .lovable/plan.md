@@ -1,102 +1,145 @@
+# Auditoria Completa: Jornada do Cliente por Tipo de Pagamento
 
+## Estado Atual de Cada Fluxo
 
-# Auditoria: Fluxos de Assinatura e Emails — Mercado Pago
+### 1. Créditos Avulsos (creditos-1500 / creditos-4200 / creditos-14000)
 
-## Resumo Geral
+**Status: OK**
 
-O sistema está **bem estruturado** na maior parte, mas encontrei **3 problemas** que precisam ser corrigidos antes do deploy e **2 observações** importantes.
+```text
+Cliente clica "Comprar"
+  → openCheckout(slug) via useMPCheckout
+  → MPEmailModal coleta Nome/Email/CPF
+  → redirectToMPCheckout → create-mp-checkout (Edge Function)
+  → Cria ordem em mp_orders (status: pending)
+  → Gera preferência no MP → retorna init_point
+  → Cliente paga no Checkout Mercado Pago
 
----
+Webhook (pagamento aprovado):
+  → Busca ordem em mp_orders → produto tipo 'credits'
+  → add_lifetime_credits (RPC) → créditos vitalícios
+  → Concede acesso pack 'upscaller-arcano'
+  → Email "Compra Confirmada" com bloco "X Créditos Adicionados!"
+  → Meta CAPI Purchase + UTMify + Admin notification
 
-## Fluxos por Tipo de Pagamento
-
-### 1. Créditos Avulsos (creditos-1500, creditos-4200, creditos-14000)
-**Status: ✅ OK**
-- Frontend: `openCheckout(slug)` → MPEmailModal → `redirectToMPCheckout`
-- Webhook: Adiciona créditos via `add_lifetime_credits`, concede acesso ao pack
-- Estorno: Revoga créditos via `revoke_lifetime_credits_on_refund`
-- Email de compra: Enviado via SendPulse com template correto para `type: 'credits'`
-
-### 2. Assinaturas (starter/pro/ultimate/unlimited × mensal/anual)
-**Status: ✅ OK (com ressalvas)**
-- Frontend: `handleSubscriptionPurchase(planName)` → monta slug correto → `openCheckout(slug)`
-- Todos os 8 slugs existem na `mp_products` com preços e `is_active = true`
-- Webhook: Faz upsert em `planos2_subscriptions` com config correta (créditos, image/video, cost_multiplier)
-- Reset de créditos via `reset_upscaler_credits`
-- Expiração: 30 dias (mensal) ou 365 dias (anual)
-- Estorno: Reset para plano `free` + zera créditos
-
-### 3. Emails de Cobrança Recorrente (process-billing-reminders)
-**Status: ✅ OK**
-- Já migrado para Mercado Pago: função `createRenewalCheckout` usa `MERCADOPAGO_ACCESS_TOKEN`
-- Gera `preferences` no MP e retorna `init_point`
-- Templates do banco (`renewal_email_templates`) com placeholders funcionando
-- Controle de dedup, blacklist, stopped_reason tudo mantido
-
-### 4. Recovery Emails (send-pix-recovery-email)
-**Status: ⚠️ PROBLEMA** — veja abaixo
-
----
-
-## Problemas Encontrados
-
-### 🔴 Problema 1: `send-pix-recovery-email` busca na tabela `asaas_orders`
-
-**Arquivo:** `supabase/functions/send-pix-recovery-email/index.ts` (linha 234)
-
-A função busca ordens pendentes na tabela **`asaas_orders`** (tabela do Pagar.me), mas as novas compras via Mercado Pago são salvas na tabela **`mp_orders`**. Isso significa que:
-- Ordens pendentes do Mercado Pago **nunca serão encontradas** por esta função
-- A função só recuperaria ordens antigas do Pagar.me (que não existem mais)
-
-**Correção necessária:** Mudar a query para buscar em `mp_orders` em vez de `asaas_orders`.
-
-### 🔴 Problema 2: `process-billing-reminders` busca produto por `plan_slug` sem filtrar `billing_period`
-
-**Arquivo:** `supabase/functions/process-billing-reminders/index.ts` (linha 460-466)
-
-```typescript
-.eq('plan_slug', sub.plan_slug)  // ex: 'pro'
-.eq('is_active', true)
-.limit(1)
-.maybeSingle()
+Estorno:
+  → revoke_lifetime_credits_on_refund
+  → Revoga pack se não há outras compras de créditos
 ```
 
-O `plan_slug` na `planos2_subscriptions` é armazenado como `starter`, `pro`, etc. (sem sufixo mensal/anual). A query busca na `mp_products` por `plan_slug = 'pro'`, mas existem **4 produtos** com `plan_slug = 'pro'`:
-- `plano-pro-mensal` (R$39,90)
-- `plano-pro-anual` (R$406,80)
-- `upscaler-arcano-pro` (R$37,00, tipo credits)
-- `landing-pro-avulso` (R$37,00, tipo landing_bundle)
+aqui ja ta errado, se a pessoa comprou creditos avulsos na platafora o que tem haver isso com conceder acesso ao pack 'upscaller-arcano'? esse produto não tem nada haver com a compra de creditos não tem que conceder acesso nenhum retire isso  
+o estorno também não tem que revogar pack nenhum pois nao tem nada haver a pessoa pode ter comprado o pack arcano antes e só cancelou os creditos, só deve revogar aqueles creditos que ela comprou em especifico
 
-O `limit(1)` retorna **qualquer um** deles — podendo gerar o checkout com preço **errado** (ex: cobrar R$406,80 de um plano mensal, ou R$37,00 de um pack avulso).
+### 2. Assinaturas Mensais (starter/pro/ultimate/unlimited-mensal)
 
-**Correção necessária:** Adicionar filtro `.eq('type', 'subscription')` e idealmente também filtrar por `billing_period` (armazenando o período na `planos2_subscriptions` ou deduzindo pelo valor do `expires_at`).
+**Status: OK (com 1 problema encontrado)**
 
-### 🟡 Problema 3: URLs de `back_urls` inconsistentes
+```text
+Cliente clica "Assinar"
+  → handleSubscriptionPurchase(planName) monta slug: "plano-pro-mensal"
+  → openCheckout(slug)
+  → MPEmailModal → create-mp-checkout → MP Checkout
+  → Cliente paga (cartão ou PIX)
 
-Os `back_urls` variam entre as funções:
-- **`create-mp-checkout`**: Usa `arcanoapp.lovable.app`
-- **`process-billing-reminders`**: Usa `arcanoapp.voxvisual.com.br`
-- **`send-pix-recovery-email`**: Usa `arcanoapp.voxvisual.com.br`
+Webhook (pagamento aprovado):
+  → Produto tipo 'subscription', plan_slug: 'pro'
+  → Upsert planos2_subscriptions (credits, image/video, cost_multiplier)
+  → expires_at = agora + 30 dias
+  → last_credit_reset_at = agora
+  → reset_upscaler_credits com créditos do plano
+  → Email "Plano Ativado com Sucesso!"
 
-Não é um erro funcional (ambos provavelmente funcionam), mas é uma inconsistência que pode confundir. Idealmente padronizar para um só domínio.
+Recorrência (30 dias depois):
+  → process-billing-reminders (cron diário)
+  → Busca assinaturas com expires_at entre -1 e +5 dias
+  → Gera preferência MP (createRenewalCheckout) → init_point
+  → Envia sequência de 6 emails (day 0 a day 5) com link de checkout
+  → Cliente clica no link → paga → webhook ativa novo ciclo
+
+Estorno:
+  → Upsert planos2_subscriptions → plan_slug: 'free'
+  → Zera créditos mensais (reset_upscaler_credits com 0)
+```
+
+### 3. Assinaturas Anuais (starter/pro/ultimate/unlimited-anual)
+
+**Status: OK**
+
+Mesmo fluxo das mensais, com diferença:
+
+- `expires_at = agora + 365 dias`
+- Renovação via email acontece 1 ano depois
+- `process-billing-reminders` sempre cobra o valor **mensal** na renovação (filtro `billing_period: 'mensal'`), o que é intencional — após 1 ano, o cliente renova mês a mês
+
+### 4. Recovery Emails (send-pix-recovery-email)
+
+**Status: OK**
+
+```text
+Cron executa send-pix-recovery-email
+  → Busca ordens pendentes de HOJE em mp_orders
+  → Gera novo checkout MP (generateCheckoutUrl)
+  → Envia email "Seu pagamento não foi processado"
+  → Cliente clica → paga → webhook processa normalmente
+```
+
+### 5. Upscaler Arcano Vitalício (upscaller-arcano-vitalicio)
+
+**Status: OK**
+
+- Compra via MP → webhook adiciona créditos do pack + 10.000 créditos bônus + habilita image/video generation
+- Estorno revoga tudo (créditos bônus + image/video)  
+  
+***aqui só deve revogar os bonus que ele ganhou da compra os 10000 creditos não pode revogar outros creditos que ele comprou
+
+### 6. Upscaler Arcano V3
+
+**Status: OK**
+
+- Compra via MP → webhook concede pack V3 + bônus pack V2 (sem créditos extras)
+- Estorno revoga V3 + bônus V2
 
 ---
 
-## Observações
+## Problema Encontrado
 
-### 📌 Comentário desatualizado
-`process-billing-reminders` linha 478 tem o comentário `// 9. Create Pagar.me PIX checkout`, mas a função já chama o Mercado Pago. É cosmético, não afeta funcionamento.
+### PROBLEMA: `process-billing-reminders` verifica renovação na tabela errada
 
-### 📌 Email de compra para assinaturas
-O email de compra enviado pelo webhook (`buildPurchaseEmailHtml`) trata assinaturas com o bloco genérico "Acesso Vitalício Ativado" (o `else` final). Isso pode confundir o cliente que comprou um **plano mensal** — ele veria "Acesso Vitalício" quando na verdade é mensal. Idealmente adicionar um bloco específico para `type === 'subscription'`.
+**Arquivo:** `supabase/functions/process-billing-reminders/index.ts`, linhas 434-457
+
+A função verifica se o usuário já pagou a renovação buscando em `**asaas_orders**` (tabela do Pagar.me):
+
+```typescript
+const { data: recentOrder } = await supabase
+  .from('asaas_orders')  // ← ERRADO — deveria ser mp_orders
+  .select('id')
+  .eq('user_email', userEmail)
+  .eq('status', 'confirmed')  // ← ERRADO — no MP o status é 'paid'
+  .gte('paid_at', expiresAt.toISOString())
+```
+
+**Impacto:** Se um cliente renovou pagando via Mercado Pago, mas o `expires_at` ainda não foi atualizado pelo webhook (por timing), a função **não detecta** que ele já pagou e envia o email de cobrança mesmo assim. Na prática, o primeiro check (`currentExpires > tomorrow`) mitiga isso na maioria dos casos, mas não é garantido se o webhook demorar.
+
+**Correção:** Mudar para `mp_orders` com status `paid`.
 
 ---
 
-## Plano de Correções (para implementar)
+## Resumo
 
-1. **`send-pix-recovery-email`**: Trocar query de `asaas_orders` para `mp_orders`
-2. **`process-billing-reminders`**: Adicionar `.eq('type', 'subscription')` e filtro de `billing_period` na query de produtos
-3. **Email de compra**: Adicionar bloco específico para assinaturas no `buildPurchaseEmailHtml`
-4. **Comentários**: Atualizar referências a "Pagar.me" para "Mercado Pago"
-5. **URLs**: Padronizar `back_urls` (opcional)
 
+| Fluxo               | Status | Observação                                                       |
+| ------------------- | ------ | ---------------------------------------------------------------- |
+| Créditos avulsos    | OK     | Checkout MP funcionando                                          |
+| Assinaturas mensais | OK     | Ativação, créditos, email corretos                               |
+| Assinaturas anuais  | OK     | 365 dias, renova como mensal                                     |
+| Emails de cobrança  | 1 bug  | Query de renovação paga usa `asaas_orders` em vez de `mp_orders` |
+| Recovery emails     | OK     | Já migrado para `mp_orders`                                      |
+| Estorno assinatura  | OK     | Reset para free + zera créditos                                  |
+| Estorno créditos    | OK     | Revoga créditos + pack                                           |
+| Email de compra     | OK     | Bloco específico para subscription                               |
+| Email de recovery   | OK     | Texto menciona "instabilidade no Pix" (cosmético, funciona)      |
+
+
+## Correção Necessária
+
+1. `**process-billing-reminders` linhas 434-442**: Trocar `asaas_orders` → `mp_orders` e `status: 'confirmed'` → `status: 'paid'`
