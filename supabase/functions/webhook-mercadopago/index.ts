@@ -127,12 +127,18 @@ function getUnsubscribeLink(email: string): string {
   return `${baseUrl}/functions/v1/email-unsubscribe?email=${encodeURIComponent(email)}`
 }
 
-function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: string, productType: string, creditsAmount?: number): string {
+function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: string, productType: string, creditsAmount?: number, productSlug?: string): string {
   const unsubscribeLink = getUnsubscribeLink(email)
 
   // Bloco dinâmico baseado no tipo de produto
   let accessBlock = ''
-  if (productType === 'credits') {
+  if (productSlug === 'upscaler-arcano-v3') {
+    accessBlock = `
+    <div style="background:linear-gradient(135deg,rgba(217,70,239,0.12) 0%,rgba(168,85,247,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(217,70,239,0.3);text-align:center;">
+      <p style="color:#e879f9;font-size:15px;font-weight:700;margin:0 0 8px;">🚀 Upscaler Arcano V3 Ativado!</p>
+      <p style="color:#f0abfc;font-size:13px;margin:0;line-height:1.6;">Agora você tem acesso ao <strong>Modo Turbo</strong> e <strong>Upscale em Lote</strong>. Seu acesso à V2 também está incluso!</p>
+    </div>`
+  } else if (productType === 'credits') {
     accessBlock = `
     <div style="background:linear-gradient(135deg,rgba(96,165,250,0.12) 0%,rgba(59,130,246,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(96,165,250,0.3);text-align:center;">
       <p style="color:#60a5fa;font-size:15px;font-weight:700;margin:0 0 8px;">🎯 ${creditsAmount || ''} Créditos Adicionados!</p>
@@ -207,7 +213,7 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
 </html>`
 }
 
-async function sendPurchaseEmailAttempt(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, productType: string, creditsAmount?: number): Promise<boolean> {
+async function sendPurchaseEmailAttempt(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, productType: string, creditsAmount?: number, productSlug?: string): Promise<boolean> {
   const dedupKey = `mp_purchase_${requestId}`
   const { data: existing } = await supabase
     .from('welcome_email_logs')
@@ -233,7 +239,7 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
   }
 
   const trackingId = crypto.randomUUID()
-  const html = buildPurchaseEmailHtml(email, productName, ctaLink, productType, creditsAmount)
+  const html = buildPurchaseEmailHtml(email, productName, ctaLink, productType, creditsAmount, productSlug)
   const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
 
   const token = await getSendPulseToken()
@@ -275,12 +281,12 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
   return response.ok
 }
 
-async function sendPurchaseEmail(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, productType: string, creditsAmount?: number) {
+async function sendPurchaseEmail(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, productType: string, creditsAmount?: number, productSlug?: string) {
   const backoffDelays = [2000, 5000, 10000]
   
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const success = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId, productType, creditsAmount)
+      const success = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId, productType, creditsAmount, productSlug)
       if (success) {
         console.log(`   ├─ ✅ Email de compra enviado para ${email} (tentativa ${attempt + 1})`)
         return
@@ -647,34 +653,34 @@ serve(async (req) => {
         } // close else (créditos não duplicados)
       }
 
-      // === BÔNUS VITALÍCIO UPSCALER ARCANO: 10.000 créditos + gerar-imagem/gerar-video ===
-      if (product.slug === 'upscaller-arcano-vitalicio' || product.slug === 'upscaler-arcano-v3') {
+      // === BÔNUS V3: conceder acesso ao pack V2 (sem 10k créditos, sem image/video) ===
+      if (product.slug === 'upscaler-arcano-v3') {
+        const { data: existingV2Pack } = await supabase
+          .from('user_pack_purchases')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('pack_slug', 'upscaller-arcano')
+          .eq('is_active', true)
+          .maybeSingle()
 
-        // Se é V3, conceder também acesso ao pack V2 como bônus
-        if (product.slug === 'upscaler-arcano-v3') {
-          const { data: existingV2Pack } = await supabase
-            .from('user_pack_purchases')
-            .select('id')
-            .eq('user_id', userId)
-            .eq('pack_slug', 'upscaller-arcano')
-            .eq('is_active', true)
-            .maybeSingle()
-
-          if (!existingV2Pack) {
-            await supabase.from('user_pack_purchases').insert({
-              user_id: userId,
-              pack_slug: 'upscaller-arcano',
-              access_type: 'vitalicio',
-              is_active: true,
-              has_bonus_access: false,
-              product_name: 'Bônus V3: acesso V2',
-              platform: 'mercadopago'
-            })
-            console.log(`   ├─ ✅ Bônus V3: acesso ao pack V2 (upscaller-arcano) concedido`)
-          } else {
-            console.log(`   ├─ ℹ️ Bônus V3: pack V2 já existente`)
-          }
+        if (!existingV2Pack) {
+          await supabase.from('user_pack_purchases').insert({
+            user_id: userId,
+            pack_slug: 'upscaller-arcano',
+            access_type: 'vitalicio',
+            is_active: true,
+            has_bonus_access: false,
+            product_name: 'Bônus V3: acesso V2',
+            platform: 'mercadopago'
+          })
+          console.log(`   ├─ ✅ Bônus V3: acesso ao pack V2 (upscaller-arcano) concedido`)
+        } else {
+          console.log(`   ├─ ℹ️ Bônus V3: pack V2 já existente`)
         }
+      }
+
+      // === BÔNUS VITALÍCIO UPSCALER ARCANO: 10.000 créditos + gerar-imagem/gerar-video (SÓ vitalício, NÃO V3) ===
+      if (product.slug === 'upscaller-arcano-vitalicio') {
         console.log(`   ├─ 🎁 Bônus vitalício Upscaler Arcano: +10.000 créditos + image/video generation`)
         
         // 1. Add 10,000 lifetime credits
@@ -771,7 +777,7 @@ serve(async (req) => {
       // 6. Enviar email de compra — CTA sempre para a Home
       const ctaLink = 'https://arcanoapp.voxvisual.com.br/'
       
-      await sendPurchaseEmail(supabase, email, product.title, ctaLink, order.id, product.type, product.credits_amount)
+      await sendPurchaseEmail(supabase, email, product.title, ctaLink, order.id, product.type, product.credits_amount, product.slug)
 
       // 7. Notificar admin
       try {

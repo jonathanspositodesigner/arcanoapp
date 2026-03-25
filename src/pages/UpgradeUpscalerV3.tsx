@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Zap, Layers, Check, X, Shield, ChevronDown, Rocket, Sparkles, Clock, ArrowRight, Timer, Play, ShoppingCart } from "lucide-react";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
+import { useMPCheckout } from "@/hooks/useMPCheckout";
 
 // Countdown to March 27, 2026 23:59:59 BRT (UTC-3)
 const DEADLINE = new Date("2026-03-28T02:59:59Z").getTime();
@@ -194,6 +195,8 @@ const FakePurchaseNotifications = () => {
 };
 
 const UpgradeUpscalerV3 = () => {
+  const { openCheckout, MPCheckoutModal } = useMPCheckout({ source_page: 'upgrade-v3' });
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -564,6 +567,7 @@ const UpgradeUpscalerV3 = () => {
                 </ul>
 
                 <button
+                  onClick={() => openCheckout('upscaler-arcano-v3')}
                   className="w-full py-4 rounded-full text-base md:text-lg font-bold transition-all duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-amber-500/25 cursor-pointer bg-gradient-to-r from-amber-400 to-amber-500 text-[#0f0a15]"
                 >
                   🚀 Fazer Upgrade para V3 Agora
@@ -641,6 +645,8 @@ const UpgradeUpscalerV3 = () => {
       <footer className="py-8 px-4 text-center text-xs text-white/30 border-t border-white/5">
         <p>© {new Date().getFullYear()} Arcano · Todos os direitos reservados</p>
       </footer>
+
+      <MPCheckoutModal />
     </div>
   );
 };
