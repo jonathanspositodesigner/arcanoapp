@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Zap, Layers, Check, X, Shield, Star, ChevronDown, Rocket, Sparkles, Clock, ArrowRight, Timer, Play, ShoppingCart } from "lucide-react";
+import { Zap, Layers, Check, X, Shield, ChevronDown, Rocket, Sparkles, Clock, ArrowRight, Timer, Play, ShoppingCart } from "lucide-react";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
 
 // Countdown to March 27, 2026 23:59:59 BRT (UTC-3)
