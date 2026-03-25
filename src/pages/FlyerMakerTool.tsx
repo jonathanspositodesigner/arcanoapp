@@ -205,6 +205,7 @@ const FlyerMakerTool: React.FC = () => {
     onGlobalStatusChange: updateJobStatus,
   });
 
+  useNotificationTokenRecovery({
     userId: user?.id,
     toolTable: 'flyer_maker_jobs',
     onRecovery: useCallback((result) => {
