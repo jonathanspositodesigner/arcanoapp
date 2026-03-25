@@ -132,7 +132,7 @@ const GerarImagemTool = () => {
     toolTable: 'image_generator_jobs',
     onRecovery: (result) => {
       if (result.outputUrl) {
-        setOutputUrl(result.outputUrl);
+        setResultUrl(result.outputUrl);
         setStatus('completed');
       }
       if (result.jobId) setJobId(result.jobId);

@@ -4767,9 +4767,24 @@ export type Database = {
       cleanup_all_stale_ai_jobs: {
         Args: never
         Returns: {
-          cancelled_count: number
-          refunded_credits: number
-          table_name: string
+          arcano_cancelled: number
+          arcano_refunded: number
+          bgremover_cancelled: number
+          bgremover_refunded: number
+          chargen_cancelled: number
+          chargen_refunded: number
+          flyer_cancelled: number
+          flyer_refunded: number
+          imggen_cancelled: number
+          imggen_refunded: number
+          pose_cancelled: number
+          pose_refunded: number
+          upscaler_cancelled: number
+          upscaler_refunded: number
+          veste_cancelled: number
+          veste_refunded: number
+          video_cancelled: number
+          video_refunded: number
         }[]
       }
       cleanup_expired_ai_jobs: {
