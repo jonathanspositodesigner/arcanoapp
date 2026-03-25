@@ -258,6 +258,7 @@ async function handleRun(req: Request) {
     aspectRatio,
     creditCost,
     prompt,
+    source,
   } = await req.json();
 
   // ========== INPUT VALIDATION ==========
@@ -363,9 +364,14 @@ async function handleRun(req: Request) {
   // ========== CONSUME CREDITS ==========
   await logStep(jobId, 'consuming_credits', { amount: creditCost });
   
+  // Determine credit description based on source
+  let creditDescription = 'Gerar Imagem';
+  if (source === 'arcano_cloner_refine') creditDescription = 'Refinamento Arcano Cloner';
+  else if (source === 'flyer_maker_refine') creditDescription = 'Refinamento Flyer Maker';
+
   const { data: creditResult, error: creditError } = await supabase.rpc(
     'consume_upscaler_credits',
-    { _user_id: verifiedUserId, _amount: creditCost, _description: 'Gerar Imagem' }
+    { _user_id: verifiedUserId, _amount: creditCost, _description: creditDescription }
   );
 
   if (creditError) {
