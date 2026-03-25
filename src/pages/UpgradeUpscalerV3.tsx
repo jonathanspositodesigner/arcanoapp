@@ -369,7 +369,7 @@ const UpgradeUpscalerV3 = () => {
                 <img src="/images/social-proof-2.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                 <img src="/images/social-proof-3.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
               </div>
-              <span className="text-white/70 text-xs font-medium">+100 profissionais já fizeram o upgrade</span>
+              <SocialProofCounter />
             </div>
 
             <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
