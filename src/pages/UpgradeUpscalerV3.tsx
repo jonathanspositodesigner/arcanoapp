@@ -475,7 +475,7 @@ const UpgradeUpscalerV3 = () => {
           </AnimatedSection>
 
           {/* Mosaico de depoimentos reais */}
-          <StaggeredAnimation className="columns-2 sm:columns-3 lg:columns-4 gap-3 space-y-3" staggerDelay={100}>
+          <StaggeredAnimation className="grid grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto" staggerDelay={100}>
             {[
               "/images/depo-v3-1.webp",
               "/images/depo-v3-7.webp",
@@ -486,7 +486,7 @@ const UpgradeUpscalerV3 = () => {
               "/images/depo-v3-6.webp",
               "/images/depo-v3-8.webp",
             ].map((src, i) => (
-              <div key={i} className="break-inside-avoid rounded-2xl overflow-hidden border border-white/10 hover:border-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02]">
+              <div key={i} className="rounded-2xl overflow-hidden border-2 border-white/10 hover:border-fuchsia-500/40 transition-all duration-300 hover:scale-[1.03] shadow-lg shadow-black/30 hover:shadow-fuchsia-500/10">
                 <img
                   src={src}
                   alt={`Depoimento real ${i + 1}`}
