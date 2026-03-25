@@ -213,7 +213,7 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
 </html>`
 }
 
-async function sendPurchaseEmailAttempt(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, productType: string, creditsAmount?: number): Promise<boolean> {
+async function sendPurchaseEmailAttempt(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, productType: string, creditsAmount?: number, productSlug?: string): Promise<boolean> {
   const dedupKey = `mp_purchase_${requestId}`
   const { data: existing } = await supabase
     .from('welcome_email_logs')
@@ -239,7 +239,7 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
   }
 
   const trackingId = crypto.randomUUID()
-  const html = buildPurchaseEmailHtml(email, productName, ctaLink, productType, creditsAmount)
+  const html = buildPurchaseEmailHtml(email, productName, ctaLink, productType, creditsAmount, productSlug)
   const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
 
   const token = await getSendPulseToken()
@@ -281,12 +281,12 @@ async function sendPurchaseEmailAttempt(supabase: any, email: string, productNam
   return response.ok
 }
 
-async function sendPurchaseEmail(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, productType: string, creditsAmount?: number) {
+async function sendPurchaseEmail(supabase: any, email: string, productName: string, ctaLink: string, requestId: string, productType: string, creditsAmount?: number, productSlug?: string) {
   const backoffDelays = [2000, 5000, 10000]
   
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const success = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId, productType, creditsAmount)
+      const success = await sendPurchaseEmailAttempt(supabase, email, productName, ctaLink, requestId, productType, creditsAmount, productSlug)
       if (success) {
         console.log(`   ├─ ✅ Email de compra enviado para ${email} (tentativa ${attempt + 1})`)
         return
