@@ -115,20 +115,13 @@ const UpgradeUpscalerV3 = () => {
           {/* VSL VIDEO */}
           <div className="w-full max-w-3xl mx-auto mb-10 rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-fuchsia-500/10 bg-black">
             <div className="relative w-full aspect-video">
-              <video
-                className="absolute inset-0 w-full h-full object-cover"
-                autoPlay
-                muted
-                playsInline
-                loop
-                controls
-                preload="auto"
-                poster="/images/upscaler-hero-preview.webp"
-              >
-                <source src="/videos/upscaler-promo-mobile.mp4" media="(max-width: 767px)" type="video/mp4" />
-                <source src="/videos/upscaler-promo-desktop.mp4" type="video/mp4" />
-                Seu navegador não suporta vídeo HTML5.
-              </video>
+              <iframe
+                className="absolute inset-0 w-full h-full"
+                src="https://www.youtube.com/embed/0Jy8hF7OCBw?autoplay=1&mute=1&rel=0&modestbranding=1"
+                title="Upscaler Arcano V3"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
             </div>
           </div>
 
