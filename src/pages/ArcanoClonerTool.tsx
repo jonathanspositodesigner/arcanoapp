@@ -655,10 +655,9 @@ const ArcanoClonerTool: React.FC = () => {
     setRefineReferencePreview(null);
     setIsRefining(false);
     setRefinementHistory([]);
+    setRefinementHistory([]);
     setSelectedHistoryIndex(0);
-  };
-
-  const handleNewImage = () => {
+    setRefineJobId(null);
     endSubmit();
     setOutputImage(null);
     setStatus('idle');

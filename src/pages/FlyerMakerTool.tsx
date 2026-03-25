@@ -600,6 +600,8 @@ const FlyerMakerTool: React.FC = () => {
     setSelectedHistoryIndex(0);
     setRefineMode(false);
     setRefinePrompt('');
+    setRefineJobId(null);
+    setIsRefining(false);
     setStatus('idle');
   };
 
