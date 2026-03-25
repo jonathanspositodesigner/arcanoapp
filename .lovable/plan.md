@@ -1,95 +1,65 @@
 
 
-# Plan: Replace Google Gemini Image Generation with RunningHub Flow
+# Auditoria Completa: Gerar Imagem via RunningHub
 
-## Overview
-Replace the current Google Gemini-based image generation on `/gerar-imagem` with a RunningHub workflow (WebApp ID `2036803905421582337`). This follows the same architecture pattern as Arcano Cloner, Flyer Maker, etc. — job table, edge function, queue manager integration, realtime sync, and webhook.
+## Resultado da Auditoria
 
-## Node Mapping (from your documentation)
-| Node | Field | Purpose |
-|------|-------|---------|
-| 145 | aspectRatio | Aspect ratio (auto, 1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9) |
-| 135 | text | Prompt |
-| 58 | image | Reference image 1 |
-| 147 | image | Reference image 2 |
-| 148 | image | Reference image 3 |
-| 149 | image | Reference image 4 |
-| 62 | image | Reference image 5 |
-| 150 | image | Reference image 6 |
+O fluxo principal (frontend → edge function → queue manager → RunningHub → webhook → resultado) está **corretamente implementado**. A arquitetura segue o padrão idêntico das outras ferramentas. Porém, existem **5 falhas críticas** nas RPCs do banco de dados que precisam ser corrigidas via migração SQL.
 
 ---
 
-## Step 1: Database Migration
+## O QUE ESTÁ FUNCIONANDO
 
-**Alter `image_generator_jobs` table** to add RunningHub-specific columns (following the pattern of other job tables):
+- **Frontend (GerarImagemTool.tsx)**: 100% RunningHub, zero referências ao Google. Hooks corretos (useJobStatusSync, useJobPendingWatchdog, useProcessingButton, useQueueSessionCleanup). Drag/drop, paste, 5 referências, aspect ratios corretos.
+- **Edge Function (runninghub-image-generator)**: Auth JWT, rate limit, validação de domínio, upload para RH, consumo de créditos, delegação ao queue manager, reconcile, queue-status. Tudo OK.
+- **Queue Manager**: WebApp ID `2036803905421582337` correto, node mapping (145/aspectRatio, 135/text, 58/147/148/149/62/150 imagens) correto, `image_generator_jobs` em JOB_TABLES e TOOL_CONFIG. Fila FIFO global funcional.
+- **Webhook**: `image_generator_jobs` já está no array IMAGE_JOB_TABLES. Callbacks retornam corretamente.
+- **JobManager.ts**: `image_generator` mapeado em TABLE_MAP, EDGE_FUNCTION_MAP e TOOL_NAMES.
+- **Frontend admin (AdminAIToolsUsageTab.tsx)**: Filtro "Gerar Imagem" → "image_generator_jobs" mapeado.
 
-- `task_id` (text) — RunningHub task ID
-- `session_id` (text) — browser session
-- `input_urls` (jsonb) — array of uploaded reference image URLs
-- `job_payload` (jsonb) — node parameters for queue manager
-- `current_step` (text) — observability
-- `step_history` (jsonb) — observability log
-- `failed_at_step` (text) — where failure occurred
-- `raw_webhook_payload` (jsonb) — webhook response
-- `credits_charged` (boolean, default false)
-- `credits_refunded` (boolean, default false)
-- `api_account` (text) — which RH account ran it
-- `queue_position` (integer)
+---
 
-Remove the `model` column default or repurpose it (currently stores "normal"/"pro"/"nano2" for Gemini models — will store "runninghub" going forward).
+## 5 FALHAS ENCONTRADAS (Requerem Migração SQL)
 
-## Step 2: Create Edge Function `runninghub-image-generator`
+### 1. `cleanup_all_stale_ai_jobs` — NÃO inclui `image_generator_jobs`
+A última versão (migração 20260311) para em `bg_remover_jobs`. Jobs de "Gerar Imagem" que travarem por 10+ minutos **não serão limpos automaticamente** nem terão créditos estornados.
 
-New edge function following the Arcano Cloner pattern:
+### 2. `mark_pending_job_as_failed` — NÃO inclui `image_generator_jobs`
+A última versão (migração 20260311) para em `bg_remover_jobs`. O watchdog do frontend (linha 315 de GerarImagemTool.tsx) chama essa RPC, mas ela retorna `FALSE` para `image_generator_jobs`, deixando jobs órfãos em `pending` para sempre.
 
-- **`/run` endpoint**: Receives jobId, prompt, aspectRatio, referenceImageUrls (array of up to 5 storage URLs), userId, creditCost
-  - Downloads reference images from storage, uploads to RunningHub
-  - Consumes credits via `consume_upscaler_credits` RPC
-  - Saves `job_payload` with all node file names
-  - Delegates to `runninghub-queue-manager/run-or-queue`
-- **`/reconcile` endpoint**: Manual recovery for stuck jobs
-- **`/queue-status` endpoint**: Check queue position
+### 3. `user_cancel_ai_job` — NÃO inclui `image_generator_jobs`
+A última versão (migração 20260311) para em `bg_remover_jobs`. O botão "Cancelar" no frontend chama essa RPC, mas ela retorna "Tabela inválida", impedindo o cancelamento de jobs.
 
-## Step 3: Update Queue Manager
+### 4. `get_ai_tools_usage` (ambas versões) + `get_ai_tools_usage_count` + `get_ai_tools_usage_summary` — NÃO incluem `image_generator_jobs`
+A última versão (migração 20260316) para em `bg_remover_jobs`. Jobs de "Gerar Imagem" **não aparecem** no dashboard admin de Custos IA.
 
-Add to `runninghub-queue-manager/index.ts`:
+### 5. `useNotificationTokenRecovery` — NÃO suporta `image_generator_jobs`
+O tipo `SupportedToolTable` (src/hooks/useNotificationTokenRecovery.ts) não inclui `image_generator_jobs`. Notificações push funcionam (via queue manager), mas ao tocar na notificação, o resultado não é recuperado automaticamente.
 
-- Add `image_generator_jobs` to `JOB_TABLES` array
-- Add WebApp ID `2036803905421582337` to `WEBAPP_IDS`
-- Add `TOOL_CONFIG` entry for notifications
-- Add `case 'image_generator_jobs'` in the node mapping switch — maps up to 6 image nodes (58, 147, 148, 149, 62, 150) + prompt (135) + aspect ratio (145). Unused image slots get a placeholder value like `"example.png"`.
+---
 
-## Step 4: Update Webhook
+## Plano de Correção
 
-In `runninghub-webhook/index.ts`, add `image_generator_jobs` to the table routing so completed/failed callbacks update the correct job.
+### Step 1: Migração SQL
+Uma única migração que atualiza todas as 6 RPCs para incluir `image_generator_jobs`:
 
-## Step 5: Rewrite Frontend (`GerarImagemTool.tsx`)
+1. **`cleanup_all_stale_ai_jobs`** — Adicionar bloco `IMAGE GENERATOR JOBS` com loop de limpeza + estorno idêntico aos outros
+2. **`mark_pending_job_as_failed`** — Adicionar `ELSIF p_table_name = 'image_generator_jobs'` nos dois blocos (SELECT e UPDATE)
+3. **`user_cancel_ai_job`** — Adicionar `ELSIF p_table_name = 'image_generator_jobs'` nos três blocos (SELECT, refund, UPDATE)
+4. **`get_ai_tools_usage`** (paginada) — Adicionar UNION ALL para `image_generator_jobs` com tool_name `'Gerar Imagem'`
+5. **`get_ai_tools_usage`** (filtrada) — Adicionar UNION ALL para `image_generator_jobs`
+6. **`get_ai_tools_usage_count`** — Adicionar UNION ALL para contagem
+7. **`get_ai_tools_usage_summary`** — Adicionar UNION ALL para resumo
+8. **`get_ai_tools_cost_averages`** — Adicionar UNION ALL (se existir versão mais recente)
 
-Complete rewrite removing all Google/Gemini references:
+### Step 2: useNotificationTokenRecovery
+Adicionar `'image_generator_jobs'` ao tipo `SupportedToolTable` e ao `TABLE_SELECT_MAP`. Remover o comentário "skip for now" em GerarImagemTool.tsx e ativar o hook.
 
-- **Remove**: All imports/usage of `GoogleApiKeyModal`, `GoogleCreditsProgressBar`, `useGoogleApiKey`, model selector (normal/pro/nano2), `generate-image` and `generate-with-user-key` edge function calls, base64 result handling
-- **Add**: RunningHub job flow following Arcano Cloner pattern:
-  - `useJobStatusSync` for realtime DB sync
-  - `useJobPendingWatchdog` for orphan detection
-  - `useNotificationTokenRecovery` for push notifications
-  - `useProcessingButton` for submit lock
-  - `useQueueSessionCleanup` for stale sessions
-  - `useAIJob` context for global job tracking
-  - Image upload to Supabase Storage (`artes-cloudinary` bucket) before invoking edge function
-  - `optimizeForAI()` compression on reference images
-  - Queue position display, cancel support, reconcile button after 60s
-  - Active job block modal (`checkActiveJob`)
-- **Keep**: Prompt textarea, aspect ratio buttons (update values to match RH options: auto, 1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9), 5 reference images with drag/drop/paste, download button, visual layout
-- **Remove**: The "Temporariamente Indisponível" maintenance screen (lines 294-312) — the tool will be live again
-- **Credit cost**: Single fixed cost (to be defined — currently uses variable costs per model). Will use `getCreditCost('gerar_imagem', X)` with one tier.
+---
 
-## Step 6: Update Aspect Ratio Options
+## Detalhes Técnicos
 
-Update the aspect ratio buttons to match the RunningHub workflow's supported ratios: `auto, 1:1, 2:3, 3:2, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9`.
-
-## Technical Details
-
-- **File changes**: `src/pages/GerarImagemTool.tsx`, new `supabase/functions/runninghub-image-generator/index.ts`, edits to `supabase/functions/runninghub-queue-manager/index.ts`, `supabase/functions/runninghub-webhook/index.ts`, DB migration
-- **Pattern**: Identical to Arcano Cloner — upload to storage → create job row → invoke edge function `/run` → edge function uploads to RH + consumes credits + delegates to queue manager → webhook/polling completes job → realtime updates frontend
-- **Reference images**: Up to 5 (or 6 if you want to use all 6 nodes). Unused slots send `"example.png"` as placeholder per RH convention.
+- **Arquivos alterados**: 1 migração SQL nova, `src/hooks/useNotificationTokenRecovery.ts`, `src/pages/GerarImagemTool.tsx` (linhas 130-131)
+- **Risco**: Zero. As alterações só adicionam suporte a uma tabela já existente em funções que já tratam outras tabelas idênticas.
+- **Sem alteração no fluxo principal**: O pipeline RunningHub → Queue Manager → Webhook já funciona. Apenas os mecanismos de proteção (cleanup, cancel, watchdog) e relatórios admin estão incompletos.
 
