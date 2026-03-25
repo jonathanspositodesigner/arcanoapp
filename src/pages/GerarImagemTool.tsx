@@ -429,7 +429,7 @@ const GerarImagemTool = () => {
           )}
 
           {/* Download progress overlay */}
-          {isDownloading && <DownloadProgressOverlay progress={downloadProgress} />}
+          {isDownloading && <DownloadProgressOverlay isVisible={isDownloading} progress={downloadProgress} />}
 
           {resultUrl ? (
             <div className="w-full max-w-2xl space-y-3">
@@ -614,7 +614,7 @@ const GerarImagemTool = () => {
 
         <NoCreditsModal isOpen={showNoCreditsModal} onClose={() => setShowNoCreditsModal(false)} reason={noCreditsReason} />
         <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeJobToolName} />
-        <NotificationPromptToast toolType="image_generator" isProcessing={isProcessing} />
+        <NotificationPromptToast toolName="gerar imagem" />
       </div>
     </AppLayout>
   );
