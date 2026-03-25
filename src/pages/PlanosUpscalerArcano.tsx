@@ -134,13 +134,13 @@ const StickyFooterBar = () => {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-fuchsia-600 to-purple-700 border-b border-white/10 shadow-[0_4px_20px_rgba(217,70,239,0.3)]">
-      <div className="max-w-7xl mx-auto px-3 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-3">
-        <div className="flex items-center gap-1.5 sm:gap-2 text-white text-[11px] sm:text-sm font-medium min-w-0">
-          <span className="truncate">🔥Deixe suas imagens em qualidade cinematográfica</span>
+      <div className="max-w-7xl mx-auto px-3 py-3 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-white text-xs sm:text-sm font-medium min-w-0">
+          <span className="truncate">🔥 Suas imagens em qualidade cinematográfica</span>
         </div>
         <button
           onClick={scrollToPlanos}
-          className="bg-white text-fuchsia-700 font-bold text-[11px] sm:text-sm px-3 sm:px-6 py-1.5 sm:py-2 rounded-full hover:bg-white/90 transition-colors shrink-0"
+          className="bg-amber-400 text-gray-900 font-bold text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-2 rounded-full hover:bg-amber-300 transition-colors shrink-0 shadow-lg shadow-amber-400/30"
         >
           ADQUIRIR AGORA
         </button>
