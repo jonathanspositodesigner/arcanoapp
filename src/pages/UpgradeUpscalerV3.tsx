@@ -82,10 +82,15 @@ const SocialProofCounter = () => {
       return () => cancelAnimationFrame(raf);
     }
     if (phase === 'incrementing') {
-      const interval = setInterval(() => {
-        setCount(prev => prev + 1);
-      }, 5000);
-      return () => clearInterval(interval);
+      const scheduleNext = () => {
+        const delay = 5000 + Math.random() * 5000;
+        return setTimeout(() => {
+          setCount(prev => prev + 1);
+          timerRef.current = scheduleNext();
+        }, delay);
+      };
+      const timerRef = { current: scheduleNext() };
+      return () => clearTimeout(timerRef.current);
     }
   }, [phase]);
 
