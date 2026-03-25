@@ -13,10 +13,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { ToolType } from '@/ai/JobManager';
 
 // Timeout para jobs sem nenhum progresso (verdadeiramente órfãos)
-const ORPHAN_TIMEOUT_MS = 180000; // 180s
+const ORPHAN_TIMEOUT_MS = 240000; // 240s (increased for RunningHub queue delays)
 
 // Timeout para jobs COM progresso mas travados (reconciliação)
-const STALLED_TIMEOUT_MS = 300000; // 5 min
+const STALLED_TIMEOUT_MS = 360000; // 6 min
 
 // Mapeamento de ToolType para nome da tabela no banco
 const TABLE_NAME_MAP: Record<ToolType, string> = {

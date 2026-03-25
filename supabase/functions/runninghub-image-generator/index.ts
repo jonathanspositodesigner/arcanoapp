@@ -244,13 +244,22 @@ async function handleRun(req: Request) {
     });
   }
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
-  if (authError || !user) {
-    return new Response(JSON.stringify({ error: 'Invalid token', code: 'UNAUTHORIZED' }), {
-      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  // Check if this is a service-role call (for BYOK proxy)
+  const isServiceRole = authHeader.replace('Bearer ', '') === SUPABASE_SERVICE_ROLE_KEY;
+
+  let verifiedUserId: string;
+  if (isServiceRole) {
+    // Will use byokUserId from body below
+    verifiedUserId = ''; // placeholder, set after parsing body
+  } else {
+    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Invalid token', code: 'UNAUTHORIZED' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    verifiedUserId = user.id;
   }
-  const verifiedUserId = user.id;
 
   const {
     jobId,
@@ -259,7 +268,20 @@ async function handleRun(req: Request) {
     creditCost,
     prompt,
     source,
+    byok,
+    byokUserId,
   } = await req.json();
+
+  // BYOK: resolve userId from body when called via service role
+  const isByok = byok === true && isServiceRole;
+  if (isServiceRole && byokUserId) {
+    verifiedUserId = byokUserId;
+  }
+  if (!verifiedUserId) {
+    return new Response(JSON.stringify({ error: 'User ID could not be resolved', code: 'UNAUTHORIZED' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
 
   // ========== INPUT VALIDATION ==========
   if (!jobId || typeof jobId !== 'string' || jobId.length > 100) {
@@ -277,7 +299,8 @@ async function handleRun(req: Request) {
   const validAspectRatios = ['auto', '1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
   const finalAspectRatio = validAspectRatios.includes(aspectRatio) ? aspectRatio : '4:3';
 
-  if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) {
+  // BYOK jobs have creditCost=0 — skip validation
+  if (!isByok && (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500)) {
     return new Response(JSON.stringify({ error: 'Invalid credit cost', code: 'INVALID_CREDIT_COST' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -361,36 +384,41 @@ async function handleRun(req: Request) {
     });
   }
 
-  // ========== CONSUME CREDITS ==========
-  await logStep(jobId, 'consuming_credits', { amount: creditCost });
-  
-  // Determine credit description based on source
-  let creditDescription = 'Gerar Imagem';
-  if (source === 'arcano_cloner_refine') creditDescription = 'Refinamento Arcano Cloner';
-  else if (source === 'flyer_maker_refine') creditDescription = 'Refinamento Flyer Maker';
+  // ========== CONSUME CREDITS (skip for BYOK) ==========
+  if (isByok) {
+    console.log(`[ImageGenerator] BYOK mode — skipping platform credit consumption for user ${verifiedUserId}`);
+    await logStep(jobId, 'byok_skip_credits');
+  } else {
+    await logStep(jobId, 'consuming_credits', { amount: creditCost });
+    
+    // Determine credit description based on source
+    let creditDescription = 'Gerar Imagem';
+    if (source === 'arcano_cloner_refine') creditDescription = 'Refinamento Arcano Cloner';
+    else if (source === 'flyer_maker_refine') creditDescription = 'Refinamento Flyer Maker';
 
-  const { data: creditResult, error: creditError } = await supabase.rpc(
-    'consume_upscaler_credits',
-    { _user_id: verifiedUserId, _amount: creditCost, _description: creditDescription }
-  );
+    const { data: creditResult, error: creditError } = await supabase.rpc(
+      'consume_upscaler_credits',
+      { _user_id: verifiedUserId, _amount: creditCost, _description: creditDescription }
+    );
 
-  if (creditError) {
-    console.error('[ImageGenerator] Credit consumption error:', creditError);
-    await logStepFailure(jobId, 'consume_credits', creditError.message);
-    return new Response(JSON.stringify({ error: 'Erro ao processar créditos', code: 'CREDIT_ERROR' }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    if (creditError) {
+      console.error('[ImageGenerator] Credit consumption error:', creditError);
+      await logStepFailure(jobId, 'consume_credits', creditError.message);
+      return new Response(JSON.stringify({ error: 'Erro ao processar créditos', code: 'CREDIT_ERROR' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
+      const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
+      await logStepFailure(jobId, 'consume_credits', errorMsg);
+      return new Response(JSON.stringify({ error: errorMsg, code: 'INSUFFICIENT_CREDITS', currentBalance: creditResult?.[0]?.new_balance }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log(`[ImageGenerator] Credits consumed. New balance: ${creditResult[0].new_balance}`);
   }
-
-  if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
-    const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
-    await logStepFailure(jobId, 'consume_credits', errorMsg);
-    return new Response(JSON.stringify({ error: errorMsg, code: 'INSUFFICIENT_CREDITS', currentBalance: creditResult?.[0]?.new_balance }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
-  console.log(`[ImageGenerator] Credits consumed. New balance: ${creditResult[0].new_balance}`);
 
   // ========== SAVE JOB PAYLOAD ==========
   // Pad uploaded files to 6 slots with 'example.png' placeholder
@@ -443,8 +471,10 @@ async function handleRun(req: Request) {
     console.error('[ImageGenerator] Queue Manager call failed:', errorMessage);
     
     try {
-      await supabase.rpc('refund_upscaler_credits', { _user_id: verifiedUserId, _amount: creditCost, _description: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
-      await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
+      if (!isByok) {
+        await supabase.rpc('refund_upscaler_credits', { _user_id: verifiedUserId, _amount: creditCost, _description: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
+      }
+      await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: !isByok, completed_at: new Date().toISOString() }).eq('id', jobId);
     } catch {
       await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `QM_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
     }
