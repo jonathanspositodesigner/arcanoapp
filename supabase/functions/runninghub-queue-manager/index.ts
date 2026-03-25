@@ -1374,6 +1374,24 @@ async function startJobOnRunningHub(
       ];
       break;
     }
+
+    case 'image_generator_jobs': {
+      webappId = WEBAPP_IDS.image_generator_jobs;
+      const refFiles = p.referenceFileNames || [];
+      const imageNodes = ['58', '147', '148', '149', '62', '150'];
+      nodeInfoList = [
+        { nodeId: "145", fieldName: "aspectRatio", fieldValue: p.aspectRatio || job.aspect_ratio || '4:3' },
+        { nodeId: "135", fieldName: "text", fieldValue: p.prompt || job.prompt || '' },
+      ];
+      for (let i = 0; i < imageNodes.length; i++) {
+        nodeInfoList.push({
+          nodeId: imageNodes[i],
+          fieldName: "image",
+          fieldValue: refFiles[i] || 'example.png',
+        });
+      }
+      break;
+    }
       
     default:
       console.error(`[QueueManager] Unknown table: ${table}`);
