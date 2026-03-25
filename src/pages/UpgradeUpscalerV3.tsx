@@ -474,19 +474,25 @@ const UpgradeUpscalerV3 = () => {
             <p className="text-white/50 text-sm mb-10">Os primeiros a testar o V3 já estão falando.</p>
           </AnimatedSection>
 
-          <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-3 gap-4" staggerDelay={150}>
+          {/* Mosaico de depoimentos reais */}
+          <StaggeredAnimation className="columns-2 sm:columns-3 lg:columns-4 gap-3 space-y-3" staggerDelay={100}>
             {[
-              { text: "O Modo Turbo é absurdo. Antes esperava 5 minutos, agora em 40 segundos tá pronto.", name: "Lucas M.", role: "Designer Gráfico" },
-              { text: "O lote mudou meu jogo. Processo 10 fotos de catálogo de uma vez. Economizo horas.", name: "Camila R.", role: "Fotógrafa de Produto" },
-              { text: "Já usava o V2 todo dia. O V3 fez eu não querer voltar nunca mais.", name: "Rafael S.", role: "Social Media" },
-            ].map((t, i) => (
-              <div key={i} className="text-left bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/10 rounded-3xl p-6 hover:border-fuchsia-500/30 transition-all duration-300">
-                <div className="flex gap-0.5 mb-3">
-                  {Array(5).fill(null).map((_, j) => <Star key={j} className="h-4 w-4 text-amber-400 fill-amber-400" />)}
-                </div>
-                <p className="text-sm leading-relaxed mb-4 text-white/60">"{t.text}"</p>
-                <p className="text-sm font-bold text-white">{t.name}</p>
-                <p className="text-xs text-white/40">{t.role}</p>
+              "/images/depo-v3-1.webp",
+              "/images/depo-v3-7.webp",
+              "/images/depo-v3-3.webp",
+              "/images/depo-v3-4.webp",
+              "/images/depo-v3-5.webp",
+              "/images/depo-v3-2.webp",
+              "/images/depo-v3-6.webp",
+              "/images/depo-v3-8.webp",
+            ].map((src, i) => (
+              <div key={i} className="break-inside-avoid rounded-2xl overflow-hidden border border-white/10 hover:border-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02]">
+                <img
+                  src={src}
+                  alt={`Depoimento real ${i + 1}`}
+                  className="w-full h-auto block"
+                  loading="lazy"
+                />
               </div>
             ))}
           </StaggeredAnimation>
