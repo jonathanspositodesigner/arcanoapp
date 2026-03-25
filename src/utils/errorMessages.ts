@@ -19,10 +19,10 @@ export function getAIErrorMessage(errorMessage: string | null): {
   }
 
   // Content safety filter - IA bloqueou por conteúdo inapropriado
-  if (error.includes('content safety') || error.includes('image generation blocked') || error.includes('safety filter') || error.includes('nsfw')) {
+  if (error.includes('content safety') || error.includes('content policy') || error.includes('image generation blocked') || error.includes('safety filter') || error.includes('nsfw')) {
     return {
       message: 'Imagem bloqueada pelo filtro de segurança',
-      solution: 'A IA considerou o conteúdo inapropriado. Tente usar outra imagem de referência ou de pessoa.'
+      solution: 'A IA considerou o conteúdo inapropriado. Seus créditos foram estornados automaticamente. Tente usar outra imagem ou prompt diferente.'
     };
   }
 

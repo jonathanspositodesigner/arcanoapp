@@ -1,76 +1,42 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+/**
+ * BYOK (Bring Your Own Key) - Proxy para RunningHub
+ * 
+ * Usuários com chave Google API própria usam esta função.
+ * Em vez de chamar Gemini diretamente (instável com 429/503),
+ * agora delega para o RunningHub via runninghub-image-generator.
+ * 
+ * O custo é rastreado em user_google_api_keys.used_credits (BRL)
+ * sem consumir créditos da plataforma.
+ * 
+ * Fluxo IMAGE:
+ * 1. Autentica e valida chave do usuário
+ * 2. Upload base64 refs para Storage
+ * 3. Cria job em image_generator_jobs (credits_charged=true para pular cobrança)
+ * 4. Chama runninghub-image-generator/run com byok=true
+ * 5. Faz polling até completar (max 120s)
+ * 6. Atualiza used_credits na tabela do usuário
+ * 
+ * Fluxo VIDEO: mantido via Veo API (sem mudança)
+ */
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const ASPECT_RATIO_MAP: Record<string, string> = {
-  "1:1":  "square 1:1 aspect ratio",
-  "16:9": "wide horizontal landscape 16:9 widescreen aspect ratio",
-  "9:16": "tall vertical portrait 9:16 aspect ratio (like a phone screen)",
-  "4:3":  "standard horizontal 4:3 aspect ratio",
-  "3:4":  "vertical portrait 3:4 aspect ratio",
-};
-
-// Real Google API costs in USD (source: ai.google.dev/gemini-api/docs/pricing - March 2026)
-// Image costs per image (USD)
-const IMAGE_COST_USD: Record<string, number> = {
-  "gemini-2.5-flash-image":           0.039,  // $0.039/image (1290 output tokens @ $30/1M)
-  "gemini-3-pro-image-preview":       0.134,  // ~$0.134/image (higher quality model)
-  "gemini-3.1-flash-image-preview":   0.039,  // same tier as flash image
-};
+// Real Google API costs in USD
+const IMAGE_COST_USD = 0.039; // RunningHub cost per image (approximate)
 
 // Video costs per second (USD) - Veo 3.1 Standard pricing
-const VEO_COST_PER_SECOND_USD = 0.40; // $0.40/second for 720p/1080p
+const VEO_COST_PER_SECOND_USD = 0.40;
 
-// BRL exchange rate (approximate, configurable)
+// BRL exchange rate
 const USD_TO_BRL = 5.80;
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-async function callGeminiWithRetry(
-  apiKey: string,
-  model: string,
-  parts: any[],
-  maxRetries: number
-): Promise<Response> {
-  let lastErr: Response | null = null;
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120_000);
-    let resp: Response;
-    try {
-      resp = await fetch(url, {
-        method: "POST",
-        headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts }],
-          generationConfig: { responseModalities: ["IMAGE", "TEXT"] },
-        }),
-        signal: controller.signal,
-      });
-    } catch (fetchErr: any) {
-      clearTimeout(timeoutId);
-      if (fetchErr.name === "AbortError") {
-        lastErr = new Response(JSON.stringify({ error: "Timeout" }), { status: 504 });
-        if (attempt === maxRetries) break;
-        await sleep(3000);
-        continue;
-      }
-      throw fetchErr;
-    }
-    clearTimeout(timeoutId);
-    if (resp.ok) return resp;
-    const isRetryable = resp.status === 503 || resp.status === 429;
-    lastErr = resp;
-    if (!isRetryable || attempt === maxRetries) break;
-    await sleep(3000);
-  }
-  return lastErr!;
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -104,7 +70,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { type, prompt, model, aspect_ratio, reference_images, duration_seconds, start_frame } = body;
+    const { type, prompt, aspect_ratio, reference_images, duration_seconds, start_frame } = body;
 
     if (!prompt || typeof prompt !== "string" || prompt.trim().length === 0) {
       return new Response(JSON.stringify({ error: "Prompt é obrigatório" }), {
@@ -112,7 +78,7 @@ serve(async (req) => {
       });
     }
 
-    // Fetch user's API key securely
+    // Fetch user's API key (validates BYOK user exists)
     const { data: keyData, error: keyError } = await serviceClient
       .from("user_google_api_keys")
       .select("api_key, used_credits, total_credits")
@@ -125,139 +91,169 @@ serve(async (req) => {
       });
     }
 
-    const userApiKey = keyData.api_key;
-    // Calculate real cost based on model and type
-    let costBrl: number;
-
     if (type === "image") {
-      // ========== IMAGE GENERATION ==========
-      const isProModel = model === "pro";
-      const isNano2Model = model === "nano2";
-      const selectedModel = isNano2Model ? "gemini-3.1-flash-image-preview" : isProModel ? "gemini-3-pro-image-preview" : "gemini-2.5-flash-image";
+      // ========== IMAGE GENERATION VIA RUNNINGHUB ==========
+      const costBrl = Number((IMAGE_COST_USD * USD_TO_BRL).toFixed(2));
+      const finalAspectRatio = aspect_ratio || "1:1";
 
-      // Real cost based on selected model
-      const imageUsd = IMAGE_COST_USD[selectedModel] || 0.039;
-      costBrl = Number((imageUsd * USD_TO_BRL).toFixed(2));
-
-      // Build parts
-      const parts: any[] = [];
+      // Upload base64 reference images to Storage
+      const storageImageUrls: string[] = [];
       if (reference_images && Array.isArray(reference_images)) {
-        for (const refImg of reference_images.slice(0, 5)) {
-          if (refImg.base64 && refImg.mimeType) {
-            parts.push({ inlineData: { mimeType: refImg.mimeType, data: refImg.base64 } });
+        for (let i = 0; i < Math.min(reference_images.length, 5); i++) {
+          const refImg = reference_images[i];
+          if (!refImg.base64 || !refImg.mimeType) continue;
+
+          const ext = refImg.mimeType.includes("png") ? "png" : "jpg";
+          const fileName = `image-generator/${userId}/byok-ref-${Date.now()}-${i}.${ext}`;
+          const binaryData = Uint8Array.from(atob(refImg.base64), c => c.charCodeAt(0));
+
+          const { error: uploadError } = await serviceClient.storage
+            .from("artes-cloudinary")
+            .upload(fileName, binaryData, { contentType: refImg.mimeType, upsert: true });
+
+          if (uploadError) {
+            console.error(`[BYOK] Upload ref ${i} error:`, uploadError);
+            continue;
+          }
+
+          const { data: publicUrlData } = serviceClient.storage
+            .from("artes-cloudinary")
+            .getPublicUrl(fileName);
+
+          if (publicUrlData?.publicUrl) {
+            storageImageUrls.push(publicUrlData.publicUrl);
           }
         }
       }
-      const arLabel = ASPECT_RATIO_MAP[aspect_ratio] || "square 1:1 aspect ratio";
-      parts.push({ text: `${prompt.trim()}. Generate this image in ${arLabel}.` });
 
-      // Create job record (no platform credits charged)
+      // Create job in image_generator_jobs
+      // credits_charged=true + user_credit_cost=0 → runninghub-image-generator skips platform credit consumption
+      const sessionId = `byok-${Date.now()}`;
       const { data: jobData, error: jobError } = await serviceClient
         .from("image_generator_jobs")
         .insert({
           user_id: userId,
           prompt: prompt.trim(),
-          model: isNano2Model ? "nano2" : isProModel ? "pro" : "normal",
-          aspect_ratio: aspect_ratio || "1:1",
+          model: "byok",
+          aspect_ratio: finalAspectRatio,
           reference_images: reference_images || [],
-          status: "processing",
+          status: "pending",
           user_credit_cost: 0,
-          credits_charged: false,
+          credits_charged: true, // Skip platform credit consumption in RH
+          session_id: sessionId,
         })
         .select("id")
         .single();
 
       if (jobError) {
+        console.error("[BYOK] Job insert error:", jobError);
         return new Response(JSON.stringify({ error: "Erro ao criar job" }), {
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+
       const jobId = jobData.id;
+      console.log(`[BYOK] Job created: ${jobId}, delegating to RunningHub`);
 
-      const geminiResponse = await callGeminiWithRetry(userApiKey, selectedModel, parts, 2);
+      // Call runninghub-image-generator/run with byok flag
+      const rhUrl = `${supabaseUrl}/functions/v1/runninghub-image-generator/run`;
+      const rhResponse = await fetch(rhUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${supabaseServiceKey}`, // Service role for byok bypass
+        },
+        body: JSON.stringify({
+          jobId,
+          referenceImageUrls: storageImageUrls,
+          aspectRatio: finalAspectRatio,
+          creditCost: 0,
+          prompt: prompt.trim(),
+          source: "byok",
+          byok: true,
+          byokUserId: userId,
+        }),
+      });
 
-      if (!geminiResponse.ok) {
-        const errText = await geminiResponse.text();
-        console.error(`[generate-with-user-key] Image failed (${geminiResponse.status}):`, errText);
-        await serviceClient.from("image_generator_jobs").update({
-          status: "failed", error_message: `API error ${geminiResponse.status}`, completed_at: new Date().toISOString(),
-        }).eq("id", jobId);
+      const rhResult = await rhResponse.json();
 
-        // Check if key is invalid
-        if (geminiResponse.status === 400 || geminiResponse.status === 403) {
-          return new Response(JSON.stringify({ error: "Chave API inválida ou sem permissão. Verifique sua chave.", key_invalid: true }), {
+      if (!rhResponse.ok && !rhResult.queued) {
+        console.error("[BYOK] RunningHub call failed:", rhResult);
+        return new Response(JSON.stringify({
+          error: rhResult.error || "Erro na geração. Tente novamente.",
+        }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Poll for completion (max 120s)
+      const FAST_POLL_TIME = 30_000;
+      const MAX_POLL_TIME = 120_000;
+      const FAST_INTERVAL = 3_000;
+      const SLOW_INTERVAL = 5_000;
+      const startTime = Date.now();
+
+      while (Date.now() - startTime < MAX_POLL_TIME) {
+        const elapsed = Date.now() - startTime;
+        const interval = elapsed < FAST_POLL_TIME ? FAST_INTERVAL : SLOW_INTERVAL;
+        await sleep(interval);
+
+        const { data: job } = await serviceClient
+          .from("image_generator_jobs")
+          .select("status, output_url, error_message")
+          .eq("id", jobId)
+          .maybeSingle();
+
+        if (!job) break;
+
+        if (job.status === "completed" && job.output_url) {
+          console.log(`[BYOK] Job ${jobId} completed in ${Math.round(elapsed / 1000)}s`);
+
+          // Track cost in user_google_api_keys
+          await serviceClient.from("user_google_api_keys").update({
+            used_credits: (keyData.used_credits || 0) + costBrl,
+            updated_at: new Date().toISOString(),
+          }).eq("user_id", userId);
+
+          return new Response(JSON.stringify({
+            success: true, job_id: jobId, output_url: job.output_url,
+            mime_type: "image/png", cost_brl: costBrl,
+          }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+
+        if (job.status === "failed") {
+          console.log(`[BYOK] Job ${jobId} failed: ${job.error_message}`);
+          return new Response(JSON.stringify({
+            error: job.error_message || "Erro na geração. Tente novamente.",
+          }), {
             status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-
-        return new Response(JSON.stringify({ error: "Erro na geração. Tente novamente." }), {
-          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
       }
 
-      const geminiData = await geminiResponse.json();
-      let imageBase64: string | null = null;
-      let imageMimeType = "image/png";
-      const candidates = geminiData?.candidates;
-      if (candidates?.[0]?.content?.parts) {
-        for (const part of candidates[0].content.parts) {
-          if (part.inlineData) {
-            imageBase64 = part.inlineData.data;
-            imageMimeType = part.inlineData.mimeType || "image/png";
-            break;
-          }
-        }
-      }
-
-      if (!imageBase64) {
-        const finishReason = candidates?.[0]?.finishReason || "";
-        await serviceClient.from("image_generator_jobs").update({
-          status: "failed", error_message: finishReason || "Sem imagem", completed_at: new Date().toISOString(),
-        }).eq("id", jobId);
-        return new Response(JSON.stringify({ error: "Nenhuma imagem gerada. Tente com outro prompt." }), {
-          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      // Upload
-      const ext = imageMimeType.includes("png") ? "png" : "webp";
-      const storagePath = `image-generator/${userId}/${jobId}.${ext}`;
-      const imageBytes = Uint8Array.from(atob(imageBase64), (c) => c.charCodeAt(0));
-
-      await serviceClient.storage.from("artes-cloudinary").upload(storagePath, imageBytes, { contentType: imageMimeType, upsert: true });
-      const { data: publicUrlData } = serviceClient.storage.from("artes-cloudinary").getPublicUrl(storagePath);
-      const outputUrl = publicUrlData?.publicUrl || null;
-
-      await serviceClient.from("image_generator_jobs").update({
-        status: "completed", output_url: outputUrl, completed_at: new Date().toISOString(),
-      }).eq("id", jobId);
-
-      // Update used_credits
-      await serviceClient.from("user_google_api_keys").update({
-        used_credits: (keyData.used_credits || 0) + costBrl,
-        updated_at: new Date().toISOString(),
-      }).eq("user_id", userId);
-
+      // Timeout
+      console.log(`[BYOK] Job ${jobId} still processing after 120s`);
       return new Response(JSON.stringify({
-        success: true, job_id: jobId, output_url: outputUrl, mime_type: imageMimeType, cost_brl: costBrl,
-      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        error: "A geração está demorando. Atualize o app para acompanhar o resultado.",
+        job_id: jobId,
+      }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
 
     } else if (type === "video") {
-      // ========== VIDEO GENERATION ==========
+      // ========== VIDEO GENERATION VIA VEO (unchanged) ==========
       const ratio = ["16:9", "9:16"].includes(aspect_ratio) ? aspect_ratio : "16:9";
       const validDurations = [4, 6, 8];
       const duration = validDurations.includes(duration_seconds) ? duration_seconds : 8;
+      const costBrl = Number((VEO_COST_PER_SECOND_USD * duration * USD_TO_BRL).toFixed(2));
 
-      // Real cost: Veo 3.1 Standard = $0.40/second × duration
-      costBrl = Number((VEO_COST_PER_SECOND_USD * duration * USD_TO_BRL).toFixed(2));
-
+      const userApiKey = keyData.api_key;
       const instance: any = { prompt: prompt.trim() };
       if (start_frame?.base64 && start_frame?.mimeType) {
         instance.image = { bytesBase64Encoded: start_frame.base64, mimeType: start_frame.mimeType };
       }
 
       const veoUrl = "https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning";
-
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60_000);
 
@@ -285,7 +281,7 @@ serve(async (req) => {
 
       if (!veoResponse.ok) {
         const errText = await veoResponse.text();
-        console.error(`[generate-with-user-key] Veo error ${veoResponse.status}:`, errText);
+        console.error(`[BYOK] Veo error ${veoResponse.status}:`, errText);
         if (veoResponse.status === 400 || veoResponse.status === 403) {
           return new Response(JSON.stringify({ error: "Chave API inválida ou sem permissão.", key_invalid: true }), {
             status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -304,7 +300,7 @@ serve(async (req) => {
         });
       }
 
-      // Create job
+      // Create video job
       const { data: jobData, error: jobError } = await serviceClient
         .from("video_generator_jobs")
         .insert({
@@ -344,7 +340,7 @@ serve(async (req) => {
     }
 
   } catch (err) {
-    console.error("[generate-with-user-key] Unexpected error:", err);
+    console.error("[BYOK] Unexpected error:", err);
     return new Response(JSON.stringify({ error: "Erro interno do servidor" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
