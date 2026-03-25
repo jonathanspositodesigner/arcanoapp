@@ -16,7 +16,7 @@ import { toast } from "sonner";
 
 import AppLayout from "@/components/layout/AppLayout";
 import PromoToolsBanner from "@/components/PromoToolsBanner";
-import UpscalerChoiceModal from "@/components/ferramentas/UpscalerChoiceModal";
+
 
 interface ToolData {
   id: string;
@@ -37,9 +37,6 @@ const FerramentasIAAplicativo = () => {
   const { user, hasAccessToPack, isPremium, isLoading: isPremiumLoading } = usePremiumArtesStatus();
   const { planType: promptsPlanType, isLoading: isPromptsLoading } = usePremiumStatus();
   
-  // State for Upscaler choice modal
-  const [showUpscalerModal, setShowUpscalerModal] = useState(false);
-  const hasUpscalerPack = hasAccessToPack('upscaller-arcano');
   
   
   // Check promo claim status
@@ -193,6 +190,7 @@ const FerramentasIAAplicativo = () => {
     if (slug === "arcano-cloner") return true;
     if (slug === "flyer-maker") return true;
     if (slug === "remover-fundo") return true;
+    if (slug === "upscaller-arcano") return true;
     if (bonusTools.includes(slug)) {
       return isPremium;
     }
@@ -200,13 +198,7 @@ const FerramentasIAAplicativo = () => {
   };
 
   const handleToolClick = (tool: ToolData) => {
-    // If it's Upscaler Arcano and user has the pack, show choice modal
-    if (tool.slug === "upscaller-arcano" && hasUpscalerPack) {
-      setShowUpscalerModal(true);
-      return;
-    }
-    
-    // Otherwise, navigate normally
+    // Navigate directly to the tool route
     navigate(getAccessRoute(tool.slug));
   };
 
@@ -327,7 +319,7 @@ const FerramentasIAAplicativo = () => {
                 <Button
                   size="sm"
                   className={`w-full text-[11px] sm:text-sm h-8 sm:h-9 font-medium ${
-                    hasAccess || (isUpscalerArcano && hasUpscalerPack)
+                    hasAccess
                       ? "bg-green-500 hover:bg-green-600" 
                       : "bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90"
                   } text-white`}
@@ -383,15 +375,6 @@ const FerramentasIAAplicativo = () => {
         )}
       </main>
 
-      {/* Upscaler Choice Modal */}
-      <UpscalerChoiceModal
-        isOpen={showUpscalerModal}
-        onClose={() => setShowUpscalerModal(false)}
-        hasClaimedPromo={hasClaimed}
-        isCheckingClaim={isCheckingClaim}
-        onClaimAndAccess={handleClaimAndAccess}
-        hasLifetimePack={hasUpscalerPack}
-      />
 
     </AppLayout>
   );
