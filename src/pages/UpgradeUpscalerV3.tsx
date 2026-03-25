@@ -194,6 +194,116 @@ const FakePurchaseNotifications = () => {
   );
 };
 
+const DEPO_IMAGES = [
+  "/images/depo-v3-1.webp",
+  "/images/depo-v3-7.webp",
+  "/images/depo-v3-3.webp",
+  "/images/depo-v3-4.webp",
+  "/images/depo-v3-5.webp",
+  "/images/depo-v3-2.webp",
+  "/images/depo-v3-6.webp",
+  "/images/depo-v3-8.webp",
+];
+
+const TestimonialsGallery = () => {
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
+
+  const openLightbox = (i: number) => {
+    if (isDesktop) setLightboxIndex(i);
+  };
+
+  const goNext = useCallback(() => {
+    setLightboxIndex(prev => prev !== null ? (prev + 1) % DEPO_IMAGES.length : null);
+  }, []);
+
+  const goPrev = useCallback(() => {
+    setLightboxIndex(prev => prev !== null ? (prev - 1 + DEPO_IMAGES.length) % DEPO_IMAGES.length : null);
+  }, []);
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') goNext();
+      else if (e.key === 'ArrowLeft') goPrev();
+      else if (e.key === 'Escape') setLightboxIndex(null);
+    };
+    window.addEventListener('keydown', handleKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', handleKey);
+      document.body.style.overflow = '';
+    };
+  }, [lightboxIndex, goNext, goPrev]);
+
+  return (
+    <>
+      <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto" staggerDelay={100}>
+        {DEPO_IMAGES.map((src, i) => (
+          <div
+            key={i}
+            className={`rounded-2xl overflow-hidden border-2 border-white/10 hover:border-fuchsia-500/40 transition-all duration-300 hover:scale-[1.03] shadow-lg shadow-black/30 hover:shadow-fuchsia-500/10 ${isDesktop ? 'cursor-pointer' : ''}`}
+            onClick={() => openLightbox(i)}
+          >
+            <img
+              src={src}
+              alt={`Depoimento real ${i + 1}`}
+              className="w-full h-auto block"
+              loading="lazy"
+            />
+          </div>
+        ))}
+      </StaggeredAnimation>
+
+      {/* Lightbox - Desktop only */}
+      {lightboxIndex !== null && (
+        <div
+          className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4"
+          onClick={() => setLightboxIndex(null)}
+        >
+          <button
+            onClick={() => setLightboxIndex(null)}
+            className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+          >
+            <X className="h-6 w-6" />
+          </button>
+
+          <button
+            onClick={(e) => { e.stopPropagation(); goPrev(); }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+
+          <button
+            onClick={(e) => { e.stopPropagation(); goNext(); }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+
+          <img
+            src={DEPO_IMAGES[lightboxIndex]}
+            alt={`Depoimento ${lightboxIndex + 1}`}
+            className="max-w-full max-h-[90vh] rounded-xl object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+            {DEPO_IMAGES.map((_, i) => (
+              <button
+                key={i}
+                onClick={(e) => { e.stopPropagation(); setLightboxIndex(i); }}
+                className={`w-2 h-2 rounded-full transition-all ${i === lightboxIndex ? 'bg-fuchsia-400 w-6' : 'bg-white/30 hover:bg-white/50'}`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
 const UpgradeUpscalerV3 = () => {
   const { openCheckout, MPCheckoutModal } = useMPCheckout({ source_page: 'upgrade-v3' });
 
