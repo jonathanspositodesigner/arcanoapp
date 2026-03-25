@@ -633,29 +633,7 @@ serve(async (req) => {
           console.log(`   ├─ ✅ +${product.credits_amount} créditos adicionados`)
         }
 
-        // Também conceder acesso ao pack para que o usuário possa usar as ferramentas
-        const { data: existingCreditAccess } = await supabase
-          .from('user_pack_purchases')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('pack_slug', 'upscaller-arcano')
-          .eq('is_active', true)
-          .maybeSingle()
-
-        if (!existingCreditAccess) {
-          await supabase.from('user_pack_purchases').insert({
-            user_id: userId,
-            pack_slug: 'upscaller-arcano',
-            access_type: 'credits',
-            has_bonus_access: true,
-            expires_at: null,
-            product_name: product.title,
-            platform: 'mercadopago'
-          })
-          console.log(`   ├─ ✅ Acesso ao pack upscaller-arcano concedido (plano de créditos)`)
-        } else {
-          console.log(`   ├─ ℹ️ Acesso ao pack upscaller-arcano já existente`)
-        }
+        // Créditos avulsos NÃO concedem acesso a packs — são apenas créditos
         } // close else (créditos não duplicados)
       }
 
@@ -972,28 +950,7 @@ serve(async (req) => {
           }
         }
 
-        // Verificar se há outras ordens pagas de créditos antes de revogar o pack
-        const { data: otherCreditOrders } = await supabase
-          .from('mp_orders')
-          .select('id, product_slug, mp_products!inner(type)')
-          .eq('user_id', order.user_id)
-          .eq('status', 'paid')
-          .neq('id', order.id)
-
-        const hasOtherCredits = otherCreditOrders?.some((o: any) => o.mp_products?.type === 'credits')
-
-        if (!hasOtherCredits) {
-          // Só revogar o pack se não houver outras compras de créditos ativas
-          await supabase
-            .from('user_pack_purchases')
-            .update({ is_active: false, updated_at: new Date().toISOString() })
-            .eq('user_id', order.user_id)
-            .eq('pack_slug', 'upscaller-arcano')
-            .eq('access_type', 'credits')
-          console.log(`   ├─ ✅ Acesso ao pack upscaller-arcano (credits) revogado`)
-        } else {
-          console.log(`   ├─ ⚠️ Pack mantido: usuário tem ${otherCreditOrders?.filter((o: any) => o.mp_products?.type === 'credits').length} outra(s) compra(s) de créditos ativa(s)`)
-        }
+        // Estorno de créditos avulsos NÃO revoga packs — são independentes
       }
 
       // === REFUND: Revogar bônus vitalício Upscaler Arcano (SÓ vitalício, NÃO V3) ===

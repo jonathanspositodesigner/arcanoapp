@@ -431,12 +431,12 @@ serve(async (req) => {
           }
         }
 
-        // Also check asaas_orders for a recent paid order
+        // Also check mp_orders for a recent paid order
         const { data: recentOrder } = await supabase
-          .from('asaas_orders')
+          .from('mp_orders')
           .select('id')
           .eq('user_email', userEmail)
-          .eq('status', 'confirmed')
+          .eq('status', 'paid')
           .gte('paid_at', expiresAt.toISOString())
           .limit(1)
           .maybeSingle()
