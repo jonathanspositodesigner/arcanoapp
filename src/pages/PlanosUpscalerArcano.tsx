@@ -149,7 +149,7 @@ const StickyFooterBar = () => {
       <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-white text-xs sm:text-sm font-medium">
           <Clock className="h-4 w-4 text-amber-400 shrink-0" />
-          <span className="hidden sm:inline">Promoção acaba em</span>
+          <span className="hidden sm:inline">🔥 Imagens perfeitas por apenas R$6,90 —</span>
           <span className="font-bold tabular-nums bg-black/20 rounded px-2 py-0.5">
             {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
           </span>
@@ -158,7 +158,7 @@ const StickyFooterBar = () => {
           onClick={scrollToPlanos}
           className="bg-white text-fuchsia-700 font-bold text-xs sm:text-sm px-4 sm:px-6 py-2 rounded-full hover:bg-white/90 transition-colors shrink-0"
         >
-          VER PLANOS
+          ADQUIRIR AGORA
         </button>
       </div>
     </div>
