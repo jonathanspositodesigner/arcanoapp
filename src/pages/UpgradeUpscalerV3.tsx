@@ -729,39 +729,45 @@ const UpgradeUpscalerV3 = () => {
         </div>
       </section>
 
-      {/* FAQ */}
-      <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
-        <div className="max-w-3xl mx-auto">
-          <AnimatedSection as="div" delay={100}>
-            <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-10 tracking-wide">
-              Perguntas <span className="text-fuchsia-400">frequentes</span>
-            </h2>
-          </AnimatedSection>
+      {/* FAQ - Lazy */}
+      <div ref={faqRef}>
+        {showFaq ? (
+          <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+            <div className="max-w-3xl mx-auto">
+              <AnimatedSection as="div" delay={100}>
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-10 tracking-wide">
+                  Perguntas <span className="text-fuchsia-400">frequentes</span>
+                </h2>
+              </AnimatedSection>
 
-          <StaggeredAnimation className="space-y-3" staggerDelay={100}>
-            {[
-              { q: "O que muda do V2 para o V3?", a: "O V3 traz o Modo Turbo (resultados em menos de 60 segundos) e o Upscale em Lote, que permite melhorar até 10 imagens de uma vez. Tudo com a mesma qualidade do V2." },
-              { q: "Preciso pagar de novo pelo V2?", a: "Não. Quem compra o V3 recebe acesso ao V2 automaticamente. Você mantém tudo." },
-              { q: "Posso usar o V2 e o V3 ao mesmo tempo?", a: "Sim. Você terá acesso às duas versões e pode alternar entre elas a qualquer momento." },
-              { q: "O acesso é vitalício mesmo?", a: "Sim. Pagamento único, acesso para sempre. Sem assinaturas, sem taxas recorrentes, sem limite de uso." },
-              { q: "Funciona com qualquer tipo de imagem?", a: "Sim. O Upscaler Arcano funciona com fotos, artes digitais, logos, prints e qualquer imagem que você queira melhorar." },
-            ].map((item, i) => (
-              <details
-                key={i}
-                className="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-fuchsia-500/30 transition-all duration-300"
-              >
-                <summary className="font-semibold text-sm md:text-base text-white/90 list-none flex items-center justify-between cursor-pointer p-5 md:p-6">
-                  {item.q}
-                  <ChevronDown className="h-4 w-4 text-fuchsia-400 shrink-0 ml-3 transition-transform duration-300 group-open:rotate-180" />
-                </summary>
-                <div className="px-5 md:px-6 pb-5 md:pb-6 -mt-1">
-                  <p className="text-sm leading-relaxed text-white/50">{item.a}</p>
-                </div>
-              </details>
-            ))}
-          </StaggeredAnimation>
-        </div>
-      </AnimatedSection>
+              <StaggeredAnimation className="space-y-3" staggerDelay={100}>
+                {[
+                  { q: "O que muda do V2 para o V3?", a: "O V3 traz o Modo Turbo (resultados em menos de 60 segundos) e o Upscale em Lote, que permite melhorar até 10 imagens de uma vez. Tudo com a mesma qualidade do V2." },
+                  { q: "Preciso pagar de novo pelo V2?", a: "Não. Quem compra o V3 recebe acesso ao V2 automaticamente. Você mantém tudo." },
+                  { q: "Posso usar o V2 e o V3 ao mesmo tempo?", a: "Sim. Você terá acesso às duas versões e pode alternar entre elas a qualquer momento." },
+                  { q: "O acesso é vitalício mesmo?", a: "Sim. Pagamento único, acesso para sempre. Sem assinaturas, sem taxas recorrentes, sem limite de uso." },
+                  { q: "Funciona com qualquer tipo de imagem?", a: "Sim. O Upscaler Arcano funciona com fotos, artes digitais, logos, prints e qualquer imagem que você queira melhorar." },
+                ].map((item, i) => (
+                  <details
+                    key={i}
+                    className="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-fuchsia-500/30 transition-all duration-300"
+                  >
+                    <summary className="font-semibold text-sm md:text-base text-white/90 list-none flex items-center justify-between cursor-pointer p-5 md:p-6">
+                      {item.q}
+                      <ChevronDown className="h-4 w-4 text-fuchsia-400 shrink-0 ml-3 transition-transform duration-300 group-open:rotate-180" />
+                    </summary>
+                    <div className="px-5 md:px-6 pb-5 md:pb-6 -mt-1">
+                      <p className="text-sm leading-relaxed text-white/50">{item.a}</p>
+                    </div>
+                  </details>
+                ))}
+              </StaggeredAnimation>
+            </div>
+          </AnimatedSection>
+        ) : (
+          <div className="min-h-[400px]" />
+        )}
+      </div>
 
       {/* CTA FINAL */}
       <section className="px-4 py-20 md:py-24 text-center">
