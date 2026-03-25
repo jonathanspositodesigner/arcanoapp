@@ -57,6 +57,48 @@ const CountdownTimer = () => {
   );
 };
 
+const YouTubeFacade = ({ videoId }: { videoId: string }) => {
+  const [showIframe, setShowIframe] = useState(false);
+
+  const handlePlay = useCallback(() => {
+    setShowIframe(true);
+  }, []);
+
+  return (
+    <div className="w-full max-w-3xl mx-auto mb-10 rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-fuchsia-500/10 bg-black">
+      <div className="relative w-full aspect-video">
+        {showIframe ? (
+          <iframe
+            className="absolute inset-0 w-full h-full"
+            src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=1`}
+            title="Upscaler Arcano V3"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <button
+            onClick={handlePlay}
+            className="absolute inset-0 w-full h-full cursor-pointer group bg-black"
+            aria-label="Reproduzir vídeo"
+          >
+            <img
+              src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+              alt="Thumbnail do vídeo"
+              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+              loading="eager"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-red-600 flex items-center justify-center shadow-2xl shadow-black/50 group-hover:scale-110 transition-transform duration-300">
+                <Play className="h-7 w-7 md:h-9 md:w-9 text-white fill-white ml-1" />
+              </div>
+            </div>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const UpgradeUpscalerV3 = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
