@@ -154,15 +154,18 @@ const FakePurchaseNotifications = () => {
   const [notification, setNotification] = useState<{ name: string; id: number } | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const countRef = useRef(0);
 
   useEffect(() => {
     const scheduleNext = () => {
+      if (countRef.current >= 4) return;
       const delay = 5000 + Math.random() * 5000;
       timeoutRef.current = setTimeout(() => {
         const name = FAKE_NAMES[Math.floor(Math.random() * FAKE_NAMES.length)];
         setNotification({ name, id: Date.now() });
         setIsVisible(true);
-        setTimeout(() => setIsVisible(false), 2000);
+        countRef.current += 1;
+        setTimeout(() => setIsVisible(false), 5000);
         scheduleNext();
       }, delay);
     };
