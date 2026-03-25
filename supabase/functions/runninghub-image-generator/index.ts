@@ -272,6 +272,17 @@ async function handleRun(req: Request) {
     byokUserId,
   } = await req.json();
 
+  // BYOK: resolve userId from body when called via service role
+  const isByok = byok === true && isServiceRole;
+  if (isServiceRole && byokUserId) {
+    verifiedUserId = byokUserId;
+  }
+  if (!verifiedUserId) {
+    return new Response(JSON.stringify({ error: 'User ID could not be resolved', code: 'UNAUTHORIZED' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   // ========== INPUT VALIDATION ==========
   if (!jobId || typeof jobId !== 'string' || jobId.length > 100) {
     return new Response(JSON.stringify({ error: 'Valid jobId is required', code: 'INVALID_JOB_ID' }), {
@@ -288,7 +299,8 @@ async function handleRun(req: Request) {
   const validAspectRatios = ['auto', '1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
   const finalAspectRatio = validAspectRatios.includes(aspectRatio) ? aspectRatio : '4:3';
 
-  if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) {
+  // BYOK jobs have creditCost=0 — skip validation
+  if (!isByok && (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500)) {
     return new Response(JSON.stringify({ error: 'Invalid credit cost', code: 'INVALID_CREDIT_COST' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
