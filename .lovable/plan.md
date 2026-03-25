@@ -1,29 +1,23 @@
 
 
-# Fix: "Gerar Imagem" — Edge Function Not Deployed
+# Fix: Webhook Not Finding Image Generator Jobs
 
 ## Root Cause
 
-The edge function `runninghub-image-generator` **was never deployed**. The file exists in the codebase (`supabase/functions/runninghub-image-generator/index.ts`) but has zero logs on the server. Every call from the frontend returns "Failed to send a request to the Edge Function", which triggers 4 retries and then marks the job as failed via the queue manager's `/finish` endpoint.
+The `runninghub-webhook` edge function on the server is running an **old deployed version** that does NOT include `image_generator_jobs` in the `IMAGE_JOB_TABLES` array. The codebase is correct (line 29 includes it), but the server version predates the migration.
+
+**Evidence from logs:**
+- Webhook received `TASK_END` for taskId `2036816453054894082` at 14:44:50 → **"Job not found"**
+- The job only completed ~35 seconds later when you clicked "Verificar Status", which triggered the `/reconcile` endpoint (a different function), which found the result and called `/finish`
+
+This is the exact same problem that happened with the queue manager — the code exists but the function wasn't redeployed after adding `image_generator_jobs`.
 
 ## Fix
 
-**Deploy the edge function.** The code itself is correct — identical patterns to the 8 other RunningHub functions that are all working (same imports, same CORS, same structure). No code changes needed.
+**Redeploy `runninghub-webhook`** — no code changes needed. The current codebase already has `image_generator_jobs` in `IMAGE_JOB_TABLES` (line 29). Once redeployed, webhooks from RunningHub will immediately find and complete image generator jobs, eliminating the delay.
 
-### Step 1: Deploy `runninghub-image-generator`
-Use the deploy tool to push the function to the server. This is the only action needed.
-
-### Step 2: Verify deployment
-Check the function logs to confirm it boots and responds correctly.
-
----
-
-## Technical Details
-
-- The frontend (`GerarImagemTool.tsx`) calls `supabase.functions.invoke('runninghub-image-generator/run', ...)` via `JobManager.startJob()`
-- JobManager retries 4 times with exponential backoff (2s, 5s, 10s delays)
-- All 4 attempts fail with "Failed to send a request to the Edge Function" because the function doesn't exist on the server
-- After attempt 4, the catch block calls `mark_pending_job_as_failed` which goes through `runninghub-queue-manager/finish` to mark the job as failed
-- The queue manager log confirms: `[image_generator_jobs] Job 68c02eb8: failed { error: "Falha na comunicação com o servidor" }`
-- No code changes required — just deployment
+## What This Fixes
+- Images will appear **instantly** when RunningHub finishes (via webhook → /finish → realtime update)
+- No more "stuck on running" requiring manual "Verificar Status" click
+- Thumbnails, push notifications, and credit accounting all triggered properly on first webhook
 
