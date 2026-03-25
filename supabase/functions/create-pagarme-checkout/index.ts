@@ -143,6 +143,45 @@ serve(async (req) => {
       return errorResponse('product_slug é obrigatório', 400, 'MISSING_FIELDS');
     }
 
+    // ===== PROXY: Slugs migrados para Mercado Pago =====
+    const MIGRATED_SLUGS = [
+      'plano-starter-mensal', 'plano-starter-anual',
+      'plano-pro-mensal', 'plano-pro-anual',
+      'plano-ultimate-mensal', 'plano-ultimate-anual',
+      'plano-unlimited-mensal', 'plano-unlimited-anual',
+      'creditos-1500', 'creditos-4200', 'creditos-14000',
+    ];
+    if (MIGRATED_SLUGS.includes(product_slug)) {
+      console.log(`[${requestId}] 🔀 Proxy: slug "${product_slug}" migrado → redirecionando para create-mp-checkout`);
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const mpPayload = {
+        product_slug,
+        user_email: user_email || null,
+        user_name: user_name || null,
+        user_document: user_cpf || null,
+        utm_data: utm_data || null,
+        fbp: fbp || null,
+        fbc: fbc || null,
+        user_agent: req.headers.get('user-agent') || null,
+      };
+      try {
+        const mpRes = await fetch(`${supabaseUrl}/functions/v1/create-mp-checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mpPayload),
+        });
+        const mpBody = await mpRes.text();
+        return new Response(mpBody, {
+          status: mpRes.status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } catch (proxyErr: any) {
+        console.error(`[${requestId}] ❌ Proxy MP falhou:`, proxyErr);
+        return errorResponse('Erro ao redirecionar checkout', 502, 'PROXY_ERROR');
+      }
+    }
+    // ===== FIM PROXY =====
+
     // Email obrigatório para criação de checkout
     let email: string | null = null
     if (typeof user_email !== 'string' || !user_email.trim()) {
