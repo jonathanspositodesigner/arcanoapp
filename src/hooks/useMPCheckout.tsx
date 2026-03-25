@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { redirectToMPCheckout } from "@/lib/mpCheckout";
 import { MPEmailModal, type MPCustomerData } from "@/components/checkout/MPEmailModal";
 
-export function useMPCheckout() {
+export function useMPCheckout(hookOptions?: { source_page?: string }) {
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -56,12 +56,12 @@ export function useMPCheckout() {
     if (!selectedSlug) return;
     setLoading(true);
     try {
-      await redirectToMPCheckout(selectedSlug, data);
+      await redirectToMPCheckout(selectedSlug, data, { source_page: hookOptions?.source_page });
     } finally {
       setLoading(false);
       setSelectedSlug(null);
     }
-  }, [selectedSlug]);
+  }, [selectedSlug, hookOptions?.source_page]);
 
   // ── Componente do modal pronto para renderizar ──
   const MPCheckoutModal = useMemo(() => {
