@@ -708,21 +708,9 @@ const PlanosUpscalerArcano = () => {
           </AnimatedSection>
           </LazySection>
 
-          {/* GALERIA - O que o Upscaler faz */}
-          <LazySection rootMargin="1200px">
-          {/* Fullscreen scroll-driven gallery - all devices */}
-          <div>
-            <h2 className="text-center text-3xl md:text-5xl font-black py-12 bg-clip-text text-transparent bg-gradient-to-r from-fuchsia-500 to-purple-600 uppercase tracking-tight">
-              Melhorado com o Upscaler Arcano
-            </h2>
-            <Suspense fallback={<div className="h-screen bg-white/5 animate-pulse" />}>
-              {isMobile ? (
-                <MobileBeforeAfterGallery items={galleryItemsMobile} />
-              ) : (
-                <ScrollDrivenGallery items={galleryItemsDesktop} />
-              )}
-            </Suspense>
-          </div>
+          {/* PROVA SOCIAL - Lazy loaded with Intersection Observer */}
+          <LazySection rootMargin="100px">
+          <LazySocialProofWrapper locale="pt" onZoomClick={openModal} isMobile={isMobile} />
           </LazySection>
 
 
