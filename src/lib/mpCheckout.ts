@@ -11,7 +11,8 @@ const TIMEOUT_MS = 20_000;
 
 export async function redirectToMPCheckout(
   productSlug: string,
-  customerData: { name: string; email: string; document: string }
+  customerData: { name: string; email: string; document: string },
+  options?: { source_page?: string }
 ): Promise<void> {
   if (!productSlug?.trim()) {
     toast.error("Produto inválido. Tente novamente.");
@@ -57,6 +58,7 @@ export async function redirectToMPCheckout(
         fbc,
         user_agent: navigator.userAgent,
         event_id: eventId,
+        ...(options?.source_page ? { source_page: options.source_page } : {}),
       }),
       signal: controller.signal,
     });
