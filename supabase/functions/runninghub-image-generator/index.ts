@@ -244,13 +244,22 @@ async function handleRun(req: Request) {
     });
   }
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
-  if (authError || !user) {
-    return new Response(JSON.stringify({ error: 'Invalid token', code: 'UNAUTHORIZED' }), {
-      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  // Check if this is a service-role call (for BYOK proxy)
+  const isServiceRole = authHeader.replace('Bearer ', '') === SUPABASE_SERVICE_ROLE_KEY;
+
+  let verifiedUserId: string;
+  if (isServiceRole) {
+    // Will use byokUserId from body below
+    verifiedUserId = ''; // placeholder, set after parsing body
+  } else {
+    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Invalid token', code: 'UNAUTHORIZED' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    verifiedUserId = user.id;
   }
-  const verifiedUserId = user.id;
 
   const {
     jobId,
