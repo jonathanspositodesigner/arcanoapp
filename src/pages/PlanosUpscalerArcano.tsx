@@ -20,8 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MousePointerClick, MessageCircle, ZoomIn, X, User, Rocket, PenTool, Image as ImageIcon, Award, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { redirectToCheckout } from "@/lib/pagarmeCheckout";
-import { CheckoutCustomerModal, type CheckoutCustomerData } from "@/components/checkout/CheckoutCustomerModal";
+import { useMPCheckout } from "@/hooks/useMPCheckout";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -234,23 +233,7 @@ const PlanosUpscalerArcano = () => {
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
-  const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null);
-  const [checkoutSlug, setCheckoutSlug] = useState<string | null>(null);
-
-  const handlePurchase = (productSlug?: string | unknown) => {
-    const slug = typeof productSlug === 'string' && productSlug.trim().length > 0
-      ? productSlug
-      : 'upscaller-arcano-vitalicio';
-    setCheckoutSlug(slug);
-  };
-
-  const handleCheckoutConfirm = async (customerData: CheckoutCustomerData) => {
-    if (!checkoutSlug) return;
-    setPurchaseLoading(checkoutSlug);
-    await redirectToCheckout(checkoutSlug, customerData);
-    setPurchaseLoading(null);
-    setCheckoutSlug(null);
-  };
+  const { openCheckout, MPCheckoutModal } = useMPCheckout();
 
   // Countdown timer - 48 minutes
   const [timeLeft, setTimeLeft] = useState(() => {
@@ -752,7 +735,7 @@ const PlanosUpscalerArcano = () => {
                     </div>
 
                     <Button
-                      onClick={() => handlePurchase(plan.productSlug)}
+                      onClick={() => openCheckout(plan.productSlug)}
                       className={`w-full mb-2 text-sm lg:text-base h-10 lg:h-12 ${
                         plan.isLifetime
                           ? "bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-700 hover:to-purple-700 text-white font-semibold"
@@ -931,12 +914,7 @@ const PlanosUpscalerArcano = () => {
 
 
       {/* Modal Checkout Customer */}
-      <CheckoutCustomerModal
-        open={!!checkoutSlug}
-        onClose={() => setCheckoutSlug(null)}
-        onConfirm={handleCheckoutConfirm}
-        loading={!!purchaseLoading}
-      />
+      <MPCheckoutModal />
 
       {/* Modal Fullscreen */}
       {modalImages && (
