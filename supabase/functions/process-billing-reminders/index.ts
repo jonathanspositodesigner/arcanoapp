@@ -6,8 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const PAGARME_API_URL = 'https://api.pagar.me/core/v5'
-
 // ========== PLAN BENEFITS MAPPING ==========
 interface PlanInfo {
   displayName: string
@@ -116,63 +114,55 @@ async function getSendPulseToken(): Promise<string> {
   return data.access_token
 }
 
-// ========== PAGAR.ME CHECKOUT ==========
+// ========== MERCADO PAGO CHECKOUT ==========
 async function createRenewalCheckout(
-  pagarmeSecretKey: string,
+  mpAccessToken: string,
   userEmail: string,
   userName: string,
   productTitle: string,
-  amountInCents: number,
+  amount: number,
   orderId: string,
-): Promise<{ checkoutUrl: string; pixCopyPaste: string | null }> {
-  const authHeader = 'Basic ' + btoa(pagarmeSecretKey + ':')
+): Promise<{ checkoutUrl: string }> {
   const payload = {
     items: [{
-      amount: amountInCents,
-      description: `Renovação - ${productTitle}`,
+      title: `Renovação - ${productTitle}`,
       quantity: 1,
+      unit_price: amount,
+      currency_id: 'BRL',
     }],
-    customer: {
-      name: userName || userEmail.split('@')[0],
+    payer: {
       email: userEmail,
-      type: 'individual',
+      name: userName || userEmail.split('@')[0],
     },
-    payments: [{
-      payment_method: 'checkout',
-      checkout: {
-        expires_in: 259200, // 3 days
-        accepted_payment_methods: ['pix', 'credit_card'],
-        success_url: 'https://arcanoapp.voxvisual.com.br/sucesso-compra',
-        customer_editable: true,
-        billing_address_editable: true,
-        skip_checkout_success_page: false,
-        credit_card: {
-          installments: [{ number: 1, total: amountInCents }],
-        },
-        pix: { expires_in: 259200 },
-      },
-    }],
-    metadata: { order_id: orderId, billing_reminder: 'true' },
+    external_reference: orderId,
+    back_urls: {
+      success: 'https://arcanoapp.voxvisual.com.br/sucesso-compra',
+      failure: 'https://arcanoapp.voxvisual.com.br/planos-2?mp_status=failure',
+      pending: 'https://arcanoapp.voxvisual.com.br/planos-2?mp_status=pending',
+    },
+    auto_return: 'approved',
+    expires: true,
+    expiration_date_to: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
   }
 
-  const resp = await fetch(`${PAGARME_API_URL}/orders`, {
+  const resp = await fetch('https://api.mercadopago.com/checkout/preferences', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${mpAccessToken}`,
+    },
     body: JSON.stringify(payload),
   })
 
   if (!resp.ok) {
     const txt = await resp.text()
-    throw new Error(`Pagar.me error ${resp.status}: ${txt.substring(0, 300)}`)
+    throw new Error(`MP Preference error ${resp.status}: ${txt.substring(0, 300)}`)
   }
 
   const data = await resp.json()
-  const lastTx = data.charges?.[0]?.last_transaction
-  const checkoutUrl = lastTx?.url || lastTx?.payment_url || data.checkouts?.[0]?.payment_url || null
-  const pixCopyPaste = lastTx?.qr_code || null
-
-  if (!checkoutUrl) throw new Error('No checkout URL in Pagar.me response')
-  return { checkoutUrl, pixCopyPaste }
+  const checkoutUrl = data.init_point
+  if (!checkoutUrl) throw new Error('No init_point in MP response')
+  return { checkoutUrl }
 }
 
 // ========== EMAIL TEMPLATES ==========
