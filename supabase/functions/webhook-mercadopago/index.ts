@@ -777,7 +777,7 @@ serve(async (req) => {
       // 6. Enviar email de compra — CTA sempre para a Home
       const ctaLink = 'https://arcanoapp.voxvisual.com.br/'
       
-      await sendPurchaseEmail(supabase, email, product.title, ctaLink, order.id, product.type, product.credits_amount)
+      await sendPurchaseEmail(supabase, email, product.title, ctaLink, order.id, product.type, product.credits_amount, product.slug)
 
       // 7. Notificar admin
       try {
