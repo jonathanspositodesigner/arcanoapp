@@ -201,13 +201,7 @@ const FerramentasIAAplicativo = () => {
   };
 
   const handleToolClick = (tool: ToolData) => {
-    // If it's Upscaler Arcano and user has the pack, show choice modal
-    if (tool.slug === "upscaller-arcano" && hasUpscalerPack) {
-      setShowUpscalerModal(true);
-      return;
-    }
-    
-    // Otherwise, navigate normally
+    // Navigate directly to the tool route
     navigate(getAccessRoute(tool.slug));
   };
 

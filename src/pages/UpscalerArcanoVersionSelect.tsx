@@ -161,19 +161,7 @@ const UpscalerArcanoVersionSelect = () => {
     );
   }
 
-  if (!hasAccess) {
-    return (
-      <div className="min-h-screen bg-[#0D0221]">
-        <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold text-white">{t('upscaler.title')}</h1>
-          <p className="text-purple-300">{t('versionSelect.noAccess')}</p>
-          <Button onClick={() => navigate(upscalerPlansPath)} className="bg-gradient-to-r from-purple-600 to-blue-500">
-            {t('ferramentas.seePlans')}
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // Access is now universal — no gate needed
 
   // Get localized version name
   const getVersionName = (version: ToolVersion) => {
