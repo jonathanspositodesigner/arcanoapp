@@ -57,6 +57,45 @@ const CountdownTimer = () => {
   );
 };
 
+const SocialProofCounter = () => {
+  const [count, setCount] = useState(0);
+  const [phase, setPhase] = useState<'animating' | 'incrementing'>('animating');
+
+  useEffect(() => {
+    if (phase === 'animating') {
+      const duration = 1500;
+      const target = 30;
+      const start = performance.now();
+      let raf: number;
+      const step = (now: number) => {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setCount(Math.floor(eased * target));
+        if (progress < 1) {
+          raf = requestAnimationFrame(step);
+        } else {
+          setCount(target);
+          setPhase('incrementing');
+        }
+      };
+      raf = requestAnimationFrame(step);
+      return () => cancelAnimationFrame(raf);
+    }
+    if (phase === 'incrementing') {
+      const interval = setInterval(() => {
+        setCount(prev => prev + 1);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [phase]);
+
+  return (
+    <span className="text-white/70 text-xs font-medium">
+      +{count} profissionais já fizeram o upgrade
+    </span>
+  );
+};
+
 const YouTubeFacade = ({ videoId }: { videoId: string }) => {
   const [showIframe, setShowIframe] = useState(false);
 
@@ -369,7 +408,7 @@ const UpgradeUpscalerV3 = () => {
                 <img src="/images/social-proof-2.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                 <img src="/images/social-proof-3.webp" alt="" width="24" height="24" loading="lazy" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
               </div>
-              <span className="text-white/70 text-xs font-medium">+100 profissionais já fizeram o upgrade</span>
+              <SocialProofCounter />
             </div>
 
             <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
