@@ -145,18 +145,18 @@ const StickyFooterBar = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-fuchsia-600 to-purple-700 border-t border-white/10 shadow-[0_-4px_20px_rgba(217,70,239,0.3)]">
-      <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-white text-xs sm:text-sm font-medium">
-          <Clock className="h-4 w-4 text-amber-400 shrink-0" />
-          <span className="hidden sm:inline">🔥 Imagens perfeitas por apenas R$6,90 —</span>
-          <span className="font-bold tabular-nums bg-black/20 rounded px-2 py-0.5">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-fuchsia-600 to-purple-700 border-b border-white/10 shadow-[0_4px_20px_rgba(217,70,239,0.3)]">
+      <div className="max-w-7xl mx-auto px-3 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-white text-[11px] sm:text-sm font-medium min-w-0">
+          <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-400 shrink-0" />
+          <span className="truncate">🔥Deixe suas imagens em qualidade cinematográfica</span>
+          <span className="font-bold tabular-nums bg-black/20 rounded px-1.5 sm:px-2 py-0.5 shrink-0">
             {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
           </span>
         </div>
         <button
           onClick={scrollToPlanos}
-          className="bg-white text-fuchsia-700 font-bold text-xs sm:text-sm px-4 sm:px-6 py-2 rounded-full hover:bg-white/90 transition-colors shrink-0"
+          className="bg-white text-fuchsia-700 font-bold text-[11px] sm:text-sm px-3 sm:px-6 py-1.5 sm:py-2 rounded-full hover:bg-white/90 transition-colors shrink-0"
         >
           ADQUIRIR AGORA
         </button>
@@ -547,7 +547,7 @@ const PlanosUpscalerArcano = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] pb-14">
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] pt-12 sm:pt-14">
 
       <LazyFakePurchaseNotifications />
       {!hasAccess && <StickyFooterBar />}
