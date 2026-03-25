@@ -384,36 +384,41 @@ async function handleRun(req: Request) {
     });
   }
 
-  // ========== CONSUME CREDITS ==========
-  await logStep(jobId, 'consuming_credits', { amount: creditCost });
-  
-  // Determine credit description based on source
-  let creditDescription = 'Gerar Imagem';
-  if (source === 'arcano_cloner_refine') creditDescription = 'Refinamento Arcano Cloner';
-  else if (source === 'flyer_maker_refine') creditDescription = 'Refinamento Flyer Maker';
+  // ========== CONSUME CREDITS (skip for BYOK) ==========
+  if (isByok) {
+    console.log(`[ImageGenerator] BYOK mode — skipping platform credit consumption for user ${verifiedUserId}`);
+    await logStep(jobId, 'byok_skip_credits');
+  } else {
+    await logStep(jobId, 'consuming_credits', { amount: creditCost });
+    
+    // Determine credit description based on source
+    let creditDescription = 'Gerar Imagem';
+    if (source === 'arcano_cloner_refine') creditDescription = 'Refinamento Arcano Cloner';
+    else if (source === 'flyer_maker_refine') creditDescription = 'Refinamento Flyer Maker';
 
-  const { data: creditResult, error: creditError } = await supabase.rpc(
-    'consume_upscaler_credits',
-    { _user_id: verifiedUserId, _amount: creditCost, _description: creditDescription }
-  );
+    const { data: creditResult, error: creditError } = await supabase.rpc(
+      'consume_upscaler_credits',
+      { _user_id: verifiedUserId, _amount: creditCost, _description: creditDescription }
+    );
 
-  if (creditError) {
-    console.error('[ImageGenerator] Credit consumption error:', creditError);
-    await logStepFailure(jobId, 'consume_credits', creditError.message);
-    return new Response(JSON.stringify({ error: 'Erro ao processar créditos', code: 'CREDIT_ERROR' }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    if (creditError) {
+      console.error('[ImageGenerator] Credit consumption error:', creditError);
+      await logStepFailure(jobId, 'consume_credits', creditError.message);
+      return new Response(JSON.stringify({ error: 'Erro ao processar créditos', code: 'CREDIT_ERROR' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
+      const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
+      await logStepFailure(jobId, 'consume_credits', errorMsg);
+      return new Response(JSON.stringify({ error: errorMsg, code: 'INSUFFICIENT_CREDITS', currentBalance: creditResult?.[0]?.new_balance }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log(`[ImageGenerator] Credits consumed. New balance: ${creditResult[0].new_balance}`);
   }
-
-  if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
-    const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
-    await logStepFailure(jobId, 'consume_credits', errorMsg);
-    return new Response(JSON.stringify({ error: errorMsg, code: 'INSUFFICIENT_CREDITS', currentBalance: creditResult?.[0]?.new_balance }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
-  console.log(`[ImageGenerator] Credits consumed. New balance: ${creditResult[0].new_balance}`);
 
   // ========== SAVE JOB PAYLOAD ==========
   // Pad uploaded files to 6 slots with 'example.png' placeholder
