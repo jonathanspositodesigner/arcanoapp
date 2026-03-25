@@ -225,23 +225,19 @@ function getEmailTemplateFromDb(
 ): { subject: string; html: string } {
   const benefitsHtml = buildBenefitsList(d.benefits)
   const lossesHtml = buildLossesList(d.losses)
-  const pixSection = buildPixSection(d.pixCopyPaste)
 
-  // Replace placeholders in subject
   const subject = template.subject
     .replace(/\{\{PLAN_NAME\}\}/g, d.planName)
     .replace(/\{\{PLAN_VALUE\}\}/g, d.planValue)
     .replace(/\{\{DUE_DATE\}\}/g, d.dueDate)
     .replace(/\{\{USER_NAME\}\}/g, d.userName)
 
-  // Replace placeholders in preheader
   const preheader = template.preheader
     .replace(/\{\{PLAN_NAME\}\}/g, d.planName)
     .replace(/\{\{PLAN_VALUE\}\}/g, d.planValue)
     .replace(/\{\{DUE_DATE\}\}/g, d.dueDate)
     .replace(/\{\{USER_NAME\}\}/g, d.userName)
 
-  // Replace placeholders in body
   const body = template.body_html
     .replace(/\{\{USER_NAME\}\}/g, d.userName)
     .replace(/\{\{PLAN_NAME\}\}/g, d.planName)
@@ -250,10 +246,8 @@ function getEmailTemplateFromDb(
     .replace(/\{\{BENEFITS_LIST\}\}/g, benefitsHtml)
     .replace(/\{\{LOSSES_LIST\}\}/g, lossesHtml)
 
-  // Build final HTML with checkout URL and pix section injected
   let html = wrapEmail(subject, preheader, body, d.email)
   html = html.replace('{{CHECKOUT_URL}}', d.checkoutUrl)
-  html = html.replace('{{PIX_SECTION}}', pixSection)
 
   return { subject, html }
 }
@@ -267,10 +261,10 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const pagarmeSecretKey = Deno.env.get('PAGARME_SECRET_KEY')
+    const mpAccessToken = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN')
 
-    if (!pagarmeSecretKey) {
-      console.error('❌ PAGARME_SECRET_KEY not configured')
+    if (!mpAccessToken) {
+      console.error('❌ MERCADOPAGO_ACCESS_TOKEN not configured')
       return new Response(JSON.stringify({ error: 'Missing config' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
