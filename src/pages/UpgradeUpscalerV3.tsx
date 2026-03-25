@@ -257,9 +257,10 @@ const TestimonialsGallery = () => {
       </StaggeredAnimation>
 
       {/* Lightbox - Desktop only */}
-      {lightboxIndex !== null && (
+      {lightboxIndex !== null && createPortal(
         <div
-          className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center"
+          style={{ top: 0, left: 0, width: '100vw', height: '100vh' }}
           onClick={() => setLightboxIndex(null)}
         >
           <button
@@ -286,7 +287,7 @@ const TestimonialsGallery = () => {
           <img
             src={DEPO_IMAGES[lightboxIndex]}
             alt={`Depoimento ${lightboxIndex + 1}`}
-            className="max-w-full max-h-[90vh] rounded-xl object-contain"
+            className="max-w-[90vw] max-h-[85vh] rounded-xl object-contain"
             onClick={(e) => e.stopPropagation()}
           />
 
@@ -299,7 +300,8 @@ const TestimonialsGallery = () => {
               />
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
