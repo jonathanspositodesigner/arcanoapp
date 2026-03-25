@@ -375,15 +375,6 @@ const FerramentasIAAplicativo = () => {
         )}
       </main>
 
-      {/* Upscaler Choice Modal */}
-      <UpscalerChoiceModal
-        isOpen={showUpscalerModal}
-        onClose={() => setShowUpscalerModal(false)}
-        hasClaimedPromo={hasClaimed}
-        isCheckingClaim={isCheckingClaim}
-        onClaimAndAccess={handleClaimAndAccess}
-        hasLifetimePack={hasUpscalerPack}
-      />
 
     </AppLayout>
   );
