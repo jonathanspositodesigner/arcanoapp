@@ -138,7 +138,7 @@ const FerramentasIAAplicativo = () => {
     if (slug === "upscaller-arcano") {
       return "/upscaler-arcano-tool";
     }
-    if (slug === "upscaller-arcano-video") {
+    if (slug === "upscaller-arcano-video" || slug === "upscaler-video") {
       return "/video-upscaler-tool";
     }
     if (slug === "ia-muda-pose") {
@@ -162,7 +162,8 @@ const FerramentasIAAplicativo = () => {
   // Override names for display
   const toolNameOverrides: Record<string, string> = {
     "upscaller-arcano": "Upscaler Arcano App",
-    "upscaller-arcano-video": "Upscaler Arcano V3 (vídeo)",
+    "upscaller-arcano-video": "Upscaler de Vídeo",
+    "upscaler-video": "Upscaler de Vídeo",
     "ia-muda-pose": "Pose Changer",
     "ia-muda-roupa": "Veste AI",
     "arcano-cloner": "Arcano Cloner",
@@ -200,6 +201,7 @@ const FerramentasIAAplicativo = () => {
     if (slug === "flyer-maker") return true;
     if (slug === "remover-fundo") return true;
     if (slug === "upscaller-arcano") return true;
+    if (slug === "upscaler-video") return true;
     if (bonusTools.includes(slug)) {
       return isPremium;
     }
