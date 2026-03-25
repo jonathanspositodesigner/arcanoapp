@@ -1,30 +1,50 @@
 
+Objetivo: corrigir o fluxo para que o **Upscaler App (com créditos)** seja público para todas as contas, e manter **V2/V3 (videoaulas)** com acesso por compra.
 
-## Plano: Liberar Upscaler App para todos + Remover créditos vitalícios da usuária
+1) Corrigir o destino do “Upscaler Arcano V3” para ir direto ao app
+- Arquivo: `src/pages/FerramentasIAAplicativo.tsx`
+  - Em `getAccessRoute`, trocar o slug `upscaller-arcano` para `"/upscaler-arcano-tool"` (não mais `"/ferramenta-ia-artes/upscaller-arcano"`).
+- Arquivo: `src/components/layout/AppSidebar.tsx`
+  - Em `aiToolLinks`, trocar path de `"Upscaler Arcano V3"` para `"/upscaler-arcano-tool"`.
+- Arquivo: `src/pages/BibliotecaPrompts.tsx`
+  - CTA do banner de Upscaler deve navegar para `"/upscaler-arcano-tool"` para manter o mesmo comportamento em todos os pontos de entrada.
 
-### Contexto
-O Upscaler versão aplicativo (a ferramenta que processa imagens) está restrito por `hasAccessToPack('upscaller-arcano')` na lista de ferramentas e nas páginas de versões/aulas. Mas o Cloner, Veste AI, Pose Changer etc. são livres para todos. O objetivo é igualar — todos podem usar o Upscaler app, e as versões vitalícias com vídeo-aulas continuam restritas por pack.
+2) Ajustar o gate das versões com videoaula (V2/V3)
+- Arquivo: `src/pages/UpscalerArcanoVersionSelect.tsx`
+  - Corrigir regra atual (hoje V2 está liberado para todos por `hasVersionAccess = isV3 ? hasV3Pack : true`).
+  - Nova regra:
+    - `hasV2Access = hasUpscalerPack || hasV3Pack || hasUnlimitedAccess`
+    - `hasV3Access = hasV3Pack || hasUnlimitedAccess`
+  - Aplicar isso em clique, estado do botão e badge de status dos cards.
 
-### Alterações
+3) Ajustar proteção da página de aulas por versão
+- Arquivo: `src/pages/ToolVersionLessons.tsx`
+  - Hoje o acesso usa apenas `hasAccessToPack(toolSlug)` (insuficiente para distinguir V2 vs V3).
+  - Implementar verificação por `versionSlug`:
+    - `v3` exige `upscaller-arcano-v3` (ou unlimited, se mantido como bypass atual).
+    - `v1/v2` exigem `upscaller-arcano` **ou** `upscaller-arcano-v3` (V3 herda V2).
+  - Manter redirecionamento para login/plano quando não autorizado.
 
-**1. `src/pages/FerramentasIAAplicativo.tsx`**
-- Na função `checkToolAccess`, adicionar `if (slug === "upscaller-arcano") return true;` — igual ao cloner, flyer-maker e remover-fundo
-- Remover a lógica do modal de escolha de versão que depende de `hasUpscalerPack` — ao clicar no Upscaler, ir direto para a rota de acesso (`/ferramenta-ia-artes/upscaller-arcano` ou `/upscaler-arcano-tool`)
-- O botão sempre aparece verde "Acessar" para o Upscaler, sem verificação de pack
+4) Compatibilidade de rota legada
+- Arquivo: `src/pages/UpscalerSelectionPage.tsx`
+  - Remover o redirecionamento forçado para a seleção vitalícia quando não há pack V3.
+  - Deixar a rota legada sem quebrar usuários antigos (sem bloquear acesso indevidamente ao app).
 
-**2. `src/pages/UpscalerArcanoVersionSelect.tsx`**
-- Remover o gate `if (!hasAccess)` que bloqueia a página inteira — todos podem ver as versões
-- Manter a distinção entre V2/V3 com pack (aulas vitalícias) vs sem pack (apenas app)
-- Cards de versões vitalícias (V1, V2, V3 com aulas) continuam restritos por pack — quem não tem pack vê "Comprar" ou "Em Breve"
-- O botão "Usar Aplicativo" (que leva ao `/upscaler-arcano-tool`) fica disponível para todos
+5) Validação end-to-end (obrigatória)
+- Conta free:
+  - Clicar em “Upscaler Arcano V3” (Ferramentas IA / Sidebar / Banner) deve abrir `"/upscaler-arcano-tool"`.
+  - Processar sem pack deve depender só de login + créditos (sem bloqueio por pack).
+- Conta com pack V2:
+  - Acessa videoaulas V2.
+  - Não acessa V3.
+- Conta com pack V3:
+  - Acessa V2 e V3.
+- Confirmar que nenhuma rota de “Upscaler Arcano V3” volta a cair na seleção vitalícia por engano.
 
-**3. Dados da usuária gs.arq@hotmail.com.br**
-- Remover 1.500 créditos vitalícios (lifetime_balance: 1500 → 0)
-- Ajustar balance total de 5.700 → 4.200
-- Registrar transação no log
-
-### Arquivos alterados
+Arquivos que serão alterados:
 - `src/pages/FerramentasIAAplicativo.tsx`
+- `src/components/layout/AppSidebar.tsx`
+- `src/pages/BibliotecaPrompts.tsx`
 - `src/pages/UpscalerArcanoVersionSelect.tsx`
-- Inserção de dados: update credits + transaction log
-
+- `src/pages/ToolVersionLessons.tsx`
+- `src/pages/UpscalerSelectionPage.tsx`
