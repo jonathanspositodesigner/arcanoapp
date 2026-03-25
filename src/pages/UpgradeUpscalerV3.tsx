@@ -475,7 +475,7 @@ const UpgradeUpscalerV3 = () => {
           </AnimatedSection>
 
           {/* Mosaico de depoimentos reais */}
-          <StaggeredAnimation className="grid grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto" staggerDelay={100}>
+          <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto" staggerDelay={100}>
             {[
               "/images/depo-v3-1.webp",
               "/images/depo-v3-7.webp",
