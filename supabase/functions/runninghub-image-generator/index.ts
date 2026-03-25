@@ -259,6 +259,8 @@ async function handleRun(req: Request) {
     creditCost,
     prompt,
     source,
+    byok,
+    byokUserId,
   } = await req.json();
 
   // ========== INPUT VALIDATION ==========
