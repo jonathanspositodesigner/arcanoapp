@@ -16,7 +16,7 @@ import { toast } from "sonner";
 
 import AppLayout from "@/components/layout/AppLayout";
 import PromoToolsBanner from "@/components/PromoToolsBanner";
-import UpscalerChoiceModal from "@/components/ferramentas/UpscalerChoiceModal";
+
 
 interface ToolData {
   id: string;
