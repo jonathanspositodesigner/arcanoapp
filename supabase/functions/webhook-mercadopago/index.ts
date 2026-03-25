@@ -740,7 +740,61 @@ serve(async (req) => {
         }
       }
 
-      // 4. Atualizar ordem
+      // === SUBSCRIPTION PLAN ACTIVATION ===
+      if (product.type === 'subscription' && product.plan_slug) {
+        console.log(`   ├─ 📋 Ativando plano: ${product.plan_slug} (${product.billing_period})`)
+
+        const PLAN_CONFIG: Record<string, {
+          credits_per_month: number;
+          daily_prompt_limit: number | null;
+          has_image_generation: boolean;
+          has_video_generation: boolean;
+          cost_multiplier: number;
+        }> = {
+          'starter': { credits_per_month: 1500, daily_prompt_limit: null, has_image_generation: false, has_video_generation: false, cost_multiplier: 1.0 },
+          'pro': { credits_per_month: 5000, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
+          'ultimate': { credits_per_month: 14000, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
+          'unlimited': { credits_per_month: 99999, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 0.5 },
+        }
+
+        const config = PLAN_CONFIG[product.plan_slug]
+        if (config) {
+          const periodDays = product.billing_period === 'anual' ? 365 : 30
+          const expiresAt = new Date(Date.now() + periodDays * 24 * 60 * 60 * 1000).toISOString()
+
+          // Upsert subscription (no recurring subscription ID for MP V1 — manual renewal via email)
+          await supabase.from('planos2_subscriptions').upsert({
+            user_id: userId,
+            plan_slug: product.plan_slug,
+            is_active: true,
+            credits_per_month: config.credits_per_month,
+            daily_prompt_limit: config.daily_prompt_limit,
+            has_image_generation: config.has_image_generation,
+            has_video_generation: config.has_video_generation,
+            cost_multiplier: config.cost_multiplier,
+            expires_at: expiresAt,
+            pagarme_subscription_id: null,
+            last_credit_reset_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' })
+
+          // Reset monthly credits to the plan amount
+          const { error: resetError } = await supabase.rpc('reset_upscaler_credits', {
+            _user_id: userId,
+            _amount: config.credits_per_month,
+            _description: `Ativação plano ${product.plan_slug} (${product.billing_period}) via Mercado Pago`
+          })
+          if (resetError) {
+            console.error(`   ├─ ❌ Erro ao resetar créditos:`, resetError)
+          }
+
+          console.log(`   ├─ ✅ Plano ${product.plan_slug} ativado (${config.credits_per_month} créditos, expira: ${expiresAt})`)
+        } else {
+          console.error(`   ├─ ❌ Config não encontrada para plan_slug: ${product.plan_slug}`)
+        }
+      }
+
+
       await supabase.from('mp_orders').update({
         status: 'paid',
         user_id: userId,
@@ -984,6 +1038,39 @@ serve(async (req) => {
           .eq('pack_slug', 'upscaller-arcano-v3')
         console.log(`   ├─ ✅ Pack V3 revogado`)
       }
+
+      // === SUBSCRIPTION PLAN REVOCATION ===
+      if (order.user_id && product.type === 'subscription') {
+        console.log(`   ├─ 📋 Revogando plano de assinatura...`)
+
+        // Reset to free plan
+        await supabase.from('planos2_subscriptions').upsert({
+          user_id: order.user_id,
+          plan_slug: 'free',
+          is_active: true,
+          credits_per_month: 100,
+          daily_prompt_limit: 5,
+          has_image_generation: false,
+          has_video_generation: false,
+          cost_multiplier: 1.0,
+          expires_at: null,
+          pagarme_subscription_id: null,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' })
+
+        // Zero out monthly credits
+        const { error: zeroError } = await supabase.rpc('reset_upscaler_credits', {
+          _user_id: order.user_id,
+          _amount: 0,
+          _description: `Reembolso MP: plano revogado → free`
+        })
+        if (zeroError) {
+          console.error(`   ├─ ❌ Erro ao zerar créditos:`, zeroError)
+        }
+
+        console.log(`   ├─ ✅ Plano revogado → free, créditos mensais zerados`)
+      }
+
       await supabase.from('mp_orders').update({
         status: 'refunded',
         updated_at: new Date().toISOString()

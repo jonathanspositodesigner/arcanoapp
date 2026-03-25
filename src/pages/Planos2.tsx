@@ -1,7 +1,4 @@
 import { useState, useEffect } from "react";
-import { getSanitizedUtms } from "@/lib/utmUtils";
-import { getMetaCookies } from "@/lib/metaCookies";
-import { useProcessingButton } from "@/hooks/useProcessingButton";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star, ShieldCheck, Headset, Loader2, CreditCard, QrCode } from "lucide-react";
@@ -22,10 +19,7 @@ import { CreditsFAQSection } from "@/components/credits/CreditsFAQSection";
 import { StatsCards } from "@/components/credits/StatsCards";
 
 import { supabase } from "@/integrations/supabase/client";
-import { invokeCheckout, preWarmCheckout } from "@/lib/checkoutFetch";
-import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
 import HomeAuthModal from "@/components/HomeAuthModal";
-import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
 import { useMPCheckout } from "@/hooks/useMPCheckout";
 
 import { usePlanos2Access } from "@/hooks/usePlanos2Access";
@@ -42,27 +36,11 @@ const Planos2 = () => {
   const [showComingSoonModal, setShowComingSoonModal] = useState(false);
   const [expandedAiTools, setExpandedAiTools] = useState<Record<string, boolean>>({});
   
-  // Checkout state — single slug for ALL flows (credits + plans)
-  const [showPreCheckout, setShowPreCheckout] = useState(false);
-  const [preCheckoutSlug, setPreCheckoutSlug] = useState<string | null>(null);
-  const [pixLoading, setPixLoading] = useState<string | null>(null);
-  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
-  const [pendingSlug, setPendingSlug] = useState<string | null>(null);
-  const [pendingProfile, setPendingProfile] = useState<any>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [showSignupModal, setShowSignupModal] = useState(false);
-  const [pendingPlanName, setPendingPlanName] = useState<string>("");
-  const [isSubscriptionFlow, setIsSubscriptionFlow] = useState(false);
   const { planSlug: activePlanSlug } = usePlanos2Access(userId || undefined);
-  const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
-  const { openCheckout, MPCheckoutModal } = useMPCheckout({ source_page: "planos-2" });
-
-  // Pre-warm checkout edge function after 3s
-  useEffect(() => {
-    const timer = setTimeout(() => preWarmCheckout(), 3000);
-    return () => clearTimeout(timer);
-  }, []);
+  const { openCheckout, isLoading: isMPLoading, MPCheckoutModal } = useMPCheckout({ source_page: "planos-2" });
 
   // Check auth and profile on mount
   useEffect(() => {
@@ -124,79 +102,13 @@ const Planos2 = () => {
     };
   };
 
+  const countdown = formatTime(timeLeft);
+
   const handleCreditPurchase = (slug: string) => {
     openCheckout(slug);
   };
 
-  const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
-    if (!pendingSlug || !pendingProfile) return;
-
-    // ALL payment methods go to hosted checkout (card data filled on Pagar.me page)
-    if (!startCheckout()) return;
-    
-    setPixLoading(pendingSlug);
-    
-    try {
-      const utmData = getSanitizedUtms();
-
-      const { fbp, fbc } = getMetaCookies();
-      const body: any = {
-        product_slug: pendingSlug,
-        user_email: userEmail,
-        user_phone: pendingProfile.phone,
-        user_name: pendingProfile.name,
-        user_cpf: pendingProfile.cpf,
-        billing_type: method,
-        utm_data: utmData,
-        fbp,
-        fbc,
-      };
-
-      // Always send address for hosted checkout
-      if (pendingProfile.address_line) {
-        body.user_address = {
-          line_1: pendingProfile.address_line,
-          zip_code: pendingProfile.address_zip,
-          city: pendingProfile.address_city,
-          state: pendingProfile.address_state,
-          country: pendingProfile.address_country || 'BR'
-        };
-      }
-
-      const response = await invokeCheckout(body);
-
-      if (response.error) {
-        console.error('Erro checkout direto:', response.error);
-        toast.error('Erro ao gerar pagamento. Tente novamente.');
-        setPixLoading(null);
-        setShowPaymentMethodModal(false);
-        endCheckout();
-        return;
-      }
-
-      const { checkout_url, event_id } = response.data;
-      if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
-        (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
-      }
-      if (checkout_url) {
-        window.location.href = checkout_url;
-        return;
-      } else {
-        toast.error('Erro ao gerar link de pagamento.');
-      }
-    } catch (error) {
-      console.error('Erro checkout direto:', error);
-      toast.error('Erro ao processar. Tente novamente.');
-    }
-    endCheckout();
-    setPixLoading(null);
-    setShowPaymentMethodModal(false);
-  };
-
-  const countdown = formatTime(timeLeft);
-  
-  // Subscription purchase handler
-  const handleSubscriptionPurchase = async (planName: string) => {
+  const handleSubscriptionPurchase = (planName: string) => {
     const slugMap: Record<string, string> = {
       "Starter": `plano-starter-${billingPeriod}`,
       "Pro": `plano-pro-${billingPeriod}`,
@@ -205,40 +117,7 @@ const Planos2 = () => {
     };
     const slug = slugMap[planName];
     if (!slug) return;
-
-    if (!userId) {
-      setPreCheckoutSlug(slug);
-      setShowPreCheckout(true);
-      return;
-    }
-
-    if (!startCheckout()) return;
-
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
-        .eq('id', userId)
-        .single();
-
-      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf 
-        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
-
-      if (isProfileComplete) {
-        setPendingSlug(slug);
-        setPendingProfile(profile);
-        setPendingPlanName(planName);
-        setIsSubscriptionFlow(true);
-        setShowPaymentMethodModal(true);
-        endCheckout();
-      } else {
-        setPreCheckoutSlug(slug);
-        setShowPreCheckout(true);
-        endCheckout();
-      }
-    } catch {
-      endCheckout();
-    }
+    openCheckout(slug);
   };
 
   const plans = {
@@ -645,7 +524,7 @@ const Planos2 = () => {
                           handleSubscriptionPurchase(plan.name);
                         }
                       }}
-                      disabled={isDisabled || isCheckoutSubmitting}
+                      disabled={isDisabled || isMPLoading}
                       className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-purple-500/20 border border-purple-500/40 text-purple-300 cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"}`}
                     >
                       {buttonText}
@@ -779,7 +658,6 @@ const Planos2 = () => {
             { credits: "+14.000", description: "~233 imagens", price: "79,90", originalPrice: "149,90", savings: "57", slug: "creditos-14000", bestValue: true, icon: Star, color: "from-yellow-500 to-orange-500" },
           ].map((plan) => {
             const Icon = plan.icon;
-            const isLoading = pixLoading === plan.slug;
             return (
               <Card
                 key={plan.credits}
@@ -897,25 +775,6 @@ const Planos2 = () => {
           </Button>
         </DialogContent>
       </Dialog>
-
-      {/* Payment Method Modal for complete profiles */}
-      <PaymentMethodModal
-        open={showPaymentMethodModal}
-        onOpenChange={setShowPaymentMethodModal}
-        onSelect={handlePaymentMethodSelected}
-        isProcessing={isCheckoutSubmitting}
-        colorScheme="purple"
-      />
-
-
-      {/* PreCheckout Modal for credit purchases */}
-      <PreCheckoutModal
-        isOpen={showPreCheckout}
-        onClose={() => setShowPreCheckout(false)}
-        userEmail={userEmail}
-        userId={userId}
-        productSlug={preCheckoutSlug || undefined}
-      />
 
       <MPCheckoutModal />
 

@@ -6,8 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const PAGARME_API_URL = 'https://api.pagar.me/core/v5'
-
 // ========== PLAN BENEFITS MAPPING ==========
 interface PlanInfo {
   displayName: string
@@ -116,63 +114,55 @@ async function getSendPulseToken(): Promise<string> {
   return data.access_token
 }
 
-// ========== PAGAR.ME CHECKOUT ==========
+// ========== MERCADO PAGO CHECKOUT ==========
 async function createRenewalCheckout(
-  pagarmeSecretKey: string,
+  mpAccessToken: string,
   userEmail: string,
   userName: string,
   productTitle: string,
-  amountInCents: number,
+  amount: number,
   orderId: string,
-): Promise<{ checkoutUrl: string; pixCopyPaste: string | null }> {
-  const authHeader = 'Basic ' + btoa(pagarmeSecretKey + ':')
+): Promise<{ checkoutUrl: string }> {
   const payload = {
     items: [{
-      amount: amountInCents,
-      description: `Renovação - ${productTitle}`,
+      title: `Renovação - ${productTitle}`,
       quantity: 1,
+      unit_price: amount,
+      currency_id: 'BRL',
     }],
-    customer: {
-      name: userName || userEmail.split('@')[0],
+    payer: {
       email: userEmail,
-      type: 'individual',
+      name: userName || userEmail.split('@')[0],
     },
-    payments: [{
-      payment_method: 'checkout',
-      checkout: {
-        expires_in: 259200, // 3 days
-        accepted_payment_methods: ['pix', 'credit_card'],
-        success_url: 'https://arcanoapp.voxvisual.com.br/sucesso-compra',
-        customer_editable: true,
-        billing_address_editable: true,
-        skip_checkout_success_page: false,
-        credit_card: {
-          installments: [{ number: 1, total: amountInCents }],
-        },
-        pix: { expires_in: 259200 },
-      },
-    }],
-    metadata: { order_id: orderId, billing_reminder: 'true' },
+    external_reference: orderId,
+    back_urls: {
+      success: 'https://arcanoapp.voxvisual.com.br/sucesso-compra',
+      failure: 'https://arcanoapp.voxvisual.com.br/planos-2?mp_status=failure',
+      pending: 'https://arcanoapp.voxvisual.com.br/planos-2?mp_status=pending',
+    },
+    auto_return: 'approved',
+    expires: true,
+    expiration_date_to: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
   }
 
-  const resp = await fetch(`${PAGARME_API_URL}/orders`, {
+  const resp = await fetch('https://api.mercadopago.com/checkout/preferences', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': authHeader },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${mpAccessToken}`,
+    },
     body: JSON.stringify(payload),
   })
 
   if (!resp.ok) {
     const txt = await resp.text()
-    throw new Error(`Pagar.me error ${resp.status}: ${txt.substring(0, 300)}`)
+    throw new Error(`MP Preference error ${resp.status}: ${txt.substring(0, 300)}`)
   }
 
   const data = await resp.json()
-  const lastTx = data.charges?.[0]?.last_transaction
-  const checkoutUrl = lastTx?.url || lastTx?.payment_url || data.checkouts?.[0]?.payment_url || null
-  const pixCopyPaste = lastTx?.qr_code || null
-
-  if (!checkoutUrl) throw new Error('No checkout URL in Pagar.me response')
-  return { checkoutUrl, pixCopyPaste }
+  const checkoutUrl = data.init_point
+  if (!checkoutUrl) throw new Error('No init_point in MP response')
+  return { checkoutUrl }
 }
 
 // ========== EMAIL TEMPLATES ==========
@@ -197,7 +187,6 @@ interface EmailData {
   benefits: string[]
   losses: string[]
   checkoutUrl: string
-  pixCopyPaste: string | null
   email: string
 }
 
@@ -217,7 +206,6 @@ function wrapEmail(subject: string, preheader: string, bodyContent: string, emai
         Renovar agora →
       </a>
     </div>
-    \${PIX_SECTION}
   </div>
   <div style="background:#150828;border-radius:0 0 20px 20px;padding:28px 40px;border:1px solid rgba(212,175,55,0.15);border-top:none;text-align:center;">
     <p style="color:#9ca3af;font-size:12px;margin:0 0 10px;">
@@ -228,15 +216,7 @@ function wrapEmail(subject: string, preheader: string, bodyContent: string, emai
   </div>
 </div>
 </body>
-</html>`.replace('${CHECKOUT_URL}', '{{CHECKOUT_URL}}').replace('${PIX_SECTION}', '{{PIX_SECTION}}')
-}
-
-function buildPixSection(pixCopyPaste: string | null): string {
-  if (!pixCopyPaste) return ''
-  return `<div style="background:rgba(255,255,255,0.06);border-radius:14px;padding:20px;margin-top:16px;border:1px solid rgba(212,175,55,0.25);text-align:center;">
-    <p style="color:#d4af37;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 12px;">Pix Copia e Cola</p>
-    <p style="color:#e2d8f0;font-size:13px;word-break:break-all;margin:0;background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;font-family:monospace;">${pixCopyPaste}</p>
-  </div>`
+</html>`.replace('${CHECKOUT_URL}', '{{CHECKOUT_URL}}')
 }
 
 function getEmailTemplateFromDb(
@@ -245,23 +225,19 @@ function getEmailTemplateFromDb(
 ): { subject: string; html: string } {
   const benefitsHtml = buildBenefitsList(d.benefits)
   const lossesHtml = buildLossesList(d.losses)
-  const pixSection = buildPixSection(d.pixCopyPaste)
 
-  // Replace placeholders in subject
   const subject = template.subject
     .replace(/\{\{PLAN_NAME\}\}/g, d.planName)
     .replace(/\{\{PLAN_VALUE\}\}/g, d.planValue)
     .replace(/\{\{DUE_DATE\}\}/g, d.dueDate)
     .replace(/\{\{USER_NAME\}\}/g, d.userName)
 
-  // Replace placeholders in preheader
   const preheader = template.preheader
     .replace(/\{\{PLAN_NAME\}\}/g, d.planName)
     .replace(/\{\{PLAN_VALUE\}\}/g, d.planValue)
     .replace(/\{\{DUE_DATE\}\}/g, d.dueDate)
     .replace(/\{\{USER_NAME\}\}/g, d.userName)
 
-  // Replace placeholders in body
   const body = template.body_html
     .replace(/\{\{USER_NAME\}\}/g, d.userName)
     .replace(/\{\{PLAN_NAME\}\}/g, d.planName)
@@ -270,10 +246,8 @@ function getEmailTemplateFromDb(
     .replace(/\{\{BENEFITS_LIST\}\}/g, benefitsHtml)
     .replace(/\{\{LOSSES_LIST\}\}/g, lossesHtml)
 
-  // Build final HTML with checkout URL and pix section injected
   let html = wrapEmail(subject, preheader, body, d.email)
   html = html.replace('{{CHECKOUT_URL}}', d.checkoutUrl)
-  html = html.replace('{{PIX_SECTION}}', pixSection)
 
   return { subject, html }
 }
@@ -287,10 +261,10 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const pagarmeSecretKey = Deno.env.get('PAGARME_SECRET_KEY')
+    const mpAccessToken = Deno.env.get('MERCADOPAGO_ACCESS_TOKEN')
 
-    if (!pagarmeSecretKey) {
-      console.error('❌ PAGARME_SECRET_KEY not configured')
+    if (!mpAccessToken) {
+      console.error('❌ MERCADOPAGO_ACCESS_TOKEN not configured')
       return new Response(JSON.stringify({ error: 'Missing config' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
@@ -503,18 +477,16 @@ serve(async (req) => {
 
         // 9. Create Pagar.me PIX checkout
         let checkoutUrl = ''
-        let pixCopyPaste: string | null = null
         try {
           const checkout = await createRenewalCheckout(
-            pagarmeSecretKey,
+            mpAccessToken,
             userEmail,
             profile.name || '',
             productTitle,
-            Math.round(price * 100),
-            crypto.randomUUID(), // dummy order ID for the metadata
+            price,
+            crypto.randomUUID(),
           )
           checkoutUrl = checkout.checkoutUrl
-          pixCopyPaste = checkout.pixCopyPaste
         } catch (err: any) {
           console.error(`❌ Failed to create checkout for ${userEmail}:`, err.message)
           errors++
@@ -530,7 +502,6 @@ serve(async (req) => {
           benefits: planInfo.benefits,
           losses: planInfo.losses,
           checkoutUrl,
-          pixCopyPaste,
           email: userEmail,
         }
 

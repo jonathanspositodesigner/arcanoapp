@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const PAGARME_API_URL = "https://api.pagar.me/core/v5";
+const MP_API_URL = "https://api.mercadopago.com";
 
 // ===== SendPulse OAuth =====
 let cachedToken: { token: string; expiresAt: number } | null = null;
@@ -30,102 +30,57 @@ async function getSendPulseToken(): Promise<string> {
   return data.access_token;
 }
 
-// ===== Gerar checkout Pagar.me =====
+// ===== Gerar checkout Mercado Pago =====
 async function generateCheckoutUrl(
   product: any,
   order: any,
-  pagarmeSecretKey: string
+  mpAccessToken: string
 ): Promise<string | null> {
-  const amountInCents = Math.round(Number(product.price) * 100);
   const customerName = order.user_name || order.user_email?.split("@")[0] || "Cliente";
 
-  const customerObj: Record<string, unknown> = {
-    name: customerName,
-    email: order.user_email,
-    type: "individual",
-  };
-
-  if (order.user_cpf) {
-    customerObj.document = order.user_cpf;
-    customerObj.document_type = "CPF";
-  }
-  if (order.user_phone) {
-    const digits = order.user_phone.replace(/\D/g, "");
-    if (digits.length >= 10) {
-      customerObj.phones = {
-        mobile_phone: {
-          country_code: "55",
-          area_code: digits.slice(0, 2),
-          number: digits.slice(2),
-        },
-      };
-    }
-  }
-
-  const checkoutPayload = {
-    items: [
-      {
-        amount: amountInCents,
-        description: product.title,
-        quantity: 1,
-        code: product.slug || product.id,
-      },
-    ],
-    customer: customerObj,
-    payments: [
-      {
-        payment_method: "checkout",
-        checkout: {
-          expires_in: 259200,
-          accepted_payment_methods: ["pix", "credit_card"],
-          success_url: "https://arcanoapp.voxvisual.com.br/sucesso-compra",
-          customer_editable: true,
-          billing_address_editable: true,
-          credit_card: {
-            capture: true,
-            installments: [
-              { number: 1, total: amountInCents },
-              { number: 2, total: amountInCents },
-              { number: 3, total: amountInCents },
-            ],
-          },
-          pix: { expires_in: 259200 },
-        },
-      },
-    ],
+  const payload = {
+    items: [{
+      title: product.title,
+      quantity: 1,
+      unit_price: Number(product.price),
+      currency_id: 'BRL',
+    }],
+    payer: {
+      email: order.user_email,
+      name: customerName,
+    },
+    external_reference: order.id,
+    back_urls: {
+      success: 'https://arcanoapp.voxvisual.com.br/sucesso-compra',
+      failure: 'https://arcanoapp.voxvisual.com.br/planos-2?mp_status=failure',
+      pending: 'https://arcanoapp.voxvisual.com.br/planos-2?mp_status=pending',
+    },
+    auto_return: 'approved',
+    expires: true,
+    expiration_date_to: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
     metadata: {
       order_id: order.id,
       recovery_email: true,
     },
   };
 
-  const authHeader = "Basic " + btoa(pagarmeSecretKey + ":");
-
-  const response = await fetch(`${PAGARME_API_URL}/orders`, {
+  const response = await fetch(`${MP_API_URL}/checkout/preferences`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: authHeader,
+      "Authorization": `Bearer ${mpAccessToken}`,
     },
-    body: JSON.stringify(checkoutPayload),
+    body: JSON.stringify(payload),
   });
 
   const responseText = await response.text();
   if (!response.ok) {
-    console.error(`Pagar.me error for order ${order.id}: ${responseText.substring(0, 500)}`);
+    console.error(`MP error for order ${order.id}: ${responseText.substring(0, 500)}`);
     return null;
   }
 
   const data = JSON.parse(responseText);
-  const lastTransaction = data.charges?.[0]?.last_transaction;
-  return (
-    lastTransaction?.url ||
-    lastTransaction?.payment_url ||
-    lastTransaction?.checkout_url ||
-    data.checkouts?.[0]?.payment_url ||
-    data.checkouts?.[0]?.url ||
-    null
-  );
+  return data.init_point || null;
 }
 
 // ===== HTML do email =====
@@ -264,9 +219,9 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const pagarmeSecretKey = Deno.env.get("PAGARME_SECRET_KEY");
-    if (!pagarmeSecretKey) {
-      return new Response(JSON.stringify({ error: "PAGARME_SECRET_KEY missing" }), {
+    const mpAccessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
+    if (!mpAccessToken) {
+      return new Response(JSON.stringify({ error: "MERCADOPAGO_ACCESS_TOKEN missing" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -358,7 +313,7 @@ serve(async (req) => {
 
       // Generate fresh checkout
       console.log(`Generating checkout for ${email} - ${product.title}`);
-      const checkoutUrl = await generateCheckoutUrl(product, order, pagarmeSecretKey);
+      const checkoutUrl = await generateCheckoutUrl(product, order, mpAccessToken);
 
       if (!checkoutUrl) {
         results.push({ email, status: "failed", reason: "checkout_generation_failed" });
