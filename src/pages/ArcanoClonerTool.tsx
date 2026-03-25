@@ -658,6 +658,9 @@ const ArcanoClonerTool: React.FC = () => {
     setRefinementHistory([]);
     setSelectedHistoryIndex(0);
     setRefineJobId(null);
+  };
+
+  const handleNewImage = () => {
     endSubmit();
     setOutputImage(null);
     setStatus('idle');
@@ -669,7 +672,6 @@ const ArcanoClonerTool: React.FC = () => {
     setFailedAtStep(null);
     setDebugErrorMessage(null);
     clearGlobalJob();
-    // Clear refine state
     setRefineMode(false);
     setRefinePrompt('');
     setRefineReferenceFile(null);
@@ -677,6 +679,7 @@ const ArcanoClonerTool: React.FC = () => {
     setIsRefining(false);
     setRefinementHistory([]);
     setSelectedHistoryIndex(0);
+    setRefineJobId(null);
   };
 
   // Handle refine submission (via RunningHub queue)
