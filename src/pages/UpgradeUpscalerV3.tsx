@@ -1,8 +1,29 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
 import { Zap, Layers, Check, X, Shield, ChevronDown, Rocket, Sparkles, Clock, ArrowRight, Timer, Play, ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
 import { useMPCheckout } from "@/hooks/useMPCheckout";
+
+/**
+ * Hook: lazy-render a section only when near viewport.
+ */
+const useLazySection = (rootMargin = "300px") => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [shouldRender, setShouldRender] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) { setShouldRender(true); observer.disconnect(); }
+      },
+      { rootMargin }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [rootMargin]);
+  return [ref, shouldRender] as const;
+};
 
 // Countdown to March 27, 2026 23:59:59 BRT (UTC-3)
 const DEADLINE = new Date("2026-03-28T02:59:59Z").getTime();
