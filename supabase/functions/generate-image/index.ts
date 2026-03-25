@@ -193,13 +193,17 @@ serve(async (req) => {
       });
     }
 
-    // ========== POLL FOR COMPLETION (max ~100s) ==========
-    const MAX_POLL_TIME = 100_000; // 100 seconds
-    const POLL_INTERVAL = 3_000; // 3 seconds
+    // ========== POLL FOR COMPLETION (30s rápido, depois 5s até 120s) ==========
+    const FAST_POLL_TIME = 30_000; // 30s polling rápido (3s interval)
+    const MAX_POLL_TIME = 120_000; // 120s total max
+    const FAST_INTERVAL = 3_000;
+    const SLOW_INTERVAL = 5_000;
     const startTime = Date.now();
 
     while (Date.now() - startTime < MAX_POLL_TIME) {
-      await sleep(POLL_INTERVAL);
+      const elapsed = Date.now() - startTime;
+      const interval = elapsed < FAST_POLL_TIME ? FAST_INTERVAL : SLOW_INTERVAL;
+      await sleep(interval);
 
       const { data: job } = await serviceClient
         .from("image_generator_jobs")
@@ -210,7 +214,7 @@ serve(async (req) => {
       if (!job) break;
 
       if (job.status === "completed" && job.output_url) {
-        console.log(`[generate-image PROXY] Job ${jobId} completed`);
+        console.log(`[generate-image PROXY] Job ${jobId} completed in ${Math.round(elapsed / 1000)}s`);
         return new Response(JSON.stringify({
           success: true,
           job_id: jobId,
@@ -232,8 +236,8 @@ serve(async (req) => {
       }
     }
 
-    // Timeout — job still processing, return partial info
-    console.log(`[generate-image PROXY] Job ${jobId} still processing after polling timeout`);
+    // Timeout — job still processing
+    console.log(`[generate-image PROXY] Job ${jobId} still processing after 120s`);
     return new Response(JSON.stringify({
       error: "A geração está demorando mais que o esperado. Atualize o app para ter uma experiência melhor. Seus créditos serão estornados se a geração falhar.",
       refunded: false,
