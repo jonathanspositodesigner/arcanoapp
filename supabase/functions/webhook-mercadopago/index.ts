@@ -127,12 +127,18 @@ function getUnsubscribeLink(email: string): string {
   return `${baseUrl}/functions/v1/email-unsubscribe?email=${encodeURIComponent(email)}`
 }
 
-function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: string, productType: string, creditsAmount?: number): string {
+function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: string, productType: string, creditsAmount?: number, productSlug?: string): string {
   const unsubscribeLink = getUnsubscribeLink(email)
 
   // Bloco dinâmico baseado no tipo de produto
   let accessBlock = ''
-  if (productType === 'credits') {
+  if (productSlug === 'upscaler-arcano-v3') {
+    accessBlock = `
+    <div style="background:linear-gradient(135deg,rgba(217,70,239,0.12) 0%,rgba(168,85,247,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(217,70,239,0.3);text-align:center;">
+      <p style="color:#e879f9;font-size:15px;font-weight:700;margin:0 0 8px;">🚀 Upscaler Arcano V3 Ativado!</p>
+      <p style="color:#f0abfc;font-size:13px;margin:0;line-height:1.6;">Agora você tem acesso ao <strong>Modo Turbo</strong> e <strong>Upscale em Lote</strong>. Seu acesso à V2 também está incluso!</p>
+    </div>`
+  } else if (productType === 'credits') {
     accessBlock = `
     <div style="background:linear-gradient(135deg,rgba(96,165,250,0.12) 0%,rgba(59,130,246,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(96,165,250,0.3);text-align:center;">
       <p style="color:#60a5fa;font-size:15px;font-weight:700;margin:0 0 8px;">🎯 ${creditsAmount || ''} Créditos Adicionados!</p>
