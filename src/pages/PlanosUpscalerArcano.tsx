@@ -547,7 +547,7 @@ const PlanosUpscalerArcano = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] pb-14">
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] pt-12 sm:pt-14">
 
       <LazyFakePurchaseNotifications />
       {!hasAccess && <StickyFooterBar />}
