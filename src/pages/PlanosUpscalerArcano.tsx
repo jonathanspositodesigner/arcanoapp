@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from "react";
 import galleryBefore2 from "@/assets/upscaler/2a.webp";
 import galleryAfter2 from "@/assets/upscaler/2d.webp";
 import galleryBefore3 from "@/assets/upscaler/3a.webp";
@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MousePointerClick, MessageCircle, ZoomIn, X, User, Rocket, PenTool, Image as ImageIcon, Award, Flame } from "lucide-react";
+import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MousePointerClick, MessageCircle, ZoomIn, X, User, Rocket, PenTool, Image as ImageIcon, Award, Flame, ShoppingCart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useMPCheckout } from "@/hooks/useMPCheckout";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
@@ -64,6 +64,106 @@ interface ToolData {
   checkout_link_membro_vitalicio: string | null;
   cover_url: string | null;
 }
+
+// ── Fake Purchase Notifications ──
+const FAKE_NAMES = [
+  "Lucas Oliveira", "Ana Souza", "Pedro Santos", "Mariana Costa", "Rafael Lima",
+  "Camila Ferreira", "Gabriel Almeida", "Juliana Ribeiro", "Thiago Martins", "Beatriz Rocha",
+  "Felipe Carvalho", "Larissa Gomes", "Matheus Pereira", "Amanda Nascimento", "Bruno Araújo",
+  "Fernanda Barbosa", "Diego Mendes", "Isabela Cardoso", "Vinícius Correia", "Letícia Dias",
+];
+
+const FakePurchaseNotifications = () => {
+  const [notification, setNotification] = useState<{ name: string; id: number } | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const countRef = useRef(0);
+
+  useEffect(() => {
+    const scheduleNext = () => {
+      if (countRef.current >= 4) return;
+      const delay = 5000 + Math.random() * 5000;
+      timeoutRef.current = setTimeout(() => {
+        const name = FAKE_NAMES[Math.floor(Math.random() * FAKE_NAMES.length)];
+        setNotification({ name, id: Date.now() });
+        setIsVisible(true);
+        countRef.current += 1;
+        setTimeout(() => setIsVisible(false), 5000);
+        scheduleNext();
+      }, delay);
+    };
+    scheduleNext();
+    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
+  }, []);
+
+  if (!notification) return null;
+
+  return (
+    <div
+      key={notification.id}
+      className={`fixed top-16 right-4 z-[100] max-w-xs transition-all duration-300 ${
+        isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
+      }`}
+    >
+      <div className="flex items-center gap-3 bg-emerald-600 text-white rounded-xl px-4 py-3 shadow-lg shadow-emerald-900/40 border border-emerald-400/20">
+        <ShoppingCart className="h-4 w-4 shrink-0" />
+        <span className="text-xs font-medium leading-tight">{notification.name} acabou de comprar!</span>
+        <button onClick={() => setIsVisible(false)} className="shrink-0 ml-1 hover:bg-white/10 rounded p-0.5">
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const LazyFakePurchaseNotifications = () => {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setShow(true), 3000);
+    return () => clearTimeout(t);
+  }, []);
+  if (!show) return null;
+  return <FakePurchaseNotifications />;
+};
+
+// ── Sticky Footer Bar with Countdown ──
+const StickyFooterBar = () => {
+  const [secondsLeft, setSecondsLeft] = useState(40 * 60); // 40 minutes
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSecondsLeft(prev => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const minutes = Math.floor(secondsLeft / 60);
+  const seconds = secondsLeft % 60;
+
+  const scrollToPlanos = () => {
+    document.getElementById("planos")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-r from-fuchsia-600 to-purple-700 border-t border-white/10 shadow-[0_-4px_20px_rgba(217,70,239,0.3)]">
+      <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-white text-xs sm:text-sm font-medium">
+          <Clock className="h-4 w-4 text-amber-400 shrink-0" />
+          <span className="hidden sm:inline">Promoção acaba em</span>
+          <span className="font-bold tabular-nums bg-black/20 rounded px-2 py-0.5">
+            {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
+          </span>
+        </div>
+        <button
+          onClick={scrollToPlanos}
+          className="bg-white text-fuchsia-700 font-bold text-xs sm:text-sm px-4 sm:px-6 py-2 rounded-full hover:bg-white/90 transition-colors shrink-0"
+        >
+          VER PLANOS
+        </button>
+      </div>
+    </div>
+  );
+};
 
 // CTA Button Component - estilo pill
 const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
@@ -447,7 +547,10 @@ const PlanosUpscalerArcano = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510]">
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] pb-14">
+
+      <LazyFakePurchaseNotifications />
+      {!hasAccess && <StickyFooterBar />}
 
       {/* Se já tem acesso */}
       {hasAccess ? (
