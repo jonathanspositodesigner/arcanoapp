@@ -138,6 +138,53 @@ const YouTubeFacade = ({ videoId }: { videoId: string }) => {
   );
 };
 
+const FAKE_NAMES = [
+  "Lucas Oliveira", "Ana Souza", "Pedro Santos", "Mariana Costa", "Rafael Lima",
+  "Camila Ferreira", "Gabriel Almeida", "Juliana Ribeiro", "Thiago Martins", "Beatriz Rocha",
+  "Felipe Carvalho", "Larissa Gomes", "Matheus Pereira", "Amanda Nascimento", "Bruno Araújo",
+  "Fernanda Barbosa", "Diego Mendes", "Isabela Cardoso", "Vinícius Correia", "Letícia Dias",
+];
+
+const FakePurchaseNotifications = () => {
+  const [notification, setNotification] = useState<{ name: string; id: number } | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    const scheduleNext = () => {
+      const delay = 5000 + Math.random() * 5000;
+      timeoutRef.current = setTimeout(() => {
+        const name = FAKE_NAMES[Math.floor(Math.random() * FAKE_NAMES.length)];
+        setNotification({ name, id: Date.now() });
+        setIsVisible(true);
+        setTimeout(() => setIsVisible(false), 2000);
+        scheduleNext();
+      }, delay);
+    };
+    scheduleNext();
+    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
+  }, []);
+
+  if (!notification) return null;
+
+  return (
+    <div
+      key={notification.id}
+      className={`fixed top-16 right-4 z-[100] max-w-xs transition-all duration-300 ${
+        isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
+      }`}
+    >
+      <div className="flex items-center gap-3 bg-emerald-600 text-white rounded-xl px-4 py-3 shadow-lg shadow-emerald-900/40 border border-emerald-400/20">
+        <ShoppingCart className="h-4 w-4 shrink-0" />
+        <span className="text-xs font-medium leading-tight">{notification.name} acabou de comprar!</span>
+        <button onClick={() => setIsVisible(false)} className="shrink-0 ml-1 hover:bg-white/10 rounded p-0.5">
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const UpgradeUpscalerV3 = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
