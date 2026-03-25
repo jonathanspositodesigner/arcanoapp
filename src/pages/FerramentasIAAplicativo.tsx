@@ -64,7 +64,7 @@ const FerramentasIAAplicativo = () => {
   const [loading, setLoading] = useState(true);
 
   // Preferred order for tools
-  const preferredOrder = ["arcano-cloner", "upscaller-arcano", "upscaller-arcano-video", "ia-muda-pose", "ia-muda-roupa", "remover-fundo", "forja-selos-3d-ilimitada", "flyer-maker"];
+  const preferredOrder = ["arcano-cloner", "upscaller-arcano", "upscaler-video", "ia-muda-pose", "ia-muda-roupa", "remover-fundo", "forja-selos-3d-ilimitada", "flyer-maker"];
 
   useEffect(() => {
     const fetchTools = async () => {
@@ -106,9 +106,19 @@ const FerramentasIAAplicativo = () => {
           checkout_link_vitalicio: null,
           checkout_link_membro_vitalicio: null,
         };
+
+        const videoUpscalerTool: ToolData = {
+          id: 'video-upscaler-static',
+          name: 'Upscaler de Vídeo',
+          slug: 'upscaler-video',
+          cover_url: null,
+          price_vitalicio: null,
+          checkout_link_vitalicio: null,
+          checkout_link_membro_vitalicio: null,
+        };
         
         // Combine database tools with static tools
-        const allTools = [...data, arcanoClonerTool, flyerMakerTool, removerFundoTool];
+        const allTools = [...data, arcanoClonerTool, flyerMakerTool, removerFundoTool, videoUpscalerTool];
         
         // Sort by preferred order
         const sorted = allTools.sort((a, b) => {
