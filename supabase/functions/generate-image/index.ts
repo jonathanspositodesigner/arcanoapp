@@ -1,92 +1,36 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+/**
+ * LEGACY PROXY: generate-image
+ * 
+ * Redireciona chamadas da API antiga (Google Gemini) para o sistema RunningHub.
+ * Usuários com PWA cacheado ainda chamam esta função esperando resposta síncrona.
+ * 
+ * Fluxo:
+ * 1. Autentica o usuário
+ * 2. Cria job em image_generator_jobs
+ * 3. Faz upload das imagens de referência (base64) para o Supabase Storage
+ * 4. Chama runninghub-image-generator/run para delegar ao queue manager
+ * 5. Faz polling do status do job até completar (max ~100s)
+ * 6. Retorna output_url no mesmo formato que o frontend antigo espera
+ */
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const ASPECT_RATIO_MAP: Record<string, string> = {
-  "1:1":  "square 1:1 aspect ratio",
-  "16:9": "wide horizontal landscape 16:9 widescreen aspect ratio",
-  "9:16": "tall vertical portrait 9:16 aspect ratio (like a phone screen)",
-  "4:3":  "standard horizontal 4:3 aspect ratio",
-  "3:4":  "vertical portrait 3:4 aspect ratio",
-};
-
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-async function callGeminiWithRetry(
-  apiKey: string,
-  model: string,
-  parts: any[],
-  maxRetries: number
-): Promise<Response> {
-  let lastErr: Response | null = null;
-
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-
-    // Timeout de 120s para evitar que a edge function trave se a API não responder
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120_000);
-
-    let resp: Response;
-    try {
-      resp = await fetch(geminiUrl, {
-        method: "POST",
-        headers: {
-          "x-goog-api-key": apiKey,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [{ parts }],
-          generationConfig: {
-            responseModalities: ["IMAGE", "TEXT"],
-          },
-        }),
-        signal: controller.signal,
-      });
-    } catch (fetchErr: any) {
-      clearTimeout(timeoutId);
-      if (fetchErr.name === "AbortError") {
-        console.error(`[generate-image] ${model} attempt ${attempt}/${maxRetries} timed out after 120s`);
-        // Create a fake 504 response so the caller handles it as a failure
-        lastErr = new Response(JSON.stringify({ error: "Timeout: API não respondeu em 120s" }), { status: 504 });
-        if (attempt === maxRetries) break;
-        await sleep(3000);
-        continue;
-      }
-      throw fetchErr;
-    }
-    clearTimeout(timeoutId);
-
-    if (resp.ok) return resp;
-
-    const isRetryable = resp.status === 503 || resp.status === 429;
-    console.warn(`[generate-image] ${model} attempt ${attempt}/${maxRetries} failed (${resp.status})`);
-
-    lastErr = resp;
-
-    if (!isRetryable || attempt === maxRetries) break;
-
-    await sleep(3000);
-  }
-
-  return lastErr!;
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const GEMINI_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
-  if (!GEMINI_API_KEY) {
-    return new Response(JSON.stringify({ error: "GOOGLE_GEMINI_API_KEY not configured" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabaseAnon = Deno.env.get("SUPABASE_ANON_KEY")!;
 
   // Auth
   const authHeader = req.headers.get("Authorization");
@@ -95,10 +39,6 @@ serve(async (req) => {
       status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const supabaseAnon = Deno.env.get("SUPABASE_ANON_KEY")!;
 
   const userClient = createClient(supabaseUrl, supabaseAnon, {
     global: { headers: { Authorization: authHeader } },
@@ -123,249 +63,187 @@ serve(async (req) => {
       });
     }
 
-    // Determine model and cost
+    console.log(`[generate-image PROXY] Redirecting to RunningHub — user: ${userId}, source: ${source || "legacy"}`);
+
+    // ========== DETERMINE CREDIT COST ==========
     const isProModel = model === "pro";
     const isNano2Model = model === "nano2";
-    const proGeminiModel  = "gemini-3-pro-image-preview";
-    const flashGeminiModel = "gemini-2.5-flash-image";
-    const nano2GeminiModel = "gemini-3.1-flash-image-preview";
 
     let creditCost: number;
-    let toolDescription: string;
+    let creditDescription: string;
 
     if (source === "arcano_cloner_refine" || source === "flyer_maker_refine") {
       creditCost = 30;
-      toolDescription = source === "flyer_maker_refine" 
-        ? "Refinamento Flyer Maker" 
+      creditDescription = source === "flyer_maker_refine"
+        ? "Refinamento Flyer Maker"
         : "Refinamento Arcano Cloner";
     } else {
-      const toolName = isNano2Model ? "gerar_imagem_nano2" : isProModel ? "gerar_imagem_pro" : "gerar_imagem";
-
+      // Standard generation — check premium status
       const { data: premiumData } = await serviceClient
         .from("premium_users")
         .select("plan_type, expires_at")
         .eq("user_id", userId)
         .eq("is_active", true)
         .maybeSingle();
-      const isUnlimited = premiumData?.plan_type === "arcano_unlimited" 
+      const isUnlimited = premiumData?.plan_type === "arcano_unlimited"
         && (!premiumData?.expires_at || new Date(premiumData.expires_at) > new Date());
 
-      const { data: settingsData } = await serviceClient
-        .from("ai_tool_settings")
-        .select("credit_cost")
-        .eq("tool_name", toolName)
-        .single();
-
       if (isUnlimited) {
-        creditCost = settingsData?.credit_cost ?? (isNano2Model ? 100 : isProModel ? 60 : 40);
+        creditCost = 100;
       } else {
-        creditCost = isNano2Model ? 100 : isProModel ? 100 : 80;
+        creditCost = 100;
       }
-
-      toolDescription = `Gerar Imagem (${isNano2Model ? "NanoBanana 2" : isProModel ? "NanoBanana Pro" : "NanoBanana Normal"})`;
+      creditDescription = "Gerar Imagem";
     }
 
-    // Flash fallback cost (cheaper)
-    const flashCreditCost = creditCost;
+    // ========== UPLOAD BASE64 REFERENCE IMAGES TO STORAGE ==========
+    const storageImageUrls: string[] = [];
 
-    // Consume credits
-    const { data: consumeResult } = await serviceClient.rpc("consume_upscaler_credits", {
-      _user_id: userId,
-      _amount: creditCost,
-      _description: toolDescription,
-    });
+    if (reference_images && Array.isArray(reference_images) && reference_images.length > 0) {
+      for (let i = 0; i < Math.min(reference_images.length, 5); i++) {
+        const refImg = reference_images[i];
+        if (!refImg.base64 || !refImg.mimeType) continue;
 
-    const consumeRow = Array.isArray(consumeResult) ? consumeResult[0] : consumeResult;
-    if (!consumeRow?.success) {
-      return new Response(JSON.stringify({ error: "INSUFFICIENT_CREDITS", message: consumeRow?.error_message || "Créditos insuficientes" }), {
-        status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+        const ext = refImg.mimeType.includes("png") ? "png" : "jpg";
+        const fileName = `image-generator/${userId}/legacy-ref-${Date.now()}-${i}.${ext}`;
+
+        // Decode base64 to Uint8Array
+        const binaryData = Uint8Array.from(atob(refImg.base64), c => c.charCodeAt(0));
+
+        const { error: uploadError } = await serviceClient.storage
+          .from("artes-cloudinary")
+          .upload(fileName, binaryData, {
+            contentType: refImg.mimeType,
+            upsert: true,
+          });
+
+        if (uploadError) {
+          console.error(`[generate-image PROXY] Upload ref ${i} error:`, uploadError);
+          continue;
+        }
+
+        const { data: publicUrlData } = serviceClient.storage
+          .from("artes-cloudinary")
+          .getPublicUrl(fileName);
+
+        if (publicUrlData?.publicUrl) {
+          storageImageUrls.push(publicUrlData.publicUrl);
+        }
+      }
     }
 
-    // Create job record
+    // ========== CREATE JOB IN image_generator_jobs ==========
+    const finalAspectRatio = aspect_ratio || "1:1";
+    const sessionId = `legacy-${Date.now()}`;
+
     const { data: jobData, error: jobError } = await serviceClient
       .from("image_generator_jobs")
       .insert({
         user_id: userId,
         prompt: prompt.trim(),
         model: isNano2Model ? "nano2" : isProModel ? "pro" : "normal",
-        aspect_ratio: aspect_ratio || "1:1",
+        aspect_ratio: finalAspectRatio,
         reference_images: reference_images || [],
-        status: "processing",
+        status: "pending",
         user_credit_cost: creditCost,
-        credits_charged: true,
+        session_id: sessionId,
       })
       .select("id")
       .single();
 
     if (jobError) {
-      console.error("[generate-image] Job insert error:", jobError);
-      await serviceClient.rpc("refund_upscaler_credits", {
-        _user_id: userId,
-        _amount: creditCost,
-        _description: "Estorno: erro ao criar job de imagem",
-      });
+      console.error("[generate-image PROXY] Job insert error:", jobError);
       return new Response(JSON.stringify({ error: "Erro ao criar job" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const jobId = jobData.id;
+    console.log(`[generate-image PROXY] Job created: ${jobId}`);
 
-    // Build parts with reference images
-    const parts: any[] = [];
-    if (reference_images && Array.isArray(reference_images) && reference_images.length > 0) {
-      for (const refImg of reference_images.slice(0, 5)) {
-        if (refImg.base64 && refImg.mimeType) {
-          parts.push({ inlineData: { mimeType: refImg.mimeType, data: refImg.base64 } });
-        }
-      }
-    }
+    // ========== CALL runninghub-image-generator/run ==========
+    const rhUrl = `${supabaseUrl}/functions/v1/runninghub-image-generator/run`;
+    const rhResponse = await fetch(rhUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": authHeader,
+      },
+      body: JSON.stringify({
+        jobId,
+        referenceImageUrls: storageImageUrls,
+        aspectRatio: finalAspectRatio,
+        creditCost,
+        prompt: prompt.trim(),
+        source: source || "legacy_proxy",
+      }),
+    });
 
-    // Inject aspect ratio into the text prompt
-    const arLabel = ASPECT_RATIO_MAP[aspect_ratio] || "square 1:1 aspect ratio";
-    const finalPrompt = `${prompt.trim()}. Generate this image in ${arLabel}.`;
-    parts.push({ text: finalPrompt });
+    const rhResult = await rhResponse.json();
 
-    const modelLogName = isNano2Model ? "nano2" : isProModel ? "pro" : "normal";
-    console.log(`[generate-image] Job ${jobId} — model: ${modelLogName}, aspect_ratio: ${aspect_ratio}`);
+    if (!rhResponse.ok && !rhResult.queued) {
+      console.error("[generate-image PROXY] RunningHub call failed:", rhResult);
 
-    // === Call selected model (2 attempts, no fallback) ===
-    const selectedGeminiModel = isNano2Model ? nano2GeminiModel : isProModel ? proGeminiModel : flashGeminiModel;
-    const effectiveCreditCost = creditCost;
-
-    console.log(`[generate-image] Trying ${modelLogName} model (up to 2 attempts)...`);
-    const geminiResponse = await callGeminiWithRetry(GEMINI_API_KEY, selectedGeminiModel, parts, 2);
-
-    // Model failed after retries — refund and return error
-    if (!geminiResponse.ok) {
-      const errText = await geminiResponse.text();
-      console.error(`[generate-image] ${modelLogName} model failed after retries (${geminiResponse.status})`, errText);
-
-      await serviceClient.rpc("refund_upscaler_credits", {
-        _user_id: userId,
-        _amount: creditCost,
-        _description: `Estorno: modelo ${modelLogName} falhou`,
-      });
-
-      await serviceClient.from("image_generator_jobs").update({
-        status: "failed",
-        error_message: `Gemini API error ${geminiResponse.status}: tente novamente em instantes`,
-        credits_refunded: true,
-        completed_at: new Date().toISOString(),
-      }).eq("id", jobId);
-
-      const userMessage = geminiResponse.status === 503 || geminiResponse.status === 429
-        ? "API de geração sobrecarregada. Seus créditos foram estornados. Tente novamente em alguns instantes."
-        : "Erro na geração de imagem. Seus créditos foram estornados.";
-
-      // Return HTTP 200 with error field so frontend can read the message
-      return new Response(JSON.stringify({ error: userMessage, refunded: true }), {
+      // Return user-friendly error with refund info
+      return new Response(JSON.stringify({
+        error: rhResult.error || "Erro na geração de imagem. Seus créditos foram estornados.",
+        refunded: rhResult.refunded || true,
+      }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const geminiData = await geminiResponse.json();
+    // ========== POLL FOR COMPLETION (max ~100s) ==========
+    const MAX_POLL_TIME = 100_000; // 100 seconds
+    const POLL_INTERVAL = 3_000; // 3 seconds
+    const startTime = Date.now();
 
-    // Extract image from response
-    let imageBase64: string | null = null;
-    let imageMimeType = "image/png";
+    while (Date.now() - startTime < MAX_POLL_TIME) {
+      await sleep(POLL_INTERVAL);
 
-    const candidates = geminiData?.candidates;
-    if (candidates && candidates[0]?.content?.parts) {
-      for (const part of candidates[0].content.parts) {
-        if (part.inlineData) {
-          imageBase64 = part.inlineData.data;
-          imageMimeType = part.inlineData.mimeType || "image/png";
-          break;
-        }
+      const { data: job } = await serviceClient
+        .from("image_generator_jobs")
+        .select("status, output_url, error_message, credits_refunded")
+        .eq("id", jobId)
+        .maybeSingle();
+
+      if (!job) break;
+
+      if (job.status === "completed" && job.output_url) {
+        console.log(`[generate-image PROXY] Job ${jobId} completed`);
+        return new Response(JSON.stringify({
+          success: true,
+          job_id: jobId,
+          output_url: job.output_url,
+          mime_type: "image/png",
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (job.status === "failed") {
+        console.log(`[generate-image PROXY] Job ${jobId} failed: ${job.error_message}`);
+        return new Response(JSON.stringify({
+          error: job.error_message || "Erro na geração de imagem. Seus créditos foram estornados.",
+          refunded: job.credits_refunded || false,
+        }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
     }
 
-    if (!imageBase64) {
-      // Detect specific Gemini finishReason for user-friendly messages
-      const finishReason = candidates?.[0]?.finishReason || "";
-      let userErrorMessage: string;
-
-      if (finishReason === "MALFORMED_FUNCTION_CALL") {
-        userErrorMessage = "A IA não conseguiu processar esta imagem. Tente usar um prompt diferente ou outra imagem de referência. Seus créditos foram estornados.";
-      } else if (finishReason === "SAFETY") {
-        userErrorMessage = "Imagem bloqueada pelo filtro de segurança. Tente usar outra imagem. Seus créditos foram estornados.";
-      } else if (finishReason === "RECITATION") {
-        userErrorMessage = "A IA detectou conteúdo protegido por direitos autorais. Tente com outra imagem. Seus créditos foram estornados.";
-      } else {
-        userErrorMessage = "Nenhuma imagem gerada. Tente novamente com um prompt diferente. Seus créditos foram estornados.";
-      }
-
-      console.error(`[generate-image] No image in response. finishReason: ${finishReason}`, JSON.stringify(geminiData).slice(0, 500));
-
-      await serviceClient.rpc("refund_upscaler_credits", {
-        _user_id: userId,
-        _amount: effectiveCreditCost,
-        _description: `Estorno: ${finishReason || "sem imagem na resposta"}`,
-      });
-
-      await serviceClient.from("image_generator_jobs").update({
-        status: "failed",
-        error_message: finishReason || "Nenhuma imagem gerada na resposta",
-        credits_refunded: true,
-        completed_at: new Date().toISOString(),
-      }).eq("id", jobId);
-
-      // Return HTTP 200 with error field so frontend can read the message
-      // (supabase.functions.invoke hides the body on non-2xx responses)
-      return new Response(JSON.stringify({ error: userErrorMessage, refunded: true }), {
-        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Upload to storage — stream-friendly: decode in chunks to reduce peak memory
-    const ext = imageMimeType.includes("png") ? "png" : "webp";
-    const storagePath = `image-generator/${userId}/${jobId}.${ext}`;
-    
-    // Decode base64 and immediately release the base64 string
-    const imageBytes = Uint8Array.from(atob(imageBase64), (c) => c.charCodeAt(0));
-    imageBase64 = null; // Free memory immediately
-
-    const { error: uploadError } = await serviceClient.storage
-      .from("artes-cloudinary")
-      .upload(storagePath, imageBytes, {
-        contentType: imageMimeType,
-        upsert: true,
-      });
-
-    if (uploadError) {
-      console.error("[generate-image] Upload error:", uploadError);
-    }
-
-    const { data: publicUrlData } = serviceClient.storage
-      .from("artes-cloudinary")
-      .getPublicUrl(storagePath);
-
-    const outputUrl = publicUrlData?.publicUrl || null;
-
-    // Update job as completed
-    await serviceClient.from("image_generator_jobs").update({
-      status: "completed",
-      output_url: outputUrl,
-      model: isNano2Model ? "nano2" : isProModel ? "pro" : "normal",
-      user_credit_cost: effectiveCreditCost,
-      completed_at: new Date().toISOString(),
-    }).eq("id", jobId);
-
-    console.log(`[generate-image] Job ${jobId} completed`);
-
+    // Timeout — job still processing, return partial info
+    console.log(`[generate-image PROXY] Job ${jobId} still processing after polling timeout`);
     return new Response(JSON.stringify({
-      success: true,
+      error: "A geração está demorando mais que o esperado. Atualize o app para ter uma experiência melhor. Seus créditos serão estornados se a geração falhar.",
+      refunded: false,
       job_id: jobId,
-      output_url: outputUrl,
-      mime_type: imageMimeType,
     }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
   } catch (err) {
-    console.error("[generate-image] Unexpected error:", err);
+    console.error("[generate-image PROXY] Unexpected error:", err);
     return new Response(JSON.stringify({ error: "Erro interno do servidor" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
