@@ -63,7 +63,7 @@ const CreditHistory = lazy(() => import("./pages/CreditHistory"));
 const InstallApp = lazy(() => import("./pages/InstallApp"));
 const Planos = lazy(() => import("./pages/Planos"));
 const Planos2 = lazy(() => import("./pages/Planos2"));
-const UpgradePlano = lazy(() => import("./pages/UpgradePlano"));
+
 const AdminInstallStats = lazy(() => import("./pages/AdminInstallStats"));
 const AdminManagePremium = lazy(() => import("./pages/AdminManagePremium"));
 const AdminPremiumDashboard = lazy(() => import("./pages/AdminPremiumDashboard"));
