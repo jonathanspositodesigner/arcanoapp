@@ -328,8 +328,24 @@ const TestimonialsGallery = () => {
   );
 };
 
+const LazyFakePurchaseNotifications = () => {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setShow(true), 3000);
+    return () => clearTimeout(t);
+  }, []);
+  if (!show) return null;
+  return <FakePurchaseNotifications />;
+};
+
 const UpgradeUpscalerV3 = () => {
   const { openCheckout, MPCheckoutModal } = useMPCheckout({ source_page: 'upgrade-v3' });
+
+  // Lazy section refs for below-the-fold content
+  const [comparativoRef, showComparativo] = useLazySection("400px");
+  const [garantiaRef, showGarantia] = useLazySection("400px");
+  const [socialProofRef, showSocialProof] = useLazySection("400px");
+  const [faqRef, showFaq] = useLazySection("400px");
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -342,7 +358,7 @@ const UpgradeUpscalerV3 = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510]">
 
-      <FakePurchaseNotifications />
+      <LazyFakePurchaseNotifications />
 
       {/* BARRA STICKY */}
       <div className="sticky top-0 z-50 w-full bg-gradient-to-r from-fuchsia-600 to-purple-700 backdrop-blur-md border-b border-white/10">
