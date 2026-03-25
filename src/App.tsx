@@ -63,7 +63,7 @@ const CreditHistory = lazy(() => import("./pages/CreditHistory"));
 const InstallApp = lazy(() => import("./pages/InstallApp"));
 const Planos = lazy(() => import("./pages/Planos"));
 const Planos2 = lazy(() => import("./pages/Planos2"));
-const UpgradePlano = lazy(() => import("./pages/UpgradePlano"));
+
 const AdminInstallStats = lazy(() => import("./pages/AdminInstallStats"));
 const AdminManagePremium = lazy(() => import("./pages/AdminManagePremium"));
 const AdminPremiumDashboard = lazy(() => import("./pages/AdminPremiumDashboard"));
@@ -254,7 +254,7 @@ const AppContent = () => {
           <Route path="/install-app" element={<InstallApp />} />
           <Route path="/planos" element={<Navigate to="/planos-2" replace />} />
           <Route path="/planos-2" element={<Planos2 />} />
-          <Route path="/upgrade" element={<UpgradePlano />} />
+          <Route path="/upgrade" element={<Navigate to="/planos-2" replace />} />
           <Route path="/admin-install-stats" element={<AdminInstallStats />} />
           <Route path="/admin-manage-premium" element={<AdminManagePremium />} />
           <Route path="/admin-premium-dashboard" element={<AdminPremiumDashboard />} />
