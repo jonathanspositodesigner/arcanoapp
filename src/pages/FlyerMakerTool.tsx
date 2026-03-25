@@ -482,47 +482,9 @@ const FlyerMakerTool: React.FC = () => {
     } catch (e) { console.error(e); toast.error('Erro ao cancelar'); }
   };
 
-  // Convert image URL to base64 using canvas to avoid CORS fetch issues
-  const imageUrlToBase64 = async (url: string): Promise<{ base64: string; mimeType: string }> => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.naturalWidth;
-          canvas.height = img.naturalHeight;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) return reject(new Error('Canvas context failed'));
-          ctx.drawImage(img, 0, 0);
-          const dataUrl = canvas.toDataURL('image/png');
-          const base64 = dataUrl.split(',')[1];
-          resolve({ base64, mimeType: 'image/png' });
-        } catch (e) {
-          reject(e);
-        }
-      };
-      img.onerror = () => reject(new Error('Falha ao carregar imagem para refinamento'));
-      img.src = url;
-    });
-  };
-
-  const fileToBase64 = async (file: File): Promise<{ base64: string; mimeType: string }> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
-        const [header, base64] = dataUrl.split(',');
-        const mimeType = header.match(/:(.*?);/)?.[1] || 'image/png';
-        resolve({ base64, mimeType });
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  };
-
+  // Handle refine submission (via RunningHub queue)
   const handleRefine = async () => {
-    if (!startSubmit()) return; // Synchronous guard against double-clicks
+    if (!startSubmit()) return;
     
     if (!outputImage || !refinePrompt.trim() || !user?.id) {
       endSubmit();
@@ -530,6 +492,18 @@ const FlyerMakerTool: React.FC = () => {
     }
 
     const REFINE_COST = 30;
+
+    // Check active job
+    const activeCheck = await checkActiveJob(user.id);
+    if (activeCheck.hasActiveJob && activeCheck.activeTool) {
+      setActiveToolName(activeCheck.activeTool);
+      setActiveJobId(activeCheck.activeJobId);
+      setActiveStatus(activeCheck.activeStatus);
+      setShowActiveJobModal(true);
+      endSubmit();
+      return;
+    }
+
     const freshCredits = await checkBalance();
     if (freshCredits < REFINE_COST) {
       setNoCreditsReason('insufficient');
@@ -541,70 +515,74 @@ const FlyerMakerTool: React.FC = () => {
     setIsRefining(true);
 
     try {
-      const currentImage = await imageUrlToBase64(outputImage);
-      const referenceImages: { base64: string; mimeType: string }[] = [currentImage];
+      // Build reference URLs — outputImage is already a storage URL
+      const referenceImageUrls: string[] = [outputImage];
 
+      // Upload extra reference if provided
       if (refineReferenceFile) {
-        const extraRef = await fileToBase64(refineReferenceFile);
-        referenceImages.push(extraRef);
+        const compressed = await compressImage(refineReferenceFile);
+        const extraUrl = await uploadToStorage(compressed, 'refine-ref');
+        referenceImageUrls.push(extraUrl);
       }
 
+      // If first refinement, seed history with original
       if (refinementHistory.length === 0) {
         setRefinementHistory([{ url: outputImage, label: 'Original' }]);
       }
 
-      const { data, error } = await supabase.functions.invoke('generate-image', {
-        body: {
+      // Create job in image_generator_jobs
+      const { data: job, error: jobError } = await supabase
+        .from('image_generator_jobs')
+        .insert({
+          session_id: sessionIdRef.current,
+          user_id: user.id,
+          status: 'pending',
           prompt: refinePrompt.trim(),
-          model: 'pro',
           aspect_ratio: imageSize === '9:16' ? '9:16' : '3:4',
-          reference_images: referenceImages,
+          model: 'refine',
+        } as any)
+        .select('id')
+        .single();
+
+      if (jobError || !job) throw new Error(jobError?.message || 'Erro ao criar job de refinamento');
+
+      setRefineJobId(job.id);
+      registerJob(job.id, 'Gerar Imagem', 'pending');
+
+      // Start via edge function
+      const { data: runResult, error: runError } = await supabase.functions.invoke('runninghub-image-generator/run', {
+        body: {
+          jobId: job.id,
+          referenceImageUrls,
+          aspectRatio: imageSize === '9:16' ? '9:16' : '3:4',
+          creditCost: REFINE_COST,
+          prompt: refinePrompt.trim(),
           source: 'flyer_maker_refine',
         },
       });
 
-      if (error) {
-        let realMessage = 'Erro ao alterar imagem. Tente novamente.';
-        try {
-          const ctx = (error as any)?.context;
-          if (ctx && typeof ctx.json === 'function') {
-            const body = await ctx.json();
-            if (body?.error) realMessage = body.error;
-          }
-        } catch { /* ignore */ }
-        throw new Error(realMessage);
+      if (runError) throw new Error(runError.message || 'Erro ao iniciar refinamento');
+
+      if (runResult?.code === 'INSUFFICIENT_CREDITS') {
+        setNoCreditsReason('insufficient');
+        setShowNoCreditsModal(true);
+        setIsRefining(false);
+        setRefineJobId(null);
+        endSubmit();
+        return;
       }
-      if (data?.error) throw new Error(data.error);
 
-      const newUrl = data?.output_url;
-      if (!newUrl) throw new Error('Nenhuma imagem gerada. Tente novamente.');
+      if (runResult?.error && !runResult?.success && !runResult?.queued) {
+        throw new Error(runResult.error);
+      }
 
-      const newIndex = refinementHistory.length === 0 ? 1 : refinementHistory.length;
-      const newVersion: RefinementVersion = {
-        url: newUrl,
-        label: `Alteração ${newIndex}`,
-      };
+      // Now wait for useJobStatusSync to deliver the result via Realtime
 
-      setRefinementHistory(prev => {
-        const updated = prev.length === 0
-          ? [{ url: outputImage, label: 'Original' }, newVersion]
-          : [...prev, newVersion];
-        setSelectedHistoryIndex(updated.length - 1);
-        return updated;
-      });
-
-      setOutputImage(newUrl);
-      setRefineMode(false);
-      setRefinePrompt('');
-      setRefineReferenceFile(null);
-      setRefineReferencePreview(null);
-      refetchCredits();
-      toast.success('Alteração feita com sucesso!');
     } catch (err: any) {
       console.error('[FlyerMaker] Refine error:', err);
       toast.error(err.message || 'Erro ao alterar imagem');
-    } finally {
       setIsRefining(false);
+      setRefineJobId(null);
       endSubmit();
     }
   };
