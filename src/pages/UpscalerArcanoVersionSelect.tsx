@@ -193,8 +193,9 @@ const UpscalerArcanoVersionSelect = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
            {versions.map((version) => {
               const isV3 = version.name.toLowerCase().includes('v3') || version.slug === 'v3';
-              const isLegacyVersion = !isV3 && (version.slug === 'v1' || version.name.toLowerCase().includes('1.5') || version.name.toLowerCase().includes('1.0'));
-              const hasVersionAccess = isV3 ? hasV3Pack : true;
+               const isLegacyVersion = !isV3 && (version.slug === 'v1' || version.name.toLowerCase().includes('1.5') || version.name.toLowerCase().includes('1.0'));
+               const hasV2Access = hasUpscalerPack || hasV3Pack || hasUnlimitedAccess;
+               const hasVersionAccess = isV3 ? (hasV3Pack || hasUnlimitedAccess) : hasV2Access;
 
             return (
               <Card 

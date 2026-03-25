@@ -126,8 +126,7 @@ const FerramentasIAAplicativo = () => {
 
   const getAccessRoute = (slug: string) => {
     if (slug === "upscaller-arcano") {
-      // Navigate to version selection page (shows V2 versions + V3 card)
-      return "/ferramenta-ia-artes/upscaller-arcano";
+      return "/upscaler-arcano-tool";
     }
     if (slug === "upscaller-arcano-video") {
       return "/video-upscaler-tool";
