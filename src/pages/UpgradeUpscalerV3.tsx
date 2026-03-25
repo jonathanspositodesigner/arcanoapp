@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Zap, Layers, Check, X, Shield, ChevronDown, Rocket, Sparkles, Clock, ArrowRight, Timer, Play, ShoppingCart } from "lucide-react";
+import { Zap, Layers, Check, X, Shield, ChevronDown, Rocket, Sparkles, Clock, ArrowRight, Timer, Play, ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
 import { useMPCheckout } from "@/hooks/useMPCheckout";
 
@@ -110,7 +110,7 @@ const YouTubeFacade = ({ videoId }: { videoId: string }) => {
   }, []);
 
   return (
-    <div className="w-full max-w-3xl mx-auto mb-10 rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-fuchsia-500/10 bg-black">
+    <div className="w-full max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto mb-10 rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-fuchsia-500/10 bg-black">
       <div className="relative w-full aspect-video">
         {showIframe ? (
           <iframe
@@ -478,27 +478,7 @@ const UpgradeUpscalerV3 = () => {
           </AnimatedSection>
 
           {/* Mosaico de depoimentos reais */}
-          <StaggeredAnimation className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto" staggerDelay={100}>
-            {[
-              "/images/depo-v3-1.webp",
-              "/images/depo-v3-7.webp",
-              "/images/depo-v3-3.webp",
-              "/images/depo-v3-4.webp",
-              "/images/depo-v3-5.webp",
-              "/images/depo-v3-2.webp",
-              "/images/depo-v3-6.webp",
-              "/images/depo-v3-8.webp",
-            ].map((src, i) => (
-              <div key={i} className="rounded-2xl overflow-hidden border-2 border-white/10 hover:border-fuchsia-500/40 transition-all duration-300 hover:scale-[1.03] shadow-lg shadow-black/30 hover:shadow-fuchsia-500/10">
-                <img
-                  src={src}
-                  alt={`Depoimento real ${i + 1}`}
-                  className="w-full h-auto block"
-                  loading="lazy"
-                />
-              </div>
-            ))}
-          </StaggeredAnimation>
+          <TestimonialsGallery />
         </div>
       </AnimatedSection>
 
