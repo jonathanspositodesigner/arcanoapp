@@ -74,7 +74,7 @@ export function useJobStatusSync({
   useEffect(() => {
     // === Funções internas (capturam refs, não dependem de callbacks instáveis) ===
     
-    const processUpdate = (data: any, source: 'realtime' | 'polling' | 'visibility') => {
+    const processUpdate = async (data: any, source: 'realtime' | 'polling' | 'visibility') => {
       const status = data.status as JobStatus;
       
       if (status === lastKnownStatusRef.current) {
@@ -88,13 +88,36 @@ export function useJobStatusSync({
       // Notificar contexto global (para som de notificação)
       onGlobalStatusChangeRef.current?.(status);
       
-      const update: JobUpdate = {
+      let update: JobUpdate = {
         status,
         outputUrl: data.output_url,
         thumbnailUrl: data.thumbnail_url,
         errorMessage: data.error_message,
         position: data.position,
+        currentStep: data.current_step,
       };
+      
+      // FALLBACK: Se completou mas output_url veio null no realtime, buscar do banco
+      if (status === 'completed' && !data.output_url && jobId) {
+        console.log(`[JobSync] ${source}: completed without output_url, fetching from DB...`);
+        try {
+          const dbUpdate = await queryJobStatus(toolType, jobId);
+          if (dbUpdate?.outputUrl) {
+            console.log(`[JobSync] DB fallback found output_url`);
+            update = { ...update, outputUrl: dbUpdate.outputUrl, thumbnailUrl: dbUpdate.thumbnailUrl };
+          } else {
+            // Retry once after 2s - output_url might not be written yet
+            await new Promise(r => setTimeout(r, 2000));
+            const retryUpdate = await queryJobStatus(toolType, jobId);
+            if (retryUpdate?.outputUrl) {
+              console.log(`[JobSync] DB fallback retry found output_url`);
+              update = { ...update, outputUrl: retryUpdate.outputUrl, thumbnailUrl: retryUpdate.thumbnailUrl };
+            }
+          }
+        } catch (e) {
+          console.error('[JobSync] DB fallback failed:', e);
+        }
+      }
       
       if (['completed', 'failed', 'cancelled'].includes(status)) {
         isCompletedRef.current = true;
