@@ -44,9 +44,8 @@ interface ApiAccount {
 
 const WEBAPP_IDS = {
   upscaler_jobs: {
-    pro: '2015865378030755841',
-    standard: '2017030861371219969',
     pessoas_sem_rosto: '2037188547966406658',
+    pessoas_com_rosto: '2037184937371115522',
     fotoAntiga: '2018913880214343681',
     comida: '2015855359243587585',
     logo: '2019239272464785409',
@@ -1262,17 +1261,13 @@ async function startJobOnRunningHub(
           { nodeId: "548", fieldName: "value", fieldValue: String(resolution || 4096) },
         ];
       } else {
-        // Pessoas COM detalhar rosto ativo → webapps pro/standard existentes
-        webappId = version === 'pro' ? WEBAPP_IDS.upscaler_jobs.pro : WEBAPP_IDS.upscaler_jobs.standard;
-        const resNodeId = version === 'pro' ? '73' : '75';
+        // Pessoas COM detalhar rosto ativo (V3 Pro) → nova API com face detail
+        webappId = WEBAPP_IDS.upscaler_jobs.pessoas_com_rosto;
         nodeInfoList = [
-          { nodeId: "26", fieldName: "image", fieldValue: inputFile },
-          { nodeId: "25", fieldName: "value", fieldValue: detailDenoise || 0.15 },
-          { nodeId: resNodeId, fieldName: "value", fieldValue: String(resolution || 2048) },
+          { nodeId: "1", fieldName: "image", fieldValue: inputFile },
+          { nodeId: "102", fieldName: "value", fieldValue: String(detailDenoise) },
+          { nodeId: "547", fieldName: "value", fieldValue: String(resolution || 4096) },
         ];
-        if (prompt) {
-          nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: prompt });
-        }
       }
       break;
     }
