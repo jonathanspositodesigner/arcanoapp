@@ -21,7 +21,7 @@ import ExpiringSubscriptionModal from "@/components/ExpiringSubscriptionModal";
 import RunningHubBonusModal from "@/components/RunningHubBonusModal";
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 import AppLayout from "@/components/layout/AppLayout";
-import PromoToolsBanner from "@/components/PromoToolsBanner";
+
 import { useSmartSearch } from "@/hooks/useSmartSearch";
 import { removeAccents } from "@/lib/synonyms";
 

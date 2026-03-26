@@ -15,8 +15,6 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
 import AppLayout from "@/components/layout/AppLayout";
-import PromoToolsBanner from "@/components/PromoToolsBanner";
-
 
 interface ToolData {
   id: string;
