@@ -26,7 +26,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-const IMAGE_JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs', 'bg_remover_jobs', 'image_generator_jobs'] as const;
+const IMAGE_JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs', 'bg_remover_jobs', 'image_generator_jobs', 'video_generator_jobs'] as const;
 
 // De Longe → Standard fallback configuration
 const WEBAPP_ID_STANDARD = '2017030861371219969';
@@ -106,10 +106,14 @@ serve(async (req) => {
 
     const results = eventData.results || [];
     if (Array.isArray(results) && results.length > 0) {
+      // Check for video outputs first, then images
+      const videoResult = results.find((r: any) => 
+        ['mp4', 'webm', 'mov', 'avi'].includes(r.outputType)
+      );
       const imageResult = results.find((r: any) => 
         ['png', 'jpg', 'jpeg', 'webp'].includes(r.outputType)
       );
-      outputUrl = imageResult?.url || results[0]?.url || null;
+      outputUrl = videoResult?.url || imageResult?.url || results[0]?.url || null;
     }
 
     if (taskStatus === 'FAILED') {

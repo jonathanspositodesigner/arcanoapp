@@ -1393,6 +1393,49 @@ async function startJobOnRunningHub(
       break;
     }
       
+    case 'video_generator_jobs': {
+      const videoModel = p.model || job.model || 'veo3.1';
+      const webappIds = WEBAPP_IDS.video_generator_jobs as Record<string, string>;
+      webappId = webappIds[videoModel] || webappIds['veo3.1'];
+      
+      nodeInfoList = [];
+      
+      // Start frame (first frame)
+      if (p.startFrame?.base64 && p.startFrame?.mimeType) {
+        const dataUri = `data:${p.startFrame.mimeType};base64,${p.startFrame.base64}`;
+        nodeInfoList.push({ nodeId: "15", fieldName: "image", fieldValue: dataUri, description: "FIRST FRAME" });
+      }
+      
+      // End frame (last frame)
+      if (p.endFrame?.base64 && p.endFrame?.mimeType) {
+        const dataUri = `data:${p.endFrame.mimeType};base64,${p.endFrame.base64}`;
+        nodeInfoList.push({ nodeId: "5", fieldName: "image", fieldValue: dataUri, description: "LAST FRAME" });
+      }
+      
+      // Aspect ratio
+      nodeInfoList.push({
+        nodeId: "3",
+        fieldName: "aspect_ratio",
+        fieldData: JSON.stringify([
+          { name: "auto", index: "auto", description: "", fastIndex: 1.0 },
+          { name: "16:9", index: "16:9", description: "", fastIndex: 2.0 },
+          { name: "9:16", index: "9:16", description: "", fastIndex: 3.0 },
+        ]),
+        fieldValue: p.aspectRatio || job.aspect_ratio || "16:9",
+        description: "TAMANHO DO VIDEO",
+      });
+      
+      // Prompt
+      nodeInfoList.push({
+        nodeId: "3",
+        fieldName: "prompt",
+        fieldValue: p.prompt || job.prompt || '',
+        description: "PROMPT",
+      });
+      
+      break;
+    }
+      
     default:
       console.error(`[QueueManager] Unknown table: ${table}`);
       return { taskId: null };
