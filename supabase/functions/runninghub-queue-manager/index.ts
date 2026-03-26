@@ -46,7 +46,7 @@ const WEBAPP_IDS = {
   upscaler_jobs: {
     pro: '2015865378030755841',
     standard: '2017030861371219969',
-    longe: '2020634325636616194',
+    pessoas_sem_rosto: '2037188547966406658',
     fotoAntiga: '2018913880214343681',
     comida: '2015855359243587585',
     logo: '2019239272464785409',
@@ -1254,13 +1254,15 @@ async function startJobOnRunningHub(
         if (version === 'pro' && detailDenoise !== undefined) {
           nodeInfoList.push({ nodeId: "300", fieldName: "value", fieldValue: String(detailDenoise) });
         }
-      } else if (framingMode === 'longe' && category?.startsWith('pessoas')) {
-        webappId = WEBAPP_IDS.upscaler_jobs.longe;
+      } else if (category?.startsWith('pessoas') && (!detailDenoise || detailDenoise <= 0)) {
+        // Pessoas SEM detalhar rosto → nova API unificada (V3 Turbo e V3 Pro)
+        webappId = WEBAPP_IDS.upscaler_jobs.pessoas_sem_rosto;
         nodeInfoList = [
           { nodeId: "1", fieldName: "image", fieldValue: inputFile },
-          { nodeId: "2", fieldName: "value", fieldValue: String(resolution || 4096) },
+          { nodeId: "548", fieldName: "value", fieldValue: String(resolution || 4096) },
         ];
       } else {
+        // Pessoas COM detalhar rosto ativo → webapps pro/standard existentes
         webappId = version === 'pro' ? WEBAPP_IDS.upscaler_jobs.pro : WEBAPP_IDS.upscaler_jobs.standard;
         const resNodeId = version === 'pro' ? '73' : '75';
         nodeInfoList = [
@@ -1268,9 +1270,6 @@ async function startJobOnRunningHub(
           { nodeId: "25", fieldName: "value", fieldValue: detailDenoise || 0.15 },
           { nodeId: resNodeId, fieldName: "value", fieldValue: String(resolution || 2048) },
         ];
-        if (version === 'pro' && category === 'pessoas_perto' && editingLevel !== undefined) {
-          nodeInfoList.push({ nodeId: "91", fieldName: "value", fieldValue: String(editingLevel) });
-        }
         if (prompt) {
           nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: prompt });
         }
