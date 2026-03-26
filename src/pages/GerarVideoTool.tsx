@@ -325,17 +325,9 @@ const GerarVideoTool = () => {
         {/* Main content area */}
         <div className="flex-1 flex items-center justify-center p-4">
           {resultUrl ? (
-            <div className="w-full max-w-2xl space-y-3">
+            <div className="w-full max-w-2xl">
               <div className="rounded-2xl overflow-hidden border border-purple-500/20 bg-black/30 shadow-2xl">
                 <video src={resultUrl} controls autoPlay className="w-full h-auto" />
-              </div>
-              <div className="flex gap-2 justify-center">
-                <Button onClick={handleDownload} size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-full px-5">
-                  <Download className="h-4 w-4 mr-2" /> Baixar
-                </Button>
-                <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-purple-500/50 text-purple-200 hover:bg-purple-500/20 rounded-full px-5">
-                  <Video className="h-4 w-4 mr-2" /> Novo
-                </Button>
               </div>
             </div>
           ) : isGenerating ? (
@@ -399,193 +391,201 @@ const GerarVideoTool = () => {
         <div className="sticky bottom-0 z-20 bg-[#120e1a]/95 backdrop-blur-xl border-t border-purple-500/15 w-full">
           <div className="max-w-3xl mx-auto px-3 py-3 space-y-2.5">
 
-            {/* Frame upload area - when with_frames mode */}
-            {generationMode === 'with_frames' && (
-              <div className="flex items-center gap-3">
-                {/* Start Frame Upload */}
-                <div className="flex-1">
-                  <p className="text-[10px] text-purple-400 mb-1 font-medium">1º Frame (início)</p>
-                  {startFrame ? (
-                    <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
-                      <img src={startFrame.preview} alt="Primeiro frame" className="w-full h-full object-cover" />
-                      <button 
-                        onClick={() => setStartFrame(null)} 
-                        className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
-                      >
-                        <X className="h-3 w-3 text-white" />
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => startFrameRef.current?.click()}
-                      disabled={isGenerating}
-                      className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/10 hover:bg-purple-900/20 flex flex-col items-center justify-center gap-1 transition-colors"
-                    >
-                      <Upload className="h-4 w-4 text-purple-400" />
-                      <span className="text-[10px] text-purple-300">Enviar imagem</span>
-                    </button>
-                  )}
-                </div>
-
-                {/* Arrow indicator */}
-                <div className="flex flex-col items-center gap-0.5 pt-4 flex-shrink-0">
-                  <span className="text-purple-400 text-lg">→</span>
-                  <span className="text-[8px] text-purple-500">{MODEL_DURATIONS[selectedModel] || 8}s</span>
-                </div>
-
-                {/* End Frame Upload */}
-                <div className="flex-1">
-                  <p className="text-[10px] text-purple-400 mb-1 font-medium">Último Frame (fim)</p>
-                  {endFrame ? (
-                    <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
-                      <img src={endFrame.preview} alt="Último frame" className="w-full h-full object-cover" />
-                      <button 
-                        onClick={() => setEndFrame(null)} 
-                        className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
-                      >
-                        <X className="h-3 w-3 text-white" />
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => endFrameRef.current?.click()}
-                      disabled={isGenerating}
-                      className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/10 hover:bg-purple-900/20 flex flex-col items-center justify-center gap-1 transition-colors"
-                    >
-                      <Upload className="h-4 w-4 text-purple-400" />
-                      <span className="text-[10px] text-purple-300">Enviar imagem</span>
-                    </button>
-                  )}
-                </div>
+            {/* When result is showing: Download + Novo buttons */}
+            {resultUrl ? (
+              <div className="flex gap-2 justify-center">
+                <Button onClick={handleDownload} size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-full px-5">
+                  <Download className="h-4 w-4 mr-2" /> Baixar
+                </Button>
+                <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-purple-500/50 text-purple-200 hover:bg-purple-500/20 rounded-full px-5">
+                  <Video className="h-4 w-4 mr-2" /> Gerar Novo
+                </Button>
               </div>
-            )}
+            ) : (
+              <>
+                {/* Frame upload area - when with_frames mode */}
+                {generationMode === 'with_frames' && (
+                  <div className="flex items-center gap-3">
+                    {/* Start Frame Upload */}
+                    <div className="flex-1">
+                      <p className="text-[10px] text-purple-400 mb-1 font-medium">1º Frame (início)</p>
+                      {startFrame ? (
+                        <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
+                          <img src={startFrame.preview} alt="Primeiro frame" className="w-full h-full object-cover" />
+                          <button 
+                            onClick={() => setStartFrame(null)} 
+                            className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
+                          >
+                            <X className="h-3 w-3 text-white" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => startFrameRef.current?.click()}
+                          disabled={isGenerating}
+                          className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/10 hover:bg-purple-900/20 flex flex-col items-center justify-center gap-1 transition-colors"
+                        >
+                          <Upload className="h-4 w-4 text-purple-400" />
+                          <span className="text-[10px] text-purple-300">Enviar imagem</span>
+                        </button>
+                      )}
+                    </div>
 
-            {/* Prompt input row */}
-            <div className="flex items-end gap-2">
-              {/* Prompt textarea */}
-              <div className="flex-1">
-                <textarea
-                  ref={textareaRef}
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder={generationMode === 'with_frames' ? "Descreva a transição entre os frames..." : "Descreva o vídeo que você quer gerar..."}
-                  rows={1}
-                  className="w-full bg-purple-900/20 border border-purple-500/25 rounded-xl px-3 py-2 text-sm text-white placeholder:text-purple-500/50 resize-none focus:outline-none focus:border-purple-400/50 transition-colors"
-                  style={{ minHeight: '36px', maxHeight: '80px' }}
-                  disabled={isGenerating}
-                  onInput={(e) => {
-                    const target = e.target as HTMLTextAreaElement;
-                    target.style.height = '36px';
-                    target.style.height = Math.min(target.scrollHeight, 80) + 'px';
-                  }}
-                />
-              </div>
+                    {/* Arrow indicator */}
+                    <div className="flex flex-col items-center gap-0.5 pt-4 flex-shrink-0">
+                      <span className="text-purple-400 text-lg">→</span>
+                      <span className="text-[8px] text-purple-500">{MODEL_DURATIONS[selectedModel] || 8}s</span>
+                    </div>
 
-              {/* Generate button */}
-              <Button
-                onClick={handleGenerate}
-                disabled={isGenerating || isSubmitting || !prompt.trim() || (generationMode === 'with_frames' && !bothFramesReady)}
-                size="sm"
-                className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-9 min-w-0 shrink-0"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
-                    {isQueued ? 'Fila...' : '...'}
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-3.5 h-3.5 mr-1" />
-                    Gerar
-                  </>
+                    {/* End Frame Upload */}
+                    <div className="flex-1">
+                      <p className="text-[10px] text-purple-400 mb-1 font-medium">Último Frame (fim)</p>
+                      {endFrame ? (
+                        <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
+                          <img src={endFrame.preview} alt="Último frame" className="w-full h-full object-cover" />
+                          <button 
+                            onClick={() => setEndFrame(null)} 
+                            className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
+                          >
+                            <X className="h-3 w-3 text-white" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => endFrameRef.current?.click()}
+                          disabled={isGenerating}
+                          className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/10 hover:bg-purple-900/20 flex flex-col items-center justify-center gap-1 transition-colors"
+                        >
+                          <Upload className="h-4 w-4 text-purple-400" />
+                          <span className="text-[10px] text-purple-300">Enviar imagem</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 )}
-              </Button>
-            </div>
 
-            {/* Controls row */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {/* Mode toggle */}
-              <div className="flex rounded-lg border border-purple-500/25 overflow-hidden">
-                <button
-                  onClick={() => setGenerationMode('prompt_only')}
-                  disabled={isGenerating}
-                  className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium transition-colors ${
-                    generationMode === 'prompt_only' 
-                      ? 'bg-purple-600/60 text-white' 
-                      : 'bg-purple-900/20 text-purple-400 hover:text-purple-200'
-                  }`}
-                >
-                  <Type className="h-3 w-3" />
-                  <span>Só Prompt</span>
-                </button>
-                <button
-                  onClick={() => setGenerationMode('with_frames')}
-                  disabled={isGenerating}
-                  className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium transition-colors ${
-                    generationMode === 'with_frames' 
-                      ? 'bg-purple-600/60 text-white' 
-                      : 'bg-purple-900/20 text-purple-400 hover:text-purple-200'
-                  }`}
-                >
-                  <ImagePlus className="h-3 w-3" />
-                  <span>Com Imagens</span>
-                </button>
-              </div>
+                {/* Prompt input row */}
+                <div className="flex items-end gap-2">
+                  <div className="flex-1">
+                    <textarea
+                      ref={textareaRef}
+                      value={prompt}
+                      onChange={(e) => setPrompt(e.target.value)}
+                      placeholder={generationMode === 'with_frames' ? "Descreva a transição entre os frames..." : "Descreva o vídeo que você quer gerar..."}
+                      rows={1}
+                      className="w-full bg-purple-900/20 border border-purple-500/25 rounded-xl px-3 py-2 text-sm text-white placeholder:text-purple-500/50 resize-none focus:outline-none focus:border-purple-400/50 transition-colors"
+                      style={{ minHeight: '36px', maxHeight: '80px' }}
+                      disabled={isGenerating}
+                      onInput={(e) => {
+                        const target = e.target as HTMLTextAreaElement;
+                        target.style.height = '36px';
+                        target.style.height = Math.min(target.scrollHeight, 80) + 'px';
+                      }}
+                    />
+                  </div>
 
-              {/* Model dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-900/40 border border-purple-500/25 text-[10px] text-purple-200 hover:bg-purple-800/50 transition-colors">
-                    <span className="font-medium">{currentModel.name}</span>
-                    <ChevronDown className="h-3 w-3 text-purple-400" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
-                  {MODELS.map(model => (
-                    <DropdownMenuItem
-                      key={model.id}
-                      onClick={() => setSelectedModel(model.id)}
-                      className={`text-xs ${selectedModel === model.id ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-purple-200'}`}
+                  <Button
+                    onClick={handleGenerate}
+                    disabled={isGenerating || isSubmitting || !prompt.trim() || (generationMode === 'with_frames' && !bothFramesReady)}
+                    size="sm"
+                    className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-9 min-w-0 shrink-0"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                        {isQueued ? 'Fila...' : '...'}
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-3.5 h-3.5 mr-1" />
+                        Gerar
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {/* Controls row */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <div className="flex rounded-lg border border-purple-500/25 overflow-hidden">
+                    <button
+                      onClick={() => setGenerationMode('prompt_only')}
+                      disabled={isGenerating}
+                      className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium transition-colors ${
+                        generationMode === 'prompt_only' 
+                          ? 'bg-purple-600/60 text-white' 
+                          : 'bg-purple-900/20 text-purple-400 hover:text-purple-200'
+                      }`}
                     >
-                      <div className="flex flex-col">
-                        <span className="font-medium">{model.name}</span>
-                        <span className="text-[10px] text-purple-400">{model.description} • {model.cost} créditos</span>
-                      </div>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* Aspect ratio - only Veo 3.1 */}
-              {selectedModel === 'veo3.1' && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-900/40 border border-purple-500/25 text-[10px] text-purple-200 hover:bg-purple-800/50 transition-colors">
-                      <span className="font-medium">{aspectRatio}</span>
-                      <ChevronDown className="h-3 w-3 text-purple-400" />
+                      <Type className="h-3 w-3" />
+                      <span>Só Prompt</span>
                     </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
-                    {ASPECT_RATIOS.map(ratio => (
-                      <DropdownMenuItem
-                        key={ratio}
-                        onClick={() => setAspectRatio(ratio)}
-                        className={`text-xs ${aspectRatio === ratio ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-purple-200'}`}
-                      >
-                        {ratio}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+                    <button
+                      onClick={() => setGenerationMode('with_frames')}
+                      disabled={isGenerating}
+                      className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium transition-colors ${
+                        generationMode === 'with_frames' 
+                          ? 'bg-purple-600/60 text-white' 
+                          : 'bg-purple-900/20 text-purple-400 hover:text-purple-200'
+                      }`}
+                    >
+                      <ImagePlus className="h-3 w-3" />
+                      <span>Com Imagens</span>
+                    </button>
+                  </div>
 
-              {/* Duration + cost */}
-              <span className="text-[10px] text-purple-400 ml-auto flex items-center gap-1.5">
-                <span>⏱ {MODEL_DURATIONS[selectedModel] || 8}s</span>
-                <span>•</span>
-                <span className="flex items-center gap-0.5"><Coins className="h-3 w-3" />{creditCost}</span>
-              </span>
-            </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-900/40 border border-purple-500/25 text-[10px] text-purple-200 hover:bg-purple-800/50 transition-colors">
+                        <span className="font-medium">{currentModel.name}</span>
+                        <ChevronDown className="h-3 w-3 text-purple-400" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
+                      {MODELS.map(model => (
+                        <DropdownMenuItem
+                          key={model.id}
+                          onClick={() => setSelectedModel(model.id)}
+                          className={`text-xs ${selectedModel === model.id ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-purple-200'}`}
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-medium">{model.name}</span>
+                            <span className="text-[10px] text-purple-400">{model.description} • {model.cost} créditos</span>
+                          </div>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {selectedModel === 'veo3.1' && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-900/40 border border-purple-500/25 text-[10px] text-purple-200 hover:bg-purple-800/50 transition-colors">
+                          <span className="font-medium">{aspectRatio}</span>
+                          <ChevronDown className="h-3 w-3 text-purple-400" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
+                        {ASPECT_RATIOS.map(ratio => (
+                          <DropdownMenuItem
+                            key={ratio}
+                            onClick={() => setAspectRatio(ratio)}
+                            className={`text-xs ${aspectRatio === ratio ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-purple-200'}`}
+                          >
+                            {ratio}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+
+                  <span className="text-[10px] text-purple-400 ml-auto flex items-center gap-1.5">
+                    <span>⏱ {MODEL_DURATIONS[selectedModel] || 8}s</span>
+                    <span>•</span>
+                    <span className="flex items-center gap-0.5"><Coins className="h-3 w-3" />{creditCost}</span>
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
