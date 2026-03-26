@@ -752,492 +752,366 @@ const UpscalerArcanoTool: React.FC = () => {
     <AppLayout fullScreen>
 
       {/* Main Content - Two Column Layout */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden flex flex-col">
-        {/* Tool intro - full width centered */}
-        <div className="text-center py-3">
-          <h1 className="text-2xl lg:text-3xl font-bold text-white">Upscaler Arcano App</h1>
-          <p className="text-sm text-purple-300 mt-1 max-w-lg mx-auto">Aumente a qualidade das suas imagens com inteligência artificial. Transforme fotos em alta resolução sem perder detalhes.</p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 flex-1 lg:min-h-0">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-4 overflow-y-auto lg:overflow-hidden flex flex-col">
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-5 flex-1 lg:min-h-0">
           
-          {/* Left Side - Controls Panel (~28%) */}
-          <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
-            
-            {/* Version Switcher - Compact */}
-            <TooltipProvider>
-              <ToggleGroup 
-                type="single" 
-                value={version} 
-                onValueChange={(val) => val && setVersion(val as 'standard' | 'pro')}
-                className="w-full grid grid-cols-2 gap-0 bg-[#1A0A2E]/50 border border-white/20 rounded-lg p-1"
-              >
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <ToggleGroupItem 
-                      value="standard" 
-                      className={`w-full py-2 px-2 text-xs rounded-md transition-all font-medium ${
-                        version === 'standard' 
-                          ? 'bg-purple-600 text-white border border-purple-400' 
-                          : 'border border-transparent text-purple-300/70 hover:bg-purple-500/10'
-                      }`}
-                    >
-                      ⚡ V3 Turbo
-                    </ToggleGroupItem>
-                  </TooltipTrigger>
-                  <TooltipContent className="bg-black/90 border-purple-500/30">
-                    <div className="flex items-center gap-1.5 text-xs text-white">
-                      <Clock className="w-3 h-3 text-purple-400" />
-                      <span>~2m 20s</span>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <ToggleGroupItem 
-                      value="pro" 
-                      className={`w-full py-2 px-2 text-xs rounded-md transition-all font-medium flex items-center justify-center gap-1 ${
-                        version === 'pro' 
-                          ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border border-purple-400' 
-                          : 'border border-transparent text-purple-300/70 hover:bg-purple-500/10'
-                      }`}
-                    >
-                      <Crown className="w-3 h-3" />
-                      V3 Pro
-                    </ToggleGroupItem>
-                  </TooltipTrigger>
-                  <TooltipContent className="bg-black/90 border-purple-500/30">
-                    <div className="flex items-center gap-1.5 text-xs text-white">
-                      <Clock className="w-3 h-3 text-purple-400" />
-                      <span>~3m 30s</span>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </ToggleGroup>
-            </TooltipProvider>
-            
-            {/* Estimated Time */}
-            <div className="flex items-center justify-center gap-1 text-xs text-white/60">
-              <Clock className="w-3 h-3 text-purple-400" />
-              <span>{version === 'pro' ? '~3m 30s' : '~2m 20s'}</span>
-            </div>
+          {/* Left Side - Controls Panel inside ONE card */}
+          <div className="lg:col-span-2 flex flex-col pb-2 lg:pb-0">
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-5 lg:overflow-y-auto">
+              
+              {/* Title inside card */}
+              <div>
+                <h1 className="text-xl font-bold text-white">Upscaler Arcano App</h1>
+                <p className="text-xs text-gray-400 mt-1">Aumente a qualidade das suas imagens com inteligência artificial. Transforme fotos em alta resolução sem perder detalhes.</p>
+              </div>
 
-            {/* Image Upload - Compact */}
-            <Card 
-              className="bg-[#0D0221]/70 border-white/20 border-dashed border-2 p-6 cursor-pointer hover:bg-[#0D0221]/90 transition-colors"
-              onClick={() => fileInputRef.current?.click()}
-              onDrop={handleDrop}
-              onDragOver={(e) => e.preventDefault()}
-            >
-              {inputImage ? (
-                <div className="flex items-center gap-3">
-                  <img src={inputImage} alt="Preview" className="w-12 h-12 object-cover rounded-lg" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-white truncate">{inputFileName || 'Imagem selecionada'}</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-[10px] text-purple-300/70">Clique para trocar</p>
-                      {inputDimensions && (
-                        <span className="text-[10px] text-purple-400">
-                          📐 {inputDimensions.w}x{inputDimensions.h}
-                        </span>
-                      )}
+              {/* Upload Area */}
+              <div 
+                className="bg-black/60 border border-white/10 border-dashed rounded-xl p-6 cursor-pointer hover:bg-black/80 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+                onDrop={handleDrop}
+                onDragOver={(e) => e.preventDefault()}
+              >
+                {inputImage ? (
+                  <div className="flex items-center gap-3">
+                    <img src={inputImage} alt="Preview" className="w-12 h-12 object-cover rounded-lg" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-white truncate">{inputFileName || 'Imagem selecionada'}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-[10px] text-gray-500">Clique para trocar</p>
+                        {inputDimensions && (
+                          <span className="text-[10px] text-gray-400">
+                            📐 {inputDimensions.w}x{inputDimensions.h}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-3 py-4">
-                  <div className="w-14 h-14 rounded-xl bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
-                    <Upload className="w-7 h-7 text-purple-400" />
+                ) : (
+                  <div className="flex flex-col items-center gap-2 py-6">
+                    <Upload className="w-6 h-6 text-gray-400" />
+                    <p className="text-sm font-medium text-white">Arraste sua imagem aqui</p>
+                    <p className="text-[10px] text-gray-500">PNG, JPEG, WEBP - Máximo 10MB</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-sm font-medium text-white">{t('upscalerTool.upload.dragHere')}</p>
-                    <p className="text-[10px] text-purple-300/50 mt-1">PNG, JPEG, WEBP - Máximo 10MB</p>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+                />
+              </div>
+
+              {/* Modo */}
+              <div>
+                <span className="text-sm font-medium text-white mb-2 block">Modo</span>
+                <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1">
+                  <button
+                    onClick={() => setVersion('standard')}
+                    className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
+                      version === 'standard'
+                        ? 'bg-white/10 text-white'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    V3 Turbo
+                  </button>
+                  <button
+                    onClick={() => setVersion('pro')}
+                    className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
+                      version === 'pro'
+                        ? 'bg-white/10 text-white'
+                        : 'text-gray-400 hover:text-white'
+                    }`}
+                  >
+                    V3 Pro
+                  </button>
+                </div>
+              </div>
+
+              {/* Tipo de Imagem */}
+              {(!useCustomPrompt || version === 'standard') && (
+                <div>
+                  <span className="text-sm font-medium text-white mb-2 block">Tipo de Imagem</span>
+                  <Select
+                    value={promptCategory.startsWith('pessoas') ? 'pessoas' : promptCategory}
+                    onValueChange={(value) => {
+                      if (value === 'pessoas') {
+                        setPromptCategory(`pessoas_${pessoasFraming}` as PromptCategory);
+                      } else {
+                        setPromptCategory(value as PromptCategory);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full bg-black/40 border-white/10 text-white text-sm h-10">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1a1a2e] border-white/10">
+                      <SelectItem value="pessoas" className="text-white text-sm">Pessoas</SelectItem>
+                      <SelectItem value="comida" className="text-white text-sm">Comida/Objeto</SelectItem>
+                      <SelectItem value="fotoAntiga" className="text-white text-sm">Foto Antiga</SelectItem>
+                      <SelectItem value="render3d" className="text-white text-sm">Selo 3D</SelectItem>
+                      <SelectItem value="logo" className="text-white text-sm">Logo/Arte</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Tamanho */}
+              {!isSpecialWorkflow && (
+                <div>
+                  <span className="text-sm font-medium text-white mb-2 block">Tamanho</span>
+                  <div className="inline-flex gap-0 bg-black/40 border border-white/10 rounded-lg p-1">
+                    <button
+                      onClick={() => setResolution('2k')}
+                      className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
+                        resolution === '2k'
+                          ? 'bg-white/10 text-white'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      2K
+                    </button>
+                    <button
+                      onClick={() => setResolution('4k')}
+                      className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
+                        resolution === '4k'
+                          ? 'bg-white/10 text-white'
+                          : 'text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      4k
+                    </button>
                   </div>
                 </div>
               )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-              />
-            </Card>
 
-            {/* Image Type Selector - Only show when not using custom prompt */}
-            {(!useCustomPrompt || version === 'standard') && (
-              <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageSquare className="w-3.5 h-3.5 text-pink-400" />
-                  <span className="text-xs font-medium text-white">Tipo de Imagem</span>
-                </div>
-                <Select
-                  value={promptCategory.startsWith('pessoas') ? 'pessoas' : promptCategory}
-                  onValueChange={(value) => {
-                    if (value === 'pessoas') {
-                      setPromptCategory(`pessoas_${pessoasFraming}` as PromptCategory);
-                    } else {
-                      setPromptCategory(value as PromptCategory);
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-full bg-[#0D0221]/70 border-white/20 text-white text-xs h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1A0A2E] border-white/20">
-                    <SelectItem value="pessoas" className="text-white text-xs">👤 Pessoas</SelectItem>
-                    <SelectItem value="comida" className="text-white text-xs">🍔 Comida/Objeto</SelectItem>
-                    <SelectItem value="fotoAntiga" className="text-white text-xs">📷 Foto Antiga</SelectItem>
-                    <SelectItem value="render3d" className="text-white text-xs">🏷️ Selo 3D</SelectItem>
-                    <SelectItem value="logo" className="text-white text-xs">🎨 Logo/Arte</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                {/* Pessoas Framing Selector */}
-                {promptCategory.startsWith('pessoas') && (
-                 !isSpecialWorkflow && (
-                  <div className="mt-3 pt-3 border-t border-white/10">
-                    <ToggleGroup 
-                      type="single" 
-                      value={pessoasFraming} 
-                      onValueChange={(value) => {
-                        if (value) {
-                          setPessoasFraming(value as PessoasFraming);
-                          setPromptCategory(`pessoas_${value}` as PromptCategory);
-                        }
+              {/* Detalhar Rosto - V3 Pro only, not special workflows */}
+              {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
+                <div className="border border-white/10 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-white">Detalhar Rosto</span>
+                    <Switch
+                      checked={detailDenoise > 0}
+                      onCheckedChange={(checked) => {
+                        if (!checked) setDetailDenoise(0);
+                        else setDetailDenoise(0.15);
                       }}
-                      className="grid w-full grid-cols-2 gap-2"
-                    >
-                      <ToggleGroupItem 
-                        value="perto" 
-                        className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all h-auto ${
-                          pessoasFraming === 'perto'
-                            ? 'bg-purple-600 text-white border border-purple-400' 
-                            : 'border border-white/20 text-purple-300/70 hover:bg-purple-500/10'
-                        }`}
-                      >
-                        <div className="w-8 h-8 rounded bg-purple-900/50 flex items-center justify-center border border-purple-500/30 relative">
-                          <svg width="24" height="24" viewBox="0 0 48 48" fill="none" className="text-current">
-                            <circle cx="24" cy="20" r="14" fill="currentColor" opacity="0.85" />
-                            <ellipse cx="24" cy="48" rx="18" ry="14" fill="currentColor" opacity="0.55" />
-                          </svg>
-                        </div>
-                        <span className="text-[10px] font-medium">De Perto</span>
-                      </ToggleGroupItem>
-                      <ToggleGroupItem 
-                        value="longe" 
-                        className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all h-auto ${
-                          pessoasFraming === 'longe'
-                            ? 'bg-purple-600 text-white border border-purple-400' 
-                            : 'border border-white/20 text-purple-300/70 hover:bg-purple-500/10'
-                        }`}
-                      >
-                        <div className="w-8 h-8 rounded bg-purple-900/50 flex items-center justify-center border border-purple-500/30 relative">
-                          <svg width="24" height="24" viewBox="0 0 48 48" fill="none" className="text-current">
-                            <circle cx="24" cy="14" r="5" fill="currentColor" opacity="0.85" />
-                            <rect x="20" y="19" width="8" height="12" rx="3" fill="currentColor" opacity="0.75" />
-                            <rect x="20" y="30" width="3.5" height="13" rx="1.5" fill="currentColor" opacity="0.55" />
-                            <rect x="24.5" y="30" width="3.5" height="13" rx="1.5" fill="currentColor" opacity="0.55" />
-                          </svg>
-                        </div>
-                        <span className="text-[10px] font-medium">De Longe</span>
-                      </ToggleGroupItem>
-                    </ToggleGroup>
-                  </div>
-                 ))}
-              </Card>
-            )}
-
-             {/* Face Detail Switch + Detail Level Slider - PRO only, not in Longe mode, not in special workflows */}
-             {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
-              <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                    <span className="text-xs font-medium text-white">Detalhar Rosto</span>
-                  </div>
-                  <Switch
-                    checked={detailDenoise > 0}
-                    onCheckedChange={(checked) => {
-                      if (!checked) setDetailDenoise(0);
-                      else setDetailDenoise(0.15);
-                    }}
-                  />
-                </div>
-                {detailDenoise > 0 && (
-                  <>
-                    <div className="flex items-center justify-between mt-2 mb-1">
-                      <span className="text-[10px] text-purple-300/70">Nível de Detalhes</span>
-                      <span className="text-xs text-purple-300 font-mono">{detailDenoise.toFixed(2)}</span>
-                    </div>
-                    <Slider
-                      value={[detailDenoise]}
-                      onValueChange={([value]) => setDetailDenoise(value)}
-                      min={0.01}
-                      max={1}
-                      step={0.01}
-                      className="w-full"
                     />
-                    <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
-                      <span>Menos</span>
-                      <span>Mais</span>
+                  </div>
+                  {detailDenoise > 0 && (
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs text-gray-400">Nível de detalhes</span>
+                        <span className="text-xs text-gray-300 font-mono">{detailDenoise.toFixed(2)}</span>
+                      </div>
+                      <Slider
+                        value={[detailDenoise]}
+                        onValueChange={([value]) => setDetailDenoise(value)}
+                        min={0.01}
+                        max={1}
+                        step={0.01}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+                        <span>Menos</span>
+                        <span>Mais</span>
+                      </div>
                     </div>
-                    {promptCategory === 'pessoas_perto' && (
-                      <p className="text-[10px] text-purple-400/80 text-center mt-2">
-                        💡 Recomendado: entre 0.05 e 0.20
-                      </p>
-                    )}
-                  </>
-                )}
-              </Card>
-            )}
-
-             {/* Editing Level Slider - PRO + Pessoas + De Perto only */}
-             {version === 'pro' && promptCategory === 'pessoas_perto' && (
-               <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
-                 <div className="flex items-center justify-between mb-1">
-                   <div className="flex items-center gap-1.5">
-                     <Sparkles className="w-3.5 h-3.5 text-pink-400" />
-                     <span className="text-xs font-medium text-white">Nível de Edição</span>
-                   </div>
-                   <span className="text-xs text-purple-300 font-mono">{editingLevel.toFixed(2)}</span>
-                 </div>
-                 <Slider
-                   value={[editingLevel]}
-                   onValueChange={([value]) => setEditingLevel(value)}
-                   min={0}
-                   max={1}
-                   step={0.01}
-                   className="w-full"
-                 />
-                 <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
-                   <span>Menos Edição</span>
-                   <span>Mais Edição</span>
-                 </div>
-               </Card>
-             )}
- 
-             {/* Comida/Objeto Detail Level Slider (0.70 to 1.00) */}
-             {isComidaMode && (
-               <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
-                 <div className="flex items-center justify-between mb-1">
-                   <div className="flex items-center gap-1.5">
-                     <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                     <span className="text-xs font-medium text-white">Nível de Detalhes</span>
-                   </div>
-                   <span className="text-xs text-purple-300 font-mono">{Math.round(comidaDetailLevel * 100)}%</span>
-                 </div>
-                 <Slider
-                   value={[comidaDetailLevel]}
-                   onValueChange={([value]) => setComidaDetailLevel(value)}
-                   min={0.70}
-                   max={1.00}
-                   step={0.01}
-                   className="w-full"
-                 />
-                 <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
-                   <span>Mais Fiel</span>
-                   <span>Mais Criativo</span>
-                 </div>
-               </Card>
-             )}
- 
-             {/* Logo/Arte Detail Level Slider - PRO only */}
-             {isLogoMode && version === 'pro' && (
-               <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
-                 <div className="flex items-center justify-between mb-1">
-                   <div className="flex items-center gap-1.5">
-                     <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                     <span className="text-xs font-medium text-white">Nível de Detalhe</span>
-                   </div>
-                   <span className="text-xs text-purple-300 font-mono">{logoDetailLevel.toFixed(2)}</span>
-                 </div>
-                 <Slider
-                   value={[logoDetailLevel]}
-                   onValueChange={([value]) => setLogoDetailLevel(value)}
-                   min={0.01}
-                   max={1.00}
-                   step={0.01}
-                   className="w-full"
-                 />
-                 <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
-                   <span>Mais Fidelidade</span>
-                   <span>Mais Criatividade</span>
-                 </div>
-                 <p className="text-[9px] text-purple-300/40 mt-1 text-center">
-                   Recomendado: 0,30 a 0,60
-                 </p>
-               </Card>
-             )}
-
-             {/* Selos 3D Detail Level Slider - PRO only */}
-             {isRender3dMode && version === 'pro' && (
-               <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
-                 <div className="flex items-center justify-between mb-1">
-                   <div className="flex items-center gap-1.5">
-                     <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                     <span className="text-xs font-medium text-white">Nível de Detalhe</span>
-                   </div>
-                   <span className="text-xs text-purple-300 font-mono">{render3dDetailLevel.toFixed(2)}</span>
-                 </div>
-                 <Slider
-                   value={[render3dDetailLevel]}
-                   onValueChange={([value]) => setRender3dDetailLevel(value)}
-                   min={0.01}
-                   max={1.00}
-                   step={0.01}
-                   className="w-full"
-                 />
-                 <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
-                   <span>Mais Fidelidade</span>
-                   <span>Mais Criatividade</span>
-                 </div>
-                 <p className="text-[9px] text-purple-300/40 mt-1 text-center">
-                   Recomendado: 0,70 a 0,90
-                 </p>
-               </Card>
-             )}
-
-             {/* Resolution Selector - hide for special workflows */}
-             {!isSpecialWorkflow && (
-            <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-medium text-white">📐 Resolução</span>
-              </div>
-              <ToggleGroup 
-                type="single" 
-                value={resolution} 
-                onValueChange={(val) => val && setResolution(val as '2k' | '4k')}
-                className="flex gap-1"
-              >
-                <ToggleGroupItem 
-                  value="2k" 
-                  className={`px-3 py-1.5 text-xs rounded-md transition-all ${
-                    resolution === '2k' 
-                      ? 'bg-purple-600 text-white border border-purple-400' 
-                      : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                  }`}
-                >
-                  2K
-                </ToggleGroupItem>
-                <ToggleGroupItem 
-                  value="4k" 
-                  className={`px-3 py-1.5 text-xs rounded-md transition-all ${
-                    resolution === '4k' 
-                      ? 'bg-purple-600 text-white border border-purple-400' 
-                      : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                  }`}
-                >
-                  4K
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </Card>
-             )}
-
-             {/* Custom Prompt - PRO only, not in Longe mode, not in special workflows */}
-             {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
-              <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <MessageSquare className="w-3.5 h-3.5 text-pink-400" />
-                    <span className="text-xs font-medium text-white">{t('upscalerTool.controls.usePrompt')}</span>
-                  </div>
-                  <Switch
-                    checked={useCustomPrompt}
-                    onCheckedChange={setUseCustomPrompt}
-                  />
+                  )}
                 </div>
-                
-                {useCustomPrompt && (
-                  <Textarea
-                    value={customPrompt}
-                    onChange={(e) => setCustomPrompt(e.target.value)}
-                    placeholder={t('upscalerTool.controls.promptPlaceholder')}
-                    className="min-h-[60px] text-xs bg-[#0D0221]/50 border-purple-500/30 text-white placeholder:text-purple-300/50"
+              )}
+
+              {/* Editing Level Slider - PRO + Pessoas + De Perto only */}
+              {version === 'pro' && promptCategory === 'pessoas_perto' && (
+                <div className="border border-white/10 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-white">Nível de Edição</span>
+                    <span className="text-xs text-gray-300 font-mono">{editingLevel.toFixed(2)}</span>
+                  </div>
+                  <Slider
+                    value={[editingLevel]}
+                    onValueChange={([value]) => setEditingLevel(value)}
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    className="w-full"
                   />
-                )}
-              </Card>
-            )}
-
-            {/* Generate Button */}
-            {inputImage && !isProcessing && status !== 'completed' && (
-              <Button
-                className="w-full py-3 text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-blue-500/25"
-                onClick={processImage}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Iniciando...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    {t('upscalerTool.buttons.increaseQuality')}
-                    <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
-                      <Coins className="w-3.5 h-3.5" />
-                      {isLogoMode ? 50 : (version === 'pro' ? getCreditCost('Upscaler Pro', 80) : getCreditCost('Upscaler Arcano', 60))}
-                    </span>
-                  </>
-                )}
-              </Button>
-            )}
-
-            {/* Completed Actions */}
-            {status === 'completed' && (
-              <div className="space-y-2">
-                <Button
-                  className="w-full py-3 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                  onClick={downloadResult}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  {t('upscalerTool.buttons.downloadHD')}
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full py-3 text-sm border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
-                  onClick={resetTool}
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  {t('upscalerTool.buttons.processNew')}
-                </Button>
-              </div>
-            )}
-
-            {/* Error State */}
-            {status === 'error' && lastError && (
-              <Card className="bg-red-950/30 border-red-500/30 p-3">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1 space-y-1">
-                    <p className="text-xs font-medium text-red-300">{lastError.message}</p>
-                    {lastError.solution && (
-                      <p className="text-[10px] text-purple-300/80">💡 {lastError.solution}</p>
-                    )}
+                  <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+                    <span>Menos Edição</span>
+                    <span>Mais Edição</span>
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  className="w-full mt-2 py-2 text-xs border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
-                  onClick={resetTool}
-                >
-                  <RotateCcw className="w-3.5 h-3.5 mr-1" />
-                  {t('upscalerTool.buttons.tryAgain')}
-                </Button>
-              </Card>
-            )}
+              )}
 
-            {/* Debug Panel - only visible when debug mode is ON */}
-            <JobDebugPanel
-              jobId={jobId}
-              tableName="upscaler_jobs"
-              currentStep={currentStep}
-              failedAtStep={failedAtStep}
-              errorMessage={lastError?.message}
-              position={queuePosition}
-              status={status}
-            />
+              {/* Comida/Objeto Detail Level Slider */}
+              {isComidaMode && (
+                <div className="border border-white/10 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-white">Nível de Detalhes</span>
+                    <span className="text-xs text-gray-300 font-mono">{Math.round(comidaDetailLevel * 100)}%</span>
+                  </div>
+                  <Slider
+                    value={[comidaDetailLevel]}
+                    onValueChange={([value]) => setComidaDetailLevel(value)}
+                    min={0.70}
+                    max={1.00}
+                    step={0.01}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+                    <span>Mais Fiel</span>
+                    <span>Mais Criativo</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Logo/Arte Detail Level Slider - PRO only */}
+              {isLogoMode && version === 'pro' && (
+                <div className="border border-white/10 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-white">Nível de Detalhe</span>
+                    <span className="text-xs text-gray-300 font-mono">{logoDetailLevel.toFixed(2)}</span>
+                  </div>
+                  <Slider
+                    value={[logoDetailLevel]}
+                    onValueChange={([value]) => setLogoDetailLevel(value)}
+                    min={0.01}
+                    max={1.00}
+                    step={0.01}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+                    <span>Mais Fidelidade</span>
+                    <span>Mais Criatividade</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Selos 3D Detail Level Slider - PRO only */}
+              {isRender3dMode && version === 'pro' && (
+                <div className="border border-white/10 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-white">Nível de Detalhe</span>
+                    <span className="text-xs text-gray-300 font-mono">{render3dDetailLevel.toFixed(2)}</span>
+                  </div>
+                  <Slider
+                    value={[render3dDetailLevel]}
+                    onValueChange={([value]) => setRender3dDetailLevel(value)}
+                    min={0.01}
+                    max={1.00}
+                    step={0.01}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+                    <span>Mais Fidelidade</span>
+                    <span>Mais Criatividade</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Custom Prompt - PRO only */}
+              {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
+                <div className="border border-white/10 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-white">{t('upscalerTool.controls.usePrompt')}</span>
+                    <Switch
+                      checked={useCustomPrompt}
+                      onCheckedChange={setUseCustomPrompt}
+                    />
+                  </div>
+                  {useCustomPrompt && (
+                    <Textarea
+                      value={customPrompt}
+                      onChange={(e) => setCustomPrompt(e.target.value)}
+                      placeholder={t('upscalerTool.controls.promptPlaceholder')}
+                      className="min-h-[60px] text-xs bg-black/40 border-white/10 text-white placeholder:text-gray-500"
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* Generate Button - always at bottom */}
+              {inputImage && !isProcessing && status !== 'completed' && (
+                <Button
+                  className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg"
+                  onClick={processImage}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Iniciando...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Gerar Upscaling
+                      <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                        <Coins className="w-3.5 h-3.5" />
+                        {isLogoMode ? 50 : (version === 'pro' ? getCreditCost('Upscaler Pro', 80) : getCreditCost('Upscaler Arcano', 60))}
+                      </span>
+                    </>
+                  )}
+                </Button>
+              )}
+
+              {/* Completed Actions */}
+              {status === 'completed' && (
+                <div className="space-y-2">
+                  <Button
+                    className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl"
+                    onClick={downloadResult}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    {t('upscalerTool.buttons.downloadHD')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full py-3 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                    onClick={resetTool}
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    {t('upscalerTool.buttons.processNew')}
+                  </Button>
+                </div>
+              )}
+
+              {/* Error State */}
+              {status === 'error' && lastError && (
+                <div className="bg-red-950/30 border border-red-500/30 rounded-xl p-3">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1 space-y-1">
+                      <p className="text-xs font-medium text-red-300">{lastError.message}</p>
+                      {lastError.solution && (
+                        <p className="text-[10px] text-gray-400">💡 {lastError.solution}</p>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="w-full mt-2 py-2 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg"
+                    onClick={resetTool}
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                    {t('upscalerTool.buttons.tryAgain')}
+                  </Button>
+                </div>
+              )}
+
+              {/* Debug Panel */}
+              <JobDebugPanel
+                jobId={jobId}
+                tableName="upscaler_jobs"
+                currentStep={currentStep}
+                failedAtStep={failedAtStep}
+                errorMessage={lastError?.message}
+                position={queuePosition}
+                status={status}
+              />
+            </div>
           </div>
 
           {/* Right Side - Result Viewer (~72%) */}
