@@ -1405,24 +1405,30 @@ async function startJobOnRunningHub(
       nodeInfoList = [];
       
       if (videoModel === 'wan2.2') {
-        webappId = webappIds['wan2.2'];
         // Wan 2.2 nodes: 37=FIRST FRAME, 16=LAST FRAME, 9=PROMPT (no aspect_ratio)
         if (hasFrames) {
+          webappId = webappIds['wan2.2'];
           const startUri = `data:${p.startFrame.mimeType};base64,${p.startFrame.base64}`;
           nodeInfoList.push({ nodeId: "37", fieldName: "image", fieldValue: startUri, description: "FIRST FRAME" });
           const endUri = `data:${p.endFrame.mimeType};base64,${p.endFrame.base64}`;
           nodeInfoList.push({ nodeId: "16", fieldName: "image", fieldValue: endUri, description: "LAST FRAME" });
+          nodeInfoList.push({
+            nodeId: "9",
+            fieldName: "text",
+            fieldValue: p.prompt || job.prompt || '',
+            description: "text",
+          });
         } else {
-          // No frames - send placeholder images
-          nodeInfoList.push({ nodeId: "37", fieldName: "image", fieldValue: "example.png", description: "image" });
-          nodeInfoList.push({ nodeId: "16", fieldName: "image", fieldValue: "example.png", description: "image" });
+          // Text-only mode - dedicated text-to-video webapp
+          webappId = webappIds['wan2.2_text_only'];
+          console.log(`[QueueManager] Wan 2.2 text-only mode, using webapp ${webappId}`);
+          nodeInfoList.push({
+            nodeId: "15",
+            fieldName: "text",
+            fieldValue: p.prompt || job.prompt || '',
+            description: "text",
+          });
         }
-        nodeInfoList.push({
-          nodeId: "9",
-          fieldName: "text",
-          fieldValue: p.prompt || job.prompt || '',
-          description: "text",
-        });
       } else {
         // Veo 3.1
         if (hasFrames) {
