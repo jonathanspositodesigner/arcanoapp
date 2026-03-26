@@ -390,96 +390,76 @@ const GerarVideoTool = () => {
           )}
         </div>
 
-        {/* Frame previews strip - only show when in with_frames mode and has frames */}
-        {generationMode === 'with_frames' && hasFrames && (
-          <div className="sticky bottom-[110px] z-20 px-4">
-            <div className="max-w-3xl mx-auto flex gap-2 items-center bg-[#1a1525]/90 backdrop-blur-md rounded-xl p-2 border border-purple-500/20">
-              {/* Start Frame */}
-              <div 
-                onClick={() => !startFrame && startFrameRef.current?.click()}
-                className={`relative w-20 h-12 rounded-lg overflow-hidden border flex-shrink-0 flex items-center justify-center cursor-pointer transition-colors ${
-                  startFrame ? 'border-green-500/50' : 'border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/20'
-                }`}
-              >
-                {startFrame ? (
-                  <>
-                    <img src={startFrame.preview} alt="Start" className="w-full h-full object-cover" />
-                    <button onClick={(e) => { e.stopPropagation(); setStartFrame(null); }} className="absolute -top-1 -right-1 bg-red-600 rounded-full p-0.5 z-10">
-                      <X className="h-2.5 w-2.5 text-white" />
-                    </button>
-                  </>
-                ) : (
-                  <ImagePlus className="h-4 w-4 text-purple-400" />
-                )}
-                <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-[7px] text-white text-center py-0.5">1º Frame</span>
-              </div>
-
-              {/* Arrow */}
-              <span className="text-purple-400 text-xs">→</span>
-
-              {/* End Frame */}
-              <div 
-                onClick={() => !endFrame && endFrameRef.current?.click()}
-                className={`relative w-20 h-12 rounded-lg overflow-hidden border flex-shrink-0 flex items-center justify-center cursor-pointer transition-colors ${
-                  endFrame ? 'border-green-500/50' : 'border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/20'
-                }`}
-              >
-                {endFrame ? (
-                  <>
-                    <img src={endFrame.preview} alt="End" className="w-full h-full object-cover" />
-                    <button onClick={(e) => { e.stopPropagation(); setEndFrame(null); }} className="absolute -top-1 -right-1 bg-red-600 rounded-full p-0.5 z-10">
-                      <X className="h-2.5 w-2.5 text-white" />
-                    </button>
-                  </>
-                ) : (
-                  <ImagePlus className="h-4 w-4 text-purple-400" />
-                )}
-                <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-[7px] text-white text-center py-0.5">Último Frame</span>
-              </div>
-
-              {!bothFramesReady && (
-                <span className="text-[10px] text-yellow-400/80 ml-1">Selecione ambos os frames</span>
-              )}
-            </div>
-          </div>
-        )}
+        <input ref={startFrameRef} type="file" accept="image/*" onChange={handleFrameSelect('start')} className="hidden" />
+        <input ref={endFrameRef} type="file" accept="image/*" onChange={handleFrameSelect('end')} className="hidden" />
 
         {/* Bottom bar */}
         <div className="sticky bottom-0 z-20 bg-[#120e1a]/95 backdrop-blur-xl border-t border-purple-500/15 w-full">
           <div className="max-w-3xl mx-auto px-3 py-3 space-y-2.5">
-            {/* Prompt input row */}
-            <div className="flex items-center gap-2">
-              {/* Mode toggle: prompt only vs with frames */}
-              <div className="flex-shrink-0 flex rounded-lg border border-purple-500/25 overflow-hidden">
-                <button
-                  onClick={() => setGenerationMode('prompt_only')}
-                  disabled={isGenerating}
-                  className={`flex items-center gap-1 px-2 py-1.5 text-[10px] font-medium transition-colors ${
-                    generationMode === 'prompt_only' 
-                      ? 'bg-purple-600/60 text-white' 
-                      : 'bg-purple-900/20 text-purple-400 hover:text-purple-200'
-                  }`}
-                  title="Só prompt"
-                >
-                  <Type className="h-3 w-3" />
-                </button>
-                <button
-                  onClick={() => setGenerationMode('with_frames')}
-                  disabled={isGenerating}
-                  className={`flex items-center gap-1 px-2 py-1.5 text-[10px] font-medium transition-colors ${
-                    generationMode === 'with_frames' 
-                      ? 'bg-purple-600/60 text-white' 
-                      : 'bg-purple-900/20 text-purple-400 hover:text-purple-200'
-                  }`}
-                  title="Com frames de início e fim"
-                >
-                  <Image className="h-3 w-3" />
-                </button>
+
+            {/* Frame upload area - when with_frames mode */}
+            {generationMode === 'with_frames' && (
+              <div className="flex items-center gap-3">
+                {/* Start Frame Upload */}
+                <div className="flex-1">
+                  <p className="text-[10px] text-purple-400 mb-1 font-medium">1º Frame (início)</p>
+                  {startFrame ? (
+                    <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
+                      <img src={startFrame.preview} alt="Primeiro frame" className="w-full h-full object-cover" />
+                      <button 
+                        onClick={() => setStartFrame(null)} 
+                        className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
+                      >
+                        <X className="h-3 w-3 text-white" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => startFrameRef.current?.click()}
+                      disabled={isGenerating}
+                      className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/10 hover:bg-purple-900/20 flex flex-col items-center justify-center gap-1 transition-colors"
+                    >
+                      <Upload className="h-4 w-4 text-purple-400" />
+                      <span className="text-[10px] text-purple-300">Enviar imagem</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Arrow indicator */}
+                <div className="flex flex-col items-center gap-0.5 pt-4 flex-shrink-0">
+                  <span className="text-purple-400 text-lg">→</span>
+                  <span className="text-[8px] text-purple-500">{MODEL_DURATIONS[selectedModel] || 8}s</span>
+                </div>
+
+                {/* End Frame Upload */}
+                <div className="flex-1">
+                  <p className="text-[10px] text-purple-400 mb-1 font-medium">Último Frame (fim)</p>
+                  {endFrame ? (
+                    <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
+                      <img src={endFrame.preview} alt="Último frame" className="w-full h-full object-cover" />
+                      <button 
+                        onClick={() => setEndFrame(null)} 
+                        className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
+                      >
+                        <X className="h-3 w-3 text-white" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => endFrameRef.current?.click()}
+                      disabled={isGenerating}
+                      className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/10 hover:bg-purple-900/20 flex flex-col items-center justify-center gap-1 transition-colors"
+                    >
+                      <Upload className="h-4 w-4 text-purple-400" />
+                      <span className="text-[10px] text-purple-300">Enviar imagem</span>
+                    </button>
+                  )}
+                </div>
               </div>
+            )}
 
-              <input ref={startFrameRef} type="file" accept="image/*" onChange={handleFrameSelect('start')} className="hidden" />
-              <input ref={endFrameRef} type="file" accept="image/*" onChange={handleFrameSelect('end')} className="hidden" />
-
+            {/* Prompt input row */}
+            <div className="flex items-end gap-2">
               {/* Prompt textarea */}
               <div className="flex-1">
                 <textarea
@@ -498,15 +478,62 @@ const GerarVideoTool = () => {
                   }}
                 />
               </div>
+
+              {/* Generate button */}
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating || isSubmitting || !prompt.trim() || (generationMode === 'with_frames' && !bothFramesReady)}
+                size="sm"
+                className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-9 min-w-0 shrink-0"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                    {isQueued ? 'Fila...' : '...'}
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5 mr-1" />
+                    Gerar
+                  </>
+                )}
+              </Button>
             </div>
 
             {/* Controls row */}
-            <div className="flex items-center gap-1.5 overflow-hidden">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {/* Mode toggle */}
+              <div className="flex rounded-lg border border-purple-500/25 overflow-hidden">
+                <button
+                  onClick={() => setGenerationMode('prompt_only')}
+                  disabled={isGenerating}
+                  className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium transition-colors ${
+                    generationMode === 'prompt_only' 
+                      ? 'bg-purple-600/60 text-white' 
+                      : 'bg-purple-900/20 text-purple-400 hover:text-purple-200'
+                  }`}
+                >
+                  <Type className="h-3 w-3" />
+                  <span>Só Prompt</span>
+                </button>
+                <button
+                  onClick={() => setGenerationMode('with_frames')}
+                  disabled={isGenerating}
+                  className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium transition-colors ${
+                    generationMode === 'with_frames' 
+                      ? 'bg-purple-600/60 text-white' 
+                      : 'bg-purple-900/20 text-purple-400 hover:text-purple-200'
+                  }`}
+                >
+                  <ImagePlus className="h-3 w-3" />
+                  <span>Com Imagens</span>
+                </button>
+              </div>
+
               {/* Model dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
-                    <span>🤖</span>
+                  <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-900/40 border border-purple-500/25 text-[10px] text-purple-200 hover:bg-purple-800/50 transition-colors">
                     <span className="font-medium">{currentModel.name}</span>
                     <ChevronDown className="h-3 w-3 text-purple-400" />
                   </button>
@@ -527,12 +554,11 @@ const GerarVideoTool = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Aspect ratio dropdown - only for Veo 3.1 */}
+              {/* Aspect ratio - only Veo 3.1 */}
               {selectedModel === 'veo3.1' && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
-                      <span>⬜</span>
+                    <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-900/40 border border-purple-500/25 text-[10px] text-purple-200 hover:bg-purple-800/50 transition-colors">
                       <span className="font-medium">{aspectRatio}</span>
                       <ChevronDown className="h-3 w-3 text-purple-400" />
                     </button>
@@ -551,53 +577,12 @@ const GerarVideoTool = () => {
                 </DropdownMenu>
               )}
 
-              {/* Duration badge (fixed per model) */}
-              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200">
-                <span>⏱</span>
-                <span className="font-medium">{MODEL_DURATIONS[selectedModel] || 8}s</span>
-              </div>
-
-              {/* Mode indicator */}
-              <div className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-purple-900/30 text-[10px] text-purple-400">
-                {generationMode === 'with_frames' ? (
-                  <>
-                    <Image className="h-3 w-3" />
-                    <span>Frames</span>
-                    {bothFramesReady && <span className="text-green-400">✓</span>}
-                  </>
-                ) : (
-                  <>
-                    <Type className="h-3 w-3" />
-                    <span>Prompt</span>
-                  </>
-                )}
-              </div>
-
-              <div className="flex-1 min-w-[4px]" />
-
-              {/* Generate button */}
-              <Button
-                onClick={handleGenerate}
-                disabled={isGenerating || isSubmitting || !prompt.trim() || (generationMode === 'with_frames' && !bothFramesReady)}
-                size="sm"
-                className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-2 h-8 min-w-0 shrink-0"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                    {isQueued ? 'Na fila...' : 'Gerando...'}
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                    Gerar
-                    <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
-                      <Coins className="w-3.5 h-3.5" />
-                      {creditCost}
-                    </span>
-                  </>
-                )}
-              </Button>
+              {/* Duration + cost */}
+              <span className="text-[10px] text-purple-400 ml-auto flex items-center gap-1.5">
+                <span>⏱ {MODEL_DURATIONS[selectedModel] || 8}s</span>
+                <span>•</span>
+                <span className="flex items-center gap-0.5"><Coins className="h-3 w-3" />{creditCost}</span>
+              </span>
             </div>
           </div>
         </div>
