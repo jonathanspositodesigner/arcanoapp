@@ -75,7 +75,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
   // State
   const [version, setVersion] = useState<'standard' | 'pro'>('standard');
-  const [detailDenoise, setDetailDenoise] = useState(0.15);
+  const [detailDenoise, setDetailDenoise] = useState(0);
   const [resolution, setResolution] = useState<'2k' | '4k'>('2k');
   const [useCustomPrompt, setUseCustomPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
