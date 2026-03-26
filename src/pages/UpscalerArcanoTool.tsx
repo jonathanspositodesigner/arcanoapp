@@ -770,7 +770,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 type="single" 
                 value={version} 
                 onValueChange={(val) => val && setVersion(val as 'standard' | 'pro')}
-                className="w-full grid grid-cols-2 gap-0 bg-[#1A0A2E]/50 border border-purple-500/30 rounded-lg p-1"
+                className="w-full grid grid-cols-2 gap-0 bg-[#1A0A2E]/50 border border-white/20 rounded-lg p-1"
               >
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -782,7 +782,7 @@ const UpscalerArcanoTool: React.FC = () => {
                           : 'border border-transparent text-purple-300/70 hover:bg-purple-500/10'
                       }`}
                     >
-                      Standard
+                      ⚡ V3 Turbo
                     </ToggleGroupItem>
                   </TooltipTrigger>
                   <TooltipContent className="bg-black/90 border-purple-500/30">
@@ -803,7 +803,7 @@ const UpscalerArcanoTool: React.FC = () => {
                       }`}
                     >
                       <Crown className="w-3 h-3" />
-                      PRO
+                      V3 Pro
                     </ToggleGroupItem>
                   </TooltipTrigger>
                   <TooltipContent className="bg-black/90 border-purple-500/30">
@@ -824,7 +824,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
             {/* Image Upload - Compact */}
             <Card 
-              className="bg-[#1A0A2E]/50 border-purple-500/20 border-dashed border-2 p-4 cursor-pointer hover:bg-[#1A0A2E]/70 transition-colors"
+              className="bg-[#0D0221]/70 border-white/20 border-dashed border-2 p-6 cursor-pointer hover:bg-[#0D0221]/90 transition-colors"
               onClick={() => fileInputRef.current?.click()}
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
@@ -845,13 +845,13 @@ const UpscalerArcanoTool: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                    <Upload className="w-5 h-5 text-purple-400" />
+                <div className="flex flex-col items-center gap-3 py-4">
+                  <div className="w-14 h-14 rounded-xl bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
+                    <Upload className="w-7 h-7 text-purple-400" />
                   </div>
-                  <div>
+                  <div className="text-center">
                     <p className="text-sm font-medium text-white">{t('upscalerTool.upload.dragHere')}</p>
-                    <p className="text-[10px] text-purple-300/50">{t('upscalerTool.upload.formats')}</p>
+                    <p className="text-[10px] text-purple-300/50 mt-1">PNG, JPEG, WEBP - Máximo 10MB</p>
                   </div>
                 </div>
               )}
@@ -866,63 +866,37 @@ const UpscalerArcanoTool: React.FC = () => {
 
             {/* Image Type Selector - Only show when not using custom prompt */}
             {(!useCustomPrompt || version === 'standard') && (
-              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+              <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
                 <div className="flex items-center gap-2 mb-2">
                   <MessageSquare className="w-3.5 h-3.5 text-pink-400" />
                   <span className="text-xs font-medium text-white">Tipo de Imagem</span>
                 </div>
-                <ToggleGroup 
-                  type="single" 
-                  value={promptCategory.startsWith('pessoas') ? 'pessoas' : promptCategory} 
+                <Select
+                  value={promptCategory.startsWith('pessoas') ? 'pessoas' : promptCategory}
                   onValueChange={(value) => {
-                    if (value) {
-                      if (value === 'pessoas') {
-                        setPromptCategory(`pessoas_${pessoasFraming}` as PromptCategory);
-                      } else {
-                        setPromptCategory(value as PromptCategory);
-                      }
+                    if (value === 'pessoas') {
+                      setPromptCategory(`pessoas_${pessoasFraming}` as PromptCategory);
+                    } else {
+                      setPromptCategory(value as PromptCategory);
                     }
                   }}
-                  className="flex flex-col gap-1"
                 >
-                  {/* Top row: 3 buttons */}
-                  <div className="flex gap-1">
-                    {['pessoas', 'comida', 'fotoAntiga'].map((cat) => (
-                      <ToggleGroupItem 
-                        key={cat}
-                        value={cat} 
-                        className={`flex-1 px-2 py-1 text-[10px] rounded-md transition-all ${
-                          (cat === 'pessoas' ? promptCategory.startsWith('pessoas') : promptCategory === cat)
-                            ? 'bg-purple-600 text-white border border-purple-400' 
-                            : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                        }`}
-                      >
-                        {cat === 'pessoas' ? 'Pessoas' : cat === 'comida' ? 'Comida/Objeto' : 'Foto Antiga'}
-                      </ToggleGroupItem>
-                    ))}
-                  </div>
-                  {/* Bottom row: 2 buttons */}
-                  <div className="flex gap-1">
-                    {['render3d', 'logo'].map((cat) => (
-                      <ToggleGroupItem 
-                        key={cat}
-                        value={cat} 
-                        className={`flex-1 px-2 py-1 text-[10px] rounded-md transition-all ${
-                          promptCategory === cat
-                            ? 'bg-purple-600 text-white border border-purple-400' 
-                            : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
-                        }`}
-                      >
-                        {cat === 'render3d' ? 'Selo 3D' : 'Logo/Arte'}
-                      </ToggleGroupItem>
-                    ))}
-                  </div>
-                </ToggleGroup>
+                  <SelectTrigger className="w-full bg-[#0D0221]/70 border-white/20 text-white text-xs h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1A0A2E] border-white/20">
+                    <SelectItem value="pessoas" className="text-white text-xs">👤 Pessoas</SelectItem>
+                    <SelectItem value="comida" className="text-white text-xs">🍔 Comida/Objeto</SelectItem>
+                    <SelectItem value="fotoAntiga" className="text-white text-xs">📷 Foto Antiga</SelectItem>
+                    <SelectItem value="render3d" className="text-white text-xs">🏷️ Selo 3D</SelectItem>
+                    <SelectItem value="logo" className="text-white text-xs">🎨 Logo/Arte</SelectItem>
+                  </SelectContent>
+                </Select>
 
                 {/* Pessoas Framing Selector */}
                 {promptCategory.startsWith('pessoas') && (
                  !isSpecialWorkflow && (
-                  <div className="mt-3 pt-3 border-t border-purple-500/20">
+                  <div className="mt-3 pt-3 border-t border-white/10">
                     <ToggleGroup 
                       type="single" 
                       value={pessoasFraming} 
@@ -939,7 +913,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all h-auto ${
                           pessoasFraming === 'perto'
                             ? 'bg-purple-600 text-white border border-purple-400' 
-                            : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                            : 'border border-white/20 text-purple-300/70 hover:bg-purple-500/10'
                         }`}
                       >
                         <div className="w-8 h-8 rounded bg-purple-900/50 flex items-center justify-center border border-purple-500/30 relative">
@@ -955,7 +929,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all h-auto ${
                           pessoasFraming === 'longe'
                             ? 'bg-purple-600 text-white border border-purple-400' 
-                            : 'border border-purple-500/30 text-purple-300/70 hover:bg-purple-500/10'
+                            : 'border border-white/20 text-purple-300/70 hover:bg-purple-500/10'
                         }`}
                       >
                         <div className="w-8 h-8 rounded bg-purple-900/50 flex items-center justify-center border border-purple-500/30 relative">
@@ -974,32 +948,46 @@ const UpscalerArcanoTool: React.FC = () => {
               </Card>
             )}
 
-             {/* Detail Level Slider - PRO only, not in Longe mode, not in special workflows */}
+             {/* Face Detail Switch + Detail Level Slider - PRO only, not in Longe mode, not in special workflows */}
              {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
-              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+              <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                    <span className="text-xs font-medium text-white">{t('upscalerTool.controls.detailLevel')}</span>
+                    <span className="text-xs font-medium text-white">Detalhar Rosto</span>
                   </div>
-                  <span className="text-xs text-purple-300 font-mono">{detailDenoise.toFixed(2)}</span>
+                  <Switch
+                    checked={detailDenoise > 0}
+                    onCheckedChange={(checked) => {
+                      if (!checked) setDetailDenoise(0);
+                      else setDetailDenoise(0.15);
+                    }}
+                  />
                 </div>
-                <Slider
-                  value={[detailDenoise]}
-                  onValueChange={([value]) => setDetailDenoise(value)}
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
-                  <span>Menos</span>
-                  <span>Mais</span>
-                </div>
-                {promptCategory === 'pessoas_perto' && (
-                  <p className="text-[10px] text-purple-400/80 text-center mt-2">
-                    💡 Recomendado: entre 0.05 e 0.20
-                  </p>
+                {detailDenoise > 0 && (
+                  <>
+                    <div className="flex items-center justify-between mt-2 mb-1">
+                      <span className="text-[10px] text-purple-300/70">Nível de Detalhes</span>
+                      <span className="text-xs text-purple-300 font-mono">{detailDenoise.toFixed(2)}</span>
+                    </div>
+                    <Slider
+                      value={[detailDenoise]}
+                      onValueChange={([value]) => setDetailDenoise(value)}
+                      min={0.01}
+                      max={1}
+                      step={0.01}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
+                      <span>Menos</span>
+                      <span>Mais</span>
+                    </div>
+                    {promptCategory === 'pessoas_perto' && (
+                      <p className="text-[10px] text-purple-400/80 text-center mt-2">
+                        💡 Recomendado: entre 0.05 e 0.20
+                      </p>
+                    )}
+                  </>
                 )}
               </Card>
             )}
