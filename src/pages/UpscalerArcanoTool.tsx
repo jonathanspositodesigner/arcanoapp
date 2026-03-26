@@ -1116,7 +1116,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
           {/* Right Side - Result Viewer (~72%) */}
           <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
-            <Card className="flex-1 bg-[#1A0A2E]/50 border-white/20 overflow-hidden flex flex-col min-h-[250px] lg:min-h-0">
+            <div className="flex-1 bg-[#1a1a2e] border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-[250px] lg:min-h-0">
               {/* Warning Banner */}
               {isProcessing && (
                 <div className="bg-amber-500/20 border-b border-amber-500/50 px-3 py-2 flex items-center gap-2">
