@@ -1628,3 +1628,77 @@ async function callRunningHubApi(
   
   return { taskId: null };
 }
+
+/**
+ * handleRetry - Re-submits a failed job using its saved job_payload.
+ * Called by the webhook when a transient infrastructure error is detected.
+ */
+async function handleRetry(req: Request): Promise<Response> {
+  try {
+    const { table, jobId } = await req.json();
+    
+    if (!table || !jobId || !JOB_TABLES.includes(table as JobTable)) {
+      return new Response(JSON.stringify({ error: 'Valid table and jobId required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    console.log(`[QueueManager] /retry: table=${table}, jobId=${jobId}`);
+    
+    // Fetch job with payload
+    const { data: job, error: jobError } = await supabase
+      .from(table)
+      .select('*')
+      .eq('id', jobId)
+      .maybeSingle();
+    
+    if (jobError || !job) {
+      return new Response(JSON.stringify({ error: 'Job not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Reset job to starting state
+    const account = await getAccountWithAvailableSlot() || getApiAccounts()[0];
+    
+    await supabase
+      .from(table)
+      .update({
+        status: 'starting',
+        current_step: 'auto_retrying',
+        started_at: new Date().toISOString(),
+        error_message: null,
+        failed_at_step: null,
+        task_id: null,
+        api_account: account.name,
+      })
+      .eq('id', jobId);
+    
+    await logStep(table, jobId, 'auto_retrying', { accountName: account.name });
+    
+    // Re-submit to RunningHub
+    const result = await startJobOnRunningHub(table as JobTable, job, account);
+    
+    if (result.taskId) {
+      console.log(`[QueueManager] Auto-retry successful for ${jobId}, new taskId: ${result.taskId}`);
+      return new Response(JSON.stringify({ success: true, taskId: result.taskId }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    console.error(`[QueueManager] Auto-retry failed for ${jobId}`);
+    return new Response(JSON.stringify({ success: false, error: 'Retry submission failed' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+    
+  } catch (error) {
+    console.error('[QueueManager] /retry error:', error);
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
