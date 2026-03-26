@@ -752,12 +752,14 @@ const UpscalerArcanoTool: React.FC = () => {
     <AppLayout fullScreen>
 
       {/* Main Content - Two Column Layout */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-4 overflow-y-auto lg:overflow-hidden flex flex-col">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-4 overflow-y-auto flex flex-col">
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-5 flex-1 lg:min-h-0">
           
           {/* Left Side - Controls Panel inside ONE card */}
-          <div className="lg:col-span-2 flex flex-col pb-2 lg:pb-0">
-            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-5 lg:overflow-y-auto">
+          <div className="lg:col-span-2 flex flex-col pb-2 lg:pb-0 lg:min-h-0 lg:overflow-hidden">
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-5 lg:overflow-y-auto lg:flex-1"
+              style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}
+            >
               
               {/* Title inside card */}
               <div>
@@ -889,7 +891,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
               {/* Detalhar Rosto - V3 Pro only, not special workflows */}
               {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
-                <div className="border border-white/10 rounded-xl p-4 space-y-3">
+                <div className="border border-white/10 rounded-xl p-4 space-y-3 bg-black/30">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-white">Detalhar Rosto</span>
                     <Switch
@@ -898,6 +900,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         if (!checked) setDetailDenoise(0);
                         else setDetailDenoise(0.15);
                       }}
+                      className="data-[state=checked]:bg-white/30 data-[state=unchecked]:bg-white/10 [&>span]:bg-white"
                     />
                   </div>
                   {detailDenoise > 0 && (
@@ -912,7 +915,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         min={0.01}
                         max={1}
                         step={0.01}
-                        className="w-full"
+                        className="w-full [&_[role=slider]]:bg-white [&_[role=slider]]:border-white/50 [&_.relative>div:first-child]:bg-white/20 [&_.relative>div:first-child>div]:bg-white/60"
                       />
                       <div className="flex justify-between text-[10px] text-gray-500 mt-1">
                         <span>Menos</span>
@@ -1115,8 +1118,8 @@ const UpscalerArcanoTool: React.FC = () => {
           </div>
 
           {/* Right Side - Result Viewer (~72%) */}
-          <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
-            <div className="flex-1 bg-[#1a1a2e] border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-[250px] lg:min-h-0">
+          <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0 lg:overflow-hidden">
+            <div className="flex-1 bg-[#1a1a2e] border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-[250px] lg:min-h-0 lg:max-h-full">
               {/* Warning Banner */}
               {isProcessing && (
                 <div className="bg-amber-500/20 border-b border-amber-500/50 px-3 py-2 flex items-center gap-2">
