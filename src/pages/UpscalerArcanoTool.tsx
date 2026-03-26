@@ -1435,7 +1435,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   </div>
                 )}
               </div>
-            </Card>
+            </div>
           </div>
         </div>
       </div>
