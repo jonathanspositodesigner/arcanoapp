@@ -752,12 +752,12 @@ const UpscalerArcanoTool: React.FC = () => {
     <AppLayout fullScreen>
 
       {/* Main Content - Two Column Layout */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-4 overflow-y-auto flex flex-col">
-        <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-5 flex-1 lg:min-h-0">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-4 flex flex-col h-full overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-5 flex-1 min-h-0">
           
           {/* Left Side - Controls Panel inside ONE card */}
-          <div className="lg:col-span-2 flex flex-col pb-2 lg:pb-0 lg:min-h-0 lg:overflow-hidden">
-            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-5 lg:overflow-y-auto lg:flex-1"
+          <div className="lg:col-span-2 min-h-0 overflow-hidden">
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-5 overflow-y-auto h-full max-h-full"
               style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}
             >
               
@@ -926,27 +926,6 @@ const UpscalerArcanoTool: React.FC = () => {
                 </div>
               )}
 
-              {/* Editing Level Slider - PRO + Pessoas + De Perto only */}
-              {version === 'pro' && promptCategory === 'pessoas_perto' && (
-                <div className="border border-white/10 rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-white">Nível de Edição</span>
-                    <span className="text-xs text-gray-300 font-mono">{editingLevel.toFixed(2)}</span>
-                  </div>
-                  <Slider
-                    value={[editingLevel]}
-                    onValueChange={([value]) => setEditingLevel(value)}
-                    min={0}
-                    max={1}
-                    step={0.01}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-[10px] text-gray-500 mt-1">
-                    <span>Menos Edição</span>
-                    <span>Mais Edição</span>
-                  </div>
-                </div>
-              )}
 
               {/* Comida/Objeto Detail Level Slider */}
               {isComidaMode && (
@@ -1118,8 +1097,8 @@ const UpscalerArcanoTool: React.FC = () => {
           </div>
 
           {/* Right Side - Result Viewer (~72%) */}
-          <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0 lg:overflow-hidden">
-            <div className="flex-1 bg-[#1a1a2e] border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-[250px] lg:min-h-0 lg:max-h-full">
+          <div className="lg:col-span-5 min-h-0 overflow-hidden">
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-[400px] h-full">
               {/* Warning Banner */}
               {isProcessing && (
                 <div className="bg-amber-500/20 border-b border-amber-500/50 px-3 py-2 flex items-center gap-2">
