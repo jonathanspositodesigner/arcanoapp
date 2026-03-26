@@ -1354,7 +1354,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   >
                     {/* After image (full) */}
                     <img 
-                      src="/images/upscaler-example-after.jpg" 
+                      src={upscalerExampleAfter} 
                       alt="Exemplo depois" 
                       className="w-full h-full object-cover pointer-events-none"
                       draggable={false}
@@ -1365,7 +1365,7 @@ const UpscalerArcanoTool: React.FC = () => {
                       style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
                     >
                       <img 
-                        src="/images/upscaler-example-before.jpg" 
+                        src={upscalerExampleBefore} 
                         alt="Exemplo antes" 
                         className="w-full h-full object-cover"
                         draggable={false}
