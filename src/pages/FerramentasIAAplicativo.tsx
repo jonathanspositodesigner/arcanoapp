@@ -15,8 +15,6 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
 import AppLayout from "@/components/layout/AppLayout";
-import PromoToolsBanner from "@/components/PromoToolsBanner";
-
 
 interface ToolData {
   id: string;
@@ -363,9 +361,6 @@ const FerramentasIAAplicativo = () => {
 
   return (
     <AppLayout>
-      
-      {/* Promo Banner */}
-      <PromoToolsBanner />
 
       {/* Content - Single grid with all tools */}
       <main className="container mx-auto px-4 py-8">

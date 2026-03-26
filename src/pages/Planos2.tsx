@@ -596,11 +596,6 @@ const Planos2 = () => {
                       )}
                       <span className={`${feature.included ? "text-purple-200" : "text-orange-500"} flex items-center gap-1.5`}>
                         {feature.text}
-                        {(feature as any).hasDiscount && (
-                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[8px] font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 leading-none whitespace-nowrap">
-                            50% OFF
-                          </span>
-                        )}
                       </span>
                       {(feature as any).isAiTools && (
                         <ChevronDown className={`w-3 h-3 shrink-0 mt-0.5 transition-transform duration-200 ${feature.included ? 'text-purple-400' : 'text-orange-500'} ${expandedAiTools[plan.name] ? 'rotate-180' : ''}`} />

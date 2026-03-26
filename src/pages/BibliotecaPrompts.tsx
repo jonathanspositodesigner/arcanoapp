@@ -21,7 +21,7 @@ import ExpiringSubscriptionModal from "@/components/ExpiringSubscriptionModal";
 import RunningHubBonusModal from "@/components/RunningHubBonusModal";
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 import AppLayout from "@/components/layout/AppLayout";
-import PromoToolsBanner from "@/components/PromoToolsBanner";
+
 import { useSmartSearch } from "@/hooks/useSmartSearch";
 import { removeAccents } from "@/lib/synonyms";
 
@@ -359,8 +359,6 @@ const BibliotecaPrompts = () => {
 
   return (
     <AppLayout>
-      {/* Promo Banner */}
-      <PromoToolsBanner />
       {/* Main Content */}
       <div className="p-4 sm:p-6 lg:p-8 bg-[#0D0221] pb-24 lg:pb-8 overflow-x-hidden max-w-full">
         {/* Mobile Install App Button */}

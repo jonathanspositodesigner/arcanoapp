@@ -34,7 +34,7 @@ const GerarVideoTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
-  const { isPlanos2User, hasVideoGeneration, costMultiplier } = useAuth();
+  const { isPlanos2User, hasVideoGeneration } = useAuth();
   
   const { getCreditCost } = useAIToolSettings();
   const { hasKey, refetch: refetchApiKey } = useGoogleApiKey();
@@ -61,9 +61,7 @@ const GerarVideoTool = () => {
   const pollingStartRef = useRef<number>(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const isUnlimited = planType === 'arcano_unlimited';
-  const hasReducedCost = isUnlimited || (isPlanos2User && costMultiplier < 1);
-  const creditCost = hasReducedCost ? getCreditCost('gerar_video', 700) : 750;
+  const creditCost = getCreditCost('gerar_video', 750);
 
   const handleFrameSelect = (e: React.ChangeEvent<HTMLInputElement>, type: 'start' | 'end') => {
     const file = e.target.files?.[0];
