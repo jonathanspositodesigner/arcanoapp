@@ -994,7 +994,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
              {/* Editing Level Slider - PRO + Pessoas + De Perto only */}
              {version === 'pro' && promptCategory === 'pessoas_perto' && (
-               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+               <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
                  <div className="flex items-center justify-between mb-1">
                    <div className="flex items-center gap-1.5">
                      <Sparkles className="w-3.5 h-3.5 text-pink-400" />
@@ -1019,7 +1019,7 @@ const UpscalerArcanoTool: React.FC = () => {
  
              {/* Comida/Objeto Detail Level Slider (0.70 to 1.00) */}
              {isComidaMode && (
-               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+               <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
                  <div className="flex items-center justify-between mb-1">
                    <div className="flex items-center gap-1.5">
                      <Sparkles className="w-3.5 h-3.5 text-purple-400" />
@@ -1044,7 +1044,7 @@ const UpscalerArcanoTool: React.FC = () => {
  
              {/* Logo/Arte Detail Level Slider - PRO only */}
              {isLogoMode && version === 'pro' && (
-               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+               <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
                  <div className="flex items-center justify-between mb-1">
                    <div className="flex items-center gap-1.5">
                      <Sparkles className="w-3.5 h-3.5 text-purple-400" />
@@ -1072,7 +1072,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
              {/* Selos 3D Detail Level Slider - PRO only */}
              {isRender3dMode && version === 'pro' && (
-               <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+               <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
                  <div className="flex items-center justify-between mb-1">
                    <div className="flex items-center gap-1.5">
                      <Sparkles className="w-3.5 h-3.5 text-purple-400" />
@@ -1100,7 +1100,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
              {/* Resolution Selector - hide for special workflows */}
              {!isSpecialWorkflow && (
-            <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+            <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-xs font-medium text-white">📐 Resolução</span>
               </div>
@@ -1136,7 +1136,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
              {/* Custom Prompt - PRO only, not in Longe mode, not in special workflows */}
              {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
-              <Card className="bg-[#1A0A2E]/50 border-purple-500/20 p-3">
+              <Card className="bg-[#1A0A2E]/50 border-white/20 p-3">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-1.5">
                     <MessageSquare className="w-3.5 h-3.5 text-pink-400" />
@@ -1242,7 +1242,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
           {/* Right Side - Result Viewer (~72%) */}
           <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
-            <Card className="flex-1 bg-[#1A0A2E]/50 border-purple-500/20 overflow-hidden flex flex-col min-h-[250px] lg:min-h-0">
+            <Card className="flex-1 bg-[#1A0A2E]/50 border-white/20 overflow-hidden flex flex-col min-h-[250px] lg:min-h-0">
               {/* Warning Banner */}
               {isProcessing && (
                 <div className="bg-amber-500/20 border-b border-amber-500/50 px-3 py-2 flex items-center gap-2">
