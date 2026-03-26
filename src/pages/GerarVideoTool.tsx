@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock } from 'lucide-react';
+import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock, Image, Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,6 +37,8 @@ const MODELS = [
   { id: 'wan2.2', name: 'Wan 2.2', cost: 400, description: 'Mais acessível' },
 ] as const;
 
+type GenerationMode = 'prompt_only' | 'with_frames';
+
 const GerarVideoTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, planType } = usePremiumStatus();
@@ -47,7 +49,9 @@ const GerarVideoTool = () => {
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState<string>('16:9');
   const [selectedModel, setSelectedModel] = useState<string>('veo3.1');
+  const [generationMode, setGenerationMode] = useState<GenerationMode>('prompt_only');
   const [startFrame, setStartFrame] = useState<FrameImage | null>(null);
+  const [endFrame, setEndFrame] = useState<FrameImage | null>(null);
   
   const [isGenerating, setIsGenerating] = useState(false);
   const [isQueued, setIsQueued] = useState(false);
@@ -59,12 +63,13 @@ const GerarVideoTool = () => {
   const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
 
   const startFrameRef = useRef<HTMLInputElement>(null);
+  const endFrameRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const currentModel = MODELS.find(m => m.id === selectedModel) || MODELS[0];
   const creditCost = currentModel.cost;
 
-  const handleFrameSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFrameSelect = (type: 'start' | 'end') => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
 
@@ -73,11 +78,20 @@ const GerarVideoTool = () => {
       const dataUrl = reader.result as string;
       const base64 = dataUrl.split(',')[1];
       const frame: FrameImage = { file, preview: dataUrl, base64, mimeType: file.type };
-      setStartFrame(frame);
+      if (type === 'start') setStartFrame(frame);
+      else setEndFrame(frame);
     };
     reader.readAsDataURL(file);
     e.target.value = '';
   };
+
+  // Clear frames when switching to prompt_only mode
+  useEffect(() => {
+    if (generationMode === 'prompt_only') {
+      setStartFrame(null);
+      setEndFrame(null);
+    }
+  }, [generationMode]);
 
   // Realtime subscription for job status
   useEffect(() => {
@@ -131,6 +145,14 @@ const GerarVideoTool = () => {
       return;
     }
 
+    // Validate frames when in with_frames mode
+    if (generationMode === 'with_frames') {
+      if (!startFrame || !endFrame) {
+        toast.error('Selecione o primeiro e o último frame para gerar o vídeo');
+        return;
+      }
+    }
+
     if (!user?.id) {
       setNoCreditsReason('not_logged');
       setShowNoCreditsModal(true);
@@ -172,8 +194,9 @@ const GerarVideoTool = () => {
         model: selectedModel,
       };
 
-      if (startFrame) {
+      if (generationMode === 'with_frames' && startFrame && endFrame) {
         bodyData.start_frame = { base64: startFrame.base64, mimeType: startFrame.mimeType };
+        bodyData.end_frame = { base64: endFrame.base64, mimeType: endFrame.mimeType };
       }
 
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video/run`, {
@@ -239,7 +262,8 @@ const GerarVideoTool = () => {
     setQueuePosition(0);
   };
 
-  const hasFrames = !!startFrame;
+  const hasFrames = !!startFrame || !!endFrame;
+  const bothFramesReady = !!startFrame && !!endFrame;
 
   // Block access for planos2 users without video generation permission
   if (isPlanos2User && !hasVideoGeneration) {
@@ -366,18 +390,55 @@ const GerarVideoTool = () => {
           )}
         </div>
 
-        {/* Frame previews strip */}
-        {hasFrames && (
+        {/* Frame previews strip - only show when in with_frames mode and has frames */}
+        {generationMode === 'with_frames' && hasFrames && (
           <div className="sticky bottom-[110px] z-20 px-4">
             <div className="max-w-3xl mx-auto flex gap-2 items-center bg-[#1a1525]/90 backdrop-blur-md rounded-xl p-2 border border-purple-500/20">
-              {startFrame && (
-                <div className="relative w-16 h-10 rounded-lg overflow-hidden border border-purple-500/30 flex-shrink-0">
-                  <img src={startFrame.preview} alt="Start" className="w-full h-full object-cover" />
-                  <button onClick={() => setStartFrame(null)} className="absolute -top-1 -right-1 bg-red-600 rounded-full p-0.5">
-                    <X className="h-2.5 w-2.5 text-white" />
-                  </button>
-                  <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[8px] text-white text-center">Início</span>
-                </div>
+              {/* Start Frame */}
+              <div 
+                onClick={() => !startFrame && startFrameRef.current?.click()}
+                className={`relative w-20 h-12 rounded-lg overflow-hidden border flex-shrink-0 flex items-center justify-center cursor-pointer transition-colors ${
+                  startFrame ? 'border-green-500/50' : 'border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/20'
+                }`}
+              >
+                {startFrame ? (
+                  <>
+                    <img src={startFrame.preview} alt="Start" className="w-full h-full object-cover" />
+                    <button onClick={(e) => { e.stopPropagation(); setStartFrame(null); }} className="absolute -top-1 -right-1 bg-red-600 rounded-full p-0.5 z-10">
+                      <X className="h-2.5 w-2.5 text-white" />
+                    </button>
+                  </>
+                ) : (
+                  <ImagePlus className="h-4 w-4 text-purple-400" />
+                )}
+                <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-[7px] text-white text-center py-0.5">1º Frame</span>
+              </div>
+
+              {/* Arrow */}
+              <span className="text-purple-400 text-xs">→</span>
+
+              {/* End Frame */}
+              <div 
+                onClick={() => !endFrame && endFrameRef.current?.click()}
+                className={`relative w-20 h-12 rounded-lg overflow-hidden border flex-shrink-0 flex items-center justify-center cursor-pointer transition-colors ${
+                  endFrame ? 'border-green-500/50' : 'border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/20'
+                }`}
+              >
+                {endFrame ? (
+                  <>
+                    <img src={endFrame.preview} alt="End" className="w-full h-full object-cover" />
+                    <button onClick={(e) => { e.stopPropagation(); setEndFrame(null); }} className="absolute -top-1 -right-1 bg-red-600 rounded-full p-0.5 z-10">
+                      <X className="h-2.5 w-2.5 text-white" />
+                    </button>
+                  </>
+                ) : (
+                  <ImagePlus className="h-4 w-4 text-purple-400" />
+                )}
+                <span className="absolute bottom-0 left-0 right-0 bg-black/70 text-[7px] text-white text-center py-0.5">Último Frame</span>
+              </div>
+
+              {!bothFramesReady && (
+                <span className="text-[10px] text-yellow-400/80 ml-1">Selecione ambos os frames</span>
               )}
             </div>
           </div>
@@ -388,31 +449,36 @@ const GerarVideoTool = () => {
           <div className="max-w-3xl mx-auto px-3 py-3 space-y-2.5">
             {/* Prompt input row */}
             <div className="flex items-center gap-2">
-              {/* Frame upload */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    disabled={isGenerating}
-                    className="relative flex-shrink-0 w-9 h-9 rounded-full border border-purple-500/30 bg-purple-900/30 flex items-center justify-center text-purple-300 hover:text-white hover:border-purple-400/60 transition-colors disabled:opacity-40"
-                  >
-                    <ImagePlus className="h-4 w-4" />
-                    {hasFrames && (
-                      <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                        1
-                      </span>
-                    )}
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
-                  <DropdownMenuItem
-                    onClick={() => startFrameRef.current?.click()}
-                    className="text-xs text-purple-200"
-                  >
-                    {startFrame ? '✅ ' : ''}Start Frame (início)
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <input ref={startFrameRef} type="file" accept="image/*" onChange={handleFrameSelect} className="hidden" />
+              {/* Mode toggle: prompt only vs with frames */}
+              <div className="flex-shrink-0 flex rounded-lg border border-purple-500/25 overflow-hidden">
+                <button
+                  onClick={() => setGenerationMode('prompt_only')}
+                  disabled={isGenerating}
+                  className={`flex items-center gap-1 px-2 py-1.5 text-[10px] font-medium transition-colors ${
+                    generationMode === 'prompt_only' 
+                      ? 'bg-purple-600/60 text-white' 
+                      : 'bg-purple-900/20 text-purple-400 hover:text-purple-200'
+                  }`}
+                  title="Só prompt"
+                >
+                  <Type className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={() => setGenerationMode('with_frames')}
+                  disabled={isGenerating}
+                  className={`flex items-center gap-1 px-2 py-1.5 text-[10px] font-medium transition-colors ${
+                    generationMode === 'with_frames' 
+                      ? 'bg-purple-600/60 text-white' 
+                      : 'bg-purple-900/20 text-purple-400 hover:text-purple-200'
+                  }`}
+                  title="Com frames de início e fim"
+                >
+                  <Image className="h-3 w-3" />
+                </button>
+              </div>
+
+              <input ref={startFrameRef} type="file" accept="image/*" onChange={handleFrameSelect('start')} className="hidden" />
+              <input ref={endFrameRef} type="file" accept="image/*" onChange={handleFrameSelect('end')} className="hidden" />
 
               {/* Prompt textarea */}
               <div className="flex-1">
@@ -420,7 +486,7 @@ const GerarVideoTool = () => {
                   ref={textareaRef}
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Descreva o vídeo que você quer gerar..."
+                  placeholder={generationMode === 'with_frames' ? "Descreva a transição entre os frames..." : "Descreva o vídeo que você quer gerar..."}
                   rows={1}
                   className="w-full bg-purple-900/20 border border-purple-500/25 rounded-xl px-3 py-2 text-sm text-white placeholder:text-purple-500/50 resize-none focus:outline-none focus:border-purple-400/50 transition-colors"
                   style={{ minHeight: '36px', maxHeight: '80px' }}
@@ -491,12 +557,28 @@ const GerarVideoTool = () => {
                 <span className="font-medium">{MODEL_DURATIONS[selectedModel] || 8}s</span>
               </div>
 
+              {/* Mode indicator */}
+              <div className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-purple-900/30 text-[10px] text-purple-400">
+                {generationMode === 'with_frames' ? (
+                  <>
+                    <Image className="h-3 w-3" />
+                    <span>Frames</span>
+                    {bothFramesReady && <span className="text-green-400">✓</span>}
+                  </>
+                ) : (
+                  <>
+                    <Type className="h-3 w-3" />
+                    <span>Prompt</span>
+                  </>
+                )}
+              </div>
+
               <div className="flex-1 min-w-[4px]" />
 
               {/* Generate button */}
               <Button
                 onClick={handleGenerate}
-                disabled={isGenerating || isSubmitting || !prompt.trim()}
+                disabled={isGenerating || isSubmitting || !prompt.trim() || (generationMode === 'with_frames' && !bothFramesReady)}
                 size="sm"
                 className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-2 h-8 min-w-0 shrink-0"
               >
