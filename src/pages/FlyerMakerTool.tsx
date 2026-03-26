@@ -513,6 +513,7 @@ const FlyerMakerTool: React.FC = () => {
     }
 
     setIsRefining(true);
+    let localRefineJobId: string | null = null;
 
     try {
       // Build reference URLs — outputImage is already a storage URL
@@ -546,6 +547,7 @@ const FlyerMakerTool: React.FC = () => {
 
       if (jobError || !job) throw new Error(jobError?.message || 'Erro ao criar job de refinamento');
 
+      localRefineJobId = job.id;
       setRefineJobId(job.id);
       registerJob(job.id, 'Gerar Imagem', 'pending');
 
@@ -581,6 +583,10 @@ const FlyerMakerTool: React.FC = () => {
     } catch (err: any) {
       console.error('[FlyerMaker] Refine error:', err);
       toast.error(err.message || 'Erro ao alterar imagem');
+      if (localRefineJobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(localRefineJobId, 'image_generator', err.message || 'Refine invocation failed');
+      }
       setIsRefining(false);
       setRefineJobId(null);
       endSubmit();

@@ -714,6 +714,8 @@ const ArcanoClonerTool: React.FC = () => {
 
     setIsRefining(true);
 
+    let localRefineJobId: string | null = null;
+
     try {
       // Build reference URLs — outputImage is already a storage URL
       const referenceImageUrls: string[] = [outputImage];
@@ -746,6 +748,7 @@ const ArcanoClonerTool: React.FC = () => {
 
       if (jobError || !job) throw new Error(jobError?.message || 'Erro ao criar job de refinamento');
 
+      localRefineJobId = job.id;
       setRefineJobId(job.id);
       registerJob(job.id, 'Gerar Imagem', 'pending');
 
@@ -781,6 +784,11 @@ const ArcanoClonerTool: React.FC = () => {
     } catch (err: any) {
       console.error('[ArcanoCloner] Refine error:', err);
       toast.error(err.message || 'Erro ao refinar imagem');
+      // Mark job as failed in DB to prevent orphan pending jobs
+      if (localRefineJobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(localRefineJobId, 'image_generator', err.message || 'Refine invocation failed');
+      }
       setIsRefining(false);
       setRefineJobId(null);
       endSubmit();
