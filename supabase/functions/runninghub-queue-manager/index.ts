@@ -61,6 +61,7 @@ const WEBAPP_IDS = {
   image_generator_jobs: '2036803905421582337',
   video_generator_jobs: {
     'veo3.1': '2037253069662068738',
+    'veo3.1_text_only': '2037271484384681986',
     'wan2.2': '2037260767040380929',
   },
 };
