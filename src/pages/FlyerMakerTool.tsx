@@ -581,6 +581,10 @@ const FlyerMakerTool: React.FC = () => {
     } catch (err: any) {
       console.error('[FlyerMaker] Refine error:', err);
       toast.error(err.message || 'Erro ao alterar imagem');
+      if (localRefineJobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(localRefineJobId, 'image_generator', err.message || 'Refine invocation failed');
+      }
       setIsRefining(false);
       setRefineJobId(null);
       endSubmit();
