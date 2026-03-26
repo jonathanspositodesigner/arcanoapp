@@ -513,6 +513,7 @@ const FlyerMakerTool: React.FC = () => {
     }
 
     setIsRefining(true);
+    let localRefineJobId: string | null = null;
 
     try {
       // Build reference URLs — outputImage is already a storage URL
