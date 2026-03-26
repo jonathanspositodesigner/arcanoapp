@@ -19,7 +19,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const ASPECT_RATIOS = ['16:9', '9:16'] as const;
-const DURATIONS = [4, 6, 8] as const;
+
+const MODEL_DURATIONS: Record<string, number> = {
+  'veo3.1': 8,
+  'wan2.2': 5,
+};
 
 interface FrameImage {
   file: File;
@@ -42,7 +46,6 @@ const GerarVideoTool = () => {
 
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState<string>('16:9');
-  const [duration, setDuration] = useState<number>(8);
   const [selectedModel, setSelectedModel] = useState<string>('veo3.1');
   const [startFrame, setStartFrame] = useState<FrameImage | null>(null);
   
@@ -164,8 +167,8 @@ const GerarVideoTool = () => {
 
       const bodyData: any = {
         prompt: prompt.trim(),
-        aspect_ratio: aspectRatio,
-        duration_seconds: duration,
+        aspect_ratio: selectedModel === 'veo3.1' ? aspectRatio : undefined,
+        duration_seconds: MODEL_DURATIONS[selectedModel] || 8,
         model: selectedModel,
       };
 
@@ -458,49 +461,35 @@ const GerarVideoTool = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Aspect ratio dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
-                    <span>⬜</span>
-                    <span className="font-medium">{aspectRatio}</span>
-                    <ChevronDown className="h-3 w-3 text-purple-400" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
-                  {ASPECT_RATIOS.map(ratio => (
-                    <DropdownMenuItem
-                      key={ratio}
-                      onClick={() => setAspectRatio(ratio)}
-                      className={`text-xs ${aspectRatio === ratio ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-purple-200'}`}
-                    >
-                      {ratio}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {/* Aspect ratio dropdown - only for Veo 3.1 */}
+              {selectedModel === 'veo3.1' && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
+                      <span>⬜</span>
+                      <span className="font-medium">{aspectRatio}</span>
+                      <ChevronDown className="h-3 w-3 text-purple-400" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
+                    {ASPECT_RATIOS.map(ratio => (
+                      <DropdownMenuItem
+                        key={ratio}
+                        onClick={() => setAspectRatio(ratio)}
+                        className={`text-xs ${aspectRatio === ratio ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-purple-200'}`}
+                      >
+                        {ratio}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
 
-              {/* Duration dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
-                    <span>⏱</span>
-                    <span className="font-medium">{duration}s</span>
-                    <ChevronDown className="h-3 w-3 text-purple-400" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
-                  {DURATIONS.map(d => (
-                    <DropdownMenuItem
-                      key={d}
-                      onClick={() => setDuration(d)}
-                      className={`text-xs ${duration === d ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-purple-200'}`}
-                    >
-                      {d} segundos
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {/* Duration badge (fixed per model) */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200">
+                <span>⏱</span>
+                <span className="font-medium">{MODEL_DURATIONS[selectedModel] || 8}s</span>
+              </div>
 
               <div className="flex-1 min-w-[4px]" />
 
