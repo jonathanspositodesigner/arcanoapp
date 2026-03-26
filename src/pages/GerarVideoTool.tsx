@@ -34,7 +34,7 @@ const GerarVideoTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
-  const { isPlanos2User, hasVideoGeneration, costMultiplier } = useAuth();
+  const { isPlanos2User, hasVideoGeneration } = useAuth();
   
   const { getCreditCost } = useAIToolSettings();
   const { hasKey, refetch: refetchApiKey } = useGoogleApiKey();
