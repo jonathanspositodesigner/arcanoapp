@@ -1,47 +1,33 @@
 
 
-# Proxy de Redirecionamento: Pagar.me → Mercado Pago (Planos-2)
+# Redesign do Layout do Upscaler Arcano Tool
 
-## Problema
-Usuários com cache antigo do frontend podem ainda chamar `create-pagarme-checkout` com slugs de planos/créditos. Precisamos interceptar essas chamadas e redirecionar para `create-mp-checkout` sem afetar os packs da biblioteca de artes que ainda usam Pagar.me.
+## O que muda
 
-## Solução
+### 1. Painel esquerdo — Controles
+- **Modo**: Renomear "Standard" → "V3 Turbo" e "PRO" → "V3 Pro" (mantendo os mesmos valores internos `standard`/`pro`)
+- **Upload**: Área maior e mais escura como na imagem, com ícone de upload centralizado e texto "Arraste sua imagem aqui" + "PNG, JPEG, WEBP - Máximo 10MB"
+- **Tipo de Imagem**: Trocar os toggle buttons por um `<Select>` dropdown, mantendo as mesmas opções (Pessoas, Comida/Objeto, Foto Antiga, Selo 3D, Logo/Arte)
+- **Tamanho**: Toggle 2K / 4K (já existe, manter)
+- **Detalhar Rosto**: Switch visível **apenas no modo V3 Pro**. Quando ativado, exibe o slider "Nível de detalhes". Quando desativado, oculta o slider. No modo V3 Turbo, este switch não aparece.
+- **Botão "Gerar Upscaling"**: Gradiente azul→roxo como na imagem
 
-Adicionar um bloco no início da Edge Function `create-pagarme-checkout` que:
+### 2. Painel direito — Visualizador
+- **Estado vazio (sem imagem carregada)**: Em vez do ícone de upload genérico, exibir uma **imagem de exemplo** com o slider antes/depois já funcional, para demonstrar o resultado da ferramenta
+- A imagem de exemplo será embutida como asset estático (uma foto split antes/depois)
+- Quando o usuário carregar uma foto, o comportamento atual é mantido
 
-1. Lê o `product_slug` do body
-2. Verifica se pertence à lista de slugs migrados (planos + créditos)
-3. Se sim, faz um proxy transparente para `create-mp-checkout`, mapeando os campos do payload (ex: `user_cpf` → `user_document`, `user_email` → `user_email`)
-4. Retorna a resposta do MP diretamente ao cliente
-5. Se não, continua o fluxo normal do Pagar.me (packs de artes)
+### 3. Cores e estilo
+- Manter o esquema escuro atual (`#1A0A2E`), alinhado com a imagem de referência
+- Cards com `border-white/20` em vez de `border-purple-500/20` para bordas mais visíveis como na imagem
 
-### Slugs migrados (proxy ativo)
-```
-plano-starter-mensal, plano-starter-anual
-plano-pro-mensal, plano-pro-anual
-plano-ultimate-mensal, plano-ultimate-anual
-plano-unlimited-mensal, plano-unlimited-anual
-creditos-1500, creditos-4200, creditos-14000
-```
+## Arquivo editado
+- `src/pages/UpscalerArcanoTool.tsx` — seção de controles (linhas ~750-1250) e estado vazio do visualizador (linhas ~1508-1514)
 
-### Arquivo editado
-- `supabase/functions/create-pagarme-checkout/index.ts` — adicionar bloco de proxy logo após o parse do JSON (antes da validação de email), ~15 linhas
-
-### Mapeamento de campos
-| Pagar.me (entrada) | Mercado Pago (saída) |
-|---|---|
-| `product_slug` | `product_slug` |
-| `user_email` | `user_email` |
-| `user_name` | `user_name` |
-| `user_cpf` | `user_document` |
-| `utm_data` | `utm_data` |
-| `fbp` | `fbp` |
-| `fbc` | `fbc` |
-
-O campo `user_phone` e `user_address` são ignorados pois o MP não os usa.
-
-### O que NÃO muda
-- Packs da biblioteca de artes (vol1, vol2, vol3, vol4, etc.) continuam usando Pagar.me normalmente
-- Nenhum outro arquivo é alterado
-- Deploy apenas de `create-pagarme-checkout`
+## O que NÃO muda
+- Toda a lógica de processamento, webhooks, jobs, créditos
+- Os prompts por categoria
+- A lógica de framing (De Perto / De Longe) dentro da categoria Pessoas
+- Os sliders específicos por tipo (Comida, Logo, Selo 3D, Editing Level)
+- O comportamento pós-processamento (slider antes/depois com zoom)
 
