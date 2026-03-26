@@ -123,6 +123,30 @@ serve(async (req) => {
       errorMessage = realError || genericError;
     }
 
+    // ========================================
+    // AUTO-RETRY: Transient RunningHub infra errors
+    // Errors like "Stale file handle", "OSError", "FileNotFoundError" on LoadImage
+    // are RunningHub server-side filesystem issues - retry automatically
+    // ========================================
+    const TRANSIENT_INFRA_ERRORS = [
+      'stale file handle',
+      'errno 116',
+      'oserror',
+      'filenotfounderror',
+      'no such file or directory',
+      'input/output error',
+      'errno 5',
+      'broken pipe',
+      'connection reset',
+    ];
+
+    const isTransientInfraError = errorMessage && TRANSIENT_INFRA_ERRORS.some(pattern => 
+      errorMessage!.toLowerCase().includes(pattern)
+    );
+    const failedNodeName = eventData.failedReason?.node_name || '';
+    const isLoadImageFailure = failedNodeName === 'LoadImage' || failedNodeName === 'LoadVideo';
+    
+
     // Encontrar job - minimal select that works for ALL tables
     let jobTable: string | null = null;
     let jobData: any = null;
