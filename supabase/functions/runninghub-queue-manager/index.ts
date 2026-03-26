@@ -1402,13 +1402,18 @@ async function startJobOnRunningHub(
       
       if (videoModel === 'wan2.2') {
         // Wan 2.2 nodes: 37=FIRST FRAME, 16=LAST FRAME, 9=PROMPT (no aspect_ratio)
+        // IMPORTANT: Always send image value for frame nodes to avoid "cannot identify image file" error
         if (p.startFrame?.base64 && p.startFrame?.mimeType) {
           const dataUri = `data:${p.startFrame.mimeType};base64,${p.startFrame.base64}`;
           nodeInfoList.push({ nodeId: "37", fieldName: "image", fieldValue: dataUri, description: "image" });
+        } else {
+          nodeInfoList.push({ nodeId: "37", fieldName: "image", fieldValue: "example.png", description: "image" });
         }
         if (p.endFrame?.base64 && p.endFrame?.mimeType) {
           const dataUri = `data:${p.endFrame.mimeType};base64,${p.endFrame.base64}`;
           nodeInfoList.push({ nodeId: "16", fieldName: "image", fieldValue: dataUri, description: "image" });
+        } else {
+          nodeInfoList.push({ nodeId: "16", fieldName: "image", fieldValue: "example.png", description: "image" });
         }
         nodeInfoList.push({
           nodeId: "9",
