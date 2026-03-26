@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import AdminLayoutPlatform from "@/components/AdminLayoutPlatform";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,28 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Cpu } from "lucide-react";
+import { Plus, Trash2, Cpu, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-
-const STORAGE_KEY = "motores_ia_custos_v2";
+import { supabase } from "@/integrations/supabase/client";
 
 const CUSTO_RH = 0.002;
 const RECEITA_CREDITO = 0.0057;
 const TAXA_RH = 0.2;
 const MULT = 3;
-
-interface ModeloIA {
-  nome: string;
-  modo: string;
-  api: number;
-  seg: number;
-  rhCoins: number;
-  custoRH: number;
-  total: number;
-  creditos: number;
-  cobrar3x: number;
-  creditos3x: number;
-}
 
 function calcular(apiR: number, tempoMin: number) {
   const seg = tempoMin * 60;
@@ -45,36 +32,25 @@ function fmt(n: number, d = 3) {
   return n.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
 }
 
-const DEFAULT_DATA: ModeloIA[] = (() => {
-  const c = calcular(1.50, 2);
-  return [{ nome: "Veo3.1 Fast", modo: "API", api: 1.50, ...c }];
-})();
-
 const PromptsMotoresIA = () => {
-  const [dados, setDados] = useState<ModeloIA[]>([]);
+  const queryClient = useQueryClient();
   const [nome, setNome] = useState("");
   const [modo, setModo] = useState("Standard");
   const [apiCost, setApiCost] = useState("");
   const [tempo, setTempo] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        setDados(JSON.parse(raw));
-      } else {
-        setDados(DEFAULT_DATA);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_DATA));
-      }
-    } catch {
-      setDados(DEFAULT_DATA);
-    }
-  }, []);
-
-  const salvar = (newData: ModeloIA[]) => {
-    setDados(newData);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
-  };
+  const { data: dados = [], isLoading } = useQuery({
+    queryKey: ["ai-engine-costs"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ai_engine_costs" as any)
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data || []) as any[];
+    },
+  });
 
   const preview = useMemo(() => {
     const a = parseFloat(apiCost);
@@ -83,26 +59,46 @@ const PromptsMotoresIA = () => {
     return calcular(a, t);
   }, [apiCost, tempo]);
 
-  const adicionar = () => {
+  const adicionar = async () => {
     const a = parseFloat(apiCost);
     const t = parseFloat(tempo);
     if (!nome.trim() || isNaN(a) || isNaN(t) || t <= 0) {
       toast.error("Preencha todos os campos corretamente.");
       return;
     }
+    setSaving(true);
     const c = calcular(a, t);
-    const newItem: ModeloIA = { nome: nome.trim(), modo, api: a, ...c };
-    const newData = [...dados, newItem];
-    salvar(newData);
+    const { error } = await supabase.from("ai_engine_costs" as any).insert({
+      nome: nome.trim(),
+      modo,
+      api_cost: a,
+      tempo_segundos: c.seg,
+      rh_coins: c.rhCoins,
+      custo_rh: c.custoRH,
+      custo_total: c.total,
+      creditos_cobrir: c.creditos,
+      cobrar_3x: c.cobrar3x,
+      creditos_3x: c.creditos3x,
+    } as any);
+    setSaving(false);
+    if (error) {
+      toast.error("Erro ao salvar modelo.");
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["ai-engine-costs"] });
     setNome("");
     setApiCost("");
     setTempo("");
     toast.success(`Modelo "${nome.trim()}" adicionado!`);
   };
 
-  const remover = (index: number) => {
-    const newData = dados.filter((_, i) => i !== index);
-    salvar(newData);
+  const remover = async (id: string) => {
+    const { error } = await supabase.from("ai_engine_costs" as any).delete().eq("id", id);
+    if (error) {
+      toast.error("Erro ao remover.");
+      return;
+    }
+    await queryClient.invalidateQueries({ queryKey: ["ai-engine-costs"] });
     toast.success("Modelo removido.");
   };
 
@@ -161,31 +157,37 @@ const PromptsMotoresIA = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {dados.length === 0 ? (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={11} className="text-center py-8">
+                      <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
+                    </TableCell>
+                  </TableRow>
+                ) : dados.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
                       Nenhum modelo cadastrado. Adicione abaixo ⬇️
                     </TableCell>
                   </TableRow>
                 ) : (
-                  dados.map((d, i) => (
-                    <TableRow key={i} className="hover:bg-muted/20">
+                  dados.map((d: any) => (
+                    <TableRow key={d.id} className="hover:bg-muted/20">
                       <TableCell className="font-bold text-foreground">{d.nome}</TableCell>
                       <TableCell>
                         <Badge variant={d.modo === "Free" ? "default" : "destructive"} className={d.modo === "Free" ? "bg-emerald-900/60 text-emerald-300 hover:bg-emerald-900/60" : "bg-red-900/60 text-red-300 hover:bg-red-900/60"}>
                           {d.modo}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-amber-400 font-semibold">R$ {fmt(d.api)}</TableCell>
-                      <TableCell className="text-muted-foreground">{d.seg}s ({d.seg / 60}min)</TableCell>
-                      <TableCell className="text-muted-foreground">{fmt(d.rhCoins, 1)}</TableCell>
-                      <TableCell className="text-muted-foreground">R$ {fmt(d.custoRH)}</TableCell>
-                      <TableCell className="text-red-400 font-bold">R$ {fmt(d.total)}</TableCell>
-                      <TableCell className="text-emerald-400 font-bold">{d.creditos} créditos</TableCell>
-                      <TableCell className="text-amber-400 font-extrabold text-[0.95rem] border-l-2 border-amber-500/20">R$ {fmt(d.cobrar3x)}</TableCell>
-                      <TableCell className="text-amber-300 font-extrabold text-[0.95rem]">{d.creditos3x} créditos</TableCell>
+                      <TableCell className="text-amber-400 font-semibold">R$ {fmt(d.api_cost)}</TableCell>
+                      <TableCell className="text-muted-foreground">{d.tempo_segundos}s ({d.tempo_segundos / 60}min)</TableCell>
+                      <TableCell className="text-muted-foreground">{fmt(d.rh_coins, 1)}</TableCell>
+                      <TableCell className="text-muted-foreground">R$ {fmt(d.custo_rh)}</TableCell>
+                      <TableCell className="text-red-400 font-bold">R$ {fmt(d.custo_total)}</TableCell>
+                      <TableCell className="text-emerald-400 font-bold">{d.creditos_cobrir} créditos</TableCell>
+                      <TableCell className="text-amber-400 font-extrabold text-[0.95rem] border-l-2 border-amber-500/20">R$ {fmt(d.cobrar_3x)}</TableCell>
+                      <TableCell className="text-amber-300 font-extrabold text-[0.95rem]">{d.creditos_3x} créditos</TableCell>
                       <TableCell>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => remover(i)}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => remover(d.id)}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </TableCell>
@@ -244,8 +246,9 @@ const PromptsMotoresIA = () => {
             </Card>
           )}
 
-          <Button className="w-full mt-4 font-bold" onClick={adicionar}>
-            <Plus className="h-4 w-4 mr-2" /> Adicionar à Tabela
+          <Button className="w-full mt-4 font-bold" onClick={adicionar} disabled={saving}>
+            {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Plus className="h-4 w-4 mr-2" />}
+            Adicionar à Tabela
           </Button>
         </Card>
       </div>
