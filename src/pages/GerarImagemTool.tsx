@@ -72,9 +72,7 @@ const GerarImagemTool = () => {
   const sessionIdRef = useRef(crypto.randomUUID());
   const reconcileTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const isUnlimited = planType === 'arcano_unlimited';
-  const hasReducedCost = isUnlimited || (isPlanos2User && costMultiplier < 1);
-  const creditCost = hasReducedCost ? getCreditCost('gerar_imagem', 100) : 100;
+  const creditCost = getCreditCost('gerar_imagem', 100);
 
   const isProcessing = ['pending', 'starting', 'running', 'queued'].includes(status);
 
