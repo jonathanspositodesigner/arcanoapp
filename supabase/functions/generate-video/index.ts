@@ -9,7 +9,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
  * Models:
  * - veo3.1 (WebApp ID 2037253069662068738): Veo 3.1 Fast
  *   Nodes: 15=FIRST FRAME, 5=LAST FRAME, 3=aspect_ratio+prompt
- * - wan2.2 (WebApp ID TBD): Wan 2.2 (a ser configurado)
+ * - wan2.2 (WebApp ID 2037260767040380929): Wan 2.2
+ *   Nodes: 37=FIRST FRAME, 16=LAST FRAME, 9=prompt
  * 
  * Endpoints:
  * - /run - Inicia processamento

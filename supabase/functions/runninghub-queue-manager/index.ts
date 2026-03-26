@@ -61,7 +61,7 @@ const WEBAPP_IDS = {
   image_generator_jobs: '2036803905421582337',
   video_generator_jobs: {
     'veo3.1': '2037253069662068738',
-    'wan2.2': '', // TBD - will be set when Wan 2.2 docs arrive
+    'wan2.2': '2037260767040380929',
   },
 };
 
@@ -1400,38 +1400,50 @@ async function startJobOnRunningHub(
       
       nodeInfoList = [];
       
-      // Start frame (first frame)
-      if (p.startFrame?.base64 && p.startFrame?.mimeType) {
-        const dataUri = `data:${p.startFrame.mimeType};base64,${p.startFrame.base64}`;
-        nodeInfoList.push({ nodeId: "15", fieldName: "image", fieldValue: dataUri, description: "FIRST FRAME" });
+      if (videoModel === 'wan2.2') {
+        // Wan 2.2 nodes: 37=FIRST FRAME, 16=LAST FRAME, 9=PROMPT (no aspect_ratio)
+        if (p.startFrame?.base64 && p.startFrame?.mimeType) {
+          const dataUri = `data:${p.startFrame.mimeType};base64,${p.startFrame.base64}`;
+          nodeInfoList.push({ nodeId: "37", fieldName: "image", fieldValue: dataUri, description: "image" });
+        }
+        if (p.endFrame?.base64 && p.endFrame?.mimeType) {
+          const dataUri = `data:${p.endFrame.mimeType};base64,${p.endFrame.base64}`;
+          nodeInfoList.push({ nodeId: "16", fieldName: "image", fieldValue: dataUri, description: "image" });
+        }
+        nodeInfoList.push({
+          nodeId: "9",
+          fieldName: "text",
+          fieldValue: p.prompt || job.prompt || '',
+          description: "text",
+        });
+      } else {
+        // Veo 3.1 nodes: 15=FIRST FRAME, 5=LAST FRAME, 3=aspect_ratio+prompt
+        if (p.startFrame?.base64 && p.startFrame?.mimeType) {
+          const dataUri = `data:${p.startFrame.mimeType};base64,${p.startFrame.base64}`;
+          nodeInfoList.push({ nodeId: "15", fieldName: "image", fieldValue: dataUri, description: "FIRST FRAME" });
+        }
+        if (p.endFrame?.base64 && p.endFrame?.mimeType) {
+          const dataUri = `data:${p.endFrame.mimeType};base64,${p.endFrame.base64}`;
+          nodeInfoList.push({ nodeId: "5", fieldName: "image", fieldValue: dataUri, description: "LAST FRAME" });
+        }
+        nodeInfoList.push({
+          nodeId: "3",
+          fieldName: "aspect_ratio",
+          fieldData: JSON.stringify([
+            { name: "auto", index: "auto", description: "", fastIndex: 1.0 },
+            { name: "16:9", index: "16:9", description: "", fastIndex: 2.0 },
+            { name: "9:16", index: "9:16", description: "", fastIndex: 3.0 },
+          ]),
+          fieldValue: p.aspectRatio || job.aspect_ratio || "16:9",
+          description: "TAMANHO DO VIDEO",
+        });
+        nodeInfoList.push({
+          nodeId: "3",
+          fieldName: "prompt",
+          fieldValue: p.prompt || job.prompt || '',
+          description: "PROMPT",
+        });
       }
-      
-      // End frame (last frame)
-      if (p.endFrame?.base64 && p.endFrame?.mimeType) {
-        const dataUri = `data:${p.endFrame.mimeType};base64,${p.endFrame.base64}`;
-        nodeInfoList.push({ nodeId: "5", fieldName: "image", fieldValue: dataUri, description: "LAST FRAME" });
-      }
-      
-      // Aspect ratio
-      nodeInfoList.push({
-        nodeId: "3",
-        fieldName: "aspect_ratio",
-        fieldData: JSON.stringify([
-          { name: "auto", index: "auto", description: "", fastIndex: 1.0 },
-          { name: "16:9", index: "16:9", description: "", fastIndex: 2.0 },
-          { name: "9:16", index: "9:16", description: "", fastIndex: 3.0 },
-        ]),
-        fieldValue: p.aspectRatio || job.aspect_ratio || "16:9",
-        description: "TAMANHO DO VIDEO",
-      });
-      
-      // Prompt
-      nodeInfoList.push({
-        nodeId: "3",
-        fieldName: "prompt",
-        fieldValue: p.prompt || job.prompt || '',
-        description: "PROMPT",
-      });
       
       break;
     }
