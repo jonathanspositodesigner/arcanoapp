@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { getAIErrorMessage } from '@/utils/errorMessages';
 import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock, Image, Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -124,11 +125,12 @@ const GerarVideoTool = () => {
             refetchCredits();
             toast.success('Vídeo gerado com sucesso!');
           } else if (job.status === 'failed' || job.status === 'cancelled') {
-            setErrorMessage(job.error_message || 'Erro na geração');
+            const errInfo = getAIErrorMessage(job.error_message || 'Erro na geração');
+            setErrorMessage(errInfo.message);
             setIsGenerating(false);
             setIsQueued(false);
             refetchCredits();
-            if (job.error_message) toast.error(job.error_message);
+            if (job.error_message) toast.error(`${errInfo.message}. ${errInfo.solution}`);
           }
         }
       )
