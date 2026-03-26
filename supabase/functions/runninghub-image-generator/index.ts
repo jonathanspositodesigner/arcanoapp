@@ -307,7 +307,7 @@ async function handleRun(req: Request) {
   }
 
   // Validate image URLs are from Supabase storage
-  const allowedDomains = ['supabase.co', 'supabase.in', SUPABASE_URL.replace('https://', '')];
+  const allowedDomains = ['supabase.co', 'supabase.in', SUPABASE_URL.replace('https://', ''), 'rh-images-1252422369.cos.ap-beijing.myqcloud.com'];
   const imageUrls: string[] = Array.isArray(referenceImageUrls) ? referenceImageUrls : [];
 
   for (const imageUrl of imageUrls) {
