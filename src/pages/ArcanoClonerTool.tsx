@@ -717,63 +717,14 @@ const ArcanoClonerTool: React.FC = () => {
     try {
       // Build reference URLs — outputImage is already a storage URL
       const referenceImageUrls: string[] = [outputImage];
-
-      // Upload extra reference if provided
-      if (refineReferenceFile) {
-        const compressed = await compressImage(refineReferenceFile);
-        const extraUrl = await uploadToStorage(compressed, 'refine-ref', user.id);
-        referenceImageUrls.push(extraUrl);
-      }
-
-      // If first refinement, seed history with original
-      if (refinementHistory.length === 0) {
-        setRefinementHistory([{ url: outputImage, label: 'Original' }]);
-      }
-
-      // Create job in image_generator_jobs
-      const { data: job, error: jobError } = await supabase
-        .from('image_generator_jobs')
-        .insert({
-          session_id: sessionIdRef.current,
-          user_id: user.id,
-          status: 'pending',
-          prompt: refinePrompt.trim(),
-          aspect_ratio: aspectRatio,
-          model: 'refine',
-        } as any)
-        .select('id')
-        .single();
-
-      if (jobError || !job) throw new Error(jobError?.message || 'Erro ao criar job de refinamento');
-
+...
       setRefineJobId(job.id);
+      const localRefineJobId = job.id;
       registerJob(job.id, 'Gerar Imagem', 'pending');
 
       // Start via edge function
       const { data: runResult, error: runError } = await supabase.functions.invoke('runninghub-image-generator/run', {
-        body: {
-          jobId: job.id,
-          referenceImageUrls,
-          aspectRatio,
-          creditCost: REFINE_COST,
-          prompt: refinePrompt.trim(),
-          source: 'arcano_cloner_refine',
-        },
-      });
-
-      if (runError) throw new Error(runError.message || 'Erro ao iniciar refinamento');
-
-      if (runResult?.code === 'INSUFFICIENT_CREDITS') {
-        setNoCreditsReason('insufficient');
-        setShowNoCreditsModal(true);
-        setIsRefining(false);
-        setRefineJobId(null);
-        endSubmit();
-        return;
-      }
-
-      if (runResult?.error && !runResult?.success && !runResult?.queued) {
-        throw new Error(runResult.error);
+...
       }
 
       // Now wait for useJobStatusSync to deliver the result via Realtime
@@ -782,9 +733,10 @@ const ArcanoClonerTool: React.FC = () => {
       console.error('[ArcanoCloner] Refine error:', err);
       toast.error(err.message || 'Erro ao refinar imagem');
       // Mark job as failed in DB to prevent orphan pending jobs
-      if (refineJobId) {
+      const failJobId = refineJobId || localRefineJobId;
+      if (failJobId) {
         const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
-        await markJobAsFailedInDb(refineJobId, 'image_generator', err.message || 'Refine invocation failed');
+        await markJobAsFailedInDb(failJobId, 'image_generator', err.message || 'Refine invocation failed');
       }
       setIsRefining(false);
       setRefineJobId(null);
