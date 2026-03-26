@@ -1162,7 +1162,7 @@ const UpscalerArcanoTool: React.FC = () => {
             {/* Generate Button */}
             {inputImage && !isProcessing && status !== 'completed' && (
               <Button
-                className="w-full py-3 text-sm font-semibold bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/25"
+                className="w-full py-3 text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg shadow-blue-500/25"
                 onClick={processImage}
                 disabled={isSubmitting}
               >
