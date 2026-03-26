@@ -782,8 +782,9 @@ const ArcanoClonerTool: React.FC = () => {
       console.error('[ArcanoCloner] Refine error:', err);
       toast.error(err.message || 'Erro ao refinar imagem');
       // Mark job as failed in DB to prevent orphan pending jobs
-      if (refineJobId || job?.id) {
-        await markJobAsFailedInDb(refineJobId || job?.id, 'image_generator', err.message || 'Refine invocation failed');
+      if (refineJobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(refineJobId, 'image_generator', err.message || 'Refine invocation failed');
       }
       setIsRefining(false);
       setRefineJobId(null);
