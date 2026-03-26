@@ -26,8 +26,17 @@ export function getAIErrorMessage(errorMessage: string | null): {
     };
   }
 
+  // RunningHub infrastructure errors (server filesystem issues)
+  if (error.includes('stale file handle') || error.includes('errno 116') || error.includes('errno 5') || 
+      error.includes('oserror') || error.includes('filenotfounderror') || error.includes('input/output error')) {
+    return {
+      message: 'Erro temporário no servidor de IA',
+      solution: 'Houve uma falha temporária na infraestrutura. Seus créditos foram estornados. Tente novamente em alguns segundos.'
+    };
+  }
+
   // PIL/ComfyUI não consegue ler a imagem (formato incompatível)
-  if (error.includes('unidentifiedimageerror') || error.includes('cannot identify image') || error.includes('pil')) {
+  if (error.includes('unidentifiedimageerror') || error.includes('cannot identify image') || error.includes('pil') || error.includes('keep_this_dic')) {
     return {
       message: 'Formato de imagem incompatível',
       solution: 'Tente salvar a imagem como JPEG antes de enviar, ou use outra imagem.'
