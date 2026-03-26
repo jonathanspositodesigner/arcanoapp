@@ -212,6 +212,70 @@ serve(async (req) => {
       hasOutput: !!outputUrl 
     });
 
+    // ========================================
+    // AUTO-RETRY for transient RunningHub infra errors
+    // Re-submits the job using the saved job_payload
+    // ========================================
+    if (isTransientInfraError && (isLoadImageFailure || failedNodeName === '')) {
+      // Check retry count from step_history
+      const { data: jobHistory } = await supabase
+        .from(jobTable)
+        .select('step_history, job_payload')
+        .eq('id', jobData.id)
+        .maybeSingle();
+      
+      const history = (jobHistory?.step_history as any[]) || [];
+      const retryCount = history.filter((h: any) => h.step === 'auto_retry').length;
+      
+      if (retryCount < 2 && jobHistory?.job_payload) {
+        console.log(`[Webhook] AUTO-RETRY ${retryCount + 1}/2 for transient infra error on job ${jobData.id}: ${errorMessage}`);
+        
+        await logStep(jobTable, jobData.id, 'auto_retry', { 
+          attempt: retryCount + 1,
+          originalError: errorMessage,
+          failedNode: failedNodeName,
+        });
+        
+        // Re-submit via queue manager
+        try {
+          const retryUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/retry`;
+          const retryResponse = await fetch(retryUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+            body: JSON.stringify({
+              table: jobTable,
+              jobId: jobData.id,
+            }),
+          });
+          
+          const retryResult = await retryResponse.json();
+          console.log(`[Webhook] Auto-retry response:`, JSON.stringify(retryResult));
+          
+          if (retryResult.success) {
+            return new Response(JSON.stringify({ 
+              success: true, 
+              autoRetry: true,
+              attempt: retryCount + 1,
+              message: 'Transient error detected, auto-retrying' 
+            }), {
+              status: 200,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+        } catch (retryError) {
+          console.error(`[Webhook] Auto-retry call failed:`, retryError);
+          await logStep(jobTable, jobData.id, 'auto_retry_failed', { error: String(retryError) });
+        }
+      } else if (retryCount >= 2) {
+        console.log(`[Webhook] Max auto-retries (2) exhausted for job ${jobData.id}`);
+        // Update error message to be more descriptive for admin
+        errorMessage = `Erro de infraestrutura do servidor (${retryCount + 1}x): ${errorMessage}`;
+      }
+    }
+
     // Calcular custo RH
     const completedAt = new Date();
     let rhCost = 0;
