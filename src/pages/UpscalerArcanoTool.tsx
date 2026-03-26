@@ -1495,10 +1495,52 @@ const UpscalerArcanoTool: React.FC = () => {
                     />
                   </div>
                 ) : (
-                  /* Empty State */
-                  <div className="flex flex-col items-center gap-4 text-center text-purple-300/50">
-                    <Upload className="w-16 h-16" />
-                    <p className="text-sm">Carregue uma imagem para começar</p>
+                  /* Empty State - Example Before/After */
+                  <div className="relative w-full h-full overflow-hidden rounded-lg">
+                    {/* After image (full) */}
+                    <img 
+                      src="/images/upscaler-example-after.jpg" 
+                      alt="Exemplo depois" 
+                      className="w-full h-full object-cover"
+                    />
+                    {/* Before image (clipped) */}
+                    <div 
+                      className="absolute inset-0 overflow-hidden"
+                      style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+                    >
+                      <img 
+                        src="/images/upscaler-example-before.jpg" 
+                        alt="Exemplo antes" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    {/* Slider line */}
+                    <div 
+                      className="absolute top-0 bottom-0 w-[2px] bg-white/70 z-10"
+                      style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)', cursor: 'ew-resize', touchAction: 'none' }}
+                      onPointerDown={handleSliderPointerDown}
+                      onPointerMove={handleSliderPointerMove}
+                      onPointerUp={handleSliderPointerUp}
+                      onPointerCancel={handleSliderPointerUp}
+                    >
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center cursor-ew-resize" style={{ touchAction: 'none' }}>
+                        <div className="flex gap-[1px]">
+                          <div className="w-[1px] h-3 bg-gray-400 rounded-full" />
+                          <div className="w-[1px] h-3 bg-gray-400 rounded-full" />
+                        </div>
+                      </div>
+                    </div>
+                    {/* Labels */}
+                    <div className="absolute top-3 left-3 text-[10px] px-2.5 py-1 bg-black/60 text-white/80 font-medium rounded-full z-10">
+                      Antes
+                    </div>
+                    <div className="absolute top-3 right-3 text-[10px] px-2.5 py-1 bg-white/15 text-white/80 font-medium rounded-full z-10">
+                      Depois
+                    </div>
+                    {/* Hint text */}
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/70 bg-black/60 px-3 py-1 rounded-full z-10">
+                      Arraste para comparar • Exemplo
+                    </div>
                   </div>
                 )}
               </div>
