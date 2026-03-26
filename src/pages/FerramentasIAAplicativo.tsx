@@ -10,6 +10,7 @@ import { Sparkles, Loader2, Play, Users } from "lucide-react";
 import arcanoClonerCover from "@/assets/arcano-cloner-cover.webp";
 import removerFundoCover from "@/assets/removedor-fundo-capa.png";
 import flyerMakerCover from "@/assets/flyer-maker-preview.webp";
+import upscalerVideoCover from "@/assets/upscaler-video-cover.webp";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
@@ -110,7 +111,7 @@ const FerramentasIAAplicativo = () => {
           id: 'video-upscaler-static',
           name: 'Upscaler de Vídeo',
           slug: 'upscaler-video',
-          cover_url: null,
+          cover_url: upscalerVideoCover,
           price_vitalicio: null,
           checkout_link_vitalicio: null,
           checkout_link_membro_vitalicio: null,
