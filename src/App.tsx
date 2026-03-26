@@ -45,7 +45,7 @@ const PromptsDashboard = lazy(() => import("./pages/admin/PromptsDashboard"));
 const PromptsFerramentas = lazy(() => import("./pages/admin/PromptsFerramentas"));
 const PromptsMarketing = lazy(() => import("./pages/admin/PromptsMarketing"));
 const PromptsCustosIA = lazy(() => import("./pages/admin/PromptsCustosIA"));
-const PromptsApiGoogle = lazy(() => import("./pages/admin/PromptsApiGoogle"));
+const PromptsMotoresIA = lazy(() => import("./pages/admin/PromptsMotoresIA"));
 const PromptsRentabilidade = lazy(() => import("./pages/admin/PromptsRentabilidade"));
 const PromptsTopIndicadores = lazy(() => import("./pages/admin/PromptsTopIndicadores"));
 const AdminCommunityReview = lazy(() => import("./pages/AdminCommunityReview"));
@@ -233,8 +233,9 @@ const AppContent = () => {
           <Route path="/admin-prompts/dashboard" element={<PromptsDashboard />} />
           <Route path="/admin-prompts/marketing" element={<PromptsMarketing />} />
           <Route path="/admin-prompts/custos-ia" element={<PromptsCustosIA />} />
-          <Route path="/admin-prompts/debug-ia" element={<Navigate to="/admin-prompts/api-google" replace />} />
-          <Route path="/admin-prompts/api-google" element={<PromptsApiGoogle />} />
+          <Route path="/admin-prompts/debug-ia" element={<Navigate to="/admin-prompts/motores-ia" replace />} />
+          <Route path="/admin-prompts/api-google" element={<Navigate to="/admin-prompts/motores-ia" replace />} />
+          <Route path="/admin-prompts/motores-ia" element={<PromptsMotoresIA />} />
           <Route path="/admin-prompts/rentabilidade" element={<PromptsRentabilidade />} />
           <Route path="/admin-prompts/top-indicadores" element={<PromptsTopIndicadores />} />
           <Route path="/admin-upload" element={<AdminUpload />} />

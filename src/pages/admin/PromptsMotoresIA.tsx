@@ -1,0 +1,256 @@
+import { useState, useEffect, useMemo } from "react";
+import AdminLayoutPlatform from "@/components/AdminLayoutPlatform";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Plus, Trash2, Cpu } from "lucide-react";
+import { toast } from "sonner";
+
+const STORAGE_KEY = "motores_ia_custos_v2";
+
+const CUSTO_RH = 0.002;
+const RECEITA_CREDITO = 0.0057;
+const TAXA_RH = 0.2;
+const MULT = 3;
+
+interface ModeloIA {
+  nome: string;
+  modo: string;
+  api: number;
+  seg: number;
+  rhCoins: number;
+  custoRH: number;
+  total: number;
+  creditos: number;
+  cobrar3x: number;
+  creditos3x: number;
+}
+
+function calcular(apiR: number, tempoMin: number) {
+  const seg = tempoMin * 60;
+  const rhCoins = seg * TAXA_RH;
+  const custoRH = rhCoins * CUSTO_RH;
+  const total = apiR + custoRH;
+  const creditos = Math.ceil(total / RECEITA_CREDITO);
+  const cobrar3x = total * MULT;
+  const creditos3x = Math.ceil(cobrar3x / RECEITA_CREDITO);
+  return { seg, rhCoins, custoRH, total, creditos, cobrar3x, creditos3x };
+}
+
+function fmt(n: number, d = 3) {
+  return n.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+
+const DEFAULT_DATA: ModeloIA[] = (() => {
+  const c = calcular(1.50, 2);
+  return [{ nome: "Veo3.1 Fast", modo: "API", api: 1.50, ...c }];
+})();
+
+const PromptsMotoresIA = () => {
+  const [dados, setDados] = useState<ModeloIA[]>([]);
+  const [nome, setNome] = useState("");
+  const [modo, setModo] = useState("Standard");
+  const [apiCost, setApiCost] = useState("");
+  const [tempo, setTempo] = useState("");
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        setDados(JSON.parse(raw));
+      } else {
+        setDados(DEFAULT_DATA);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_DATA));
+      }
+    } catch {
+      setDados(DEFAULT_DATA);
+    }
+  }, []);
+
+  const salvar = (newData: ModeloIA[]) => {
+    setDados(newData);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
+  };
+
+  const preview = useMemo(() => {
+    const a = parseFloat(apiCost);
+    const t = parseFloat(tempo);
+    if (isNaN(a) || isNaN(t) || t <= 0) return null;
+    return calcular(a, t);
+  }, [apiCost, tempo]);
+
+  const adicionar = () => {
+    const a = parseFloat(apiCost);
+    const t = parseFloat(tempo);
+    if (!nome.trim() || isNaN(a) || isNaN(t) || t <= 0) {
+      toast.error("Preencha todos os campos corretamente.");
+      return;
+    }
+    const c = calcular(a, t);
+    const newItem: ModeloIA = { nome: nome.trim(), modo, api: a, ...c };
+    const newData = [...dados, newItem];
+    salvar(newData);
+    setNome("");
+    setApiCost("");
+    setTempo("");
+    toast.success(`Modelo "${nome.trim()}" adicionado!`);
+  };
+
+  const remover = (index: number) => {
+    const newData = dados.filter((_, i) => i !== index);
+    salvar(newData);
+    toast.success("Modelo removido.");
+  };
+
+  return (
+    <AdminLayoutPlatform platform="prompts">
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-1 flex items-center gap-3">
+            <Cpu className="h-8 w-8 text-primary" />
+            Motores IA — Tabela de Custos
+          </h1>
+          <p className="text-muted-foreground text-sm">Calculadora de custos e créditos por modelo de IA</p>
+        </div>
+
+        {/* Reference Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Card className="p-4 text-center border-border">
+            <p className="text-[0.7rem] text-muted-foreground uppercase tracking-wider">Custo / RH Coin</p>
+            <p className="text-lg font-bold text-primary mt-1">R$ 0,0020</p>
+          </Card>
+          <Card className="p-4 text-center border-border">
+            <p className="text-[0.7rem] text-muted-foreground uppercase tracking-wider">Receita / Crédito</p>
+            <p className="text-lg font-bold text-primary mt-1">R$ 0,0057</p>
+          </Card>
+          <Card className="p-4 text-center border-border">
+            <p className="text-[0.7rem] text-muted-foreground uppercase tracking-wider">Taxa RH (Standard)</p>
+            <p className="text-lg font-bold text-primary mt-1">0,2 coins/seg</p>
+          </Card>
+          <Card className="p-4 text-center border-amber-500/30">
+            <p className="text-[0.7rem] text-amber-400 uppercase tracking-wider font-semibold">Meta de Lucro</p>
+            <p className="text-lg font-bold text-amber-400 mt-1">3× por geração</p>
+          </Card>
+        </div>
+
+        <p className="text-center text-xs text-muted-foreground">
+          Colunas em <span className="text-amber-400 font-bold">dourado</span> = o que cobrar para lucrar 3× em cada geração
+        </p>
+
+        {/* Table */}
+        <Card className="overflow-hidden border-border">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/30">
+                  <TableHead className="text-primary font-semibold text-[0.7rem] uppercase">Modelo</TableHead>
+                  <TableHead className="text-primary font-semibold text-[0.7rem] uppercase">Modo</TableHead>
+                  <TableHead className="text-primary font-semibold text-[0.7rem] uppercase">Custo API</TableHead>
+                  <TableHead className="text-primary font-semibold text-[0.7rem] uppercase">Tempo</TableHead>
+                  <TableHead className="text-primary font-semibold text-[0.7rem] uppercase">RH Coins</TableHead>
+                  <TableHead className="text-primary font-semibold text-[0.7rem] uppercase">Custo RH (R$)</TableHead>
+                  <TableHead className="text-primary font-semibold text-[0.7rem] uppercase">Custo Total (R$)</TableHead>
+                  <TableHead className="text-primary font-semibold text-[0.7rem] uppercase">Créditos p/ cobrir</TableHead>
+                  <TableHead className="text-amber-400 font-bold text-[0.7rem] uppercase border-l-2 border-amber-500/20">💰 Cobrar 3× (R$)</TableHead>
+                  <TableHead className="text-amber-400 font-bold text-[0.7rem] uppercase">🎯 Créditos 3×</TableHead>
+                  <TableHead className="w-10"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {dados.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
+                      Nenhum modelo cadastrado. Adicione abaixo ⬇️
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  dados.map((d, i) => (
+                    <TableRow key={i} className="hover:bg-muted/20">
+                      <TableCell className="font-bold text-foreground">{d.nome}</TableCell>
+                      <TableCell>
+                        <Badge variant={d.modo === "Free" ? "default" : "destructive"} className={d.modo === "Free" ? "bg-emerald-900/60 text-emerald-300 hover:bg-emerald-900/60" : "bg-red-900/60 text-red-300 hover:bg-red-900/60"}>
+                          {d.modo}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-amber-400 font-semibold">R$ {fmt(d.api)}</TableCell>
+                      <TableCell className="text-muted-foreground">{d.seg}s ({d.seg / 60}min)</TableCell>
+                      <TableCell className="text-muted-foreground">{fmt(d.rhCoins, 1)}</TableCell>
+                      <TableCell className="text-muted-foreground">R$ {fmt(d.custoRH)}</TableCell>
+                      <TableCell className="text-red-400 font-bold">R$ {fmt(d.total)}</TableCell>
+                      <TableCell className="text-emerald-400 font-bold">{d.creditos} créditos</TableCell>
+                      <TableCell className="text-amber-400 font-extrabold text-[0.95rem] border-l-2 border-amber-500/20">R$ {fmt(d.cobrar3x)}</TableCell>
+                      <TableCell className="text-amber-300 font-extrabold text-[0.95rem]">{d.creditos3x} créditos</TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => remover(i)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </Card>
+
+        {/* Add Form */}
+        <Card className="p-6 border-border max-w-2xl mx-auto">
+          <h2 className="text-base font-bold text-primary mb-4 flex items-center gap-2">
+            <Plus className="h-4 w-4" /> Adicionar novo modelo
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2 space-y-1.5">
+              <Label className="text-xs text-muted-foreground uppercase">Nome do Modelo</Label>
+              <Input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="ex: Kling 1.6, Sora, Runway Gen-4..." />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground uppercase">Modo</Label>
+              <Select value={modo} onValueChange={setModo}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Free">Free</SelectItem>
+                  <SelectItem value="Standard">Standard</SelectItem>
+                  <SelectItem value="Plus">Plus</SelectItem>
+                  <SelectItem value="API">API</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground uppercase">Custo API / geração (R$)</Label>
+              <Input type="number" step="0.001" value={apiCost} onChange={(e) => setApiCost(e.target.value)} placeholder="ex: 1.50" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground uppercase">Tempo estimado (min)</Label>
+              <Input type="number" step="0.5" value={tempo} onChange={(e) => setTempo(e.target.value)} placeholder="ex: 2" />
+            </div>
+          </div>
+
+          {/* Preview */}
+          {preview && (
+            <Card className="mt-4 p-4 bg-muted/20 border-border space-y-1.5">
+              <p className="text-xs text-muted-foreground uppercase font-semibold mb-2">Pré-visualização do cálculo</p>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">RH Coins consumidos</span><span className="text-primary font-semibold">{fmt(preview.rhCoins, 1)}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Custo RH (R$)</span><span className="text-primary font-semibold">R$ {fmt(preview.custoRH)}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Custo Total (R$)</span><span className="text-primary font-semibold">R$ {fmt(preview.total)}</span></div>
+              <div className="flex justify-between text-sm"><span className="text-muted-foreground">Créditos p/ cobrir custo</span><span className="text-primary font-semibold">{preview.creditos} créditos</span></div>
+              <div className="border-t border-amber-500/20 mt-2 pt-2">
+                <div className="flex justify-between text-sm"><span className="text-amber-400 font-bold">💰 Cobrar para 3× (R$)</span><span className="text-amber-400 font-extrabold text-base">R$ {fmt(preview.cobrar3x)}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-amber-400 font-bold">🎯 Créditos cobrar 3×</span><span className="text-amber-400 font-extrabold text-base">{preview.creditos3x} créditos</span></div>
+              </div>
+            </Card>
+          )}
+
+          <Button className="w-full mt-4 font-bold" onClick={adicionar}>
+            <Plus className="h-4 w-4 mr-2" /> Adicionar à Tabela
+          </Button>
+        </Card>
+      </div>
+    </AdminLayoutPlatform>
+  );
+};
+
+export default PromptsMotoresIA;
