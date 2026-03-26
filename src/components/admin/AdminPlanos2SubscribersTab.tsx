@@ -82,7 +82,7 @@ const PAID_PLANS = [
   { slug: "starter", label: "Starter", credits: 1800, costMultiplier: 1 },
   { slug: "pro", label: "Pro", credits: 4200, costMultiplier: 1 },
   { slug: "ultimate", label: "Ultimate", credits: 10800, costMultiplier: 1 },
-  { slug: "unlimited", label: "IA Unlimited", credits: 99999, costMultiplier: 0.5 },
+  { slug: "unlimited", label: "IA Unlimited", credits: 99999, costMultiplier: 1 },
 ];
 
 const AdminPlanos2SubscribersTab = () => {
