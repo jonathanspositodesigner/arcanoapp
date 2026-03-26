@@ -414,6 +414,54 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_engine_costs: {
+        Row: {
+          api_cost: number
+          cobrar_3x: number
+          created_at: string
+          creditos_3x: number
+          creditos_cobrir: number
+          custo_rh: number
+          custo_total: number
+          id: string
+          modo: string
+          nome: string
+          rh_coins: number
+          tempo_segundos: number
+          updated_at: string
+        }
+        Insert: {
+          api_cost?: number
+          cobrar_3x?: number
+          created_at?: string
+          creditos_3x?: number
+          creditos_cobrir?: number
+          custo_rh?: number
+          custo_total?: number
+          id?: string
+          modo?: string
+          nome: string
+          rh_coins?: number
+          tempo_segundos?: number
+          updated_at?: string
+        }
+        Update: {
+          api_cost?: number
+          cobrar_3x?: number
+          created_at?: string
+          creditos_3x?: number
+          creditos_cobrir?: number
+          custo_rh?: number
+          custo_total?: number
+          id?: string
+          modo?: string
+          nome?: string
+          rh_coins?: number
+          tempo_segundos?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_tool_settings: {
         Row: {
           api_cost: number
