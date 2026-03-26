@@ -1,33 +1,44 @@
 
 
-# Redesign do Layout do Upscaler Arcano Tool
+# Migração do Upscaler: Pessoas sem Detalhar Rosto → Nova API
 
-## O que muda
+## Resumo
+Quando o tipo de imagem for "Pessoas" e o switch "Detalhar Rosto" estiver desativado (detailDenoise = 0), tanto V3 Turbo quanto V3 Pro usarão a nova webapp `2037188547966406658` com apenas 2 nós: imagem (1) e resolução (548).
 
-### 1. Painel esquerdo — Controles
-- **Modo**: Renomear "Standard" → "V3 Turbo" e "PRO" → "V3 Pro" (mantendo os mesmos valores internos `standard`/`pro`)
-- **Upload**: Área maior e mais escura como na imagem, com ícone de upload centralizado e texto "Arraste sua imagem aqui" + "PNG, JPEG, WEBP - Máximo 10MB"
-- **Tipo de Imagem**: Trocar os toggle buttons por um `<Select>` dropdown, mantendo as mesmas opções (Pessoas, Comida/Objeto, Foto Antiga, Selo 3D, Logo/Arte)
-- **Tamanho**: Toggle 2K / 4K (já existe, manter)
-- **Detalhar Rosto**: Switch visível **apenas no modo V3 Pro**. Quando ativado, exibe o slider "Nível de detalhes". Quando desativado, oculta o slider. No modo V3 Turbo, este switch não aparece.
-- **Botão "Gerar Upscaling"**: Gradiente azul→roxo como na imagem
+## Alterações
 
-### 2. Painel direito — Visualizador
-- **Estado vazio (sem imagem carregada)**: Em vez do ícone de upload genérico, exibir uma **imagem de exemplo** com o slider antes/depois já funcional, para demonstrar o resultado da ferramenta
-- A imagem de exemplo será embutida como asset estático (uma foto split antes/depois)
-- Quando o usuário carregar uma foto, o comportamento atual é mantido
+### 1. Adicionar nova webapp ID
+**Arquivo:** `supabase/functions/runninghub-queue-manager/index.ts`
 
-### 3. Cores e estilo
-- Manter o esquema escuro atual (`#1A0A2E`), alinhado com a imagem de referência
-- Cards com `border-white/20` em vez de `border-purple-500/20` para bordas mais visíveis como na imagem
+Adicionar ao objeto `WEBAPP_IDS.upscaler_jobs`:
+```ts
+pessoas_sem_rosto: '2037188547966406658',
+```
 
-## Arquivo editado
-- `src/pages/UpscalerArcanoTool.tsx` — seção de controles (linhas ~750-1250) e estado vazio do visualizador (linhas ~1508-1514)
+### 2. Modificar roteamento na função `buildNodeInfoList`
+**Arquivo:** `supabase/functions/runninghub-queue-manager/index.ts` (linhas ~1257-1277)
+
+Substituir a lógica atual de `framingMode === 'longe'` e o bloco `else` (que usa pro/standard) por:
+
+```
+if categoria é pessoas (pessoas_perto ou pessoas_longe) E detailDenoise é 0/undefined/falsy:
+  → webapp pessoas_sem_rosto (2037188547966406658)
+  → nós: { nodeId: "1", image } + { nodeId: "548", resolução }
+else (pessoas COM detalhar rosto ativo):
+  → mantém webapp pro/standard existente (será reconfigurado depois)
+```
+
+Isso garante que:
+- A webapp `longe` (`2020634325636616194`) deixa de ser usada para pessoas
+- Ambos V3 Turbo e V3 Pro sem detalhar rosto vão para a mesma nova API
+- Nenhuma outra categoria (comida, logo, render3d, fotoAntiga) é afetada
+
+### 3. Remover referência `longe` do WEBAPP_IDS (opcional)
+Pode ser removida agora ou mantida até confirmar que não é mais usada em nenhum outro fluxo.
 
 ## O que NÃO muda
-- Toda a lógica de processamento, webhooks, jobs, créditos
-- Os prompts por categoria
-- A lógica de framing (De Perto / De Longe) dentro da categoria Pessoas
-- Os sliders específicos por tipo (Comida, Logo, Selo 3D, Editing Level)
-- O comportamento pós-processamento (slider antes/depois com zoom)
+- Frontend (já não tem mais botões perto/longe)
+- Categorias comida, logo, render3d, fotoAntiga
+- Fluxo de webhook, créditos, fila
+- Lógica de "Detalhar Rosto" ativo (será reconfigurado em próximo passo)
 
