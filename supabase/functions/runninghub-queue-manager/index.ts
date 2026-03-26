@@ -59,9 +59,13 @@ const WEBAPP_IDS = {
   flyer_maker_jobs: '2025656642724962305',
   bg_remover_jobs: '2031815099811368962',
   image_generator_jobs: '2036803905421582337',
+  video_generator_jobs: {
+    'veo3.1': '2037253069662068738',
+    'wan2.2': '', // TBD - will be set when Wan 2.2 docs arrive
+  },
 };
 
-const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs', 'bg_remover_jobs', 'image_generator_jobs'] as const;
+const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs', 'bg_remover_jobs', 'image_generator_jobs', 'video_generator_jobs'] as const;
 type JobTable = typeof JOB_TABLES[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -78,6 +82,7 @@ const TOOL_CONFIG: Record<JobTable, { name: string; url: string; emoji: string }
   flyer_maker_jobs: { name: 'Flyer Maker', url: '/flyer-maker', emoji: '🎭' },
   bg_remover_jobs: { name: 'Remover Fundo', url: '/remover-fundo', emoji: '🖼️' },
   image_generator_jobs: { name: 'Gerar Imagem', url: '/gerar-imagem', emoji: '🖌️' },
+  video_generator_jobs: { name: 'Gerar Vídeo', url: '/gerar-video', emoji: '🎥' },
 };
 
 /**
@@ -582,6 +587,7 @@ async function handleCheckUserActive(req: Request): Promise<Response> {
       'flyer_maker_jobs': 'Flyer Maker',
       'bg_remover_jobs': 'Remover Fundo',
       'image_generator_jobs': 'Gerar Imagem',
+      'video_generator_jobs': 'Gerar Vídeo',
     };
     
     // Verificar em TODAS as tabelas - incluir STARTING e PENDING recente (< 35s)
@@ -1384,6 +1390,49 @@ async function startJobOnRunningHub(
           fieldValue: refFiles[i] || 'example.png',
         });
       }
+      break;
+    }
+      
+    case 'video_generator_jobs': {
+      const videoModel = p.model || job.model || 'veo3.1';
+      const webappIds = WEBAPP_IDS.video_generator_jobs as Record<string, string>;
+      webappId = webappIds[videoModel] || webappIds['veo3.1'];
+      
+      nodeInfoList = [];
+      
+      // Start frame (first frame)
+      if (p.startFrame?.base64 && p.startFrame?.mimeType) {
+        const dataUri = `data:${p.startFrame.mimeType};base64,${p.startFrame.base64}`;
+        nodeInfoList.push({ nodeId: "15", fieldName: "image", fieldValue: dataUri, description: "FIRST FRAME" });
+      }
+      
+      // End frame (last frame)
+      if (p.endFrame?.base64 && p.endFrame?.mimeType) {
+        const dataUri = `data:${p.endFrame.mimeType};base64,${p.endFrame.base64}`;
+        nodeInfoList.push({ nodeId: "5", fieldName: "image", fieldValue: dataUri, description: "LAST FRAME" });
+      }
+      
+      // Aspect ratio
+      nodeInfoList.push({
+        nodeId: "3",
+        fieldName: "aspect_ratio",
+        fieldData: JSON.stringify([
+          { name: "auto", index: "auto", description: "", fastIndex: 1.0 },
+          { name: "16:9", index: "16:9", description: "", fastIndex: 2.0 },
+          { name: "9:16", index: "9:16", description: "", fastIndex: 3.0 },
+        ]),
+        fieldValue: p.aspectRatio || job.aspect_ratio || "16:9",
+        description: "TAMANHO DO VIDEO",
+      });
+      
+      // Prompt
+      nodeInfoList.push({
+        nodeId: "3",
+        fieldName: "prompt",
+        fieldValue: p.prompt || job.prompt || '',
+        description: "PROMPT",
+      });
+      
       break;
     }
       

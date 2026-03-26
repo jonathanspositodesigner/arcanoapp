@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock, Gift } from 'lucide-react';
+import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +8,7 @@ import { useCredits } from '@/contexts/CreditsContext';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProcessingButton } from '@/hooks/useProcessingButton';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import AppLayout from '@/components/layout/AppLayout';
 import {
@@ -27,21 +28,25 @@ interface FrameImage {
   mimeType: string;
 }
 
+const MODELS = [
+  { id: 'veo3.1', name: 'Veo 3.1', cost: 750, description: 'Google • Alta qualidade' },
+  { id: 'wan2.2', name: 'Wan 2.2', cost: 400, description: 'Mais acessível' },
+] as const;
+
 const GerarVideoTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
   const { isPlanos2User, hasVideoGeneration } = useAuth();
-  
-  const { getCreditCost } = useAIToolSettings();
+  const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
 
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState<string>('16:9');
   const [duration, setDuration] = useState<number>(8);
+  const [selectedModel, setSelectedModel] = useState<string>('veo3.1');
   const [startFrame, setStartFrame] = useState<FrameImage | null>(null);
   
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isPolling, setIsPolling] = useState(false);
   const [isQueued, setIsQueued] = useState(false);
   const [queuePosition, setQueuePosition] = useState(0);
   const [jobId, setJobId] = useState<string | null>(null);
@@ -51,14 +56,12 @@ const GerarVideoTool = () => {
   const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
 
   const startFrameRef = useRef<HTMLInputElement>(null);
-  
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const pollingStartRef = useRef<number>(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const creditCost = getCreditCost('gerar_video', 750);
+  const currentModel = MODELS.find(m => m.id === selectedModel) || MODELS[0];
+  const creditCost = currentModel.cost;
 
-  const handleFrameSelect = (e: React.ChangeEvent<HTMLInputElement>, type: 'start' | 'end') => {
+  const handleFrameSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
 
@@ -67,92 +70,57 @@ const GerarVideoTool = () => {
       const dataUrl = reader.result as string;
       const base64 = dataUrl.split(',')[1];
       const frame: FrameImage = { file, preview: dataUrl, base64, mimeType: file.type };
-      if (type === 'start') setStartFrame(frame);
+      setStartFrame(frame);
     };
     reader.readAsDataURL(file);
     e.target.value = '';
   };
 
-  const stopPolling = useCallback(() => {
-    if (pollingRef.current) {
-      clearInterval(pollingRef.current);
-      pollingRef.current = null;
-    }
-    setIsPolling(false);
-    setIsQueued(false);
-    setQueuePosition(0);
-  }, []);
-
-  const pollStatus = useCallback(async () => {
+  // Realtime subscription for job status
+  useEffect(() => {
     if (!jobId) return;
 
-    if (Date.now() - pollingStartRef.current > 600_000) {
-      stopPolling();
-      setErrorMessage('Tempo limite excedido. Tente novamente.');
-      setIsGenerating(false);
-      return;
-    }
-
-    try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
-      if (!accessToken) return;
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/poll-video-status`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+    const channel = supabase
+      .channel(`video-job-${jobId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'video_generator_jobs',
+          filter: `id=eq.${jobId}`,
         },
-        body: JSON.stringify({ job_id: jobId }),
-      });
+        (payload) => {
+          const job = payload.new as any;
+          console.log(`[GerarVideo] Realtime update:`, job.status, job.current_step);
 
-      const data = await response.json();
+          if (job.status === 'queued') {
+            setIsQueued(true);
+            setQueuePosition(job.position || 1);
+          } else if (job.status === 'starting' || job.status === 'running') {
+            setIsQueued(false);
+            setQueuePosition(0);
+          } else if (job.status === 'completed') {
+            setResultUrl(job.output_url);
+            setIsGenerating(false);
+            setIsQueued(false);
+            refetchCredits();
+            toast.success('Vídeo gerado com sucesso!');
+          } else if (job.status === 'failed' || job.status === 'cancelled') {
+            setErrorMessage(job.error_message || 'Erro na geração');
+            setIsGenerating(false);
+            setIsQueued(false);
+            refetchCredits();
+            if (job.error_message) toast.error(job.error_message);
+          }
+        }
+      )
+      .subscribe();
 
-      if (data.status === 'queued') {
-        setIsQueued(true);
-        setQueuePosition(data.position || 1);
-      } else if (data.status === 'processing') {
-        setIsQueued(false);
-        setQueuePosition(0);
-      } else if (data.status === 'completed') {
-        stopPolling();
-        setResultUrl(data.output_url);
-        setIsGenerating(false);
-        await refetchCredits();
-        toast.success('Vídeo gerado com sucesso!');
-      } else if (data.status === 'failed') {
-        stopPolling();
-        setErrorMessage(data.error_message || 'Erro na geração');
-        setIsGenerating(false);
-        await refetchCredits();
-        toast.error(data.error_message || 'Erro na geração do vídeo');
-      }
-    } catch (err) {
-      console.error('[GerarVideo] Poll error:', err);
-    }
-  }, [jobId, stopPolling, refetchCredits]);
-
-  useEffect(() => {
-    if (isPolling && jobId) {
-      const timeout = setTimeout(() => {
-        pollStatus();
-        pollingRef.current = setInterval(pollStatus, 10_000);
-      }, 5_000);
-
-      return () => {
-        clearTimeout(timeout);
-        if (pollingRef.current) clearInterval(pollingRef.current);
-      };
-    }
-  }, [isPolling, jobId, pollStatus]);
-
-  useEffect(() => {
     return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
+      supabase.removeChannel(channel);
     };
-  }, []);
+  }, [jobId, refetchCredits]);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -165,6 +133,8 @@ const GerarVideoTool = () => {
       setShowNoCreditsModal(true);
       return;
     }
+
+    if (!startSubmit()) return;
 
     setIsGenerating(true);
     setErrorMessage(null);
@@ -179,6 +149,16 @@ const GerarVideoTool = () => {
       if (!accessToken) {
         toast.error('Sessão expirada. Faça login novamente.');
         setIsGenerating(false);
+        endSubmit();
+        return;
+      }
+
+      const freshCredits = await checkBalance();
+      if (freshCredits < creditCost) {
+        setNoCreditsReason('insufficient');
+        setShowNoCreditsModal(true);
+        setIsGenerating(false);
+        endSubmit();
         return;
       }
 
@@ -186,62 +166,55 @@ const GerarVideoTool = () => {
         prompt: prompt.trim(),
         aspect_ratio: aspectRatio,
         duration_seconds: duration,
+        model: selectedModel,
       };
 
       if (startFrame) {
         bodyData.start_frame = { base64: startFrame.base64, mimeType: startFrame.mimeType };
       }
 
-      // Standard flow with platform credits
-      {
-        const freshCredits = await checkBalance();
-        if (freshCredits < creditCost) {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video/run`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify(bodyData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.code === 'INSUFFICIENT_CREDITS') {
           setNoCreditsReason('insufficient');
           setShowNoCreditsModal(true);
-          setIsGenerating(false);
-          return;
-        }
-
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`,
-            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          },
-          body: JSON.stringify(bodyData),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          if (data.error === 'INSUFFICIENT_CREDITS') {
-            setNoCreditsReason('insufficient');
-            setShowNoCreditsModal(true);
-          } else {
-            toast.error(data.error || 'Erro ao iniciar geração');
-            setErrorMessage(data.error || 'Erro ao iniciar geração');
-          }
-          setIsGenerating(false);
-          return;
-        }
-
-        setJobId(data.job_id);
-        setIsPolling(true);
-        pollingStartRef.current = Date.now();
-
-        if (data.queued) {
-          setIsQueued(true);
-          setQueuePosition(data.position || 1);
-          toast.info(`Você está na fila (posição ${data.position || 1}). Aguarde...`);
+        } else if (data.code === 'USER_HAS_ACTIVE_JOB') {
+          toast.error(data.error);
         } else {
-          toast.success('Geração de vídeo iniciada! Aguarde...');
+          toast.error(data.error || 'Erro ao iniciar geração');
+          setErrorMessage(data.error || 'Erro ao iniciar geração');
         }
+        setIsGenerating(false);
+        endSubmit();
+        return;
+      }
+
+      setJobId(data.job_id);
+
+      if (data.queued) {
+        setIsQueued(true);
+        setQueuePosition(data.position || 1);
+        toast.info(`Você está na fila (posição ${data.position || 1}). Aguarde...`);
+      } else {
+        toast.success('Geração de vídeo iniciada! Aguarde...');
       }
     } catch (err) {
       console.error('[GerarVideo] Error:', err);
       toast.error('Erro ao gerar vídeo');
       setIsGenerating(false);
+    } finally {
+      endSubmit();
     }
   };
 
@@ -249,7 +222,7 @@ const GerarVideoTool = () => {
     if (resultUrl) {
       const link = document.createElement('a');
       link.href = resultUrl;
-      link.download = `veo-video-${Date.now()}.mp4`;
+      link.download = `video-${selectedModel}-${Date.now()}.mp4`;
       link.target = '_blank';
       link.click();
     }
@@ -306,12 +279,11 @@ const GerarVideoTool = () => {
                   <Video className="h-5 w-5 text-fuchsia-400" />
                   Gerar Vídeo
                 </h1>
-                <p className="text-[10px] text-purple-400">Veo 3.1 Fast • Google</p>
+                <p className="text-[10px] text-purple-400">{currentModel.name} • {currentModel.description}</p>
               </div>
             </div>
           </div>
         </div>
-
 
         {/* Beta warning */}
         <div className="mx-4 mt-2 mb-0 max-w-4xl self-center w-full">
@@ -352,19 +324,20 @@ const GerarVideoTool = () => {
                     <p className="text-sm text-white font-medium">Você está na fila</p>
                     <p className="text-lg text-fuchsia-400 font-bold mt-1">Posição {queuePosition}</p>
                     <p className="text-xs text-purple-400 mt-2">Sua geração será processada em breve</p>
-                    <p className="text-[10px] text-purple-500 mt-1">Limite: 2 vídeos simultâneos</p>
+                    <p className="text-[10px] text-purple-500 mt-1">Fila global compartilhada</p>
                   </>
                 ) : (
                   <>
                     <p className="text-sm text-white font-medium">Gerando vídeo...</p>
                     <p className="text-xs text-purple-400 mt-1">Isso pode levar de 2 a 5 minutos</p>
+                    <p className="text-[10px] text-purple-500 mt-1">Você pode sair da página — receberá uma notificação</p>
                   </>
                 )}
               </div>
             </div>
           ) : errorMessage ? (
             <div className="max-w-md text-center space-y-3">
-              {errorMessage.includes('celebridade') || errorMessage.includes('pessoa pública') || errorMessage.includes('filtro de segurança') ? (
+              {errorMessage.includes('celebridade') || errorMessage.includes('pessoa pública') || errorMessage.includes('filtro de segurança') || errorMessage.includes('bloqueado') ? (
                 <div className="p-5 rounded-xl border border-orange-500/40 bg-orange-900/20 space-y-2">
                   <div className="flex items-center justify-center gap-2 text-orange-400 font-semibold text-base">
                     <span>⚠️</span> Conteúdo bloqueado
@@ -375,6 +348,7 @@ const GerarVideoTool = () => {
               ) : (
                 <div className="p-4 rounded-xl border border-red-500/30 bg-red-900/20 text-red-300 text-sm">
                   {errorMessage}
+                  <p className="text-red-400/60 text-xs mt-2">Seus créditos foram estornados automaticamente.</p>
                 </div>
               )}
               <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-purple-500/50 text-purple-200 hover:bg-purple-500/20 rounded-full px-5">
@@ -385,10 +359,6 @@ const GerarVideoTool = () => {
             <div className="flex flex-col items-center gap-3 text-purple-500/60">
               <Video className="h-12 w-12" />
               <p className="text-sm text-center">Digite um prompt e clique em Gerar Vídeo</p>
-              <div className="mt-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-fuchsia-500/10 to-purple-600/10 border border-fuchsia-500/20 max-w-sm">
-                <p className="text-[11px] text-fuchsia-300 text-center font-medium">🔥 Preço Promocional de Lançamento!</p>
-                <p className="text-[10px] text-purple-400 text-center mt-1">Aproveite os preços especiais por tempo limitado.</p>
-              </div>
             </div>
           )}
         </div>
@@ -415,7 +385,7 @@ const GerarVideoTool = () => {
           <div className="max-w-3xl mx-auto px-3 py-3 space-y-2.5">
             {/* Prompt input row */}
             <div className="flex items-center gap-2">
-              {/* Frame upload dropdown */}
+              {/* Frame upload */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
@@ -439,7 +409,7 @@ const GerarVideoTool = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <input ref={startFrameRef} type="file" accept="image/*" onChange={(e) => handleFrameSelect(e, 'start')} className="hidden" />
+              <input ref={startFrameRef} type="file" accept="image/*" onChange={handleFrameSelect} className="hidden" />
 
               {/* Prompt textarea */}
               <div className="flex-1">
@@ -463,6 +433,31 @@ const GerarVideoTool = () => {
 
             {/* Controls row */}
             <div className="flex items-center gap-1.5 overflow-hidden">
+              {/* Model dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
+                    <span>🤖</span>
+                    <span className="font-medium">{currentModel.name}</span>
+                    <ChevronDown className="h-3 w-3 text-purple-400" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
+                  {MODELS.map(model => (
+                    <DropdownMenuItem
+                      key={model.id}
+                      onClick={() => setSelectedModel(model.id)}
+                      className={`text-xs ${selectedModel === model.id ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-purple-200'}`}
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-medium">{model.name}</span>
+                        <span className="text-[10px] text-purple-400">{model.description} • {model.cost} créditos</span>
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               {/* Aspect ratio dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -512,7 +507,7 @@ const GerarVideoTool = () => {
               {/* Generate button */}
               <Button
                 onClick={handleGenerate}
-                disabled={isGenerating || !prompt.trim()}
+                disabled={isGenerating || isSubmitting || !prompt.trim()}
                 size="sm"
                 className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-2 h-8 min-w-0 shrink-0"
               >
@@ -524,7 +519,7 @@ const GerarVideoTool = () => {
                 ) : (
                   <>
                     <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                    Gerar Vídeo
+                    Gerar
                     <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
                       <Coins className="w-3.5 h-3.5" />
                       {creditCost}
