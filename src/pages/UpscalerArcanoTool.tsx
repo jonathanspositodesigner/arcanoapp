@@ -993,26 +993,6 @@ const UpscalerArcanoTool: React.FC = () => {
                 </div>
               )}
 
-              {/* Custom Prompt - PRO only */}
-              {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
-                <div className="border border-white/10 rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-white">{t('upscalerTool.controls.usePrompt')}</span>
-                    <Switch
-                      checked={useCustomPrompt}
-                      onCheckedChange={setUseCustomPrompt}
-                    />
-                  </div>
-                  {useCustomPrompt && (
-                    <Textarea
-                      value={customPrompt}
-                      onChange={(e) => setCustomPrompt(e.target.value)}
-                      placeholder={t('upscalerTool.controls.promptPlaceholder')}
-                      className="min-h-[60px] text-xs bg-black/40 border-white/10 text-white placeholder:text-gray-500"
-                    />
-                  )}
-                </div>
-              )}
 
               {/* Generate Button - always visible */}
               {!isProcessing && status !== 'completed' && (
