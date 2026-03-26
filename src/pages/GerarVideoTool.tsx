@@ -325,17 +325,9 @@ const GerarVideoTool = () => {
         {/* Main content area */}
         <div className="flex-1 flex items-center justify-center p-4">
           {resultUrl ? (
-            <div className="w-full max-w-2xl space-y-3">
+            <div className="w-full max-w-2xl">
               <div className="rounded-2xl overflow-hidden border border-purple-500/20 bg-black/30 shadow-2xl">
                 <video src={resultUrl} controls autoPlay className="w-full h-auto" />
-              </div>
-              <div className="flex gap-2 justify-center">
-                <Button onClick={handleDownload} size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-full px-5">
-                  <Download className="h-4 w-4 mr-2" /> Baixar
-                </Button>
-                <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-purple-500/50 text-purple-200 hover:bg-purple-500/20 rounded-full px-5">
-                  <Video className="h-4 w-4 mr-2" /> Novo
-                </Button>
               </div>
             </div>
           ) : isGenerating ? (
