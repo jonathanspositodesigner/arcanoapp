@@ -1397,23 +1397,23 @@ async function startJobOnRunningHub(
     case 'video_generator_jobs': {
       const videoModel = p.model || job.model || 'veo3.1';
       const webappIds = WEBAPP_IDS.video_generator_jobs as Record<string, string>;
-      webappId = webappIds[videoModel] || webappIds['veo3.1'];
+      const hasStartFrame = p.startFrame?.base64 && p.startFrame?.mimeType;
+      const hasEndFrame = p.endFrame?.base64 && p.endFrame?.mimeType;
+      const hasFrames = hasStartFrame && hasEndFrame;
       
       nodeInfoList = [];
       
       if (videoModel === 'wan2.2') {
+        webappId = webappIds['wan2.2'];
         // Wan 2.2 nodes: 37=FIRST FRAME, 16=LAST FRAME, 9=PROMPT (no aspect_ratio)
-        // IMPORTANT: Always send image value for frame nodes to avoid "cannot identify image file" error
-        if (p.startFrame?.base64 && p.startFrame?.mimeType) {
-          const dataUri = `data:${p.startFrame.mimeType};base64,${p.startFrame.base64}`;
-          nodeInfoList.push({ nodeId: "37", fieldName: "image", fieldValue: dataUri, description: "image" });
+        if (hasFrames) {
+          const startUri = `data:${p.startFrame.mimeType};base64,${p.startFrame.base64}`;
+          nodeInfoList.push({ nodeId: "37", fieldName: "image", fieldValue: startUri, description: "FIRST FRAME" });
+          const endUri = `data:${p.endFrame.mimeType};base64,${p.endFrame.base64}`;
+          nodeInfoList.push({ nodeId: "16", fieldName: "image", fieldValue: endUri, description: "LAST FRAME" });
         } else {
+          // No frames - send placeholder images
           nodeInfoList.push({ nodeId: "37", fieldName: "image", fieldValue: "example.png", description: "image" });
-        }
-        if (p.endFrame?.base64 && p.endFrame?.mimeType) {
-          const dataUri = `data:${p.endFrame.mimeType};base64,${p.endFrame.base64}`;
-          nodeInfoList.push({ nodeId: "16", fieldName: "image", fieldValue: dataUri, description: "image" });
-        } else {
           nodeInfoList.push({ nodeId: "16", fieldName: "image", fieldValue: "example.png", description: "image" });
         }
         nodeInfoList.push({
@@ -1423,14 +1423,18 @@ async function startJobOnRunningHub(
           description: "text",
         });
       } else {
-        // Veo 3.1 nodes: 15=FIRST FRAME, 5=LAST FRAME, 3=aspect_ratio+prompt
-        if (p.startFrame?.base64 && p.startFrame?.mimeType) {
-          const dataUri = `data:${p.startFrame.mimeType};base64,${p.startFrame.base64}`;
-          nodeInfoList.push({ nodeId: "15", fieldName: "image", fieldValue: dataUri, description: "FIRST FRAME" });
-        }
-        if (p.endFrame?.base64 && p.endFrame?.mimeType) {
-          const dataUri = `data:${p.endFrame.mimeType};base64,${p.endFrame.base64}`;
-          nodeInfoList.push({ nodeId: "5", fieldName: "image", fieldValue: dataUri, description: "LAST FRAME" });
+        // Veo 3.1
+        if (hasFrames) {
+          // Use image-to-video webapp with both frames
+          webappId = webappIds['veo3.1'];
+          const startUri = `data:${p.startFrame.mimeType};base64,${p.startFrame.base64}`;
+          nodeInfoList.push({ nodeId: "15", fieldName: "image", fieldValue: startUri, description: "FIRST FRAME" });
+          const endUri = `data:${p.endFrame.mimeType};base64,${p.endFrame.base64}`;
+          nodeInfoList.push({ nodeId: "5", fieldName: "image", fieldValue: endUri, description: "LAST FRAME" });
+        } else {
+          // Use text-to-video webapp (no frame nodes needed)
+          webappId = webappIds['veo3.1_text_only'];
+          console.log(`[QueueManager] Veo 3.1 text-only mode, using webapp ${webappId}`);
         }
         nodeInfoList.push({
           nodeId: "3",
