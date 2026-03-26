@@ -59,9 +59,13 @@ const WEBAPP_IDS = {
   flyer_maker_jobs: '2025656642724962305',
   bg_remover_jobs: '2031815099811368962',
   image_generator_jobs: '2036803905421582337',
+  video_generator_jobs: {
+    'veo3.1': '2037253069662068738',
+    'wan2.2': '', // TBD - will be set when Wan 2.2 docs arrive
+  },
 };
 
-const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs', 'bg_remover_jobs', 'image_generator_jobs'] as const;
+const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs', 'bg_remover_jobs', 'image_generator_jobs', 'video_generator_jobs'] as const;
 type JobTable = typeof JOB_TABLES[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -78,6 +82,7 @@ const TOOL_CONFIG: Record<JobTable, { name: string; url: string; emoji: string }
   flyer_maker_jobs: { name: 'Flyer Maker', url: '/flyer-maker', emoji: '🎭' },
   bg_remover_jobs: { name: 'Remover Fundo', url: '/remover-fundo', emoji: '🖼️' },
   image_generator_jobs: { name: 'Gerar Imagem', url: '/gerar-imagem', emoji: '🖌️' },
+  video_generator_jobs: { name: 'Gerar Vídeo', url: '/gerar-video', emoji: '🎥' },
 };
 
 /**
@@ -582,6 +587,7 @@ async function handleCheckUserActive(req: Request): Promise<Response> {
       'flyer_maker_jobs': 'Flyer Maker',
       'bg_remover_jobs': 'Remover Fundo',
       'image_generator_jobs': 'Gerar Imagem',
+      'video_generator_jobs': 'Gerar Vídeo',
     };
     
     // Verificar em TODAS as tabelas - incluir STARTING e PENDING recente (< 35s)
