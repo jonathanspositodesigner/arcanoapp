@@ -547,6 +547,7 @@ const FlyerMakerTool: React.FC = () => {
 
       if (jobError || !job) throw new Error(jobError?.message || 'Erro ao criar job de refinamento');
 
+      localRefineJobId = job.id;
       setRefineJobId(job.id);
       registerJob(job.id, 'Gerar Imagem', 'pending');
 
