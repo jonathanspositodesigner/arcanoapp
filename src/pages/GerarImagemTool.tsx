@@ -486,7 +486,8 @@ const GerarImagemTool = () => {
             </div>
           ) : status === 'failed' ? (
             <div className="flex flex-col items-center gap-3 text-red-400">
-              <p className="text-sm text-center">{errorMessage || 'Erro ao gerar imagem'}</p>
+              <p className="text-sm text-center font-medium">{(() => { const info = getAIErrorMessage(errorMessage || ''); return info.message; })()}</p>
+              <p className="text-xs text-center text-red-300/70">{(() => { const info = getAIErrorMessage(errorMessage || ''); return info.solution; })()}</p>
               <button onClick={resetJobState} className="text-xs text-purple-400 hover:text-purple-200 underline">Tentar novamente</button>
             </div>
           ) : (
