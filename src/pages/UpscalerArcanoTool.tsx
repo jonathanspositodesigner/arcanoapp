@@ -752,12 +752,12 @@ const UpscalerArcanoTool: React.FC = () => {
     <AppLayout fullScreen>
 
       {/* Main Content - Two Column Layout */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-4 flex flex-col lg:h-full lg:overflow-hidden overflow-y-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-5 lg:flex-1 lg:min-h-0 lg:h-full">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-4 flex flex-col h-full overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-5 flex-1 min-h-0">
           
           {/* Left Side - Controls Panel inside ONE card */}
-          <div className="lg:col-span-2 flex flex-col pb-2 lg:pb-0 lg:min-h-0 lg:h-full">
-            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-5 lg:overflow-y-auto lg:h-full"
+          <div className="lg:col-span-2 min-h-0 overflow-hidden">
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-5 overflow-y-auto h-full max-h-full"
               style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}
             >
               
@@ -1097,8 +1097,8 @@ const UpscalerArcanoTool: React.FC = () => {
           </div>
 
           {/* Right Side - Result Viewer (~72%) */}
-          <div className="lg:col-span-5 flex flex-col lg:min-h-0 lg:h-full">
-            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-[400px] lg:h-full">
+          <div className="lg:col-span-5 min-h-0 overflow-hidden">
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-[400px] h-full">
               {/* Warning Banner */}
               {isProcessing && (
                 <div className="bg-amber-500/20 border-b border-amber-500/50 px-3 py-2 flex items-center gap-2">
