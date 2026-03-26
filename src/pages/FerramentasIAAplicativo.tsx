@@ -361,9 +361,6 @@ const FerramentasIAAplicativo = () => {
 
   return (
     <AppLayout>
-      
-      {/* Promo Banner */}
-      <PromoToolsBanner />
 
       {/* Content - Single grid with all tools */}
       <main className="container mx-auto px-4 py-8">
