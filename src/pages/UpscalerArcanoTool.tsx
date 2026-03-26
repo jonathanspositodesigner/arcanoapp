@@ -1496,34 +1496,51 @@ const UpscalerArcanoTool: React.FC = () => {
                   </div>
                 ) : (
                   /* Empty State - Example Before/After */
-                  <div className="relative w-full h-full overflow-hidden rounded-lg">
+                  <div 
+                    ref={sliderRef}
+                    className="relative w-full h-full overflow-hidden rounded-lg cursor-ew-resize select-none"
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      isDraggingRef.current = true;
+                      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+                      updateSliderPositionFromClientX(e.clientX);
+                    }}
+                    onPointerMove={(e) => {
+                      if (isDraggingRef.current) {
+                        e.preventDefault();
+                        updateSliderPositionFromClientX(e.clientX);
+                      }
+                    }}
+                    onPointerUp={(e) => {
+                      isDraggingRef.current = false;
+                      (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+                    }}
+                  >
                     {/* After image (full) */}
                     <img 
                       src="/images/upscaler-example-after.jpg" 
                       alt="Exemplo depois" 
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover pointer-events-none"
+                      draggable={false}
                     />
                     {/* Before image (clipped) */}
                     <div 
-                      className="absolute inset-0 overflow-hidden"
+                      className="absolute inset-0 overflow-hidden pointer-events-none"
                       style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
                     >
                       <img 
                         src="/images/upscaler-example-before.jpg" 
                         alt="Exemplo antes" 
                         className="w-full h-full object-cover"
+                        draggable={false}
                       />
                     </div>
                     {/* Slider line */}
                     <div 
-                      className="absolute top-0 bottom-0 w-[2px] bg-white/70 z-10"
-                      style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)', cursor: 'ew-resize', touchAction: 'none' }}
-                      onPointerDown={handleSliderPointerDown}
-                      onPointerMove={handleSliderPointerMove}
-                      onPointerUp={handleSliderPointerUp}
-                      onPointerCancel={handleSliderPointerUp}
+                      className="absolute top-0 bottom-0 w-[2px] bg-white/70 z-10 pointer-events-none"
+                      style={{ left: `${sliderPosition}%`, transform: 'translateX(-50%)' }}
                     >
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center cursor-ew-resize" style={{ touchAction: 'none' }}>
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center">
                         <div className="flex gap-[1px]">
                           <div className="w-[1px] h-3 bg-gray-400 rounded-full" />
                           <div className="w-[1px] h-3 bg-gray-400 rounded-full" />
@@ -1531,14 +1548,14 @@ const UpscalerArcanoTool: React.FC = () => {
                       </div>
                     </div>
                     {/* Labels */}
-                    <div className="absolute top-3 left-3 text-[10px] px-2.5 py-1 bg-black/60 text-white/80 font-medium rounded-full z-10">
+                    <div className="absolute top-3 left-3 text-[10px] px-2.5 py-1 bg-black/60 text-white/80 font-medium rounded-full z-10 pointer-events-none">
                       Antes
                     </div>
-                    <div className="absolute top-3 right-3 text-[10px] px-2.5 py-1 bg-white/15 text-white/80 font-medium rounded-full z-10">
+                    <div className="absolute top-3 right-3 text-[10px] px-2.5 py-1 bg-white/15 text-white/80 font-medium rounded-full z-10 pointer-events-none">
                       Depois
                     </div>
                     {/* Hint text */}
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/70 bg-black/60 px-3 py-1 rounded-full z-10">
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/70 bg-black/60 px-3 py-1 rounded-full z-10 pointer-events-none">
                       Arraste para comparar • Exemplo
                     </div>
                   </div>
