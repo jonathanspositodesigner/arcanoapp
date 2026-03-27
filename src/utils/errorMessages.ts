@@ -35,6 +35,22 @@ export function getAIErrorMessage(errorMessage: string | null): {
     };
   }
 
+  // Workflow validation error (error 433)
+  if (error.includes('workflow validation') || error.includes('工作流校验失败') || error.includes('433')) {
+    return {
+      message: 'Erro de configuração do workflow',
+      solution: 'Houve um problema interno na configuração. Seus créditos foram estornados. Tente novamente ou entre em contato com o suporte.'
+    };
+  }
+
+  // Image transfer errors
+  if (error.includes('image_transfer') || error.includes('frame upload') || error.includes('upload failed')) {
+    return {
+      message: 'Erro ao enviar imagem para o servidor',
+      solution: 'Não foi possível enviar sua imagem. Tente com uma imagem menor (máx 5MB) ou em formato JPG/PNG.'
+    };
+  }
+
   // PIL/ComfyUI não consegue ler a imagem (formato incompatível)
   if (error.includes('unidentifiedimageerror') || error.includes('cannot identify image') || error.includes('pil') || error.includes('keep_this_dic')) {
     return {
