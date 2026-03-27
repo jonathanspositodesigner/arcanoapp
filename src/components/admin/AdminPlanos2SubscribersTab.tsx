@@ -132,13 +132,20 @@ const AdminPlanos2SubscribersTab = () => {
 
       const userIds = data?.map(u => u.user_id) || [];
 
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, name, email, phone")
-        .in("id", userIds);
+      // Chunk userIds to avoid PostgREST URL length limit (~8KB)
+      const chunkSize = 50;
+      const allProfiles: { id: string; name: string | null; email: string | null; phone: string | null }[] = [];
+      for (let i = 0; i < userIds.length; i += chunkSize) {
+        const chunk = userIds.slice(i, i + chunkSize);
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, name, email, phone")
+          .in("id", chunk);
+        if (profiles) allProfiles.push(...profiles);
+      }
 
       const merged = data?.map(sub => {
-        const profile = profiles?.find(p => p.id === sub.user_id);
+        const profile = allProfiles.find(p => p.id === sub.user_id);
         return {
           ...sub,
           name: profile?.name || '',
