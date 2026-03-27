@@ -21,7 +21,7 @@ const ProfileSettings = () => {
   const { t } = useTranslation('auth');
   const { user, isPremium, isLoading: premiumLoading } = usePremiumStatus();
   const { isSupported, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
-  const { balance: credits, isLoading: creditsLoading } = useCredits();
+  const { balance: credits, isLoading: creditsLoading, isUnlimited } = useCredits();
   
   // FONTE ÚNICA DE VERDADE: Notification.permission
   const hasPermission = typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted';
@@ -392,7 +392,8 @@ const ProfileSettings = () => {
         <CreditsCard 
           credits={credits} 
           creditsLoading={creditsLoading} 
-          userId={user?.id} 
+          userId={user?.id}
+          isUnlimited={isUnlimited}
         />
 
         {/* Change Password */}

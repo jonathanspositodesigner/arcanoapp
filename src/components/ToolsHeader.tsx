@@ -38,7 +38,7 @@ const ToolsHeader = ({
   const navigate = useNavigate();
   const { t } = useTranslation('tools');
   const { user, logout } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading } = useCredits();
+  const { balance: credits, isLoading: creditsLoading, isUnlimited } = useCredits();
   const [userProfile, setUserProfile] = useState<{ name?: string; phone?: string } | null>(null);
   const [showCreationsModal, setShowCreationsModal] = useState(false);
   
@@ -154,6 +154,7 @@ const ToolsHeader = ({
                     showCoin={true}
                     variant="text"
                     className="text-purple-200"
+                    isUnlimited={isUnlimited}
                   />
                 </div>
                 <button
@@ -214,6 +215,7 @@ const ToolsHeader = ({
                         size="sm"
                         showCoin={false}
                         variant="badge"
+                        isUnlimited={isUnlimited}
                       />
                       <button
                         onClick={() => navigate('/planos-creditos')}
