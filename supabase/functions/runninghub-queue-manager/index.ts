@@ -1109,7 +1109,7 @@ async function handleRunOrQueue(req: Request): Promise<Response> {
     
     console.log(`[QueueManager] run-or-queue: running=${globalRunning}, queued=${totalQueued}, max=${GLOBAL_MAX_CONCURRENT}`);
     
-    // Pode iniciar imediatamente se: running < 3 E fila vazia E conta disponível
+    // Pode iniciar imediatamente se: running < 20 E fila vazia E conta disponível
     if (globalRunning < GLOBAL_MAX_CONCURRENT && totalQueued === 0) {
       const availableAccount = await getAccountWithAvailableSlot();
       if (availableAccount) {
