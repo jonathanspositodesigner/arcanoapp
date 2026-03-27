@@ -182,7 +182,7 @@ const TesteCloner = () => {
             </h2>
 
             <div className="flex flex-col items-center mt-8 mb-2">
-              <CountUp target={589} duration={2000} />
+              <CountUp target={789} duration={2000} />
               <p className="text-white/50 text-xs md:text-sm tracking-[0.2em] uppercase mt-1">Modelos Disponíveis</p>
             </div>
 
