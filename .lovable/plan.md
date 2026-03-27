@@ -1,49 +1,57 @@
 
 
-# Correção: Refinar no Arcano Cloner + Cancelar Job
+## Diagnóstico
 
-## Problemas Identificados
+O banco de dados está **100% íntegro** — todos os 633 assinantes têm nome e email reais salvos na tabela `profiles`.
 
-### 1. Refine falha sistematicamente (TODAS as tentativas de refinamento)
-**Causa raiz**: Quando o Arcano Cloner completa um job, o `outputImage` pode ser uma URL do CDN externo da RunningHub (`rh-images-1252422369.cos.ap-beijing.myqcloud.com`). Ao tentar refinar, essa URL é enviada como referência para a edge function `runninghub-image-generator`, que valida se TODAS as URLs são do domínio Supabase. A URL do CDN é rejeitada com `INVALID_IMAGE_SOURCE` (status 400).
+O problema está no **frontend** (`AdminPlanos2SubscribersTab.tsx`): a função `fetchPlanos2Users` busca os 633 user IDs e faz uma query `.in("id", userIds)` com todos eles de uma vez. Com 633 UUIDs (cada um com 36 caracteres), a URL gerada tem ~24KB, o que **excede o limite de URL do PostgREST** (~8KB). Isso faz a query de profiles **falhar silenciosamente** — retorna `null` em vez de um array — e o merge coloca string vazia em nome e email para todos.
 
-Além disso, quando o catch block tenta marcar o job como failed via `markJobAsFailedInDb`, a RPC `mark_pending_job_as_failed` NÃO tem `image_generator_jobs` nas branches → retorna false silenciosamente → job fica preso em `pending` até o orphan timeout (240s).
+## Correção
 
-### 2. Cancelar job retorna "tabela inválida"
-**Causa raiz**: A RPC `user_cancel_ai_job` não tem branches para `arcano_cloner_jobs` nem `image_generator_jobs`. Qualquer tentativa de cancelar jobs dessas ferramentas cai no ELSE → "Tabela inválida".
+### Arquivo: `src/components/admin/AdminPlanos2SubscribersTab.tsx`
 
-## Alterações
+**Alterar a função `fetchPlanos2Users`** para dividir os userIds em chunks de 50 e fazer múltiplas queries:
 
-### Passo 1: Atualizar RPC `user_cancel_ai_job`
-**Tipo**: Migration SQL
-
-Adicionar branches para `arcano_cloner_jobs` e `image_generator_jobs` (tanto no SELECT quanto no UPDATE).
-
-### Passo 2: Atualizar RPC `mark_pending_job_as_failed`
-**Tipo**: Migration SQL
-
-Adicionar branches para `arcano_cloner_jobs` e `image_generator_jobs`.
-
-### Passo 3: Corrigir validação de URL na edge function do Image Generator
-**Arquivo**: `supabase/functions/runninghub-image-generator/index.ts`
-
-Adicionar o domínio do CDN da RunningHub (`rh-images-1252422369.cos.ap-beijing.myqcloud.com`) à lista de domínios permitidos, OU (mais robusto) fazer re-upload da imagem de referência para o Supabase Storage no frontend antes de enviar para a edge function.
-
-A abordagem mais segura é adicionar os domínios CDN da RunningHub como permitidos na edge function, já que são URLs legítimas de resultados anteriores:
-
-```ts
-const allowedDomains = [
-  'supabase.co', 'supabase.in', 
-  SUPABASE_URL.replace('https://', ''),
-  'rh-images-1252422369.cos.ap-beijing.myqcloud.com', // RunningHub CDN
-];
+```
+1. Buscar planos2_subscriptions normalmente
+2. Dividir os userIds em chunks de 50
+3. Para cada chunk, fazer query .in("id", chunk) na tabela profiles
+4. Concatenar todos os resultados de profiles
+5. Fazer o merge normalmente
 ```
 
-### Passo 4: Redeploy da edge function
-Deploy automático de `runninghub-image-generator`.
+Isso garante que cada request tenha no máximo ~1.8KB de UUIDs na URL, bem dentro do limite.
 
-## Resultado Esperado
-- Refinar funciona mesmo quando `outputImage` é URL do CDN
-- Cancelar job funciona para Arcano Cloner e Image Generator
-- Jobs órfãos de refine são marcados como failed imediatamente pelo catch block
+### Código da correção (resumo)
+
+```typescript
+// Helper para chunking
+const chunkArray = <T,>(arr: T[], size: number): T[][] => {
+  const chunks: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) {
+    chunks.push(arr.slice(i, i + size));
+  }
+  return chunks;
+};
+
+// Dentro de fetchPlanos2Users:
+const userIds = data?.map(u => u.user_id) || [];
+const chunks = chunkArray(userIds, 50);
+const allProfiles = [];
+
+for (const chunk of chunks) {
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, name, email, phone")
+    .in("id", chunk);
+  if (profiles) allProfiles.push(...profiles);
+}
+
+// Merge usa allProfiles em vez de profiles
+```
+
+### Resultado
+- Nomes e emails reais voltam a aparecer para TODOS os assinantes
+- Sem criação de dados fictícios — apenas correção da query que estava falhando
+- Zero impacto no banco de dados
 
