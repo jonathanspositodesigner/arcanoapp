@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Check, X, Sparkles, Image, Video, Award, ShieldCheck, Zap, Headset, Rocket, Crown, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -6,9 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { AnimatedSection, StaggeredAnimation } from "@/hooks/useScrollAnimation";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { supabase } from "@/integrations/supabase/client";
-import { invokeCheckout, preWarmCheckout } from "@/lib/checkoutFetch";
-import { useProcessingButton } from "@/hooks/useProcessingButton";
-import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
+import { useMPCheckout } from "@/hooks/useMPCheckout";
 
 const socialProofImages = [
   "/images/social-proof-1.webp",
@@ -154,45 +152,7 @@ const landingPlans: Plan[] = [
 ];
 
 const LandingPricingSection = () => {
-  const [userId, setUserId] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [showPreCheckout, setShowPreCheckout] = useState(false);
-  const [preCheckoutSlug, setPreCheckoutSlug] = useState<string | null>(null);
-  const { isSubmitting: isProcessing, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
-
-  // Pre-warm checkout edge function after 3s
-  useEffect(() => {
-    const timer = setTimeout(() => preWarmCheckout(), 3000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-        setUserEmail(user.email ?? null);
-      }
-    };
-    getUser();
-  }, []);
-
-  const handlePurchase = (productSlug: string) => {
-    if (!startCheckout()) return;
-
-    if (typeof window !== "undefined" && (window as any).fbq) {
-      (window as any).fbq("track", "InitiateCheckout", {
-        content_name: productSlug,
-        content_category: "Landing Bundle",
-        content_type: "product",
-        currency: "BRL",
-      });
-    }
-
-    setPreCheckoutSlug(productSlug);
-    setShowPreCheckout(true);
-    endCheckout();
-  };
+  const { openCheckout, isLoading, MPCheckoutModal } = useMPCheckout({ source_page: "arcanocloner-teste" });
 
   return (
     <AnimatedSection className="px-4 py-16 md:py-20">
@@ -259,8 +219,8 @@ const LandingPricingSection = () => {
 
                 {/* CTA */}
                 <Button
-                  onClick={() => handlePurchase(plan.productSlug)}
-                  disabled={isProcessing}
+                  onClick={() => openCheckout(plan.productSlug)}
+                  disabled={isLoading}
                   className={`w-full mb-2 text-sm lg:text-base h-10 lg:h-12 ${
                     plan.bestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" :
                     plan.hasCountdown ? "bg-gradient-to-r from-fuchsia-600 to-blue-500 hover:from-fuchsia-700 hover:to-blue-600 text-white font-semibold" :
@@ -335,16 +295,7 @@ const LandingPricingSection = () => {
         </div>
       </div>
 
-      {/* PreCheckout Modal */}
-      <PreCheckoutModal
-        isOpen={showPreCheckout}
-        onClose={() => { setShowPreCheckout(false); setPreCheckoutSlug(null); }}
-        userEmail={userEmail}
-        userId={userId}
-        productSlug={preCheckoutSlug || undefined}
-        modalTitle="Finalizar Compra"
-        colorScheme="fuchsia"
-      />
+      <MPCheckoutModal />
 
     </AnimatedSection>
   );

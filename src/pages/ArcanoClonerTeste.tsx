@@ -125,16 +125,6 @@ const ArcanoClonerTeste = () => {
     document.getElementById('pricing-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handlePurchase = () => {
-    if (typeof window !== 'undefined' && (window as any).fbq) {
-      (window as any).fbq('track', 'InitiateCheckout', {
-        content_name: 'Arcano Cloner',
-        value: 39.90,
-        currency: 'BRL'
-      });
-    }
-    window.open(appendUtmToUrl(CHECKOUT_URL), "_blank");
-  };
 
   const galleryItems = [
     { imageUrl: "/images/gallery/gallery-1.webp" },
