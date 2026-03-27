@@ -14,7 +14,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 // WebApp ID for Pose Changer
 const WEBAPP_ID_POSE = '2018451429635133442';
-const MAX_CONCURRENT_JOBS = 3;
+const MAX_CONCURRENT_JOBS = 20;
 
 // Rate limit configuration
 const RATE_LIMIT_UPLOAD = { maxRequests: 10, windowSeconds: 60 };

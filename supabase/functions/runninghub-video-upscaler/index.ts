@@ -10,7 +10,7 @@ const corsHeaders = {
 // RunningHub Video Upscaler Configuration
 const VIDEO_UPSCALER_WEBAPP_ID = "2018810750139109378";
 const RUNNINGHUB_API_BASE = "https://www.runninghub.ai/openapi/v2";
-const MAX_CONCURRENT_JOBS = 3;
+const MAX_CONCURRENT_JOBS = 20;
 const CREDIT_COST = 150;
 
 // Node mapping for Video Upscaler

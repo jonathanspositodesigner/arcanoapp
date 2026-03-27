@@ -32,9 +32,9 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-// LIMITE GLOBAL FIXO: 3 jobs simultâneos
-const GLOBAL_MAX_CONCURRENT = 3;
-const SLOTS_PER_ACCOUNT = 3;
+// LIMITE GLOBAL FIXO: 20 jobs simultâneos
+const GLOBAL_MAX_CONCURRENT = 20;
+const SLOTS_PER_ACCOUNT = 20;
 
 interface ApiAccount {
   name: string;
@@ -1109,7 +1109,7 @@ async function handleRunOrQueue(req: Request): Promise<Response> {
     
     console.log(`[QueueManager] run-or-queue: running=${globalRunning}, queued=${totalQueued}, max=${GLOBAL_MAX_CONCURRENT}`);
     
-    // Pode iniciar imediatamente se: running < 3 E fila vazia E conta disponível
+    // Pode iniciar imediatamente se: running < 20 E fila vazia E conta disponível
     if (globalRunning < GLOBAL_MAX_CONCURRENT && totalQueued === 0) {
       const availableAccount = await getAccountWithAvailableSlot();
       if (availableAccount) {
