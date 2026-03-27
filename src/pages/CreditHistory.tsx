@@ -22,7 +22,7 @@ interface Transaction {
 const CreditHistory = () => {
   const navigate = useNavigate();
   const { user, isLoading: userLoading } = usePremiumStatus();
-  const { balance: credits, isLoading: creditsLoading } = useCredits();
+  const { balance: credits, isLoading: creditsLoading, isUnlimited } = useCredits();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -104,6 +104,7 @@ const CreditHistory = () => {
                 size="lg"
                 showCoin={false}
                 variant="badge"
+                isUnlimited={isUnlimited}
               />
               <button
                 onClick={() => navigate('/planos-creditos')}
