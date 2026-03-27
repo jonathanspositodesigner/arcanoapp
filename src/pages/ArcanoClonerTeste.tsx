@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, ArrowRight, Shield, Clock, Zap, Sparkles, MousePointerClick, Upload, Image, Play, Maximize, BookOpen, Gift, DollarSign, Car, Shirt, Bot, CameraOff, Briefcase, Music, User, Rocket, Share2, Star } from "lucide-react";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
-import { appendUtmToUrl } from "@/lib/utmUtils";
+
 import { useIsMobile } from "@/hooks/use-mobile";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import HeroCarouselBackground from "@/components/combo-artes/HeroCarouselBackground";
