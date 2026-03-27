@@ -7,10 +7,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
  * Gera vídeos via RunningHub workflow
  * 
  * Models:
- * - veo3.1 (WebApp ID 2037253069662068738): Veo 3.1 Fast
- *   Nodes: 15=FIRST FRAME, 5=LAST FRAME, 3=aspect_ratio+prompt
- * - wan2.2 (WebApp ID 2037260767040380929): Wan 2.2
- *   Nodes: 37=FIRST FRAME, 16=LAST FRAME, 9=prompt
+ * - veo3.1: Veo 3.1 Fast (image-to-video + text-only)
+ * - wan2.2: Wan 2.2 (image-to-video + text-only)
  * 
  * Endpoints:
  * - /run - Inicia processamento
@@ -19,6 +17,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const RUNNINGHUB_API_KEY = (Deno.env.get('RUNNINGHUB_API_KEY') || Deno.env.get('RUNNINGHUB_APIKEY') || '').trim();
 
 const TABLE_NAME = 'video_generator_jobs';
 
@@ -33,6 +32,78 @@ const MODEL_COSTS: Record<string, number> = {
   'veo3.1': 750,
   'wan2.2': 400,
 };
+
+// ========== RESILIENT FETCH ==========
+
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  label: string,
+  maxRetries = 4
+): Promise<Response> {
+  const RETRYABLE_STATUSES = [429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525];
+  const RETRY_DELAYS = [3000, 6000, 12000, 20000];
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
+      const response = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (RETRYABLE_STATUSES.includes(response.status) && attempt < maxRetries - 1) {
+        await response.text();
+        const delay = RETRY_DELAYS[attempt] + Math.random() * 2000;
+        console.warn(`[VideoGenerator] ${label}: HTTP ${response.status}, retry ${attempt + 1}/${maxRetries} in ${Math.round(delay)}ms`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      return response;
+    } catch (error: any) {
+      if (attempt < maxRetries - 1) {
+        const delay = RETRY_DELAYS[attempt] + Math.random() * 2000;
+        console.warn(`[VideoGenerator] ${label}: ${error.message}, retry ${attempt + 1}/${maxRetries}`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw new Error(`${label}: All retries exhausted`);
+}
+
+// ========== UPLOAD FRAME TO RUNNINGHUB ==========
+
+async function uploadFrameToRunningHub(
+  base64Data: string,
+  mimeType: string,
+  label: string
+): Promise<string> {
+  const bytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+  const ext = mimeType.includes('jpeg') || mimeType.includes('jpg') ? 'jpg' 
+    : mimeType.includes('webp') ? 'webp' : 'png';
+  const fileName = `video_frame_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+  const formData = new FormData();
+  formData.append('apiKey', RUNNINGHUB_API_KEY);
+  formData.append('fileType', 'image');
+  formData.append('file', new Blob([bytes], { type: mimeType }), fileName);
+
+  const response = await fetchWithRetry(
+    'https://www.runninghub.ai/task/openapi/upload',
+    { method: 'POST', body: formData },
+    `Upload ${label}`
+  );
+
+  const data = await response.json();
+  console.log(`[VideoGenerator] Upload ${label} response:`, JSON.stringify(data));
+
+  if (data.code !== 0 || !data.data?.fileName) {
+    throw new Error(`${label} upload failed: ${data.msg || data.message || 'Unknown error'}`);
+  }
+
+  return data.data.fileName;
+}
 
 // ========== OBSERVABILITY HELPER ==========
 
@@ -116,7 +187,6 @@ serve(async (req) => {
     } else if (path === 'queue-status') {
       return await handleQueueStatus(req);
     } else {
-      // Default to run for backward compat
       return await handleRun(req);
     }
   } catch (error: unknown) {
@@ -138,7 +208,6 @@ async function handleRun(req: Request) {
     });
   }
 
-  // Authenticate user
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
   const userClient = createClient(SUPABASE_URL, anonKey, {
     global: { headers: { Authorization: authHeader } },
@@ -208,9 +277,7 @@ async function handleRun(req: Request) {
   const isUnlimited = premiumData?.plan_type === 'arcano_unlimited'
     && (!premiumData?.expires_at || new Date(premiumData.expires_at) > new Date());
 
-  // Use settings cost for the base model if unlimited
   if (isUnlimited && settingsData?.credit_cost) {
-    // For unlimited, use the configured cost but adjusted per model
     creditCost = selectedModel === 'wan2.2' 
       ? Math.round((settingsData.credit_cost / 750) * 400) 
       : settingsData.credit_cost;
@@ -272,7 +339,7 @@ async function handleRun(req: Request) {
 
   console.log(`[VideoGenerator] Credits consumed. New balance: ${creditResult[0].new_balance}`);
 
-  // Save job payload for queue processing
+  // Upload frames to RunningHub if provided
   const jobPayload: any = {
     prompt: prompt.trim(),
     aspectRatio: ratio,
@@ -280,11 +347,62 @@ async function handleRun(req: Request) {
     model: selectedModel,
   };
 
-  if (start_frame?.base64 && start_frame?.mimeType) {
-    jobPayload.startFrame = { base64: start_frame.base64, mimeType: start_frame.mimeType };
-  }
-  if (end_frame?.base64 && end_frame?.mimeType) {
-    jobPayload.endFrame = { base64: end_frame.base64, mimeType: end_frame.mimeType };
+  const hasStartFrame = start_frame?.base64 && start_frame?.mimeType;
+  const hasEndFrame = end_frame?.base64 && end_frame?.mimeType;
+
+  if (hasStartFrame || hasEndFrame) {
+    await logStep(jobId, 'uploading_frames');
+    
+    try {
+      if (hasStartFrame) {
+        const startFileName = await uploadFrameToRunningHub(
+          start_frame.base64, start_frame.mimeType, 'start_frame'
+        );
+        jobPayload.startFrameFileName = startFileName;
+        console.log(`[VideoGenerator] Start frame uploaded: ${startFileName}`);
+      }
+
+      if (hasEndFrame) {
+        const endFileName = await uploadFrameToRunningHub(
+          end_frame.base64, end_frame.mimeType, 'end_frame'
+        );
+        jobPayload.endFrameFileName = endFileName;
+        console.log(`[VideoGenerator] End frame uploaded: ${endFileName}`);
+      }
+
+      await logStep(jobId, 'frames_uploaded', { 
+        startFrame: !!jobPayload.startFrameFileName, 
+        endFrame: !!jobPayload.endFrameFileName 
+      });
+    } catch (error: any) {
+      const errorMsg = error.message || 'Frame upload failed';
+      console.error('[VideoGenerator] Frame upload error:', errorMsg);
+      
+      // Refund credits and fail
+      try {
+        await supabase.rpc('refund_upscaler_credits', { 
+          _user_id: verifiedUserId, _amount: creditCost, 
+          _description: `FRAME_UPLOAD_REFUNDED: ${errorMsg.slice(0, 100)}` 
+        });
+        await logStepFailure(jobId, 'upload_frames', errorMsg);
+        await supabase.from(TABLE_NAME).update({ 
+          status: 'failed', 
+          error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`, 
+          credits_refunded: true, 
+          completed_at: new Date().toISOString() 
+        }).eq('id', jobId);
+      } catch {
+        await supabase.from(TABLE_NAME).update({ 
+          status: 'failed', 
+          error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`, 
+          completed_at: new Date().toISOString() 
+        }).eq('id', jobId);
+      }
+      
+      return new Response(JSON.stringify({ error: errorMsg, code: 'IMAGE_TRANSFER_ERROR', refunded: true }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
   }
 
   await supabase.from(TABLE_NAME).update({
