@@ -25,7 +25,7 @@ const NODE_ID_PERSON = '41';
 const NODE_ID_CLOTHING = '43';
 // =====================================================
 
-const MAX_CONCURRENT_JOBS = 3;
+const MAX_CONCURRENT_JOBS = 20;
 
 // Rate limit configuration
 const RATE_LIMIT_UPLOAD = { maxRequests: 10, windowSeconds: 60 };
