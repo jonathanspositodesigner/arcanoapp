@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Coins, ArrowRight, TrendingUp, Zap } from "lucide-react";
+import { Coins, ArrowRight, TrendingUp, Zap, Infinity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { useCredits } from "@/contexts/CreditsContext";
