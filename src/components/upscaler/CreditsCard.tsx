@@ -27,9 +27,10 @@ interface CreditsCardProps {
   creditsLoading: boolean;
   userId: string | undefined;
   breakdown?: CreditsBreakdown;
+  isUnlimited?: boolean;
 }
 
-export const CreditsCard = ({ credits, creditsLoading, userId, breakdown }: CreditsCardProps) => {
+export const CreditsCard = ({ credits, creditsLoading, userId, breakdown, isUnlimited = false }: CreditsCardProps) => {
   const navigate = useNavigate();
   const [latestTransaction, setLatestTransaction] = useState<Transaction | null>(null);
   const [transactionsLoading, setTransactionsLoading] = useState(true);
@@ -87,6 +88,7 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown }: Cred
           size="lg"
           showCoin={false}
           variant="badge"
+          isUnlimited={isUnlimited}
         />
       </div>
 
