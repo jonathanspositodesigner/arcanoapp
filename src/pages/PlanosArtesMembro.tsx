@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { getSanitizedUtms } from "@/lib/utmUtils";
-import { getMetaCookies } from "@/lib/metaCookies";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -9,18 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Check, Star, ArrowLeft, Gift, Clock, Crown, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { invokeCheckout, preWarmCheckout } from "@/lib/checkoutFetch";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
-import { appendUtmToUrl } from "@/lib/utmUtils";
 import { useLocale } from "@/contexts/LocaleContext";
-import { useProcessingButton } from "@/hooks/useProcessingButton";
-import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
-import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
-import { toast } from "sonner";
+import { useMPCheckout } from "@/hooks/useMPCheckout";
 
-// Mapeamento de slugs Pagar.me para desconto de membro (20% OFF)
-const PAGARME_MEMBER_SLUGS: Record<string, Record<string, string>> = {
+// Mapeamento de slugs MP para desconto de membro (20% OFF)
+const MP_MEMBER_SLUGS: Record<string, Record<string, string>> = {
   'pack-arcano-vol-1': { '6_meses': 'vol1-membro-6meses', '1_ano': 'vol1-membro-1ano', 'vitalicio': 'vol1-membro-vitalicio' },
   'pack-arcano-vol-2': { '6_meses': 'vol2-membro-6meses', '1_ano': 'vol2-membro-1ano', 'vitalicio': 'vol2-membro-vitalicio' },
   'pack-arcano-vol-3': { '6_meses': 'vol3-membro-6meses', '1_ano': 'vol3-membro-1ano', 'vitalicio': 'vol3-membro-vitalicio' },
@@ -46,56 +39,25 @@ interface Pack {
   enabled_6_meses: boolean;
   enabled_1_ano: boolean;
   enabled_vitalicio: boolean;
-  checkout_link_membro_6_meses: string | null;
-  checkout_link_membro_1_ano: string | null;
-  checkout_link_membro_vitalicio: string | null;
-  checkout_link_latam_membro_6_meses: string | null;
-  checkout_link_latam_membro_1_ano: string | null;
-  checkout_link_latam_membro_vitalicio: string | null;
 }
 
 const PlanosArtesMembro = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { t } = useTranslation('plans');
-  const { isLatam, getCheckoutLink } = useLocale();
+  const { isLatam } = useLocale();
   
   const packSlug = searchParams.get("pack");
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
   const [packs, setPacks] = useState<Pack[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user, isPremium, userPacks, isLoading: authLoading } = usePremiumArtesStatus();
+  const { isPremium, userPacks, isLoading: authLoading } = usePremiumArtesStatus();
   
   const { isActive: isPromoActive, loading: promoLoading } = useYearEndPromo();
 
-  // Pagar.me checkout state
-  const [showPreCheckout, setShowPreCheckout] = useState(false);
-  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
-  const [pendingSlug, setPendingSlug] = useState<string | null>(null);
-  const [pendingProfile, setPendingProfile] = useState<any>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
-  const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
+  const { openCheckout, isLoading: isCheckoutSubmitting, MPCheckoutModal } = useMPCheckout({ source_page: "planos-artes-membro" });
   const [selectedAccessType, setSelectedAccessType] = useState('vitalicio');
   const [arteCount, setArteCount] = useState<number | null>(null);
-
-  // Pre-warm checkout edge function after 3s
-  useEffect(() => {
-    const timer = setTimeout(() => preWarmCheckout(), 3000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Check auth on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-        setUserEmail(user.email || null);
-      }
-    };
-    checkAuth();
-  }, []);
 
   // Redirect to promo page if year-end promo is active
   useEffect(() => {
@@ -137,9 +99,7 @@ const PlanosArtesMembro = () => {
         id, name, slug, cover_url, type,
         price_6_meses, price_1_ano, price_vitalicio,
         price_6_meses_usd, price_1_ano_usd, price_vitalicio_usd,
-        enabled_6_meses, enabled_1_ano, enabled_vitalicio,
-        checkout_link_membro_6_meses, checkout_link_membro_1_ano, checkout_link_membro_vitalicio,
-        checkout_link_latam_membro_6_meses, checkout_link_latam_membro_1_ano, checkout_link_latam_membro_vitalicio
+        enabled_6_meses, enabled_1_ano, enabled_vitalicio
       `)
       .in("type", ["pack", "curso"])
       .order("display_order", { ascending: true });
@@ -272,141 +232,12 @@ const PlanosArtesMembro = () => {
     }
   }, [selectedPack]);
 
-  // Check if this pack uses Pagar.me checkout
-  const isPagarmeMemberSlug = selectedPack ? PAGARME_MEMBER_SLUGS[selectedPack.slug] : null;
-
-  const handlePagarmeCheckout = async (accessType: string) => {
-    if (!selectedPack || !isPagarmeMemberSlug) return;
-    const productSlug = isPagarmeMemberSlug[accessType];
-    if (!productSlug) return;
-
-    if (!startCheckout()) return;
-
-    if (!userId) {
-      setPendingSlug(productSlug);
-      setShowPreCheckout(true);
-      endCheckout();
-      return;
-    }
-
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
-        .eq('id', userId)
-        .single();
-
-      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf
-        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
-
-      if (isProfileComplete) {
-        setPendingSlug(productSlug);
-        setPendingProfile(profile);
-        setShowPaymentMethodModal(true);
-        endCheckout();
-      } else {
-        setPendingSlug(productSlug);
-        setShowPreCheckout(true);
-        endCheckout();
-      }
-    } catch {
-      endCheckout();
-    }
-  };
-
-  const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
-    if (!pendingSlug || !pendingProfile) return;
-    if (!startCheckout()) return;
-
-    try {
-      const utmData = getSanitizedUtms();
-
-      const { fbp, fbc } = getMetaCookies();
-      const body: any = {
-        product_slug: pendingSlug,
-        user_email: userEmail,
-        user_phone: pendingProfile.phone,
-        user_name: pendingProfile.name,
-        user_cpf: pendingProfile.cpf,
-        billing_type: method,
-        utm_data: utmData,
-        fbp,
-        fbc,
-      };
-
-      if (method === 'PIX') {
-        body.user_address = {
-          line_1: pendingProfile.address_line,
-          zip_code: pendingProfile.address_zip,
-          city: pendingProfile.address_city,
-          state: pendingProfile.address_state,
-          country: pendingProfile.address_country || 'BR'
-        };
-      }
-
-      const response = await invokeCheckout(body);
-
-      if (response.error) {
-        console.error('Erro checkout direto:', response.error);
-        toast.error('Erro ao gerar pagamento. Tente novamente.');
-        setShowPaymentMethodModal(false);
-        endCheckout();
-        return;
-      }
-
-      const { checkout_url, event_id } = response.data;
-      // Fire InitiateCheckout with event_id for deduplication with server-side CAPI
-      if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
-        (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
-      }
-      if (checkout_url) {
-        window.location.href = checkout_url;
-        return; // Keep modal open during redirect
-      } else {
-        toast.error('Erro ao gerar link de pagamento.');
-      }
-    } catch (error) {
-      console.error('Erro checkout direto:', error);
-      toast.error('Erro ao processar. Tente novamente.');
-    }
-    endCheckout();
-    setShowPaymentMethodModal(false);
-  };
-
   const handleSelectOption = (accessType: string) => {
     if (!selectedPack) return;
 
-    // If this pack has a Pagar.me member slug, use that flow
-    if (isPagarmeMemberSlug) {
-      handlePagarmeCheckout(accessType);
-      return;
-    }
-    
-    // Fallback to Greenn links
-    let checkoutLinkBR: string | null = null;
-    let checkoutLinkLatam: string | null = null;
-    
-    switch (accessType) {
-      case "6_meses":
-        checkoutLinkBR = selectedPack.checkout_link_membro_6_meses;
-        checkoutLinkLatam = selectedPack.checkout_link_latam_membro_6_meses;
-        break;
-      case "1_ano":
-        checkoutLinkBR = selectedPack.checkout_link_membro_1_ano;
-        checkoutLinkLatam = selectedPack.checkout_link_latam_membro_1_ano;
-        break;
-      case "vitalicio":
-        checkoutLinkBR = selectedPack.checkout_link_membro_vitalicio;
-        checkoutLinkLatam = selectedPack.checkout_link_latam_membro_vitalicio;
-        break;
-    }
-    
-    const checkoutLink = getCheckoutLink(checkoutLinkBR, checkoutLinkLatam);
-    
-    if (checkoutLink) {
-      window.open(appendUtmToUrl(checkoutLink), "_blank");
-    } else {
-      window.open(appendUtmToUrl("https://voxvisual.com.br/linksbio/"), "_blank");
+    const slug = MP_MEMBER_SLUGS[selectedPack.slug]?.[accessType];
+    if (slug) {
+      openCheckout(slug);
     }
   };
 
@@ -505,8 +336,6 @@ const PlanosArtesMembro = () => {
         ) : (
           // Show access options for selected pack
           <>
-
-
             <div className="max-w-lg mx-auto">
               <Card className="relative bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
                 {selectedAccessType === 'vitalicio' && accessOptions.length > 1 && (
@@ -599,21 +428,7 @@ const PlanosArtesMembro = () => {
         )}
       </div>
 
-      {/* PreCheckout Modal for Pagar.me member discount */}
-      <PreCheckoutModal
-        isOpen={showPreCheckout}
-        onClose={() => setShowPreCheckout(false)}
-        productSlug={pendingSlug || undefined}
-      />
-
-      {/* Payment Method Modal */}
-      <PaymentMethodModal
-        open={showPaymentMethodModal}
-        onOpenChange={setShowPaymentMethodModal}
-        onSelect={handlePaymentMethodSelected}
-        isProcessing={isCheckoutSubmitting}
-        colorScheme="purple"
-      />
+      <MPCheckoutModal />
     </div>
   );
 };

@@ -1,13 +1,6 @@
-import { Check, Star, Gift, Clock, CreditCard } from "lucide-react";
-import { getSanitizedUtms } from "@/lib/utmUtils";
-import { getMetaCookies } from "@/lib/metaCookies";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { invokeCheckout } from "@/lib/checkoutFetch";
-import { useProcessingButton } from "@/hooks/useProcessingButton";
-import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
-import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
-import { toast } from "sonner";
+import { Check, Star, Gift, Clock, CreditCard } from "lucide-react";
+import { useMPCheckout } from "@/hooks/useMPCheckout";
 
 interface PricingFeature {
   text: string;
@@ -104,25 +97,7 @@ const plans: PricingPlan[] = [
 
 export const PricingCardsSection = () => {
   const [timeLeft, setTimeLeft] = useState(0);
-  const [showPreCheckout, setShowPreCheckout] = useState(false);
-  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
-  const [pendingSlug, setPendingSlug] = useState<string | null>(null);
-  const [pendingProfile, setPendingProfile] = useState<any>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
-  const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
-
-  // Check auth on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-        setUserEmail(user.email || null);
-      }
-    };
-    checkAuth();
-  }, []);
+  const { openCheckout, isLoading: isCheckoutSubmitting, MPCheckoutModal } = useMPCheckout({ source_page: "combo-artes" });
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -143,109 +118,6 @@ export const PricingCardsSection = () => {
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
     return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const handlePurchase = async (productSlug: string) => {
-    if (!startCheckout()) return;
-
-    // Fire Meta Pixel
-    if (typeof window !== "undefined" && (window as any).fbq) {
-      (window as any).fbq("track", "InitiateCheckout", {
-        content_name: "Combo Artes Arcanas",
-        content_category: "Digital Product",
-        content_type: "product",
-        currency: "BRL",
-      });
-    }
-
-    if (!userId) {
-      // Not logged in → open PreCheckoutModal
-      setPendingSlug(productSlug);
-      setShowPreCheckout(true);
-      endCheckout();
-      return;
-    }
-
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
-        .eq('id', userId)
-        .single();
-
-      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf
-        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
-
-      if (isProfileComplete) {
-        setPendingSlug(productSlug);
-        setPendingProfile(profile);
-        setShowPaymentMethodModal(true);
-        endCheckout();
-      } else {
-        setPendingSlug(productSlug);
-        setShowPreCheckout(true);
-        endCheckout();
-      }
-    } catch {
-      endCheckout();
-    }
-  };
-
-  const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
-    if (!pendingSlug || !pendingProfile) return;
-    if (!startCheckout()) return;
-
-    try {
-      const utmData = getSanitizedUtms();
-      const { fbp, fbc } = getMetaCookies();
-      const body: any = {
-        product_slug: pendingSlug,
-        user_email: userEmail,
-        user_phone: pendingProfile.phone,
-        user_name: pendingProfile.name,
-        user_cpf: pendingProfile.cpf,
-        billing_type: method,
-        utm_data: utmData,
-        fbp,
-        fbc,
-      };
-
-      if (method === 'PIX') {
-        body.user_address = {
-          line_1: pendingProfile.address_line,
-          zip_code: pendingProfile.address_zip,
-          city: pendingProfile.address_city,
-          state: pendingProfile.address_state,
-          country: pendingProfile.address_country || 'BR'
-        };
-      }
-
-      const response = await invokeCheckout(body);
-
-      if (response.error) {
-        console.error('Erro checkout direto:', response.error);
-        toast.error('Erro ao gerar pagamento. Tente novamente.');
-        setShowPaymentMethodModal(false);
-        endCheckout();
-        return;
-      }
-
-      const { checkout_url, event_id } = response.data;
-      if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
-        (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
-      }
-      if (checkout_url) {
-        window.location.href = checkout_url;
-        return;
-      } else {
-        toast.error('Erro ao gerar link de pagamento.');
-      }
-    } catch (error) {
-      console.error('Erro checkout direto:', error);
-      toast.error('Erro ao processar. Tente novamente.');
-    }
-    endCheckout();
-    setShowPaymentMethodModal(false);
   };
 
   return (
@@ -336,7 +208,7 @@ export const PricingCardsSection = () => {
               </ul>
 
               <button
-                onClick={() => handlePurchase(plan.productSlug)}
+                onClick={() => openCheckout(plan.productSlug)}
                 disabled={isCheckoutSubmitting}
                 className={`w-full font-bold text-sm py-3.5 rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
                   plan.highlight
@@ -368,21 +240,7 @@ export const PricingCardsSection = () => {
         </div>
       </div>
 
-      {/* PreCheckout Modal for Pagar.me */}
-      <PreCheckoutModal
-        isOpen={showPreCheckout}
-        onClose={() => setShowPreCheckout(false)}
-        productSlug={pendingSlug || undefined}
-        colorScheme="orange"
-      />
-
-      {/* Payment Method Modal */}
-      <PaymentMethodModal
-        open={showPaymentMethodModal}
-        onOpenChange={setShowPaymentMethodModal}
-        onSelect={handlePaymentMethodSelected}
-        isProcessing={isCheckoutSubmitting}
-      />
+      <MPCheckoutModal />
     </section>
   );
 };

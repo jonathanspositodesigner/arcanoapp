@@ -1,131 +1,10 @@
-import { useState, useEffect } from "react";
 import { ShieldCheck, Award, Lock } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { invokeCheckout } from "@/lib/checkoutFetch";
-import { useProcessingButton } from "@/hooks/useProcessingButton";
-import PreCheckoutModal from "@/components/upscaler/PreCheckoutModal";
-import PaymentMethodModal from "@/components/checkout/PaymentMethodModal";
-import { getSanitizedUtms } from "@/lib/utmUtils";
-import { getMetaCookies } from "@/lib/metaCookies";
-import { toast } from "sonner";
+import { useMPCheckout } from "@/hooks/useMPCheckout";
 
 const PRODUCT_SLUG = "combo-1ao3-vitalicio";
 
 export const GuaranteeSectionCombo = () => {
-  const [showPreCheckout, setShowPreCheckout] = useState(false);
-  const [showPaymentMethodModal, setShowPaymentMethodModal] = useState(false);
-  const [pendingProfile, setPendingProfile] = useState<any>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
-  const { isSubmitting: isCheckoutSubmitting, startSubmit: startCheckout, endSubmit: endCheckout } = useProcessingButton();
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-        setUserEmail(user.email || null);
-      }
-    };
-    checkAuth();
-  }, []);
-
-  const handlePurchase = async () => {
-    if (!startCheckout()) return;
-
-    if (typeof window !== "undefined" && (window as any).fbq) {
-      (window as any).fbq("track", "InitiateCheckout", {
-        content_name: "Combo Artes Arcanas - Garantia",
-        content_category: "Digital Product",
-        content_type: "product",
-        currency: "BRL",
-      });
-    }
-
-    if (!userId) {
-      setShowPreCheckout(true);
-      endCheckout();
-      return;
-    }
-
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('name, phone, cpf, address_line, address_zip, address_city, address_state, address_country')
-        .eq('id', userId)
-        .single();
-
-      const isProfileComplete = profile?.name && profile?.phone && profile?.cpf
-        && profile?.address_line && profile?.address_zip && profile?.address_city && profile?.address_state;
-
-      if (isProfileComplete) {
-        setPendingProfile(profile);
-        setShowPaymentMethodModal(true);
-      } else {
-        setShowPreCheckout(true);
-      }
-    } catch {
-      // fallback
-    }
-    endCheckout();
-  };
-
-  const handlePaymentMethodSelected = async (method: 'PIX' | 'CREDIT_CARD') => {
-    if (!pendingProfile) return;
-    if (!startCheckout()) return;
-
-    try {
-      const utmData = getSanitizedUtms();
-      const { fbp, fbc } = getMetaCookies();
-      const body: any = {
-        product_slug: PRODUCT_SLUG,
-        user_email: userEmail,
-        user_phone: pendingProfile.phone,
-        user_name: pendingProfile.name,
-        user_cpf: pendingProfile.cpf,
-        billing_type: method,
-        utm_data: utmData,
-        fbp,
-        fbc,
-      };
-
-      if (method === 'PIX') {
-        body.user_address = {
-          line_1: pendingProfile.address_line,
-          zip_code: pendingProfile.address_zip,
-          city: pendingProfile.address_city,
-          state: pendingProfile.address_state,
-          country: pendingProfile.address_country || 'BR'
-        };
-      }
-
-      const response = await invokeCheckout(body);
-
-      if (response.error) {
-        console.error('Erro checkout direto:', response.error);
-        toast.error('Erro ao gerar pagamento. Tente novamente.');
-        setShowPaymentMethodModal(false);
-        endCheckout();
-        return;
-      }
-
-      const { checkout_url, event_id } = response.data;
-      if (typeof window !== 'undefined' && (window as any).fbq && event_id) {
-        (window as any).fbq('track', 'InitiateCheckout', {}, { eventID: event_id });
-      }
-      if (checkout_url) {
-        window.location.href = checkout_url;
-        return;
-      } else {
-        toast.error('Erro ao gerar link de pagamento.');
-      }
-    } catch (error) {
-      console.error('Erro checkout direto:', error);
-      toast.error('Erro ao processar. Tente novamente.');
-    }
-    endCheckout();
-    setShowPaymentMethodModal(false);
-  };
+  const { openCheckout, isLoading: isCheckoutSubmitting, MPCheckoutModal } = useMPCheckout({ source_page: "combo-artes" });
 
   return (
     <section className="py-16 px-4 bg-gradient-to-b from-black to-[#0a0505]">
@@ -159,7 +38,7 @@ export const GuaranteeSectionCombo = () => {
               </p>
               
               <button
-                onClick={handlePurchase}
+                onClick={() => openCheckout(PRODUCT_SLUG)}
                 disabled={isCheckoutSubmitting}
                 className="w-full md:w-auto bg-green-500 hover:bg-green-600 text-white font-bold text-base md:text-lg px-6 md:px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-lg shadow-green-500/30 flex items-center justify-center gap-2 mx-auto md:mx-0 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -197,20 +76,7 @@ export const GuaranteeSectionCombo = () => {
         </div>
       </div>
 
-      <PreCheckoutModal
-        isOpen={showPreCheckout}
-        onClose={() => setShowPreCheckout(false)}
-        productSlug={PRODUCT_SLUG}
-        colorScheme="orange"
-      />
-
-      <PaymentMethodModal
-        open={showPaymentMethodModal}
-        onOpenChange={setShowPaymentMethodModal}
-        onSelect={handlePaymentMethodSelected}
-        isProcessing={isCheckoutSubmitting}
-        colorScheme="orange"
-      />
+      <MPCheckoutModal />
     </section>
   );
 };
