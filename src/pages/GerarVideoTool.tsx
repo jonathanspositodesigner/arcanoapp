@@ -12,6 +12,7 @@ import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
+import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { markJobAsFailedInDb } from '@/utils/markJobAsFailedInDb';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import AppLayout from '@/components/layout/AppLayout';
