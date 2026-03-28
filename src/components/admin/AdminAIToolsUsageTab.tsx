@@ -997,6 +997,25 @@ const AdminAIToolsUsageTab = () => {
                     {renderJsonBlock("Raw Webhook Payload", errorDetails.raw_webhook_payload)}
                   </div>
                 ) : null}
+
+                {/* Input image for failed jobs */}
+                {jobInputUrl && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Imagem Enviada pelo Usuário</p>
+                    <img
+                      src={jobInputUrl}
+                      alt="Imagem enviada"
+                      className="w-full rounded-md max-h-[400px] object-contain border border-border cursor-pointer"
+                      onClick={() => window.open(jobInputUrl, '_blank')}
+                    />
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={jobInputUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Ver Imagem Original
+                      </a>
+                    </Button>
+                  </div>
+                )}
               </>
             ) : isLoadingOutput ? (
               <div className="flex items-center justify-center py-12">
