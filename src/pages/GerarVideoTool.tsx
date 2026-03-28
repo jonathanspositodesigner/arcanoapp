@@ -49,6 +49,16 @@ const GerarVideoTool = () => {
   const { isPlanos2User, hasVideoGeneration } = useAuth();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
 
+  // Watchdog: detect stuck pending jobs (5 min timeout)
+  const handleWatchdogFailed = useCallback((msg: string) => {
+    const errInfo = getAIErrorMessage(msg);
+    setErrorMessage(errInfo.message);
+    setIsGenerating(false);
+    setIsQueued(false);
+    refetchCredits();
+    toast.error(`${errInfo.message}. ${errInfo.solution}`);
+  }, [refetchCredits]);
+
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState<string>('16:9');
   const [selectedModel, setSelectedModel] = useState<string>('veo3.1');
@@ -239,10 +249,15 @@ const GerarVideoTool = () => {
       } else {
         toast.success('Geração de vídeo iniciada! Aguarde...');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('[GerarVideo] Error:', err);
-      toast.error('Erro ao gerar vídeo');
+      const errMsg = err?.message || 'Erro ao gerar vídeo';
+      toast.error(errMsg);
       setIsGenerating(false);
+      // Fire-and-forget: mark job as failed in DB if we have a jobId
+      if (jobId) {
+        markJobAsFailedInDb(jobId, 'video_generator', errMsg);
+      }
     } finally {
       endSubmit();
     }
