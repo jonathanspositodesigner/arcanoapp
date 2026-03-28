@@ -552,7 +552,8 @@ const UpscalerArcanoTool: React.FC = () => {
       // Step 2: Create job in database ONLY AFTER successful upload
       // This prevents orphaned jobs if user closes page during upload
       // IMPORTANTE: Gravar category, version, resolution para o fallback funcionar
-      const resolutionValue = resolution === '4k' ? 4096 : 2048;
+      // VRAM safety: always cap at 2048 to prevent OOM (backend also enforces this)
+      const resolutionValue = 2048;
       const framingMode = isLongeMode ? 'longe' : 'perto';
       const effectiveCategory = isLongeMode ? 'pessoas_longe' : promptCategory;
       
