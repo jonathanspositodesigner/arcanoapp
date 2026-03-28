@@ -1242,9 +1242,16 @@ async function startJobOnRunningHub(
       const framingMode = p.framingMode || job.framing_mode || 'perto';
       const inputFile = p.inputFileName || job.input_file_name;
       const detailDenoise = p.detailDenoise ?? job.detail_denoise;
-      const resolution = p.resolution || job.resolution;
+      let resolution = p.resolution || job.resolution;
       const prompt = p.prompt || job.prompt;
       const editingLevel = p.editingLevel ?? job.editing_level;
+      
+      // VRAM GUARDRAIL: Cap resolution to 2048 if it would exceed safe output limits
+      // This prevents OOM errors on RunningHub GPUs
+      if (resolution && Number(resolution) > 2048) {
+        console.log(`[QueueManager] VRAM guardrail: capping resolution from ${resolution} to 2048 for safety`);
+        resolution = 2048;
+      }
       
       if (category === 'fotoAntiga') {
         webappId = WEBAPP_IDS.upscaler_jobs.fotoAntiga;
