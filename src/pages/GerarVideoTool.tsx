@@ -10,6 +10,8 @@ import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
+import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
+import { markJobAsFailedInDb } from '@/utils/markJobAsFailedInDb';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import AppLayout from '@/components/layout/AppLayout';
 import {
@@ -47,6 +49,16 @@ const GerarVideoTool = () => {
   const { isPlanos2User, hasVideoGeneration } = useAuth();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
 
+  // Watchdog: detect stuck pending jobs (5 min timeout)
+  const handleWatchdogFailed = useCallback((msg: string) => {
+    const errInfo = getAIErrorMessage(msg);
+    setErrorMessage(errInfo.message);
+    setIsGenerating(false);
+    setIsQueued(false);
+    refetchCredits();
+    toast.error(`${errInfo.message}. ${errInfo.solution}`);
+  }, [refetchCredits]);
+
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState<string>('16:9');
   const [selectedModel, setSelectedModel] = useState<string>('veo3.1');
@@ -69,6 +81,14 @@ const GerarVideoTool = () => {
 
   const currentModel = MODELS.find(m => m.id === selectedModel) || MODELS[0];
   const creditCost = currentModel.cost;
+
+  // 5 min watchdog for stuck pending jobs
+  useJobPendingWatchdog({
+    jobId,
+    toolType: 'video_generator',
+    enabled: !!jobId && isGenerating,
+    onJobFailed: handleWatchdogFailed,
+  });
 
   const handleFrameSelect = (type: 'start' | 'end') => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -237,10 +257,15 @@ const GerarVideoTool = () => {
       } else {
         toast.success('Geração de vídeo iniciada! Aguarde...');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('[GerarVideo] Error:', err);
-      toast.error('Erro ao gerar vídeo');
+      const errMsg = err?.message || 'Erro ao gerar vídeo';
+      toast.error(errMsg);
       setIsGenerating(false);
+      // Fire-and-forget: mark job as failed in DB if we have a jobId
+      if (jobId) {
+        markJobAsFailedInDb(jobId, 'video_generator', errMsg);
+      }
     } finally {
       endSubmit();
     }
