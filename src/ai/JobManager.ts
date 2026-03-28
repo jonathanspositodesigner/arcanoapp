@@ -21,7 +21,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 // ==================== TYPES ====================
 
-export type ToolType = 'upscaler' | 'pose_changer' | 'veste_ai' | 'video_upscaler' | 'arcano_cloner' | 'character_generator' | 'flyer_maker' | 'bg_remover' | 'image_generator';
+export type ToolType = 'upscaler' | 'pose_changer' | 'veste_ai' | 'video_upscaler' | 'arcano_cloner' | 'character_generator' | 'flyer_maker' | 'bg_remover' | 'image_generator' | 'video_generator';
 export type JobStatus = 'pending' | 'queued' | 'starting' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 export interface JobResult {
@@ -66,6 +66,7 @@ const TABLE_MAP: Record<ToolType, string> = {
   flyer_maker: 'flyer_maker_jobs',
   bg_remover: 'bg_remover_jobs',
   image_generator: 'image_generator_jobs',
+  video_generator: 'video_generator_jobs',
 };
 
 // Edge function names mapping
@@ -79,6 +80,7 @@ const EDGE_FUNCTION_MAP: Record<ToolType, string> = {
   flyer_maker: 'runninghub-flyer-maker/run',
   bg_remover: 'runninghub-bg-remover/run',
   image_generator: 'runninghub-image-generator/run',
+  video_generator: 'generate-video/run',
 };
 
 // Tool names for display
@@ -92,6 +94,7 @@ const TOOL_NAMES: Record<string, ToolType> = {
   'Flyer Maker': 'flyer_maker',
   'Remover Fundo': 'bg_remover',
   'Gerar Imagem': 'image_generator',
+  'Gerar Vídeo': 'video_generator',
 };
 
 // ==================== CORE FUNCTIONS ====================

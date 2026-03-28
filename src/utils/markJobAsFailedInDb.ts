@@ -17,6 +17,7 @@ const TABLE_NAME_MAP: Record<string, string> = {
   flyer_maker: 'flyer_maker_jobs',
   bg_remover: 'bg_remover_jobs',
   image_generator: 'image_generator_jobs',
+  video_generator: 'video_generator_jobs',
 };
 
 export async function markJobAsFailedInDb(

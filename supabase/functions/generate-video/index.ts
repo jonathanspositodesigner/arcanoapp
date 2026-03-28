@@ -339,6 +339,14 @@ async function handleRun(req: Request) {
 
   console.log(`[VideoGenerator] Credits consumed. New balance: ${creditResult[0].new_balance}`);
 
+  // CRITICAL: Mark credits_charged=true IMMEDIATELY after consuming
+  // This ensures cleanup/watchdog can refund if the job gets stuck later
+  await supabase.from(TABLE_NAME).update({
+    credits_charged: true,
+    user_credit_cost: creditCost,
+  }).eq('id', jobId);
+  console.log(`[VideoGenerator] Job ${jobId} marked as credits_charged=true (cost=${creditCost})`);
+
   // Upload frames to RunningHub if provided
   const jobPayload: any = {
     prompt: prompt.trim(),
@@ -405,9 +413,8 @@ async function handleRun(req: Request) {
     }
   }
 
+  // Save job_payload (credits_charged already set above)
   await supabase.from(TABLE_NAME).update({
-    credits_charged: true,
-    user_credit_cost: creditCost,
     job_payload: jobPayload,
   }).eq('id', jobId);
 
