@@ -92,6 +92,36 @@ const GerarVideoTool = () => {
     onJobFailed: handleWatchdogFailed,
   });
 
+  // Triple sync: realtime + polling backup + visibility recovery
+  useJobStatusSync({
+    jobId,
+    toolType: 'video_generator',
+    enabled: !!jobId && isGenerating,
+    onStatusChange: useCallback((update) => {
+      console.log(`[GerarVideo] StatusSync update:`, update.status);
+      if (update.status === 'queued') {
+        setIsQueued(true);
+        setQueuePosition(update.position || 1);
+      } else if (update.status === 'starting' || update.status === 'running') {
+        setIsQueued(false);
+        setQueuePosition(0);
+      } else if (update.status === 'completed') {
+        if (update.outputUrl) setResultUrl(update.outputUrl);
+        setIsGenerating(false);
+        setIsQueued(false);
+        refetchCredits();
+        toast.success('Vídeo gerado com sucesso!');
+      } else if (update.status === 'failed' || update.status === 'cancelled') {
+        const errInfo = getAIErrorMessage(update.errorMessage || 'Erro na geração');
+        setErrorMessage(errInfo.message);
+        setIsGenerating(false);
+        setIsQueued(false);
+        refetchCredits();
+        if (update.errorMessage) toast.error(`${errInfo.message}. ${errInfo.solution}`);
+      }
+    }, [refetchCredits]),
+  });
+
   const handleFrameSelect = (type: 'start' | 'end') => async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
