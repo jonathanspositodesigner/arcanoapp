@@ -146,6 +146,8 @@ const AdminAIToolsUsageTab = () => {
       case "Gerador Avatar": return "front_image_url";
       case "Flyer Maker": return "reference_image_url";
       case "Remover Fundo": return "input_url";
+      case "Gerar Imagem": return null;
+      case "Gerar Vídeo": return null;
       default: return null;
     }
   };
@@ -197,10 +199,31 @@ const AdminAIToolsUsageTab = () => {
     setShowFullscreen(false);
     setErrorDetails(null);
 
-    // If failed or non-completed, fetch error details
+    // If failed or non-completed, fetch error details AND input image
     if (record.status !== "completed") {
       fetchErrorDetails(record);
-      setIsLoadingOutput(false);
+      // Also fetch input image for failed jobs so admin can see what the user sent
+      setIsLoadingOutput(true);
+      try {
+        const tableName = getTableName(record.tool_name);
+        const inputCol = getInputColumn(record.tool_name);
+        const selectFields = inputCol ? `output_url, thumbnail_url, ${inputCol}` : 'output_url, thumbnail_url';
+
+        const { data, error } = await supabase
+          .from(tableName as any)
+          .select(selectFields)
+          .eq('id', record.id)
+          .maybeSingle();
+
+        if (!error && data) {
+          setJobOutputUrl((data as any)?.output_url || null);
+          setJobInputUrl(inputCol ? (data as any)?.[inputCol] || null : null);
+        }
+      } catch (err) {
+        console.error("Error fetching input for failed job:", err);
+      } finally {
+        setIsLoadingOutput(false);
+      }
       return;
     }
 
