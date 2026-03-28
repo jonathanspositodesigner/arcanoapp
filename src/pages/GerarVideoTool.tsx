@@ -14,9 +14,6 @@ import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
 import { markJobAsFailedInDb } from '@/utils/markJobAsFailedInDb';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import AppLayout from '@/components/layout/AppLayout';
-import { useProcessingButton } from '@/hooks/useProcessingButton';
-import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
-import AppLayout from '@/components/layout/AppLayout';
 import {
   DropdownMenu,
   DropdownMenuContent,
