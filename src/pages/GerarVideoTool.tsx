@@ -82,6 +82,14 @@ const GerarVideoTool = () => {
   const currentModel = MODELS.find(m => m.id === selectedModel) || MODELS[0];
   const creditCost = currentModel.cost;
 
+  // 5 min watchdog for stuck pending jobs
+  useJobPendingWatchdog({
+    jobId,
+    toolType: 'video_generator',
+    enabled: !!jobId && isGenerating,
+    onJobFailed: handleWatchdogFailed,
+  });
+
   const handleFrameSelect = (type: 'start' | 'end') => (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
