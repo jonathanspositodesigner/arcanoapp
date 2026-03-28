@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { getAIErrorMessage } from '@/utils/errorMessages';
 import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock, Image, Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -90,20 +91,36 @@ const GerarVideoTool = () => {
     onJobFailed: handleWatchdogFailed,
   });
 
-  const handleFrameSelect = (type: 'start' | 'end') => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFrameSelect = (type: 'start' | 'end') => async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      const base64 = dataUrl.split(',')[1];
-      const frame: FrameImage = { file, preview: dataUrl, base64, mimeType: file.type };
-      if (type === 'start') setStartFrame(frame);
-      else setEndFrame(frame);
-    };
-    reader.readAsDataURL(file);
     e.target.value = '';
+
+    try {
+      // Compress to ≤1536px JPEG before converting to base64
+      const { file: optimizedFile } = await optimizeForAI(file);
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        const base64 = dataUrl.split(',')[1];
+        const frame: FrameImage = { file: optimizedFile, preview: dataUrl, base64, mimeType: optimizedFile.type };
+        if (type === 'start') setStartFrame(frame);
+        else setEndFrame(frame);
+      };
+      reader.readAsDataURL(optimizedFile);
+    } catch (err) {
+      console.error('[VideoTool] Frame compression failed, using original:', err);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        const base64 = dataUrl.split(',')[1];
+        const frame: FrameImage = { file, preview: dataUrl, base64, mimeType: file.type };
+        if (type === 'start') setStartFrame(frame);
+        else setEndFrame(frame);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // Clear frames when switching to prompt_only mode
