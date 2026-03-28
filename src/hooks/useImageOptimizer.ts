@@ -40,6 +40,16 @@ const AI_OPTIMIZATION_CONFIG = {
   initialQuality: 0.9,
 };
 
+// Upscaler-specific config - stricter limit to prevent VRAM OOM
+// Input at 1024px * 4x scale = 4096px max output (safe for GPU)
+const UPSCALER_OPTIMIZATION_CONFIG = {
+  maxSizeMB: 2,
+  maxWidthOrHeight: 1024, // Stricter limit for upscaler to prevent OOM at 4x
+  useWebWorker: true,
+  fileType: 'image/jpeg' as const,
+  initialQuality: 0.9,
+};
+
 export const optimizeImage = async (
   file: File,
   options: OptimizationOptions = {}
@@ -264,10 +274,53 @@ export const validateImageDimensions = (file: File): Promise<ImageDimensionValid
   });
 };
 
+/**
+ * Optimize image specifically for Upscaler tool
+ * Uses 1024px limit to prevent VRAM OOM when upscaling to 4096px
+ */
+export const optimizeForUpscaler = async (file: File): Promise<OptimizationResult> => {
+  const originalSize = file.size;
+
+  try {
+    const compressedFile = await imageCompression(file, UPSCALER_OPTIMIZATION_CONFIG);
+
+    const jpegFileName = file.name.replace(/\.[^/.]+$/, '.jpg');
+    const optimizedFile = new File([compressedFile], jpegFileName, {
+      type: 'image/jpeg',
+    });
+
+    const optimizedSize = optimizedFile.size;
+    const savings = originalSize - optimizedSize;
+    const savingsPercent = Math.round((savings / originalSize) * 100);
+
+    console.log(
+      `[Upscaler Optimize] ${file.name} (${formatBytes(originalSize)}) → ${jpegFileName} (${formatBytes(optimizedSize)}) - ${savingsPercent}% saved`
+    );
+
+    return {
+      file: optimizedFile,
+      originalSize,
+      optimizedSize,
+      savings,
+      savingsPercent,
+    };
+  } catch (error) {
+    console.error('[Upscaler Optimize] Error:', error);
+    return {
+      file,
+      originalSize,
+      optimizedSize: originalSize,
+      savings: 0,
+      savingsPercent: 0,
+    };
+  }
+};
+
 export const useImageOptimizer = () => {
   return {
     optimizeImage,
     optimizeForAI,
+    optimizeForUpscaler,
     isImageFile,
     formatBytes,
     validateImageDimensions,

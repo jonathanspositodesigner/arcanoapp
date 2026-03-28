@@ -22,7 +22,7 @@ import { useCredits } from '@/contexts/CreditsContext';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { useAIJob } from '@/contexts/AIJobContext';
-import { optimizeForAI, validateImageDimensions, getImageDimensions, compressToMaxDimension, MAX_AI_DIMENSION } from '@/hooks/useImageOptimizer';
+import { optimizeForUpscaler, validateImageDimensions, getImageDimensions, compressToMaxDimension, MAX_AI_DIMENSION } from '@/hooks/useImageOptimizer';
 import AppLayout from '@/components/layout/AppLayout';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
@@ -365,9 +365,9 @@ const UpscalerArcanoTool: React.FC = () => {
 
   // Process file after dimension check or compression
   const processFileWithDimensions = useCallback(async (file: File, dimensions: { width: number; height: number }) => {
-    // ALWAYS optimize for AI tools (1536px max) to prevent VRAM overflow
+    // Optimize specifically for Upscaler (1024px max) to prevent VRAM OOM
     toast.info('Otimizando imagem...');
-    const optimizationResult = await optimizeForAI(file);
+    const optimizationResult = await optimizeForUpscaler(file);
     const processedFile = optimizationResult.file;
 
     // Get final dimensions after optimization
@@ -552,7 +552,8 @@ const UpscalerArcanoTool: React.FC = () => {
       // Step 2: Create job in database ONLY AFTER successful upload
       // This prevents orphaned jobs if user closes page during upload
       // IMPORTANTE: Gravar category, version, resolution para o fallback funcionar
-      const resolutionValue = resolution === '4k' ? 4096 : 2048;
+      // VRAM safety: always cap at 2048 to prevent OOM (backend also enforces this)
+      const resolutionValue = 2048;
       const framingMode = isLongeMode ? 'longe' : 'perto';
       const effectiveCategory = isLongeMode ? 'pessoas_longe' : promptCategory;
       
