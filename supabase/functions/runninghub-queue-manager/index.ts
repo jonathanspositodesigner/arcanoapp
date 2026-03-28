@@ -335,9 +335,13 @@ async function cleanupStaleJobs(): Promise<number> {
       return 0;
     }
     let totalCancelled = 0;
-    if (Array.isArray(data)) {
-      for (const row of data) {
-        totalCancelled += row.cancelled_count || 0;
+    if (Array.isArray(data) && data.length > 0) {
+      const row = data[0];
+      // Sum all *_cancelled columns from the wide return type
+      for (const [key, val] of Object.entries(row || {})) {
+        if (key.endsWith('_cancelled') && typeof val === 'number') {
+          totalCancelled += val;
+        }
       }
     }
     if (totalCancelled > 0) {
@@ -1432,16 +1436,20 @@ async function startJobOnRunningHub(
         }
       } else {
         // Veo 3.1
+        // IMPORTANT: With-images uses nodeId=3, text-only uses nodeId=8
+        const isVeoTextOnly = !hasFrames;
+        const veoNodeId = isVeoTextOnly ? "8" : "3";
+        
         if (hasFrames) {
           webappId = webappIds['veo3.1'];
           nodeInfoList.push({ nodeId: "15", fieldName: "image", fieldValue: p.startFrameFileName, description: "FIRST FRAME" });
           nodeInfoList.push({ nodeId: "5", fieldName: "image", fieldValue: p.endFrameFileName, description: "LAST FRAME" });
         } else {
           webappId = webappIds['veo3.1_text_only'];
-          console.log(`[QueueManager] Veo 3.1 text-only mode, using webapp ${webappId}`);
+          console.log(`[QueueManager] Veo 3.1 text-only mode, using webapp ${webappId}, nodeId=${veoNodeId}`);
         }
         nodeInfoList.push({
-          nodeId: "3",
+          nodeId: veoNodeId,
           fieldName: "aspect_ratio",
           fieldData: JSON.stringify([
             { name: "auto", index: "auto", description: "", fastIndex: 1.0 },
@@ -1449,13 +1457,13 @@ async function startJobOnRunningHub(
             { name: "9:16", index: "9:16", description: "", fastIndex: 3.0 },
           ]),
           fieldValue: p.aspectRatio || job.aspect_ratio || "16:9",
-          description: "TAMANHO DO VIDEO",
+          description: "aspect_ratio",
         });
         nodeInfoList.push({
-          nodeId: "3",
+          nodeId: veoNodeId,
           fieldName: "prompt",
           fieldValue: p.prompt || job.prompt || '',
-          description: "PROMPT",
+          description: "prompt",
         });
       }
       

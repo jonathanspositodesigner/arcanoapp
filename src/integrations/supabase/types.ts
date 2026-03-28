@@ -4875,6 +4875,8 @@ export type Database = {
           veste_refunded: number
           video_cancelled: number
           video_refunded: number
+          videogen_cancelled: number
+          videogen_refunded: number
         }[]
       }
       cleanup_expired_ai_jobs: {
