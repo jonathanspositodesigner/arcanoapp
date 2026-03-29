@@ -902,7 +902,130 @@ async function handleFinish(req: Request): Promise<Response> {
   }
 }
 
-async function handleStatus(): Promise<Response> {
+// ==================== RECONCILE ====================
+// Queries RunningHub for the actual task status before the frontend kills a job
+async function handleReconcile(req: Request): Promise<Response> {
+  try {
+    const { table, jobId } = await req.json();
+    
+    if (!table || !jobId) {
+      return new Response(JSON.stringify({ error: 'table and jobId required', resolved: false }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    console.log(`[QueueManager] /reconcile: ${table}/${jobId}`);
+    
+    // Get job's task_id and current status
+    const { data: job } = await supabase
+      .from(table)
+      .select('task_id, status, api_account')
+      .eq('id', jobId)
+      .maybeSingle();
+    
+    if (!job || !job.task_id) {
+      return new Response(JSON.stringify({ resolved: false, reason: 'no_task_id' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Already terminal - nothing to do
+    if (['completed', 'failed', 'cancelled'].includes(job.status)) {
+      return new Response(JSON.stringify({ resolved: true, status: job.status }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Get the API key for this account
+    const accounts = getAvailableApiAccounts();
+    const account = accounts.find(a => a.name === job.api_account) || accounts[0];
+    if (!account) {
+      return new Response(JSON.stringify({ resolved: false, reason: 'no_api_key' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Query RunningHub for task status
+    const statusResponse = await fetch('https://www.runninghub.ai/task/openapi/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiKey: account.apiKey, taskId: job.task_id }),
+    });
+    
+    const statusData = await statusResponse.json();
+    console.log(`[QueueManager] Reconcile status for ${job.task_id}:`, JSON.stringify(statusData));
+    
+    if (statusData.code !== 0) {
+      return new Response(JSON.stringify({ resolved: false, reason: 'api_error', details: statusData }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    const taskStatus = statusData.data?.status || statusData.data?.taskStatus;
+    
+    // If task completed successfully, extract output and finish
+    if (taskStatus === 'SUCCESS' || taskStatus === 'COMPLETED') {
+      const results = statusData.data?.outputFileList || statusData.data?.results || [];
+      let outputUrl: string | null = null;
+      
+      if (Array.isArray(results) && results.length > 0) {
+        const videoResult = results.find((r: any) => ['mp4', 'webm', 'mov'].includes(r.outputType || r.fileType));
+        const imageResult = results.find((r: any) => ['png', 'jpg', 'jpeg', 'webp'].includes(r.outputType || r.fileType));
+        outputUrl = videoResult?.fileUrl || videoResult?.url || imageResult?.fileUrl || imageResult?.url || results[0]?.fileUrl || results[0]?.url || null;
+      }
+      
+      if (outputUrl) {
+        console.log(`[QueueManager] Reconcile: task ${job.task_id} completed with output!`);
+        
+        // Delegate to /finish to handle all side effects
+        const finishUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/finish`;
+        await fetch(finishUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+          body: JSON.stringify({ table, jobId, status: 'completed', outputUrl, taskId: job.task_id }),
+        });
+        
+        await logStep(table, jobId, 'reconciled_completed', { taskId: job.task_id, outputUrl: 'found' });
+        
+        return new Response(JSON.stringify({ resolved: true, status: 'completed' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+    
+    // If task failed on provider side
+    if (taskStatus === 'FAILED' || taskStatus === 'ERROR') {
+      const errorMsg = statusData.data?.errorMessage || statusData.data?.failedReason?.exception_message || 'Provider task failed';
+      
+      const finishUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/finish`;
+      await fetch(finishUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
+        body: JSON.stringify({ table, jobId, status: 'failed', errorMessage: errorMsg, taskId: job.task_id }),
+      });
+      
+      await logStep(table, jobId, 'reconciled_failed', { taskId: job.task_id, error: errorMsg });
+      
+      return new Response(JSON.stringify({ resolved: true, status: 'failed' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Task still running on provider - DON'T kill it
+    console.log(`[QueueManager] Reconcile: task ${job.task_id} still ${taskStatus} on provider`);
+    return new Response(JSON.stringify({ resolved: false, reason: 'still_running', providerStatus: taskStatus }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+    
+  } catch (error) {
+    console.error('[QueueManager] Reconcile error:', error);
+    return new Response(JSON.stringify({ resolved: false, error: error instanceof Error ? error.message : 'Unknown' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+
   const accounts = getAvailableApiAccounts();
   const accountsStats = [];
   
