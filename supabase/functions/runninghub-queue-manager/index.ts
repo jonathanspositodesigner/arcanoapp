@@ -1025,7 +1025,7 @@ async function handleReconcile(req: Request): Promise<Response> {
   }
 }
 
-
+async function handleStatus(): Promise<Response> {
   const accounts = getAvailableApiAccounts();
   const accountsStats = [];
   
