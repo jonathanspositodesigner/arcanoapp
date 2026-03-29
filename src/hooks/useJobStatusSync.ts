@@ -15,7 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ToolType, JobStatus, JobUpdate, TABLE_MAP, queryJobStatus } from '@/ai/JobManager';
 
 // Timeouts diferenciados por tipo de ferramenta
-const VIDEO_TOOLS: ToolType[] = ['gerar_video'];
+const VIDEO_TOOLS: ToolType[] = ['video_generator'];
 const TIMEOUT_DEFAULT_MS = 600000;  // 10 min para ferramentas padrão
 const TIMEOUT_VIDEO_MS = 900000;    // 15 min para vídeo (Veo pode demorar)
 
@@ -140,7 +140,7 @@ export function useJobStatusSync({
       
       if (pollingStartTimeRef.current) {
         const elapsed = Date.now() - pollingStartTimeRef.current;
-        if (elapsed >= POLLING_CONFIG.MAX_DURATION_MS) {
+        if (elapsed >= getTimeoutForTool(toolType)) {
           console.log('[JobSync] Polling timeout reached, stopping');
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -324,13 +324,14 @@ export function useJobStatusSync({
       
       onGlobalStatusChangeRef.current?.('failed');
       
+      const timeoutMinutes = Math.round(getTimeoutForTool(toolType) / 60000);
       onStatusChangeRef.current({
         status: 'failed',
-        errorMessage: 'Tempo limite de processamento excedido (10 min). Seus créditos serão estornados automaticamente.',
+        errorMessage: `Tempo limite de processamento excedido (${timeoutMinutes} min). Seus créditos serão estornados automaticamente.`,
       });
       
       doCleanup();
-    }, ABSOLUTE_TIMEOUT_MS);
+    }, getTimeoutForTool(toolType));
     
     // Cleanup on unmount/deps change
     return () => {
