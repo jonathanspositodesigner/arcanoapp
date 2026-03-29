@@ -271,12 +271,15 @@ export function useJobStatusSync({
     // 3. VISIBILITY RECOVERY
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
-    // 4. TIMER ABSOLUTO DE 10 MINUTOS
+    // 4. TIMER ABSOLUTO (diferenciado por ferramenta)
+    const timeoutMs = getTimeoutForTool(toolType);
+    const timeoutMinutes = Math.round(timeoutMs / 60000);
     absoluteTimeoutRef.current = setTimeout(async () => {
       if (isCompletedRef.current) return;
       
-      console.log('[JobSync] ⚠️ ABSOLUTE TIMEOUT (10 min) reached! Forcing final check...');
+      console.log(`[JobSync] ⚠️ ABSOLUTE TIMEOUT (${timeoutMinutes} min) reached! Forcing final check...`);
       
+      // 4a. Check DB status first
       try {
         const update = await queryJobStatus(toolType, jobId);
         if (update && ['completed', 'failed', 'cancelled'].includes(update.status)) {
@@ -293,11 +296,47 @@ export function useJobStatusSync({
         console.error('[JobSync] Final check error:', error);
       }
       
+      // 4b. Try server-side reconciliation before killing
+      // This queries the provider (RunningHub) to check if the task actually finished
+      try {
+        console.log('[JobSync] Attempting server-side reconciliation before timeout...');
+        const reconcileResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-queue-manager/reconcile`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ table: tableName, jobId }),
+          }
+        );
+        const reconcileResult = await reconcileResponse.json();
+        console.log('[JobSync] Reconciliation result:', reconcileResult);
+        
+        if (reconcileResult.resolved) {
+          // Provider confirmed a status - check DB again
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          const finalUpdate = await queryJobStatus(toolType, jobId);
+          if (finalUpdate && ['completed', 'failed', 'cancelled'].includes(finalUpdate.status)) {
+            processUpdate({
+              status: finalUpdate.status,
+              output_url: finalUpdate.outputUrl,
+              error_message: finalUpdate.errorMessage,
+              position: finalUpdate.position,
+            }, 'polling');
+            return;
+          }
+        }
+      } catch (reconcileError) {
+        console.error('[JobSync] Reconciliation failed:', reconcileError);
+      }
+      
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       if (isCompletedRef.current) return;
       
-      console.log('[JobSync] ❌ Job still active after 10 min, forcing server-side cancellation');
+      console.log(`[JobSync] ❌ Job still active after ${timeoutMinutes} min, forcing server-side cancellation`);
       isCompletedRef.current = true;
       
       try {
@@ -313,7 +352,7 @@ export function useJobStatusSync({
               table: tableName,
               jobId,
               status: 'failed',
-              errorMessage: 'Timeout: job excedeu 10 minutos sem resposta do provedor',
+              errorMessage: `Timeout: job excedeu ${timeoutMinutes} minutos sem resposta do provedor`,
             }),
           }
         );
@@ -324,14 +363,13 @@ export function useJobStatusSync({
       
       onGlobalStatusChangeRef.current?.('failed');
       
-      const timeoutMinutes = Math.round(getTimeoutForTool(toolType) / 60000);
       onStatusChangeRef.current({
         status: 'failed',
         errorMessage: `Tempo limite de processamento excedido (${timeoutMinutes} min). Seus créditos serão estornados automaticamente.`,
       });
       
       doCleanup();
-    }, getTimeoutForTool(toolType));
+    }, timeoutMs);
     
     // Cleanup on unmount/deps change
     return () => {
