@@ -529,6 +529,8 @@ serve(async (req) => {
         return await handleRunOrQueue(req);
       case 'retry':
         return await handleRetry(req);
+      case 'reconcile':
+        return await handleReconcile(req);
       default:
         return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
           status: 400,
