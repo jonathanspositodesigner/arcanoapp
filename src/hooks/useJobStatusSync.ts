@@ -14,15 +14,20 @@ import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ToolType, JobStatus, JobUpdate, TABLE_MAP, queryJobStatus } from '@/ai/JobManager';
 
+// Timeouts diferenciados por tipo de ferramenta
+const VIDEO_TOOLS: ToolType[] = ['gerar_video'];
+const TIMEOUT_DEFAULT_MS = 600000;  // 10 min para ferramentas padrão
+const TIMEOUT_VIDEO_MS = 900000;    // 15 min para vídeo (Veo pode demorar)
+
+function getTimeoutForTool(toolType: ToolType): number {
+  return VIDEO_TOOLS.includes(toolType) ? TIMEOUT_VIDEO_MS : TIMEOUT_DEFAULT_MS;
+}
+
 // Configurações do polling de backup
 const POLLING_CONFIG = {
   INITIAL_DELAY_MS: 5000,   // 5s - verificar mais cedo
   INTERVAL_MS: 5000,        // 5s entre polls
-  MAX_DURATION_MS: 600000,  // 10 min - acompanha o timer absoluto
 } as const;
-
-// Timer absoluto de segurança - NENHUM job fica ativo por mais de 10 minutos
-const ABSOLUTE_TIMEOUT_MS = 600000; // 10 minutos
 
 interface UseJobStatusSyncOptions {
   /** ID do job ativo (null quando não há job) */
