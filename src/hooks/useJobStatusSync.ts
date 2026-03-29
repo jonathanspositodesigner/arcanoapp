@@ -327,6 +327,22 @@ export function useJobStatusSync({
             }, 'polling');
             return;
           }
+        } else if (reconcileResult.reason === 'still_running') {
+          // Provider says task is still processing - DON'T kill it
+          console.log('[JobSync] Provider confirms task still running, extending wait...');
+          // Continue polling for another 5 minutes instead of killing
+          const extendMs = 300000; // 5 min extension
+          absoluteTimeoutRef.current = setTimeout(() => {
+            console.log('[JobSync] Extended timeout expired, forcing failure');
+            isCompletedRef.current = true;
+            onGlobalStatusChangeRef.current?.('failed');
+            onStatusChangeRef.current({
+              status: 'failed',
+              errorMessage: `Tempo limite estendido excedido. Seus créditos serão estornados automaticamente.`,
+            });
+            doCleanup();
+          }, extendMs);
+          return; // Don't kill the job now
         }
       } catch (reconcileError) {
         console.error('[JobSync] Reconciliation failed:', reconcileError);
