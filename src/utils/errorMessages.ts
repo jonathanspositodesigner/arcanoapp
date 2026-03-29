@@ -10,6 +10,14 @@ export function getAIErrorMessage(errorMessage: string | null): {
 } {
   const error = errorMessage?.toLowerCase() || '';
   
+  // Video generation provider rejection (Veo/Wan model errors)
+  if (error.includes('video generation failed') || error.includes('generate_video')) {
+    return {
+      message: 'A IA não conseguiu gerar o vídeo',
+      solution: 'Tente com um prompt diferente ou use outra imagem. Alguns conteúdos podem ser rejeitados pelo modelo. Seus créditos foram estornados.'
+    };
+  }
+
   // Erro chinês da RunningHub = "Workflow execution failed"
   if (errorMessage?.includes('工作流运行失败') || error.includes('workflow')) {
     return {

@@ -14,15 +14,20 @@ import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ToolType, JobStatus, JobUpdate, TABLE_MAP, queryJobStatus } from '@/ai/JobManager';
 
+// Timeouts diferenciados por tipo de ferramenta
+const VIDEO_TOOLS: ToolType[] = ['video_generator'];
+const TIMEOUT_DEFAULT_MS = 600000;  // 10 min para ferramentas padrão
+const TIMEOUT_VIDEO_MS = 900000;    // 15 min para vídeo (Veo pode demorar)
+
+function getTimeoutForTool(toolType: ToolType): number {
+  return VIDEO_TOOLS.includes(toolType) ? TIMEOUT_VIDEO_MS : TIMEOUT_DEFAULT_MS;
+}
+
 // Configurações do polling de backup
 const POLLING_CONFIG = {
   INITIAL_DELAY_MS: 5000,   // 5s - verificar mais cedo
   INTERVAL_MS: 5000,        // 5s entre polls
-  MAX_DURATION_MS: 600000,  // 10 min - acompanha o timer absoluto
 } as const;
-
-// Timer absoluto de segurança - NENHUM job fica ativo por mais de 10 minutos
-const ABSOLUTE_TIMEOUT_MS = 600000; // 10 minutos
 
 interface UseJobStatusSyncOptions {
   /** ID do job ativo (null quando não há job) */
@@ -135,7 +140,7 @@ export function useJobStatusSync({
       
       if (pollingStartTimeRef.current) {
         const elapsed = Date.now() - pollingStartTimeRef.current;
-        if (elapsed >= POLLING_CONFIG.MAX_DURATION_MS) {
+        if (elapsed >= getTimeoutForTool(toolType)) {
           console.log('[JobSync] Polling timeout reached, stopping');
           if (pollingIntervalRef.current) {
             clearInterval(pollingIntervalRef.current);
@@ -266,12 +271,15 @@ export function useJobStatusSync({
     // 3. VISIBILITY RECOVERY
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
-    // 4. TIMER ABSOLUTO DE 10 MINUTOS
+    // 4. TIMER ABSOLUTO (diferenciado por ferramenta)
+    const timeoutMs = getTimeoutForTool(toolType);
+    const timeoutMinutes = Math.round(timeoutMs / 60000);
     absoluteTimeoutRef.current = setTimeout(async () => {
       if (isCompletedRef.current) return;
       
-      console.log('[JobSync] ⚠️ ABSOLUTE TIMEOUT (10 min) reached! Forcing final check...');
+      console.log(`[JobSync] ⚠️ ABSOLUTE TIMEOUT (${timeoutMinutes} min) reached! Forcing final check...`);
       
+      // 4a. Check DB status first
       try {
         const update = await queryJobStatus(toolType, jobId);
         if (update && ['completed', 'failed', 'cancelled'].includes(update.status)) {
@@ -288,11 +296,63 @@ export function useJobStatusSync({
         console.error('[JobSync] Final check error:', error);
       }
       
+      // 4b. Try server-side reconciliation before killing
+      // This queries the provider (RunningHub) to check if the task actually finished
+      try {
+        console.log('[JobSync] Attempting server-side reconciliation before timeout...');
+        const reconcileResponse = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-queue-manager/reconcile`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ table: tableName, jobId }),
+          }
+        );
+        const reconcileResult = await reconcileResponse.json();
+        console.log('[JobSync] Reconciliation result:', reconcileResult);
+        
+        if (reconcileResult.resolved) {
+          // Provider confirmed a status - check DB again
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          const finalUpdate = await queryJobStatus(toolType, jobId);
+          if (finalUpdate && ['completed', 'failed', 'cancelled'].includes(finalUpdate.status)) {
+            processUpdate({
+              status: finalUpdate.status,
+              output_url: finalUpdate.outputUrl,
+              error_message: finalUpdate.errorMessage,
+              position: finalUpdate.position,
+            }, 'polling');
+            return;
+          }
+        } else if (reconcileResult.reason === 'still_running') {
+          // Provider says task is still processing - DON'T kill it
+          console.log('[JobSync] Provider confirms task still running, extending wait...');
+          // Continue polling for another 5 minutes instead of killing
+          const extendMs = 300000; // 5 min extension
+          absoluteTimeoutRef.current = setTimeout(() => {
+            console.log('[JobSync] Extended timeout expired, forcing failure');
+            isCompletedRef.current = true;
+            onGlobalStatusChangeRef.current?.('failed');
+            onStatusChangeRef.current({
+              status: 'failed',
+              errorMessage: `Tempo limite estendido excedido. Seus créditos serão estornados automaticamente.`,
+            });
+            doCleanup();
+          }, extendMs);
+          return; // Don't kill the job now
+        }
+      } catch (reconcileError) {
+        console.error('[JobSync] Reconciliation failed:', reconcileError);
+      }
+      
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       if (isCompletedRef.current) return;
       
-      console.log('[JobSync] ❌ Job still active after 10 min, forcing server-side cancellation');
+      console.log(`[JobSync] ❌ Job still active after ${timeoutMinutes} min, forcing server-side cancellation`);
       isCompletedRef.current = true;
       
       try {
@@ -308,7 +368,7 @@ export function useJobStatusSync({
               table: tableName,
               jobId,
               status: 'failed',
-              errorMessage: 'Timeout: job excedeu 10 minutos sem resposta do provedor',
+              errorMessage: `Timeout: job excedeu ${timeoutMinutes} minutos sem resposta do provedor`,
             }),
           }
         );
@@ -321,11 +381,11 @@ export function useJobStatusSync({
       
       onStatusChangeRef.current({
         status: 'failed',
-        errorMessage: 'Tempo limite de processamento excedido (10 min). Seus créditos serão estornados automaticamente.',
+        errorMessage: `Tempo limite de processamento excedido (${timeoutMinutes} min). Seus créditos serão estornados automaticamente.`,
       });
       
       doCleanup();
-    }, ABSOLUTE_TIMEOUT_MS);
+    }, timeoutMs);
     
     // Cleanup on unmount/deps change
     return () => {
