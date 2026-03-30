@@ -19,6 +19,7 @@ import AppLayout from "@/components/layout/AppLayout";
 
 const ProfileSettings = () => {
   const navigate = useNavigate();
+  const { goBack } = useSmartBackNavigation({ fallback: '/biblioteca-prompts' });
   const { t } = useTranslation('auth');
   const { user, isPremium, isLoading: premiumLoading } = usePremiumStatus();
   const { isSupported, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
