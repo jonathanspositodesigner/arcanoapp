@@ -97,6 +97,7 @@ const TOOL_NAMES: Record<string, ToolType> = {
   'Remover Fundo': 'bg_remover',
   'Gerar Imagem': 'image_generator',
   'Gerar Vídeo': 'video_generator',
+  'MovieLed Maker': 'movieled_maker',
 };
 
 // ==================== CORE FUNCTIONS ====================
