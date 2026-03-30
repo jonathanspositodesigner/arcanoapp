@@ -65,6 +65,10 @@ const WEBAPP_IDS = {
     'wan2.2': '2037260767040380929',
     'wan2.2_text_only': '2037277392862973953',
   },
+  movieled_maker_jobs: {
+    'veo3.1': '2021398746331881473',
+    'wan2.2': '2038686081360596993',
+  },
 };
 
 const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs', 'bg_remover_jobs', 'image_generator_jobs', 'video_generator_jobs'] as const;
