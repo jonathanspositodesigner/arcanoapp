@@ -46,6 +46,8 @@ const MovieLedMakerTool = () => {
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
 
+  const isTutorialTestUser = user?.email?.toLowerCase() === 'jonathan@admin.com';
+
   // Engine selection
   const [selectedEngine, setSelectedEngine] = useState<string>('wan2.2');
   const currentEngine = ENGINES.find(e => e.id === selectedEngine) || ENGINES[0];
@@ -77,6 +79,13 @@ const MovieLedMakerTool = () => {
   const [showTutorial, setShowTutorial] = useState(() => !localStorage.getItem(MOVIELED_TUTORIAL_STORAGE_KEY));
   
   const sessionIdRef = useRef(crypto.randomUUID());
+
+  useEffect(() => {
+    if (isTutorialTestUser) {
+      localStorage.removeItem(MOVIELED_TUTORIAL_STORAGE_KEY);
+      setShowTutorial(true);
+    }
+  }, [isTutorialTestUser]);
 
   // Cleanup queued jobs
   useQueueSessionCleanup(sessionIdRef.current, status);
