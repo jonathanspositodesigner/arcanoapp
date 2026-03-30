@@ -66,7 +66,7 @@ const FerramentasIAAplicativo = () => {
   const [loading, setLoading] = useState(true);
 
   // Preferred order for tools
-  const preferredOrder = ["arcano-cloner", "upscaller-arcano", "upscaler-video", "ia-muda-pose", "ia-muda-roupa", "remover-fundo", "forja-selos-3d-ilimitada", "flyer-maker", "movieled-maker"];
+  const preferredOrder = ["arcano-cloner", "upscaller-arcano", "movieled-maker", "upscaler-video", "ia-muda-pose", "ia-muda-roupa", "remover-fundo", "forja-selos-3d-ilimitada", "flyer-maker"];
 
   useEffect(() => {
     const fetchTools = async () => {
@@ -277,8 +277,8 @@ const FerramentasIAAplicativo = () => {
   const renderToolCard = (tool: ToolData) => {
     const hasAccess = checkToolAccess(tool.slug);
     const description = toolDescriptions[tool.slug] || "Ferramenta de IA";
-    const isComingSoon = tool.slug === "forja-selos-3d-ilimitada" || tool.slug === "flyer-maker" || tool.slug === "movieled-maker";
-    const isNew = false;
+    const isComingSoon = tool.slug === "forja-selos-3d-ilimitada" || tool.slug === "flyer-maker";
+    const isNew = tool.slug === "movieled-maker";
     const isUpscalerArcano = tool.slug === "upscaller-arcano";
     
     const handleCardClick = (e: React.MouseEvent) => {
