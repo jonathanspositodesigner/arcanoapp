@@ -135,6 +135,7 @@ const VideoUpscalerTool = lazy(() => import("./pages/VideoUpscalerTool"));
 const ArcanoClonerTool = lazy(() => import("./pages/ArcanoClonerTool"));
 const GeradorPersonagemTool = lazy(() => import("./pages/GeradorPersonagemTool"));
 const UpscalerSelectionPage = lazy(() => import("./pages/UpscalerSelectionPage"));
+const MovieLedMakerTool = lazy(() => import("./pages/MovieLedMakerTool"));
 const AguardandoPagamentoMusicos = lazy(() => import("./pages/AguardandoPagamentoMusicos"));
 
 const ComboArtesArcanas = lazy(() => import("./pages/ComboArtesArcanas"));
@@ -351,7 +352,8 @@ const AppContent = () => {
            <Route path="/resgatar-creditos" element={<ResgatarCreditos />} />
            <Route path="/teste-gratis" element={<TesteGratis />} />
              <Route path="/gerar-imagem" element={<GerarImagemTool />} />
-             <Route path="/gerar-video" element={<GerarVideoTool />} />
+              <Route path="/gerar-video" element={<GerarVideoTool />} />
+              <Route path="/movieled-maker" element={<MovieLedMakerTool />} />
             <Route path="/planos-arcanocloner" element={<PlanosArcanoCloner />} />
             <Route path="/arcanocloner-teste" element={<ArcanoClonerTeste />} />
             <Route path="/testecloner" element={<TesteCloner />} />
