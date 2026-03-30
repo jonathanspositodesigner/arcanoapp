@@ -139,45 +139,6 @@ const MovieLedMakerTool = () => {
   }, [jobId, registerJob]);
 
 
-  // Handle file upload
-  const handleFileSelect = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      toast.error('Selecione uma imagem válida');
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Imagem muito grande (máx. 10MB)');
-      return;
-    }
-
-    try {
-      const { file: optimized } = await optimizeForAI(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setUploadedImage(e.target?.result as string);
-        setUploadedFileName(file.name);
-        setSelectedLibraryItem(null);
-      };
-      reader.readAsDataURL(optimized);
-    } catch {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setUploadedImage(e.target?.result as string);
-        setUploadedFileName(file.name);
-        setSelectedLibraryItem(null);
-      };
-      reader.readAsDataURL(file);
-    }
-  }, []);
-
-  // Select library item
-  const selectLibraryItem = (item: LibraryItem) => {
-    setSelectedLibraryItem(item);
-    setUploadedImage(null);
-    setUploadedFileName('');
-    setShowLibrary(false);
-  };
-
   // Get effective image URL for processing
   const getEffectiveImageUrl = (): string | null => {
     if (selectedLibraryItem) {
