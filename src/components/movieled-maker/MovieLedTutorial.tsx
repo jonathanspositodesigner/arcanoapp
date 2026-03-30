@@ -45,7 +45,7 @@ const STEPS: TutorialStep[] = [
     description: 'Escreva o nome que aparecerá no telão de LED. Pode ser seu nome artístico, nome do evento, etc.',
     targetSelector: '[data-tutorial-movieled="text-input"]',
     emoji: '✍️',
-    action: 'Digite algo no campo e clique fora',
+    action: 'Digite o nome e clique no ✓ para confirmar',
   },
   {
     step: 5,
