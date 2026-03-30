@@ -269,9 +269,12 @@ const GerarVideoTool = () => {
         model: selectedModel,
       };
 
-      if (generationMode === 'with_frames' && startFrame && endFrame) {
+      if (generationMode === 'with_frames' && startFrame) {
         bodyData.start_frame = { base64: startFrame.base64, mimeType: startFrame.mimeType };
-        bodyData.end_frame = { base64: endFrame.base64, mimeType: endFrame.mimeType };
+        // Wan 2.2 requires both frames; Veo 3.1 uses only start_frame
+        if (selectedModel === 'wan2.2' && endFrame) {
+          bodyData.end_frame = { base64: endFrame.base64, mimeType: endFrame.mimeType };
+        }
       }
 
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video/run`, {
