@@ -45,7 +45,7 @@ const STEPS: TutorialStep[] = [
     description: 'Escreva o nome que aparecerá no telão de LED. Pode ser seu nome artístico, nome do evento, etc.',
     targetSelector: '[data-tutorial-movieled="text-input"]',
     emoji: '✍️',
-    action: 'Digite algo no campo e clique fora',
+    action: 'Digite o nome e clique no ✓ para confirmar',
   },
   {
     step: 5,
@@ -131,16 +131,18 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true }: MovieLedTuto
       const el = document.querySelector(step.targetSelector);
       if (!el) return;
 
-      // For text input (step 4), listen for input + blur
+      // For text input (step 4), listen for click on the confirm button
       if (step.step === 4) {
-        const inputEl = el as HTMLInputElement;
-        const handleInput = () => {
-          if (inputEl.value.trim().length > 0) {
-            advanceStep();
+        const confirmBtn = document.querySelector('[data-tutorial-movieled="text-confirm"]');
+        if (!confirmBtn) return;
+        const handleClick = () => {
+          const inputEl = el?.querySelector('input') as HTMLInputElement | null;
+          if (inputEl && inputEl.value.trim().length > 0) {
+            setTimeout(() => advanceStep(), 150);
           }
         };
-        inputEl.addEventListener('blur', handleInput);
-        listenerCleanupRef.current = () => inputEl.removeEventListener('blur', handleInput);
+        confirmBtn.addEventListener('click', handleClick, { capture: true });
+        listenerCleanupRef.current = () => confirmBtn.removeEventListener('click', handleClick, { capture: true });
         return;
       }
 

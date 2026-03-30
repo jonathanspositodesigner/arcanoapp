@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowLeft, Download, Sparkles, Loader2, Video, Coins, Clock, Type, RotateCcw, AlertCircle, ImageIcon, X, Plus } from 'lucide-react';
+import { ArrowLeft, Download, Sparkles, Loader2, Video, Coins, Clock, Type, RotateCcw, AlertCircle, ImageIcon, X, Plus, Check } from 'lucide-react';
 
 import MovieLedLibraryModal, { type MovieLedItem } from '@/components/movieled-maker/MovieLedLibraryModal';
 import { Button } from '@/components/ui/button';
@@ -462,15 +462,24 @@ const MovieLedMakerTool = () => {
                   <Type className="h-3.5 w-3.5 text-fuchsia-400" />
                   Nome no Telão
                 </span>
-                <Input
-                  data-tutorial-movieled="text-input"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  placeholder="Ex: DJ MARCOS"
-                  disabled={isProcessing}
-                  className="bg-black/40 border-white/10 text-white placeholder:text-gray-500 text-sm"
-                  maxLength={50}
-                />
+                <div className="flex gap-2" data-tutorial-movieled="text-input">
+                  <Input
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    placeholder="Ex: DJ MARCOS"
+                    disabled={isProcessing}
+                    className="bg-black/40 border-white/10 text-white placeholder:text-gray-500 text-sm flex-1"
+                    maxLength={50}
+                  />
+                  <button
+                    data-tutorial-movieled="text-confirm"
+                    type="button"
+                    disabled={!inputText.trim() || isProcessing}
+                    className="flex items-center justify-center w-10 h-10 rounded-md bg-green-600 hover:bg-green-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                  >
+                    <Check className="w-4 h-4 text-white" />
+                  </button>
+                </div>
                 <p className="text-[10px] text-gray-500 mt-1">{inputText.length}/50 caracteres</p>
               </div>
 
