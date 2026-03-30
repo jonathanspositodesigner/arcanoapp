@@ -89,6 +89,7 @@ const TOOL_CONFIG: Record<JobTable, { name: string; url: string; emoji: string }
   bg_remover_jobs: { name: 'Remover Fundo', url: '/remover-fundo', emoji: '🖼️' },
   image_generator_jobs: { name: 'Gerar Imagem', url: '/gerar-imagem', emoji: '🖌️' },
   video_generator_jobs: { name: 'Gerar Vídeo', url: '/gerar-video', emoji: '🎥' },
+  movieled_maker_jobs: { name: 'MovieLed Maker', url: '/movieled-maker', emoji: '📺' },
 };
 
 /**
