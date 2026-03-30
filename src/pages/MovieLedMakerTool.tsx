@@ -54,9 +54,6 @@ const MovieLedMakerTool = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const [showLibrary, setShowLibrary] = useState(false);
-  const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
-  const [librarySearch, setLibrarySearch] = useState('');
-  const [loadingLibrary, setLoadingLibrary] = useState(false);
 
   // Text input
   const [inputText, setInputText] = useState('');
