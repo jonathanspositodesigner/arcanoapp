@@ -79,9 +79,9 @@ const PLAN_COLORS: Record<string, string> = {
 };
 
 const PAID_PLANS = [
-  { slug: "starter", label: "Starter", credits: 1800, costMultiplier: 1 },
-  { slug: "pro", label: "Pro", credits: 4200, costMultiplier: 1 },
-  { slug: "ultimate", label: "Ultimate", credits: 10800, costMultiplier: 1 },
+  { slug: "starter", label: "Starter", credits: 1500, costMultiplier: 1 },
+  { slug: "pro", label: "Pro", credits: 5000, costMultiplier: 1 },
+  { slug: "ultimate", label: "Ultimate", credits: 14000, costMultiplier: 1 },
   { slug: "unlimited", label: "IA Unlimited", credits: 99999, costMultiplier: 1 },
 ];
 
