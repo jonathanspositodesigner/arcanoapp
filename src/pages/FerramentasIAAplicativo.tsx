@@ -297,7 +297,7 @@ const FerramentasIAAplicativo = () => {
         onClick={handleCardClick}
       >
         <div className="aspect-[16/9] sm:aspect-[3/4] relative overflow-hidden">
-          {tool.slug === "arcano-cloner" && (
+          {(tool.slug === "arcano-cloner" || isNew) && (
             <div className="absolute top-2 right-2 z-10 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
               <Sparkles className="w-3 h-3" />
               NOVO
