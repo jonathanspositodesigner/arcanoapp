@@ -1813,7 +1813,7 @@ async function handleRetry(req: Request): Promise<Response> {
     }
     
     // Reset job to starting state
-    const account = await getAccountWithAvailableSlot() || getApiAccounts()[0];
+    const account = await getAccountWithAvailableSlot() || getAvailableApiAccounts()[0];
     
     await supabase
       .from(table)
