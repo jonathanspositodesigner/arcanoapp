@@ -436,82 +436,20 @@ const MovieLedMakerTool = () => {
                 </div>
               </div>
 
-              {/* Reference Image - Single Card (consistent with Arcano Cloner, Veste AI) */}
-              <div>
-                <span className="text-sm font-medium text-white mb-2 block">Telão de Referência</span>
-                {selectedLibraryItem ? (
-                  <div className="bg-black/40 border border-white/10 rounded-xl p-3">
-                    <div className="flex items-center gap-3">
-                      <video
-                        src={selectedLibraryItem.image_url}
-                        className="w-16 h-10 object-cover rounded-lg"
-                        muted loop autoPlay playsInline
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-white truncate">{selectedLibraryItem.title}</p>
-                      </div>
-                      <button
-                        onClick={() => setSelectedLibraryItem(null)}
-                        disabled={isProcessing}
-                        className="w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center"
-                      >
-                        <X className="w-3 h-3 text-white" />
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => setShowLibrary(true)}
-                      disabled={isProcessing}
-                      className="w-full mt-2 h-6 text-[10px] rounded-md bg-purple-500/10 border border-purple-500/30 text-purple-200 hover:bg-purple-500/20 hover:text-white transition-colors flex items-center justify-center gap-1"
-                    >
-                      <ImageIcon className="w-3 h-3" />
-                      Trocar Telão
-                    </button>
-                  </div>
-                ) : uploadedImage ? (
-                  <div className="bg-black/40 border border-white/10 rounded-xl p-3">
-                    <div className="flex items-center gap-3">
-                      <img src={uploadedImage} alt="Preview" className="w-16 h-10 object-cover rounded-lg" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-white truncate">{uploadedFileName}</p>
-                      </div>
-                      <button
-                        onClick={() => { setUploadedImage(null); setUploadedFileName(''); }}
-                        disabled={isProcessing}
-                        className="w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center"
-                      >
-                        <X className="w-3 h-3 text-white" />
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => setShowLibrary(true)}
-                      disabled={isProcessing}
-                      className="w-full mt-2 h-6 text-[10px] rounded-md bg-purple-500/10 border border-purple-500/30 text-purple-200 hover:bg-purple-500/20 hover:text-white transition-colors flex items-center justify-center gap-1"
-                    >
-                      <ImageIcon className="w-3 h-3" />
-                      Trocar Imagem
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setShowLibrary(true)}
-                    disabled={isProcessing}
-                    className="w-full bg-black/40 border border-white/10 border-dashed rounded-xl p-5 text-center hover:bg-black/60 transition-colors"
-                  >
-                    <div className="w-10 h-10 mx-auto rounded-lg bg-fuchsia-500/20 border border-dashed border-fuchsia-500/40 flex items-center justify-center mb-2">
-                      <ImageIcon className="w-5 h-5 text-fuchsia-400" />
-                    </div>
-                    <p className="text-sm text-white font-medium">Escolher Telão</p>
-                    <p className="text-[10px] text-gray-500 mt-0.5">Da biblioteca ou envie sua imagem</p>
-                  </button>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-                />
-              </div>
+              {/* Reference Image - ReferenceImageCard (consistent with Arcano Cloner) */}
+              <ReferenceImageCard
+                image={selectedLibraryItem?.image_url || uploadedImage || null}
+                onClearImage={() => {
+                  setSelectedLibraryItem(null);
+                  setUploadedImage(null);
+                  setUploadedFileName('');
+                }}
+                onOpenLibrary={() => setShowLibrary(true)}
+                disabled={isProcessing}
+                title="Telão de Referência"
+                emptyLabel="Escolher Telão"
+                emptySubLabel="Da biblioteca ou envie sua imagem"
+              />
 
               {/* Text Input */}
               <div>
