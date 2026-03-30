@@ -16,6 +16,7 @@ interface MovieLedLibraryModalProps {
   onSelectItem: (item: MovieLedItem) => void;
   onUploadPhoto?: (dataUrl: string, file: File) => void;
   isPremiumUser?: boolean;
+  freeOnly?: boolean;
 }
 
 export interface MovieLedItem {
@@ -46,6 +47,7 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
   onSelectItem,
   onUploadPhoto,
   isPremiumUser = false,
+  freeOnly = false,
 }) => {
   const navigate = useNavigate();
   const [allItems, setAllItems] = useState<MovieLedItem[]>([]);
@@ -71,6 +73,10 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
           .eq('category', 'Movies para Telão')
           .order('created_at', { ascending: false })
           .range(from, from + FETCH_BATCH_SIZE - 1);
+
+        if (freeOnly) {
+          query = query.eq('is_premium', false);
+        }
 
         if (expandedTerms.length > 0) {
           const orFilter = buildSmartSearchFilter(expandedTerms, ['title'], 'tags');
