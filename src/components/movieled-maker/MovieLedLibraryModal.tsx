@@ -165,7 +165,7 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl w-[calc(100%-32px)] sm:w-full bg-[#1A0A2E] border border-purple-500/40 text-white max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-xl">
+        <DialogContent data-tutorial-movieled="library-modal" className="max-w-2xl w-[calc(100%-32px)] sm:w-full bg-[#1A0A2E] border border-purple-500/40 text-white max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-xl">
           <DialogHeader className="flex-shrink-0 pb-2">
             <DialogTitle className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
               <Video className="w-4 h-4 sm:w-5 sm:h-5 text-fuchsia-400" />

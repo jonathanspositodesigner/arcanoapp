@@ -22,6 +22,7 @@ import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { cancelJob as centralCancelJob } from '@/ai/JobManager';
 import AppLayout from '@/components/layout/AppLayout';
+import MovieLedTutorial, { MOVIELED_TUTORIAL_STORAGE_KEY } from '@/components/movieled-maker/MovieLedTutorial';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
 
@@ -73,7 +74,7 @@ const MovieLedMakerTool = () => {
   const [activeToolName, setActiveToolName] = useState('');
   const [activeJobId, setActiveJobId] = useState<string | undefined>();
   const [activeStatus, setActiveStatus] = useState<string | undefined>();
-
+  const [showTutorial, setShowTutorial] = useState(() => !localStorage.getItem(MOVIELED_TUTORIAL_STORAGE_KEY));
   
   const sessionIdRef = useRef(crypto.randomUUID());
 
@@ -366,7 +367,7 @@ const MovieLedMakerTool = () => {
               {/* Engine Selector */}
               <div>
                 <span className="text-sm font-medium text-white mb-2 block">Motor</span>
-                <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1">
+                <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1" data-tutorial-movieled="engine">
                   {ENGINES.map(engine => (
                     <button
                       key={engine.id}
@@ -404,7 +405,7 @@ const MovieLedMakerTool = () => {
                   Telão de Referência
                 </span>
                 {(selectedLibraryItem || uploadedImage) ? (
-                  <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black/30">
+                  <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black/30" data-tutorial-movieled="reference">
                     <img
                       src={selectedLibraryItem?.reference_images?.[0] || selectedLibraryItem?.image_url || uploadedImage || ''}
                       alt="Telão de referência"
@@ -432,6 +433,7 @@ const MovieLedMakerTool = () => {
                   <button
                     onClick={() => setShowLibrary(true)}
                     disabled={isProcessing}
+                    data-tutorial-movieled="reference"
                     className="w-full h-[100px] lg:h-[120px] rounded-xl border border-dashed border-white/15 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/25 transition-all flex flex-col items-center justify-center gap-2 group"
                   >
                     <div className="w-9 h-9 rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center group-hover:bg-fuchsia-500/20 transition-colors">
@@ -452,6 +454,7 @@ const MovieLedMakerTool = () => {
                   Nome no Telão
                 </span>
                 <Input
+                  data-tutorial-movieled="text-input"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder="Ex: DJ MARCOS"
@@ -465,6 +468,7 @@ const MovieLedMakerTool = () => {
               {/* Generate Button */}
               {status !== 'completed' && status !== 'error' && !isProcessing && (
                 <Button
+                  data-tutorial-movieled="generate"
                   className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
                   onClick={handleGenerate}
                   disabled={isSubmitting || !canGenerate}
@@ -652,6 +656,9 @@ const MovieLedMakerTool = () => {
         activeStatus={activeStatus}
         onCancelJob={centralCancelJob}
       />
+      {showTutorial && (
+        <MovieLedTutorial onComplete={() => setShowTutorial(false)} />
+      )}
     </AppLayout>
   );
 };
