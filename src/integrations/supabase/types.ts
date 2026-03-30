@@ -4992,19 +4992,7 @@ export type Database = {
           videogen_refunded: number
         }[]
       }
-      cleanup_expired_ai_jobs: {
-        Args: never
-        Returns: {
-          arcano_cloner_deleted: number
-          character_generator_deleted: number
-          image_generator_deleted: number
-          pose_changer_deleted: number
-          upscaler_deleted: number
-          veste_ai_deleted: number
-          video_generator_deleted: number
-          video_upscaler_deleted: number
-        }[]
-      }
+      cleanup_expired_ai_jobs: { Args: never; Returns: Json }
       cleanup_monthly_logs: { Args: never; Returns: undefined }
       cleanup_old_logs: { Args: never; Returns: undefined }
       cleanup_orphaned_checkout_orders: { Args: never; Returns: number }
