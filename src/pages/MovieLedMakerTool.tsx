@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { ArrowLeft, Download, Sparkles, Loader2, Video, Coins, Clock, Type, RotateCcw, AlertCircle, ImageIcon, X, Plus, Check } from 'lucide-react';
 
 import MovieLedLibraryModal, { type MovieLedItem } from '@/components/movieled-maker/MovieLedLibraryModal';
@@ -40,6 +41,7 @@ const ENGINES = [
 ] as const;
 
 const MovieLedMakerTool = () => {
+  const location = useLocation();
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, isPremium } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
@@ -88,7 +90,17 @@ const MovieLedMakerTool = () => {
     }
   }, [isTutorialTestUser]);
 
-  // Cleanup queued jobs
+  // Pre-select item from navigation state (e.g. from Biblioteca de Prompts)
+  useEffect(() => {
+    const state = location.state as { preSelectedItem?: LibraryItem } | null;
+    if (state?.preSelectedItem) {
+      setSelectedLibraryItem(state.preSelectedItem);
+      setShowTutorial(false);
+      // Clear the state so it doesn't re-apply on re-render
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   useQueueSessionCleanup(sessionIdRef.current, status);
 
   // Watchdog for stuck pending jobs

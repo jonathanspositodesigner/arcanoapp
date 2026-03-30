@@ -540,6 +540,35 @@ const BibliotecaPrompts = () => {
                       <span className="truncate">Gerar foto</span>
                     </Button>
                   )}
+                  {item.category === 'Movies para Telão' && (
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (item.isPremium && !isPremium) {
+                          setPremiumModalItem(item);
+                          setShowPremiumModal(true);
+                        } else {
+                          trackPromptClick(String(item.id), item.title, !!item.isExclusive);
+                          navigate('/movieled-maker-tool', {
+                            state: {
+                              preSelectedItem: {
+                                id: String(item.id),
+                                title: item.title,
+                                image_url: item.imageUrl,
+                                reference_images: item.referenceImages || null,
+                                prompt: item.prompt,
+                              }
+                            }
+                          });
+                        }
+                      }}
+                      size="sm"
+                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1 sm:px-3 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-700 hover:to-purple-700 text-white min-w-0"
+                    >
+                      <Video className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
+                      <span className="truncate">Gerar movie</span>
+                    </Button>
+                  )}
                 </div>
               </div>
             );
