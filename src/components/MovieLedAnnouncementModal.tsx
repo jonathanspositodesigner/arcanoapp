@@ -7,8 +7,8 @@ import { Sparkles, Video } from "lucide-react";
 const STORAGE_KEY = "movieled_announcement_seen";
 const VIDEO_URL = "https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/admin_prompts/12573b5e-6813-4ef0-ab3e-fcd734dc1add-1766250040709.mp4";
 
-// ⚠️ Mude para false quando quiser ativar a lógica definitiva (mostrar só 1x)
-const ALWAYS_SHOW = true;
+// Modal só aparece 1x — após clicar em qualquer botão, não reaparece
+const ALWAYS_SHOW = false;
 
 const MovieLedAnnouncementModal = () => {
   const navigate = useNavigate();

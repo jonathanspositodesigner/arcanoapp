@@ -48,7 +48,7 @@ const MovieLedMakerTool = () => {
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
 
-  const isTutorialTestUser = user?.email?.toLowerCase() === 'jonathan@admin.com';
+  const isTutorialTestUser = false; // Tutorial test mode disabled
 
   // Engine selection
   const [selectedEngine, setSelectedEngine] = useState<string>('wan2.2');
