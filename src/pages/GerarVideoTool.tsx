@@ -488,12 +488,14 @@ const GerarVideoTool = () => {
                 {/* Frame upload area - when with_frames mode */}
                 {generationMode === 'with_frames' && (
                   <div className="flex items-center gap-3">
-                    {/* Start Frame Upload */}
+                    {/* Start Frame / Reference Image Upload */}
                     <div className="flex-1">
-                      <p className="text-[10px] text-purple-400 mb-1 font-medium">1º Frame (início)</p>
+                      <p className="text-[10px] text-purple-400 mb-1 font-medium">
+                        {isVeo ? 'Imagem de Referência' : '1º Frame (início)'}
+                      </p>
                       {startFrame ? (
                         <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
-                          <img src={startFrame.preview} alt="Primeiro frame" className="w-full h-full object-cover" />
+                          <img src={startFrame.preview} alt={isVeo ? 'Imagem de referência' : 'Primeiro frame'} className="w-full h-full object-cover" />
                           <button 
                             onClick={() => setStartFrame(null)} 
                             className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
@@ -513,36 +515,39 @@ const GerarVideoTool = () => {
                       )}
                     </div>
 
-                    {/* Arrow indicator */}
-                    <div className="flex flex-col items-center gap-0.5 pt-4 flex-shrink-0">
-                      <span className="text-purple-400 text-lg">→</span>
-                      <span className="text-[8px] text-purple-500">{MODEL_DURATIONS[selectedModel] || 8}s</span>
-                    </div>
-
-                    {/* End Frame Upload */}
-                    <div className="flex-1">
-                      <p className="text-[10px] text-purple-400 mb-1 font-medium">Último Frame (fim)</p>
-                      {endFrame ? (
-                        <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
-                          <img src={endFrame.preview} alt="Último frame" className="w-full h-full object-cover" />
-                          <button 
-                            onClick={() => setEndFrame(null)} 
-                            className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
-                          >
-                            <X className="h-3 w-3 text-white" />
-                          </button>
+                    {/* Arrow indicator + End Frame - only for Wan 2.2 */}
+                    {!isVeo && (
+                      <>
+                        <div className="flex flex-col items-center gap-0.5 pt-4 flex-shrink-0">
+                          <span className="text-purple-400 text-lg">→</span>
+                          <span className="text-[8px] text-purple-500">{MODEL_DURATIONS[selectedModel] || 8}s</span>
                         </div>
-                      ) : (
-                        <button
-                          onClick={() => endFrameRef.current?.click()}
-                          disabled={isGenerating}
-                          className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/10 hover:bg-purple-900/20 flex flex-col items-center justify-center gap-1 transition-colors"
-                        >
-                          <Upload className="h-4 w-4 text-purple-400" />
-                          <span className="text-[10px] text-purple-300">Enviar imagem</span>
-                        </button>
-                      )}
-                    </div>
+
+                        <div className="flex-1">
+                          <p className="text-[10px] text-purple-400 mb-1 font-medium">Último Frame (fim)</p>
+                          {endFrame ? (
+                            <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
+                              <img src={endFrame.preview} alt="Último frame" className="w-full h-full object-cover" />
+                              <button 
+                                onClick={() => setEndFrame(null)} 
+                                className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
+                              >
+                                <X className="h-3 w-3 text-white" />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => endFrameRef.current?.click()}
+                              disabled={isGenerating}
+                              className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/10 hover:bg-purple-900/20 flex flex-col items-center justify-center gap-1 transition-colors"
+                            >
+                              <Upload className="h-4 w-4 text-purple-400" />
+                              <span className="text-[10px] text-purple-300">Enviar imagem</span>
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 
