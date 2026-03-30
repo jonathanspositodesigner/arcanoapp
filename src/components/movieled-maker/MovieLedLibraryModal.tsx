@@ -69,7 +69,7 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
         let query = supabase
           .from('admin_prompts')
           .select('id, title, image_url, thumbnail_url, reference_images, prompt, tags, is_premium')
-          .eq('category', 'movies-para-telao')
+          .eq('category', 'Movies para Telão')
           .order('created_at', { ascending: false })
           .range(from, from + FETCH_BATCH_SIZE - 1);
 
