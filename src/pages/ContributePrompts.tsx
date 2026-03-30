@@ -28,6 +28,7 @@ const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 
 const ContributePrompts = () => {
   const navigate = useNavigate();
+  const { goBack } = useSmartBackNavigation({ fallback: '/' });
   const { t } = useTranslation('prompts');
   const [title, setTitle] = useState("");
   const [prompt, setPrompt] = useState("");
