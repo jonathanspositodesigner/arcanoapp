@@ -138,34 +138,6 @@ const MovieLedMakerTool = () => {
     }
   }, [jobId, registerJob]);
 
-  // Load library items
-  const loadLibrary = useCallback(async () => {
-    setLoadingLibrary(true);
-    try {
-      let query = supabase
-        .from('admin_prompts')
-        .select('id, title, image_url, reference_images, prompt')
-        .eq('category', 'movies-para-telao')
-        .order('title', { ascending: true });
-
-      if (librarySearch.trim()) {
-        query = query.ilike('title', `%${librarySearch.trim()}%`);
-      }
-
-      const { data, error } = await query.limit(50);
-      if (error) throw error;
-      setLibraryItems(data || []);
-    } catch (err) {
-      console.error('[MovieLed] Error loading library:', err);
-      toast.error('Erro ao carregar biblioteca');
-    } finally {
-      setLoadingLibrary(false);
-    }
-  }, [librarySearch]);
-
-  useEffect(() => {
-    if (showLibrary) loadLibrary();
-  }, [showLibrary, loadLibrary]);
 
   // Handle file upload
   const handleFileSelect = useCallback(async (file: File) => {
