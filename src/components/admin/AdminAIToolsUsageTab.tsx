@@ -136,7 +136,7 @@ const AdminAIToolsUsageTab = () => {
   const [errorDetails, setErrorDetails] = useState<JobErrorDetails | null>(null);
   const [isLoadingErrorDetails, setIsLoadingErrorDetails] = useState(false);
 
-  const isVideoTool = (toolName: string) => toolName === "Video Upscaler" || toolName === "Gerar Vídeo";
+  const isVideoTool = (toolName: string) => toolName === "Video Upscaler" || toolName === "Gerar Vídeo" || toolName === "MovieLed Maker";
 
   const getInputColumn = (toolName: string): string | null => {
     switch (toolName) {
