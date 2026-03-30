@@ -217,8 +217,13 @@ const GerarVideoTool = () => {
 
     // Validate frames when in with_frames mode
     if (generationMode === 'with_frames') {
-      if (!startFrame || !endFrame) {
+      const needsBothFrames = selectedModel === 'wan2.2';
+      if (needsBothFrames && (!startFrame || !endFrame)) {
         toast.error('Selecione o primeiro e o último frame para gerar o vídeo');
+        return;
+      }
+      if (!needsBothFrames && !startFrame) {
+        toast.error('Selecione a imagem de referência para gerar o vídeo');
         return;
       }
     }
