@@ -165,6 +165,7 @@ const AdminAIToolsUsageTab = () => {
       case "Gerar Vídeo": return "video_generator_jobs";
       case "Flyer Maker": return "flyer_maker_jobs";
       case "Remover Fundo": return "bg_remover_jobs";
+      case "MovieLed Maker": return "movieled_maker_jobs";
       default: return "upscaler_jobs";
     }
   };
