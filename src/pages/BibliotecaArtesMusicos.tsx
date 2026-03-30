@@ -40,6 +40,7 @@ interface Arte {
 
 const BibliotecaArtesMusicos = () => {
   const navigate = useNavigate();
+  const { goBack } = useSmartBackNavigation({ fallback: '/biblioteca-artes-hub' });
   const { t } = useTranslation('library');
   const { user, isPremium, planType, isLoading: authLoading, logout } = usePremiumMusicosStatus();
   const { downloadCount, dailyLimit, canDownload, recordDownload } = useDailyMusicosLimit();
