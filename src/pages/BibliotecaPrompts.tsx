@@ -18,7 +18,7 @@ import LazyVideo from "@/components/LazyVideo";
 import { useTranslation } from "react-i18next";
 import ExpiredSubscriptionModal from "@/components/ExpiredSubscriptionModal";
 import ExpiringSubscriptionModal from "@/components/ExpiringSubscriptionModal";
-import RunningHubBonusModal from "@/components/RunningHubBonusModal";
+
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 import AppLayout from "@/components/layout/AppLayout";
 
