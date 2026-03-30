@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, History, Zap, TrendingUp, Loader2, Coins, PlusCircle } from "lucide-react";

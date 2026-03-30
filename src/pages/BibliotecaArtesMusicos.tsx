@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumMusicosStatus } from "@/hooks/usePremiumMusicosStatus";

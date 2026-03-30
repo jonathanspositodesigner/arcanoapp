@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Upload, ArrowLeft, FileText, X } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
