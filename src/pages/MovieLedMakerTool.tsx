@@ -399,7 +399,7 @@ const MovieLedMakerTool = () => {
 
               {/* Reference Image - ReferenceImageCard (consistent with Arcano Cloner) */}
               <ReferenceImageCard
-                image={selectedLibraryItem?.image_url || uploadedImage || null}
+                image={selectedLibraryItem?.reference_images?.[0] || selectedLibraryItem?.image_url || uploadedImage || null}
                 onClearImage={() => {
                   setSelectedLibraryItem(null);
                   setUploadedImage(null);
