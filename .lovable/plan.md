@@ -1,32 +1,28 @@
 
 
-# Plano: Substituir biblioteca customizada do MovieLed Maker pela mesma biblioteca padrão do Arcano Cloner
+# Plano: Corrigir filtro de categoria da biblioteca MovieLed
 
 ## Problema
-O MovieLed Maker usa uma biblioteca inline customizada (modal feito na mão dentro do próprio arquivo). As outras ferramentas (Arcano Cloner, Veste AI, Pose Changer) usam o componente `ReferenceImageCard` + `PhotoLibraryModal` que são reutilizáveis e consistentes.
+A query no `MovieLedLibraryModal.tsx` filtra por `.eq('category', 'movies-para-telao')` (formato slug), mas no banco de dados a categoria real é `'Movies para Telão'` (com espaços, maiúsculas e acento). Resultado: 0 itens retornados.
 
-## O que vai ser feito
+## Correção
+**Arquivo**: `src/components/movieled-maker/MovieLedLibraryModal.tsx` (linha 72)
 
-### 1. Criar `MovieLedLibraryModal` baseado no `PhotoLibraryModal`
-- Novo arquivo: `src/components/movieled-maker/MovieLedLibraryModal.tsx`
-- Cópia exata do layout/estilo do `PhotoLibraryModal` (Dialog, gender filter, search, grid, upload, premium, load more)
-- **Diferença 1**: Query filtra por `category = 'Movies para Telão'` em vez de `'Fotos'`
-- **Diferença 2**: Grid mostra `<video>` em aspect-ratio 16:9 em vez de `<img>` em 3:4
-- **Diferença 3**: Título "Biblioteca de Telões" em vez de "Biblioteca de Fotos"
-- **Diferença 4**: Aviso de 1920x1080 (16:9) no upload
-- **Diferença 5**: `onSelectPhoto` retorna o item completo (com `reference_images` e `id`) para que o MovieLed possa usar a referência correta
+Trocar:
+```typescript
+.eq('category', 'movies-para-telao')
+```
+Por:
+```typescript
+.eq('category', 'Movies para Telão')
+```
 
-### 2. Usar `ReferenceImageCard` no MovieLed Maker
-- Importar o mesmo `ReferenceImageCard` de `src/components/arcano-cloner/ReferenceImageCard.tsx`
-- Substituir todo o bloco inline de seleção de imagem (linhas ~468-543) pelo `ReferenceImageCard`
-- Props: `title="Telão de Referência"`, `emptyLabel="Escolher Telão"`, `emptySubLabel="Da biblioteca ou envie sua imagem"`
+Uma linha. Isso resolve o problema.
 
-### 3. Limpar código do MovieLedMakerTool.tsx
-- Remover o modal inline (linhas 722-791)
-- Remover estados `libraryItems`, `librarySearch`, `loadingLibrary`, `loadLibrary`
-- Adicionar o `MovieLedLibraryModal` no final do JSX (igual Arcano Cloner faz com `PhotoLibraryModal`)
-- Manter toda a lógica de `selectedLibraryItem` e `reference_images` como está
-
-## Resultado
-Interface 100% consistente com Arcano Cloner, Veste AI e Pose Changer: mesmo card de referência, mesmo estilo de modal, mesma experiência de upload.
+## Detalhes técnicos confirmados
+- A tabela `admin_prompts` tem 30+ registros com `category = 'Movies para Telão'`
+- Cada item tem `reference_images` com a imagem de referência (webp/jpg/png) que é usada como input no RunningHub (nó `image`)
+- O `image_url` é o `.mp4` (vídeo de preview)
+- O `thumbnail_url` é o webp para thumbnail
+- A lógica de `getEffectiveImageUrl()` no `MovieLedMakerTool.tsx` já pega `reference_images[0]` corretamente para enviar ao backend
 
