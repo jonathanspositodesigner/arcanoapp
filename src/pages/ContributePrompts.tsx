@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Upload, ArrowLeft, FileText, X } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
@@ -27,6 +28,7 @@ const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 
 const ContributePrompts = () => {
   const navigate = useNavigate();
+  const { goBack } = useSmartBackNavigation({ fallback: '/' });
   const { t } = useTranslation('prompts');
   const [title, setTitle] = useState("");
   const [prompt, setPrompt] = useState("");
@@ -223,7 +225,7 @@ const ContributePrompts = () => {
       <div className="container max-w-4xl mx-auto py-8 px-4">
         <Button
           variant="ghost"
-          onClick={() => navigate("/")}
+          onClick={goBack}
           className="mb-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

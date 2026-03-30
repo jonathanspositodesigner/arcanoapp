@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ import AppLayout from "@/components/layout/AppLayout";
 
 const ProfileSettings = () => {
   const navigate = useNavigate();
+  const { goBack } = useSmartBackNavigation({ fallback: '/biblioteca-prompts' });
   const { t } = useTranslation('auth');
   const { user, isPremium, isLoading: premiumLoading } = usePremiumStatus();
   const { isSupported, isLoading: pushLoading, subscribe, unsubscribe } = usePushNotifications();
@@ -212,7 +214,7 @@ const ProfileSettings = () => {
       <div className="max-w-2xl mx-auto space-y-6">
         <Button
           variant="ghost"
-          onClick={() => navigate("/biblioteca-prompts")}
+          onClick={goBack}
           className="mb-4 text-purple-300 hover:text-white hover:bg-purple-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

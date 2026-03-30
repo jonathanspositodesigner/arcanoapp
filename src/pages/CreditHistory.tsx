@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, History, Zap, TrendingUp, Loader2, Coins, PlusCircle } from "lucide-react";
@@ -21,6 +22,7 @@ interface Transaction {
 
 const CreditHistory = () => {
   const navigate = useNavigate();
+  const { goBack } = useSmartBackNavigation({ fallback: '/profile-settings' });
   const { user, isLoading: userLoading } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, isUnlimited } = useCredits();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -78,7 +80,7 @@ const CreditHistory = () => {
       <div className="max-w-2xl mx-auto space-y-6">
         <Button
           variant="ghost"
-          onClick={() => navigate("/profile-settings")}
+          onClick={goBack}
           className="mb-4 text-purple-300 hover:text-white hover:bg-purple-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

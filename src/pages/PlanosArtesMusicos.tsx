@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, UserPlus, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import { useLocale } from "@/contexts/LocaleContext";
 
 const PlanosArtesMusicos = () => {
   const navigate = useNavigate();
+  const { goBack } = useSmartBackNavigation({ fallback: '/biblioteca-artes-musicos' });
   const { t } = useTranslation('library');
   const { locale } = useLocale();
   const [billingPeriod, setBillingPeriod] = useState<"mensal" | "anual">("mensal");
@@ -130,7 +132,7 @@ const PlanosArtesMusicos = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0f0f0f] via-[#1a1a2e] to-[#16213e]">
       <div className="container mx-auto px-4 py-6 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" onClick={() => navigate('/biblioteca-artes-musicos')} className="text-violet-300 hover:text-violet-100 hover:bg-violet-500/20">
+          <Button variant="ghost" onClick={goBack} className="text-violet-300 hover:text-violet-100 hover:bg-violet-500/20">
             <ArrowLeft className="w-4 h-4 mr-2" />{t('plansMusicos.back')}
           </Button>
           <img src={baaLogo} alt="BAA" className="h-8 hidden sm:block" />

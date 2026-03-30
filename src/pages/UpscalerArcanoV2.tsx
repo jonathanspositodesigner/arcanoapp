@@ -177,7 +177,7 @@ const UpscalerArcanoV2 = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/')}
+            onClick={goBack}
             className="text-purple-300 hover:text-white hover:bg-purple-500/20 gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
