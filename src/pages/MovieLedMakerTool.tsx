@@ -383,14 +383,14 @@ const MovieLedMakerTool = () => {
                   ))}
                 </div>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/8">
                     {currentEngine.duration} • {currentEngine.resolution}
                   </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/8 flex items-center gap-1">
                     <Clock className="h-2.5 w-2.5" />
                     {currentEngine.time}
                   </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/8 flex items-center gap-1">
                     <Coins className="h-2.5 w-2.5" />
                     {currentEngine.cost}
                   </span>
