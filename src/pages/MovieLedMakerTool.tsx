@@ -397,20 +397,53 @@ const MovieLedMakerTool = () => {
                 </div>
               </div>
 
-              {/* Reference Image - ReferenceImageCard (consistent with Arcano Cloner) */}
-              <ReferenceImageCard
-                image={selectedLibraryItem?.reference_images?.[0] || selectedLibraryItem?.image_url || uploadedImage || null}
-                onClearImage={() => {
-                  setSelectedLibraryItem(null);
-                  setUploadedImage(null);
-                  setUploadedFileName('');
-                }}
-                onOpenLibrary={() => setShowLibrary(true)}
-                disabled={isProcessing}
-                title="Telão de Referência"
-                emptyLabel="Escolher Telão"
-                emptySubLabel="Da biblioteca ou envie sua imagem"
-              />
+              {/* Reference Image */}
+              <div>
+                <span className="text-sm font-medium text-white mb-2 block flex items-center gap-1.5">
+                  <ImageIcon className="h-3.5 w-3.5 text-fuchsia-400" />
+                  Telão de Referência
+                </span>
+                {(selectedLibraryItem || uploadedImage) ? (
+                  <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black/30">
+                    <img
+                      src={selectedLibraryItem?.reference_images?.[0] || selectedLibraryItem?.image_url || uploadedImage || ''}
+                      alt="Telão de referência"
+                      className="w-full h-[120px] lg:h-[140px] object-contain"
+                    />
+                    <div className="absolute bottom-0 inset-x-0 flex gap-1.5 p-1.5 bg-gradient-to-t from-black/70 to-transparent">
+                      <button
+                        onClick={() => setShowLibrary(true)}
+                        disabled={isProcessing}
+                        className="flex-1 h-7 text-[10px] rounded-lg bg-white/10 backdrop-blur-sm text-gray-200 hover:bg-white/20 transition-colors flex items-center justify-center gap-1"
+                      >
+                        <ImageIcon className="w-3 h-3" />
+                        Trocar
+                      </button>
+                      <button
+                        onClick={() => { setSelectedLibraryItem(null); setUploadedImage(null); setUploadedFileName(''); }}
+                        disabled={isProcessing}
+                        className="h-7 w-7 rounded-lg bg-white/10 backdrop-blur-sm text-gray-200 hover:bg-red-500/40 transition-colors flex items-center justify-center"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowLibrary(true)}
+                    disabled={isProcessing}
+                    className="w-full h-[100px] lg:h-[120px] rounded-xl border border-dashed border-white/15 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/25 transition-all flex flex-col items-center justify-center gap-2 group"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center group-hover:bg-fuchsia-500/20 transition-colors">
+                      <Plus className="w-4 h-4 text-fuchsia-400" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[11px] text-gray-300 font-medium">Escolher Telão</p>
+                      <p className="text-[9px] text-gray-500">Da biblioteca ou envie sua imagem</p>
+                    </div>
+                  </button>
+                )}
+              </div>
 
               {/* Text Input */}
               <div>
