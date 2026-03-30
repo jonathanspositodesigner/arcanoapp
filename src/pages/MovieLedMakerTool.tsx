@@ -74,7 +74,7 @@ const MovieLedMakerTool = () => {
   const [activeJobId, setActiveJobId] = useState<string | undefined>();
   const [activeStatus, setActiveStatus] = useState<string | undefined>();
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const sessionIdRef = useRef(crypto.randomUUID());
 
   // Cleanup queued jobs
