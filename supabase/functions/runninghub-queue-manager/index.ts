@@ -1573,15 +1573,15 @@ async function startJobOnRunningHub(
           });
         }
       } else {
-        // Veo 3.1
-        // IMPORTANT: With-images uses nodeId=3, text-only uses nodeId=8
-        const isVeoTextOnly = !hasFrames;
+        // Veo 3.1 - single image (node 5) or text-only
+        const hasVeoImage = !!p.startFrameFileName;
+        const isVeoTextOnly = !hasVeoImage;
         const veoNodeId = isVeoTextOnly ? "8" : "3";
         
-        if (hasFrames) {
+        if (hasVeoImage) {
           webappId = webappIds['veo3.1'];
-          nodeInfoList.push({ nodeId: "15", fieldName: "image", fieldValue: p.startFrameFileName, description: "FIRST FRAME" });
-          nodeInfoList.push({ nodeId: "5", fieldName: "image", fieldValue: p.endFrameFileName, description: "LAST FRAME" });
+          // Single image goes to node 5 only (node 15 removed from workflow)
+          nodeInfoList.push({ nodeId: "5", fieldName: "image", fieldValue: p.startFrameFileName, description: "LAST FRAME" });
         } else {
           webappId = webappIds['veo3.1_text_only'];
           console.log(`[QueueManager] Veo 3.1 text-only mode, using webapp ${webappId}, nodeId=${veoNodeId}`);

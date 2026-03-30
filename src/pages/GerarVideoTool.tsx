@@ -217,8 +217,13 @@ const GerarVideoTool = () => {
 
     // Validate frames when in with_frames mode
     if (generationMode === 'with_frames') {
-      if (!startFrame || !endFrame) {
+      const needsBothFrames = selectedModel === 'wan2.2';
+      if (needsBothFrames && (!startFrame || !endFrame)) {
         toast.error('Selecione o primeiro e o último frame para gerar o vídeo');
+        return;
+      }
+      if (!needsBothFrames && !startFrame) {
+        toast.error('Selecione a imagem de referência para gerar o vídeo');
         return;
       }
     }
@@ -264,9 +269,12 @@ const GerarVideoTool = () => {
         model: selectedModel,
       };
 
-      if (generationMode === 'with_frames' && startFrame && endFrame) {
+      if (generationMode === 'with_frames' && startFrame) {
         bodyData.start_frame = { base64: startFrame.base64, mimeType: startFrame.mimeType };
-        bodyData.end_frame = { base64: endFrame.base64, mimeType: endFrame.mimeType };
+        // Wan 2.2 requires both frames; Veo 3.1 uses only start_frame
+        if (selectedModel === 'wan2.2' && endFrame) {
+          bodyData.end_frame = { base64: endFrame.base64, mimeType: endFrame.mimeType };
+        }
       }
 
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video/run`, {
@@ -338,7 +346,8 @@ const GerarVideoTool = () => {
   };
 
   const hasFrames = !!startFrame || !!endFrame;
-  const bothFramesReady = !!startFrame && !!endFrame;
+  const isVeo = selectedModel === 'veo3.1';
+  const framesReady = isVeo ? !!startFrame : (!!startFrame && !!endFrame);
 
   // Block access for planos2 users without video generation permission
   if (isPlanos2User && !hasVideoGeneration) {
@@ -479,12 +488,14 @@ const GerarVideoTool = () => {
                 {/* Frame upload area - when with_frames mode */}
                 {generationMode === 'with_frames' && (
                   <div className="flex items-center gap-3">
-                    {/* Start Frame Upload */}
+                    {/* Start Frame / Reference Image Upload */}
                     <div className="flex-1">
-                      <p className="text-[10px] text-purple-400 mb-1 font-medium">1º Frame (início)</p>
+                      <p className="text-[10px] text-purple-400 mb-1 font-medium">
+                        {isVeo ? 'Imagem de Referência' : '1º Frame (início)'}
+                      </p>
                       {startFrame ? (
                         <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
-                          <img src={startFrame.preview} alt="Primeiro frame" className="w-full h-full object-cover" />
+                          <img src={startFrame.preview} alt={isVeo ? 'Imagem de referência' : 'Primeiro frame'} className="w-full h-full object-cover" />
                           <button 
                             onClick={() => setStartFrame(null)} 
                             className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
@@ -504,36 +515,39 @@ const GerarVideoTool = () => {
                       )}
                     </div>
 
-                    {/* Arrow indicator */}
-                    <div className="flex flex-col items-center gap-0.5 pt-4 flex-shrink-0">
-                      <span className="text-purple-400 text-lg">→</span>
-                      <span className="text-[8px] text-purple-500">{MODEL_DURATIONS[selectedModel] || 8}s</span>
-                    </div>
-
-                    {/* End Frame Upload */}
-                    <div className="flex-1">
-                      <p className="text-[10px] text-purple-400 mb-1 font-medium">Último Frame (fim)</p>
-                      {endFrame ? (
-                        <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
-                          <img src={endFrame.preview} alt="Último frame" className="w-full h-full object-cover" />
-                          <button 
-                            onClick={() => setEndFrame(null)} 
-                            className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
-                          >
-                            <X className="h-3 w-3 text-white" />
-                          </button>
+                    {/* Arrow indicator + End Frame - only for Wan 2.2 */}
+                    {!isVeo && (
+                      <>
+                        <div className="flex flex-col items-center gap-0.5 pt-4 flex-shrink-0">
+                          <span className="text-purple-400 text-lg">→</span>
+                          <span className="text-[8px] text-purple-500">{MODEL_DURATIONS[selectedModel] || 8}s</span>
                         </div>
-                      ) : (
-                        <button
-                          onClick={() => endFrameRef.current?.click()}
-                          disabled={isGenerating}
-                          className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/10 hover:bg-purple-900/20 flex flex-col items-center justify-center gap-1 transition-colors"
-                        >
-                          <Upload className="h-4 w-4 text-purple-400" />
-                          <span className="text-[10px] text-purple-300">Enviar imagem</span>
-                        </button>
-                      )}
-                    </div>
+
+                        <div className="flex-1">
+                          <p className="text-[10px] text-purple-400 mb-1 font-medium">Último Frame (fim)</p>
+                          {endFrame ? (
+                            <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
+                              <img src={endFrame.preview} alt="Último frame" className="w-full h-full object-cover" />
+                              <button 
+                                onClick={() => setEndFrame(null)} 
+                                className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
+                              >
+                                <X className="h-3 w-3 text-white" />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => endFrameRef.current?.click()}
+                              disabled={isGenerating}
+                              className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/10 hover:bg-purple-900/20 flex flex-col items-center justify-center gap-1 transition-colors"
+                            >
+                              <Upload className="h-4 w-4 text-purple-400" />
+                              <span className="text-[10px] text-purple-300">Enviar imagem</span>
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
 
@@ -559,7 +573,7 @@ const GerarVideoTool = () => {
 
                   <Button
                     onClick={handleGenerate}
-                    disabled={isGenerating || isSubmitting || !prompt.trim() || (generationMode === 'with_frames' && !bothFramesReady)}
+                    disabled={isGenerating || isSubmitting || !prompt.trim() || (generationMode === 'with_frames' && !framesReady)}
                     size="sm"
                     className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-9 min-w-0 shrink-0"
                   >
