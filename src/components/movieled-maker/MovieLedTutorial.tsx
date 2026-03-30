@@ -60,11 +60,12 @@ const STEPS: TutorialStep[] = [
 interface MovieLedTutorialProps {
   onComplete: () => void;
   persistCompletion?: boolean;
+  onPhaseChange?: (phase: 'intro' | 'active') => void;
 }
 
 type Phase = 'intro' | 'active';
 
-const MovieLedTutorial = ({ onComplete, persistCompletion = true }: MovieLedTutorialProps) => {
+const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange }: MovieLedTutorialProps) => {
   const [phase, setPhase] = useState<Phase>('intro');
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
