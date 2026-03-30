@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowLeft, Download, Upload, Sparkles, Loader2, Video, Coins, Clock, Search, X, Type, ImageIcon, RotateCcw, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Download, Sparkles, Loader2, Video, Coins, Clock, Type, RotateCcw, AlertCircle } from 'lucide-react';
+import ReferenceImageCard from '@/components/arcano-cloner/ReferenceImageCard';
+import MovieLedLibraryModal, { type MovieLedItem } from '@/components/movieled-maker/MovieLedLibraryModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
@@ -15,7 +17,7 @@ import { useAIJob } from '@/contexts/AIJobContext';
 import { markJobAsFailedInDb } from '@/utils/markJobAsFailedInDb';
 import { checkActiveJob } from '@/ai/JobManager';
 import { getAIErrorMessage } from '@/utils/errorMessages';
-import { optimizeForAI } from '@/hooks/useImageOptimizer';
+
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { cancelJob as centralCancelJob } from '@/ai/JobManager';
@@ -26,7 +28,7 @@ type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'err
 interface LibraryItem {
   id: string;
   title: string;
-  image_url: string; // video preview
+  image_url: string;
   reference_images: string[] | null;
   prompt: string;
 }
@@ -52,9 +54,6 @@ const MovieLedMakerTool = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const [showLibrary, setShowLibrary] = useState(false);
-  const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
-  const [librarySearch, setLibrarySearch] = useState('');
-  const [loadingLibrary, setLoadingLibrary] = useState(false);
 
   // Text input
   const [inputText, setInputText] = useState('');
@@ -75,7 +74,7 @@ const MovieLedMakerTool = () => {
   const [activeJobId, setActiveJobId] = useState<string | undefined>();
   const [activeStatus, setActiveStatus] = useState<string | undefined>();
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const sessionIdRef = useRef(crypto.randomUUID());
 
   // Cleanup queued jobs
@@ -139,73 +138,6 @@ const MovieLedMakerTool = () => {
     }
   }, [jobId, registerJob]);
 
-  // Load library items
-  const loadLibrary = useCallback(async () => {
-    setLoadingLibrary(true);
-    try {
-      let query = supabase
-        .from('admin_prompts')
-        .select('id, title, image_url, reference_images, prompt')
-        .eq('category', 'movies-para-telao')
-        .order('title', { ascending: true });
-
-      if (librarySearch.trim()) {
-        query = query.ilike('title', `%${librarySearch.trim()}%`);
-      }
-
-      const { data, error } = await query.limit(50);
-      if (error) throw error;
-      setLibraryItems(data || []);
-    } catch (err) {
-      console.error('[MovieLed] Error loading library:', err);
-      toast.error('Erro ao carregar biblioteca');
-    } finally {
-      setLoadingLibrary(false);
-    }
-  }, [librarySearch]);
-
-  useEffect(() => {
-    if (showLibrary) loadLibrary();
-  }, [showLibrary, loadLibrary]);
-
-  // Handle file upload
-  const handleFileSelect = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      toast.error('Selecione uma imagem válida');
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Imagem muito grande (máx. 10MB)');
-      return;
-    }
-
-    try {
-      const { file: optimized } = await optimizeForAI(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setUploadedImage(e.target?.result as string);
-        setUploadedFileName(file.name);
-        setSelectedLibraryItem(null);
-      };
-      reader.readAsDataURL(optimized);
-    } catch {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setUploadedImage(e.target?.result as string);
-        setUploadedFileName(file.name);
-        setSelectedLibraryItem(null);
-      };
-      reader.readAsDataURL(file);
-    }
-  }, []);
-
-  // Select library item
-  const selectLibraryItem = (item: LibraryItem) => {
-    setSelectedLibraryItem(item);
-    setUploadedImage(null);
-    setUploadedFileName('');
-    setShowLibrary(false);
-  };
 
   // Get effective image URL for processing
   const getEffectiveImageUrl = (): string | null => {
@@ -465,82 +397,20 @@ const MovieLedMakerTool = () => {
                 </div>
               </div>
 
-              {/* Reference Image - Single Card (consistent with Arcano Cloner, Veste AI) */}
-              <div>
-                <span className="text-sm font-medium text-white mb-2 block">Telão de Referência</span>
-                {selectedLibraryItem ? (
-                  <div className="bg-black/40 border border-white/10 rounded-xl p-3">
-                    <div className="flex items-center gap-3">
-                      <video
-                        src={selectedLibraryItem.image_url}
-                        className="w-16 h-10 object-cover rounded-lg"
-                        muted loop autoPlay playsInline
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-white truncate">{selectedLibraryItem.title}</p>
-                      </div>
-                      <button
-                        onClick={() => setSelectedLibraryItem(null)}
-                        disabled={isProcessing}
-                        className="w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center"
-                      >
-                        <X className="w-3 h-3 text-white" />
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => setShowLibrary(true)}
-                      disabled={isProcessing}
-                      className="w-full mt-2 h-6 text-[10px] rounded-md bg-purple-500/10 border border-purple-500/30 text-purple-200 hover:bg-purple-500/20 hover:text-white transition-colors flex items-center justify-center gap-1"
-                    >
-                      <ImageIcon className="w-3 h-3" />
-                      Trocar Telão
-                    </button>
-                  </div>
-                ) : uploadedImage ? (
-                  <div className="bg-black/40 border border-white/10 rounded-xl p-3">
-                    <div className="flex items-center gap-3">
-                      <img src={uploadedImage} alt="Preview" className="w-16 h-10 object-cover rounded-lg" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-white truncate">{uploadedFileName}</p>
-                      </div>
-                      <button
-                        onClick={() => { setUploadedImage(null); setUploadedFileName(''); }}
-                        disabled={isProcessing}
-                        className="w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center"
-                      >
-                        <X className="w-3 h-3 text-white" />
-                      </button>
-                    </div>
-                    <button
-                      onClick={() => setShowLibrary(true)}
-                      disabled={isProcessing}
-                      className="w-full mt-2 h-6 text-[10px] rounded-md bg-purple-500/10 border border-purple-500/30 text-purple-200 hover:bg-purple-500/20 hover:text-white transition-colors flex items-center justify-center gap-1"
-                    >
-                      <ImageIcon className="w-3 h-3" />
-                      Trocar Imagem
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setShowLibrary(true)}
-                    disabled={isProcessing}
-                    className="w-full bg-black/40 border border-white/10 border-dashed rounded-xl p-5 text-center hover:bg-black/60 transition-colors"
-                  >
-                    <div className="w-10 h-10 mx-auto rounded-lg bg-fuchsia-500/20 border border-dashed border-fuchsia-500/40 flex items-center justify-center mb-2">
-                      <ImageIcon className="w-5 h-5 text-fuchsia-400" />
-                    </div>
-                    <p className="text-sm text-white font-medium">Escolher Telão</p>
-                    <p className="text-[10px] text-gray-500 mt-0.5">Da biblioteca ou envie sua imagem</p>
-                  </button>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
-                />
-              </div>
+              {/* Reference Image - ReferenceImageCard (consistent with Arcano Cloner) */}
+              <ReferenceImageCard
+                image={selectedLibraryItem?.image_url || uploadedImage || null}
+                onClearImage={() => {
+                  setSelectedLibraryItem(null);
+                  setUploadedImage(null);
+                  setUploadedFileName('');
+                }}
+                onOpenLibrary={() => setShowLibrary(true)}
+                disabled={isProcessing}
+                title="Telão de Referência"
+                emptyLabel="Escolher Telão"
+                emptySubLabel="Da biblioteca ou envie sua imagem"
+              />
 
               {/* Text Input */}
               <div>
@@ -718,77 +588,21 @@ const MovieLedMakerTool = () => {
         </div>
       </div>
 
-      {/* Library Modal */}
-      {showLibrary && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl max-w-3xl w-full max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
-              <h3 className="text-lg font-bold text-white">Telões para LED</h3>
-              <button onClick={() => setShowLibrary(false)} className="text-gray-400 hover:text-white">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="p-4 border-b border-white/10 flex gap-2">
-              <Input
-                value={librarySearch}
-                onChange={(e) => setLibrarySearch(e.target.value)}
-                placeholder="Buscar telão..."
-                className="bg-black/40 border-white/10 text-white text-sm flex-1"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-white/10 text-white hover:bg-white/5 flex items-center gap-1.5 shrink-0"
-                onClick={() => { fileInputRef.current?.click(); setShowLibrary(false); }}
-              >
-                <Upload className="h-3.5 w-3.5" />
-                Enviar Imagem
-              </Button>
-            </div>
-            <div className="px-4 pt-3 pb-1">
-              <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                <AlertCircle className="h-3 w-3 text-amber-400 flex-shrink-0" />
-                <p className="text-[10px] text-amber-300">
-                  Para melhores resultados ao enviar sua imagem, use <strong>1920x1080</strong> (16:9).
-                </p>
-              </div>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4">
-              {loadingLibrary ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
-                </div>
-              ) : libraryItems.length === 0 ? (
-                <p className="text-center text-gray-400 py-8">Nenhum telão encontrado</p>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {libraryItems.map(item => (
-                    <button
-                      key={item.id}
-                      onClick={() => selectLibraryItem(item)}
-                      className="group bg-black/40 border border-white/10 rounded-xl overflow-hidden hover:border-fuchsia-500/50 transition-all text-left"
-                    >
-                      <div className="aspect-video relative overflow-hidden">
-                        <video
-                          src={item.image_url}
-                          muted
-                          loop
-                          autoPlay
-                          playsInline
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        />
-                      </div>
-                      <div className="p-2">
-                        <p className="text-xs text-white truncate">{item.title}</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Library Modal - Same pattern as PhotoLibraryModal in Arcano Cloner */}
+      <MovieLedLibraryModal
+        isOpen={showLibrary}
+        onClose={() => setShowLibrary(false)}
+        onSelectItem={(item) => {
+          setSelectedLibraryItem(item as unknown as LibraryItem);
+          setUploadedImage(null);
+          setUploadedFileName('');
+        }}
+        onUploadPhoto={(dataUrl, file) => {
+          setUploadedImage(dataUrl);
+          setUploadedFileName(file.name);
+          setSelectedLibraryItem(null);
+        }}
+      />
 
       {/* Modals */}
       <NoCreditsModal
