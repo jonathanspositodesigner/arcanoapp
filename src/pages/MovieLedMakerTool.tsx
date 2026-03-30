@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { ArrowLeft, Download, Sparkles, Loader2, Video, Coins, Clock, Type, RotateCcw, AlertCircle, ImageIcon, X, Plus } from 'lucide-react';
-import ReferenceImageCard from '@/components/arcano-cloner/ReferenceImageCard';
+
 import MovieLedLibraryModal, { type MovieLedItem } from '@/components/movieled-maker/MovieLedLibraryModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
