@@ -28,7 +28,7 @@ type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'err
 interface LibraryItem {
   id: string;
   title: string;
-  image_url: string; // video preview
+  image_url: string;
   reference_images: string[] | null;
   prompt: string;
 }
