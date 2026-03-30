@@ -225,7 +225,7 @@ const ContributePrompts = () => {
       <div className="container max-w-4xl mx-auto py-8 px-4">
         <Button
           variant="ghost"
-          onClick={() => navigate("/")}
+          onClick={goBack}
           className="mb-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

@@ -214,7 +214,7 @@ const ProfileSettings = () => {
       <div className="max-w-2xl mx-auto space-y-6">
         <Button
           variant="ghost"
-          onClick={() => navigate("/biblioteca-prompts")}
+          onClick={goBack}
           className="mb-4 text-purple-300 hover:text-white hover:bg-purple-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

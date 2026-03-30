@@ -252,7 +252,7 @@ const BibliotecaArtesMusicos = () => {
               <Button variant="ghost" size="icon" className="lg:hidden text-gray-400 hover:text-white hover:bg-white/10" onClick={() => setSidebarOpen(true)}>
                 <Menu className="w-5 h-5" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => navigate("/biblioteca-artes-hub")} className="text-gray-400 hover:text-white hover:bg-white/10">
+              <Button variant="ghost" size="icon" onClick={goBack} className="text-gray-400 hover:text-white hover:bg-white/10">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <img src={baaLogo} alt="BAA" className="h-8" />
