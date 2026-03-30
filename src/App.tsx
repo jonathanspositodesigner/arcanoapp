@@ -135,6 +135,7 @@ const VideoUpscalerTool = lazy(() => import("./pages/VideoUpscalerTool"));
 const ArcanoClonerTool = lazy(() => import("./pages/ArcanoClonerTool"));
 const GeradorPersonagemTool = lazy(() => import("./pages/GeradorPersonagemTool"));
 const UpscalerSelectionPage = lazy(() => import("./pages/UpscalerSelectionPage"));
+const MovieLedMakerTool = lazy(() => import("./pages/MovieLedMakerTool"));
 const AguardandoPagamentoMusicos = lazy(() => import("./pages/AguardandoPagamentoMusicos"));
 
 const ComboArtesArcanas = lazy(() => import("./pages/ComboArtesArcanas"));
