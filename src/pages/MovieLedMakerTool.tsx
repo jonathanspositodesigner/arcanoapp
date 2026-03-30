@@ -48,7 +48,6 @@ const MovieLedMakerTool = () => {
   const currentEngine = ENGINES.find(e => e.id === selectedEngine) || ENGINES[0];
 
   // Image input
-  const [imageSource, setImageSource] = useState<'library' | 'upload'>('library');
   const [selectedLibraryItem, setSelectedLibraryItem] = useState<LibraryItem | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
