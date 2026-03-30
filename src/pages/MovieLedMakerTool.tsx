@@ -367,7 +367,7 @@ const MovieLedMakerTool = () => {
               {/* Engine Selector */}
               <div>
                 <span className="text-sm font-medium text-white mb-2 block">Motor</span>
-                <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1">
+                <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1" data-tutorial-movieled="engine">
                   {ENGINES.map(engine => (
                     <button
                       key={engine.id}
