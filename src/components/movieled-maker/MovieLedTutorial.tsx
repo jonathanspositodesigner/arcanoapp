@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { X, ChevronRight, CheckCircle2, Sparkles, Zap, MousePointerClick } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { X, CheckCircle2, Sparkles, MousePointerClick, GraduationCap, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 
@@ -11,7 +11,7 @@ interface TutorialStep {
   description: string;
   targetSelector: string;
   emoji: string;
-  action?: string;
+  action: string;
 }
 
 const STEPS: TutorialStep[] = [
@@ -21,7 +21,7 @@ const STEPS: TutorialStep[] = [
     description: 'Selecione entre Wan 2.2 (15s, 720p) ou Veo 3.1 (8s, 1080p). Cada motor tem qualidade e duração diferentes!',
     targetSelector: '[data-tutorial-movieled="engine"]',
     emoji: '⚡',
-    action: 'Clique em um dos motores',
+    action: 'Clique em um dos motores para continuar',
   },
   {
     step: 2,
@@ -29,7 +29,7 @@ const STEPS: TutorialStep[] = [
     description: 'Clique no botão abaixo para abrir a biblioteca de telões de LED e escolher um modelo.',
     targetSelector: '[data-tutorial-movieled="reference"]',
     emoji: '🖼️',
-    action: 'Clique para abrir a biblioteca',
+    action: 'Clique no botão para abrir a biblioteca',
   },
   {
     step: 3,
@@ -37,7 +37,7 @@ const STEPS: TutorialStep[] = [
     description: 'Na biblioteca, escolha o telão "Boteco do Luan" (gratuito) ou qualquer outro modelo disponível!',
     targetSelector: '[data-tutorial-movieled="library-modal"]',
     emoji: '🎯',
-    action: 'Escolha o telão Boteco do Luan',
+    action: 'Selecione um telão da lista',
   },
   {
     step: 4,
@@ -45,7 +45,7 @@ const STEPS: TutorialStep[] = [
     description: 'Escreva o nome que aparecerá no telão de LED. Pode ser seu nome artístico, nome do evento, etc.',
     targetSelector: '[data-tutorial-movieled="text-input"]',
     emoji: '✍️',
-    action: 'Digite o nome desejado',
+    action: 'Digite algo no campo e clique fora',
   },
   {
     step: 5,
@@ -61,29 +61,49 @@ interface MovieLedTutorialProps {
   onComplete: () => void;
 }
 
+type Phase = 'intro' | 'active';
+
 const MovieLedTutorial = ({ onComplete }: MovieLedTutorialProps) => {
+  const [phase, setPhase] = useState<Phase>('intro');
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [animateIn, setAnimateIn] = useState(true);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const listenerCleanupRef = useRef<(() => void) | null>(null);
 
   const step = STEPS[currentStep];
   const progress = ((currentStep) / STEPS.length) * 100;
 
+  const finishTutorial = useCallback(() => {
+    listenerCleanupRef.current?.();
+    localStorage.setItem(STORAGE_KEY, 'true');
+    setIsVisible(false);
+    onComplete();
+  }, [onComplete]);
+
+  const advanceStep = useCallback(() => {
+    setCompletedSteps(prev => new Set([...prev, currentStep]));
+    if (currentStep < STEPS.length - 1) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      finishTutorial();
+    }
+  }, [currentStep, finishTutorial]);
+
   // Position the highlight around the target element
   const updateTargetPosition = useCallback(() => {
-    if (!step) return;
+    if (phase !== 'active' || !step) return;
     const el = document.querySelector(step.targetSelector);
     if (el) {
       setTargetRect(el.getBoundingClientRect());
     } else {
       setTargetRect(null);
     }
-  }, [step]);
+  }, [step, phase]);
 
   useEffect(() => {
-    // Small delay for DOM to settle
+    if (phase !== 'active') return;
     const timer = setTimeout(updateTargetPosition, 200);
     window.addEventListener('resize', updateTargetPosition);
     window.addEventListener('scroll', updateTargetPosition);
@@ -92,7 +112,55 @@ const MovieLedTutorial = ({ onComplete }: MovieLedTutorialProps) => {
       window.removeEventListener('resize', updateTargetPosition);
       window.removeEventListener('scroll', updateTargetPosition);
     };
-  }, [currentStep, updateTargetPosition]);
+  }, [currentStep, updateTargetPosition, phase]);
+
+  // Listen for clicks on the target element to advance
+  useEffect(() => {
+    if (phase !== 'active') return;
+
+    // Clean up previous listener
+    listenerCleanupRef.current?.();
+    listenerCleanupRef.current = null;
+
+    const attachListener = () => {
+      const el = document.querySelector(step.targetSelector);
+      if (!el) return;
+
+      // For text input (step 4), listen for input + blur
+      if (step.step === 4) {
+        const inputEl = el as HTMLInputElement;
+        const handleInput = () => {
+          if (inputEl.value.trim().length > 0) {
+            advanceStep();
+          }
+        };
+        inputEl.addEventListener('blur', handleInput);
+        listenerCleanupRef.current = () => inputEl.removeEventListener('blur', handleInput);
+        return;
+      }
+
+      // For other steps, listen for click anywhere inside the target
+      const handleClick = () => {
+        // Small delay so the actual action happens first
+        setTimeout(() => advanceStep(), 150);
+      };
+      el.addEventListener('click', handleClick, { capture: true });
+      listenerCleanupRef.current = () => el.removeEventListener('click', handleClick, { capture: true });
+    };
+
+    // Retry finding the element (e.g. modal might not be open yet for step 3)
+    const timer = setTimeout(attachListener, 300);
+    const interval = setInterval(() => {
+      if (!listenerCleanupRef.current) attachListener();
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+      listenerCleanupRef.current?.();
+      listenerCleanupRef.current = null;
+    };
+  }, [phase, currentStep, step, advanceStep]);
 
   // Animate in on step change
   useEffect(() => {
@@ -101,62 +169,74 @@ const MovieLedTutorial = ({ onComplete }: MovieLedTutorialProps) => {
     return () => clearTimeout(t);
   }, [currentStep]);
 
-  const finishTutorial = useCallback(() => {
-    localStorage.setItem(STORAGE_KEY, 'true');
-    setIsVisible(false);
-    onComplete();
-  }, [onComplete]);
-
-  const handleNext = () => {
-    setCompletedSteps(prev => new Set([...prev, currentStep]));
-    if (currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      finishTutorial();
-    }
-  };
-
-  const handleSkip = () => {
-    finishTutorial();
-  };
-
   if (!isVisible) return null;
 
+  // =================== INTRO SCREEN ===================
+  if (phase === 'intro') {
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/80 pointer-events-auto" onClick={finishTutorial} />
+        <div className="relative z-10 bg-[#1e1e3a] border border-purple-500/30 rounded-2xl p-6 shadow-2xl shadow-purple-900/40 max-w-sm w-full pointer-events-auto animate-scale-in">
+          {/* Icon */}
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/25 to-fuchsia-500/25 border border-purple-500/20 flex items-center justify-center">
+              <GraduationCap className="w-8 h-8 text-purple-400" />
+            </div>
+          </div>
+
+          <h2 className="text-xl font-bold text-white text-center mb-2">
+            Tutorial MovieLed Maker
+          </h2>
+          <p className="text-sm text-gray-400 text-center mb-1">
+            Quer aprender a usar o MovieLed Maker?
+          </p>
+          <p className="text-xs text-gray-500 text-center mb-6">
+            Um tutorial rápido e interativo em 5 passos para você dominar a ferramenta.
+          </p>
+
+          {/* Steps preview */}
+          <div className="space-y-2 mb-6">
+            {STEPS.map((s) => (
+              <div key={s.step} className="flex items-center gap-2.5 bg-white/[0.03] rounded-lg px-3 py-2">
+                <span className="text-base">{s.emoji}</span>
+                <span className="text-xs text-gray-300">{s.title}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-col gap-2">
+            <Button
+              onClick={() => setPhase('active')}
+              className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-semibold gap-2 rounded-xl py-5"
+            >
+              <Play className="w-4 h-4" />
+              Iniciar Tutorial
+            </Button>
+            <button
+              onClick={finishTutorial}
+              className="text-xs text-gray-500 hover:text-gray-300 transition-colors py-2"
+            >
+              Não, já sei usar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // =================== ACTIVE TUTORIAL ===================
   const pad = 12;
 
   return (
-    <div className="fixed inset-0 z-[9999]">
+    <div className="fixed inset-0 z-[9999] pointer-events-none">
       {/* Overlay panels around target */}
       {targetRect ? (
         <>
-          {/* Top */}
-          <div
-            className="absolute left-0 right-0 top-0 bg-black/80 pointer-events-auto"
-            style={{ height: Math.max(0, targetRect.top - pad) }}
-          />
-          {/* Bottom */}
-          <div
-            className="absolute left-0 right-0 bottom-0 bg-black/80 pointer-events-auto"
-            style={{ top: targetRect.bottom + pad }}
-          />
-          {/* Left */}
-          <div
-            className="absolute left-0 bg-black/80 pointer-events-auto"
-            style={{
-              top: targetRect.top - pad,
-              height: targetRect.height + pad * 2,
-              width: Math.max(0, targetRect.left - pad),
-            }}
-          />
-          {/* Right */}
-          <div
-            className="absolute right-0 bg-black/80 pointer-events-auto"
-            style={{
-              top: targetRect.top - pad,
-              height: targetRect.height + pad * 2,
-              left: targetRect.right + pad,
-            }}
-          />
+          <div className="absolute left-0 right-0 top-0 bg-black/75 pointer-events-auto" style={{ height: Math.max(0, targetRect.top - pad) }} />
+          <div className="absolute left-0 right-0 bottom-0 bg-black/75 pointer-events-auto" style={{ top: targetRect.bottom + pad }} />
+          <div className="absolute left-0 bg-black/75 pointer-events-auto" style={{ top: targetRect.top - pad, height: targetRect.height + pad * 2, width: Math.max(0, targetRect.left - pad) }} />
+          <div className="absolute right-0 bg-black/75 pointer-events-auto" style={{ top: targetRect.top - pad, height: targetRect.height + pad * 2, left: targetRect.right + pad }} />
 
           {/* Highlight ring */}
           <div
@@ -169,8 +249,6 @@ const MovieLedTutorial = ({ onComplete }: MovieLedTutorialProps) => {
               boxShadow: '0 0 0 3px rgba(168, 85, 247, 0.7), 0 0 20px rgba(168, 85, 247, 0.3)',
             }}
           />
-
-          {/* Pulsing ring animation */}
           <div
             className="absolute rounded-xl pointer-events-none animate-pulse"
             style={{
@@ -183,17 +261,16 @@ const MovieLedTutorial = ({ onComplete }: MovieLedTutorialProps) => {
           />
         </>
       ) : (
-        /* Full overlay when no target found (e.g. step 3 modal not open yet) */
-        <div className="absolute inset-0 bg-black/80 pointer-events-auto" />
+        <div className="absolute inset-0 bg-black/75 pointer-events-auto" />
       )}
 
       {/* Skip button */}
       <button
-        onClick={handleSkip}
+        onClick={finishTutorial}
         className="absolute top-3 right-3 z-[100] flex items-center gap-1.5 text-white/60 hover:text-white text-xs pointer-events-auto transition-colors"
       >
         <X className="h-3.5 w-3.5" />
-        Pular tutorial
+        Pular
       </button>
 
       {/* Tooltip card */}
@@ -204,15 +281,12 @@ const MovieLedTutorial = ({ onComplete }: MovieLedTutorialProps) => {
         style={{
           ...(targetRect
             ? {
-                // Position below target if enough space, else above
-                top:
-                  targetRect.bottom + pad + 16 + 220 < window.innerHeight
-                    ? targetRect.bottom + pad + 12
-                    : undefined,
-                bottom:
-                  targetRect.bottom + pad + 16 + 220 >= window.innerHeight
-                    ? window.innerHeight - targetRect.top + pad + 12
-                    : undefined,
+                top: targetRect.bottom + pad + 16 + 200 < window.innerHeight
+                  ? targetRect.bottom + pad + 12
+                  : undefined,
+                bottom: targetRect.bottom + pad + 16 + 200 >= window.innerHeight
+                  ? window.innerHeight - targetRect.top + pad + 12
+                  : undefined,
                 left: 16,
                 right: 16,
               }
@@ -225,89 +299,56 @@ const MovieLedTutorial = ({ onComplete }: MovieLedTutorialProps) => {
           zIndex: 100,
         }}
       >
-        <div className="bg-[#1e1e3a] border border-purple-500/30 rounded-2xl p-5 shadow-2xl shadow-purple-900/30 max-w-lg mx-auto">
-          {/* Progress bar */}
-          <div className="mb-4">
+        <div className="bg-[#1e1e3a] border border-purple-500/30 rounded-2xl p-4 shadow-2xl shadow-purple-900/30 max-w-lg mx-auto">
+          {/* Progress */}
+          <div className="mb-3">
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                <span className="text-[10px] font-medium text-purple-300 uppercase tracking-wider">
-                  Tutorial MovieLed
-                </span>
+                <span className="text-[10px] font-medium text-purple-300 uppercase tracking-wider">Tutorial</span>
               </div>
-              <span className="text-[10px] text-gray-400 font-medium">
-                {currentStep + 1} de {STEPS.length}
-              </span>
+              <span className="text-[10px] text-gray-400 font-medium">{currentStep + 1}/{STEPS.length}</span>
             </div>
             <Progress value={progress} className="h-1.5 bg-white/5" />
           </div>
 
-          {/* Step indicator dots */}
-          <div className="flex items-center gap-1.5 mb-4">
+          {/* Step dots */}
+          <div className="flex items-center gap-1.5 mb-3">
             {STEPS.map((_, i) => (
               <div
                 key={i}
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  i === currentStep
-                    ? 'w-6 bg-purple-500'
-                    : completedSteps.has(i)
-                    ? 'w-2 bg-green-500'
-                    : 'w-2 bg-white/15'
+                  i === currentStep ? 'w-6 bg-purple-500' : completedSteps.has(i) ? 'w-2 bg-green-500' : 'w-2 bg-white/15'
                 }`}
               />
             ))}
           </div>
 
           {/* Content */}
-          <div className="flex items-start gap-3.5">
-            {/* Emoji badge */}
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-fuchsia-500/20 border border-purple-500/20 flex items-center justify-center text-2xl flex-shrink-0">
+          <div className="flex items-start gap-3">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-500/20 to-fuchsia-500/20 border border-purple-500/20 flex items-center justify-center text-xl flex-shrink-0">
               {step.emoji}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-base font-bold text-white mb-1 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-white mb-0.5 flex items-center gap-2">
                 Passo {step.step}: {step.title}
-                {completedSteps.has(currentStep) && (
-                  <CheckCircle2 className="w-4 h-4 text-green-400" />
-                )}
+                {completedSteps.has(currentStep) && <CheckCircle2 className="w-4 h-4 text-green-400" />}
               </h3>
-              <p className="text-sm text-gray-300 leading-relaxed">{step.description}</p>
+              <p className="text-xs text-gray-300 leading-relaxed">{step.description}</p>
 
-              {/* Action hint */}
-              {step.action && (
-                <div className="mt-2.5 flex items-center gap-2 bg-purple-500/10 border border-purple-500/15 rounded-lg px-3 py-1.5">
-                  <MousePointerClick className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
-                  <span className="text-xs text-purple-300 font-medium">{step.action}</span>
-                </div>
-              )}
+              {/* Action hint - this is the key instruction */}
+              <div className="mt-2 flex items-center gap-2 bg-purple-500/10 border border-purple-500/15 rounded-lg px-3 py-1.5 animate-pulse">
+                <MousePointerClick className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
+                <span className="text-[11px] text-purple-300 font-medium">{step.action}</span>
+              </div>
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
-            <button
-              onClick={handleSkip}
-              className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
-            >
-              Pular tudo
+          {/* Skip only - no Next button */}
+          <div className="flex justify-end mt-3 pt-2 border-t border-white/5">
+            <button onClick={finishTutorial} className="text-[11px] text-gray-500 hover:text-gray-300 transition-colors">
+              Pular tutorial
             </button>
-            <Button
-              onClick={handleNext}
-              size="sm"
-              className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-medium gap-1.5 rounded-lg px-5"
-            >
-              {currentStep < STEPS.length - 1 ? (
-                <>
-                  Próximo
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </>
-              ) : (
-                <>
-                  <Zap className="w-3.5 h-3.5" />
-                  Concluir!
-                </>
-              )}
-            </Button>
           </div>
         </div>
       </div>
