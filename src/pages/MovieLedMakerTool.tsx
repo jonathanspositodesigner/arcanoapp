@@ -679,7 +679,8 @@ const MovieLedMakerTool = () => {
       {showTutorial && (
         <MovieLedTutorial
           persistCompletion={!isTutorialTestUser}
-          onComplete={() => setShowTutorial(false)}
+          onComplete={() => { setShowTutorial(false); setTutorialInProgress(false); }}
+          onPhaseChange={(phase) => setTutorialInProgress(phase === 'active')}
         />
       )}
     </AppLayout>
