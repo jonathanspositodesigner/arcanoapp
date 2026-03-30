@@ -462,6 +462,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_tool_registry: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          expiry_hours: number
+          id: string
+          media_type: string
+          storage_folder: string | null
+          table_name: string
+          tool_name: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          expiry_hours?: number
+          id?: string
+          media_type?: string
+          storage_folder?: string | null
+          table_name: string
+          tool_name: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          expiry_hours?: number
+          id?: string
+          media_type?: string
+          storage_folder?: string | null
+          table_name?: string
+          tool_name?: string
+        }
+        Relationships: []
+      }
       ai_tool_settings: {
         Row: {
           api_cost: number
@@ -4992,19 +5025,7 @@ export type Database = {
           videogen_refunded: number
         }[]
       }
-      cleanup_expired_ai_jobs: {
-        Args: never
-        Returns: {
-          arcano_cloner_deleted: number
-          character_generator_deleted: number
-          image_generator_deleted: number
-          pose_changer_deleted: number
-          upscaler_deleted: number
-          veste_ai_deleted: number
-          video_generator_deleted: number
-          video_upscaler_deleted: number
-        }[]
-      }
+      cleanup_expired_ai_jobs: { Args: never; Returns: Json }
       cleanup_monthly_logs: { Args: never; Returns: undefined }
       cleanup_old_logs: { Args: never; Returns: undefined }
       cleanup_orphaned_checkout_orders: { Args: never; Returns: number }
