@@ -97,6 +97,7 @@ const TOOL_FILTERS = [
   { value: "Gerar Vídeo", label: "Gerar Vídeo" },
   { value: "Flyer Maker", label: "Flyer Maker" },
   { value: "Remover Fundo", label: "Remover Fundo" },
+  { value: "MovieLed Maker", label: "MovieLed Maker" },
 ];
 
 const STATUS_FILTERS = [
@@ -135,7 +136,7 @@ const AdminAIToolsUsageTab = () => {
   const [errorDetails, setErrorDetails] = useState<JobErrorDetails | null>(null);
   const [isLoadingErrorDetails, setIsLoadingErrorDetails] = useState(false);
 
-  const isVideoTool = (toolName: string) => toolName === "Video Upscaler" || toolName === "Gerar Vídeo";
+  const isVideoTool = (toolName: string) => toolName === "Video Upscaler" || toolName === "Gerar Vídeo" || toolName === "MovieLed Maker";
 
   const getInputColumn = (toolName: string): string | null => {
     switch (toolName) {
@@ -164,6 +165,7 @@ const AdminAIToolsUsageTab = () => {
       case "Gerar Vídeo": return "video_generator_jobs";
       case "Flyer Maker": return "flyer_maker_jobs";
       case "Remover Fundo": return "bg_remover_jobs";
+      case "MovieLed Maker": return "movieled_maker_jobs";
       default: return "upscaler_jobs";
     }
   };
@@ -444,6 +446,7 @@ const AdminAIToolsUsageTab = () => {
       "Gerar Vídeo": "bg-rose-500/20 text-rose-400 border-rose-500/30",
       "Flyer Maker": "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
       "Remover Fundo": "bg-teal-500/20 text-teal-400 border-teal-500/30",
+      "MovieLed Maker": "bg-violet-500/20 text-violet-400 border-violet-500/30",
     };
     return <Badge className={colors[toolName] || ""}>{toolName}</Badge>;
   };
