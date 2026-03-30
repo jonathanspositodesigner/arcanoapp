@@ -1062,6 +1062,16 @@ serve(async (req) => {
             eventData?.subscription?.id || 
             null
 
+          // Check existing subscription to preserve landing_bundle benefits (image/video gen)
+          const { data: existingSubForPlan } = await supabase
+            .from('planos2_subscriptions')
+            .select('has_image_generation, has_video_generation')
+            .eq('user_id', userId)
+            .maybeSingle()
+
+          const preserveImageGen = config.has_image_generation || (existingSubForPlan?.has_image_generation === true)
+          const preserveVideoGen = config.has_video_generation || (existingSubForPlan?.has_video_generation === true)
+
           // Upsert subscription
           await supabase.from('planos2_subscriptions').upsert({
             user_id: userId,
@@ -1069,8 +1079,8 @@ serve(async (req) => {
             is_active: true,
             credits_per_month: config.credits_per_month,
             daily_prompt_limit: config.daily_prompt_limit,
-            has_image_generation: config.has_image_generation,
-            has_video_generation: config.has_video_generation,
+            has_image_generation: preserveImageGen,
+            has_video_generation: preserveVideoGen,
             cost_multiplier: config.cost_multiplier,
             expires_at: expiresAt,
             pagarme_subscription_id: subId,
