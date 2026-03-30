@@ -35,7 +35,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
     { name: "Arcano Cloner", path: "/arcano-cloner-tool", badge: "Novo", badgeColor: "bg-green-500", disabled: false },
     { name: "Pose Changer", path: "/pose-changer-tool", badge: null, badgeColor: null, disabled: false },
     { name: "Veste AI", path: "/veste-ai-tool", badge: null, badgeColor: null, disabled: false },
-    { name: "MovieLed Maker", path: "#", badge: "Em breve", badgeColor: "bg-purple-400/30", textColor: "text-purple-300", disabled: true },
+    { name: "MovieLed Maker", path: "/movieled-maker", badge: "Novo", badgeColor: "bg-green-500/30", textColor: "text-green-300", disabled: false },
     { name: "Forja de Selos 3D", path: "#", badge: "Em breve", badgeColor: "bg-purple-400/30", textColor: "text-purple-300", disabled: true },
   ];
 
