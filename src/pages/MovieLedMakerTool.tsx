@@ -209,8 +209,7 @@ const MovieLedMakerTool = () => {
 
   // Get effective image URL for processing
   const getEffectiveImageUrl = (): string | null => {
-    if (imageSource === 'library' && selectedLibraryItem) {
-      // Use the reference_image (the still frame), not the video URL
+    if (selectedLibraryItem) {
       return selectedLibraryItem.reference_images?.[0] || null;
     }
     return uploadedImage;
