@@ -74,6 +74,10 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
           .order('created_at', { ascending: false })
           .range(from, from + FETCH_BATCH_SIZE - 1);
 
+        if (freeOnly) {
+          query = query.eq('is_premium', false);
+        }
+
         if (expandedTerms.length > 0) {
           const orFilter = buildSmartSearchFilter(expandedTerms, ['title'], 'tags');
           query = query.or(orFilter);
