@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowLeft, Download, Upload, Sparkles, Loader2, Video, Coins, Clock, Search, X, Type, ImageIcon, RotateCcw, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Download, Sparkles, Loader2, Video, Coins, Clock, X, Type, ImageIcon, RotateCcw, AlertCircle } from 'lucide-react';
+import ReferenceImageCard from '@/components/arcano-cloner/ReferenceImageCard';
+import MovieLedLibraryModal, { type MovieLedItem } from '@/components/movieled-maker/MovieLedLibraryModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
