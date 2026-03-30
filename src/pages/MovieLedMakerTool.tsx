@@ -602,6 +602,7 @@ const MovieLedMakerTool = () => {
           setUploadedFileName(file.name);
           setSelectedLibraryItem(null);
         }}
+        isPremiumUser={isPremium}
       />
 
       {/* Modals */}
