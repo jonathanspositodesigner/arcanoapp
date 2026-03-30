@@ -603,6 +603,7 @@ async function handleCheckUserActive(req: Request): Promise<Response> {
       'bg_remover_jobs': 'Remover Fundo',
       'image_generator_jobs': 'Gerar Imagem',
       'video_generator_jobs': 'Gerar Vídeo',
+      'movieled_maker_jobs': 'MovieLed Maker',
     };
     
     // Verificar em TODAS as tabelas - incluir STARTING e PENDING recente (< 35s)
