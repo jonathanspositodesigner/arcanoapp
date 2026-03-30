@@ -32,8 +32,8 @@ interface LibraryItem {
 }
 
 const ENGINES = [
-  { id: 'veo3.1', name: 'Veo 3.1', cost: 850, duration: '8s', resolution: '1080p', time: '3 a 4 min' },
   { id: 'wan2.2', name: 'Wan 2.2', cost: 500, duration: '15s', resolution: '720p', time: '4 a 5 min' },
+  { id: 'veo3.1', name: 'Veo 3.1', cost: 850, duration: '8s', resolution: '1080p', time: '3 a 4 min' },
 ] as const;
 
 const MovieLedMakerTool = () => {
@@ -44,11 +44,10 @@ const MovieLedMakerTool = () => {
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
 
   // Engine selection
-  const [selectedEngine, setSelectedEngine] = useState<string>('veo3.1');
+  const [selectedEngine, setSelectedEngine] = useState<string>('wan2.2');
   const currentEngine = ENGINES.find(e => e.id === selectedEngine) || ENGINES[0];
 
   // Image input
-  const [imageSource, setImageSource] = useState<'library' | 'upload'>('library');
   const [selectedLibraryItem, setSelectedLibraryItem] = useState<LibraryItem | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
@@ -210,8 +209,7 @@ const MovieLedMakerTool = () => {
 
   // Get effective image URL for processing
   const getEffectiveImageUrl = (): string | null => {
-    if (imageSource === 'library' && selectedLibraryItem) {
-      // Use the reference_image (the still frame), not the video URL
+    if (selectedLibraryItem) {
       return selectedLibraryItem.reference_images?.[0] || null;
     }
     return uploadedImage;
@@ -277,7 +275,7 @@ const MovieLedMakerTool = () => {
       // If uploading from device, upload to storage first
       let imageUrlForBackend = effectiveImageUrl;
       
-      if (imageSource === 'upload' && uploadedImage) {
+      if (uploadedImage && !selectedLibraryItem) {
         const base64Data = uploadedImage.split(',')[1];
         const binaryStr = atob(base64Data);
         const bytes = new Uint8Array(binaryStr.length);
@@ -406,7 +404,7 @@ const MovieLedMakerTool = () => {
   };
 
   const isProcessing = status === 'processing' || status === 'uploading' || isQueued;
-  const hasImage = imageSource === 'library' ? !!selectedLibraryItem : !!uploadedImage;
+  const hasImage = !!selectedLibraryItem || !!uploadedImage;
   const canGenerate = hasImage && inputText.trim().length > 0 && !isProcessing && status !== 'completed';
 
   return (
@@ -467,105 +465,81 @@ const MovieLedMakerTool = () => {
                 </div>
               </div>
 
-              {/* Image Source */}
+              {/* Reference Image - Single Card (consistent with Arcano Cloner, Veste AI) */}
               <div>
                 <span className="text-sm font-medium text-white mb-2 block">Telão de Referência</span>
-                <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1 mb-3">
-                  <button
-                    onClick={() => { setImageSource('library'); setUploadedImage(null); }}
-                    disabled={isProcessing}
-                    className={`py-2 px-3 text-xs rounded-md transition-all font-medium ${
-                      imageSource === 'library' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    <Search className="h-3 w-3 inline mr-1" />
-                    Biblioteca
-                  </button>
-                  <button
-                    onClick={() => { setImageSource('upload'); setSelectedLibraryItem(null); }}
-                    disabled={isProcessing}
-                    className={`py-2 px-3 text-xs rounded-md transition-all font-medium ${
-                      imageSource === 'upload' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    <Upload className="h-3 w-3 inline mr-1" />
-                    Minha Imagem
-                  </button>
-                </div>
-
-                {imageSource === 'library' ? (
-                  <>
-                    {selectedLibraryItem ? (
-                      <div className="bg-black/40 border border-white/10 rounded-xl p-3 flex items-center gap-3">
-                        {/* Show the video as preview */}
-                        <video
-                          src={selectedLibraryItem.image_url}
-                          className="w-16 h-10 object-cover rounded-lg"
-                          muted
-                          loop
-                          autoPlay
-                          playsInline
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-white truncate">{selectedLibraryItem.title}</p>
-                          <button
-                            onClick={() => { setSelectedLibraryItem(null); setShowLibrary(true); }}
-                            className="text-[10px] text-fuchsia-400 hover:text-fuchsia-300"
-                            disabled={isProcessing}
-                          >
-                            Trocar telão
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => setShowLibrary(true)}
-                        disabled={isProcessing}
-                        className="w-full bg-black/40 border border-white/10 border-dashed rounded-xl p-4 text-center hover:bg-black/60 transition-colors"
-                      >
-                        <ImageIcon className="h-6 w-6 text-gray-400 mx-auto mb-1" />
-                        <p className="text-sm text-white">Explorar Biblioteca</p>
-                        <p className="text-[10px] text-gray-500">Escolha um telão da nossa coleção</p>
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div
-                      className="bg-black/40 border border-white/10 border-dashed rounded-xl p-4 cursor-pointer hover:bg-black/60 transition-colors"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {uploadedImage ? (
-                        <div className="flex items-center gap-3">
-                          <img src={uploadedImage} alt="Preview" className="w-12 h-8 object-cover rounded-lg" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs text-white truncate">{uploadedFileName}</p>
-                            <p className="text-[10px] text-gray-500">Clique para trocar</p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center gap-1">
-                          <Upload className="h-6 w-6 text-gray-400" />
-                          <p className="text-sm text-white">Enviar imagem</p>
-                          <p className="text-[10px] text-gray-500">PNG, JPEG, WEBP - Máx 10MB</p>
-                        </div>
-                      )}
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+                {selectedLibraryItem ? (
+                  <div className="bg-black/40 border border-white/10 rounded-xl p-3">
+                    <div className="flex items-center gap-3">
+                      <video
+                        src={selectedLibraryItem.image_url}
+                        className="w-16 h-10 object-cover rounded-lg"
+                        muted loop autoPlay playsInline
                       />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-white truncate">{selectedLibraryItem.title}</p>
+                      </div>
+                      <button
+                        onClick={() => setSelectedLibraryItem(null)}
+                        disabled={isProcessing}
+                        className="w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center"
+                      >
+                        <X className="w-3 h-3 text-white" />
+                      </button>
                     </div>
-                    <div className="flex items-center gap-2 mt-2 px-2 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
-                      <AlertCircle className="h-3 w-3 text-amber-400 flex-shrink-0" />
-                      <p className="text-[10px] text-amber-300">
-                        Para melhores resultados, use uma imagem <strong>1920x1080</strong> (16:9).
-                      </p>
+                    <button
+                      onClick={() => setShowLibrary(true)}
+                      disabled={isProcessing}
+                      className="w-full mt-2 h-6 text-[10px] rounded-md bg-purple-500/10 border border-purple-500/30 text-purple-200 hover:bg-purple-500/20 hover:text-white transition-colors flex items-center justify-center gap-1"
+                    >
+                      <ImageIcon className="w-3 h-3" />
+                      Trocar Telão
+                    </button>
+                  </div>
+                ) : uploadedImage ? (
+                  <div className="bg-black/40 border border-white/10 rounded-xl p-3">
+                    <div className="flex items-center gap-3">
+                      <img src={uploadedImage} alt="Preview" className="w-16 h-10 object-cover rounded-lg" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-white truncate">{uploadedFileName}</p>
+                      </div>
+                      <button
+                        onClick={() => { setUploadedImage(null); setUploadedFileName(''); }}
+                        disabled={isProcessing}
+                        className="w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center"
+                      >
+                        <X className="w-3 h-3 text-white" />
+                      </button>
                     </div>
-                  </>
+                    <button
+                      onClick={() => setShowLibrary(true)}
+                      disabled={isProcessing}
+                      className="w-full mt-2 h-6 text-[10px] rounded-md bg-purple-500/10 border border-purple-500/30 text-purple-200 hover:bg-purple-500/20 hover:text-white transition-colors flex items-center justify-center gap-1"
+                    >
+                      <ImageIcon className="w-3 h-3" />
+                      Trocar Imagem
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowLibrary(true)}
+                    disabled={isProcessing}
+                    className="w-full bg-black/40 border border-white/10 border-dashed rounded-xl p-5 text-center hover:bg-black/60 transition-colors"
+                  >
+                    <div className="w-10 h-10 mx-auto rounded-lg bg-fuchsia-500/20 border border-dashed border-fuchsia-500/40 flex items-center justify-center mb-2">
+                      <ImageIcon className="w-5 h-5 text-fuchsia-400" />
+                    </div>
+                    <p className="text-sm text-white font-medium">Escolher Telão</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">Da biblioteca ou envie sua imagem</p>
+                  </button>
                 )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+                />
               </div>
 
               {/* Text Input */}
@@ -754,13 +728,30 @@ const MovieLedMakerTool = () => {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="p-4 border-b border-white/10">
+            <div className="p-4 border-b border-white/10 flex gap-2">
               <Input
                 value={librarySearch}
                 onChange={(e) => setLibrarySearch(e.target.value)}
                 placeholder="Buscar telão..."
-                className="bg-black/40 border-white/10 text-white text-sm"
+                className="bg-black/40 border-white/10 text-white text-sm flex-1"
               />
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-white/10 text-white hover:bg-white/5 flex items-center gap-1.5 shrink-0"
+                onClick={() => { fileInputRef.current?.click(); setShowLibrary(false); }}
+              >
+                <Upload className="h-3.5 w-3.5" />
+                Enviar Imagem
+              </Button>
+            </div>
+            <div className="px-4 pt-3 pb-1">
+              <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <AlertCircle className="h-3 w-3 text-amber-400 flex-shrink-0" />
+                <p className="text-[10px] text-amber-300">
+                  Para melhores resultados ao enviar sua imagem, use <strong>1920x1080</strong> (16:9).
+                </p>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto p-4">
               {loadingLibrary ? (
