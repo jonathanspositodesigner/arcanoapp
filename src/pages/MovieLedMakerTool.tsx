@@ -467,6 +467,7 @@ const MovieLedMakerTool = () => {
               {/* Generate Button */}
               {status !== 'completed' && status !== 'error' && !isProcessing && (
                 <Button
+                  data-tutorial-movieled="generate"
                   className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
                   onClick={handleGenerate}
                   disabled={isSubmitting || !canGenerate}
