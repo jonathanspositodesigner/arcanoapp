@@ -22,6 +22,7 @@ interface Transaction {
 
 const CreditHistory = () => {
   const navigate = useNavigate();
+  const { goBack } = useSmartBackNavigation({ fallback: '/profile-settings' });
   const { user, isLoading: userLoading } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, isUnlimited } = useCredits();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
