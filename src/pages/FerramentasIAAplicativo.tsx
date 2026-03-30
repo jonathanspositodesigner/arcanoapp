@@ -167,6 +167,9 @@ const FerramentasIAAplicativo = () => {
     if (slug === "remover-fundo") {
       return "/remover-fundo";
     }
+    if (slug === "movieled-maker") {
+      return "/movieled-maker";
+    }
     return `/ferramenta-ia-artes/${slug}`;
   };
 
