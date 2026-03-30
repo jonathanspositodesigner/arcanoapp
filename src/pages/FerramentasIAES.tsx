@@ -36,6 +36,7 @@ const FerramentasIAES = () => {
   // Apenas Upscaler Arcano
   const allowedSlugs = ["upscaller-arcano"];
 
+
   useEffect(() => {
     const fetchTools = async () => {
       const { data, error } = await supabase
@@ -69,6 +70,10 @@ const FerramentasIAES = () => {
   const checkToolAccess = (slug: string): boolean => {
     if (hasUnlimitedAccess) {
       return true;
+    }
+    // V3 buyers also get access to upscaller-arcano via bônus pack
+    if (slug === 'upscaller-arcano') {
+      return hasAccessToPack('upscaller-arcano') || hasAccessToPack('upscaller-arcano-v3');
     }
     return hasAccessToPack(slug);
   };

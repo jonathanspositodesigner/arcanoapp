@@ -56,7 +56,7 @@ const UpscalerArcanoV1 = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramenta-ia-artes/upscaller-arcano' });
 
   const hasUnlimitedAccess = planType === "arcano_unlimited";
-  const hasAccess = hasUnlimitedAccess || hasAccessToPack('upscaller-arcano');
+  const hasAccess = hasUnlimitedAccess || hasAccessToPack('upscaller-arcano') || hasAccessToPack('upscaller-arcano-v3');
 
   // Selected lesson for display
   const [selectedLesson, setSelectedLesson] = useState(0);
