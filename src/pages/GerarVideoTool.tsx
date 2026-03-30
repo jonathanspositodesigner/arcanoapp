@@ -346,7 +346,8 @@ const GerarVideoTool = () => {
   };
 
   const hasFrames = !!startFrame || !!endFrame;
-  const bothFramesReady = !!startFrame && !!endFrame;
+  const isVeo = selectedModel === 'veo3.1';
+  const framesReady = isVeo ? !!startFrame : (!!startFrame && !!endFrame);
 
   // Block access for planos2 users without video generation permission
   if (isPlanos2User && !hasVideoGeneration) {
