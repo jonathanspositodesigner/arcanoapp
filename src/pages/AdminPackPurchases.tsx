@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle, X, Upload, KeyRound, ArrowUpDown, ArrowUp, ArrowDown, RefreshCw } from "lucide-react";
+import { ArrowLeft, Plus, Search, Trash2, Edit, Package, Calendar, User, MessageCircle, X, Upload, KeyRound, ArrowUpDown, ArrowUp, ArrowDown, RefreshCw, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, addMonths, addYears } from "date-fns";
@@ -44,10 +44,10 @@ interface PackAccess {
   pack_slug: string;
   access_type: '3_meses' | '6_meses' | '1_ano' | 'vitalicio';
   is_active: boolean;
-  id?: string; // for existing purchases
-  purchased_at?: string; // purchase date for expiration calculation
-  expires_at?: string | null; // calculated expiration date
-  product_name?: string | null; // original product name from Greenn
+  id?: string;
+  purchased_at?: string;
+  expires_at?: string | null;
+  product_name?: string | null;
 }
 
 interface ClientFormData {
@@ -65,15 +65,48 @@ interface GroupedClient {
   purchases: PackPurchase[];
 }
 
+interface ServerClient {
+  user_id: string;
+  user_email: string;
+  user_name: string;
+  user_phone: string;
+  pack_count: number;
+  latest_purchase: string;
+  earliest_expiration: string | null;
+  has_vitalicio: boolean;
+  purchases: PackPurchase[];
+}
+
+interface ServerStats {
+  total_clients: number;
+  total_purchases: number;
+  expired_some: number;
+  expired_all: number;
+  expiring_30d: number;
+}
+
+interface ServerResponse {
+  clients: ServerClient[];
+  total_count: number;
+  page: number;
+  page_size: number;
+  stats: ServerStats;
+}
+
 const AdminPackPurchases = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [purchases, setPurchases] = useState<PackPurchase[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [packs, setPacks] = useState<Pack[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPack, setFilterPack] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  
+  // Server-side data
+  const [clients, setClients] = useState<ServerClient[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [stats, setStats] = useState<ServerStats>({ total_clients: 0, total_purchases: 0, expired_some: 0, expired_all: 0, expiring_30d: 0 });
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -88,6 +121,8 @@ const AdminPackPurchases = () => {
   // Expired clients modal state
   const [showExpiredModal, setShowExpiredModal] = useState(false);
   const [expiredViewMode, setExpiredViewMode] = useState<'some' | 'all'>('some');
+  const [expiredClients, setExpiredClients] = useState<ServerClient[]>([]);
+  const [isLoadingExpired, setIsLoadingExpired] = useState(false);
   
   // Add/Edit dialog state
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -99,6 +134,8 @@ const AdminPackPurchases = () => {
     packAccesses: []
   });
 
+  // Debounce ref
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     checkAdminStatus();
@@ -126,8 +163,8 @@ const AdminPackPurchases = () => {
 
     setIsAdmin(true);
     setIsLoading(false);
-    fetchPurchases();
     fetchPacks();
+    fetchClients();
   };
 
   const fetchPacks = async () => {
@@ -139,111 +176,101 @@ const AdminPackPurchases = () => {
     setPacks(data || []);
   };
 
-  const fetchPurchases = async () => {
-    // 1. Fetch ALL profiles first (to include users without packs)
-    let allProfiles: any[] = [];
-    let profilesFrom = 0;
-    const pageSize = 1000;
-    
-    while (true) {
-      const { data: profilesData, error } = await supabase
-        .from('profiles')
-        .select('id, email, name, phone')
-        .order('created_at', { ascending: false })
-        .range(profilesFrom, profilesFrom + pageSize - 1);
-
-      if (error) {
-        console.error('Error fetching profiles:', error);
-        break;
-      }
-
-      if (!profilesData || profilesData.length === 0) break;
-      
-      allProfiles = [...allProfiles, ...profilesData];
-      
-      if (profilesData.length < pageSize) break;
-      
-      profilesFrom += pageSize;
-    }
-
-    console.log(`Fetched ${allProfiles.length} total profiles`);
-
-    // 2. Fetch ALL purchases
-    let allPurchases: any[] = [];
-    let purchasesFrom = 0;
-    
-    while (true) {
-      const { data: purchasesData, error } = await supabase
-        .from('user_pack_purchases')
-        .select('*')
-        .order('purchased_at', { ascending: false })
-        .range(purchasesFrom, purchasesFrom + pageSize - 1);
-
-      if (error) {
-        console.error('Error fetching purchases:', error);
-        break;
-      }
-
-      if (!purchasesData || purchasesData.length === 0) break;
-      
-      allPurchases = [...allPurchases, ...purchasesData];
-      
-      if (purchasesData.length < pageSize) break;
-      
-      purchasesFrom += pageSize;
-    }
-
-    console.log(`Fetched ${allPurchases.length} total purchases`);
-
-    const profilesMap = new Map(allProfiles.map(p => [p.id, p]));
-    const purchasesByUser = new Map<string, any[]>();
-    
-    // Group purchases by user
-    allPurchases.forEach(purchase => {
-      if (!purchasesByUser.has(purchase.user_id)) {
-        purchasesByUser.set(purchase.user_id, []);
-      }
-      purchasesByUser.get(purchase.user_id)!.push(purchase);
-    });
-
-    // 3. Create purchases array including users WITHOUT packs (as placeholder entries)
-    const purchasesWithUsers: PackPurchase[] = [];
-    
-    // Add all actual purchases with user info
-    allPurchases.forEach(purchase => {
-      purchasesWithUsers.push({
-        ...purchase,
-        user_email: profilesMap.get(purchase.user_id)?.email || '',
-        user_name: profilesMap.get(purchase.user_id)?.name || '',
-        user_phone: profilesMap.get(purchase.user_id)?.phone || ''
+  const fetchClients = useCallback(async (
+    search?: string,
+    packFilter?: string,
+    statusFilter?: string,
+    page?: number,
+    sort?: SortField,
+    dir?: SortDirection
+  ) => {
+    setIsSearching(true);
+    try {
+      const { data, error } = await supabase.rpc('admin_search_pack_clients', {
+        p_search: search ?? searchTerm,
+        p_pack_filter: packFilter ?? filterPack,
+        p_status_filter: statusFilter ?? filterStatus,
+        p_sort_field: sort ?? sortField,
+        p_sort_direction: dir ?? sortDirection,
+        p_page: page ?? currentPage,
+        p_page_size: ITEMS_PER_PAGE,
       });
-    });
-    
-    // Add placeholder entries for users WITHOUT any packs
-    allProfiles.forEach(profile => {
-      if (!purchasesByUser.has(profile.id)) {
-        // User has no packs - create a placeholder entry
-        purchasesWithUsers.push({
-          id: `orphan-${profile.id}`,
-          user_id: profile.id,
-          pack_slug: '__none__',
-          access_type: 'vitalicio',
-          has_bonus_access: false,
-          is_active: false,
-          purchased_at: profile.created_at || new Date().toISOString(),
-          expires_at: null,
-          greenn_contract_id: null,
-          product_name: null,
-          user_email: profile.email || '',
-          user_name: profile.name || '',
-          user_phone: profile.phone || ''
-        });
-      }
-    });
 
-    console.log(`Total entries (including orphans): ${purchasesWithUsers.length}`);
-    setPurchases(purchasesWithUsers);
+      if (error) {
+        console.error('Error fetching clients:', error);
+        toast.error("Erro ao buscar clientes");
+        return;
+      }
+
+      const result = data as unknown as ServerResponse;
+      setClients(result.clients || []);
+      setTotalCount(result.total_count || 0);
+      if (result.stats) setStats(result.stats);
+    } catch (err) {
+      console.error('Error:', err);
+    } finally {
+      setIsSearching(false);
+    }
+  }, [searchTerm, filterPack, filterStatus, sortField, sortDirection, currentPage]);
+
+  // Debounced search
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => {
+      setCurrentPage(1);
+      fetchClients(value, filterPack, filterStatus, 1, sortField, sortDirection);
+    }, 400);
   };
+
+  // Filter changes
+  useEffect(() => {
+    if (!isAdmin) return;
+    setCurrentPage(1);
+    fetchClients(searchTerm, filterPack, filterStatus, 1, sortField, sortDirection);
+  }, [filterPack, filterStatus]);
+
+  // Page / sort changes
+  useEffect(() => {
+    if (!isAdmin) return;
+    fetchClients(searchTerm, filterPack, filterStatus, currentPage, sortField, sortDirection);
+  }, [currentPage, sortField, sortDirection]);
+
+  // Fetch expired clients for modal
+  const fetchExpiredClients = async (mode: 'some' | 'all') => {
+    setIsLoadingExpired(true);
+    try {
+      // Use status filter to find expired
+      const { data, error } = await supabase.rpc('admin_search_pack_clients', {
+        p_search: '',
+        p_pack_filter: 'all',
+        p_status_filter: 'all',
+        p_sort_field: 'expires_at',
+        p_sort_direction: 'asc',
+        p_page: 1,
+        p_page_size: 200,
+      });
+      if (!error && data) {
+        const result = data as unknown as ServerResponse;
+        const now = new Date();
+        const filtered = (result.clients || []).filter(c => {
+          if (mode === 'all') {
+            return c.purchases.length > 0 && c.purchases.every(p => p.expires_at && new Date(p.expires_at) < now);
+          }
+          return c.purchases.some(p => p.expires_at && new Date(p.expires_at) < now);
+        });
+        setExpiredClients(filtered);
+      }
+    } finally {
+      setIsLoadingExpired(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showExpiredModal) {
+      fetchExpiredClients(expiredViewMode);
+    }
+  }, [showExpiredModal, expiredViewMode]);
 
   const calculateExpiresAt = (accessType: '3_meses' | '6_meses' | '1_ano' | 'vitalicio', baseDate?: Date): string | null => {
     const startDate = baseDate || new Date();
@@ -293,8 +320,6 @@ const AdminPackPurchases = () => {
       return;
     }
 
-    // Allow saving with no packs (just update profile)
-
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -303,42 +328,29 @@ const AdminPackPurchases = () => {
       }
 
       if (editingClient) {
-        // Editing existing client - update via direct queries (admin has permission)
         const userId = editingClient.user_id;
-
-        // Get existing purchase IDs for this user
         const existingIds = editingClient.purchases.map(p => p.id);
         const formAccessIds = formData.packAccesses.filter(pa => pa.id).map(pa => pa.id);
-
-        // Delete removed purchases
         const toDelete = existingIds.filter(id => !formAccessIds.includes(id));
         if (toDelete.length > 0) {
           await supabase.from('user_pack_purchases').delete().in('id', toDelete);
         }
 
-        // Update or insert purchases
         for (const access of formData.packAccesses) {
           const hasBonus = access.access_type === '1_ano' || access.access_type === 'vitalicio';
-
           if (access.id) {
-            // Update existing - find original purchase to compare
             const originalPurchase = editingClient.purchases.find(p => p.id === access.id);
-            
             let expiresAt;
             if (originalPurchase) {
               if (originalPurchase.access_type === access.access_type) {
-                // Access type NOT changed - keep original expires_at
                 expiresAt = originalPurchase.expires_at;
               } else {
-                // Access type CHANGED - recalculate from ORIGINAL PURCHASE DATE
                 const purchaseDate = new Date(originalPurchase.purchased_at);
                 expiresAt = calculateExpiresAt(access.access_type, purchaseDate);
               }
             } else {
-              // Fallback if original not found (shouldn't happen)
               expiresAt = calculateExpiresAt(access.access_type);
             }
-
             await supabase.from('user_pack_purchases').update({
               pack_slug: access.pack_slug,
               access_type: access.access_type,
@@ -347,7 +359,6 @@ const AdminPackPurchases = () => {
               expires_at: expiresAt
             }).eq('id', access.id);
           } else {
-            // Insert new - use today's date
             const expiresAt = calculateExpiresAt(access.access_type);
             await supabase.from('user_pack_purchases').insert({
               user_id: userId,
@@ -359,10 +370,8 @@ const AdminPackPurchases = () => {
             });
           }
         }
-
         toast.success("Cliente atualizado com sucesso!");
       } else {
-        // Creating new client - use edge function to avoid session switching
         const packsToCreate = formData.packAccesses.map(access => {
           const hasBonus = access.access_type === '1_ano' || access.access_type === 'vitalicio';
           const expiresAt = calculateExpiresAt(access.access_type);
@@ -392,18 +401,16 @@ const AdminPackPurchases = () => {
         );
 
         const result = await response.json();
-        
         if (!response.ok) {
           toast.error(result.error || "Erro ao criar cliente");
           return;
         }
-
         toast.success(result.message || "Cliente cadastrado com sucesso!");
       }
 
       setShowAddDialog(false);
       resetForm();
-      fetchPurchases();
+      fetchClients(searchTerm, filterPack, filterStatus, currentPage, sortField, sortDirection);
     } catch (error) {
       console.error('Error saving client:', error);
       toast.error("Erro ao salvar cliente");
@@ -412,128 +419,64 @@ const AdminPackPurchases = () => {
 
   const handleDeletePurchase = async (id: string) => {
     if (!confirm("Tem certeza que deseja remover este acesso?")) return;
-
-    const { error } = await supabase
-      .from('user_pack_purchases')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      toast.error("Erro ao remover: " + error.message);
-      return;
-    }
-
+    const { error } = await supabase.from('user_pack_purchases').delete().eq('id', id);
+    if (error) { toast.error("Erro ao remover: " + error.message); return; }
     toast.success("Acesso removido!");
-    fetchPurchases();
+    fetchClients(searchTerm, filterPack, filterStatus, currentPage, sortField, sortDirection);
   };
 
   const handleDeleteClient = async (client: GroupedClient) => {
     if (!confirm(`Tem certeza que deseja EXCLUIR COMPLETAMENTE o cliente "${client.user_email}"? Isso irá remover todos os acessos, perfil e conta de login.`)) return;
 
-    // OPTIMISTIC UI: Remove from list IMMEDIATELY
-    const previousPurchases = [...purchases];
-    setPurchases(prev => prev.filter(p => p.user_id !== client.user_id));
+    // Optimistic UI
+    setClients(prev => prev.filter(c => c.user_id !== client.user_id));
     toast.success("Cliente excluído!");
 
     try {
-      // Batch delete all pack purchases at once
       const purchaseIds = client.purchases.map(p => p.id);
-      await supabase.from('user_pack_purchases').delete().in('id', purchaseIds);
-
-      // Delete profile
+      if (purchaseIds.length > 0) await supabase.from('user_pack_purchases').delete().in('id', purchaseIds);
       await supabase.from('profiles').delete().eq('id', client.user_id);
-
-      // Delete premium_artes_users if exists
       await supabase.from('premium_artes_users').delete().eq('user_id', client.user_id);
 
-      // Delete user from Auth via edge function
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         fetch(
           `https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/delete-auth-user-artes`,
           {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
             body: JSON.stringify({ user_id: client.user_id })
           }
         );
       }
     } catch (error) {
       console.error('Error deleting client:', error);
-      // Revert on error
-      setPurchases(previousPurchases);
+      fetchClients(searchTerm, filterPack, filterStatus, currentPage, sortField, sortDirection);
       toast.error("Erro ao excluir cliente");
     }
   };
 
-  const handleToggleActive = async (purchase: PackPurchase) => {
-    const { error } = await supabase
-      .from('user_pack_purchases')
-      .update({ is_active: !purchase.is_active })
-      .eq('id', purchase.id);
-
-    if (error) {
-      toast.error("Erro ao atualizar status");
-      return;
-    }
-
-    toast.success(purchase.is_active ? "Acesso desativado" : "Acesso ativado");
-    fetchPurchases();
-  };
-
   const handleResetFirstPassword = async () => {
     if (!editingClient) return;
-    
-    const confirmed = window.confirm(
-      `Tem certeza que deseja redefinir a senha de ${editingClient.user_email} para a senha inicial (email)?`
-    );
-    
+    const confirmed = window.confirm(`Tem certeza que deseja redefinir a senha de ${editingClient.user_email} para a senha inicial (email)?`);
     if (!confirmed) return;
     
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Sessão expirada. Faça login novamente.");
-        return;
-      }
+      if (!session) { toast.error("Sessão expirada."); return; }
       
-      // Call edge function to update password to email
       const response = await fetch(
         `https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/update-user-password-artes`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({ 
-            user_id: editingClient.user_id, 
-            new_password: editingClient.user_email 
-          })
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+          body: JSON.stringify({ user_id: editingClient.user_id, new_password: editingClient.user_email })
         }
       );
-
       const result = await response.json();
-      if (!response.ok) {
-        toast.error("Erro ao redefinir senha: " + result.error);
-        return;
-      }
+      if (!response.ok) { toast.error("Erro ao redefinir senha: " + result.error); return; }
       
-      // Update password_changed to false in profiles table
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ password_changed: false })
-        .eq('id', editingClient.user_id);
-      
-      if (profileError) {
-        console.error('Error updating profile:', profileError);
-        toast.error("Senha redefinida, mas erro ao marcar para exigir mudança");
-        return;
-      }
-      
+      await supabase.from('profiles').update({ password_changed: false }).eq('id', editingClient.user_id);
       toast.success("Senha redefinida! Cliente precisará alterar no próximo login.");
     } catch (error) {
       console.error('Error resetting password:', error);
@@ -542,33 +485,24 @@ const AdminPackPurchases = () => {
   };
 
   const resetForm = () => {
-    setFormData({
-      email: "",
-      name: "",
-      phone: "",
-      packAccesses: []
-    });
+    setFormData({ email: "", name: "", phone: "", packAccesses: [] });
     setEditingClient(null);
   };
 
-  const openEditDialog = (purchase: PackPurchase) => {
-    // Group all purchases for this user
-    const userPurchases = purchases.filter(p => p.user_id === purchase.user_id);
-    
-    const client: GroupedClient = {
-      user_id: purchase.user_id,
-      user_email: purchase.user_email || '',
-      user_name: purchase.user_name || '',
-      user_phone: purchase.user_phone || '',
-      purchases: userPurchases
+  const openEditDialog = (client: ServerClient) => {
+    const gc: GroupedClient = {
+      user_id: client.user_id,
+      user_email: client.user_email || '',
+      user_name: client.user_name || '',
+      user_phone: client.user_phone || '',
+      purchases: client.purchases || []
     };
-
-    setEditingClient(client);
+    setEditingClient(gc);
     setFormData({
-      email: client.user_email,
-      name: client.user_name,
-      phone: client.user_phone,
-      packAccesses: userPurchases.map(p => ({
+      email: gc.user_email,
+      name: gc.user_name,
+      phone: gc.user_phone,
+      packAccesses: (client.purchases || []).map(p => ({
         pack_slug: p.pack_slug,
         access_type: p.access_type,
         is_active: p.is_active,
@@ -582,10 +516,7 @@ const AdminPackPurchases = () => {
   };
 
   const openWhatsApp = (phone: string) => {
-    if (!phone) {
-      toast.error("Telefone não cadastrado");
-      return;
-    }
+    if (!phone) { toast.error("Telefone não cadastrado"); return; }
     window.open(`https://api.whatsapp.com/send/?phone=${phone}&text&type=phone_number&app_absent=0`, '_blank');
   };
 
@@ -603,43 +534,7 @@ const AdminPackPurchases = () => {
     return pack?.name || slug;
   };
 
-  const filteredPurchases = purchases.filter(purchase => {
-    const matchesSearch = 
-      (purchase.user_email?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (purchase.user_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      purchase.pack_slug.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesPack = filterPack === "all" || purchase.pack_slug === filterPack;
-    const matchesStatus = filterStatus === "all" || 
-      (filterStatus === "active" && purchase.is_active) ||
-      (filterStatus === "inactive" && !purchase.is_active);
-    
-    return matchesSearch && matchesPack && matchesStatus;
-  });
-
-  // Group purchases by user for display
-  const groupedClientsUnsorted: GroupedClient[] = [];
-  const userMap = new Map<string, GroupedClient>();
-  
-  filteredPurchases.forEach(purchase => {
-    if (!userMap.has(purchase.user_id)) {
-      const client: GroupedClient = {
-        user_id: purchase.user_id,
-        user_email: purchase.user_email || '',
-        user_name: purchase.user_name || '',
-        user_phone: purchase.user_phone || '',
-        purchases: []
-      };
-      userMap.set(purchase.user_id, client);
-      groupedClientsUnsorted.push(client);
-    }
-    // Only add real purchases (not placeholder orphans)
-    if (purchase.pack_slug !== '__none__') {
-      userMap.get(purchase.user_id)!.purchases.push(purchase);
-    }
-  });
-
-  // Sorting logic
+  // Sorting
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
@@ -657,50 +552,7 @@ const AdminPackPurchases = () => {
       : <ArrowDown className="h-4 w-4 ml-1" />;
   };
 
-  const getEarliestExpiration = (client: GroupedClient): Date | null => {
-    const expirations = client.purchases
-      .filter(p => p.expires_at && p.is_active)
-      .map(p => new Date(p.expires_at!));
-    if (expirations.length === 0) return null;
-    return new Date(Math.min(...expirations.map(d => d.getTime())));
-  };
-
-  const getLatestPurchaseDate = (client: GroupedClient): Date => {
-    if (client.purchases.length === 0) return new Date(0); // Orphans go to end
-    const dates = client.purchases.map(p => new Date(p.purchased_at));
-    return new Date(Math.max(...dates.map(d => d.getTime())));
-  };
-
-  const groupedClients = [...groupedClientsUnsorted].sort((a, b) => {
-    const multiplier = sortDirection === 'asc' ? 1 : -1;
-    
-    switch (sortField) {
-      case 'name':
-        const nameA = (a.user_name || a.user_email || '').toLowerCase();
-        const nameB = (b.user_name || b.user_email || '').toLowerCase();
-        return multiplier * nameA.localeCompare(nameB);
-      
-      case 'purchase_date':
-        const dateA = getLatestPurchaseDate(a);
-        const dateB = getLatestPurchaseDate(b);
-        return multiplier * (dateA.getTime() - dateB.getTime());
-      
-      case 'packs':
-        return multiplier * (a.purchases.length - b.purchases.length);
-      
-      case 'expires_at':
-        const expA = getEarliestExpiration(a);
-        const expB = getEarliestExpiration(b);
-        // Vitalício (null) goes to end when sorting asc, beginning when desc
-        if (!expA && !expB) return 0;
-        if (!expA) return sortDirection === 'asc' ? 1 : -1;
-        if (!expB) return sortDirection === 'asc' ? -1 : 1;
-        return multiplier * (expA.getTime() - expB.getTime());
-      
-      default:
-        return 0;
-    }
-  });
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
   if (isLoading) {
     return (
@@ -715,7 +567,7 @@ const AdminPackPurchases = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-7xl mx-auto py-4 sm:py-8 px-3 sm:px-4">
-        {/* Header - Mobile friendly */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="flex items-center gap-2 sm:gap-4">
             <Button variant="ghost" size="sm" onClick={() => navigate('/admin-artes-eventos/ferramentas')} className="px-2 sm:px-4">
@@ -730,10 +582,7 @@ const AdminPackPurchases = () => {
               variant="outline" 
               size="sm"
               className="sm:hidden"
-              onClick={() => {
-                toast.info("Atualizando lista...");
-                fetchPurchases();
-              }}
+              onClick={() => fetchClients(searchTerm, filterPack, filterStatus, currentPage, sortField, sortDirection)}
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
@@ -741,17 +590,14 @@ const AdminPackPurchases = () => {
           <Button 
             variant="outline" 
             className="hidden sm:flex"
-            onClick={() => {
-              toast.info("Atualizando lista...");
-              fetchPurchases();
-            }}
+            onClick={() => fetchClients(searchTerm, filterPack, filterStatus, currentPage, sortField, sortDirection)}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Atualizar
           </Button>
         </div>
 
-        {/* Stats Cards - 2 cols on mobile */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
           <Card className="p-2 sm:p-4">
             <div className="flex items-center gap-2 sm:gap-3">
@@ -760,7 +606,7 @@ const AdminPackPurchases = () => {
               </div>
               <div>
                 <p className="text-[10px] sm:text-sm text-muted-foreground">Total Clientes</p>
-                <p className="text-lg sm:text-2xl font-bold">{[...new Set(purchases.map(p => p.user_id))].length}</p>
+                <p className="text-lg sm:text-2xl font-bold">{stats.total_clients}</p>
               </div>
             </div>
           </Card>
@@ -771,7 +617,7 @@ const AdminPackPurchases = () => {
               </div>
               <div>
                 <p className="text-[10px] sm:text-sm text-muted-foreground">Total Compras</p>
-                <p className="text-lg sm:text-2xl font-bold">{purchases.length}</p>
+                <p className="text-lg sm:text-2xl font-bold">{stats.total_purchases}</p>
               </div>
             </div>
           </Card>
@@ -787,34 +633,11 @@ const AdminPackPurchases = () => {
                 <p className="text-[10px] sm:text-sm text-muted-foreground">Packs Vencidos</p>
                 <div className="flex items-center gap-2 sm:gap-4">
                   <div>
-                    <p className="text-base sm:text-xl font-bold text-amber-600">
-                      {(() => {
-                        const now = new Date();
-                        const userIds = [...new Set(purchases.map(p => p.user_id))];
-                        return userIds.filter(userId => 
-                          purchases.some(p => 
-                            p.user_id === userId && 
-                            p.expires_at && 
-                            new Date(p.expires_at) < now
-                          )
-                        ).length;
-                      })()}
-                    </p>
+                    <p className="text-base sm:text-xl font-bold text-amber-600">{stats.expired_some}</p>
                     <p className="text-[8px] sm:text-xs text-muted-foreground">algum</p>
                   </div>
                   <div>
-                    <p className="text-base sm:text-xl font-bold text-red-600">
-                      {(() => {
-                        const now = new Date();
-                        const userIds = [...new Set(purchases.map(p => p.user_id))];
-                        return userIds.filter(userId => {
-                          const userPurchases = purchases.filter(p => p.user_id === userId);
-                          return userPurchases.every(p => 
-                            p.expires_at && new Date(p.expires_at) < now
-                          );
-                        }).length;
-                      })()}
-                    </p>
+                    <p className="text-base sm:text-xl font-bold text-red-600">{stats.expired_all}</p>
                     <p className="text-[8px] sm:text-xs text-muted-foreground">todos</p>
                   </div>
                 </div>
@@ -828,21 +651,7 @@ const AdminPackPurchases = () => {
               </div>
               <div>
                 <p className="text-[10px] sm:text-sm text-muted-foreground">Expira 30 dias</p>
-                <p className="text-lg sm:text-2xl font-bold">
-                  {(() => {
-                    const now = new Date();
-                    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-                    const userIds = [...new Set(purchases.map(p => p.user_id))];
-                    return userIds.filter(userId => 
-                      purchases.some(p => 
-                        p.user_id === userId && 
-                        p.is_active && 
-                        p.expires_at && 
-                        new Date(p.expires_at) <= thirtyDaysFromNow
-                      )
-                    ).length;
-                  })()}
-                </p>
+                <p className="text-lg sm:text-2xl font-bold">{stats.expiring_30d}</p>
               </div>
             </div>
           </Card>
@@ -855,9 +664,12 @@ const AdminPackPurchases = () => {
             <Input
               placeholder="Buscar por email, nome ou pack..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-10"
             />
+            {isSearching && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+            )}
           </div>
           <Select value={filterPack} onValueChange={setFilterPack}>
             <SelectTrigger className="w-[180px]">
@@ -890,9 +702,7 @@ const AdminPackPurchases = () => {
           </Button>
           <Dialog open={showAddDialog} onOpenChange={(open) => {
             setShowAddDialog(open);
-            if (!open) {
-              resetForm();
-            }
+            if (!open) resetForm();
           }}>
             <DialogTrigger asChild>
               <Button className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
@@ -995,11 +805,7 @@ const AdminPackPurchases = () => {
                               <Label className="text-xs">Pack</Label>
                               <Popover>
                                 <PopoverTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    role="combobox"
-                                    className="w-full justify-between font-normal"
-                                  >
+                                  <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
                                     {access.pack_slug
                                       ? packs.find((pack) => pack.slug === access.pack_slug)?.name || access.pack_slug
                                       : "Selecione um pack..."}
@@ -1018,16 +824,9 @@ const AdminPackPurchases = () => {
                                             <CommandItem
                                               key={pack.id}
                                               value={pack.name}
-                                              onSelect={() => {
-                                                updatePackAccess(index, 'pack_slug', pack.slug);
-                                              }}
+                                              onSelect={() => updatePackAccess(index, 'pack_slug', pack.slug)}
                                             >
-                                              <Check
-                                                className={cn(
-                                                  "mr-2 h-4 w-4",
-                                                  access.pack_slug === pack.slug ? "opacity-100" : "opacity-0"
-                                                )}
-                                              />
+                                              <Check className={cn("mr-2 h-4 w-4", access.pack_slug === pack.slug ? "opacity-100" : "opacity-0")} />
                                               {pack.name}
                                             </CommandItem>
                                           ))}
@@ -1043,9 +842,7 @@ const AdminPackPurchases = () => {
                                 value={access.access_type} 
                                 onValueChange={(v: '3_meses' | '6_meses' | '1_ano' | 'vitalicio') => updatePackAccess(index, 'access_type', v)}
                               >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="3_meses">3 Meses</SelectItem>
                                   <SelectItem value="6_meses">6 Meses</SelectItem>
@@ -1060,9 +857,7 @@ const AdminPackPurchases = () => {
                                 value={access.is_active ? "active" : "inactive"} 
                                 onValueChange={(v) => updatePackAccess(index, 'is_active', v === "active")}
                               >
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="active">Ativo</SelectItem>
                                   <SelectItem value="inactive">Inativo</SelectItem>
@@ -1071,10 +866,8 @@ const AdminPackPurchases = () => {
                             </div>
                           </div>
                           
-                          {/* Expiration info for existing purchases */}
                           {access.id && access.purchased_at && (
                             <div className="space-y-2">
-                              {/* Product name if available */}
                               {access.product_name && (
                                 <div className="text-xs text-muted-foreground bg-blue-500/10 border border-blue-500/20 rounded-lg px-2 py-1">
                                   <span className="font-medium text-blue-600">Produto:</span> {access.product_name}
@@ -1107,33 +900,25 @@ const AdminPackPurchases = () => {
                                       </Badge>
                                     </>
                                   ) : (
-                                    <Badge variant="outline" className="text-xs">
-                                      Sem data de expiração
-                                    </Badge>
+                                    <Badge variant="outline" className="text-xs">Sem data de expiração</Badge>
                                   )}
                                 </div>
                               </div>
                               
-                              {/* Expired pack indicator and renew button */}
                               {access.access_type !== 'vitalicio' && access.expires_at && new Date(access.expires_at) < new Date() && (
                                 <div className="flex items-center justify-between p-2 bg-red-500/10 border border-red-500/30 rounded-lg">
                                   <div className="flex items-center gap-2">
-                                    <Badge className="bg-red-500 text-white text-xs">
-                                      ACESSO EXPIRADO
-                                    </Badge>
+                                    <Badge className="bg-red-500 text-white text-xs">ACESSO EXPIRADO</Badge>
                                     <span className="text-xs text-red-600">
                                       Expirou em {format(new Date(access.expires_at), "dd/MM/yyyy", { locale: ptBR })}
                                     </span>
                                   </div>
                                   <Button 
-                                    type="button" 
-                                    size="sm" 
+                                    type="button" size="sm" 
                                     className="bg-green-600 hover:bg-green-700 text-white text-xs"
                                     onClick={() => {
                                       const packName = packs.find(p => p.slug === access.pack_slug)?.name || access.pack_slug;
-                                      const whatsappMessage = encodeURIComponent(
-                                        `Olá! Gostaria de renovar meu acesso ao ${packName} com desconto especial.`
-                                      );
+                                      const whatsappMessage = encodeURIComponent(`Olá! Gostaria de renovar meu acesso ao ${packName} com desconto especial.`);
                                       window.open(`https://api.whatsapp.com/send/?phone=&text=${whatsappMessage}&type=phone_number&app_absent=0`, '_blank');
                                     }}
                                   >
@@ -1145,9 +930,7 @@ const AdminPackPurchases = () => {
                           )}
                         </div>
                         <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="icon"
+                          type="button" variant="ghost" size="icon"
                           onClick={() => removePackAccess(index)}
                           className="text-red-500 hover:text-red-600"
                         >
@@ -1177,160 +960,113 @@ const AdminPackPurchases = () => {
                     className="cursor-pointer hover:bg-muted/50 select-none w-[180px]"
                     onClick={() => handleSort('name')}
                   >
-                    <div className="flex items-center">
-                      Cliente
-                      {getSortIcon('name')}
-                    </div>
+                    <div className="flex items-center">Cliente{getSortIcon('name')}</div>
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer hover:bg-muted/50 select-none w-[280px]"
                     onClick={() => handleSort('packs')}
                   >
-                    <div className="flex items-center">
-                      Packs
-                      {getSortIcon('packs')}
-                    </div>
+                    <div className="flex items-center">Packs{getSortIcon('packs')}</div>
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer hover:bg-muted/50 select-none w-[100px]"
                     onClick={() => handleSort('purchase_date')}
                   >
-                    <div className="flex items-center">
-                      Compra
-                      {getSortIcon('purchase_date')}
-                    </div>
+                    <div className="flex items-center">Compra{getSortIcon('purchase_date')}</div>
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer hover:bg-muted/50 select-none w-[100px]"
                     onClick={() => handleSort('expires_at')}
                   >
-                    <div className="flex items-center">
-                      Vence
-                      {getSortIcon('expires_at')}
-                    </div>
+                    <div className="flex items-center">Vence{getSortIcon('expires_at')}</div>
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {groupedClients
-                  .slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
-                  .map((client) => {
-                    const latestPurchase = getLatestPurchaseDate(client);
-                    const earliestExpiration = getEarliestExpiration(client);
-                    const hasVitalicio = client.purchases.some(p => p.access_type === 'vitalicio');
-                    
-                    return (
-                      <TableRow key={client.user_id}>
-                        <TableCell className="sticky left-0 bg-background z-10">
-                          <div className="flex gap-0.5">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => openWhatsApp(client.user_phone)}
-                              title="WhatsApp"
-                            >
-                              <MessageCircle className="h-4 w-4 text-green-500" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={() => {
-                                // For orphans (no purchases), create a mock purchase for edit dialog
-                                if (client.purchases.length === 0) {
-                                  setEditingClient(client);
-                                  setFormData({
-                                    email: client.user_email,
-                                    name: client.user_name,
-                                    phone: client.user_phone,
-                                    packAccesses: []
-                                  });
-                                  setShowAddDialog(true);
-                                } else {
-                                  openEditDialog(client.purchases[0]);
-                                }
-                              }}
-                              title="Editar"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-red-500 hover:text-red-600"
-                              onClick={() => handleDeleteClient(client)}
-                              title="Excluir cliente"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium text-sm">{client.user_name || 'Sem nome'}</p>
-                            <p className="text-xs text-muted-foreground truncate max-w-[150px]">{client.user_email}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1">
-                            {client.purchases.length === 0 ? (
-                              <Badge variant="outline" className="text-xs bg-muted text-muted-foreground">
-                                Sem packs
-                              </Badge>
-                            ) : (
-                              client.purchases.map((purchase) => (
-                                <Badge 
-                                  key={purchase.id} 
-                                  variant="outline"
-                                  className={`text-xs ${!purchase.is_active ? 'opacity-50 line-through' : ''}`}
-                                >
-                                  {getPackName(purchase.pack_slug)} ({getAccessTypeLabel(purchase.access_type)})
-                                </Badge>
-                              ))
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {client.purchases.length === 0 ? (
-                            <span className="text-xs text-muted-foreground">-</span>
-                          ) : (
-                            <span className="text-xs">
-                              {format(latestPurchase, "dd/MM/yy", { locale: ptBR })}
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {client.purchases.length === 0 ? (
-                            <span className="text-xs text-muted-foreground">-</span>
-                          ) : hasVitalicio ? (
-                            <Badge variant="outline" className="bg-purple-500/10 text-purple-600 border-purple-500/30 text-xs">
-                              Vitalício
-                            </Badge>
-                          ) : earliestExpiration ? (
+                {clients.map((client) => (
+                  <TableRow key={client.user_id}>
+                    <TableCell className="sticky left-0 bg-background z-10">
+                      <div className="flex gap-0.5">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openWhatsApp(client.user_phone)} title="WhatsApp">
+                          <MessageCircle className="h-4 w-4 text-green-500" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDialog(client)} title="Editar">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600" onClick={() => handleDeleteClient({
+                          user_id: client.user_id,
+                          user_email: client.user_email,
+                          user_name: client.user_name,
+                          user_phone: client.user_phone,
+                          purchases: client.purchases || []
+                        })} title="Excluir cliente">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-sm">{client.user_name || 'Sem nome'}</p>
+                        <p className="text-xs text-muted-foreground truncate max-w-[150px]">{client.user_email}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {client.pack_count === 0 ? (
+                          <Badge variant="outline" className="text-xs bg-muted text-muted-foreground">Sem packs</Badge>
+                        ) : (
+                          (client.purchases || []).map((purchase) => (
                             <Badge 
-                              variant="outline" 
-                              className={`text-xs ${
-                                earliestExpiration < new Date() 
-                                  ? 'bg-red-500/10 text-red-600 border-red-500/30'
-                                  : earliestExpiration < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-                                  ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
-                                  : 'bg-green-500/10 text-green-600 border-green-500/30'
-                              }`}
+                              key={purchase.id} 
+                              variant="outline"
+                              className={`text-xs ${!purchase.is_active ? 'opacity-50 line-through' : ''}`}
                             >
-                              {format(earliestExpiration, "dd/MM/yy", { locale: ptBR })}
+                              {getPackName(purchase.pack_slug)} ({getAccessTypeLabel(purchase.access_type)})
                             </Badge>
-                          ) : (
-                            <span className="text-muted-foreground text-xs">-</span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                {groupedClients.length === 0 && (
+                          ))
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {client.latest_purchase ? (
+                        <span className="text-xs">{format(new Date(client.latest_purchase), "dd/MM/yy", { locale: ptBR })}</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {client.has_vitalicio ? (
+                        <Badge variant="outline" className="bg-purple-500/10 text-purple-600 border-purple-500/30 text-xs">Vitalício</Badge>
+                      ) : client.earliest_expiration ? (
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${
+                            new Date(client.earliest_expiration) < new Date() 
+                              ? 'bg-red-500/10 text-red-600 border-red-500/30'
+                              : new Date(client.earliest_expiration) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                              ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
+                              : 'bg-green-500/10 text-green-600 border-green-500/30'
+                          }`}
+                        >
+                          {format(new Date(client.earliest_expiration), "dd/MM/yy", { locale: ptBR })}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">-</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {clients.length === 0 && !isSearching && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                       Nenhum cliente encontrado
+                    </TableCell>
+                  </TableRow>
+                )}
+                {isSearching && clients.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
                 )}
@@ -1338,29 +1074,20 @@ const AdminPackPurchases = () => {
             </Table>
           </div>
           
-          {/* Pagination - Mobile friendly */}
-          {groupedClients.length > ITEMS_PER_PAGE && (
+          {/* Pagination */}
+          {totalPages > 1 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3 sm:p-4 border-t">
               <p className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
-                {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, groupedClients.length)} de {groupedClients.length}
+                {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} de {totalCount}
               </p>
               <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 px-2 sm:px-3 text-xs"
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                >
+                <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 text-xs"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
                   Ant
                 </Button>
                 <div className="flex items-center gap-0.5 sm:gap-1">
-                  {Array.from({ length: Math.ceil(groupedClients.length / ITEMS_PER_PAGE) }, (_, i) => i + 1)
-                    .filter(page => 
-                      page === 1 || 
-                      page === Math.ceil(groupedClients.length / ITEMS_PER_PAGE) ||
-                      Math.abs(page - currentPage) <= 1
-                    )
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
                     .map((page, index, arr) => (
                       <span key={page} className="flex items-center">
                         {index > 0 && arr[index - 1] !== page - 1 && (
@@ -1378,13 +1105,8 @@ const AdminPackPurchases = () => {
                     ))
                   }
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 px-2 sm:px-3 text-xs"
-                  onClick={() => setCurrentPage(p => Math.min(Math.ceil(groupedClients.length / ITEMS_PER_PAGE), p + 1))}
-                  disabled={currentPage === Math.ceil(groupedClients.length / ITEMS_PER_PAGE)}
-                >
+                <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 text-xs"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
                   Próx
                 </Button>
               </div>
@@ -1403,100 +1125,73 @@ const AdminPackPurchases = () => {
                 <Button 
                   variant={expiredViewMode === 'some' ? 'default' : 'outline'}
                   onClick={() => setExpiredViewMode('some')}
-                  size="sm"
-                  className="text-xs sm:text-sm h-8"
-                >
-                  Algum vencido
-                </Button>
+                  size="sm" className="text-xs sm:text-sm h-8"
+                >Algum vencido</Button>
                 <Button 
                   variant={expiredViewMode === 'all' ? 'default' : 'outline'}
                   onClick={() => setExpiredViewMode('all')}
-                  size="sm"
-                  className="text-xs sm:text-sm h-8"
-                >
-                  Todos vencidos
-                </Button>
+                  size="sm" className="text-xs sm:text-sm h-8"
+                >Todos vencidos</Button>
               </div>
               
               <div className="overflow-auto flex-1">
-                <Table className="min-w-[500px]">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[70px] sticky left-0 bg-background z-10">Ações</TableHead>
-                      <TableHead className="w-[180px]">Cliente</TableHead>
-                      <TableHead>Packs Vencidos</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {(() => {
-                      const now = new Date();
-                      const userIds = [...new Set(purchases.map(p => p.user_id))];
-                      
-                      const expiredClients = userIds.filter(userId => {
-                        const userPurchases = purchases.filter(p => p.user_id === userId);
-                        const hasExpired = userPurchases.some(p => p.expires_at && new Date(p.expires_at) < now);
-                        const allExpired = userPurchases.every(p => p.expires_at && new Date(p.expires_at) < now);
-                        
-                        return expiredViewMode === 'all' ? allExpired : hasExpired;
-                      });
-                      
-                      return expiredClients.map(userId => {
-                        const userPurchases = purchases.filter(p => p.user_id === userId);
-                        const firstPurchase = userPurchases[0];
-                        const expiredPacks = userPurchases.filter(p => p.expires_at && new Date(p.expires_at) < now);
-                        
+                {isLoadingExpired ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <Table className="min-w-[500px]">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[70px] sticky left-0 bg-background z-10">Ações</TableHead>
+                        <TableHead className="w-[180px]">Cliente</TableHead>
+                        <TableHead>Packs Vencidos</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {expiredClients.map(client => {
+                        const now = new Date();
+                        const expiredPacks = (client.purchases || []).filter(p => p.expires_at && new Date(p.expires_at) < now);
                         return (
-                          <TableRow key={userId}>
+                          <TableRow key={client.user_id}>
                             <TableCell className="sticky left-0 bg-background z-10">
                               <div className="flex gap-0.5">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() => openWhatsApp(firstPurchase.user_phone || '')}
-                                  title="WhatsApp"
-                                >
-                                  <MessageCircle className="h-4 w-4 text-green-500" />
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openWhatsApp(client.user_phone)} title="WhatsApp">
+                                  <MessageCircle className="h-3.5 w-3.5 text-green-500" />
                                 </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7"
-                                  onClick={() => {
-                                    setShowExpiredModal(false);
-                                    openEditDialog(firstPurchase);
-                                  }}
-                                  title="Editar"
-                                >
-                                  <Edit className="h-4 w-4" />
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setShowExpiredModal(false); openEditDialog(client); }} title="Editar">
+                                  <Edit className="h-3.5 w-3.5" />
                                 </Button>
                               </div>
                             </TableCell>
                             <TableCell>
                               <div>
-                                <p className="font-medium text-sm">{firstPurchase.user_name || 'Sem nome'}</p>
-                                <p className="text-xs text-muted-foreground truncate max-w-[140px]">{firstPurchase.user_email}</p>
+                                <p className="font-medium text-xs">{client.user_name || 'Sem nome'}</p>
+                                <p className="text-[10px] text-muted-foreground truncate max-w-[150px]">{client.user_email}</p>
                               </div>
                             </TableCell>
                             <TableCell>
                               <div className="flex flex-wrap gap-1">
-                                {expiredPacks.map((purchase) => (
-                                  <Badge 
-                                    key={purchase.id} 
-                                    variant="outline"
-                                    className="text-[10px] sm:text-xs bg-red-500/10 text-red-600 border-red-500/30"
-                                  >
-                                    {getPackName(purchase.pack_slug)} - {format(new Date(purchase.expires_at!), "dd/MM/yy", { locale: ptBR })}
+                                {expiredPacks.map(p => (
+                                  <Badge key={p.id} variant="outline" className="text-[10px] bg-red-500/10 text-red-600 border-red-500/30">
+                                    {getPackName(p.pack_slug)} - {p.expires_at ? format(new Date(p.expires_at), "dd/MM/yy", { locale: ptBR }) : ''}
                                   </Badge>
                                 ))}
                               </div>
                             </TableCell>
                           </TableRow>
                         );
-                      });
-                    })()}
-                  </TableBody>
-                </Table>
+                      })}
+                      {expiredClients.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={3} className="text-center py-6 text-sm text-muted-foreground">
+                            Nenhum cliente com packs vencidos
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
               </div>
             </div>
           </DialogContent>
