@@ -4978,6 +4978,8 @@ export type Database = {
           flyer_refunded: number
           imggen_cancelled: number
           imggen_refunded: number
+          movieled_cancelled: number
+          movieled_refunded: number
           pose_cancelled: number
           pose_refunded: number
           upscaler_cancelled: number

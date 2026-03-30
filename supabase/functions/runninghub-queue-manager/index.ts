@@ -65,9 +65,13 @@ const WEBAPP_IDS = {
     'wan2.2': '2037260767040380929',
     'wan2.2_text_only': '2037277392862973953',
   },
+  movieled_maker_jobs: {
+    'veo3.1': '2021398746331881473',
+    'wan2.2': '2038686081360596993',
+  },
 };
 
-const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs', 'bg_remover_jobs', 'image_generator_jobs', 'video_generator_jobs'] as const;
+const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs', 'bg_remover_jobs', 'image_generator_jobs', 'video_generator_jobs', 'movieled_maker_jobs'] as const;
 type JobTable = typeof JOB_TABLES[number];
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -85,6 +89,7 @@ const TOOL_CONFIG: Record<JobTable, { name: string; url: string; emoji: string }
   bg_remover_jobs: { name: 'Remover Fundo', url: '/remover-fundo', emoji: '🖼️' },
   image_generator_jobs: { name: 'Gerar Imagem', url: '/gerar-imagem', emoji: '🖌️' },
   video_generator_jobs: { name: 'Gerar Vídeo', url: '/gerar-video', emoji: '🎥' },
+  movieled_maker_jobs: { name: 'MovieLed Maker', url: '/movieled-maker', emoji: '📺' },
 };
 
 /**
@@ -598,6 +603,7 @@ async function handleCheckUserActive(req: Request): Promise<Response> {
       'bg_remover_jobs': 'Remover Fundo',
       'image_generator_jobs': 'Gerar Imagem',
       'video_generator_jobs': 'Gerar Vídeo',
+      'movieled_maker_jobs': 'MovieLed Maker',
     };
     
     // Verificar em TODAS as tabelas - incluir STARTING e PENDING recente (< 35s)
@@ -1602,6 +1608,17 @@ async function startJobOnRunningHub(
       break;
     }
       
+    case 'movieled_maker_jobs': {
+      const movieEngine = p.engine || job.engine || 'veo3.1';
+      const movieWebappIds = WEBAPP_IDS.movieled_maker_jobs as Record<string, string>;
+      webappId = movieWebappIds[movieEngine] || movieWebappIds['veo3.1'];
+      nodeInfoList = [
+        { nodeId: "68", fieldName: "image", fieldValue: p.rhFileName || job.reference_file_name, description: "image" },
+        { nodeId: "72", fieldName: "text", fieldValue: p.inputText || job.input_text || '', description: "text" },
+      ];
+      break;
+    }
+
     default:
       console.error(`[QueueManager] Unknown table: ${table}`);
       return { taskId: null };
@@ -1796,7 +1813,7 @@ async function handleRetry(req: Request): Promise<Response> {
     }
     
     // Reset job to starting state
-    const account = await getAccountWithAvailableSlot() || getApiAccounts()[0];
+    const account = await getAccountWithAvailableSlot() || getAvailableApiAccounts()[0];
     
     await supabase
       .from(table)
