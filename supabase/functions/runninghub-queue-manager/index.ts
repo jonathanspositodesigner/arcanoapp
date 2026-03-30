@@ -1608,6 +1608,17 @@ async function startJobOnRunningHub(
       break;
     }
       
+    case 'movieled_maker_jobs': {
+      const movieEngine = p.engine || job.engine || 'veo3.1';
+      const movieWebappIds = WEBAPP_IDS.movieled_maker_jobs as Record<string, string>;
+      webappId = movieWebappIds[movieEngine] || movieWebappIds['veo3.1'];
+      nodeInfoList = [
+        { nodeId: "68", fieldName: "image", fieldValue: p.rhFileName || job.reference_file_name, description: "image" },
+        { nodeId: "72", fieldName: "text", fieldValue: p.inputText || job.input_text || '', description: "text" },
+      ];
+      break;
+    }
+
     default:
       console.error(`[QueueManager] Unknown table: ${table}`);
       return { taskId: null };
