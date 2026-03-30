@@ -405,7 +405,7 @@ const MovieLedMakerTool = () => {
                   Telão de Referência
                 </span>
                 {(selectedLibraryItem || uploadedImage) ? (
-                  <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black/30">
+                  <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black/30" data-tutorial-movieled="reference">
                     <img
                       src={selectedLibraryItem?.reference_images?.[0] || selectedLibraryItem?.image_url || uploadedImage || ''}
                       alt="Telão de referência"
