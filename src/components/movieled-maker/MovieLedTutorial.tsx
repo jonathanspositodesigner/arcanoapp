@@ -181,50 +181,21 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true }: MovieLedTuto
     return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/80 pointer-events-auto" onClick={finishTutorial} />
-        <div className="relative z-10 bg-[#1e1e3a] border border-purple-500/30 rounded-2xl p-6 shadow-2xl shadow-purple-900/40 max-w-sm w-full pointer-events-auto animate-scale-in">
-          {/* Icon */}
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/25 to-fuchsia-500/25 border border-purple-500/20 flex items-center justify-center">
-              <GraduationCap className="w-8 h-8 text-purple-400" />
-            </div>
-          </div>
+        <div className="relative z-10 bg-[#1e1e3a] border border-purple-500/30 rounded-2xl p-6 shadow-2xl shadow-purple-900/40 max-w-xs w-full pointer-events-auto animate-scale-in text-center">
+          <div className="text-4xl mb-3">🎬</div>
+          <h2 className="text-lg font-bold text-white mb-1">Primeira vez aqui?</h2>
+          <p className="text-xs text-gray-400 mb-5">Aprenda a usar em 5 passos rápidos.</p>
 
-          <h2 className="text-xl font-bold text-white text-center mb-2">
-            Tutorial MovieLed Maker
-          </h2>
-          <p className="text-sm text-gray-400 text-center mb-1">
-            Quer aprender a usar o MovieLed Maker?
-          </p>
-          <p className="text-xs text-gray-500 text-center mb-6">
-            Um tutorial rápido e interativo em 5 passos para você dominar a ferramenta.
-          </p>
-
-          {/* Steps preview */}
-          <div className="space-y-2 mb-6">
-            {STEPS.map((s) => (
-              <div key={s.step} className="flex items-center gap-2.5 bg-white/[0.03] rounded-lg px-3 py-2">
-                <span className="text-base">{s.emoji}</span>
-                <span className="text-xs text-gray-300">{s.title}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-col gap-2">
-            <Button
-              onClick={() => setPhase('active')}
-              className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-semibold gap-2 rounded-xl py-5"
-            >
-              <Play className="w-4 h-4" />
-              Iniciar Tutorial
-            </Button>
-            <button
-              onClick={finishTutorial}
-              className="text-xs text-gray-500 hover:text-gray-300 transition-colors py-2"
-            >
-              Não, já sei usar
-            </button>
-          </div>
+          <Button
+            onClick={() => setPhase('active')}
+            className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-semibold gap-2 rounded-xl py-5 mb-2"
+          >
+            <Play className="w-4 h-4" />
+            Iniciar Tutorial
+          </Button>
+          <button onClick={finishTutorial} className="text-xs text-gray-500 hover:text-gray-300 transition-colors py-1">
+            Não, já sei usar
+          </button>
         </div>
       </div>
     );
