@@ -453,6 +453,7 @@ const MovieLedMakerTool = () => {
                   Nome no Telão
                 </span>
                 <Input
+                  data-tutorial-movieled="text-input"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder="Ex: DJ MARCOS"
