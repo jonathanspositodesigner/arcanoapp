@@ -18,6 +18,14 @@ export function getAIErrorMessage(errorMessage: string | null): {
     };
   }
 
+  // Upstream saturado (servidor de IA sobrecarregado)
+  if (errorMessage?.includes('上游负载已饱和') || error.includes('upstream') || error.includes('负载')) {
+    return {
+      message: 'Servidor de geração temporariamente sobrecarregado',
+      solution: 'A capacidade do servidor está esgotada no momento. Seus créditos foram estornados automaticamente. Tente novamente em alguns minutos.'
+    };
+  }
+
   // Erro chinês da RunningHub = "Workflow execution failed"
   if (errorMessage?.includes('工作流运行失败') || error.includes('workflow')) {
     return {
