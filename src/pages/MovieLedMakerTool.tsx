@@ -649,6 +649,7 @@ const MovieLedMakerTool = () => {
           setSelectedLibraryItem(null);
         }}
         isPremiumUser={isPremium}
+        freeOnly={showTutorial}
       />
 
       {/* Modals */}
