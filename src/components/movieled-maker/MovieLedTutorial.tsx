@@ -59,11 +59,12 @@ const STEPS: TutorialStep[] = [
 
 interface MovieLedTutorialProps {
   onComplete: () => void;
+  persistCompletion?: boolean;
 }
 
 type Phase = 'intro' | 'active';
 
-const MovieLedTutorial = ({ onComplete }: MovieLedTutorialProps) => {
+const MovieLedTutorial = ({ onComplete, persistCompletion = true }: MovieLedTutorialProps) => {
   const [phase, setPhase] = useState<Phase>('intro');
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
@@ -77,10 +78,14 @@ const MovieLedTutorial = ({ onComplete }: MovieLedTutorialProps) => {
 
   const finishTutorial = useCallback(() => {
     listenerCleanupRef.current?.();
-    localStorage.setItem(STORAGE_KEY, 'true');
+    if (persistCompletion) {
+      localStorage.setItem(STORAGE_KEY, 'true');
+    } else {
+      localStorage.removeItem(STORAGE_KEY);
+    }
     setIsVisible(false);
     onComplete();
-  }, [onComplete]);
+  }, [onComplete, persistCompletion]);
 
   const advanceStep = useCallback(() => {
     setCompletedSteps(prev => new Set([...prev, currentStep]));
