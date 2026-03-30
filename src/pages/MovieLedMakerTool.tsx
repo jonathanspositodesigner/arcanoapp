@@ -40,7 +40,7 @@ const ENGINES = [
 
 const MovieLedMakerTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
-  const { user } = usePremiumStatus();
+  const { user, isPremium } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
@@ -602,6 +602,7 @@ const MovieLedMakerTool = () => {
           setUploadedFileName(file.name);
           setSelectedLibraryItem(null);
         }}
+        isPremiumUser={isPremium}
       />
 
       {/* Modals */}
