@@ -47,6 +47,7 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
   onSelectItem,
   onUploadPhoto,
   isPremiumUser = false,
+  freeOnly = false,
 }) => {
   const navigate = useNavigate();
   const [allItems, setAllItems] = useState<MovieLedItem[]>([]);
