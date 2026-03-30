@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { User, Loader2, ImageIcon, Upload, Search, Lock, Crown, AlertCircle, Video } from 'lucide-react';
+import { Loader2, Upload, Search, Lock, Crown, AlertCircle, Video } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { SecureVideo } from '@/components/SecureMedia';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 import imageCompression from 'browser-image-compression';
 import { useSmartSearch, buildSmartSearchFilter } from '@/hooks/useSmartSearch';
 
@@ -54,7 +53,7 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const { searchTerm, setSearchTerm, debouncedSearch, expandedTerms } = useSmartSearch();
+  const { searchTerm, setSearchTerm, expandedTerms } = useSmartSearch();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -115,7 +114,7 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
   const hasMore = visibleCount < allItems.length;
 
   const handleLoadMore = () => {
-    setVisibleCount(prev => prev + ITEMS_PER_PAGE);
+    setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
   };
 
   const handleSelectItem = (item: MovieLedItem) => {
@@ -174,7 +173,6 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
             </DialogTitle>
           </DialogHeader>
 
-          {/* Hidden file input */}
           <input
             ref={fileInputRef}
             type="file"
@@ -183,7 +181,6 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
             className="hidden"
           />
 
-          {/* Upload Button */}
           {onUploadPhoto && (
             <Button
               onClick={handleUploadClick}
@@ -204,7 +201,6 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
             </Button>
           )}
 
-          {/* 16:9 warning */}
           {onUploadPhoto && (
             <div className="flex items-center gap-2 px-2 py-1.5 mt-2 rounded-lg bg-amber-500/10 border border-amber-500/20 flex-shrink-0">
               <AlertCircle className="h-3 w-3 text-amber-400 flex-shrink-0" />
@@ -214,14 +210,12 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
             </div>
           )}
 
-          {/* Separator */}
           <div className="flex items-center gap-2 mt-3 sm:mt-4 flex-shrink-0">
             <div className="flex-1 h-px bg-purple-500/30" />
             <span className="text-[10px] sm:text-xs text-purple-400/80">ou escolha da biblioteca</span>
             <div className="flex-1 h-px bg-purple-500/30" />
           </div>
 
-          {/* Search Input */}
           <div className="relative mt-3 flex-shrink-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400/60" />
             <Input
@@ -233,7 +227,6 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
             />
           </div>
 
-          {/* Items Grid */}
           <div className="mt-3 sm:mt-4 overflow-y-auto flex-1 pr-1 -mr-1">
             {isLoading && items.length === 0 ? (
               <div className="flex items-center justify-center py-8 sm:py-12">
@@ -253,17 +246,17 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
                       onClick={() => handleSelectItem(item)}
                       className="group relative aspect-video rounded-lg sm:rounded-xl overflow-hidden border border-purple-500/30 hover:border-fuchsia-400 transition-all active:scale-95 sm:hover:scale-105"
                     >
-                      {/* Video Preview */}
-                      <video
-                        src={item.thumbnail_url || item.image_url}
+                      <SecureVideo
+                        src={item.image_url}
+                        poster={item.thumbnail_url || undefined}
                         muted
                         loop
                         autoPlay
                         playsInline
+                        preload="auto"
                         className="absolute inset-0 w-full h-full object-cover"
                       />
 
-                      {/* Premium badge */}
                       {item.is_premium && (
                         <div className="absolute top-1.5 right-1.5 z-10 flex items-center gap-0.5">
                           {!isPremiumUser && <Lock className="w-3 h-3 text-purple-300" />}
@@ -274,17 +267,14 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
                         </div>
                       )}
 
-                      {/* Gradient overlay */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                      {/* Title on hover */}
                       <div className="hidden sm:block absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <p className="text-[10px] text-white font-medium text-center line-clamp-2">
                           {item.title}
                         </p>
                       </div>
 
-                      {/* Hover overlay */}
                       <div className="absolute inset-0 bg-fuchsia-500/0 group-hover:bg-fuchsia-500/10 transition-colors flex items-center justify-center">
                         <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-fuchsia-600 px-3 py-1 rounded-full transition-opacity">
                           Selecionar
@@ -294,7 +284,6 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
                   ))}
                 </div>
 
-                {/* Load More */}
                 {hasMore && (
                   <div className="flex justify-center mt-3 sm:mt-4">
                     <Button
@@ -325,7 +314,6 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
         </DialogContent>
       </Dialog>
 
-      {/* Premium Upsell Modal */}
       <Dialog open={showPremiumModal} onOpenChange={setShowPremiumModal}>
         <DialogContent className="max-w-sm bg-[#1A0A2E] border border-purple-500/40 text-white p-6 rounded-xl">
           <div className="flex flex-col items-center text-center gap-4">
