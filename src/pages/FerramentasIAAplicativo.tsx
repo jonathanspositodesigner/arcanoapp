@@ -50,6 +50,7 @@ const FerramentasIAAplicativo = () => {
     "flyer-maker": "Crie flyers para eventos incríveis com IA",
     "remover-fundo": "Remova o fundo de qualquer imagem com IA",
     "upscaler-video": "Melhore a qualidade de vídeos curtos com IA",
+    "movieled-maker": "Gere movies para telão de LED com um clique",
   };
 
   // Smart back navigation
@@ -64,7 +65,7 @@ const FerramentasIAAplicativo = () => {
   const [loading, setLoading] = useState(true);
 
   // Preferred order for tools
-  const preferredOrder = ["arcano-cloner", "upscaller-arcano", "upscaler-video", "ia-muda-pose", "ia-muda-roupa", "remover-fundo", "forja-selos-3d-ilimitada", "flyer-maker"];
+  const preferredOrder = ["movieled-maker", "arcano-cloner", "upscaller-arcano", "upscaler-video", "ia-muda-pose", "ia-muda-roupa", "remover-fundo", "forja-selos-3d-ilimitada", "flyer-maker"];
 
   useEffect(() => {
     const fetchTools = async () => {
@@ -116,9 +117,19 @@ const FerramentasIAAplicativo = () => {
           checkout_link_vitalicio: null,
           checkout_link_membro_vitalicio: null,
         };
+
+        const movieledMakerTool: ToolData = {
+          id: 'movieled-maker-static',
+          name: 'MovieLed Maker',
+          slug: 'movieled-maker',
+          cover_url: null,
+          price_vitalicio: null,
+          checkout_link_vitalicio: null,
+          checkout_link_membro_vitalicio: null,
+        };
         
         // Combine database tools with static tools
-        const allTools = [...data, arcanoClonerTool, flyerMakerTool, removerFundoTool, videoUpscalerTool];
+        const allTools = [...data, arcanoClonerTool, flyerMakerTool, removerFundoTool, videoUpscalerTool, movieledMakerTool];
         
         // Sort by preferred order
         const sorted = allTools.sort((a, b) => {
@@ -156,6 +167,9 @@ const FerramentasIAAplicativo = () => {
     if (slug === "remover-fundo") {
       return "/remover-fundo";
     }
+    if (slug === "movieled-maker") {
+      return "/movieled-maker";
+    }
     return `/ferramenta-ia-artes/${slug}`;
   };
 
@@ -169,6 +183,7 @@ const FerramentasIAAplicativo = () => {
     "arcano-cloner": "Arcano Cloner",
     "flyer-maker": "Flyer Maker",
     "remover-fundo": "Remover Fundo",
+    "movieled-maker": "MovieLed Maker",
   };
 
   const getPurchaseRoute = (tool: ToolData) => {
@@ -202,6 +217,7 @@ const FerramentasIAAplicativo = () => {
     if (slug === "remover-fundo") return true;
     if (slug === "upscaller-arcano") return true;
     if (slug === "upscaler-video") return true;
+    if (slug === "movieled-maker") return true;
     if (bonusTools.includes(slug)) {
       return isPremium;
     }
@@ -261,6 +277,7 @@ const FerramentasIAAplicativo = () => {
     const hasAccess = checkToolAccess(tool.slug);
     const description = toolDescriptions[tool.slug] || "Ferramenta de IA";
     const isComingSoon = tool.slug === "forja-selos-3d-ilimitada" || tool.slug === "flyer-maker";
+    const isNew = tool.slug === "movieled-maker";
     const isUpscalerArcano = tool.slug === "upscaller-arcano";
     
     const handleCardClick = (e: React.MouseEvent) => {
@@ -280,7 +297,7 @@ const FerramentasIAAplicativo = () => {
         onClick={handleCardClick}
       >
         <div className="aspect-[16/9] sm:aspect-[3/4] relative overflow-hidden">
-          {tool.slug === "arcano-cloner" && (
+          {(tool.slug === "arcano-cloner" || isNew) && (
             <div className="absolute top-2 right-2 z-10 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
               <Sparkles className="w-3 h-3" />
               NOVO
