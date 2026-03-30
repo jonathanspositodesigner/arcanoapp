@@ -77,6 +77,7 @@ const MovieLedMakerTool = () => {
   const [activeJobId, setActiveJobId] = useState<string | undefined>();
   const [activeStatus, setActiveStatus] = useState<string | undefined>();
   const [showTutorial, setShowTutorial] = useState(() => !localStorage.getItem(MOVIELED_TUTORIAL_STORAGE_KEY));
+  const [tutorialInProgress, setTutorialInProgress] = useState(false);
   
   const sessionIdRef = useRef(crypto.randomUUID());
 
@@ -658,7 +659,7 @@ const MovieLedMakerTool = () => {
           setSelectedLibraryItem(null);
         }}
         isPremiumUser={isPremium}
-        freeOnly={showTutorial}
+        freeOnly={tutorialInProgress}
       />
 
       {/* Modals */}
@@ -678,7 +679,8 @@ const MovieLedMakerTool = () => {
       {showTutorial && (
         <MovieLedTutorial
           persistCompletion={!isTutorialTestUser}
-          onComplete={() => setShowTutorial(false)}
+          onComplete={() => { setShowTutorial(false); setTutorialInProgress(false); }}
+          onPhaseChange={(phase) => setTutorialInProgress(phase === 'active')}
         />
       )}
     </AppLayout>

@@ -60,11 +60,12 @@ const STEPS: TutorialStep[] = [
 interface MovieLedTutorialProps {
   onComplete: () => void;
   persistCompletion?: boolean;
+  onPhaseChange?: (phase: 'intro' | 'active') => void;
 }
 
 type Phase = 'intro' | 'active';
 
-const MovieLedTutorial = ({ onComplete, persistCompletion = true }: MovieLedTutorialProps) => {
+const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange }: MovieLedTutorialProps) => {
   const [phase, setPhase] = useState<Phase>('intro');
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
@@ -189,7 +190,7 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true }: MovieLedTuto
           <p className="text-xs text-gray-400 mb-5">Aprenda a usar em 5 passos rápidos.</p>
 
           <Button
-            onClick={() => setPhase('active')}
+            onClick={() => { setPhase('active'); onPhaseChange?.('active'); }}
             className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-semibold gap-2 rounded-xl py-5 mb-2"
           >
             <Play className="w-4 h-4" />
