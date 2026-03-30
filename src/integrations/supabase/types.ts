@@ -4814,6 +4814,18 @@ export type Database = {
           success: boolean
         }[]
       }
+      admin_search_pack_clients: {
+        Args: {
+          p_pack_filter?: string
+          p_page?: number
+          p_page_size?: number
+          p_search?: string
+          p_sort_direction?: string
+          p_sort_field?: string
+          p_status_filter?: string
+        }
+        Returns: Json
+      }
       check_device_signup_limit: {
         Args: { p_fingerprint: string }
         Returns: boolean
