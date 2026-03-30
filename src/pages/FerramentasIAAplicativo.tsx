@@ -117,9 +117,19 @@ const FerramentasIAAplicativo = () => {
           checkout_link_vitalicio: null,
           checkout_link_membro_vitalicio: null,
         };
+
+        const movieledMakerTool: ToolData = {
+          id: 'movieled-maker-static',
+          name: 'MovieLed Maker',
+          slug: 'movieled-maker',
+          cover_url: null,
+          price_vitalicio: null,
+          checkout_link_vitalicio: null,
+          checkout_link_membro_vitalicio: null,
+        };
         
         // Combine database tools with static tools
-        const allTools = [...data, arcanoClonerTool, flyerMakerTool, removerFundoTool, videoUpscalerTool];
+        const allTools = [...data, arcanoClonerTool, flyerMakerTool, removerFundoTool, videoUpscalerTool, movieledMakerTool];
         
         // Sort by preferred order
         const sorted = allTools.sort((a, b) => {
