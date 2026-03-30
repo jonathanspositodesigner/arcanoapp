@@ -275,7 +275,7 @@ const MovieLedMakerTool = () => {
       // If uploading from device, upload to storage first
       let imageUrlForBackend = effectiveImageUrl;
       
-      if (imageSource === 'upload' && uploadedImage) {
+      if (uploadedImage && !selectedLibraryItem) {
         const base64Data = uploadedImage.split(',')[1];
         const binaryStr = atob(base64Data);
         const bytes = new Uint8Array(binaryStr.length);
