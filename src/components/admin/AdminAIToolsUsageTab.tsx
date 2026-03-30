@@ -446,6 +446,7 @@ const AdminAIToolsUsageTab = () => {
       "Gerar Vídeo": "bg-rose-500/20 text-rose-400 border-rose-500/30",
       "Flyer Maker": "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
       "Remover Fundo": "bg-teal-500/20 text-teal-400 border-teal-500/30",
+      "MovieLed Maker": "bg-violet-500/20 text-violet-400 border-violet-500/30",
     };
     return <Badge className={colors[toolName] || ""}>{toolName}</Badge>;
   };
