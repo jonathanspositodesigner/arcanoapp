@@ -433,6 +433,7 @@ const MovieLedMakerTool = () => {
                   <button
                     onClick={() => setShowLibrary(true)}
                     disabled={isProcessing}
+                    data-tutorial-movieled="reference"
                     className="w-full h-[100px] lg:h-[120px] rounded-xl border border-dashed border-white/15 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/25 transition-all flex flex-col items-center justify-center gap-2 group"
                   >
                     <div className="w-9 h-9 rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center group-hover:bg-fuchsia-500/20 transition-colors">
