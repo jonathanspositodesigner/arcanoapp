@@ -656,6 +656,9 @@ const MovieLedMakerTool = () => {
         activeStatus={activeStatus}
         onCancelJob={centralCancelJob}
       />
+      {showTutorial && (
+        <MovieLedTutorial onComplete={() => setShowTutorial(false)} />
+      )}
     </AppLayout>
   );
 };
