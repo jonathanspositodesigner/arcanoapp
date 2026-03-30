@@ -53,9 +53,9 @@ const MovieLedAnnouncementModal = () => {
 
   return (
     <Dialog open={open} onOpenChange={(val) => { if (!val) handleDismiss(); }}>
-      <DialogContent className="sm:max-w-lg p-0 bg-[#0D0221] border-purple-500/30 overflow-hidden gap-0">
+      <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg p-0 bg-[#0D0221] border-purple-500/30 overflow-hidden gap-0 mx-4">
         {/* Video */}
-        <div className="relative w-full aspect-[9/16] max-h-[55vh] overflow-hidden bg-black">
+        <div className="relative w-full overflow-hidden bg-black rounded-t-lg">
           <video
             ref={videoRef}
             src={VIDEO_URL}
@@ -65,7 +65,7 @@ const MovieLedAnnouncementModal = () => {
             playsInline
             onLoadedData={handleVideoReady}
             onCanPlay={handleVideoReady}
-            className="w-full h-full object-cover"
+            className="w-full h-auto"
           />
           {/* Gradient overlay bottom */}
           <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0D0221] to-transparent" />
