@@ -14,6 +14,7 @@ import { useLocale } from "@/contexts/LocaleContext";
 
 const PlanosArtesMusicos = () => {
   const navigate = useNavigate();
+  const { goBack } = useSmartBackNavigation({ fallback: '/biblioteca-artes-musicos' });
   const { t } = useTranslation('library');
   const { locale } = useLocale();
   const [billingPeriod, setBillingPeriod] = useState<"mensal" | "anual">("mensal");
