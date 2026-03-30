@@ -50,6 +50,7 @@ const FerramentasIAAplicativo = () => {
     "flyer-maker": "Crie flyers para eventos incríveis com IA",
     "remover-fundo": "Remova o fundo de qualquer imagem com IA",
     "upscaler-video": "Melhore a qualidade de vídeos curtos com IA",
+    "movieled-maker": "Gere movies para telão de LED com um clique",
   };
 
   // Smart back navigation
