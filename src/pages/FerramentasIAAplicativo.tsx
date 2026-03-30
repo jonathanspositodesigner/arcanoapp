@@ -402,6 +402,7 @@ const FerramentasIAAplicativo = () => {
       </main>
 
 
+      <MovieLedAnnouncementModal />
     </AppLayout>
   );
 };
