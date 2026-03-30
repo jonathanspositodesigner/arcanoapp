@@ -404,7 +404,7 @@ const MovieLedMakerTool = () => {
   };
 
   const isProcessing = status === 'processing' || status === 'uploading' || isQueued;
-  const hasImage = imageSource === 'library' ? !!selectedLibraryItem : !!uploadedImage;
+  const hasImage = !!selectedLibraryItem || !!uploadedImage;
   const canGenerate = hasImage && inputText.trim().length > 0 && !isProcessing && status !== 'completed';
 
   return (
