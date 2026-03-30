@@ -549,7 +549,7 @@ const BibliotecaPrompts = () => {
                           setShowPremiumModal(true);
                         } else {
                           trackPromptClick(String(item.id), item.title, !!item.isExclusive);
-                          navigate('/movieled-maker-tool', {
+                          navigate('/movieled-maker', {
                             state: {
                               preSelectedItem: {
                                 id: String(item.id),
