@@ -462,6 +462,39 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_tool_registry: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          expiry_hours: number
+          id: string
+          media_type: string
+          storage_folder: string | null
+          table_name: string
+          tool_name: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          expiry_hours?: number
+          id?: string
+          media_type?: string
+          storage_folder?: string | null
+          table_name: string
+          tool_name: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          expiry_hours?: number
+          id?: string
+          media_type?: string
+          storage_folder?: string | null
+          table_name?: string
+          tool_name?: string
+        }
+        Relationships: []
+      }
       ai_tool_settings: {
         Row: {
           api_cost: number
