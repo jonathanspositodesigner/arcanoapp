@@ -17,7 +17,7 @@ import { useAIJob } from '@/contexts/AIJobContext';
 import { markJobAsFailedInDb } from '@/utils/markJobAsFailedInDb';
 import { checkActiveJob } from '@/ai/JobManager';
 import { getAIErrorMessage } from '@/utils/errorMessages';
-import { optimizeForAI } from '@/hooks/useImageOptimizer';
+
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { cancelJob as centralCancelJob } from '@/ai/JobManager';
