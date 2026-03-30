@@ -123,7 +123,7 @@ const FerramentasIAAplicativo = () => {
           id: 'movieled-maker-static',
           name: 'MovieLed Maker',
           slug: 'movieled-maker',
-          cover_url: null,
+          cover_url: 'https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/prompts-cloudinary/references/BOTECO-DO-LUAN-ref.jpg',
           price_vitalicio: null,
           checkout_link_vitalicio: null,
           checkout_link_membro_vitalicio: null,
