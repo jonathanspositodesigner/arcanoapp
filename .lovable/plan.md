@@ -1,48 +1,45 @@
 
+# Plano: Integrar MovieLed Maker no dashboard Custos IA
 
-# Plano: Veo 3.1 passa a usar apenas 1 imagem (sem start+end frame)
+## Diagnóstico
 
-## Contexto
-O workflow Veo 3.1 no RunningHub foi atualizado: agora aceita apenas **1 imagem** (nó 5, "LAST FRAME") + prompt + aspect_ratio. O segundo nó de Load Image (nó 15, "FIRST FRAME") foi removido. Wan 2.2 permanece com 2 frames.
+### Notificação sonora: OK
+O MovieLed Maker já usa `useAIJob` (registerJob/updateJobStatus) + `useJobStatusSync` com `onGlobalStatusChange: updateJobStatus`. O AIJobContext toca o som automaticamente quando o status chega em `completed`/`failed`. Nada a fazer aqui.
+
+### Dashboard Custos IA: FALTANDO
+O MovieLed Maker **não aparece** na página `/admin-prompts/custos-ia`. Falta:
+
+1. **4 RPCs no banco** que precisam de UNION ALL com `movieled_maker_jobs`:
+   - `get_ai_tools_usage` (versão paginada)
+   - `get_ai_tools_usage` (versão com filtros)
+   - `get_ai_tools_usage_count`
+   - `get_ai_tools_usage_summary`
+   - `get_ai_tools_cost_averages`
+
+2. **Frontend** (`AdminAIToolsUsageTab.tsx`):
+   - Adicionar `"MovieLed Maker"` ao array `TOOL_FILTERS`
+   - Adicionar case `"MovieLed Maker": return "movieled_maker_jobs"` no `getTableName()`
+
+3. **Tabela de Custos** (`AIToolsProfitTable.tsx`):
+   - Definir custo de créditos do MovieLed Maker (500 para Wan 2.2, 850 para Veo 3.1)
 
 ## Mudanças
 
-### 1. Frontend - `src/pages/GerarVideoTool.tsx`
-- Quando `selectedModel === 'veo3.1'` e modo `with_frames`:
-  - Remover o campo "Último Frame (fim)" / endFrame
-  - Renomear "1º Frame (início)" para "Imagem de Referência"
-  - Enviar apenas `start_frame` no body (sem `end_frame`) quando modelo for Veo 3.1
-  - A validação muda: Veo 3.1 precisa de apenas 1 imagem; Wan 2.2 continua precisando de 2
-  - Atualizar o label do botão de disabled: "Selecione a imagem de referência" (Veo) vs "Selecione o primeiro e último frame" (Wan)
-  - O seta "→ 8s" entre os frames some quando Veo 3.1 (fica só o card de imagem único)
+### 1. Migration SQL
+Recriar as 5 RPCs adicionando `UNION ALL SELECT ... FROM movieled_maker_jobs` com `'MovieLed Maker'` como tool_name, seguindo o mesmo padrão das outras ferramentas (bg_remover, flyer_maker, etc.).
 
-### 2. Edge Function - `supabase/functions/generate-video/index.ts`
-- Continua aceitando `start_frame` e `end_frame` no body (para Wan 2.2 compatibilidade)
-- Nenhuma mudança necessaria aqui -- o upload de frames já é condicional (`hasStartFrame`, `hasEndFrame`) e o job_payload já grava os fileNames separados
+### 2. `src/components/admin/AdminAIToolsUsageTab.tsx`
+- Adicionar `{ value: "MovieLed Maker", label: "MovieLed Maker" }` ao `TOOL_FILTERS`
+- Adicionar `case "MovieLed Maker": return "movieled_maker_jobs"` ao `getTableName()`
 
-### 3. Queue Manager - `supabase/functions/runninghub-queue-manager/index.ts` (linhas 1542-1608)
-- No case `video_generator_jobs`, quando `videoModel === 'veo3.1'`:
-  - Mudar a lógica: `hasFrames` passa a ser `!!p.startFrameFileName` (basta 1 imagem, não precisa de 2)
-  - Quando com imagem: usar webapp `2037253069662068738` (mesmo ID)
-  - Enviar apenas **1 nó de imagem**: `nodeId: "5"`, `fieldName: "image"`, `fieldValue: p.startFrameFileName` (a imagem única vai no nó 5)
-  - Remover o nó 15 (FIRST FRAME) do Veo 3.1
-  - `nodeId` para aspect_ratio e prompt continua sendo `"3"` (com imagem) ou `"8"` (text-only)
-- Wan 2.2 permanece inalterado (2 frames, nós 37+16)
+### 3. `src/components/admin/AIToolsProfitTable.tsx`
+- Verificar se o MovieLed Maker aparece automaticamente via RPC ou se precisa de entrada manual de custos
 
-### Resumo das mudanças por arquivo
-
-| Arquivo | O que muda |
-|---------|-----------|
-| `src/pages/GerarVideoTool.tsx` | UI adapta para 1 imagem quando Veo 3.1, mantém 2 frames para Wan 2.2 |
-| `supabase/functions/generate-video/index.ts` | Sem mudanças (já é flexível) |
-| `supabase/functions/runninghub-queue-manager/index.ts` | Veo 3.1 envia apenas nó 5 (imagem), remove nó 15 |
-
-### nodeInfoList Veo 3.1 (com imagem) - APÓS correção
-```json
-[
-  { "nodeId": "5", "fieldName": "image", "fieldValue": "<fileName>", "description": "LAST FRAME" },
-  { "nodeId": "3", "fieldName": "aspect_ratio", "fieldData": "[...]", "fieldValue": "16:9" },
-  { "nodeId": "3", "fieldName": "prompt", "fieldValue": "..." }
-]
-```
-
+## Resumo
+| Item | Status |
+|------|--------|
+| Som de notificação | Já funciona |
+| Trava de navegação (job ativo) | Já funciona |
+| Dashboard Custos IA - RPCs | Precisa adicionar UNION ALL |
+| Dashboard Custos IA - Filtros frontend | Precisa adicionar |
+| Dashboard Custos IA - Tabela de nomes | Precisa adicionar |
