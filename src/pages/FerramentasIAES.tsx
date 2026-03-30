@@ -36,6 +36,7 @@ const FerramentasIAES = () => {
   // Apenas Upscaler Arcano
   const allowedSlugs = ["upscaller-arcano"];
 
+
   useEffect(() => {
     const fetchTools = async () => {
       const { data, error } = await supabase

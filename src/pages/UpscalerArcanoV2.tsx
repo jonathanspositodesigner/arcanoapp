@@ -58,7 +58,7 @@ const UpscalerArcanoV2 = () => {
   const [pendingUrl, setPendingUrl] = useState<string | null>(null);
 
   const hasUnlimitedAccess = planType === "arcano_unlimited";
-  const hasAccess = hasUnlimitedAccess || hasAccessToPack('upscaller-arcano');
+  const hasAccess = hasUnlimitedAccess || hasAccessToPack('upscaller-arcano') || hasAccessToPack('upscaller-arcano-v3');
 
   // Check if tool is unlocked (first 4 lessons or all if less than 4)
   const requiredLessons = Math.min(lessons.length, 4);
