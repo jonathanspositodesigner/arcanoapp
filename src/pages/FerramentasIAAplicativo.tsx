@@ -183,6 +183,7 @@ const FerramentasIAAplicativo = () => {
     "arcano-cloner": "Arcano Cloner",
     "flyer-maker": "Flyer Maker",
     "remover-fundo": "Remover Fundo",
+    "movieled-maker": "MovieLed Maker",
   };
 
   const getPurchaseRoute = (tool: ToolData) => {
