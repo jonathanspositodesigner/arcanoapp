@@ -1,69 +1,32 @@
 
-Objetivo: corrigir definitivamente a geração de vídeo para não falhar por mapeamento incorreto e não deixar jobs presos, usando os IDs/nodes que você enviou.
 
-1) Diagnóstico confirmado (com base no código + banco)
-- Os WebApp IDs estão corretos no backend:
-  - Veo 3.1 imagem: 2037253069662068738
-  - Veo 3.1 texto: 2037271484384681986
-  - Wan 2.2 imagem: 2037260767040380929
-  - Wan 2.2 texto: 2037277392862973953
-- O erro atual é de node mapping no Veo 3.1 texto:
-  - Falha registrada: `NODE_INFO_MISMATCH(nodeId=3, fieldName=aspect_ratio, reason=node_not_found_in_workflow)`.
-  - No código, Veo texto ainda envia `nodeId=3`; na sua especificação correta deve ser `nodeId=8`.
-- Há também fragilidade de “limpeza de travados”:
-  - `cleanup_all_stale_ai_jobs` ainda não cobre `video_generator_jobs`.
-  - O parser do queue manager espera `cancelled_count`, mas a RPC atual retorna colunas por ferramenta (shape diferente), então a contabilização fica inconsistente.
+# Plano: Substituir biblioteca customizada do MovieLed Maker pela mesma biblioteca padrão do Arcano Cloner
 
-2) Correção principal de mapeamento (RunningHub)
-- Ajustar no `runninghub-queue-manager`:
-  - Veo 3.1 texto-only (`veo3.1_text_only`) -> usar `nodeId=8` para:
-    - `aspect_ratio`
-    - `prompt`
-  - Veo 3.1 com imagens mantém `nodeId=3` (como você enviou).
-  - Wan 2.2 imagem/texto permanece igual (já está coerente com sua spec).
-- Resultado esperado: elimina erro 803 no texto->vídeo do Veo.
+## Problema
+O MovieLed Maker usa uma biblioteca inline customizada (modal feito na mão dentro do próprio arquivo). As outras ferramentas (Arcano Cloner, Veste AI, Pose Changer) usam o componente `ReferenceImageCard` + `PhotoLibraryModal` que são reutilizáveis e consistentes.
 
-3) Hardening para evitar quebra futura de nó
-- Adicionar fallback automático para vídeo quando houver erro de node mismatch (803):
-  - Se Veo texto falhar com node 8, tentar 1 retry com node alternativo (3) antes de falhar final.
-  - Se Veo imagem falhar com node 3, tentar 1 retry com node alternativo (8) para campos textuais.
-- Registrar no `step_history` qual mapeamento foi usado em cada tentativa para auditoria rápida.
+## O que vai ser feito
 
-4) Blindagem anti “pending eterno”
-- Atualizar RPC `cleanup_all_stale_ai_jobs` para incluir `video_generator_jobs` com estorno idempotente.
-- Ajustar `cleanupStaleJobs()` no queue manager para somar corretamente o novo formato de retorno da RPC (colunas por ferramenta).
-- Refinar `cleanupOrphanPendingJobs`:
-  - manter proteção para jobs realmente em progresso,
-  - mas marcar como falho jobs de vídeo `pending + task_id null` acima do timeout de estagnação, mesmo com step_history, via `mark_pending_job_as_failed` (para garantir estorno).
+### 1. Criar `MovieLedLibraryModal` baseado no `PhotoLibraryModal`
+- Novo arquivo: `src/components/movieled-maker/MovieLedLibraryModal.tsx`
+- Cópia exata do layout/estilo do `PhotoLibraryModal` (Dialog, gender filter, search, grid, upload, premium, load more)
+- **Diferença 1**: Query filtra por `category = 'Movies para Telão'` em vez de `'Fotos'`
+- **Diferença 2**: Grid mostra `<video>` em aspect-ratio 16:9 em vez de `<img>` em 3:4
+- **Diferença 3**: Título "Biblioteca de Telões" em vez de "Biblioteca de Fotos"
+- **Diferença 4**: Aviso de 1920x1080 (16:9) no upload
+- **Diferença 5**: `onSelectPhoto` retorna o item completo (com `reference_images` e `id`) para que o MovieLed possa usar a referência correta
 
-5) Robustez de UI (feedback e recuperação)
-- Integrar `useJobStatusSync` na página `GerarVideoTool` (além do realtime), para polling de backup quando realtime falhar/aba dormir.
-- Manter watchdog de pending e fallback `markJobAsFailedInDb` já existente, mas garantir reset consistente de estado visual em toda falha terminal.
+### 2. Usar `ReferenceImageCard` no MovieLed Maker
+- Importar o mesmo `ReferenceImageCard` de `src/components/arcano-cloner/ReferenceImageCard.tsx`
+- Substituir todo o bloco inline de seleção de imagem (linhas ~468-543) pelo `ReferenceImageCard`
+- Props: `title="Telão de Referência"`, `emptyLabel="Escolher Telão"`, `emptySubLabel="Da biblioteca ou envie sua imagem"`
 
-6) Validação completa (pós-correção)
-- Executar testes de ponta a ponta nos 4 cenários:
-  - Veo 3.1 texto-only
-  - Veo 3.1 com imagens
-  - Wan 2.2 texto-only
-  - Wan 2.2 com imagens
-- Verificar para cada cenário:
-  - criação do job,
-  - transição `pending -> starting/running -> completed/failed`,
-  - existência de `task_id` quando aceito pela RunningHub,
-  - estorno automático em falha,
-  - ausência de jobs `pending` antigos sem progresso.
-- Confirmar no banco/logs que o erro 803 desapareceu no Veo texto.
+### 3. Limpar código do MovieLedMakerTool.tsx
+- Remover o modal inline (linhas 722-791)
+- Remover estados `libraryItems`, `librarySearch`, `loadingLibrary`, `loadLibrary`
+- Adicionar o `MovieLedLibraryModal` no final do JSX (igual Arcano Cloner faz com `PhotoLibraryModal`)
+- Manter toda a lógica de `selectedLibraryItem` e `reference_images` como está
 
-Detalhes técnicos (arquivos que serão alterados)
-- `supabase/functions/runninghub-queue-manager/index.ts`
-  - mapeamento Veo texto (node 8), fallback de node, parser de cleanup
-- Nova migration SQL
-  - `cleanup_all_stale_ai_jobs` com `video_generator_jobs` + retorno consistente
-- `src/pages/GerarVideoTool.tsx`
-  - incluir `useJobStatusSync` para recuperação de status quando realtime falhar
+## Resultado
+Interface 100% consistente com Arcano Cloner, Veste AI e Pose Changer: mesmo card de referência, mesmo estilo de modal, mesma experiência de upload.
 
-Resultado esperado final
-- Veo 3.1 texto volta a iniciar normalmente.
-- Fluxos com imagem continuam funcionais.
-- Sem jobs presos eternamente em pending.
-- Estorno de crédito garantido em falha.
