@@ -90,7 +90,17 @@ const MovieLedMakerTool = () => {
     }
   }, [isTutorialTestUser]);
 
-  // Cleanup queued jobs
+  // Pre-select item from navigation state (e.g. from Biblioteca de Prompts)
+  useEffect(() => {
+    const state = location.state as { preSelectedItem?: LibraryItem } | null;
+    if (state?.preSelectedItem) {
+      setSelectedLibraryItem(state.preSelectedItem);
+      setShowTutorial(false);
+      // Clear the state so it doesn't re-apply on re-render
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   useQueueSessionCleanup(sessionIdRef.current, status);
 
   // Watchdog for stuck pending jobs
