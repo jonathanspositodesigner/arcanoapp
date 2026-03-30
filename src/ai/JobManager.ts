@@ -82,6 +82,7 @@ const EDGE_FUNCTION_MAP: Record<ToolType, string> = {
   bg_remover: 'runninghub-bg-remover/run',
   image_generator: 'runninghub-image-generator/run',
   video_generator: 'generate-video/run',
+  movieled_maker: 'runninghub-movieled-maker/run',
 };
 
 // Tool names for display
