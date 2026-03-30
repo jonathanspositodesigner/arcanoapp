@@ -41,6 +41,7 @@ const ENGINES = [
 ] as const;
 
 const MovieLedMakerTool = () => {
+  const location = useLocation();
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, isPremium } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
