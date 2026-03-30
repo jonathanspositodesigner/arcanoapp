@@ -217,6 +217,7 @@ const FerramentasIAAplicativo = () => {
     if (slug === "remover-fundo") return true;
     if (slug === "upscaller-arcano") return true;
     if (slug === "upscaler-video") return true;
+    if (slug === "movieled-maker") return true;
     if (bonusTools.includes(slug)) {
       return isPremium;
     }
