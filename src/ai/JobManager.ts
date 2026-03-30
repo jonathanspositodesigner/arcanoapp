@@ -67,6 +67,7 @@ const TABLE_MAP: Record<ToolType, string> = {
   bg_remover: 'bg_remover_jobs',
   image_generator: 'image_generator_jobs',
   video_generator: 'video_generator_jobs',
+  movieled_maker: 'movieled_maker_jobs',
 };
 
 // Edge function names mapping
