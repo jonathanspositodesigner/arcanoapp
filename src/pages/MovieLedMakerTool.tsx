@@ -44,7 +44,7 @@ const MovieLedMakerTool = () => {
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
 
   // Engine selection
-  const [selectedEngine, setSelectedEngine] = useState<string>('veo3.1');
+  const [selectedEngine, setSelectedEngine] = useState<string>('wan2.2');
   const currentEngine = ENGINES.find(e => e.id === selectedEngine) || ENGINES[0];
 
   // Image input
