@@ -63,7 +63,7 @@ const GerarVideoTool = () => {
 
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState<string>('16:9');
-  const [selectedModel, setSelectedModel] = useState<string>('veo3.1');
+  const [selectedModel, setSelectedModel] = useState<string>('wan2.2');
   const [generationMode, setGenerationMode] = useState<GenerationMode>('prompt_only');
   const [startFrame, setStartFrame] = useState<FrameImage | null>(null);
   const [endFrame, setEndFrame] = useState<FrameImage | null>(null);
