@@ -150,7 +150,7 @@ const Index = () => {
     creditsBreakdown.lifetime > 0
   );
   // Card separado do Upscaler Arcano Vitalício
-  const hasUpscalerPack = !isLoading && isLoggedIn && userPacks.some(p => p.pack_slug === 'upscaller-arcano');
+  const hasUpscalerPack = !isLoading && isLoggedIn && userPacks.some(p => p.pack_slug === 'upscaller-arcano' || p.pack_slug === 'upscaller-arcano-v3');
   const hasArtesAccess = !isLoading && isLoggedIn && userPacks.some(p => ARTES_SLUGS.includes(p.pack_slug));
   // hasPromptsAccess: premium SIM, mas NUNCA se planType for de ferramenta (arcano_pro, etc.)
   // OU planos2 pago (starter, pro, ultimate, unlimited)
