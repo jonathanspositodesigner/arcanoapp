@@ -22,6 +22,7 @@ import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { cancelJob as centralCancelJob } from '@/ai/JobManager';
 import AppLayout from '@/components/layout/AppLayout';
+import MovieLedTutorial, { MOVIELED_TUTORIAL_STORAGE_KEY } from '@/components/movieled-maker/MovieLedTutorial';
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
 
