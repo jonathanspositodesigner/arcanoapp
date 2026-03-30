@@ -32,8 +32,8 @@ interface LibraryItem {
 }
 
 const ENGINES = [
-  { id: 'veo3.1', name: 'Veo 3.1', cost: 850, duration: '8s', resolution: '1080p', time: '3 a 4 min' },
   { id: 'wan2.2', name: 'Wan 2.2', cost: 500, duration: '15s', resolution: '720p', time: '4 a 5 min' },
+  { id: 'veo3.1', name: 'Veo 3.1', cost: 850, duration: '8s', resolution: '1080p', time: '3 a 4 min' },
 ] as const;
 
 const MovieLedMakerTool = () => {
