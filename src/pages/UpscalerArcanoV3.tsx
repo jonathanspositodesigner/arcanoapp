@@ -24,6 +24,13 @@ import galleryAfter2 from "@/assets/upscaler/2d.webp";
 import galleryBefore3 from "@/assets/upscaler/3a.webp";
 import galleryAfter3 from "@/assets/upscaler/3d.webp";
 
+// Hero carousel slides
+const heroSlides = [
+  { before: upscalerHeroAntes, after: upscalerHeroDepois },
+  { before: galleryBefore2, after: galleryAfter2 },
+  { before: galleryBefore3, after: galleryAfter3 },
+];
+
 const UpscalerArcanoV3 = () => {
   const [sliderPct, setSliderPct] = useState(50);
   const [autoActive, setAutoActive] = useState(true);
@@ -31,11 +38,20 @@ const UpscalerArcanoV3 = () => {
   const [batchLoaded, setBatchLoaded] = useState<boolean[]>(new Array(10).fill(false));
   const [stickyVisible, setStickyVisible] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
   const autoRef = useRef(true);
   const autoPctRef = useRef(50);
   const autoDirRef = useRef(-1);
+
+  const goToSlide = useCallback((dir: 1 | -1) => {
+    setCurrentSlide(prev => (prev + dir + heroSlides.length) % heroSlides.length);
+    setSliderPct(50);
+    autoPctRef.current = 50;
+    autoRef.current = true;
+    setAutoActive(true);
+  }, []);
 
   // Scroll reveal observer
   useEffect(() => {
