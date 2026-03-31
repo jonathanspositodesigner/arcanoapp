@@ -1088,7 +1088,15 @@ const UpscalerArcanoV3 = () => {
             <div className="v3-feature-cards">
               {/* TURBO */}
               <div className="v3-feature-card turbo v3-reveal">
-                <div className="v3-feature-visual">
+                <div className="v3-feature-visual" style={{ position: "relative" }}>
+                  <img 
+                    src={turboBgImage} 
+                    alt="" 
+                    style={{ 
+                      position: "absolute", inset: 0, width: "100%", height: "100%", 
+                      objectFit: "cover", opacity: 0.2, zIndex: 0, pointerEvents: "none" 
+                    }} 
+                  />
                   <div style={{ textAlign: "center", position: "relative", zIndex: 1 }}>
                     <div className="v3-turbo-ring">
                       <svg viewBox="0 0 168 168"><circle cx="84" cy="84" r="78" /></svg>
@@ -1100,24 +1108,14 @@ const UpscalerArcanoV3 = () => {
                     <div className="v3-turbo-speed">⚡ 10x mais rápido</div>
                   </div>
                 </div>
-                <div className="v3-feature-content" style={{ position: "relative", overflow: "hidden" }}>
-                  <img 
-                    src={turboBgImage} 
-                    alt="" 
-                    style={{ 
-                      position: "absolute", inset: 0, width: "100%", height: "100%", 
-                      objectFit: "cover", opacity: 0.15, zIndex: 0, pointerEvents: "none" 
-                    }} 
-                  />
-                  <div style={{ position: "relative", zIndex: 1 }}>
-                    <div className="v3-feature-label">⚡ Modo Turbo</div>
-                    <div className="v3-feature-title">Resultado em menos de 1 minuto</div>
-                    <div className="v3-feature-desc">Enquanto o cliente ainda está no WhatsApp, a imagem já está pronta. Mesmo motor de IA. Mesma qualidade 4K. Só que agora em tempo recorde.</div>
-                    <div className="v3-feature-pills">
-                      <span className="v3-pill">Velocidade 10x</span>
-                      <span className="v3-pill">4K preservado</span>
-                      <span className="v3-pill">Entregas urgentes</span>
-                    </div>
+                <div className="v3-feature-content">
+                  <div className="v3-feature-label">⚡ Modo Turbo</div>
+                  <div className="v3-feature-title">Resultado em menos de 1 minuto</div>
+                  <div className="v3-feature-desc">Enquanto o cliente ainda está no WhatsApp, a imagem já está pronta. Mesmo motor de IA. Mesma qualidade 4K. Só que agora em tempo recorde.</div>
+                  <div className="v3-feature-pills">
+                    <span className="v3-pill">Velocidade 10x</span>
+                    <span className="v3-pill">4K preservado</span>
+                    <span className="v3-pill">Entregas urgentes</span>
                   </div>
                 </div>
               </div>
