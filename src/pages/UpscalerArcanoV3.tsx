@@ -1192,22 +1192,39 @@ const UpscalerArcanoV3 = () => {
           <button className="v3-topbar-cta" onClick={scrollToPrice}>Ver Planos</button>
         </nav>
 
-        {/* SOCIAL POPUP */}
-        <div className="v3-social-popup">
-          <div className="v3-popup-avatar">M</div>
-          <div>
-            <strong style={{ color: "var(--white)", display: "block", fontSize: 13 }}>Mariana S. acabou de comprar</strong>
-            <span style={{ color: "var(--muted2)", fontSize: 12 }}>há 3 minutos · São Paulo, SP</span>
+        {/* SOCIAL POPUP - Desktop: static, Mobile: cycling */}
+        {isMobile ? (
+          notifData && (
+            <div className={`v3-social-popup ${notifVisible ? 'v3-notif-visible' : 'v3-notif-hidden'}`}>
+              <div className="v3-popup-avatar">{notifData.initial}</div>
+              <div>
+                <strong style={{ color: "var(--white)", display: "block", fontSize: 13 }}>{notifData.name} acabou de comprar</strong>
+                <span style={{ color: "var(--muted2)", fontSize: 12 }}>{notifData.time} · {notifData.city}</span>
+              </div>
+              <div className="v3-popup-dot" />
+            </div>
+          )
+        ) : (
+          <div className="v3-social-popup">
+            <div className="v3-popup-avatar">M</div>
+            <div>
+              <strong style={{ color: "var(--white)", display: "block", fontSize: 13 }}>Mariana S. acabou de comprar</strong>
+              <span style={{ color: "var(--muted2)", fontSize: 12 }}>há 3 minutos · São Paulo, SP</span>
+            </div>
+            <div className="v3-popup-dot" />
           </div>
-          <div className="v3-popup-dot" />
-        </div>
+        )}
 
         {/* STICKY CTA */}
         <div className={`v3-sticky-cta ${stickyVisible ? "visible" : ""}`}>
           <div style={{ fontSize: 14, color: "var(--muted2)" }}>
-            <strong style={{ color: "var(--white)", fontFamily: "'Syne', sans-serif" }}>Upscaler Arcano V3</strong> — R$ 24,90 pra começar
+            <strong style={{ color: "var(--white)", fontFamily: "'Syne', sans-serif" }}>Upscaler Arcano V3</strong>{!isMobile && <> — R$ 24,90 pra começar</>}
           </div>
-          <button className="v3-sticky-btn" onClick={scrollToPrice}>Garantir Acesso →</button>
+          {isMobile ? (
+            <a href="/planos-upscaler-arcano-69" className="v3-sticky-btn" style={{ textDecoration: 'none' }}>Ver Planos →</a>
+          ) : (
+            <button className="v3-sticky-btn" onClick={scrollToPrice}>Garantir Acesso →</button>
+          )}
         </div>
 
         {/* HERO */}
