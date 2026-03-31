@@ -224,7 +224,6 @@ const UpscalerArcanoV3 = () => {
     { before: upscalerAntigaAntes, after: upscalerAntigaDepois, label: "Fotos Antigas", desc: "Memórias restauradas com IA" },
     { before: upscalerFoodAntes, after: upscalerFoodDepois, label: "Fotos de Alimento", desc: "Corrija artefatos, amplie, refine", badge: "V3" },
   ];
-  ];
 
   const painCards = [
     { icon: "📱", title: "Foto de celular pixelada", desc: "Tirou a foto perfeita mas saiu granulada e sem resolução" },
