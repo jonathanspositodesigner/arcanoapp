@@ -1004,7 +1004,7 @@ const UpscalerArcanoV3 = () => {
         }
         .v3-plan-cta.filled:hover { transform: scale(1.03); box-shadow: 0 0 50px rgba(0,212,255,0.5); }
         .v3-plan-divider { height: 1px; background: var(--card-border); margin-bottom: 20px; }
-        .v3-plan-feature { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted2); margin-bottom: 10px; }
+        .v3-plan-feature { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted2); margin-bottom: 10px; justify-content: center; }
         .v3-plan-feature .check { color: var(--green); flex-shrink: 0; }
         .v3-plan-feature .special { color: var(--cyan); }
 
