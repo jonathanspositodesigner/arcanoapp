@@ -1248,18 +1248,19 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
 
-          <div className="v3-testimonials">
-            {testimonials.map((t, i) => (
-              <div key={i} className="v3-testimonial v3-reveal">
-                <div className="v3-stars">★★★★★</div>
-                <div className="v3-testimonial-text">{t.text}</div>
-                <div className="v3-author">
-                  <div className="v3-author-avatar" style={{ background: t.gradient }}>{t.avatar}</div>
-                  <div>
-                    <div className="v3-author-name">{t.name}</div>
-                    <div className="v3-author-role">{t.role}</div>
-                  </div>
-                </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, maxWidth: 1100, margin: "0 auto" }}>
+            {[
+              "/images/depo-v3-1.webp",
+              "/images/depo-v3-7.webp",
+              "/images/depo-v3-3.webp",
+              "/images/depo-v3-4.webp",
+              "/images/depo-v3-5.webp",
+              "/images/depo-v3-2.webp",
+              "/images/depo-v3-6.webp",
+              "/images/depo-v3-8.webp",
+            ].map((src, i) => (
+              <div key={i} className="v3-reveal" style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--card-border)" }}>
+                <img src={src} alt={`Depoimento real ${i + 1}`} loading="lazy" style={{ width: "100%", height: "auto", display: "block" }} />
               </div>
             ))}
           </div>
