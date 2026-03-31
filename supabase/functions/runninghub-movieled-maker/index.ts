@@ -2,21 +2,14 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 /**
- * MOVIELED MAKER - EDGE FUNCTION
+ * MOVIELED MAKER - EDGE FUNCTION v2
  * 
  * Gera movies para telão de LED via RunningHub workflow
  * 
- * Models:
- * - veo3.1: Veo 3.1 (8s, 1080p, 850 créditos)
- * - wan2.2: Wan 2.2 (15s, 720p, 500 créditos)
- * 
- * Inputs:
- * - imageUrl: URL da imagem de referência (do storage ou da biblioteca)
- * - inputText: Nome para substituir no telão
- * - engine: 'veo3.1' | 'wan2.2'
- * 
- * Endpoints:
- * - /run - Inicia processamento
+ * FIXES v2:
+ * 1. Auth via getClaims (local JWT validation, no session roundtrip)
+ * 2. Fallback image URL support (tries primary, then fallback, then image_url from prompt)
+ * 3. Better error messages for image download failures
  */
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -76,15 +69,53 @@ async function fetchWithRetry(
   throw new Error(`${label}: All retries exhausted`);
 }
 
+// ========== DOWNLOAD IMAGE WITH FALLBACK ==========
+
+async function downloadImageWithFallback(
+  primaryUrl: string,
+  fallbackUrl: string | null,
+  label: string
+): Promise<Blob> {
+  const urls = [primaryUrl];
+  if (fallbackUrl && fallbackUrl !== primaryUrl) {
+    urls.push(fallbackUrl);
+  }
+
+  let lastError = '';
+  for (const url of urls) {
+    try {
+      console.log(`[MovieLedMaker] Trying to download ${label} from: ${url.slice(0, 120)}`);
+      const response = await fetchWithRetry(url, { method: 'GET' }, `Download ${label}`);
+      if (response.ok) {
+        const blob = await response.blob();
+        if (blob.size > 0) {
+          console.log(`[MovieLedMaker] Downloaded ${label}: ${blob.size} bytes from ${url.slice(0, 80)}`);
+          return blob;
+        }
+        lastError = `Empty response from ${url.slice(0, 80)}`;
+      } else {
+        lastError = `HTTP ${response.status} from ${url.slice(0, 80)}`;
+        console.warn(`[MovieLedMaker] ${label} download failed: ${lastError}`);
+      }
+    } catch (e: any) {
+      lastError = e.message || 'Unknown download error';
+      console.warn(`[MovieLedMaker] ${label} download exception from ${url.slice(0, 80)}: ${lastError}`);
+    }
+  }
+
+  throw new Error(`All URLs failed for ${label}: ${lastError}`);
+}
+
 // ========== UPLOAD IMAGE TO RUNNINGHUB ==========
 
-async function uploadImageToRunningHub(imageUrl: string, label: string): Promise<string> {
-  // Download image from URL
-  const imgResponse = await fetchWithRetry(imageUrl, { method: 'GET' }, `Download ${label}`);
-  if (!imgResponse.ok) throw new Error(`Failed to download ${label}: HTTP ${imgResponse.status}`);
+async function uploadImageToRunningHub(
+  primaryUrl: string,
+  fallbackUrl: string | null,
+  label: string
+): Promise<string> {
+  const blob = await downloadImageWithFallback(primaryUrl, fallbackUrl, label);
   
-  const blob = await imgResponse.blob();
-  const ext = imageUrl.includes('.webp') ? 'webp' : imageUrl.includes('.png') ? 'png' : 'jpg';
+  const ext = primaryUrl.includes('.webp') ? 'webp' : primaryUrl.includes('.png') ? 'png' : 'jpg';
   const fileName = `movieled_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
   const formData = new FormData();
@@ -202,7 +233,7 @@ serve(async (req) => {
 // ========== /run ==========
 
 async function handleRun(req: Request) {
-  // Auth validation
+  // Auth validation via getClaims (local JWT validation - no session roundtrip)
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) {
     return new Response(JSON.stringify({ error: 'Missing Authorization header', code: 'UNAUTHORIZED' }), {
@@ -210,21 +241,29 @@ async function handleRun(req: Request) {
     });
   }
 
+  const token = authHeader.replace('Bearer ', '');
   const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
   const userClient = createClient(SUPABASE_URL, anonKey, {
     global: { headers: { Authorization: authHeader } },
   });
-  const { data: { user }, error: userError } = await userClient.auth.getUser();
   
-  if (userError || !user) {
+  const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+  if (claimsError || !claimsData?.claims) {
+    console.error('[MovieLedMaker] getClaims failed:', claimsError);
     return new Response(JSON.stringify({ error: 'Unauthorized', code: 'UNAUTHORIZED' }), {
       status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-  const verifiedUserId = user.id;
+  
+  const verifiedUserId = claimsData.claims.sub as string;
+  if (!verifiedUserId) {
+    return new Response(JSON.stringify({ error: 'Invalid token', code: 'UNAUTHORIZED' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
 
   const body = await req.json();
-  const { imageUrl, inputText, engine, referencePromptId } = body;
+  const { imageUrl, fallbackImageUrl, inputText, engine, referencePromptId } = body;
 
   if (!imageUrl || typeof imageUrl !== 'string') {
     return new Response(JSON.stringify({ error: 'Imagem de referência é obrigatória' }), {
@@ -260,6 +299,23 @@ async function handleRun(req: Request) {
     }
   } catch (e) {
     console.error('[MovieLedMaker] Check user active error:', e);
+  }
+
+  // If referencePromptId provided, try to get image_url from admin_prompts as extra fallback
+  let promptFallbackUrl: string | null = fallbackImageUrl || null;
+  if (referencePromptId && !promptFallbackUrl) {
+    try {
+      const { data: prompt } = await supabase
+        .from('admin_prompts')
+        .select('image_url, reference_images')
+        .eq('id', referencePromptId)
+        .maybeSingle();
+      if (prompt) {
+        promptFallbackUrl = prompt.image_url || null;
+      }
+    } catch (e) {
+      console.warn('[MovieLedMaker] Failed to fetch prompt fallback:', e);
+    }
   }
 
   // Create job
@@ -323,11 +379,11 @@ async function handleRun(req: Request) {
   }).eq('id', jobId);
   console.log(`[MovieLedMaker] Job ${jobId} marked as credits_charged=true (cost=${creditCost})`);
 
-  // Upload reference image to RunningHub
+  // Upload reference image to RunningHub (with fallback URL support)
   let rhFileName: string;
   try {
     await logStep(jobId, 'uploading_image');
-    rhFileName = await uploadImageToRunningHub(imageUrl, 'reference_image');
+    rhFileName = await uploadImageToRunningHub(imageUrl, promptFallbackUrl, 'reference_image');
     await logStep(jobId, 'image_uploaded', { rhFileName });
   } catch (error: any) {
     const errorMsg = error.message || 'Image upload failed';
@@ -341,19 +397,23 @@ async function handleRun(req: Request) {
       await logStepFailure(jobId, 'upload_image', errorMsg);
       await supabase.from(TABLE_NAME).update({
         status: 'failed',
-        error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`,
+        error_message: `Erro ao processar imagem. Tente novamente ou escolha outra referência.`,
         credits_refunded: true,
         completed_at: new Date().toISOString()
       }).eq('id', jobId);
     } catch {
       await supabase.from(TABLE_NAME).update({
         status: 'failed',
-        error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`,
+        error_message: `Erro ao processar imagem. Tente novamente.`,
         completed_at: new Date().toISOString()
       }).eq('id', jobId);
     }
     
-    return new Response(JSON.stringify({ error: errorMsg, code: 'IMAGE_TRANSFER_ERROR', refunded: true }), {
+    return new Response(JSON.stringify({ 
+      error: 'Erro ao processar imagem de referência. Tente novamente ou escolha outra.', 
+      code: 'IMAGE_TRANSFER_ERROR', 
+      refunded: true 
+    }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
@@ -364,6 +424,7 @@ async function handleRun(req: Request) {
     inputText: inputText.trim(),
     rhFileName,
     imageUrl,
+    fallbackImageUrl: promptFallbackUrl,
     referencePromptId: referencePromptId || null,
   };
 
