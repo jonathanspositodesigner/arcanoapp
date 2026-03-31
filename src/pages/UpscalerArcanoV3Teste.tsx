@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useMPCheckout } from "@/hooks/useMPCheckout";
-import { ShieldCheck, Rocket, Flame, Crown, Infinity } from "lucide-react";
+import { ShieldCheck, Rocket, Flame, Crown, Infinity, Gift } from "lucide-react";
+import ArcanoClonerAuthModal from "@/components/arcano-cloner/ArcanoClonerAuthModal";
 
 // Image imports for before/after and gallery
 import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
@@ -323,6 +324,30 @@ const UpscalerArcanoV3 = () => {
     autoRef.current = false;
     setAutoActive(false);
   };
+
+  // Trial button state
+  const [showTrialModal, setShowTrialModal] = useState(false);
+  const handleTrialAuthSuccess = () => {
+    setShowTrialModal(false);
+    window.location.href = "https://arcanoapp.voxvisual.com.br/ferramentas-ia-aplicativo";
+  };
+
+  const TrialButton = () => (
+    <>
+      <button
+        onClick={() => setShowTrialModal(true)}
+        style={{ width: "100%", background: "linear-gradient(90deg,#c026d3,#9333ea)", color: "#fff", fontWeight: 700, padding: "16px 24px", borderRadius: 12, fontSize: 16, border: "none", cursor: "pointer" }}
+      >
+        🚀 Testar Upscaler Arcano V3 Grátis
+      </button>
+      <ArcanoClonerAuthModal
+        isOpen={showTrialModal}
+        onClose={() => setShowTrialModal(false)}
+        onAuthSuccess={handleTrialAuthSuccess}
+      />
+    </>
+  );
+
 
   const scrollToPrice = (e?: React.MouseEvent) => {
     e?.preventDefault();
@@ -1698,7 +1723,26 @@ const UpscalerArcanoV3 = () => {
           </div>
         </section>
 
-        {/* GUARANTEE */}
+        {/* TESTE GRÁTIS */}
+        <section style={{ padding: "80px 24px", background: "rgba(0,0,0,0.3)" }}>
+          <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(217,70,239,0.1)", border: "1px solid rgba(217,70,239,0.3)", borderRadius: 9999, padding: "6px 16px", marginBottom: 16 }}>
+              <Gift size={16} style={{ color: "#e879f9" }} />
+              <span style={{ color: "#d8b4fe", fontSize: 12, fontWeight: 500 }}>Teste Grátis</span>
+            </div>
+            <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "clamp(24px,4vw,32px)", fontWeight: 700, color: "#fff", marginBottom: 12, lineHeight: 1.2 }}>
+              Teste o Upscaler Arcano V3{" "}
+              <span style={{ background: "linear-gradient(90deg,#e879f9,#a855f7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                grátis agora mesmo
+              </span>
+            </h2>
+            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, marginBottom: 24 }}>
+              Experimente o Upscaler Arcano V3 e veja o poder da melhoria de imagens com IA
+            </p>
+            <TrialButton />
+          </div>
+        </section>
+
         <section className="v3-guarantee-strip">
           <div className="v3-guarantee-card">
             <div className="v3-guarantee-icon-wrap">
