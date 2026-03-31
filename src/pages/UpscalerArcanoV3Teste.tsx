@@ -1724,20 +1724,17 @@ const UpscalerArcanoV3 = () => {
         </section>
 
         {/* TESTE GRÁTIS */}
-        <section style={{ padding: "80px 24px", background: "rgba(0,0,0,0.3)" }}>
-          <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(217,70,239,0.1)", border: "1px solid rgba(217,70,239,0.3)", borderRadius: 9999, padding: "6px 16px", marginBottom: 16 }}>
-              <Gift size={16} style={{ color: "#e879f9" }} />
-              <span style={{ color: "#d8b4fe", fontSize: 12, fontWeight: 500 }}>Teste Grátis</span>
+        <section style={{ padding: "100px 24px", background: "var(--surface)", borderTop: "1px solid var(--card-border)", borderBottom: "1px solid var(--card-border)" }}>
+          <div style={{ maxWidth: 560, margin: "0 auto", textAlign: "center" }}>
+            <div className="v3-section-tag" style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+              <span style={{ fontSize: 14 }}>🎁</span>
+              <span>Teste Grátis</span>
             </div>
-            <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "clamp(24px,4vw,32px)", fontWeight: 700, color: "#fff", marginBottom: 12, lineHeight: 1.2 }}>
-              Teste o Upscaler Arcano V3{" "}
-              <span style={{ background: "linear-gradient(90deg,#e879f9,#a855f7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                grátis agora mesmo
-              </span>
-            </h2>
-            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, marginBottom: 24 }}>
-              Experimente o Upscaler Arcano V3 e veja o poder da melhoria de imagens com IA
+            <div className="v3-section-title" style={{ marginTop: 12, marginBottom: 12 }}>
+              Teste o Upscaler Arcano V3<br /><span>grátis agora mesmo.</span>
+            </div>
+            <p style={{ fontSize: 16, color: "var(--muted2)", lineHeight: 1.6, marginBottom: 32, maxWidth: 480, margin: "0 auto 32px" }}>
+              Experimente o Upscaler Arcano V3 e veja o poder da melhoria de imagens com IA — sem compromisso.
             </p>
             <TrialButton />
           </div>
