@@ -218,9 +218,9 @@ const MovieLedMakerTool = () => {
     setQueuePosition(0);
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const accessToken = sessionData?.session?.access_token;
-      if (!accessToken) {
+      // Revalidate auth to get fresh token (prevents stale session errors)
+      const { data: { user: verifiedUser }, error: authError } = await supabase.auth.getUser();
+      if (authError || !verifiedUser) {
         toast.error('Sessão expirada. Faça login novamente.');
         setStatus('idle');
         endSubmit();
@@ -239,7 +239,7 @@ const MovieLedMakerTool = () => {
         }
         
         const tempId = crypto.randomUUID();
-        const storagePath = `movieled/${user.id}/${tempId}.jpg`;
+        const storagePath = `movieled/${verifiedUser.id}/${tempId}.jpg`;
         
         const { error: uploadError } = await supabase.storage
           .from('artes-cloudinary')
@@ -256,32 +256,34 @@ const MovieLedMakerTool = () => {
 
       setStatus('processing');
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-movieled-maker/run`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify({
-          imageUrl: imageUrlForBackend,
-          inputText: inputText.trim(),
-          engine: selectedEngine,
-          referencePromptId: selectedLibraryItem?.id || null,
-        }),
-      });
+      // Send fallback URLs for library items (reference_images[0] + image_url)
+      const fallbackImageUrl = selectedLibraryItem?.image_url || null;
 
-      const data = await response.json();
+      const { data, error: invokeError } = await supabase.functions.invoke(
+        'runninghub-movieled-maker/run',
+        {
+          body: {
+            imageUrl: imageUrlForBackend,
+            fallbackImageUrl,
+            inputText: inputText.trim(),
+            engine: selectedEngine,
+            referencePromptId: selectedLibraryItem?.id || null,
+          },
+        }
+      );
 
-      if (!response.ok) {
-        if (data.code === 'INSUFFICIENT_CREDITS') {
+      if (invokeError) {
+        // supabase.functions.invoke wraps non-2xx as FunctionsHttpError
+        const errorData = data || {};
+        if (errorData.code === 'INSUFFICIENT_CREDITS') {
           setNoCreditsReason('insufficient');
           setShowNoCreditsModal(true);
-        } else if (data.code === 'USER_HAS_ACTIVE_JOB') {
-          toast.error(data.error);
+        } else if (errorData.code === 'USER_HAS_ACTIVE_JOB') {
+          toast.error(errorData.error || 'Você já tem um processamento ativo.');
         } else {
-          toast.error(data.error || 'Erro ao iniciar geração');
-          setErrorMessage(data.error || 'Erro ao iniciar geração');
+          const msg = errorData.error || invokeError.message || 'Erro ao iniciar geração';
+          toast.error(msg);
+          setErrorMessage(msg);
         }
         setStatus('idle');
         endSubmit();
