@@ -872,6 +872,7 @@ const UpscalerArcanoV3 = () => {
         }
         @media (max-width: 600px) {
           .v3-feature-cards, .v3-audience-grid, .v3-testimonials, .v3-pricing-grid, .v3-gallery-grid { grid-template-columns: 1fr; }
+          .v3-pain-grid { grid-template-columns: 1fr; }
           .v3-topbar { gap: 14px; padding: 10px 16px; }
           .v3-stats-row { gap: 24px; }
           .v3-plan.featured { transform: none; }
