@@ -114,13 +114,13 @@ const RealResultCard = ({ item }: { item: { before: string; after: string; name:
       >
         <img src={item.before} alt="Antes" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
         <div style={{ position: "absolute", inset: 0, clipPath: `inset(0 ${100 - pct}% 0 0)` }}>
-          <img src={item.after} alt="Depois" style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+          <img src={item.after} alt="Después" style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
         </div>
         <div className="v3-real-handle-line" style={{ left: `${pct}%` }}>
           <div className="v3-real-handle-knob">⟺</div>
         </div>
         <div className="v3-real-label" style={{ left: 8 }}>ANTES</div>
-        <div className="v3-real-label" style={{ right: 8 }}>DEPOIS</div>
+        <div className="v3-real-label" style={{ right: 8 }}>DESPUÉS</div>
       </div>
       <div className="v3-real-card-info">
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
