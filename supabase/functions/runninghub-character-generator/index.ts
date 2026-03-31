@@ -228,7 +228,24 @@ async function checkRateLimit(
 
 async function downloadAndUploadToRH(imageUrl: string, label: string, jobId: string, apiKey: string): Promise<string> {
   await logStep(jobId, `downloading_${label}_image`);
-  const imgResponse = await fetch(imageUrl);
+  
+  // Download with 30s timeout via AbortController
+  const downloadController = new AbortController();
+  const downloadTimeout = setTimeout(() => downloadController.abort(), 30000);
+  
+  let imgResponse: Response;
+  try {
+    imgResponse = await fetch(imageUrl, { signal: downloadController.signal });
+  } catch (err: unknown) {
+    clearTimeout(downloadTimeout);
+    const errMsg = err instanceof Error ? err.message : String(err);
+    if (errMsg.includes('abort')) {
+      throw new Error(`Download ${label} image timed out (30s)`);
+    }
+    throw new Error(`Failed to download ${label} image: ${errMsg}`);
+  }
+  clearTimeout(downloadTimeout);
+  
   if (!imgResponse.ok) throw new Error(`Failed to download ${label} image (${imgResponse.status})`);
   
   const imgBlob = await imgResponse.blob();
