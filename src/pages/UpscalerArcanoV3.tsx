@@ -79,6 +79,61 @@ const GalleryBeforeAfter = ({ item }: { item: { before: string; after: string; l
   );
 };
 
+// Real result card with before/after slider + testimonial
+const RealResultCard = ({ item }: { item: { before: string; after: string; name: string; handle: string; text: string; avatar: string } }) => {
+  const [pct, setPct] = useState(50);
+  const ref = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+
+  const update = useCallback((clientX: number) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    setPct(Math.min(Math.max(((clientX - rect.left) / rect.width) * 100, 5), 95));
+  }, []);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => { if (dragging.current) update(e.clientX); };
+    const onTouchMove = (e: TouchEvent) => { if (dragging.current) update(e.touches[0].clientX); };
+    const onUp = () => { dragging.current = false; };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onUp);
+    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); window.removeEventListener("touchmove", onTouchMove); window.removeEventListener("touchend", onUp); };
+  }, [update]);
+
+  return (
+    <div className="v3-real-card v3-reveal">
+      <div
+        ref={ref}
+        className="v3-real-card-slider"
+        onMouseDown={(e) => { dragging.current = true; update(e.clientX); }}
+        onTouchStart={(e) => { dragging.current = true; update(e.touches[0].clientX); }}
+      >
+        <img src={item.before} alt="Antes" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+        <div style={{ position: "absolute", inset: 0, clipPath: `inset(0 ${100 - pct}% 0 0)` }}>
+          <img src={item.after} alt="Depois" style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+        </div>
+        <div className="v3-real-handle-line" style={{ left: `${pct}%` }}>
+          <div className="v3-real-handle-knob">⟺</div>
+        </div>
+        <div className="v3-real-label" style={{ left: 8 }}>ANTES</div>
+        <div className="v3-real-label" style={{ right: 8 }}>DEPOIS</div>
+      </div>
+      <div className="v3-real-card-info">
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <img src={item.avatar} alt={item.name} className="v3-real-card-avatar" loading="lazy" />
+          <div>
+            <div className="v3-real-card-name">{item.name}</div>
+            <div className="v3-real-card-handle">{item.handle}</div>
+          </div>
+        </div>
+        <p className="v3-real-card-text">"{item.text}"</p>
+      </div>
+    </div>
+  );
+};
+
 // Hero carousel slides
 const heroSlides = [
   { before: upscalerHeroAntes, after: upscalerHeroDepois },
