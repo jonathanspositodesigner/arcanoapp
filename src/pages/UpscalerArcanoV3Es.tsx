@@ -1719,10 +1719,10 @@ const UpscalerArcanoV3 = () => {
         <section className="v3-real-results">
           <div className="v3-real-results-inner">
             <div style={{ textAlign: "center", marginBottom: 60 }}>
-              <div className="v3-section-tag" style={{ display: "inline-block" }}>Resultados Reais</div>
-              <div className="v3-section-title" style={{ marginTop: 12 }}>Veja o que nossos usuários<br /><span>estão alcançando.</span></div>
+              <div className="v3-section-tag" style={{ display: "inline-block" }}>Resultados Reales</div>
+              <div className="v3-section-title" style={{ marginTop: 12 }}>Mirá lo que nuestros usuarios<br /><span>están logrando.</span></div>
               <p style={{ fontSize: 16, color: "var(--muted2)", marginTop: 12, maxWidth: 600, margin: "12px auto 0" }}>
-                Antes e depois reais enviados por profissionais que usam o Upscaler Arcano no dia a dia.
+                Antes y después reales enviados por profesionales que usan el Upscaler Arcano todos los días.
               </p>
             </div>
 
