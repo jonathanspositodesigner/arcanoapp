@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useMPCheckout } from "@/hooks/useMPCheckout";
-import { ShieldCheck, Rocket, Flame, Crown, Infinity } from "lucide-react";
+import { ShieldCheck, Rocket, Flame, Crown, Infinity, Gift } from "lucide-react";
+import ArcanoClonerAuthModal from "@/components/arcano-cloner/ArcanoClonerAuthModal";
 
 // Image imports for before/after and gallery
 import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
