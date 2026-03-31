@@ -1267,7 +1267,7 @@ const UpscalerArcanoV3 = () => {
           <div className={`v3-social-popup ${notifVisible ? 'v3-notif-visible' : 'v3-notif-hidden'}`}>
             <div className="v3-popup-avatar">{notifData.initial}</div>
             <div>
-              <strong style={{ color: "#fff", display: "block", fontSize: 13 }}>{notifData.name} acabou de comprar</strong>
+              <strong style={{ color: "#fff", display: "block", fontSize: 13 }}>{notifData.name} acaba de comprar</strong>
               <span style={{ color: "var(--muted2)", fontSize: 12 }}>{notifData.time} · {notifData.city}</span>
             </div>
             <div className="v3-popup-dot" />
