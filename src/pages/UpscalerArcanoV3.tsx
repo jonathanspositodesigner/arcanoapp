@@ -1686,10 +1686,13 @@ const UpscalerArcanoV3 = () => {
         {/* GUARANTEE */}
         <section className="v3-guarantee-strip">
           <div className="v3-guarantee-card">
-            <div className="v3-guarantee-icon">🛡️</div>
+            <div className="v3-guarantee-icon-wrap">
+              <ShieldCheck size={32} strokeWidth={1.8} />
+            </div>
             <div>
               <div className="v3-guarantee-title">Garantia de 7 dias</div>
               <div className="v3-guarantee-text">Se não gostar do resultado, devolvemos 100% do seu dinheiro. Sem perguntas, sem burocracia. É confiança total no que entregamos.</div>
+              <span className="v3-guarantee-badge">✓ RISCO ZERO</span>
             </div>
           </div>
         </section>
