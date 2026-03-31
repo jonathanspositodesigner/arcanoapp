@@ -1606,6 +1606,9 @@ const UpscalerArcanoV3 = () => {
 
               {/* PRO */}
               <div className="v3-plan v3-reveal">
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                  <Flame size={32} style={{ color: "#d946ef" }} />
+                </div>
                 <div className="v3-plan-name">Pro</div>
                 <div className="v3-plan-tagline">3x mais por R$12 a mais</div>
                 <div className="v3-plan-price">
