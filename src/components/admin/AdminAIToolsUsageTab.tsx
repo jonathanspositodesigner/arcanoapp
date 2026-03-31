@@ -244,7 +244,9 @@ const AdminAIToolsUsageTab = () => {
     try {
       const tableName = getTableName(record.tool_name);
       const inputCol = getInputColumn(record.tool_name);
-      const selectFields = inputCol ? `output_url, ${inputCol}` : 'output_url';
+      const isImageGen = tableName === 'image_generator_jobs';
+      let selectFields = inputCol ? `output_url, ${inputCol}` : 'output_url';
+      if (isImageGen) selectFields += ', prompt, input_urls';
 
       const { data, error } = await supabase
         .from(tableName as any)
@@ -259,6 +261,11 @@ const AdminAIToolsUsageTab = () => {
 
       setJobOutputUrl(outputUrl);
       setJobInputUrl(inputUrl);
+      if (isImageGen) {
+        setJobPrompt((data as any)?.prompt || null);
+        const urls = (data as any)?.input_urls;
+        setJobInputImages(Array.isArray(urls) ? urls.filter((u: any) => typeof u === 'string') : []);
+      }
     } catch (err) {
       console.error("Error fetching output_url:", err);
       setJobOutputUrl(null);
