@@ -344,18 +344,18 @@ const UpscalerArcanoV3 = () => {
   // Cycling social proof notifications (both mobile and desktop)
   useEffect(() => {
     const people = [
-      { name: "Mariana S.", initial: "M", city: "São Paulo, SP" },
-      { name: "Carlos R.", initial: "C", city: "Belo Horizonte, MG" },
-      { name: "Rafael T.", initial: "R", city: "Rio de Janeiro, RJ" },
-      { name: "Ana Luiza F.", initial: "A", city: "Curitiba, PR" },
-      { name: "Wellington P.", initial: "W", city: "Recife, PE" },
-      { name: "Juliana M.", initial: "J", city: "Porto Alegre, RS" },
-      { name: "Rodrigo L.", initial: "R", city: "Florianópolis, SC" },
-      { name: "Clara V.", initial: "C", city: "Brasília, DF" },
-      { name: "Fernando A.", initial: "F", city: "Salvador, BA" },
-      { name: "Patrícia N.", initial: "P", city: "Fortaleza, CE" },
+      { name: "Valentina R.", initial: "V", city: "Buenos Aires, Argentina" },
+      { name: "Santiago M.", initial: "S", city: "Ciudad de México, México" },
+      { name: "Camila L.", initial: "C", city: "Bogotá, Colombia" },
+      { name: "Mateo G.", initial: "M", city: "Lima, Perú" },
+      { name: "Isabella P.", initial: "I", city: "Santiago, Chile" },
+      { name: "Sebastián A.", initial: "S", city: "Medellín, Colombia" },
+      { name: "Luciana F.", initial: "L", city: "Montevideo, Uruguay" },
+      { name: "Andrés V.", initial: "A", city: "Quito, Ecuador" },
+      { name: "Daniela C.", initial: "D", city: "Guadalajara, México" },
+      { name: "Nicolás T.", initial: "N", city: "Córdoba, Argentina" },
     ];
-    const times = ["há poucos segundos", "há 1 minuto", "há 2 minutos", "há 3 minutos", "há 5 minutos"];
+    const times = ["hace unos segundos", "hace 1 minuto", "hace 2 minutos", "hace 3 minutos", "hace 5 minutos"];
     let idx = Math.floor(Math.random() * people.length);
     let intervalId: ReturnType<typeof setTimeout>;
     const show = () => {
@@ -374,30 +374,30 @@ const UpscalerArcanoV3 = () => {
   const batchEmojis = ["🏔️", "🎸", "👗", "🍕", "🏠", "💍", "🚗", "🌺", "📱", "🎨"];
 
   const galleryItems = [
-    { before: upscalerFotoAntes, after: upscalerFotoDepois, label: "Fotos de Ensaio", desc: "Recupere grain, ruído e baixa luz", badge: "Popular" },
-    { before: render3dAntes, after: render3dDepois, label: "Renders 3D", desc: "Upscale sem perder geometria" },
-    { before: upscalerProdutoAntes, after: upscalerProdutoDepois, label: "Fotos de Produto", desc: "Catálogos e e-commerce em 4K" },
-    { before: upscalerLogoAntes, after: upscalerLogoDepois, label: "Logos e Artes", desc: "Vetores e brandmarks ampliados" },
-    { before: upscalerAntigaAntes, after: upscalerAntigaDepois, label: "Fotos Antigas", desc: "Memórias restauradas com IA" },
-    { before: upscalerFoodAntes, after: upscalerFoodDepois, label: "Fotos de Alimento", desc: "Corrija artefatos, amplie, refine", badge: "V3" },
+    { before: upscalerFotoAntes, after: upscalerFotoDepois, label: "Fotos de Sesión", desc: "Recuperá grano, ruido y baja luz", badge: "Popular" },
+    { before: render3dAntes, after: render3dDepois, label: "Renders 3D", desc: "Upscale sin perder geometría" },
+    { before: upscalerProdutoAntes, after: upscalerProdutoDepois, label: "Fotos de Producto", desc: "Catálogos y e-commerce en 4K" },
+    { before: upscalerLogoAntes, after: upscalerLogoDepois, label: "Logos y Artes", desc: "Vectores y marcas ampliados" },
+    { before: upscalerAntigaAntes, after: upscalerAntigaDepois, label: "Fotos Antiguas", desc: "Recuerdos restaurados con IA" },
+    { before: upscalerFoodAntes, after: upscalerFoodDepois, label: "Fotos de Comida", desc: "Corregí artefactos, ampliá, refiná", badge: "V3" },
   ];
 
   const painCards = [
-    { icon: "📱", title: "Foto de celular pixelada", desc: "Tirou a foto perfeita mas saiu granulada e sem resolução" },
-    { icon: "😤", title: "Cliente mandou foto horrível", desc: "Baixa qualidade, você não pode usar e o prazo tá apertado" },
-    { icon: "📷", title: "Ensaio que ficou granulado", desc: "Luz baixa arruinou sua melhor sessão fotográfica" },
-    { icon: "🤖", title: "Imagem de IA que não prestou", desc: "Gerou com IA mas saiu com artefatos e baixa definição" },
-    { icon: "💸", title: "Perdeu contrato por imagem ruim", desc: "Cliente foi embora porque você não tinha fotos profissionais" },
-    { icon: "🖨️", title: "Artes que ficam ruins na impressão", desc: "Looks bom na tela, pixelado no impresso. Constrangimento total" },
+    { icon: "📱", title: "Foto del celular pixelada", desc: "Sacaste la foto perfecta pero salió granulada y sin resolución" },
+    { icon: "😤", title: "El cliente mandó una foto horrible", desc: "Baja calidad, no la podés usar y la fecha de entrega ya está encima" },
+    { icon: "📷", title: "Sesión que salió granulada", desc: "La poca luz arruinó tu mejor sesión fotográfica" },
+    { icon: "🤖", title: "Imagen de IA que no sirvió", desc: "La generaste con IA pero salió con artefactos y baja definición" },
+    { icon: "💸", title: "Perdiste un trabajo por una imagen mala", desc: "El cliente se fue porque no tenías fotos profesionales" },
+    { icon: "🖨️", title: "Artes que se ven mal impresas", desc: "Se ve bien en la pantalla, pixelado en la impresión. Vergüenza total" },
   ];
 
   const audienceCards = [
-    { emoji: "📸", role: "Fotógrafos", desc: "Entregue fotos impecáveis mesmo quando as condições de iluminação não cooperaram." },
-    { emoji: "🎨", role: "Designers Gráficos", desc: "Receba foto ruim do cliente. Entregue design que impressiona. O Arcano cobre o gap." },
-    { emoji: "📲", role: "Social Media", desc: "Conteúdo visual de alta qualidade que para o scroll e gera engajamento real." },
-    { emoji: "🎸", role: "Músicos e Artistas", desc: "Fotos profissionais para contratantes, releases e capa de EP. Sem pagar fotógrafo." },
-    { emoji: "💻", role: "Infoprodutores", desc: "Landing pages e campanhas com imagens de alto impacto que convertem mais." },
-    { emoji: "✦", role: "Qualquer pessoa", desc: "Foto ruim de viagem, memória familiar, imagem importante. O Arcano resolve." },
+    { emoji: "📸", role: "Fotógrafos", desc: "Entregá fotos impecables incluso cuando las condiciones de luz no ayudaron." },
+    { emoji: "🎨", role: "Diseñadores Gráficos", desc: "Recibí una foto mala del cliente. Entregá un diseño que impresione. Arcano cubre la diferencia." },
+    { emoji: "📲", role: "Social Media", desc: "Contenido visual de alta calidad que frena el scroll y genera engagement real." },
+    { emoji: "🎸", role: "Músicos y Artistas", desc: "Fotos profesionales para contratantes, releases y portadas. Sin pagar fotógrafo." },
+    { emoji: "💻", role: "Infoproductores", desc: "Landing pages y campañas con imágenes de alto impacto que convierten más." },
+    { emoji: "✦", role: "Cualquier persona", desc: "Foto mala de viaje, recuerdo familiar, imagen importante. Arcano lo resuelve." },
   ];
 
   const testimonials = [
