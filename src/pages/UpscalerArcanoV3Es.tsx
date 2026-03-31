@@ -1409,14 +1409,14 @@ const UpscalerArcanoV3 = () => {
         {/* HOW IT WORKS */}
         <section style={{ padding: "100px 24px" }}>
           <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-            <div className="v3-section-tag">Como funciona</div>
-            <div className="v3-section-title">3 passos.<br /><span>Resultado profissional.</span></div>
+            <div className="v3-section-tag">Cómo funciona</div>
+            <div className="v3-section-title">3 pasos.<br /><span>Resultado profesional.</span></div>
             <div className="v3-steps">
               <div className="v3-step v3-reveal">
                 <div className="v3-step-num">1</div>
                 <div className="v3-step-icon-area">
                   <div className="v3-upload-anim">
-                    <div className="v3-upload-box">📤 &nbsp;Solte sua imagem aqui</div>
+                    <div className="v3-upload-box">📤 &nbsp;Soltá tu imagen acá</div>
                     <div className="v3-upload-files">
                       <div className="v3-upload-file">foto.jpg</div>
                       <div className="v3-upload-file">logo.png</div>
@@ -1424,8 +1424,8 @@ const UpscalerArcanoV3 = () => {
                     </div>
                   </div>
                 </div>
-                <div className="v3-step-title">Faça upload</div>
-                <div className="v3-step-desc">Qualquer formato. Qualquer resolução. Até 10 imagens de uma vez no V3.</div>
+                <div className="v3-step-title">Subí tu imagen</div>
+                <div className="v3-step-desc">Cualquier formato. Cualquier resolución. Hasta 10 imágenes a la vez en V3.</div>
               </div>
               <div className="v3-step v3-reveal">
                 <div className="v3-step-num">2</div>
@@ -1433,23 +1433,23 @@ const UpscalerArcanoV3 = () => {
                   <div className="v3-process-anim">
                     <div className="v3-process-ring" />
                     <div className="v3-process-bar-wrap"><div className="v3-process-bar" /></div>
-                    <div className="v3-process-label">IA PROCESSANDO...</div>
+                    <div className="v3-process-label">IA PROCESANDO...</div>
                   </div>
                 </div>
-                <div className="v3-step-title">A IA trabalha</div>
-                <div className="v3-step-desc">Motor exclusivo de IA analisa, amplia e refina cada detalhe da imagem.</div>
+                <div className="v3-step-title">La IA trabaja</div>
+                <div className="v3-step-desc">Motor exclusivo de IA analiza, amplía y refina cada detalle de la imagen.</div>
               </div>
               <div className="v3-step v3-reveal">
                 <div className="v3-step-num">3</div>
                 <div className="v3-step-icon-area">
                   <div className="v3-download-anim">
                     <div className="v3-download-check">✓</div>
-                    <div className="v3-download-label">PRONTO EM 60s</div>
-                    <div className="v3-download-quality">Qualidade <span>4K</span></div>
+                    <div className="v3-download-label">LISTO EN 60s</div>
+                    <div className="v3-download-quality">Calidad <span>4K</span></div>
                   </div>
                 </div>
-                <div className="v3-step-title">Baixe em 4K</div>
-                <div className="v3-step-desc">Sua imagem transformada. Individual ou em lote. Download imediato.</div>
+                <div className="v3-step-title">Descargá en 4K</div>
+                <div className="v3-step-desc">Tu imagen transformada. Individual o en lote. Descarga inmediata.</div>
               </div>
             </div>
           </div>
