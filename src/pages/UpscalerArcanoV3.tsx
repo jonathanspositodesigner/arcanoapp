@@ -1668,7 +1668,7 @@ const UpscalerArcanoV3 = () => {
                   <span className="cents">,90</span>
                   <span className="period">paga uma vez · usa para sempre</span>
                 </div>
-                <a href="#" className="v3-plan-cta filled v3-plan-cta-gold">Garantir Vitalício →</a>
+                <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => openCheckout("upscaler-arcano-v3")}>Garantir Vitalício →</button>
                 <div className="v3-plan-divider" />
                 <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Acesso vitalício completo</strong></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> Todas as ferramentas</div>
