@@ -355,7 +355,7 @@ const UpscalerArcanoV3 = () => {
         .v3-sticky-cta.visible { transform: translateY(0); }
         .v3-sticky-btn {
           background: linear-gradient(135deg, var(--cyan), #0099CC);
-          color: #000; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;
+          color: #000; font-family: 'Syne', sans-serif; font-weight: 700;
           font-size: 14px; padding: 12px 28px; border-radius: 100px;
           text-decoration: none; white-space: nowrap; cursor: pointer; border: none;
         }
