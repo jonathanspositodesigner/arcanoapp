@@ -1364,7 +1364,7 @@ const UpscalerArcanoV3 = () => {
               <button
                 onClick={() => goToSlide(1)}
                 className="v3-carousel-arrow v3-carousel-arrow-right"
-                aria-label="Próximo"
+                aria-label="Siguiente"
               >›</button>
             </div>
             {/* Carousel dots */}
