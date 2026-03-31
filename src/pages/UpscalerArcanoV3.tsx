@@ -1484,22 +1484,6 @@ const UpscalerArcanoV3 = () => {
           </div>
         </section>
 
-        {/* AUDIENCE */}
-        <section className="v3-audience">
-          <div className="v3-audience-inner">
-            <div className="v3-section-tag">Para quem é</div>
-            <div className="v3-section-title" style={{ marginBottom: 48 }}>Se você faz dinheiro com imagens,<br /><span>o Upscaler Arcano é pra você!</span></div>
-            <div className="v3-audience-grid">
-              {audienceCards.map((card, i) => (
-                <div key={i} className="v3-audience-card v3-reveal">
-                  <span className="v3-audience-emoji">{card.emoji}</span>
-                  <div className="v3-audience-role">{card.role}</div>
-                  <div className="v3-audience-desc">{card.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* SOCIAL PROOF */}
         <section className="v3-proof">
