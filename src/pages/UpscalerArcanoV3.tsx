@@ -829,7 +829,7 @@ const UpscalerArcanoV3 = () => {
         .v3-gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
         .v3-gallery-item {
           border-radius: 20px; overflow: hidden; border: 1px solid var(--card-border);
-          background: var(--surface2); aspect-ratio: 4/3; position: relative; cursor: pointer;
+          background: var(--surface2); aspect-ratio: 3/5; position: relative; cursor: pointer;
           opacity: 0; transform: scale(0.95);
           transition: opacity 0.5s ease, transform 0.5s ease;
         }
