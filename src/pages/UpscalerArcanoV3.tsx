@@ -989,12 +989,20 @@ const UpscalerArcanoV3 = () => {
         /* GUARANTEE */
         .v3-guarantee-strip { padding: 48px 24px; max-width: 1100px; margin: 0 auto; }
         .v3-guarantee-card {
-          background: var(--surface2); border: 1px solid var(--card-border); border-radius: 24px;
+          background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.02) 100%);
+          border: 1px solid rgba(16,185,129,0.2); border-radius: 24px;
           padding: 40px 48px; display: flex; align-items: center; gap: 32px;
         }
-        .v3-guarantee-icon { font-size: 56px; flex-shrink: 0; }
-        .v3-guarantee-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+        .v3-guarantee-icon-wrap {
+          flex-shrink: 0; width: 72px; height: 72px; border-radius: 20px;
+          background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05));
+          border: 1px solid rgba(16,185,129,0.25);
+          display: flex; align-items: center; justify-content: center;
+        }
+        .v3-guarantee-icon-wrap svg { color: #10b981; }
+        .v3-guarantee-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 8px; color: #fff; }
         .v3-guarantee-text { font-size: 15px; color: var(--muted2); line-height: 1.6; max-width: 560px; }
+        .v3-guarantee-badge { display: inline-block; margin-top: 12px; padding: 4px 14px; border-radius: 999px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); color: #10b981; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
 
         /* FAQ */
         .v3-faq {
