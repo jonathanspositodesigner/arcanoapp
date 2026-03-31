@@ -1284,8 +1284,12 @@ const UpscalerArcanoV3 = () => {
           </div>
           <h1>Foto ruim é<br /><em>problema do passado.</em></h1>
           <p className="v3-hero-sub">
-            O Upscaler Arcano transforma qualquer imagem em qualidade 4K com IA.<br />
-            Rápido. Simples. Resultado profissional em 60 segundos.
+            {isMobile ? (
+              <>Rápido. Simples. Resultado profissional em 60 segundos.</>
+            ) : (
+              <>O Upscaler Arcano transforma qualquer imagem em qualidade 4K com IA.<br />
+              Rápido. Simples. Resultado profissional em 60 segundos.</>
+            )}
           </p>
 
           <div className="v3-stats-row">
