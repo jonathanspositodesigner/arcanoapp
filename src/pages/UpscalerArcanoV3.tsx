@@ -925,31 +925,64 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
 
-          {/* BEFORE/AFTER SLIDER */}
+          {/* BEFORE/AFTER SLIDER CAROUSEL */}
           <div className="v3-slider-wrapper">
             <div className="v3-slider-label">
               <span style={{ color: "var(--red)" }}>← Antes: baixa qualidade</span>
               <span style={{ color: "var(--cyan)" }}>Depois: 4K nítido →</span>
             </div>
-            <div
-              className="v3-before-after"
-              ref={sliderRef}
-              onMouseDown={(e) => { draggingRef.current = true; stopAuto(); updateSlider(e.clientX); }}
-              onTouchStart={(e) => { draggingRef.current = true; stopAuto(); updateSlider(e.touches[0].clientX); }}
-            >
-              {/* Before layer - full */}
-              <div className="v3-ba-layer">
-                <img src={upscalerHeroAntes} alt="Antes - baixa qualidade" />
+            <div style={{ position: "relative" }}>
+              <div
+                className="v3-before-after"
+                ref={sliderRef}
+                onMouseDown={(e) => { draggingRef.current = true; stopAuto(); updateSlider(e.clientX); }}
+                onTouchStart={(e) => { draggingRef.current = true; stopAuto(); updateSlider(e.touches[0].clientX); }}
+              >
+                {/* Before layer - full */}
+                <div className="v3-ba-layer">
+                  <img src={heroSlides[currentSlide].before} alt="Antes - baixa qualidade" />
+                </div>
+                {/* After layer - clipped */}
+                <div className="v3-ba-layer" style={{ clipPath: `inset(0 ${100 - sliderPct}% 0 0)` }}>
+                  <img src={heroSlides[currentSlide].after} alt="Depois - qualidade 4K" />
+                </div>
+                {/* Handle */}
+                <div className="v3-drag-handle" style={{ left: `${sliderPct}%` }}>
+                  <div className="v3-drag-circle">⟺</div>
+                </div>
+                <div className="v3-drag-hint">⟺ Arraste para comparar</div>
               </div>
-              {/* After layer - clipped */}
-              <div className="v3-ba-layer" style={{ clipPath: `inset(0 ${100 - sliderPct}% 0 0)` }}>
-                <img src={upscalerHeroDepois} alt="Depois - qualidade 4K" />
-              </div>
-              {/* Handle */}
-              <div className="v3-drag-handle" style={{ left: `${sliderPct}%` }}>
-                <div className="v3-drag-circle">⟺</div>
-              </div>
-              <div className="v3-drag-hint">⟺ Arraste para comparar</div>
+              {/* Carousel arrows */}
+              <button
+                onClick={() => goToSlide(-1)}
+                className="v3-carousel-arrow v3-carousel-arrow-left"
+                aria-label="Anterior"
+              >‹</button>
+              <button
+                onClick={() => goToSlide(1)}
+                className="v3-carousel-arrow v3-carousel-arrow-right"
+                aria-label="Próximo"
+              >›</button>
+            </div>
+            {/* Carousel dots */}
+            <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 16 }}>
+              {heroSlides.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setCurrentSlide(i); setSliderPct(50); autoPctRef.current = 50; }}
+                  style={{
+                    width: i === currentSlide ? 24 : 8,
+                    height: 8,
+                    borderRadius: 100,
+                    border: "none",
+                    background: i === currentSlide ? "var(--cyan)" : "rgba(255,255,255,0.2)",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                  }}
+                  aria-label={`Slide ${i + 1}`}
+                />
+              ))}
+            </div>
             </div>
           </div>
         </section>
