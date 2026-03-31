@@ -216,25 +216,50 @@ const GeradorPersonagemTool: React.FC = () => {
     return () => clearInterval(interval);
   }, [status]);
 
-  const uploadToStorage = async (file: File | Blob, prefix: string, attempt = 1): Promise<string> => {
+  const isAuthOrRlsError = (error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error ?? '');
+    const normalizedMessage = message.toLowerCase();
+    const statusCode = typeof error === 'object' && error !== null && 'statusCode' in error
+      ? Number((error as { statusCode?: number }).statusCode)
+      : undefined;
+
+    return statusCode === 401 || statusCode === 403 ||
+      normalizedMessage.includes('401') ||
+      normalizedMessage.includes('403') ||
+      normalizedMessage.includes('unauthorized') ||
+      normalizedMessage.includes('security') ||
+      normalizedMessage.includes('row-level security') ||
+      normalizedMessage.includes('security policy') ||
+      normalizedMessage.includes('permission denied');
+  };
+
+  const uploadToStorage = async (file: File | Blob, prefix: string, verifiedUserId: string, attempt = 1): Promise<string> => {
     const MAX_RETRIES = 3;
     const BACKOFF = [1000, 3000, 5000];
 
-    if (!user?.id) throw new Error('User not authenticated');
     const timestamp = Date.now();
     const fileName = `${prefix}-${timestamp}.jpg`;
-    const filePath = `character-generator/${user.id}/${fileName}`;
+    const filePath = `character-generator/${verifiedUserId}/${fileName}`;
 
     try {
       const { error } = await supabase.storage.from('artes-cloudinary').upload(filePath, file, { contentType: 'image/jpeg', upsert: true });
       if (error) {
-        // On auth/permission errors, try refreshing session once
-        if (attempt === 1 && (error.message?.includes('401') || error.message?.includes('403') || error.message?.includes('Unauthorized') || error.message?.includes('security'))) {
-          console.warn(`[CharGen Upload] Auth error on attempt ${attempt}, refreshing session...`);
+        if (attempt === 1 && isAuthOrRlsError(error)) {
+          console.warn(`[CharGen Upload] Auth/RLS error on attempt ${attempt}, refreshing session...`);
           await supabase.auth.refreshSession();
+
+          const { error: retryError } = await supabase.storage
+            .from('artes-cloudinary')
+            .upload(filePath, file, { contentType: 'image/jpeg', upsert: true });
+
+          if (retryError) {
+            throw retryError;
+          }
+        } else {
+          throw error;
         }
-        throw error;
       }
+
       const { data: urlData } = supabase.storage.from('artes-cloudinary').getPublicUrl(filePath);
       return urlData.publicUrl;
     } catch (err: any) {
@@ -242,7 +267,7 @@ const GeradorPersonagemTool: React.FC = () => {
         const delay = BACKOFF[attempt - 1] || 3000;
         console.warn(`[CharGen Upload] Retry ${attempt}/${MAX_RETRIES} for ${prefix} in ${delay}ms:`, err.message);
         await new Promise(r => setTimeout(r, delay));
-        return uploadToStorage(file, prefix, attempt + 1);
+        return uploadToStorage(file, prefix, verifiedUserId, attempt + 1);
       }
       throw new Error(`Upload falhou após ${MAX_RETRIES} tentativas (${prefix}): ${err.message}`);
     }
@@ -291,11 +316,15 @@ const GeradorPersonagemTool: React.FC = () => {
       // Revalidate session before uploads
       setProgress(5);
       setCurrentStep('validating_session');
+      let verifiedUserId = user.id;
       const { data: { user: freshUser }, error: sessionError } = await supabase.auth.getUser();
+
       if (sessionError || !freshUser) {
-        // Try refreshing session
-        const { error: refreshError } = await supabase.auth.refreshSession();
-        if (refreshError) throw new Error('Sessão expirada. Faça login novamente.');
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+        verifiedUserId = refreshData.session?.user?.id || '';
+        if (refreshError || !verifiedUserId) throw new Error('Sessão expirada. Faça login novamente.');
+      } else {
+        verifiedUserId = freshUser.id;
       }
 
       // Images already optimized in AngleUploadCard — upload directly (no double optimization)
@@ -303,10 +332,10 @@ const GeradorPersonagemTool: React.FC = () => {
       setCurrentStep('uploading_images');
 
       const [frontUrl, profileUrl, semiProfileUrl, lowAngleUrl] = await Promise.all([
-        uploadToStorage(frontFile, 'front'),
-        uploadToStorage(profileFile, 'profile'),
-        uploadToStorage(semiProfileFile, 'semi-profile'),
-        uploadToStorage(lowAngleFile, 'low-angle'),
+        uploadToStorage(frontFile, 'front', verifiedUserId),
+        uploadToStorage(profileFile, 'profile', verifiedUserId),
+        uploadToStorage(semiProfileFile, 'semi-profile', verifiedUserId),
+        uploadToStorage(lowAngleFile, 'low-angle', verifiedUserId),
       ]);
 
       // Save storage URLs for refine reuse
@@ -322,7 +351,7 @@ const GeradorPersonagemTool: React.FC = () => {
         .from('character_generator_jobs' as any)
         .insert({
           session_id: sessionIdRef.current,
-          user_id: user.id,
+          user_id: verifiedUserId,
           status: 'pending',
           front_image_url: frontUrl,
           profile_image_url: profileUrl,
@@ -351,7 +380,7 @@ const GeradorPersonagemTool: React.FC = () => {
             profileImageUrl: profileUrl,
             semiProfileImageUrl: semiProfileUrl,
             lowAngleImageUrl: lowAngleUrl,
-            userId: user.id,
+            userId: verifiedUserId,
             creditCost: creditCost,
           },
         }
