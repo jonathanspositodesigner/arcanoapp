@@ -18,6 +18,19 @@ import upscalerFoodDepois from "@/assets/upscaler-food-depois.webp";
 import upscalerHeroAntes from "@/assets/upscaler-hero-antes.webp";
 import upscalerHeroDepois from "@/assets/upscaler-hero-depois.webp";
 
+// Gallery images for hero carousel
+import galleryBefore2 from "@/assets/upscaler/2a.webp";
+import galleryAfter2 from "@/assets/upscaler/2d.webp";
+import galleryBefore3 from "@/assets/upscaler/3a.webp";
+import galleryAfter3 from "@/assets/upscaler/3d.webp";
+
+// Hero carousel slides
+const heroSlides = [
+  { before: upscalerHeroAntes, after: upscalerHeroDepois },
+  { before: galleryBefore2, after: galleryAfter2 },
+  { before: galleryBefore3, after: galleryAfter3 },
+];
+
 const UpscalerArcanoV3 = () => {
   const [sliderPct, setSliderPct] = useState(50);
   const [autoActive, setAutoActive] = useState(true);
@@ -25,11 +38,20 @@ const UpscalerArcanoV3 = () => {
   const [batchLoaded, setBatchLoaded] = useState<boolean[]>(new Array(10).fill(false));
   const [stickyVisible, setStickyVisible] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
   const autoRef = useRef(true);
   const autoPctRef = useRef(50);
   const autoDirRef = useRef(-1);
+
+  const goToSlide = useCallback((dir: 1 | -1) => {
+    setCurrentSlide(prev => (prev + dir + heroSlides.length) % heroSlides.length);
+    setSliderPct(50);
+    autoPctRef.current = 50;
+    autoRef.current = true;
+    setAutoActive(true);
+  }, []);
 
   // Scroll reveal observer
   useEffect(() => {
@@ -436,6 +458,24 @@ const UpscalerArcanoV3 = () => {
           animation: v3HintFade 2s ease 2s forwards; opacity: 1;
         }
         @keyframes v3HintFade { to { opacity: 0; } }
+
+        /* CAROUSEL ARROWS */
+        .v3-carousel-arrow {
+          position: absolute; top: 50%; transform: translateY(-50%); z-index: 20;
+          width: 40px; height: 40px; border-radius: 50%;
+          background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+          border: 1px solid rgba(255,255,255,0.15); color: #fff;
+          font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+          transition: all 0.2s ease; line-height: 1;
+        }
+        .v3-carousel-arrow:hover { background: rgba(0,212,255,0.3); border-color: var(--cyan); }
+        .v3-carousel-arrow-left { left: -20px; }
+        .v3-carousel-arrow-right { right: -20px; }
+        @media (max-width: 768px) {
+          .v3-carousel-arrow-left { left: 8px; }
+          .v3-carousel-arrow-right { right: 8px; }
+          .v3-carousel-arrow { width: 36px; height: 36px; font-size: 20px; }
+        }
 
         /* PAIN STRIP */
         .v3-pain-strip {
@@ -903,31 +943,63 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
 
-          {/* BEFORE/AFTER SLIDER */}
+          {/* BEFORE/AFTER SLIDER CAROUSEL */}
           <div className="v3-slider-wrapper">
             <div className="v3-slider-label">
               <span style={{ color: "var(--red)" }}>← Antes: baixa qualidade</span>
               <span style={{ color: "var(--cyan)" }}>Depois: 4K nítido →</span>
             </div>
-            <div
-              className="v3-before-after"
-              ref={sliderRef}
-              onMouseDown={(e) => { draggingRef.current = true; stopAuto(); updateSlider(e.clientX); }}
-              onTouchStart={(e) => { draggingRef.current = true; stopAuto(); updateSlider(e.touches[0].clientX); }}
-            >
-              {/* Before layer - full */}
-              <div className="v3-ba-layer">
-                <img src={upscalerHeroAntes} alt="Antes - baixa qualidade" />
+            <div style={{ position: "relative" }}>
+              <div
+                className="v3-before-after"
+                ref={sliderRef}
+                onMouseDown={(e) => { draggingRef.current = true; stopAuto(); updateSlider(e.clientX); }}
+                onTouchStart={(e) => { draggingRef.current = true; stopAuto(); updateSlider(e.touches[0].clientX); }}
+              >
+                {/* Before layer - full */}
+                <div className="v3-ba-layer">
+                  <img src={heroSlides[currentSlide].before} alt="Antes - baixa qualidade" />
+                </div>
+                {/* After layer - clipped */}
+                <div className="v3-ba-layer" style={{ clipPath: `inset(0 ${100 - sliderPct}% 0 0)` }}>
+                  <img src={heroSlides[currentSlide].after} alt="Depois - qualidade 4K" />
+                </div>
+                {/* Handle */}
+                <div className="v3-drag-handle" style={{ left: `${sliderPct}%` }}>
+                  <div className="v3-drag-circle">⟺</div>
+                </div>
+                <div className="v3-drag-hint">⟺ Arraste para comparar</div>
               </div>
-              {/* After layer - clipped */}
-              <div className="v3-ba-layer" style={{ clipPath: `inset(0 ${100 - sliderPct}% 0 0)` }}>
-                <img src={upscalerHeroDepois} alt="Depois - qualidade 4K" />
-              </div>
-              {/* Handle */}
-              <div className="v3-drag-handle" style={{ left: `${sliderPct}%` }}>
-                <div className="v3-drag-circle">⟺</div>
-              </div>
-              <div className="v3-drag-hint">⟺ Arraste para comparar</div>
+              {/* Carousel arrows */}
+              <button
+                onClick={() => goToSlide(-1)}
+                className="v3-carousel-arrow v3-carousel-arrow-left"
+                aria-label="Anterior"
+              >‹</button>
+              <button
+                onClick={() => goToSlide(1)}
+                className="v3-carousel-arrow v3-carousel-arrow-right"
+                aria-label="Próximo"
+              >›</button>
+            </div>
+            {/* Carousel dots */}
+            <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 16 }}>
+              {heroSlides.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setCurrentSlide(i); setSliderPct(50); autoPctRef.current = 50; }}
+                  style={{
+                    width: i === currentSlide ? 24 : 8,
+                    height: 8,
+                    borderRadius: 100,
+                    border: "none",
+                    background: i === currentSlide ? "var(--cyan)" : "rgba(255,255,255,0.2)",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                  }}
+                  aria-label={`Slide ${i + 1}`}
+                />
+              ))}
             </div>
           </div>
         </section>
