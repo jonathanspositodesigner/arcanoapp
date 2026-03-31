@@ -23,6 +23,7 @@ import galleryBefore2 from "@/assets/upscaler/2a.webp";
 import galleryAfter2 from "@/assets/upscaler/2d.webp";
 import galleryBefore3 from "@/assets/upscaler/3a.webp";
 import galleryAfter3 from "@/assets/upscaler/3d.webp";
+import turboBgImage from "@/assets/upscaler-v3-turbo-bg.webp";
 
 // Hero carousel slides
 const heroSlides = [
