@@ -924,6 +924,38 @@ const UpscalerArcanoV3 = () => {
         }
         .v3-plan.featured.v3-visible { transform: translateY(-12px); }
         .v3-plan.featured:hover { transform: translateY(-16px) !important; }
+        
+        /* Lifetime card highlight */
+        .v3-plan-lifetime {
+          background: linear-gradient(145deg, #1A1500, #0F0D05); border-color: var(--gold);
+          transform: translateY(-12px); box-shadow: 0 0 60px rgba(245,200,66,0.12), 0 40px 80px rgba(0,0,0,0.5);
+        }
+        .v3-plan-lifetime.v3-visible { transform: translateY(-12px); }
+        .v3-plan-lifetime:hover { transform: translateY(-16px) !important; border-color: var(--gold) !important; }
+        .v3-plan-popular-gold {
+          background: linear-gradient(135deg, var(--gold), #CC9900) !important; color: #000 !important;
+        }
+        .v3-plan-cta-gold {
+          background: linear-gradient(135deg, var(--gold), #CC9900) !important; color: #000 !important;
+        }
+        .v3-plan-cta-gold:hover { opacity: 0.9; }
+        
+        /* Trust badges */
+        .v3-trust-badges-row {
+          display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 40; flex-wrap: wrap;
+        }
+        .v3-trust-badge {
+          display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted);
+          background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 12px; padding: 12px 20px; backdrop-filter: blur(8px);
+          opacity: 0; animation: trustFadeIn 0.5s ease-out forwards;
+        }
+        .v3-trust-badge-icon { font-size: 18px; }
+        @keyframes trustFadeIn {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
         .v3-plan-popular {
           background: linear-gradient(135deg, var(--cyan), #0099CC); color: #000;
           font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
@@ -1149,8 +1181,15 @@ const UpscalerArcanoV3 = () => {
           .v3-plan.featured { transform: none; box-shadow: 0 0 40px rgba(0,212,255,0.1), 0 20px 40px rgba(0,0,0,0.3); }
           .v3-plan.featured.v3-visible { transform: none; }
           .v3-plan.featured:hover { transform: none !important; }
+          .v3-plan-lifetime { transform: none; box-shadow: 0 0 40px rgba(245,200,66,0.1), 0 20px 40px rgba(0,0,0,0.3); }
+          .v3-plan-lifetime.v3-visible { transform: none; }
+          .v3-plan-lifetime:hover { transform: none !important; }
           .v3-plan-price .amount { font-size: 36px; }
           .v3-plan-price .cents { font-size: 18px; }
+          
+          /* Trust badges mobile */
+          .v3-trust-badges-row { flex-direction: column; gap: 10px; margin-top: 32px; }
+          .v3-trust-badge { width: 100%; justify-content: center; border-radius: 14px; padding: 14px 20px; font-size: 14px; }
           .v3-plan-name { font-size: 18px; }
 
           /* 16. Guarantee */
@@ -1596,13 +1635,8 @@ const UpscalerArcanoV3 = () => {
               </div>
 
               {/* VITALÍCIO */}
-              <div className="v3-plan v3-reveal">
-                <div style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  background: "rgba(245,200,66,0.1)", border: "1px solid rgba(245,200,66,0.2)",
-                  color: "var(--gold)", fontSize: 11, fontWeight: 700, padding: "4px 12px",
-                  borderRadius: 100, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: 12
-                }}>♾ Vitalício</div>
+              <div className="v3-plan v3-plan-lifetime v3-reveal">
+                <div className="v3-plan-popular v3-plan-popular-gold">♾ Vitalício</div>
                 <div className="v3-plan-name">Ilimitado</div>
                 <div className="v3-plan-tagline">Acesso permanente a tudo</div>
                 <div className="v3-plan-price">
@@ -1611,7 +1645,7 @@ const UpscalerArcanoV3 = () => {
                   <span className="cents">,90</span>
                   <span className="period">paga uma vez · usa para sempre</span>
                 </div>
-                <a href="#" className="v3-plan-cta outline">Garantir →</a>
+                <a href="#" className="v3-plan-cta filled v3-plan-cta-gold">Garantir Vitalício →</a>
                 <div className="v3-plan-divider" />
                 <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Acesso vitalício completo</strong></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> Todas as ferramentas</div>
@@ -1623,15 +1657,18 @@ const UpscalerArcanoV3 = () => {
             </div>
 
             {/* TRUST ROW */}
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 32, marginTop: 40, flexWrap: "wrap" as const }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--muted)" }}>
-                <span style={{ color: "var(--green)" }}>⚡</span> Acesso imediato
+            <div className="v3-trust-badges-row">
+              <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.1s" }}>
+                <span className="v3-trust-badge-icon">⚡</span>
+                <span>Acesso imediato</span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--muted)" }}>
-                <span style={{ color: "var(--green)" }}>💬</span> Suporte 24/7
+              <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.25s" }}>
+                <span className="v3-trust-badge-icon">💬</span>
+                <span>Suporte 24/7</span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--muted)" }}>
-                <span style={{ color: "var(--green)" }}>🔒</span> Pagamento seguro · Mercado Pago
+              <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.4s" }}>
+                <span className="v3-trust-badge-icon">🔒</span>
+                <span>Pagamento seguro · Mercado Pago</span>
               </div>
             </div>
           </div>
