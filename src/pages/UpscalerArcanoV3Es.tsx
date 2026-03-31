@@ -62,7 +62,7 @@ const GalleryBeforeAfter = ({ item }: { item: { before: string; after: string; l
         <img src={item.before} alt={`${item.label} antes`} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
         {/* After (clipped) */}
         <div style={{ position: "absolute", inset: 0, clipPath: `inset(0 ${100 - pct}% 0 0)` }}>
-          <img src={item.after} alt={`${item.label} depois`} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+          <img src={item.after} alt={`${item.label} después`} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
         </div>
         {/* Handle */}
         <div style={{ position: "absolute", top: 0, bottom: 0, left: `${pct}%`, transform: "translateX(-50%)", width: 2, background: "rgba(255,255,255,0.7)", zIndex: 5 }}>
@@ -70,7 +70,7 @@ const GalleryBeforeAfter = ({ item }: { item: { before: string; after: string; l
         </div>
         {/* Labels */}
         <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(0,0,0,0.6)", color: "rgba(255,255,255,0.8)", fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 100, zIndex: 6 }}>ANTES</div>
-        <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.8)", fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 100, zIndex: 6 }}>DEPOIS</div>
+        <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.8)", fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 100, zIndex: 6 }}>DESPUÉS</div>
       </div>
       {item.badge && <div className="v3-gallery-badge">{item.badge}</div>}
       <div className="v3-gallery-label">
