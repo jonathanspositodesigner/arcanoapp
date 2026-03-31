@@ -1347,7 +1347,7 @@ const UpscalerArcanoV3 = () => {
                 </div>
                 {/* After layer - clipped */}
                 <div className="v3-ba-layer" style={{ clipPath: `inset(0 ${100 - sliderPct}% 0 0)` }}>
-                  <img src={heroSlides[currentSlide].after} alt="Depois - qualidade 4K" />
+                  <img src={heroSlides[currentSlide].after} alt="Después - calidad 4K" />
                 </div>
                 {/* Handle */}
                 <div className="v3-drag-handle" style={{ left: `${sliderPct}%` }}>
