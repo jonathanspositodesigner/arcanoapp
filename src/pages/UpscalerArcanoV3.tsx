@@ -1643,7 +1643,7 @@ const UpscalerArcanoV3 = () => {
                   <span className="cents">,90</span>
                   <span className="period">acesso vitalício</span>
                 </div>
-                <a href="#" className="v3-plan-cta filled">Garantir Acesso →</a>
+                <button className="v3-plan-cta filled" onClick={() => openCheckout("upscaler-arcano-ultimate")}>Garantir Acesso →</button>
                 <div className="v3-plan-divider" />
                 <div className="v3-plan-feature"><span className="check">✓</span> 233 imagens</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> 14.000 créditos</div>
