@@ -322,9 +322,13 @@ const UpscalerArcanoV3 = () => {
     setAutoActive(false);
   };
 
-  const scrollToPrice = (e: React.MouseEvent) => {
-    e.preventDefault();
-    document.getElementById("v3-pricing")?.scrollIntoView({ behavior: "smooth" });
+  const scrollToPrice = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    const el = document.getElementById("v3-pricing");
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.scrollY - 20;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
   };
 
   // Mobile detection
