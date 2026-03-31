@@ -983,7 +983,6 @@ const UpscalerArcanoV3 = () => {
                 />
               ))}
             </div>
-            </div>
           </div>
         </section>
 
