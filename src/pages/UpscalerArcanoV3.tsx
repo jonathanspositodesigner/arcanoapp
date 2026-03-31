@@ -475,14 +475,16 @@ const UpscalerArcanoV3 = () => {
 
         /* SOCIAL POPUP */
         .v3-social-popup {
-          position: fixed; top: 16px; left: 24px; z-index: 999;
+          position: fixed; top: 24px; right: 24px; z-index: 999;
           background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3);
           border-radius: 16px; padding: 12px 18px;
           display: flex; align-items: center; gap: 12px; max-width: 340px;
-          opacity: 0; transform: translateY(-20px); animation: v3PopupIn 0.6s ease forwards 2s;
+          opacity: 0; transform: translateY(-20px);
+          transition: opacity 0.5s ease, transform 0.5s ease;
           backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
-        @keyframes v3PopupIn { to { opacity: 1; transform: translateY(0); } }
+        .v3-social-popup.v3-notif-visible { opacity: 1; transform: translateY(0); }
+        .v3-social-popup.v3-notif-hidden { opacity: 0; transform: translateY(-20px); }
         .v3-popup-avatar {
           width: 36px; height: 36px; border-radius: 50%;
           background: linear-gradient(135deg, #10b981, #059669);
