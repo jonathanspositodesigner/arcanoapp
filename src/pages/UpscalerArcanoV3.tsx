@@ -335,35 +335,35 @@ const UpscalerArcanoV3 = () => {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  // Cycling social proof notifications (mobile only)
+  // Cycling social proof notifications (both mobile and desktop)
   useEffect(() => {
-    if (!isMobile) return;
     const people = [
-      { name: "Mariana S.", initial: "M", time: "há 3 minutos", city: "São Paulo, SP" },
-      { name: "Carlos R.", initial: "C", time: "há 5 minutos", city: "Belo Horizonte, MG" },
-      { name: "Rafael T.", initial: "R", time: "há 1 minuto", city: "Rio de Janeiro, RJ" },
-      { name: "Ana Luiza F.", initial: "A", time: "há 8 minutos", city: "Curitiba, PR" },
-      { name: "Wellington P.", initial: "W", time: "há 2 minutos", city: "Recife, PE" },
-      { name: "Juliana M.", initial: "J", time: "há 4 minutos", city: "Porto Alegre, RS" },
-      { name: "Rodrigo L.", initial: "R", time: "há 6 minutos", city: "Florianópolis, SC" },
-      { name: "Clara V.", initial: "C", time: "há 1 minuto", city: "Brasília, DF" },
+      { name: "Mariana S.", initial: "M", city: "São Paulo, SP" },
+      { name: "Carlos R.", initial: "C", city: "Belo Horizonte, MG" },
+      { name: "Rafael T.", initial: "R", city: "Rio de Janeiro, RJ" },
+      { name: "Ana Luiza F.", initial: "A", city: "Curitiba, PR" },
+      { name: "Wellington P.", initial: "W", city: "Recife, PE" },
+      { name: "Juliana M.", initial: "J", city: "Porto Alegre, RS" },
+      { name: "Rodrigo L.", initial: "R", city: "Florianópolis, SC" },
+      { name: "Clara V.", initial: "C", city: "Brasília, DF" },
+      { name: "Fernando A.", initial: "F", city: "Salvador, BA" },
+      { name: "Patrícia N.", initial: "P", city: "Fortaleza, CE" },
     ];
-    let idx = 0;
+    const times = ["há poucos segundos", "há 1 minuto", "há 2 minutos", "há 3 minutos", "há 5 minutos"];
+    let idx = Math.floor(Math.random() * people.length);
+    let intervalId: ReturnType<typeof setTimeout>;
     const show = () => {
       const person = people[idx % people.length];
-      const times = ["há 1 minuto", "há 2 minutos", "há 3 minutos", "há 5 minutos", "há poucos segundos"];
       setNotifData({ ...person, time: times[Math.floor(Math.random() * times.length)] });
       setNotifVisible(true);
       idx++;
       setTimeout(() => setNotifVisible(false), 4000);
+      const nextDelay = 6000 + Math.random() * 12000;
+      intervalId = setTimeout(show, nextDelay);
     };
-    const initialDelay = setTimeout(() => {
-      show();
-      const interval = setInterval(() => show(), 7000 + Math.random() * 8000);
-      return () => clearInterval(interval);
-    }, 5000);
-    return () => clearTimeout(initialDelay);
-  }, [isMobile]);
+    const initialDelay = setTimeout(() => show(), 3000 + Math.random() * 4000);
+    return () => { clearTimeout(initialDelay); clearTimeout(intervalId); };
+  }, []);
 
   const batchEmojis = ["🏔️", "🎸", "👗", "🍕", "🏠", "💍", "🚗", "🌺", "📱", "🎨"];
 
@@ -475,14 +475,16 @@ const UpscalerArcanoV3 = () => {
 
         /* SOCIAL POPUP */
         .v3-social-popup {
-          position: fixed; top: 16px; left: 24px; z-index: 999;
+          position: fixed; top: 24px; right: 24px; z-index: 999;
           background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3);
           border-radius: 16px; padding: 12px 18px;
           display: flex; align-items: center; gap: 12px; max-width: 340px;
-          opacity: 0; transform: translateY(-20px); animation: v3PopupIn 0.6s ease forwards 2s;
+          opacity: 0; transform: translateY(-20px);
+          transition: opacity 0.5s ease, transform 0.5s ease;
           backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
-        @keyframes v3PopupIn { to { opacity: 1; transform: translateY(0); } }
+        .v3-social-popup.v3-notif-visible { opacity: 1; transform: translateY(0); }
+        .v3-social-popup.v3-notif-hidden { opacity: 0; transform: translateY(-20px); }
         .v3-popup-avatar {
           width: 36px; height: 36px; border-radius: 50%;
           background: linear-gradient(135deg, #10b981, #059669);
@@ -913,8 +915,9 @@ const UpscalerArcanoV3 = () => {
         .v3-pricing-inner { max-width: 1100px; margin: 0 auto; }
         .v3-pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: start; }
         .v3-plan {
+          position: relative;
           background: var(--bg); border: 1px solid var(--card-border); border-radius: 24px;
-          padding: 28px; opacity: 0; transform: translateY(24px);
+          padding: 28px; padding-top: 36px; opacity: 0; transform: translateY(24px);
           transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.3s;
         }
         .v3-plan.v3-visible { opacity: 1; transform: translateY(0); }
@@ -958,9 +961,10 @@ const UpscalerArcanoV3 = () => {
         }
 
         .v3-plan-popular {
+          position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
           background: linear-gradient(135deg, var(--cyan), #0099CC); color: #000;
           font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-          padding: 4px 12px; border-radius: 100px; display: inline-block; margin-bottom: 16px;
+          padding: 4px 12px; border-radius: 100px; white-space: nowrap; z-index: 2;
         }
         .v3-plan-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
         .v3-plan-tagline { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
@@ -1249,24 +1253,13 @@ const UpscalerArcanoV3 = () => {
           <button className="v3-topbar-cta" onClick={scrollToPrice}>Ver Planos</button>
         </nav>
 
-        {/* SOCIAL POPUP - Desktop: static, Mobile: cycling */}
-        {isMobile ? (
-          notifData && (
-            <div className={`v3-social-popup ${notifVisible ? 'v3-notif-visible' : 'v3-notif-hidden'}`}>
-              <div className="v3-popup-avatar">{notifData.initial}</div>
-              <div>
-                <strong style={{ color: "var(--white)", display: "block", fontSize: 13 }}>{notifData.name} acabou de comprar</strong>
-                <span style={{ color: "var(--muted2)", fontSize: 12 }}>{notifData.time} · {notifData.city}</span>
-              </div>
-              <div className="v3-popup-dot" />
-            </div>
-          )
-        ) : (
-          <div className="v3-social-popup">
-            <div className="v3-popup-avatar">M</div>
+        {/* SOCIAL POPUP - cycling on both mobile and desktop */}
+        {notifData && (
+          <div className={`v3-social-popup ${notifVisible ? 'v3-notif-visible' : 'v3-notif-hidden'}`}>
+            <div className="v3-popup-avatar">{notifData.initial}</div>
             <div>
-              <strong style={{ color: "var(--white)", display: "block", fontSize: 13 }}>Mariana S. acabou de comprar</strong>
-              <span style={{ color: "var(--muted2)", fontSize: 12 }}>há 3 minutos · São Paulo, SP</span>
+              <strong style={{ color: "#fff", display: "block", fontSize: 13 }}>{notifData.name} acabou de comprar</strong>
+              <span style={{ color: "var(--muted2)", fontSize: 12 }}>{notifData.time} · {notifData.city}</span>
             </div>
             <div className="v3-popup-dot" />
           </div>
