@@ -374,12 +374,12 @@ const UpscalerArcanoV3 = () => {
   const batchEmojis = ["🏔️", "🎸", "👗", "🍕", "🏠", "💍", "🚗", "🌺", "📱", "🎨"];
 
   const galleryItems = [
-    { before: upscalerFotoAntes, after: upscalerFotoDepois, label: "Fotos de Sesión", desc: "Recuperá grano, ruido y baja luz", badge: "Popular" },
+    { before: upscalerFotoAntes, after: upscalerFotoDepois, label: "Fotos de Sesión", desc: "Recuperá grano, ruido y baja luz" },
     { before: render3dAntes, after: render3dDepois, label: "Renders 3D", desc: "Upscale sin perder geometría" },
     { before: upscalerProdutoAntes, after: upscalerProdutoDepois, label: "Fotos de Producto", desc: "Catálogos y e-commerce en 4K" },
     { before: upscalerLogoAntes, after: upscalerLogoDepois, label: "Logos y Artes", desc: "Vectores y marcas ampliados" },
     { before: upscalerAntigaAntes, after: upscalerAntigaDepois, label: "Fotos Antiguas", desc: "Recuerdos restaurados con IA" },
-    { before: upscalerFoodAntes, after: upscalerFoodDepois, label: "Fotos de Comida", desc: "Corregí artefactos, ampliá, refiná", badge: "V3" },
+    { before: upscalerFoodAntes, after: upscalerFoodDepois, label: "Fotos de Comida", desc: "Corregí artefactos, ampliá, refiná" },
   ];
 
   const painCards = [
