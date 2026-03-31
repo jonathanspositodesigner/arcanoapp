@@ -1270,7 +1270,7 @@ const UpscalerArcanoV3 = () => {
           <div className="v3-pricing-inner">
             <div style={{ textAlign: "center", marginBottom: 60 }}>
               <div className="v3-section-tag" style={{ display: "inline-block" }}>Planos e Preços</div>
-              <div className="v3-section-title" style={{ marginTop: 12 }}>Comece agora.<br /><span>Pague uma vez.</span></div>
+              <div className="v3-section-title" style={{ marginTop: 12 }}>Comece agora.<br /><span>Acesso imediato.</span></div>
             </div>
 
             <div className="v3-pricing-grid">
