@@ -1000,7 +1000,7 @@ const UpscalerArcanoV3 = () => {
         }
         .v3-plan-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
         .v3-plan-tagline { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
-        .v3-plan-price { margin-bottom: 24px; display: flex; align-items: baseline; flex-wrap: wrap; justify-content: center; }
+        .v3-plan-price { margin-bottom: 24px; display: flex; align-items: baseline; flex-wrap: wrap; }
         .v3-plan-price .amount { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 42px; font-weight: 800; line-height: 1; }
         .v3-plan-price .cents { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; }
         .v3-plan-price .currency { font-size: 20px; font-weight: 600; margin-right: 2px; color: var(--muted2); }
