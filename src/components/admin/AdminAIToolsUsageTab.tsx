@@ -127,6 +127,8 @@ const AdminAIToolsUsageTab = () => {
   const [selectedJob, setSelectedJob] = useState<UsageRecord | null>(null);
   const [jobOutputUrl, setJobOutputUrl] = useState<string | null>(null);
   const [jobInputUrl, setJobInputUrl] = useState<string | null>(null);
+  const [jobPrompt, setJobPrompt] = useState<string | null>(null);
+  const [jobInputImages, setJobInputImages] = useState<string[]>([]);
   const [isLoadingOutput, setIsLoadingOutput] = useState(false);
   const [isOutputExpired, setIsOutputExpired] = useState(false);
   const [outputModalOpen, setOutputModalOpen] = useState(false);
