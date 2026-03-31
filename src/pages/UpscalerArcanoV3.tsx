@@ -931,10 +931,11 @@ const UpscalerArcanoV3 = () => {
         }
         .v3-plan-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
         .v3-plan-tagline { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
-        .v3-plan-price { margin-bottom: 24px; }
+        .v3-plan-price { margin-bottom: 24px; display: flex; align-items: baseline; flex-wrap: wrap; }
         .v3-plan-price .amount { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 42px; font-weight: 800; line-height: 1; }
-        .v3-plan-price .currency { font-size: 20px; font-weight: 600; vertical-align: top; margin-top: 8px; display: inline-block; color: var(--muted2); }
-        .v3-plan-price .period { font-size: 13px; color: var(--muted); display: block; margin-top: 4px; }
+        .v3-plan-price .cents { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; }
+        .v3-plan-price .currency { font-size: 20px; font-weight: 600; margin-right: 2px; color: var(--muted2); }
+        .v3-plan-price .period { font-size: 13px; color: var(--muted); display: block; width: 100%; margin-top: 4px; }
         .v3-plan-cta {
           display: block; text-align: center; font-family: 'Syne', sans-serif; font-weight: 700;
           font-size: 15px; padding: 14px; border-radius: 14px; text-decoration: none;
