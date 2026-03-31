@@ -401,18 +401,18 @@ const UpscalerArcanoV3 = () => {
   ];
 
   const testimonials = [
-    { text: '"Cliente mandou foto horrível às 18h com entrega pra 21h. Em 3 minutos o Arcano resolveu o que eu levaria 2 horas tentando no Photoshop."', name: "Carlos M.", role: "Designer Gráfico · São Paulo", avatar: "C", gradient: "linear-gradient(135deg,#00D4FF,#7B2FFF)" },
-    { text: '"Sou fotógrafo e uso o lote do V3 toda vez. Processo o ensaio inteiro enquanto edito o segundo set. Economizo literalmente horas por semana."', name: "Rafael T.", role: "Fotógrafo · Belo Horizonte", avatar: "R", gradient: "linear-gradient(135deg,#F5C842,#FF6B35)" },
-    { text: '"Minhas imagens de campanha de lançamento ficaram profissionais de verdade. As vendas subiram 40% depois que comecei a usar nas landing pages."', name: "Ana Luiza F.", role: "Infoprodutora · Curitiba", avatar: "A", gradient: "linear-gradient(135deg,#00E5A0,#0099CC)" },
+    { text: '"Un cliente me mandó una foto horrible a las 6pm con entrega para las 9pm. En 3 minutos Arcano resolvió lo que me llevaría 2 horas en Photoshop."', name: "Carlos M.", role: "Diseñador Gráfico · Buenos Aires", avatar: "C", gradient: "linear-gradient(135deg,#00D4FF,#7B2FFF)" },
+    { text: '"Soy fotógrafo y uso el lote del V3 siempre. Proceso la sesión entera mientras edito el segundo set. Ahorro literalmente horas por semana."', name: "Rafael T.", role: "Fotógrafo · Ciudad de México", avatar: "R", gradient: "linear-gradient(135deg,#F5C842,#FF6B35)" },
+    { text: '"Mis imágenes de campaña de lanzamiento quedaron profesionales de verdad. Las ventas subieron 40% después de que empecé a usarlas en las landing pages."', name: "Ana Luiza F.", role: "Infoproductora · Bogotá", avatar: "A", gradient: "linear-gradient(135deg,#00E5A0,#0099CC)" },
   ];
 
   const faqs = [
-    { q: "Preciso pagar mensalidade?", a: "Não. O Upscaler Arcano funciona com acesso vitalício — você paga uma vez e usa para sempre. Sem cobranças recorrentes, sem surpresas." },
-    { q: "Funciona com qualquer tipo de imagem?", a: "Sim. Fotos de ensaio, logos, renders 3D, fotos antigas, imagens geradas por IA, alimentos, produtos — o Arcano processa qualquer tipo de imagem." },
-    { q: "Quanto tempo leva para processar?", a: "Com o Modo Turbo do V3, menos de 60 segundos por imagem. No lote, você processa até 10 imagens em paralelo ao mesmo tempo." },
-    { q: "Os créditos expiram?", a: "Não. Os créditos que você compra ficam na sua conta para sempre. Use no seu próprio ritmo, sem pressão de data de validade." },
-    { q: "O que é o Modo Turbo? É igual ao resultado normal?", a: "O Modo Turbo é exclusivo do V3 e entrega o mesmo motor de IA, mesma qualidade 4K, mas em menos de 1 minuto — até 10x mais rápido que o processamento padrão." },
-    { q: "Precisa instalar algum programa?", a: "Não. O Upscaler Arcano é 100% online. Acesse direto pelo navegador, sem instalar nada, em qualquer computador." },
+    { q: "¿Tengo que pagar mensualidad?", a: "No. El Upscaler Arcano funciona con acceso vitalicio — pagás una vez y lo usás para siempre. Sin cobros recurrentes, sin sorpresas." },
+    { q: "¿Funciona con cualquier tipo de imagen?", a: "Sí. Fotos de sesión, logos, renders 3D, fotos antiguas, imágenes generadas por IA, comida, productos — Arcano procesa cualquier tipo de imagen." },
+    { q: "¿Cuánto tiempo tarda en procesar?", a: "Con el Modo Turbo del V3, menos de 60 segundos por imagen. En lote, procesás hasta 10 imágenes en paralelo al mismo tiempo." },
+    { q: "¿Los créditos expiran?", a: "No. Los créditos que comprás quedan en tu cuenta para siempre. Usalos a tu ritmo, sin presión de fecha de vencimiento." },
+    { q: "¿Qué es el Modo Turbo? ¿Es igual al resultado normal?", a: "El Modo Turbo es exclusivo del V3 y entrega el mismo motor de IA, misma calidad 4K, pero en menos de 1 minuto — hasta 10x más rápido que el procesamiento estándar." },
+    { q: "¿Hay que instalar algún programa?", a: "No. El Upscaler Arcano es 100% online. Accedé directo desde el navegador, sin instalar nada, desde cualquier computadora." },
   ];
 
   return (
