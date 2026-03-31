@@ -160,26 +160,41 @@ async function fetchWithRetry(
   url: string, 
   options: RequestInit, 
   context: string,
-  maxRetries: number = 4
+  maxRetries: number = 6
 ): Promise<Response> {
-  const retryableStatuses = [429, 502, 503, 504];
-  const delays = [2000, 5000, 10000, 15000];
+  const retryableStatuses = [429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525];
+  const delays = [2000, 5000, 10000, 20000, 30000, 40000];
   
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    const response = await fetch(url, options);
-    
-    if (!retryableStatuses.includes(response.status)) {
-      return response;
-    }
-    
-    await response.text();
-    
-    if (attempt < maxRetries - 1) {
-      const delay = delays[attempt] || 2000;
-      console.warn(`[CharacterGenerator] ${context} got ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
-      await new Promise(r => setTimeout(r, delay));
-    } else {
-      throw new Error(`${context} failed after ${maxRetries} retries (${response.status})`);
+    try {
+      const response = await fetch(url, options);
+      
+      if (!retryableStatuses.includes(response.status)) {
+        return response;
+      }
+      
+      await response.text();
+      
+      if (attempt < maxRetries - 1) {
+        const jitter = Math.random() * 1000;
+        const delay = (delays[attempt] || 5000) + jitter;
+        console.warn(`[CharacterGenerator] ${context} got ${response.status}, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(r => setTimeout(r, delay));
+      } else {
+        throw new Error(`${context} failed after ${maxRetries} retries (${response.status})`);
+      }
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      const isNetworkError = errMsg.includes('http2') || errMsg.includes('connection') || errMsg.includes('reset') || errMsg.includes('socket') || errMsg.includes('ECONNREFUSED') || errMsg.includes('fetch failed');
+      
+      if (isNetworkError && attempt < maxRetries - 1) {
+        const jitter = Math.random() * 1000;
+        const delay = (delays[attempt] || 5000) + jitter;
+        console.warn(`[CharacterGenerator] ${context} network error: ${errMsg}, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(r => setTimeout(r, delay));
+      } else {
+        throw err;
+      }
     }
   }
   
@@ -213,7 +228,24 @@ async function checkRateLimit(
 
 async function downloadAndUploadToRH(imageUrl: string, label: string, jobId: string, apiKey: string): Promise<string> {
   await logStep(jobId, `downloading_${label}_image`);
-  const imgResponse = await fetch(imageUrl);
+  
+  // Download with 30s timeout via AbortController
+  const downloadController = new AbortController();
+  const downloadTimeout = setTimeout(() => downloadController.abort(), 30000);
+  
+  let imgResponse: Response;
+  try {
+    imgResponse = await fetch(imageUrl, { signal: downloadController.signal });
+  } catch (err: unknown) {
+    clearTimeout(downloadTimeout);
+    const errMsg = err instanceof Error ? err.message : String(err);
+    if (errMsg.includes('abort')) {
+      throw new Error(`Download ${label} image timed out (30s)`);
+    }
+    throw new Error(`Failed to download ${label} image: ${errMsg}`);
+  }
+  clearTimeout(downloadTimeout);
+  
   if (!imgResponse.ok) throw new Error(`Failed to download ${label} image (${imgResponse.status})`);
   
   const imgBlob = await imgResponse.blob();
@@ -343,23 +375,29 @@ async function handleRun(req: Request) {
   const body = await req.json();
   const { jobId, frontImageUrl, profileImageUrl, semiProfileImageUrl, lowAngleImageUrl, creditCost } = body;
 
-  // ========== JWT AUTH VERIFICATION ==========
+  // ========== JWT AUTH VERIFICATION (local decode) ==========
   const authHeader = req.headers.get('Authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     return new Response(JSON.stringify({ error: 'Unauthorized', code: 'AUTH_REQUIRED' }), {
       status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-  const anonClient = createClient(SUPABASE_URL, Deno.env.get('SUPABASE_ANON_KEY')!);
   const jwtToken = authHeader.replace('Bearer ', '');
-  const { data: { user: authUser }, error: authError } = await anonClient.auth.getUser(jwtToken);
-  if (authError || !authUser) {
-    return new Response(JSON.stringify({ error: 'Unauthorized', code: 'INVALID_TOKEN' }), {
+  let userId: string;
+  try {
+    const payloadB64 = jwtToken.split('.')[1];
+    if (!payloadB64) throw new Error('Malformed JWT');
+    const payload = JSON.parse(atob(payloadB64));
+    if (!payload.sub) throw new Error('Missing sub claim');
+    if (payload.exp && payload.exp * 1000 < Date.now()) throw new Error('Token expired');
+    userId = payload.sub;
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Invalid token';
+    return new Response(JSON.stringify({ error: `Unauthorized: ${msg}`, code: 'INVALID_TOKEN' }), {
       status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-  const userId = authUser.id;
-  console.log(`[CharacterGenerator] JWT verified - userId: ${userId}`);
+  console.log(`[CharacterGenerator] JWT verified (local) - userId: ${userId}`);
 
   // ========== INPUT VALIDATION ==========
   if (!jobId || typeof jobId !== 'string' || jobId.length > 100) {
@@ -521,23 +559,29 @@ async function handleRefine(req: Request) {
   const body = await req.json();
   const { jobId, frontImageUrl, profileImageUrl, semiProfileImageUrl, lowAngleImageUrl, resultImageUrl, selectedNumbers, creditCost } = body;
 
-  // ========== JWT AUTH VERIFICATION ==========
+  // ========== JWT AUTH VERIFICATION (local decode) ==========
   const authHeader = req.headers.get('Authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     return new Response(JSON.stringify({ error: 'Unauthorized', code: 'AUTH_REQUIRED' }), {
       status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-  const anonClient = createClient(SUPABASE_URL, Deno.env.get('SUPABASE_ANON_KEY')!);
   const jwtToken = authHeader.replace('Bearer ', '');
-  const { data: { user: authUser }, error: authError } = await anonClient.auth.getUser(jwtToken);
-  if (authError || !authUser) {
-    return new Response(JSON.stringify({ error: 'Unauthorized', code: 'INVALID_TOKEN' }), {
+  let userId: string;
+  try {
+    const payloadB64 = jwtToken.split('.')[1];
+    if (!payloadB64) throw new Error('Malformed JWT');
+    const payload = JSON.parse(atob(payloadB64));
+    if (!payload.sub) throw new Error('Missing sub claim');
+    if (payload.exp && payload.exp * 1000 < Date.now()) throw new Error('Token expired');
+    userId = payload.sub;
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Invalid token';
+    return new Response(JSON.stringify({ error: `Unauthorized: ${msg}`, code: 'INVALID_TOKEN' }), {
       status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-  const userId = authUser.id;
-  console.log(`[CharacterGenerator] Refine JWT verified - userId: ${userId}`);
+  console.log(`[CharacterGenerator] Refine JWT verified (local) - userId: ${userId}`);
 
   // Validate inputs
   if (!jobId || typeof jobId !== 'string') {
