@@ -325,7 +325,30 @@ const UpscalerArcanoV3 = () => {
     setAutoActive(false);
   };
 
-  const scrollToPrice = (e?: React.MouseEvent) => {
+  // Trial button state
+  const [showTrialModal, setShowTrialModal] = useState(false);
+  const handleTrialAuthSuccess = () => {
+    setShowTrialModal(false);
+    window.location.href = "https://arcanoapp.voxvisual.com.br/ferramentas-ia-aplicativo";
+  };
+
+  const TrialButton = () => (
+    <>
+      <button
+        onClick={() => setShowTrialModal(true)}
+        style={{ width: "100%", background: "linear-gradient(90deg,#c026d3,#9333ea)", color: "#fff", fontWeight: 700, padding: "16px 24px", borderRadius: 12, fontSize: 16, border: "none", cursor: "pointer" }}
+      >
+        🚀 Testar Upscaler Arcano V3 Grátis
+      </button>
+      <ArcanoClonerAuthModal
+        isOpen={showTrialModal}
+        onClose={() => setShowTrialModal(false)}
+        onAuthSuccess={handleTrialAuthSuccess}
+      />
+    </>
+  );
+
+
     e?.preventDefault();
     const el = document.getElementById("v3-pricing");
     if (el) {
