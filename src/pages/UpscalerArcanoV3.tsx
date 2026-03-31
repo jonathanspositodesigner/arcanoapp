@@ -413,7 +413,7 @@ const UpscalerArcanoV3 = () => {
 
         .v3-btn-primary {
           background: linear-gradient(135deg, var(--cyan), #0099CC); color: #000;
-          font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 17px;
+          font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px;
           padding: 18px 48px; border-radius: 100px; text-decoration: none;
           display: inline-flex; align-items: center; gap: 10px;
           box-shadow: 0 0 40px rgba(0,212,255,0.3); cursor: pointer; border: none;
