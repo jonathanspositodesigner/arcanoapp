@@ -931,10 +931,11 @@ const UpscalerArcanoV3 = () => {
         }
         .v3-plan-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
         .v3-plan-tagline { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
-        .v3-plan-price { margin-bottom: 24px; }
+        .v3-plan-price { margin-bottom: 24px; display: flex; align-items: baseline; flex-wrap: wrap; }
         .v3-plan-price .amount { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 42px; font-weight: 800; line-height: 1; }
-        .v3-plan-price .currency { font-size: 20px; font-weight: 600; vertical-align: top; margin-top: 8px; display: inline-block; color: var(--muted2); }
-        .v3-plan-price .period { font-size: 13px; color: var(--muted); display: block; margin-top: 4px; }
+        .v3-plan-price .cents { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; }
+        .v3-plan-price .currency { font-size: 20px; font-weight: 600; margin-right: 2px; color: var(--muted2); }
+        .v3-plan-price .period { font-size: 13px; color: var(--muted); display: block; width: 100%; margin-top: 4px; }
         .v3-plan-cta {
           display: block; text-align: center; font-family: 'Syne', sans-serif; font-weight: 700;
           font-size: 15px; padding: 14px; border-radius: 14px; text-decoration: none;
@@ -1149,6 +1150,7 @@ const UpscalerArcanoV3 = () => {
           .v3-plan.featured.v3-visible { transform: none; }
           .v3-plan.featured:hover { transform: none !important; }
           .v3-plan-price .amount { font-size: 36px; }
+          .v3-plan-price .cents { font-size: 18px; }
           .v3-plan-name { font-size: 18px; }
 
           /* 16. Guarantee */
@@ -1539,7 +1541,7 @@ const UpscalerArcanoV3 = () => {
                 <div className="v3-plan-price">
                   <span className="currency">R$</span>
                   <span className="amount">24</span>
-                  <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800 }}>,90</span>
+                  <span className="cents">,90</span>
                   <span className="period">acesso vitalício</span>
                 </div>
                 <a href="#" className="v3-plan-cta outline">Começar →</a>
@@ -1558,7 +1560,7 @@ const UpscalerArcanoV3 = () => {
                 <div className="v3-plan-price">
                   <span className="currency">R$</span>
                   <span className="amount">37</span>
-                  <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800 }}>,00</span>
+                  <span className="cents">,00</span>
                   <span className="period">acesso vitalício</span>
                 </div>
                 <a href="#" className="v3-plan-cta outline">Começar →</a>
@@ -1579,7 +1581,7 @@ const UpscalerArcanoV3 = () => {
                 <div className="v3-plan-price">
                   <span className="currency">R$</span>
                   <span className="amount">79</span>
-                  <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800 }}>,90</span>
+                  <span className="cents">,90</span>
                   <span className="period">acesso vitalício</span>
                 </div>
                 <a href="#" className="v3-plan-cta filled">Garantir Acesso →</a>
@@ -1606,7 +1608,7 @@ const UpscalerArcanoV3 = () => {
                 <div className="v3-plan-price">
                   <span className="currency">R$</span>
                   <span className="amount">99</span>
-                  <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800 }}>,90</span>
+                  <span className="cents">,90</span>
                   <span className="period">paga uma vez · usa para sempre</span>
                 </div>
                 <a href="#" className="v3-plan-cta outline">Garantir →</a>
@@ -1623,16 +1625,13 @@ const UpscalerArcanoV3 = () => {
             {/* TRUST ROW */}
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 32, marginTop: 40, flexWrap: "wrap" as const }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--muted)" }}>
-                <span style={{ color: "var(--green)" }}>🔒</span> Pagamento SSL seguro
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--muted)" }}>
                 <span style={{ color: "var(--green)" }}>⚡</span> Acesso imediato
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--muted)" }}>
                 <span style={{ color: "var(--green)" }}>💬</span> Suporte 24/7
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--muted)" }}>
-                <span style={{ color: "var(--green)" }}>🏦</span> Mercado Pago
+                <span style={{ color: "var(--green)" }}>🔒</span> Pagamento seguro · Mercado Pago
               </div>
             </div>
           </div>
