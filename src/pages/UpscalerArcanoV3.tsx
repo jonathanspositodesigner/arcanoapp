@@ -1131,7 +1131,7 @@ const UpscalerArcanoV3 = () => {
           .v3-cta-group { margin-bottom: 32px; }
 
           /* 5. Before/after slider */
-          .v3-before-after { height: 280px; border-radius: 14px; }
+          .v3-before-after { height: auto; aspect-ratio: 3/4; border-radius: 14px; }
           .v3-drag-circle { width: 36px; height: 36px; font-size: 14px; }
 
           /* 6. Social popup - cycling notification */
