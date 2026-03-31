@@ -160,26 +160,41 @@ async function fetchWithRetry(
   url: string, 
   options: RequestInit, 
   context: string,
-  maxRetries: number = 4
+  maxRetries: number = 6
 ): Promise<Response> {
-  const retryableStatuses = [429, 502, 503, 504];
-  const delays = [2000, 5000, 10000, 15000];
+  const retryableStatuses = [429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525];
+  const delays = [2000, 5000, 10000, 20000, 30000, 40000];
   
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    const response = await fetch(url, options);
-    
-    if (!retryableStatuses.includes(response.status)) {
-      return response;
-    }
-    
-    await response.text();
-    
-    if (attempt < maxRetries - 1) {
-      const delay = delays[attempt] || 2000;
-      console.warn(`[CharacterGenerator] ${context} got ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
-      await new Promise(r => setTimeout(r, delay));
-    } else {
-      throw new Error(`${context} failed after ${maxRetries} retries (${response.status})`);
+    try {
+      const response = await fetch(url, options);
+      
+      if (!retryableStatuses.includes(response.status)) {
+        return response;
+      }
+      
+      await response.text();
+      
+      if (attempt < maxRetries - 1) {
+        const jitter = Math.random() * 1000;
+        const delay = (delays[attempt] || 5000) + jitter;
+        console.warn(`[CharacterGenerator] ${context} got ${response.status}, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(r => setTimeout(r, delay));
+      } else {
+        throw new Error(`${context} failed after ${maxRetries} retries (${response.status})`);
+      }
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      const isNetworkError = errMsg.includes('http2') || errMsg.includes('connection') || errMsg.includes('reset') || errMsg.includes('socket') || errMsg.includes('ECONNREFUSED') || errMsg.includes('fetch failed');
+      
+      if (isNetworkError && attempt < maxRetries - 1) {
+        const jitter = Math.random() * 1000;
+        const delay = (delays[attempt] || 5000) + jitter;
+        console.warn(`[CharacterGenerator] ${context} network error: ${errMsg}, retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(r => setTimeout(r, delay));
+      } else {
+        throw err;
+      }
     }
   }
   
