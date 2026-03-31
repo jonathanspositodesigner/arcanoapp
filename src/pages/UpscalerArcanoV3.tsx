@@ -913,8 +913,9 @@ const UpscalerArcanoV3 = () => {
         .v3-pricing-inner { max-width: 1100px; margin: 0 auto; }
         .v3-pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: start; }
         .v3-plan {
+          position: relative;
           background: var(--bg); border: 1px solid var(--card-border); border-radius: 24px;
-          padding: 28px; opacity: 0; transform: translateY(24px);
+          padding: 28px; padding-top: 36px; opacity: 0; transform: translateY(24px);
           transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.3s;
         }
         .v3-plan.v3-visible { opacity: 1; transform: translateY(0); }
