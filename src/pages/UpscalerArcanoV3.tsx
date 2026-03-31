@@ -1624,16 +1624,13 @@ const UpscalerArcanoV3 = () => {
             {/* TRUST ROW */}
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 32, marginTop: 40, flexWrap: "wrap" as const }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--muted)" }}>
-                <span style={{ color: "var(--green)" }}>🔒</span> Pagamento SSL seguro
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--muted)" }}>
                 <span style={{ color: "var(--green)" }}>⚡</span> Acesso imediato
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--muted)" }}>
                 <span style={{ color: "var(--green)" }}>💬</span> Suporte 24/7
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--muted)" }}>
-                <span style={{ color: "var(--green)" }}>🏦</span> Mercado Pago
+                <span style={{ color: "var(--green)" }}>🔒</span> Pagamento seguro · Mercado Pago
               </div>
             </div>
           </div>
