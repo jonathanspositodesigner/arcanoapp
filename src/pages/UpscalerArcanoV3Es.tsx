@@ -62,7 +62,7 @@ const GalleryBeforeAfter = ({ item }: { item: { before: string; after: string; l
         <img src={item.before} alt={`${item.label} antes`} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
         {/* After (clipped) */}
         <div style={{ position: "absolute", inset: 0, clipPath: `inset(0 ${100 - pct}% 0 0)` }}>
-          <img src={item.after} alt={`${item.label} depois`} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+          <img src={item.after} alt={`${item.label} después`} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
         </div>
         {/* Handle */}
         <div style={{ position: "absolute", top: 0, bottom: 0, left: `${pct}%`, transform: "translateX(-50%)", width: 2, background: "rgba(255,255,255,0.7)", zIndex: 5 }}>
@@ -70,7 +70,7 @@ const GalleryBeforeAfter = ({ item }: { item: { before: string; after: string; l
         </div>
         {/* Labels */}
         <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(0,0,0,0.6)", color: "rgba(255,255,255,0.8)", fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 100, zIndex: 6 }}>ANTES</div>
-        <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.8)", fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 100, zIndex: 6 }}>DEPOIS</div>
+        <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.8)", fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 100, zIndex: 6 }}>DESPUÉS</div>
       </div>
       {item.badge && <div className="v3-gallery-badge">{item.badge}</div>}
       <div className="v3-gallery-label">
@@ -114,13 +114,13 @@ const RealResultCard = ({ item }: { item: { before: string; after: string; name:
       >
         <img src={item.before} alt="Antes" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
         <div style={{ position: "absolute", inset: 0, clipPath: `inset(0 ${100 - pct}% 0 0)` }}>
-          <img src={item.after} alt="Depois" style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+          <img src={item.after} alt="Después" style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
         </div>
         <div className="v3-real-handle-line" style={{ left: `${pct}%` }}>
           <div className="v3-real-handle-knob">⟺</div>
         </div>
         <div className="v3-real-label" style={{ left: 8 }}>ANTES</div>
-        <div className="v3-real-label" style={{ right: 8 }}>DEPOIS</div>
+        <div className="v3-real-label" style={{ right: 8 }}>DESPUÉS</div>
       </div>
       <div className="v3-real-card-info">
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -344,18 +344,18 @@ const UpscalerArcanoV3 = () => {
   // Cycling social proof notifications (both mobile and desktop)
   useEffect(() => {
     const people = [
-      { name: "Mariana S.", initial: "M", city: "São Paulo, SP" },
-      { name: "Carlos R.", initial: "C", city: "Belo Horizonte, MG" },
-      { name: "Rafael T.", initial: "R", city: "Rio de Janeiro, RJ" },
-      { name: "Ana Luiza F.", initial: "A", city: "Curitiba, PR" },
-      { name: "Wellington P.", initial: "W", city: "Recife, PE" },
-      { name: "Juliana M.", initial: "J", city: "Porto Alegre, RS" },
-      { name: "Rodrigo L.", initial: "R", city: "Florianópolis, SC" },
-      { name: "Clara V.", initial: "C", city: "Brasília, DF" },
-      { name: "Fernando A.", initial: "F", city: "Salvador, BA" },
-      { name: "Patrícia N.", initial: "P", city: "Fortaleza, CE" },
+      { name: "Valentina R.", initial: "V", city: "Buenos Aires, Argentina" },
+      { name: "Santiago M.", initial: "S", city: "Ciudad de México, México" },
+      { name: "Camila L.", initial: "C", city: "Bogotá, Colombia" },
+      { name: "Mateo G.", initial: "M", city: "Lima, Perú" },
+      { name: "Isabella P.", initial: "I", city: "Santiago, Chile" },
+      { name: "Sebastián A.", initial: "S", city: "Medellín, Colombia" },
+      { name: "Luciana F.", initial: "L", city: "Montevideo, Uruguay" },
+      { name: "Andrés V.", initial: "A", city: "Quito, Ecuador" },
+      { name: "Daniela C.", initial: "D", city: "Guadalajara, México" },
+      { name: "Nicolás T.", initial: "N", city: "Córdoba, Argentina" },
     ];
-    const times = ["há poucos segundos", "há 1 minuto", "há 2 minutos", "há 3 minutos", "há 5 minutos"];
+    const times = ["hace unos segundos", "hace 1 minuto", "hace 2 minutos", "hace 3 minutos", "hace 5 minutos"];
     let idx = Math.floor(Math.random() * people.length);
     let intervalId: ReturnType<typeof setTimeout>;
     const show = () => {
@@ -374,45 +374,45 @@ const UpscalerArcanoV3 = () => {
   const batchEmojis = ["🏔️", "🎸", "👗", "🍕", "🏠", "💍", "🚗", "🌺", "📱", "🎨"];
 
   const galleryItems = [
-    { before: upscalerFotoAntes, after: upscalerFotoDepois, label: "Fotos de Ensaio", desc: "Recupere grain, ruído e baixa luz", badge: "Popular" },
-    { before: render3dAntes, after: render3dDepois, label: "Renders 3D", desc: "Upscale sem perder geometria" },
-    { before: upscalerProdutoAntes, after: upscalerProdutoDepois, label: "Fotos de Produto", desc: "Catálogos e e-commerce em 4K" },
-    { before: upscalerLogoAntes, after: upscalerLogoDepois, label: "Logos e Artes", desc: "Vetores e brandmarks ampliados" },
-    { before: upscalerAntigaAntes, after: upscalerAntigaDepois, label: "Fotos Antigas", desc: "Memórias restauradas com IA" },
-    { before: upscalerFoodAntes, after: upscalerFoodDepois, label: "Fotos de Alimento", desc: "Corrija artefatos, amplie, refine", badge: "V3" },
+    { before: upscalerFotoAntes, after: upscalerFotoDepois, label: "Fotos de Sesión", desc: "Recuperá grano, ruido y baja luz", badge: "Popular" },
+    { before: render3dAntes, after: render3dDepois, label: "Renders 3D", desc: "Upscale sin perder geometría" },
+    { before: upscalerProdutoAntes, after: upscalerProdutoDepois, label: "Fotos de Producto", desc: "Catálogos y e-commerce en 4K" },
+    { before: upscalerLogoAntes, after: upscalerLogoDepois, label: "Logos y Artes", desc: "Vectores y marcas ampliados" },
+    { before: upscalerAntigaAntes, after: upscalerAntigaDepois, label: "Fotos Antiguas", desc: "Recuerdos restaurados con IA" },
+    { before: upscalerFoodAntes, after: upscalerFoodDepois, label: "Fotos de Comida", desc: "Corregí artefactos, ampliá, refiná", badge: "V3" },
   ];
 
   const painCards = [
-    { icon: "📱", title: "Foto de celular pixelada", desc: "Tirou a foto perfeita mas saiu granulada e sem resolução" },
-    { icon: "😤", title: "Cliente mandou foto horrível", desc: "Baixa qualidade, você não pode usar e o prazo tá apertado" },
-    { icon: "📷", title: "Ensaio que ficou granulado", desc: "Luz baixa arruinou sua melhor sessão fotográfica" },
-    { icon: "🤖", title: "Imagem de IA que não prestou", desc: "Gerou com IA mas saiu com artefatos e baixa definição" },
-    { icon: "💸", title: "Perdeu contrato por imagem ruim", desc: "Cliente foi embora porque você não tinha fotos profissionais" },
-    { icon: "🖨️", title: "Artes que ficam ruins na impressão", desc: "Looks bom na tela, pixelado no impresso. Constrangimento total" },
+    { icon: "📱", title: "Foto del celular pixelada", desc: "Sacaste la foto perfecta pero salió granulada y sin resolución" },
+    { icon: "😤", title: "El cliente mandó una foto horrible", desc: "Baja calidad, no la podés usar y la fecha de entrega ya está encima" },
+    { icon: "📷", title: "Sesión que salió granulada", desc: "La poca luz arruinó tu mejor sesión fotográfica" },
+    { icon: "🤖", title: "Imagen de IA que no sirvió", desc: "La generaste con IA pero salió con artefactos y baja definición" },
+    { icon: "💸", title: "Perdiste un trabajo por una imagen mala", desc: "El cliente se fue porque no tenías fotos profesionales" },
+    { icon: "🖨️", title: "Artes que se ven mal impresas", desc: "Se ve bien en la pantalla, pixelado en la impresión. Vergüenza total" },
   ];
 
   const audienceCards = [
-    { emoji: "📸", role: "Fotógrafos", desc: "Entregue fotos impecáveis mesmo quando as condições de iluminação não cooperaram." },
-    { emoji: "🎨", role: "Designers Gráficos", desc: "Receba foto ruim do cliente. Entregue design que impressiona. O Arcano cobre o gap." },
-    { emoji: "📲", role: "Social Media", desc: "Conteúdo visual de alta qualidade que para o scroll e gera engajamento real." },
-    { emoji: "🎸", role: "Músicos e Artistas", desc: "Fotos profissionais para contratantes, releases e capa de EP. Sem pagar fotógrafo." },
-    { emoji: "💻", role: "Infoprodutores", desc: "Landing pages e campanhas com imagens de alto impacto que convertem mais." },
-    { emoji: "✦", role: "Qualquer pessoa", desc: "Foto ruim de viagem, memória familiar, imagem importante. O Arcano resolve." },
+    { emoji: "📸", role: "Fotógrafos", desc: "Entregá fotos impecables incluso cuando las condiciones de luz no ayudaron." },
+    { emoji: "🎨", role: "Diseñadores Gráficos", desc: "Recibí una foto mala del cliente. Entregá un diseño que impresione. Arcano cubre la diferencia." },
+    { emoji: "📲", role: "Social Media", desc: "Contenido visual de alta calidad que frena el scroll y genera engagement real." },
+    { emoji: "🎸", role: "Músicos y Artistas", desc: "Fotos profesionales para contratantes, releases y portadas. Sin pagar fotógrafo." },
+    { emoji: "💻", role: "Infoproductores", desc: "Landing pages y campañas con imágenes de alto impacto que convierten más." },
+    { emoji: "✦", role: "Cualquier persona", desc: "Foto mala de viaje, recuerdo familiar, imagen importante. Arcano lo resuelve." },
   ];
 
   const testimonials = [
-    { text: '"Cliente mandou foto horrível às 18h com entrega pra 21h. Em 3 minutos o Arcano resolveu o que eu levaria 2 horas tentando no Photoshop."', name: "Carlos M.", role: "Designer Gráfico · São Paulo", avatar: "C", gradient: "linear-gradient(135deg,#00D4FF,#7B2FFF)" },
-    { text: '"Sou fotógrafo e uso o lote do V3 toda vez. Processo o ensaio inteiro enquanto edito o segundo set. Economizo literalmente horas por semana."', name: "Rafael T.", role: "Fotógrafo · Belo Horizonte", avatar: "R", gradient: "linear-gradient(135deg,#F5C842,#FF6B35)" },
-    { text: '"Minhas imagens de campanha de lançamento ficaram profissionais de verdade. As vendas subiram 40% depois que comecei a usar nas landing pages."', name: "Ana Luiza F.", role: "Infoprodutora · Curitiba", avatar: "A", gradient: "linear-gradient(135deg,#00E5A0,#0099CC)" },
+    { text: '"Un cliente me mandó una foto horrible a las 6pm con entrega para las 9pm. En 3 minutos Arcano resolvió lo que me llevaría 2 horas en Photoshop."', name: "Carlos M.", role: "Diseñador Gráfico · Buenos Aires", avatar: "C", gradient: "linear-gradient(135deg,#00D4FF,#7B2FFF)" },
+    { text: '"Soy fotógrafo y uso el lote del V3 siempre. Proceso la sesión entera mientras edito el segundo set. Ahorro literalmente horas por semana."', name: "Rafael T.", role: "Fotógrafo · Ciudad de México", avatar: "R", gradient: "linear-gradient(135deg,#F5C842,#FF6B35)" },
+    { text: '"Mis imágenes de campaña de lanzamiento quedaron profesionales de verdad. Las ventas subieron 40% después de que empecé a usarlas en las landing pages."', name: "Ana Luiza F.", role: "Infoproductora · Bogotá", avatar: "A", gradient: "linear-gradient(135deg,#00E5A0,#0099CC)" },
   ];
 
   const faqs = [
-    { q: "Preciso pagar mensalidade?", a: "Não. O Upscaler Arcano funciona com acesso vitalício — você paga uma vez e usa para sempre. Sem cobranças recorrentes, sem surpresas." },
-    { q: "Funciona com qualquer tipo de imagem?", a: "Sim. Fotos de ensaio, logos, renders 3D, fotos antigas, imagens geradas por IA, alimentos, produtos — o Arcano processa qualquer tipo de imagem." },
-    { q: "Quanto tempo leva para processar?", a: "Com o Modo Turbo do V3, menos de 60 segundos por imagem. No lote, você processa até 10 imagens em paralelo ao mesmo tempo." },
-    { q: "Os créditos expiram?", a: "Não. Os créditos que você compra ficam na sua conta para sempre. Use no seu próprio ritmo, sem pressão de data de validade." },
-    { q: "O que é o Modo Turbo? É igual ao resultado normal?", a: "O Modo Turbo é exclusivo do V3 e entrega o mesmo motor de IA, mesma qualidade 4K, mas em menos de 1 minuto — até 10x mais rápido que o processamento padrão." },
-    { q: "Precisa instalar algum programa?", a: "Não. O Upscaler Arcano é 100% online. Acesse direto pelo navegador, sem instalar nada, em qualquer computador." },
+    { q: "¿Tengo que pagar mensualidad?", a: "No. El Upscaler Arcano funciona con acceso vitalicio — pagás una vez y lo usás para siempre. Sin cobros recurrentes, sin sorpresas." },
+    { q: "¿Funciona con cualquier tipo de imagen?", a: "Sí. Fotos de sesión, logos, renders 3D, fotos antiguas, imágenes generadas por IA, comida, productos — Arcano procesa cualquier tipo de imagen." },
+    { q: "¿Cuánto tiempo tarda en procesar?", a: "Con el Modo Turbo del V3, menos de 60 segundos por imagen. En lote, procesás hasta 10 imágenes en paralelo al mismo tiempo." },
+    { q: "¿Los créditos expiran?", a: "No. Los créditos que comprás quedan en tu cuenta para siempre. Usalos a tu ritmo, sin presión de fecha de vencimiento." },
+    { q: "¿Qué es el Modo Turbo? ¿Es igual al resultado normal?", a: "El Modo Turbo es exclusivo del V3 y entrega el mismo motor de IA, misma calidad 4K, pero en menos de 1 minuto — hasta 10x más rápido que el procesamiento estándar." },
+    { q: "¿Hay que instalar algún programa?", a: "No. El Upscaler Arcano es 100% online. Accedé directo desde el navegador, sin instalar nada, desde cualquier computadora." },
   ];
 
   return (
@@ -1267,7 +1267,7 @@ const UpscalerArcanoV3 = () => {
           <div className={`v3-social-popup ${notifVisible ? 'v3-notif-visible' : 'v3-notif-hidden'}`}>
             <div className="v3-popup-avatar">{notifData.initial}</div>
             <div>
-              <strong style={{ color: "#fff", display: "block", fontSize: 13 }}>{notifData.name} acabou de comprar</strong>
+              <strong style={{ color: "#fff", display: "block", fontSize: 13 }}>{notifData.name} acaba de comprar</strong>
               <span style={{ color: "var(--muted2)", fontSize: 12 }}>{notifData.time} · {notifData.city}</span>
             </div>
             <div className="v3-popup-dot" />
@@ -1277,39 +1277,39 @@ const UpscalerArcanoV3 = () => {
         {/* STICKY CTA */}
         <div className={`v3-sticky-cta ${stickyVisible ? "visible" : ""}`}>
           <div style={{ fontSize: 14, color: "var(--muted2)" }}>
-            <strong style={{ color: "var(--white)", fontFamily: "'Syne', sans-serif" }}>Upscaler Arcano V3</strong>{!isMobile && <> — R$ 24,90 pra começar</>}
+            <strong style={{ color: "var(--white)", fontFamily: "'Syne', sans-serif" }}>Upscaler Arcano V3</strong>{!isMobile && <> — Desde R$ 24,90</>}
           </div>
           {isMobile ? (
-            <button className="v3-sticky-btn" onClick={scrollToPrice}>Ver Planos →</button>
+            <button className="v3-sticky-btn" onClick={scrollToPrice}>Ver Planes →</button>
           ) : (
-            <button className="v3-sticky-btn" onClick={scrollToPrice}>Garantir Acesso →</button>
+            <button className="v3-sticky-btn" onClick={scrollToPrice}>Obtener Acceso →</button>
           )}
         </div>
 
         {/* HERO */}
         <section className="v3-hero">
           <div className="v3-hero-badge">
-            <span style={{ animation: "v3Blink 1.5s infinite" }}>●</span> &nbsp;Versão 3 disponível agora
+            <span style={{ animation: "v3Blink 1.5s infinite" }}>●</span> &nbsp;Versión 3 disponible ahora
           </div>
-          <h1>Foto ruim é<br /><em>problema do passado.</em></h1>
+          <h1>Foto mala es<br /><em>problema del pasado.</em></h1>
           <p className="v3-hero-sub">
             {isMobile ? (
-              <>Rápido. Simples. Resultado profissional em 60 segundos.</>
+              <>Rápido. Simple. Resultado profesional en 60 segundos.</>
             ) : (
-              <>O Upscaler Arcano transforma qualquer imagem em qualidade 4K com IA.<br />
-              Rápido. Simples. Resultado profissional em 60 segundos.</>
+              <>El Upscaler Arcano transforma cualquier imagen en calidad 4K con IA.<br />
+              Rápido. Simple. Resultado profesional en 60 segundos.</>
             )}
           </p>
 
           <div className="v3-stats-row">
             <div>
               <div className="v3-stat-num">+3.2<span>mil</span></div>
-              <div className="v3-stat-label">Profissionais ativos</div>
+              <div className="v3-stat-label">Profesionales activos</div>
             </div>
             <div className="v3-stat-divider" />
             <div>
               <div className="v3-stat-num">+14<span>mil</span></div>
-              <div className="v3-stat-label">Imagens melhoradas</div>
+              <div className="v3-stat-label">Imágenes mejoradas</div>
             </div>
             <div className="v3-stat-divider" />
             <div>
@@ -1320,19 +1320,19 @@ const UpscalerArcanoV3 = () => {
 
           <div className="v3-cta-group">
             <button className="v3-btn-primary" onClick={scrollToPrice}>
-              Quero qualidade 4K agora <span>→</span>
+              Quiero calidad 4K ahora <span>→</span>
             </button>
             <div className="v3-hero-micro">
               <span className="dot" />
-              Acesso imediato · Resultado em 60s · Qualidade 4K
+              Acceso inmediato · Resultado en 60s · Calidad 4K
             </div>
           </div>
 
           {/* BEFORE/AFTER SLIDER CAROUSEL */}
           <div className="v3-slider-wrapper">
             <div className="v3-slider-label">
-              <span style={{ color: "var(--red)" }}>← Antes: baixa qualidade</span>
-              <span style={{ color: "var(--cyan)" }}>Depois: 4K nítido →</span>
+              <span style={{ color: "var(--red)" }}>← Antes: baja calidad</span>
+              <span style={{ color: "var(--cyan)" }}>Después: 4K nítido →</span>
             </div>
             <div style={{ position: "relative" }}>
               <div
@@ -1343,17 +1343,17 @@ const UpscalerArcanoV3 = () => {
               >
                 {/* Before layer - full */}
                 <div className="v3-ba-layer">
-                  <img src={heroSlides[currentSlide].before} alt="Antes - baixa qualidade" />
+                  <img src={heroSlides[currentSlide].before} alt="Antes - baja calidad" />
                 </div>
                 {/* After layer - clipped */}
                 <div className="v3-ba-layer" style={{ clipPath: `inset(0 ${100 - sliderPct}% 0 0)` }}>
-                  <img src={heroSlides[currentSlide].after} alt="Depois - qualidade 4K" />
+                  <img src={heroSlides[currentSlide].after} alt="Después - calidad 4K" />
                 </div>
                 {/* Handle */}
                 <div className="v3-drag-handle" style={{ left: `${sliderPct}%` }}>
                   <div className="v3-drag-circle">⟺</div>
                 </div>
-                <div className="v3-drag-hint">⟺ Arraste para comparar</div>
+                <div className="v3-drag-hint">⟺ Arrastrá para comparar</div>
               </div>
               {/* Carousel arrows */}
               <button
@@ -1364,7 +1364,7 @@ const UpscalerArcanoV3 = () => {
               <button
                 onClick={() => goToSlide(1)}
                 className="v3-carousel-arrow v3-carousel-arrow-right"
-                aria-label="Próximo"
+                aria-label="Siguiente"
               >›</button>
             </div>
             {/* Carousel dots */}
@@ -1392,8 +1392,8 @@ const UpscalerArcanoV3 = () => {
         {/* AUDIENCE (was pain strip) */}
         <section className="v3-audience">
           <div className="v3-audience-inner">
-            <div className="v3-section-tag">Para quem é</div>
-            <div className="v3-section-title" style={{ marginBottom: 48 }}>Se você faz dinheiro com imagens,<br /><span>o Upscaler Arcano é pra você!</span></div>
+            <div className="v3-section-tag">¿Para quién es?</div>
+            <div className="v3-section-title" style={{ marginBottom: 48 }}>Si ganás dinero con imágenes,<br /><span>¡el Upscaler Arcano es para vos!</span></div>
             <div className="v3-audience-grid">
               {audienceCards.map((card, i) => (
                 <div key={i} className="v3-audience-card v3-reveal">
@@ -1409,14 +1409,14 @@ const UpscalerArcanoV3 = () => {
         {/* HOW IT WORKS */}
         <section style={{ padding: "100px 24px" }}>
           <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-            <div className="v3-section-tag">Como funciona</div>
-            <div className="v3-section-title">3 passos.<br /><span>Resultado profissional.</span></div>
+            <div className="v3-section-tag">Cómo funciona</div>
+            <div className="v3-section-title">3 pasos.<br /><span>Resultado profesional.</span></div>
             <div className="v3-steps">
               <div className="v3-step v3-reveal">
                 <div className="v3-step-num">1</div>
                 <div className="v3-step-icon-area">
                   <div className="v3-upload-anim">
-                    <div className="v3-upload-box">📤 &nbsp;Solte sua imagem aqui</div>
+                    <div className="v3-upload-box">📤 &nbsp;Soltá tu imagen acá</div>
                     <div className="v3-upload-files">
                       <div className="v3-upload-file">foto.jpg</div>
                       <div className="v3-upload-file">logo.png</div>
@@ -1424,8 +1424,8 @@ const UpscalerArcanoV3 = () => {
                     </div>
                   </div>
                 </div>
-                <div className="v3-step-title">Faça upload</div>
-                <div className="v3-step-desc">Qualquer formato. Qualquer resolução. Até 10 imagens de uma vez no V3.</div>
+                <div className="v3-step-title">Subí tu imagen</div>
+                <div className="v3-step-desc">Cualquier formato. Cualquier resolución. Hasta 10 imágenes a la vez en V3.</div>
               </div>
               <div className="v3-step v3-reveal">
                 <div className="v3-step-num">2</div>
@@ -1433,23 +1433,23 @@ const UpscalerArcanoV3 = () => {
                   <div className="v3-process-anim">
                     <div className="v3-process-ring" />
                     <div className="v3-process-bar-wrap"><div className="v3-process-bar" /></div>
-                    <div className="v3-process-label">IA PROCESSANDO...</div>
+                    <div className="v3-process-label">IA PROCESANDO...</div>
                   </div>
                 </div>
-                <div className="v3-step-title">A IA trabalha</div>
-                <div className="v3-step-desc">Motor exclusivo de IA analisa, amplia e refina cada detalhe da imagem.</div>
+                <div className="v3-step-title">La IA trabaja</div>
+                <div className="v3-step-desc">Motor exclusivo de IA analiza, amplía y refina cada detalle de la imagen.</div>
               </div>
               <div className="v3-step v3-reveal">
                 <div className="v3-step-num">3</div>
                 <div className="v3-step-icon-area">
                   <div className="v3-download-anim">
                     <div className="v3-download-check">✓</div>
-                    <div className="v3-download-label">PRONTO EM 60s</div>
-                    <div className="v3-download-quality">Qualidade <span>4K</span></div>
+                    <div className="v3-download-label">LISTO EN 60s</div>
+                    <div className="v3-download-quality">Calidad <span>4K</span></div>
                   </div>
                 </div>
-                <div className="v3-step-title">Baixe em 4K</div>
-                <div className="v3-step-desc">Sua imagem transformada. Individual ou em lote. Download imediato.</div>
+                <div className="v3-step-title">Descargá en 4K</div>
+                <div className="v3-step-desc">Tu imagen transformada. Individual o en lote. Descarga inmediata.</div>
               </div>
             </div>
           </div>
@@ -1461,10 +1461,10 @@ const UpscalerArcanoV3 = () => {
             <div className="v3-features-header">
               <div>
                 <div className="v3-badge">✦ &nbsp;Exclusivo V3</div>
-                <div className="v3-section-title" style={{ marginBottom: 0 }}>Dois novos recursos<br /><span>recém adicionados</span></div>
+                <div className="v3-section-title" style={{ marginBottom: 0 }}>Dos nuevas funciones<br /><span>recién agregadas</span></div>
               </div>
               <p style={{ maxWidth: 280, color: "var(--muted2)", fontSize: 15, lineHeight: 1.6 }}>
-                A versão 3 chegou com duas inovações que mudam completamente o seu fluxo de trabalho.
+                La versión 3 llegó con dos innovaciones que cambian completamente tu flujo de trabajo.
               </p>
             </div>
 
@@ -1488,15 +1488,15 @@ const UpscalerArcanoV3 = () => {
                         <div className="v3-turbo-unit">segundos</div>
                       </div>
                     </div>
-                    <div className="v3-turbo-speed">⚡ 10x mais rápido</div>
+                    <div className="v3-turbo-speed">⚡ 10x más rápido</div>
                   </div>
                 </div>
                 <div className="v3-feature-content">
                   <div className="v3-feature-label">⚡ Modo Turbo</div>
-                  <div className="v3-feature-title">Resultado em menos de 1 minuto</div>
-                  <div className="v3-feature-desc">Enquanto o cliente ainda está no WhatsApp, a imagem já está pronta. Mesmo motor de IA. Mesma qualidade 4K. Só que agora em tempo recorde.</div>
+                  <div className="v3-feature-title">Resultado en menos de 1 minuto</div>
+                  <div className="v3-feature-desc">Mientras el cliente todavía está en WhatsApp, la imagen ya está lista. Mismo motor de IA. Misma calidad 4K. Solo que ahora en tiempo récord.</div>
                   <div className="v3-feature-pills">
-                    <span className="v3-pill">Velocidade 10x</span>
+                    <span className="v3-pill">Velocidad 10x</span>
                     <span className="v3-pill">4K preservado</span>
                     <span className="v3-pill">Entregas urgentes</span>
                   </div>
@@ -1515,13 +1515,13 @@ const UpscalerArcanoV3 = () => {
                   </div>
                 </div>
                 <div className="v3-feature-content">
-                  <div className="v3-feature-label" style={{ color: "#9B6FFF" }}>🗂 Upscale em Lote</div>
-                  <div className="v3-feature-title">Até 10 imagens simultâneas</div>
-                  <div className="v3-feature-desc">Chega de processar uma por uma. Selecione tudo de uma vez, clique uma vez, e deixa a IA trabalhar enquanto você descansa.</div>
+                  <div className="v3-feature-label" style={{ color: "#9B6FFF" }}>🗂 Upscale en Lote</div>
+                  <div className="v3-feature-title">Hasta 10 imágenes simultáneas</div>
+                  <div className="v3-feature-desc">Basta de procesar una por una. Seleccioná todo de una vez, hacé clic una vez, y dejá que la IA trabaje mientras descansás.</div>
                   <div className="v3-feature-pills">
-                    <span className="v3-pill">10 imagens juntas</span>
-                    <span className="v3-pill">Processamento paralelo</span>
-                    <span className="v3-pill">Download em lote</span>
+                    <span className="v3-pill">10 imágenes juntas</span>
+                    <span className="v3-pill">Procesamiento paralelo</span>
+                    <span className="v3-pill">Descarga en lote</span>
                   </div>
                 </div>
               </div>
@@ -1531,8 +1531,8 @@ const UpscalerArcanoV3 = () => {
 
         {/* GALLERY */}
         <section className="v3-gallery">
-          <div className="v3-section-tag">Funciona com tudo</div>
-          <div className="v3-section-title" style={{ marginBottom: 40 }}>Melhora imagens<br /><span>de todo tipo</span></div>
+          <div className="v3-section-tag">Funciona con todo</div>
+          <div className="v3-section-title" style={{ marginBottom: 40 }}>Mejora imágenes<br /><span>de todo tipo</span></div>
           <div className="v3-gallery-grid">
             {galleryItems.map((item, i) => (
               <GalleryBeforeAfter key={i} item={item} />
@@ -1543,21 +1543,21 @@ const UpscalerArcanoV3 = () => {
 
         {/* SOCIAL PROOF */}
         <section className="v3-proof">
-          <div className="v3-section-tag">Resultados reais</div>
-          <div className="v3-section-title" style={{ marginBottom: 48 }}>Números que<br /><span>falam por si.</span></div>
+          <div className="v3-section-tag">Resultados reales</div>
+          <div className="v3-section-title" style={{ marginBottom: 48 }}>Números que<br /><span>hablan por sí solos.</span></div>
 
           <div className="v3-proof-numbers">
             <div className="v3-proof-num-card">
               <div className="v3-proof-number cyan" data-target="3200">0</div>
-              <div className="v3-proof-num-label">Profissionais que já usam o Arcano</div>
+              <div className="v3-proof-num-label">Profesionales que ya usan Arcano</div>
             </div>
             <div className="v3-proof-num-card">
               <div className="v3-proof-number gold" data-target="14000">0</div>
-              <div className="v3-proof-num-label">Imagens melhoradas com sucesso</div>
+              <div className="v3-proof-num-label">Imágenes mejoradas con éxito</div>
             </div>
             <div className="v3-proof-num-card">
               <div className="v3-proof-number green" data-target="100">0</div>
-              <div className="v3-proof-num-label">% de satisfação dos clientes</div>
+              <div className="v3-proof-num-label">% de satisfacción de los clientes</div>
             </div>
           </div>
 
@@ -1573,7 +1573,7 @@ const UpscalerArcanoV3 = () => {
               "/images/depo-v3-8.webp",
             ].map((src, i) => (
               <div key={i} className="v3-reveal" style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--card-border)" }}>
-                <img src={src} alt={`Depoimento real ${i + 1}`} loading="lazy" style={{ width: "100%", height: "auto", display: "block" }} />
+                <img src={src} alt={`Testimonio real ${i + 1}`} loading="lazy" style={{ width: "100%", height: "auto", display: "block" }} />
               </div>
             ))}
           </div>
@@ -1583,8 +1583,8 @@ const UpscalerArcanoV3 = () => {
         <section className="v3-pricing" id="v3-pricing">
           <div className="v3-pricing-inner">
             <div style={{ textAlign: "center", marginBottom: 60 }}>
-              <div className="v3-section-tag" style={{ display: "inline-block" }}>Planos e Preços</div>
-              <div className="v3-section-title" style={{ marginTop: 12 }}>Comece agora.<br /><span>Acesso imediato.</span></div>
+              <div className="v3-section-tag" style={{ display: "inline-block" }}>Planes y Precios</div>
+              <div className="v3-section-title" style={{ marginTop: 12 }}>Empezá ahora.<br /><span>Acceso inmediato.</span></div>
             </div>
 
             <div className="v3-pricing-grid">
@@ -1594,20 +1594,20 @@ const UpscalerArcanoV3 = () => {
                   <Rocket size={32} style={{ color: "rgba(255,255,255,0.5)" }} />
                 </div>
                 <div className="v3-plan-name">Starter</div>
-                <div className="v3-plan-tagline">Para experimentar</div>
+                <div className="v3-plan-tagline">Para probar</div>
                 <div className="v3-plan-price">
                   <span className="currency">R$</span>
                   <span className="amount">24</span>
                   <span className="cents">,90</span>
-                  <span className="period">acesso vitalício</span>
+                  <span className="period">acceso vitalicio</span>
                 </div>
-                <button className="v3-plan-cta outline" onClick={() => openCheckout("upscaler-arcano-starter")}>Começar →</button>
+                <button className="v3-plan-cta outline" onClick={() => openCheckout("upscaler-arcano-starter")}>Empezar →</button>
                 <div className="v3-plan-divider" />
-                <div className="v3-plan-feature"><span className="check">✓</span> 25 imagens</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> 25 imágenes</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> 1.500 créditos</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale em Lote V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Suporte via WhatsApp</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Soporte vía WhatsApp</div>
               </div>
 
               {/* PRO */}
@@ -1616,70 +1616,70 @@ const UpscalerArcanoV3 = () => {
                   <Flame size={32} style={{ color: "#d946ef" }} />
                 </div>
                 <div className="v3-plan-name">Pro</div>
-                <div className="v3-plan-tagline">3x mais por R$12 a mais</div>
+                <div className="v3-plan-tagline">3x más por R$12 extra</div>
                 <div className="v3-plan-price">
                   <span className="currency">R$</span>
                   <span className="amount">37</span>
                   <span className="cents">,00</span>
-                  <span className="period">acesso vitalício</span>
+                  <span className="period">acceso vitalicio</span>
                 </div>
-                <button className="v3-plan-cta outline" onClick={() => openCheckout("upscaler-arcano-pro")}>Começar →</button>
+                <button className="v3-plan-cta outline" onClick={() => openCheckout("upscaler-arcano-pro")}>Empezar →</button>
                 <div className="v3-plan-divider" />
-                <div className="v3-plan-feature"><span className="check">✓</span> 70 imagens</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> 70 imágenes</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> 4.200 créditos</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale em Lote V3</span></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> NanoBanana Pro</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Veo 3 (geração de vídeo)</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Veo 3 (generación de video)</div>
               </div>
 
               {/* ULTIMATE */}
               <div className="v3-plan featured v3-reveal">
-                <div className="v3-plan-popular">⚡ Mais vendido</div>
+                <div className="v3-plan-popular">⚡ Más vendido</div>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
                   <Crown size={32} style={{ color: "#84cc16" }} />
                 </div>
                 <div className="v3-plan-name">Ultimate</div>
-                <div className="v3-plan-tagline">Ideal para criadores ativos</div>
+                <div className="v3-plan-tagline">Ideal para creadores activos</div>
                 <div className="v3-plan-price">
                   <span className="currency">R$</span>
                   <span className="amount">79</span>
                   <span className="cents">,90</span>
-                  <span className="period">acesso vitalício</span>
+                  <span className="period">acceso vitalicio</span>
                 </div>
-                <button className="v3-plan-cta filled" onClick={() => openCheckout("upscaler-arcano-ultimate")}>Garantir Acesso →</button>
+                <button className="v3-plan-cta filled" onClick={() => openCheckout("upscaler-arcano-ultimate")}>Obtener Acceso →</button>
                 <div className="v3-plan-divider" />
-                <div className="v3-plan-feature"><span className="check">✓</span> 233 imagens</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> 233 imágenes</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> 14.000 créditos</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale em Lote V3</span></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> NanoBanana Pro</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Veo 3 (geração de vídeo)</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Suporte prioritário</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Veo 3 (generación de video)</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Soporte prioritario</div>
               </div>
 
               {/* VITALÍCIO */}
               <div className="v3-plan v3-plan-lifetime v3-reveal">
-                <div className="v3-plan-popular v3-plan-popular-gold">♾ Vitalício</div>
+                <div className="v3-plan-popular v3-plan-popular-gold">♾ Vitalicio</div>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
                   <Infinity size={32} style={{ color: "#f5c842" }} />
                 </div>
                 <div className="v3-plan-name">Ilimitado</div>
-                <div className="v3-plan-tagline">Acesso permanente a tudo</div>
+                <div className="v3-plan-tagline">Acceso permanente a todo</div>
                 <div className="v3-plan-price">
                   <span className="currency">R$</span>
                   <span className="amount">99</span>
                   <span className="cents">,90</span>
-                  <span className="period">paga uma vez · usa para sempre</span>
+                  <span className="period">pagás una vez · usás para siempre</span>
                 </div>
-                <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => openCheckout("upscaler-arcano-v3")}>Garantir Vitalício →</button>
+                <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => openCheckout("upscaler-arcano-v3")}>Obtener Vitalicio →</button>
                 <div className="v3-plan-divider" />
-                <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Acesso vitalício completo</strong></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Todas as ferramentas</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Acceso vitalicio completo</strong></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Todas las herramientas</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale em Lote V3</span></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> NanoBanana Pro + Veo 3</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Todas as atualizações futuras</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Todas las actualizaciones futuras</div>
               </div>
             </div>
 
@@ -1687,15 +1687,15 @@ const UpscalerArcanoV3 = () => {
             <div className="v3-trust-badges-row">
               <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.1s" }}>
                 <span className="v3-trust-badge-icon">⚡</span>
-                <span>Acesso imediato</span>
+                <span>Acceso inmediato</span>
               </div>
               <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.25s" }}>
                 <span className="v3-trust-badge-icon">💬</span>
-                <span>Suporte 24/7</span>
+                <span>Soporte 24/7</span>
               </div>
               <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.4s" }}>
                 <span className="v3-trust-badge-icon">🔒</span>
-                <span>Pagamento seguro · Mercado Pago</span>
+                <span>Pago seguro · Mercado Pago</span>
               </div>
             </div>
           </div>
@@ -1708,9 +1708,9 @@ const UpscalerArcanoV3 = () => {
               <ShieldCheck size={32} strokeWidth={1.8} />
             </div>
             <div>
-              <div className="v3-guarantee-title">Garantia de 7 dias</div>
-              <div className="v3-guarantee-text">Se não gostar do resultado, devolvemos 100% do seu dinheiro. Sem perguntas, sem burocracia. É confiança total no que entregamos.</div>
-              <span className="v3-guarantee-badge">✓ RISCO ZERO</span>
+              <div className="v3-guarantee-title">Garantía de 7 días</div>
+              <div className="v3-guarantee-text">Si no te gusta el resultado, te devolvemos el 100% de tu dinero. Sin preguntas, sin burocracia. Es confianza total en lo que entregamos.</div>
+              <span className="v3-guarantee-badge">✓ RIESGO CERO</span>
             </div>
           </div>
         </section>
@@ -1719,10 +1719,10 @@ const UpscalerArcanoV3 = () => {
         <section className="v3-real-results">
           <div className="v3-real-results-inner">
             <div style={{ textAlign: "center", marginBottom: 60 }}>
-              <div className="v3-section-tag" style={{ display: "inline-block" }}>Resultados Reais</div>
-              <div className="v3-section-title" style={{ marginTop: 12 }}>Veja o que nossos usuários<br /><span>estão alcançando.</span></div>
+              <div className="v3-section-tag" style={{ display: "inline-block" }}>Resultados Reales</div>
+              <div className="v3-section-title" style={{ marginTop: 12 }}>Mirá lo que nuestros usuarios<br /><span>están logrando.</span></div>
               <p style={{ fontSize: 16, color: "var(--muted2)", marginTop: 12, maxWidth: 600, margin: "12px auto 0" }}>
-                Antes e depois reais enviados por profissionais que usam o Upscaler Arcano no dia a dia.
+                Antes y después reales enviados por profesionales que usan el Upscaler Arcano todos los días.
               </p>
             </div>
 
@@ -1733,7 +1733,7 @@ const UpscalerArcanoV3 = () => {
                   after: "/images/mauricio-depois.webp",
                   name: "Maurício",
                   handle: "@ventus.studio",
-                  text: "Como fotógrafo já perdi inúmeras fotos por saírem desfocadas na hora da correria dos ensaios, e essa ferramenta literalmente me salvou!",
+                  text: "Como fotógrafo ya perdí muchas fotos por salir desenfocadas en la correría de las sesiones, ¡y esta herramienta literalmente me salvó!",
                   avatar: "/images/mauricio-avatar.png"
                 },
                 {
@@ -1741,7 +1741,7 @@ const UpscalerArcanoV3 = () => {
                   after: "/images/mariana-depois.webp",
                   name: "Mariana Costa",
                   handle: "@mari.visualarts",
-                  text: "Restaurei fotos antigas da minha família que estavam super pixeladas. O resultado ficou lindo, parecia foto nova.",
+                  text: "Restauré fotos antiguas de mi familia que estaban súper pixeladas. El resultado quedó hermoso, parecían fotos nuevas.",
                   avatar: "/images/mariana-avatar.png"
                 },
                 {
@@ -1749,7 +1749,7 @@ const UpscalerArcanoV3 = () => {
                   after: "/images/rodrigo-depois.webp",
                   name: "Rodrigo Mélius",
                   handle: "@melius.arquitetura",
-                  text: "Nenhuma outra ferramenta que testei conseguiu reproduzir meus projetos com a fidelidade que essa ferramenta faz!",
+                  text: "¡Ninguna otra herramienta que probé logró reproducir mis proyectos con la fidelidad que esta herramienta tiene!",
                   avatar: "/images/rodrigo-avatar.png"
                 }
               ].map((item, i) => (
@@ -1763,8 +1763,8 @@ const UpscalerArcanoV3 = () => {
         <section className="v3-faq">
           <div className="v3-faq-inner">
             <div style={{ textAlign: "center", marginBottom: 60 }}>
-              <div className="v3-section-tag" style={{ display: "inline-block" }}>Perguntas frequentes</div>
-              <div className="v3-section-title" style={{ marginTop: 12 }}>Tudo que você<br /><span>precisa saber.</span></div>
+              <div className="v3-section-tag" style={{ display: "inline-block" }}>Preguntas frecuentes</div>
+              <div className="v3-section-title" style={{ marginTop: 12 }}>Todo lo que<br /><span>necesitás saber.</span></div>
             </div>
             {faqs.map((faq, i) => (
               <div
@@ -1784,21 +1784,21 @@ const UpscalerArcanoV3 = () => {
 
         {/* FINAL CTA */}
         <section className="v3-final-cta">
-          <h2>Sua próxima imagem<br />merece ser <em>perfeita.</em></h2>
-          <p>+3.200 profissionais já sabem disso. Agora é a sua vez.</p>
+          <h2>Tu próxima imagen<br />merece ser <em>perfecta.</em></h2>
+          <p>+3.200 profesionales ya lo saben. Ahora es tu turno.</p>
           <button className="v3-btn-primary" onClick={scrollToPrice} style={{ display: "inline-flex" }}>
-            Quero o Upscaler Arcano V3 <span>→</span>
+            Quiero el Upscaler Arcano V3 <span>→</span>
           </button>
           <div className="v3-final-trust">
-            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Acesso imediato</div>
-            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Sem mensalidade</div>
-            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Resultado em 60s</div>
-            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Paga uma vez</div>
+            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Acceso inmediato</div>
+            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Sin mensualidad</div>
+            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Resultado en 60s</div>
+            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Pagás una vez</div>
           </div>
         </section>
 
         <footer className="v3-footer">
-          <span>© 2026 Upscaler Arcano · Todos os direitos reservados</span>
+          <span>© 2026 Upscaler Arcano · Todos los derechos reservados</span>
         </footer>
       </div>
       <MPCheckoutModal />
