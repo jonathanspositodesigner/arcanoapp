@@ -1630,6 +1630,9 @@ const UpscalerArcanoV3 = () => {
               {/* ULTIMATE */}
               <div className="v3-plan featured v3-reveal">
                 <div className="v3-plan-popular">⚡ Mais vendido</div>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                  <Crown size={32} style={{ color: "#84cc16" }} />
+                </div>
                 <div className="v3-plan-name">Ultimate</div>
                 <div className="v3-plan-tagline">Ideal para criadores ativos</div>
                 <div className="v3-plan-price">
