@@ -1635,27 +1635,27 @@ const UpscalerArcanoV3 = () => {
 
               {/* ULTIMATE */}
               <div className="v3-plan featured v3-reveal">
-                <div className="v3-plan-popular">⚡ Mais vendido</div>
+                <div className="v3-plan-popular">⚡ Más vendido</div>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
                   <Crown size={32} style={{ color: "#84cc16" }} />
                 </div>
                 <div className="v3-plan-name">Ultimate</div>
-                <div className="v3-plan-tagline">Ideal para criadores ativos</div>
+                <div className="v3-plan-tagline">Ideal para creadores activos</div>
                 <div className="v3-plan-price">
                   <span className="currency">R$</span>
                   <span className="amount">79</span>
                   <span className="cents">,90</span>
-                  <span className="period">acesso vitalício</span>
+                  <span className="period">acceso vitalicio</span>
                 </div>
-                <button className="v3-plan-cta filled" onClick={() => openCheckout("upscaler-arcano-ultimate")}>Garantir Acesso →</button>
+                <button className="v3-plan-cta filled" onClick={() => openCheckout("upscaler-arcano-ultimate")}>Obtener Acceso →</button>
                 <div className="v3-plan-divider" />
-                <div className="v3-plan-feature"><span className="check">✓</span> 233 imagens</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> 233 imágenes</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> 14.000 créditos</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale em Lote V3</span></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> NanoBanana Pro</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Veo 3 (geração de vídeo)</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Suporte prioritário</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Veo 3 (generación de video)</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Soporte prioritario</div>
               </div>
 
               {/* VITALÍCIO */}
