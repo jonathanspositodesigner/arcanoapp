@@ -374,12 +374,12 @@ const UpscalerArcanoV3 = () => {
   const batchEmojis = ["🏔️", "🎸", "👗", "🍕", "🏠", "💍", "🚗", "🌺", "📱", "🎨"];
 
   const galleryItems = [
-    { before: upscalerFotoAntes, after: upscalerFotoDepois, label: "Fotos de Sesión", desc: "Recuperá grano, ruido y baja luz", badge: "Popular" },
+    { before: upscalerFotoAntes, after: upscalerFotoDepois, label: "Fotos de Sesión", desc: "Recuperá grano, ruido y baja luz" },
     { before: render3dAntes, after: render3dDepois, label: "Renders 3D", desc: "Upscale sin perder geometría" },
     { before: upscalerProdutoAntes, after: upscalerProdutoDepois, label: "Fotos de Producto", desc: "Catálogos y e-commerce en 4K" },
     { before: upscalerLogoAntes, after: upscalerLogoDepois, label: "Logos y Artes", desc: "Vectores y marcas ampliados" },
     { before: upscalerAntigaAntes, after: upscalerAntigaDepois, label: "Fotos Antiguas", desc: "Recuerdos restaurados con IA" },
-    { before: upscalerFoodAntes, after: upscalerFoodDepois, label: "Fotos de Comida", desc: "Corregí artefactos, ampliá, refiná", badge: "V3" },
+    { before: upscalerFoodAntes, after: upscalerFoodDepois, label: "Fotos de Comida", desc: "Corregí artefactos, ampliá, refiná" },
   ];
 
   const painCards = [
@@ -1260,7 +1260,7 @@ const UpscalerArcanoV3 = () => {
         <nav className="v3-topbar">
           <div className="v3-topbar-logo">⬆ Upscaler Arcano</div>
           <div className="v3-topbar-badge">✦ V3 NOVO</div>
-          <button className="v3-topbar-cta" onClick={scrollToPrice}>Ver Planos</button>
+          <button className="v3-topbar-cta" onClick={scrollToPrice}>Adquirir Vitalicio</button>
         </nav>
 
         {/* SOCIAL POPUP - cycling on both mobile and desktop */}
@@ -1278,10 +1278,10 @@ const UpscalerArcanoV3 = () => {
         {/* STICKY CTA */}
         <div className={`v3-sticky-cta ${stickyVisible ? "visible" : ""}`}>
           <div style={{ fontSize: 14, color: "var(--muted2)" }}>
-            <strong style={{ color: "var(--white)", fontFamily: "'Syne', sans-serif" }}>Upscaler Arcano V3</strong>{!isMobile && <> — Desde R$ 24,90</>}
+            <strong style={{ color: "var(--white)", fontFamily: "'Syne', sans-serif" }}>Upscaler Arcano V3</strong>{!isMobile && <> — $19,90 USD</>}
           </div>
           {isMobile ? (
-            <button className="v3-sticky-btn" onClick={scrollToPrice}>Ver Planes →</button>
+            <button className="v3-sticky-btn" onClick={scrollToPrice}>Adquirir Vitalicio →</button>
           ) : (
             <button className="v3-sticky-btn" onClick={scrollToPrice}>Obtener Acceso →</button>
           )}
@@ -1606,7 +1606,7 @@ const UpscalerArcanoV3 = () => {
                 <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => openCheckout("upscaler-arcano-v3")}>Obtener Vitalicio →</button>
                 <div className="v3-plan-divider" />
                 <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Uso ilimitado · sin créditos</strong></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Agrega detalles y texturas de piel ultra realistas</div>
+                
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> Todas las actualizaciones futuras</div>
@@ -1626,7 +1626,7 @@ const UpscalerArcanoV3 = () => {
               </div>
               <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.4s" }}>
                 <span className="v3-trust-badge-icon">🔒</span>
-                <span>Pago seguro · Mercado Pago</span>
+                <span>Pago seguro · Hotmart</span>
               </div>
             </div>
           </div>
