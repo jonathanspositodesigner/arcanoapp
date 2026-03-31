@@ -1699,7 +1699,26 @@ const UpscalerArcanoV3 = () => {
           </div>
         </section>
 
-        {/* GUARANTEE */}
+        {/* TESTE GRÁTIS */}
+        <section style={{ padding: "80px 24px", background: "rgba(0,0,0,0.3)" }}>
+          <div style={{ maxWidth: 520, margin: "0 auto", textAlign: "center" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(217,70,239,0.1)", border: "1px solid rgba(217,70,239,0.3)", borderRadius: 9999, padding: "6px 16px", marginBottom: 16 }}>
+              <Gift size={16} style={{ color: "#e879f9" }} />
+              <span style={{ color: "#d8b4fe", fontSize: 12, fontWeight: 500 }}>Teste Grátis</span>
+            </div>
+            <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "clamp(24px,4vw,32px)", fontWeight: 700, color: "#fff", marginBottom: 12, lineHeight: 1.2 }}>
+              Teste o Upscaler Arcano V3{" "}
+              <span style={{ background: "linear-gradient(90deg,#e879f9,#a855f7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                grátis agora mesmo
+              </span>
+            </h2>
+            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, marginBottom: 24 }}>
+              Experimente o Upscaler Arcano V3 e veja o poder da melhoria de imagens com IA
+            </p>
+            <TrialButton />
+          </div>
+        </section>
+
         <section className="v3-guarantee-strip">
           <div className="v3-guarantee-card">
             <div className="v3-guarantee-icon-wrap">
