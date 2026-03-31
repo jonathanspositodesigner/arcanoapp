@@ -1251,24 +1251,13 @@ const UpscalerArcanoV3 = () => {
           <button className="v3-topbar-cta" onClick={scrollToPrice}>Ver Planos</button>
         </nav>
 
-        {/* SOCIAL POPUP - Desktop: static, Mobile: cycling */}
-        {isMobile ? (
-          notifData && (
-            <div className={`v3-social-popup ${notifVisible ? 'v3-notif-visible' : 'v3-notif-hidden'}`}>
-              <div className="v3-popup-avatar">{notifData.initial}</div>
-              <div>
-                <strong style={{ color: "var(--white)", display: "block", fontSize: 13 }}>{notifData.name} acabou de comprar</strong>
-                <span style={{ color: "var(--muted2)", fontSize: 12 }}>{notifData.time} · {notifData.city}</span>
-              </div>
-              <div className="v3-popup-dot" />
-            </div>
-          )
-        ) : (
-          <div className="v3-social-popup">
-            <div className="v3-popup-avatar">M</div>
+        {/* SOCIAL POPUP - cycling on both mobile and desktop */}
+        {notifData && (
+          <div className={`v3-social-popup ${notifVisible ? 'v3-notif-visible' : 'v3-notif-hidden'}`}>
+            <div className="v3-popup-avatar">{notifData.initial}</div>
             <div>
-              <strong style={{ color: "var(--white)", display: "block", fontSize: 13 }}>Mariana S. acabou de comprar</strong>
-              <span style={{ color: "var(--muted2)", fontSize: 12 }}>há 3 minutos · São Paulo, SP</span>
+              <strong style={{ color: "#fff", display: "block", fontSize: 13 }}>{notifData.name} acabou de comprar</strong>
+              <span style={{ color: "var(--muted2)", fontSize: 12 }}>{notifData.time} · {notifData.city}</span>
             </div>
             <div className="v3-popup-dot" />
           </div>
