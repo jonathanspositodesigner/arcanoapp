@@ -933,7 +933,7 @@ const UpscalerArcanoV3 = () => {
         .v3-pricing-inner { max-width: 1100px; margin: 0 auto; }
         .v3-pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: start; }
         .v3-plan {
-          position: relative;
+          position: relative; text-align: center;
           background: var(--bg); border: 1px solid var(--card-border); border-radius: 24px;
           padding: 28px; padding-top: 36px; opacity: 0; transform: translateY(24px);
           transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.3s;
@@ -986,15 +986,15 @@ const UpscalerArcanoV3 = () => {
         }
         .v3-plan-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
         .v3-plan-tagline { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
-        .v3-plan-price { margin-bottom: 24px; display: flex; align-items: baseline; flex-wrap: wrap; }
+        .v3-plan-price { margin-bottom: 24px; display: flex; align-items: baseline; flex-wrap: wrap; justify-content: center; }
         .v3-plan-price .amount { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 42px; font-weight: 800; line-height: 1; }
         .v3-plan-price .cents { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 700; line-height: 1; }
         .v3-plan-price .currency { font-size: 20px; font-weight: 600; margin-right: 2px; color: var(--muted2); }
-        .v3-plan-price .period { font-size: 13px; color: var(--muted); display: block; width: 100%; margin-top: 4px; }
+        .v3-plan-price .period { font-size: 13px; color: var(--muted); display: block; width: 100%; margin-top: 4px; text-align: center; }
         .v3-plan-cta {
           display: block; text-align: center; font-family: 'Syne', sans-serif; font-weight: 700;
           font-size: 15px; padding: 14px; border-radius: 14px; text-decoration: none;
-          margin-bottom: 24px; transition: all 0.2s; cursor: pointer;
+          margin: 0 auto 24px auto; max-width: 320px; transition: all 0.2s; cursor: pointer;
         }
         .v3-plan-cta.outline { border: 1px solid var(--card-border); color: var(--white); background: transparent; }
         .v3-plan-cta.outline:hover { border-color: var(--cyan); color: var(--cyan); }
@@ -1004,7 +1004,7 @@ const UpscalerArcanoV3 = () => {
         }
         .v3-plan-cta.filled:hover { transform: scale(1.03); box-shadow: 0 0 50px rgba(0,212,255,0.5); }
         .v3-plan-divider { height: 1px; background: var(--card-border); margin-bottom: 20px; }
-        .v3-plan-feature { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted2); margin-bottom: 10px; }
+        .v3-plan-feature { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted2); margin-bottom: 10px; justify-content: center; }
         .v3-plan-feature .check { color: var(--green); flex-shrink: 0; }
         .v3-plan-feature .special { color: var(--cyan); }
 
