@@ -1260,7 +1260,7 @@ const UpscalerArcanoV3 = () => {
         <nav className="v3-topbar">
           <div className="v3-topbar-logo">⬆ Upscaler Arcano</div>
           <div className="v3-topbar-badge">✦ V3 NOVO</div>
-          <button className="v3-topbar-cta" onClick={scrollToPrice}>Ver Planos</button>
+          <button className="v3-topbar-cta" onClick={scrollToPrice}>Adquirir Vitalicio</button>
         </nav>
 
         {/* SOCIAL POPUP - cycling on both mobile and desktop */}
