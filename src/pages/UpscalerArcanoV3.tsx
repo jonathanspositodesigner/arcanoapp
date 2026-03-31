@@ -916,10 +916,14 @@ const UpscalerArcanoV3 = () => {
           text-align: center; color: var(--muted); font-size: 13px;
         }
 
+        /* DEPO GRID */
+        .v3-depo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 1100px; margin: 0 auto; }
+
         /* RESPONSIVE */
         @media (max-width: 900px) {
           .v3-feature-cards, .v3-audience-grid, .v3-testimonials, .v3-pricing-grid { grid-template-columns: 1fr 1fr; }
           .v3-pain-grid { grid-template-columns: repeat(2, 1fr); }
+          .v3-depo-grid { grid-template-columns: repeat(2, 1fr); }
           .v3-steps { grid-template-columns: 1fr; }
           .v3-steps::before { display: none; }
           .v3-gallery-grid { grid-template-columns: repeat(2, 1fr); }
@@ -980,7 +984,7 @@ const UpscalerArcanoV3 = () => {
             </div>
             <div className="v3-stat-divider" />
             <div>
-              <div className="v3-stat-num">+5<span>mil</span></div>
+              <div className="v3-stat-num">+14<span>mil</span></div>
               <div className="v3-stat-label">Imagens melhoradas</div>
             </div>
             <div className="v3-stat-divider" />
@@ -1132,7 +1136,7 @@ const UpscalerArcanoV3 = () => {
             <div className="v3-features-header">
               <div>
                 <div className="v3-badge">✦ &nbsp;Exclusivo V3</div>
-                <div className="v3-section-title" style={{ marginBottom: 0 }}>Dois recursos.<br /><span>Impacto real.</span></div>
+                <div className="v3-section-title" style={{ marginBottom: 0 }}>Dois novos recursos<br /><span>recém adicionados</span></div>
               </div>
               <p style={{ maxWidth: 280, color: "var(--muted2)", fontSize: 15, lineHeight: 1.6 }}>
                 A versão 3 chegou com duas inovações que mudam completamente o seu fluxo de trabalho.
@@ -1215,7 +1219,7 @@ const UpscalerArcanoV3 = () => {
         <section className="v3-audience">
           <div className="v3-audience-inner">
             <div className="v3-section-tag">Para quem é</div>
-            <div className="v3-section-title" style={{ marginBottom: 48 }}>Se você cria,<br /><span>o Arcano é seu.</span></div>
+            <div className="v3-section-title" style={{ marginBottom: 48 }}>Se você faz dinheiro com imagens,<br /><span>o Upscaler Arcano é pra você!</span></div>
             <div className="v3-audience-grid">
               {audienceCards.map((card, i) => (
                 <div key={i} className="v3-audience-card v3-reveal">
@@ -1239,7 +1243,7 @@ const UpscalerArcanoV3 = () => {
               <div className="v3-proof-num-label">Profissionais que já usam o Arcano</div>
             </div>
             <div className="v3-proof-num-card">
-              <div className="v3-proof-number gold" data-target="5000">0</div>
+              <div className="v3-proof-number gold" data-target="14000">0</div>
               <div className="v3-proof-num-label">Imagens melhoradas com sucesso</div>
             </div>
             <div className="v3-proof-num-card">
@@ -1248,18 +1252,19 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
 
-          <div className="v3-testimonials">
-            {testimonials.map((t, i) => (
-              <div key={i} className="v3-testimonial v3-reveal">
-                <div className="v3-stars">★★★★★</div>
-                <div className="v3-testimonial-text">{t.text}</div>
-                <div className="v3-author">
-                  <div className="v3-author-avatar" style={{ background: t.gradient }}>{t.avatar}</div>
-                  <div>
-                    <div className="v3-author-name">{t.name}</div>
-                    <div className="v3-author-role">{t.role}</div>
-                  </div>
-                </div>
+          <div className="v3-depo-grid">
+            {[
+              "/images/depo-v3-1.webp",
+              "/images/depo-v3-7.webp",
+              "/images/depo-v3-3.webp",
+              "/images/depo-v3-4.webp",
+              "/images/depo-v3-5.webp",
+              "/images/depo-v3-2.webp",
+              "/images/depo-v3-6.webp",
+              "/images/depo-v3-8.webp",
+            ].map((src, i) => (
+              <div key={i} className="v3-reveal" style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--card-border)" }}>
+                <img src={src} alt={`Depoimento real ${i + 1}`} loading="lazy" style={{ width: "100%", height: "auto", display: "block" }} />
               </div>
             ))}
           </div>
@@ -1270,7 +1275,7 @@ const UpscalerArcanoV3 = () => {
           <div className="v3-pricing-inner">
             <div style={{ textAlign: "center", marginBottom: 60 }}>
               <div className="v3-section-tag" style={{ display: "inline-block" }}>Planos e Preços</div>
-              <div className="v3-section-title" style={{ marginTop: 12 }}>Comece agora.<br /><span>Pague uma vez.</span></div>
+              <div className="v3-section-title" style={{ marginTop: 12 }}>Comece agora.<br /><span>Acesso imediato.</span></div>
             </div>
 
             <div className="v3-pricing-grid">
