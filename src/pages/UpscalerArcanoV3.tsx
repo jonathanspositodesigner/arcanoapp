@@ -306,7 +306,7 @@ const UpscalerArcanoV3 = () => {
           padding: 12px 24px; display: flex; align-items: center; gap: 32px;
         }
         .v3-topbar-logo {
-          font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 15px; letter-spacing: -0.5px;
+          font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; letter-spacing: -0.5px;
           background: linear-gradient(135deg, var(--cyan), var(--white));
           -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
