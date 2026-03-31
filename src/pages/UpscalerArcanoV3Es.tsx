@@ -1278,10 +1278,10 @@ const UpscalerArcanoV3 = () => {
         {/* STICKY CTA */}
         <div className={`v3-sticky-cta ${stickyVisible ? "visible" : ""}`}>
           <div style={{ fontSize: 14, color: "var(--muted2)" }}>
-            <strong style={{ color: "var(--white)", fontFamily: "'Syne', sans-serif" }}>Upscaler Arcano V3</strong>{!isMobile && <> — Desde R$ 24,90</>}
+            <strong style={{ color: "var(--white)", fontFamily: "'Syne', sans-serif" }}>Upscaler Arcano V3</strong>{!isMobile && <> — $19,90 USD</>}
           </div>
           {isMobile ? (
-            <button className="v3-sticky-btn" onClick={scrollToPrice}>Ver Planes →</button>
+            <button className="v3-sticky-btn" onClick={scrollToPrice}>Adquirir Vitalicio →</button>
           ) : (
             <button className="v3-sticky-btn" onClick={scrollToPrice}>Obtener Acceso →</button>
           )}
