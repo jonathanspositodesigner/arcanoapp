@@ -1708,9 +1708,9 @@ const UpscalerArcanoV3 = () => {
               <ShieldCheck size={32} strokeWidth={1.8} />
             </div>
             <div>
-              <div className="v3-guarantee-title">Garantia de 7 dias</div>
-              <div className="v3-guarantee-text">Se não gostar do resultado, devolvemos 100% do seu dinheiro. Sem perguntas, sem burocracia. É confiança total no que entregamos.</div>
-              <span className="v3-guarantee-badge">✓ RISCO ZERO</span>
+              <div className="v3-guarantee-title">Garantía de 7 días</div>
+              <div className="v3-guarantee-text">Si no te gusta el resultado, te devolvemos el 100% de tu dinero. Sin preguntas, sin burocracia. Es confianza total en lo que entregamos.</div>
+              <span className="v3-guarantee-badge">✓ RIESGO CERO</span>
             </div>
           </div>
         </section>
