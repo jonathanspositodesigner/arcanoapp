@@ -1132,13 +1132,13 @@ const UpscalerArcanoV3 = () => {
 
           /* 6. Social popup - cycling notification */
           .v3-social-popup {
-            bottom: 76px; left: 12px; right: 12px; max-width: none;
+            top: 12px; bottom: auto; left: 12px; right: 12px; max-width: none;
             padding: 10px 14px; font-size: 12px;
-            animation: none; opacity: 0; transform: translateY(20px);
+            animation: none; opacity: 0; transform: translateY(-20px);
             transition: opacity 0.5s ease, transform 0.5s ease;
           }
           .v3-social-popup.v3-notif-visible { opacity: 1; transform: translateY(0); }
-          .v3-social-popup.v3-notif-hidden { opacity: 0; transform: translateY(20px); }
+          .v3-social-popup.v3-notif-hidden { opacity: 0; transform: translateY(-20px); }
           .v3-popup-avatar { width: 30px; height: 30px; font-size: 12px; }
 
           /* 7. Section padding reduction */
