@@ -156,6 +156,7 @@ const PrevendaPack4 = lazy(() => import("./pages/PrevendaPack4"));
 const PackAgendas = lazy(() => import("./pages/PackAgendas"));
 const UpscalerArcanoV3 = lazy(() => import("./pages/UpscalerArcanoV3"));
 const UpscalerArcanoV3Es = lazy(() => import("./pages/UpscalerArcanoV3Es"));
+const UpscalerArcanoV3Teste = lazy(() => import("./pages/UpscalerArcanoV3Teste"));
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
 
