@@ -1559,7 +1559,7 @@ const UpscalerArcanoV3 = () => {
                 <div className="v3-plan-price">
                   <span className="currency">R$</span>
                   <span className="amount">37</span>
-                  <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 800 }}>,00</span>
+                  <span className="cents">,00</span>
                   <span className="period">acesso vitalício</span>
                 </div>
                 <a href="#" className="v3-plan-cta outline">Começar →</a>
