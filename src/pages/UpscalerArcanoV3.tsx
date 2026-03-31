@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useMPCheckout } from "@/hooks/useMPCheckout";
 import { ShieldCheck, Rocket, Flame, Crown, Infinity } from "lucide-react";
 
 // Image imports for before/after and gallery
@@ -153,6 +154,7 @@ const UpscalerArcanoV3 = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [notifData, setNotifData] = useState<{ name: string; initial: string; time: string; city: string } | null>(null);
   const [notifVisible, setNotifVisible] = useState(false);
+  const { openCheckout, MPCheckoutModal } = useMPCheckout({ source_page: "upscalerarcanov3" });
   const sliderRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
   const autoRef = useRef(true);
@@ -1596,7 +1598,7 @@ const UpscalerArcanoV3 = () => {
                   <span className="cents">,90</span>
                   <span className="period">acesso vitalício</span>
                 </div>
-                <a href="#" className="v3-plan-cta outline">Começar →</a>
+                <button className="v3-plan-cta outline" onClick={() => openCheckout("upscaler-arcano-starter")}>Começar →</button>
                 <div className="v3-plan-divider" />
                 <div className="v3-plan-feature"><span className="check">✓</span> 25 imagens</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> 1.500 créditos</div>
@@ -1618,7 +1620,7 @@ const UpscalerArcanoV3 = () => {
                   <span className="cents">,00</span>
                   <span className="period">acesso vitalício</span>
                 </div>
-                <a href="#" className="v3-plan-cta outline">Começar →</a>
+                <button className="v3-plan-cta outline" onClick={() => openCheckout("upscaler-arcano-pro")}>Começar →</button>
                 <div className="v3-plan-divider" />
                 <div className="v3-plan-feature"><span className="check">✓</span> 70 imagens</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> 4.200 créditos</div>
@@ -1642,7 +1644,7 @@ const UpscalerArcanoV3 = () => {
                   <span className="cents">,90</span>
                   <span className="period">acesso vitalício</span>
                 </div>
-                <a href="#" className="v3-plan-cta filled">Garantir Acesso →</a>
+                <button className="v3-plan-cta filled" onClick={() => openCheckout("upscaler-arcano-ultimate")}>Garantir Acesso →</button>
                 <div className="v3-plan-divider" />
                 <div className="v3-plan-feature"><span className="check">✓</span> 233 imagens</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> 14.000 créditos</div>
@@ -1667,7 +1669,7 @@ const UpscalerArcanoV3 = () => {
                   <span className="cents">,90</span>
                   <span className="period">paga uma vez · usa para sempre</span>
                 </div>
-                <a href="#" className="v3-plan-cta filled v3-plan-cta-gold">Garantir Vitalício →</a>
+                <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => openCheckout("upscaler-arcano-v3")}>Garantir Vitalício →</button>
                 <div className="v3-plan-divider" />
                 <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Acesso vitalício completo</strong></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> Todas as ferramentas</div>
@@ -1796,6 +1798,7 @@ const UpscalerArcanoV3 = () => {
           <span>© 2026 Upscaler Arcano · Todos os direitos reservados</span>
         </footer>
       </div>
+      <MPCheckoutModal />
     </>
   );
 };
