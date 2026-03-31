@@ -1763,8 +1763,8 @@ const UpscalerArcanoV3 = () => {
         <section className="v3-faq">
           <div className="v3-faq-inner">
             <div style={{ textAlign: "center", marginBottom: 60 }}>
-              <div className="v3-section-tag" style={{ display: "inline-block" }}>Perguntas frequentes</div>
-              <div className="v3-section-title" style={{ marginTop: 12 }}>Tudo que você<br /><span>precisa saber.</span></div>
+              <div className="v3-section-tag" style={{ display: "inline-block" }}>Preguntas frecuentes</div>
+              <div className="v3-section-title" style={{ marginTop: 12 }}>Todo lo que<br /><span>necesitás saber.</span></div>
             </div>
             {faqs.map((faq, i) => (
               <div
@@ -1784,21 +1784,21 @@ const UpscalerArcanoV3 = () => {
 
         {/* FINAL CTA */}
         <section className="v3-final-cta">
-          <h2>Sua próxima imagem<br />merece ser <em>perfeita.</em></h2>
-          <p>+3.200 profissionais já sabem disso. Agora é a sua vez.</p>
+          <h2>Tu próxima imagen<br />merece ser <em>perfecta.</em></h2>
+          <p>+3.200 profesionales ya lo saben. Ahora es tu turno.</p>
           <button className="v3-btn-primary" onClick={scrollToPrice} style={{ display: "inline-flex" }}>
-            Quero o Upscaler Arcano V3 <span>→</span>
+            Quiero el Upscaler Arcano V3 <span>→</span>
           </button>
           <div className="v3-final-trust">
-            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Acesso imediato</div>
-            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Sem mensalidade</div>
-            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Resultado em 60s</div>
-            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Paga uma vez</div>
+            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Acceso inmediato</div>
+            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Sin mensualidad</div>
+            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Resultado en 60s</div>
+            <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Pagás una vez</div>
           </div>
         </section>
 
         <footer className="v3-footer">
-          <span>© 2026 Upscaler Arcano · Todos os direitos reservados</span>
+          <span>© 2026 Upscaler Arcano · Todos los derechos reservados</span>
         </footer>
       </div>
       <MPCheckoutModal />
