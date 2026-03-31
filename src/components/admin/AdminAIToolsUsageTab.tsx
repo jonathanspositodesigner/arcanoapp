@@ -1099,6 +1099,30 @@ const AdminAIToolsUsageTab = () => {
                 onError={() => setIsOutputExpired(true)}
               />
             )}
+
+            {/* Prompt and input images for completed image generator jobs */}
+            {selectedJob?.status === "completed" && jobPrompt && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Prompt Usado</p>
+                <p className="text-sm bg-muted/50 rounded p-3 font-mono break-all border border-border">{jobPrompt}</p>
+              </div>
+            )}
+            {selectedJob?.status === "completed" && jobInputImages.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Imagens de Referência ({jobInputImages.length})</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {jobInputImages.map((url, idx) => (
+                    <img
+                      key={idx}
+                      src={url}
+                      alt={`Referência ${idx + 1}`}
+                      className="w-full rounded-md max-h-[300px] object-contain border border-border cursor-pointer"
+                      onClick={() => window.open(url, '_blank')}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {jobOutputUrl && !isOutputExpired && selectedJob?.status === "completed" && (
