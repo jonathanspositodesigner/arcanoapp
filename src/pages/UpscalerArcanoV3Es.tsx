@@ -1616,21 +1616,21 @@ const UpscalerArcanoV3 = () => {
                   <Flame size={32} style={{ color: "#d946ef" }} />
                 </div>
                 <div className="v3-plan-name">Pro</div>
-                <div className="v3-plan-tagline">3x mais por R$12 a mais</div>
+                <div className="v3-plan-tagline">3x más por R$12 extra</div>
                 <div className="v3-plan-price">
                   <span className="currency">R$</span>
                   <span className="amount">37</span>
                   <span className="cents">,00</span>
-                  <span className="period">acesso vitalício</span>
+                  <span className="period">acceso vitalicio</span>
                 </div>
-                <button className="v3-plan-cta outline" onClick={() => openCheckout("upscaler-arcano-pro")}>Começar →</button>
+                <button className="v3-plan-cta outline" onClick={() => openCheckout("upscaler-arcano-pro")}>Empezar →</button>
                 <div className="v3-plan-divider" />
-                <div className="v3-plan-feature"><span className="check">✓</span> 70 imagens</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> 70 imágenes</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> 4.200 créditos</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale em Lote V3</span></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> NanoBanana Pro</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Veo 3 (geração de vídeo)</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Veo 3 (generación de video)</div>
               </div>
 
               {/* ULTIMATE */}
