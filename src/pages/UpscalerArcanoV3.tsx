@@ -149,6 +149,9 @@ const UpscalerArcanoV3 = () => {
   const [stickyVisible, setStickyVisible] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  const [notifData, setNotifData] = useState<{ name: string; initial: string; time: string; city: string } | null>(null);
+  const [notifVisible, setNotifVisible] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
   const autoRef = useRef(true);
