@@ -1596,13 +1596,8 @@ const UpscalerArcanoV3 = () => {
               </div>
 
               {/* VITALÍCIO */}
-              <div className="v3-plan v3-reveal">
-                <div style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  background: "rgba(245,200,66,0.1)", border: "1px solid rgba(245,200,66,0.2)",
-                  color: "var(--gold)", fontSize: 11, fontWeight: 700, padding: "4px 12px",
-                  borderRadius: 100, letterSpacing: 1, textTransform: "uppercase" as const, marginBottom: 12
-                }}>♾ Vitalício</div>
+              <div className="v3-plan v3-plan-lifetime v3-reveal">
+                <div className="v3-plan-popular v3-plan-popular-gold">♾ Vitalício</div>
                 <div className="v3-plan-name">Ilimitado</div>
                 <div className="v3-plan-tagline">Acesso permanente a tudo</div>
                 <div className="v3-plan-price">
@@ -1611,7 +1606,7 @@ const UpscalerArcanoV3 = () => {
                   <span className="cents">,90</span>
                   <span className="period">paga uma vez · usa para sempre</span>
                 </div>
-                <a href="#" className="v3-plan-cta outline">Garantir →</a>
+                <a href="#" className="v3-plan-cta filled v3-plan-cta-gold">Garantir Vitalício →</a>
                 <div className="v3-plan-divider" />
                 <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Acesso vitalício completo</strong></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> Todas as ferramentas</div>
