@@ -1431,6 +1431,50 @@ const UpscalerArcanoV3 = () => {
           </div>
         </section>
 
+        {/* RESULTADOS REAIS DE USUÁRIOS */}
+        <section className="v3-real-results">
+          <div className="v3-real-results-inner">
+            <div style={{ textAlign: "center", marginBottom: 60 }}>
+              <div className="v3-section-tag" style={{ display: "inline-block" }}>Resultados Reais</div>
+              <div className="v3-section-title" style={{ marginTop: 12 }}>Veja o que nossos usuários<br /><span>estão alcançando.</span></div>
+              <p style={{ fontSize: 16, color: "var(--muted2)", marginTop: 12, maxWidth: 600, margin: "12px auto 0" }}>
+                Antes e depois reais enviados por profissionais que usam o Upscaler Arcano no dia a dia.
+              </p>
+            </div>
+
+            <div className="v3-real-grid">
+              {[
+                {
+                  before: "/images/mauricio-antes.webp",
+                  after: "/images/mauricio-depois.webp",
+                  name: "Maurício",
+                  handle: "@ventus.studio",
+                  text: "Como fotógrafo já perdi inúmeras fotos por saírem desfocadas na hora da correria dos ensaios, e essa ferramenta literalmente me salvou!",
+                  avatar: "/images/mauricio-avatar.png"
+                },
+                {
+                  before: "/images/mariana-antes.webp",
+                  after: "/images/mariana-depois.webp",
+                  name: "Mariana Costa",
+                  handle: "@mari.visualarts",
+                  text: "Restaurei fotos antigas da minha família que estavam super pixeladas. O resultado ficou lindo, parecia foto nova.",
+                  avatar: "/images/mariana-avatar.png"
+                },
+                {
+                  before: "/images/rodrigo-antes.webp",
+                  after: "/images/rodrigo-depois.webp",
+                  name: "Rodrigo Mélius",
+                  handle: "@melius.arquitetura",
+                  text: "Nenhuma outra ferramenta que testei conseguiu reproduzir meus projetos com a fidelidade que essa ferramenta faz!",
+                  avatar: "/images/rodrigo-avatar.png"
+                }
+              ].map((item, i) => (
+                <RealResultCard key={i} item={item} />
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* FAQ */}
         <section className="v3-faq">
           <div className="v3-faq-inner">
