@@ -602,7 +602,7 @@ const UpscalerArcanoV3 = () => {
         }
         .v3-feature-card.v3-visible { opacity: 1; transform: translateY(0); }
         .v3-feature-card:hover { border-color: rgba(0,212,255,0.2); }
-        .v3-feature-card.turbo { background: linear-gradient(145deg, #0A0A1E, #050510); }
+        .v3-feature-card.turbo { background: linear-gradient(145deg, #0A0A1E, #050510); position: relative; }
         .v3-feature-card.batch { background: linear-gradient(145deg, #0D0A20, #080515); }
         .v3-feature-visual {
           height: 300px; position: relative; overflow: hidden;
