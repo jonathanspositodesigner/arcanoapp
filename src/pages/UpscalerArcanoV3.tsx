@@ -79,6 +79,61 @@ const GalleryBeforeAfter = ({ item }: { item: { before: string; after: string; l
   );
 };
 
+// Real result card with before/after slider + testimonial
+const RealResultCard = ({ item }: { item: { before: string; after: string; name: string; handle: string; text: string; avatar: string } }) => {
+  const [pct, setPct] = useState(50);
+  const ref = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+
+  const update = useCallback((clientX: number) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    setPct(Math.min(Math.max(((clientX - rect.left) / rect.width) * 100, 5), 95));
+  }, []);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => { if (dragging.current) update(e.clientX); };
+    const onTouchMove = (e: TouchEvent) => { if (dragging.current) update(e.touches[0].clientX); };
+    const onUp = () => { dragging.current = false; };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onUp);
+    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); window.removeEventListener("touchmove", onTouchMove); window.removeEventListener("touchend", onUp); };
+  }, [update]);
+
+  return (
+    <div className="v3-real-card v3-reveal">
+      <div
+        ref={ref}
+        className="v3-real-card-slider"
+        onMouseDown={(e) => { dragging.current = true; update(e.clientX); }}
+        onTouchStart={(e) => { dragging.current = true; update(e.touches[0].clientX); }}
+      >
+        <img src={item.before} alt="Antes" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+        <div style={{ position: "absolute", inset: 0, clipPath: `inset(0 ${100 - pct}% 0 0)` }}>
+          <img src={item.after} alt="Depois" style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+        </div>
+        <div className="v3-real-handle-line" style={{ left: `${pct}%` }}>
+          <div className="v3-real-handle-knob">⟺</div>
+        </div>
+        <div className="v3-real-label" style={{ left: 8 }}>ANTES</div>
+        <div className="v3-real-label" style={{ right: 8 }}>DEPOIS</div>
+      </div>
+      <div className="v3-real-card-info">
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <img src={item.avatar} alt={item.name} className="v3-real-card-avatar" loading="lazy" />
+          <div>
+            <div className="v3-real-card-name">{item.name}</div>
+            <div className="v3-real-card-handle">{item.handle}</div>
+          </div>
+        </div>
+        <p className="v3-real-card-text">"{item.text}"</p>
+      </div>
+    </div>
+  );
+};
+
 // Hero carousel slides
 const heroSlides = [
   { before: upscalerHeroAntes, after: upscalerHeroDepois },
@@ -916,14 +971,47 @@ const UpscalerArcanoV3 = () => {
           text-align: center; color: var(--muted); font-size: 13px;
         }
 
-        /* DEPO GRID */
-        .v3-depo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 1100px; margin: 0 auto; }
+        /* DEPO GRID - Masonry/Mosaic */
+        .v3-depo-grid { columns: 3; column-gap: 12px; max-width: 1100px; margin: 0 auto; }
+        .v3-depo-grid > div { break-inside: avoid; margin-bottom: 12px; }
+
+        /* RESULTADOS REAIS SECTION */
+        .v3-real-results { padding: 100px 24px; background: var(--surface); border-top: 1px solid var(--card-border); }
+        .v3-real-results-inner { max-width: 1100px; margin: 0 auto; }
+        .v3-real-card {
+          background: var(--surface2); border: 1px solid var(--card-border); border-radius: 20px;
+          overflow: hidden; transition: border-color 0.3s;
+        }
+        .v3-real-card:hover { border-color: var(--cyan); }
+        .v3-real-card-slider { position: relative; aspect-ratio: 2/3; overflow: hidden; cursor: ew-resize; touch-action: none; }
+        .v3-real-card-info { padding: 20px; }
+        .v3-real-card-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--card-border); object-fit: cover; flex-shrink: 0; }
+        .v3-real-card-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700; }
+        .v3-real-card-handle { font-size: 12px; color: var(--cyan); opacity: 0.7; }
+        .v3-real-card-text { font-size: 13px; color: var(--muted2); line-height: 1.6; margin-top: 12px; }
+        .v3-real-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .v3-real-label {
+          position: absolute; bottom: 8px; padding: 3px 10px; border-radius: 6px;
+          font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+          background: rgba(0,0,0,0.7); color: white; pointer-events: none; z-index: 2;
+        }
+        .v3-real-handle-line {
+          position: absolute; top: 0; bottom: 0; width: 3px; background: var(--cyan);
+          transform: translateX(-50%); z-index: 3; pointer-events: none;
+        }
+        .v3-real-handle-knob {
+          position: absolute; top: 50%; width: 28px; height: 28px; border-radius: 50%;
+          background: var(--cyan); border: 2px solid white; transform: translate(-50%, -50%);
+          display: flex; align-items: center; justify-content: center; z-index: 4;
+          font-size: 11px; color: var(--bg); cursor: ew-resize;
+        }
 
         /* RESPONSIVE */
         @media (max-width: 900px) {
           .v3-feature-cards, .v3-audience-grid, .v3-testimonials, .v3-pricing-grid { grid-template-columns: 1fr 1fr; }
           .v3-pain-grid { grid-template-columns: repeat(2, 1fr); }
-          .v3-depo-grid { grid-template-columns: repeat(2, 1fr); }
+          .v3-depo-grid { columns: 2; }
+          .v3-real-grid { grid-template-columns: repeat(2, 1fr); }
           .v3-steps { grid-template-columns: 1fr; }
           .v3-steps::before { display: none; }
           .v3-gallery-grid { grid-template-columns: repeat(2, 1fr); }
@@ -931,6 +1019,8 @@ const UpscalerArcanoV3 = () => {
         }
         @media (max-width: 600px) {
           .v3-feature-cards, .v3-audience-grid, .v3-testimonials, .v3-pricing-grid, .v3-gallery-grid { grid-template-columns: 1fr; }
+          .v3-depo-grid { columns: 1; }
+          .v3-real-grid { grid-template-columns: 1fr; }
           .v3-pain-grid { grid-template-columns: 1fr; }
           .v3-topbar { gap: 14px; padding: 10px 16px; }
           .v3-stats-row { gap: 24px; }
@@ -1392,6 +1482,50 @@ const UpscalerArcanoV3 = () => {
             <div>
               <div className="v3-guarantee-title">Garantia de 7 dias</div>
               <div className="v3-guarantee-text">Se não gostar do resultado, devolvemos 100% do seu dinheiro. Sem perguntas, sem burocracia. É confiança total no que entregamos.</div>
+            </div>
+          </div>
+        </section>
+
+        {/* RESULTADOS REAIS DE USUÁRIOS */}
+        <section className="v3-real-results">
+          <div className="v3-real-results-inner">
+            <div style={{ textAlign: "center", marginBottom: 60 }}>
+              <div className="v3-section-tag" style={{ display: "inline-block" }}>Resultados Reais</div>
+              <div className="v3-section-title" style={{ marginTop: 12 }}>Veja o que nossos usuários<br /><span>estão alcançando.</span></div>
+              <p style={{ fontSize: 16, color: "var(--muted2)", marginTop: 12, maxWidth: 600, margin: "12px auto 0" }}>
+                Antes e depois reais enviados por profissionais que usam o Upscaler Arcano no dia a dia.
+              </p>
+            </div>
+
+            <div className="v3-real-grid">
+              {[
+                {
+                  before: "/images/mauricio-antes.webp",
+                  after: "/images/mauricio-depois.webp",
+                  name: "Maurício",
+                  handle: "@ventus.studio",
+                  text: "Como fotógrafo já perdi inúmeras fotos por saírem desfocadas na hora da correria dos ensaios, e essa ferramenta literalmente me salvou!",
+                  avatar: "/images/mauricio-avatar.png"
+                },
+                {
+                  before: "/images/mariana-antes.webp",
+                  after: "/images/mariana-depois.webp",
+                  name: "Mariana Costa",
+                  handle: "@mari.visualarts",
+                  text: "Restaurei fotos antigas da minha família que estavam super pixeladas. O resultado ficou lindo, parecia foto nova.",
+                  avatar: "/images/mariana-avatar.png"
+                },
+                {
+                  before: "/images/rodrigo-antes.webp",
+                  after: "/images/rodrigo-depois.webp",
+                  name: "Rodrigo Mélius",
+                  handle: "@melius.arquitetura",
+                  text: "Nenhuma outra ferramenta que testei conseguiu reproduzir meus projetos com a fidelidade que essa ferramenta faz!",
+                  avatar: "/images/rodrigo-avatar.png"
+                }
+              ].map((item, i) => (
+                <RealResultCard key={i} item={item} />
+              ))}
             </div>
           </div>
         </section>
