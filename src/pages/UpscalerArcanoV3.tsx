@@ -1181,8 +1181,15 @@ const UpscalerArcanoV3 = () => {
           .v3-plan.featured { transform: none; box-shadow: 0 0 40px rgba(0,212,255,0.1), 0 20px 40px rgba(0,0,0,0.3); }
           .v3-plan.featured.v3-visible { transform: none; }
           .v3-plan.featured:hover { transform: none !important; }
+          .v3-plan-lifetime { transform: none; box-shadow: 0 0 40px rgba(245,200,66,0.1), 0 20px 40px rgba(0,0,0,0.3); }
+          .v3-plan-lifetime.v3-visible { transform: none; }
+          .v3-plan-lifetime:hover { transform: none !important; }
           .v3-plan-price .amount { font-size: 36px; }
           .v3-plan-price .cents { font-size: 18px; }
+          
+          /* Trust badges mobile */
+          .v3-trust-badges-row { flex-direction: column; gap: 10px; margin-top: 32px; }
+          .v3-trust-badge { width: 100%; justify-content: center; border-radius: 14px; padding: 14px 20px; font-size: 14px; }
           .v3-plan-name { font-size: 18px; }
 
           /* 16. Guarantee */
