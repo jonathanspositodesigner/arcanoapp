@@ -1597,7 +1597,7 @@ const UpscalerArcanoV3 = () => {
                 <div className="v3-plan-feature"><span className="check">✓</span> 25 imagens</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> 1.500 créditos</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Upscale em Lote V3</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale em Lote V3</span></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> Suporte via WhatsApp</div>
               </div>
 
