@@ -916,8 +916,40 @@ const UpscalerArcanoV3 = () => {
           text-align: center; color: var(--muted); font-size: 13px;
         }
 
-        /* DEPO GRID */
-        .v3-depo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 1100px; margin: 0 auto; }
+        /* DEPO GRID - Masonry/Mosaic */
+        .v3-depo-grid { columns: 3; column-gap: 12px; max-width: 1100px; margin: 0 auto; }
+        .v3-depo-grid > div { break-inside: avoid; margin-bottom: 12px; }
+
+        /* RESULTADOS REAIS SECTION */
+        .v3-real-results { padding: 100px 24px; background: var(--surface); border-top: 1px solid var(--card-border); }
+        .v3-real-results-inner { max-width: 1100px; margin: 0 auto; }
+        .v3-real-card {
+          background: var(--surface2); border: 1px solid var(--card-border); border-radius: 20px;
+          overflow: hidden; transition: border-color 0.3s;
+        }
+        .v3-real-card:hover { border-color: var(--cyan); }
+        .v3-real-card-slider { position: relative; aspect-ratio: 2/3; overflow: hidden; cursor: ew-resize; touch-action: none; }
+        .v3-real-card-info { padding: 20px; }
+        .v3-real-card-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--card-border); object-fit: cover; flex-shrink: 0; }
+        .v3-real-card-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700; }
+        .v3-real-card-handle { font-size: 12px; color: var(--cyan); opacity: 0.7; }
+        .v3-real-card-text { font-size: 13px; color: var(--muted2); line-height: 1.6; margin-top: 12px; }
+        .v3-real-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .v3-real-label {
+          position: absolute; bottom: 8px; padding: 3px 10px; border-radius: 6px;
+          font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+          background: rgba(0,0,0,0.7); color: white; pointer-events: none; z-index: 2;
+        }
+        .v3-real-handle-line {
+          position: absolute; top: 0; bottom: 0; width: 3px; background: var(--cyan);
+          transform: translateX(-50%); z-index: 3; pointer-events: none;
+        }
+        .v3-real-handle-knob {
+          position: absolute; top: 50%; width: 28px; height: 28px; border-radius: 50%;
+          background: var(--cyan); border: 2px solid white; transform: translate(-50%, -50%);
+          display: flex; align-items: center; justify-content: center; z-index: 4;
+          font-size: 11px; color: var(--bg); cursor: ew-resize;
+        }
 
         /* RESPONSIVE */
         @media (max-width: 900px) {
