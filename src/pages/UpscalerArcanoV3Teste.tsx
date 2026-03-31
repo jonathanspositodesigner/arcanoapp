@@ -349,6 +349,7 @@ const UpscalerArcanoV3 = () => {
   );
 
 
+  const scrollToPrice = (e?: React.MouseEvent) => {
     e?.preventDefault();
     const el = document.getElementById("v3-pricing");
     if (el) {
