@@ -336,9 +336,10 @@ const UpscalerArcanoV3 = () => {
     <>
       <button
         onClick={() => setShowTrialModal(true)}
-        style={{ width: "100%", background: "linear-gradient(90deg,#c026d3,#9333ea)", color: "#fff", fontWeight: 700, padding: "16px 24px", borderRadius: 12, fontSize: 16, border: "none", cursor: "pointer" }}
+        className="v3-btn-primary"
+        style={{ width: "100%", maxWidth: 480, justifyContent: "center" }}
       >
-        🚀 Testar Upscaler Arcano V3 Grátis
+        🚀 Testar Upscaler Arcano V3 Grátis <span>→</span>
       </button>
       <ArcanoClonerAuthModal
         isOpen={showTrialModal}
