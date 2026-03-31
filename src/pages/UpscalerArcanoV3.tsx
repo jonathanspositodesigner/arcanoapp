@@ -1239,7 +1239,7 @@ const UpscalerArcanoV3 = () => {
               <div className="v3-proof-num-label">Profissionais que já usam o Arcano</div>
             </div>
             <div className="v3-proof-num-card">
-              <div className="v3-proof-number gold" data-target="5000">0</div>
+              <div className="v3-proof-number gold" data-target="14000">0</div>
               <div className="v3-proof-num-label">Imagens melhoradas com sucesso</div>
             </div>
             <div className="v3-proof-num-card">
