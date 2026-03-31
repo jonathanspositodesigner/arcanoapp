@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Rocket, Flame, Crown, Infinity } from "lucide-react";
 
 // Image imports for before/after and gallery
 import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
