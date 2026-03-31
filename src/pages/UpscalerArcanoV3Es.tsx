@@ -152,6 +152,17 @@ const UpscalerArcanoV3 = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [countdown, setCountdown] = useState(30 * 60); // 30 minutes in seconds
+
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const timer = setInterval(() => setCountdown(prev => Math.max(0, prev - 1)), 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  const countdownMins = Math.floor(countdown / 60);
+  const countdownSecs = countdown % 60;
+  const countdownDisplay = `00:${String(countdownMins).padStart(2, "0")}:${String(countdownSecs).padStart(2, "0")}`;
   const [notifData, setNotifData] = useState<{ name: string; initial: string; time: string; city: string } | null>(null);
   const [notifVisible, setNotifVisible] = useState(false);
   const { openCheckout, MPCheckoutModal } = useMPCheckout({ source_page: "upscalerarcanov3" });
