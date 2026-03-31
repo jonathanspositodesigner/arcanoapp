@@ -1024,11 +1024,8 @@ const UpscalerArcanoV3 = () => {
           .v3-real-grid { grid-template-columns: 1fr; }
           .v3-pain-grid { grid-template-columns: 1fr; }
 
-          /* 1. Topbar - more compact */
-          .v3-topbar { gap: 10px; padding: 8px 14px; }
-          .v3-topbar-logo { font-size: 13px; }
-          .v3-topbar-badge { font-size: 9px; padding: 2px 8px; }
-          .v3-topbar-cta { font-size: 11px; padding: 6px 14px; }
+          /* 1. Topbar - hidden on mobile */
+          .v3-topbar { display: none; }
 
           /* 2. Hero - breathing room */
           .v3-hero { padding: 80px 16px 40px; min-height: auto; }
