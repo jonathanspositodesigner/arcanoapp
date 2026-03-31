@@ -1353,7 +1353,7 @@ const UpscalerArcanoV3 = () => {
                 <div className="v3-drag-handle" style={{ left: `${sliderPct}%` }}>
                   <div className="v3-drag-circle">⟺</div>
                 </div>
-                <div className="v3-drag-hint">⟺ Arraste para comparar</div>
+                <div className="v3-drag-hint">⟺ Arrastrá para comparar</div>
               </div>
               {/* Carousel arrows */}
               <button
