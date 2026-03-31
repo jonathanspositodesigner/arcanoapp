@@ -1577,9 +1577,20 @@ const UpscalerArcanoV3 = () => {
         {/* PRICING */}
         <section className="v3-pricing" id="v3-pricing">
           <div className="v3-pricing-inner">
-            <div style={{ textAlign: "center", marginBottom: 60 }}>
-              <div className="v3-section-tag" style={{ display: "inline-block" }}>Planes y Precios</div>
+            <div style={{ textAlign: "center", marginBottom: 40 }}>
+              <div className="v3-section-tag" style={{ display: "inline-block" }}>Oferta por tiempo limitado</div>
               <div className="v3-section-title" style={{ marginTop: 12 }}>Empezá ahora.<br /><span>Acceso inmediato.</span></div>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: 12, marginTop: 20,
+                background: "rgba(245,200,66,0.1)", border: "1px solid rgba(245,200,66,0.3)",
+                borderRadius: 12, padding: "12px 24px",
+              }}>
+                <span style={{ fontSize: 18 }}>🔥</span>
+                <div style={{ textAlign: "left" }}>
+                  <div style={{ fontSize: 13, color: "var(--muted2)", fontWeight: 500 }}>Esta promo se termina en:</div>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: "#F5C842", fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: 2, fontVariantNumeric: "tabular-nums" }}>{countdownDisplay}</div>
+                </div>
+              </div>
             </div>
 
             <div className="v3-pricing-grid" style={{ gridTemplateColumns: "1fr", maxWidth: 420, margin: "0 auto" }}>
@@ -1591,6 +1602,9 @@ const UpscalerArcanoV3 = () => {
                 </div>
                 <div className="v3-plan-name">Ilimitado</div>
                 <div className="v3-plan-tagline">Acceso permanente a todo</div>
+                <div style={{ textAlign: "center", marginBottom: 4 }}>
+                  <span style={{ fontSize: 16, color: "var(--muted)", textDecoration: "line-through", fontWeight: 500 }}>$49,90 USD</span>
+                </div>
                 <div className="v3-plan-price">
                   <span className="currency">$</span>
                   <span className="amount">19</span>
