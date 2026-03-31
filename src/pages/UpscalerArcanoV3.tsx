@@ -980,7 +980,7 @@ const UpscalerArcanoV3 = () => {
             </div>
             <div className="v3-stat-divider" />
             <div>
-              <div className="v3-stat-num">+5<span>mil</span></div>
+              <div className="v3-stat-num">+14<span>mil</span></div>
               <div className="v3-stat-label">Imagens melhoradas</div>
             </div>
             <div className="v3-stat-divider" />
