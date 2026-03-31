@@ -1626,7 +1626,7 @@ const UpscalerArcanoV3 = () => {
               </div>
               <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.4s" }}>
                 <span className="v3-trust-badge-icon">🔒</span>
-                <span>Pago seguro · Mercado Pago</span>
+                <span>Pago seguro · Hotmart</span>
               </div>
             </div>
           </div>
