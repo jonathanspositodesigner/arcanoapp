@@ -1606,7 +1606,7 @@ const UpscalerArcanoV3 = () => {
                 <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => openCheckout("upscaler-arcano-v3")}>Obtener Vitalicio →</button>
                 <div className="v3-plan-divider" />
                 <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Uso ilimitado · sin créditos</strong></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Agrega detalles y texturas de piel ultra realistas</div>
+                
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> Todas las actualizaciones futuras</div>
