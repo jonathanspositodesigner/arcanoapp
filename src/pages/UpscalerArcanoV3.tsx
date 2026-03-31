@@ -1175,9 +1175,16 @@ const UpscalerArcanoV3 = () => {
           /* 20. Footer */
           .v3-footer { padding: 24px 16px; font-size: 12px; }
 
-          /* 21. Sticky CTA bar */
-          .v3-sticky-cta { padding: 10px 16px; }
-          .v3-sticky-btn { font-size: 12px; padding: 10px 20px; }
+          /* 21. Sticky CTA bar - bigger */
+          .v3-sticky-cta { padding: 16px 16px; }
+          .v3-sticky-btn { font-size: 14px; padding: 14px 28px; }
+
+          /* 22. Steps reorder: num → text → icon-area */
+          .v3-step { display: flex; flex-direction: column; }
+          .v3-step-num { order: 1; margin-bottom: 14px; }
+          .v3-step-title { order: 2; }
+          .v3-step-desc { order: 3; margin-bottom: 16px; }
+          .v3-step-icon-area { order: 4; margin-bottom: 0; }
 
           /* 22. Depo grid cards */
           .v3-depo-grid > div { border-radius: 12px; }
