@@ -487,7 +487,7 @@ const UpscalerArcanoV3 = () => {
           text-transform: uppercase; letter-spacing: 2px; margin-bottom: 48px;
         }
         .v3-pain-grid {
-          display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          display: grid; grid-template-columns: repeat(3, 1fr);
           gap: 16px; max-width: 1100px; margin: 0 auto;
         }
         .v3-pain-card {
