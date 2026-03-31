@@ -786,7 +786,7 @@ const UpscalerArcanoV3 = () => {
         .v3-plan-price .currency { font-size: 20px; font-weight: 600; vertical-align: top; margin-top: 8px; display: inline-block; color: var(--muted2); }
         .v3-plan-price .period { font-size: 13px; color: var(--muted); display: block; margin-top: 4px; }
         .v3-plan-cta {
-          display: block; text-align: center; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;
+          display: block; text-align: center; font-family: 'Syne', sans-serif; font-weight: 700;
           font-size: 15px; padding: 14px; border-radius: 14px; text-decoration: none;
           margin-bottom: 24px; transition: all 0.2s; cursor: pointer;
         }
