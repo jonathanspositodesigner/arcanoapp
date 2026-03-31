@@ -919,7 +919,7 @@ const UpscalerArcanoV3 = () => {
           border-top: 1px solid var(--card-border);
         }
         .v3-pricing-inner { max-width: 1100px; margin: 0 auto; }
-        .v3-pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: start; }
+        .v3-pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: stretch; }
         .v3-plan {
           position: relative;
           background: var(--bg); border: 1px solid var(--card-border); border-radius: 24px;
