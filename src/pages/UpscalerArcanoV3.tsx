@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { ShieldCheck } from "lucide-react";
 
 // Image imports for before/after and gallery
 import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
@@ -988,12 +989,20 @@ const UpscalerArcanoV3 = () => {
         /* GUARANTEE */
         .v3-guarantee-strip { padding: 48px 24px; max-width: 1100px; margin: 0 auto; }
         .v3-guarantee-card {
-          background: var(--surface2); border: 1px solid var(--card-border); border-radius: 24px;
+          background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.02) 100%);
+          border: 1px solid rgba(16,185,129,0.2); border-radius: 24px;
           padding: 40px 48px; display: flex; align-items: center; gap: 32px;
         }
-        .v3-guarantee-icon { font-size: 56px; flex-shrink: 0; }
-        .v3-guarantee-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+        .v3-guarantee-icon-wrap {
+          flex-shrink: 0; width: 72px; height: 72px; border-radius: 20px;
+          background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.05));
+          border: 1px solid rgba(16,185,129,0.25);
+          display: flex; align-items: center; justify-content: center;
+        }
+        .v3-guarantee-icon-wrap svg { color: #10b981; }
+        .v3-guarantee-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 8px; color: #fff; }
         .v3-guarantee-text { font-size: 15px; color: var(--muted2); line-height: 1.6; max-width: 560px; }
+        .v3-guarantee-badge { display: inline-block; margin-top: 12px; padding: 4px 14px; border-radius: 999px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); color: #10b981; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
 
         /* FAQ */
         .v3-faq {
@@ -1195,7 +1204,7 @@ const UpscalerArcanoV3 = () => {
           /* 16. Guarantee */
           .v3-guarantee-strip { padding: 32px 16px; }
           .v3-guarantee-card { flex-direction: column; text-align: center; padding: 24px 20px; }
-          .v3-guarantee-icon { font-size: 44px; }
+          .v3-guarantee-icon-wrap { width: 60px; height: 60px; border-radius: 16px; }
           .v3-guarantee-title { font-size: 18px; }
           .v3-guarantee-text { font-size: 13px; }
 
@@ -1677,10 +1686,13 @@ const UpscalerArcanoV3 = () => {
         {/* GUARANTEE */}
         <section className="v3-guarantee-strip">
           <div className="v3-guarantee-card">
-            <div className="v3-guarantee-icon">🛡️</div>
+            <div className="v3-guarantee-icon-wrap">
+              <ShieldCheck size={32} strokeWidth={1.8} />
+            </div>
             <div>
               <div className="v3-guarantee-title">Garantia de 7 dias</div>
               <div className="v3-guarantee-text">Se não gostar do resultado, devolvemos 100% do seu dinheiro. Sem perguntas, sem burocracia. É confiança total no que entregamos.</div>
+              <span className="v3-guarantee-badge">✓ RISCO ZERO</span>
             </div>
           </div>
         </section>
