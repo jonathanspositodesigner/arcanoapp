@@ -475,22 +475,22 @@ const UpscalerArcanoV3 = () => {
 
         /* SOCIAL POPUP */
         .v3-social-popup {
-          position: fixed; bottom: 24px; left: 24px; z-index: 999;
-          background: var(--surface2); border: 1px solid var(--card-border);
-          border-radius: 16px; padding: 14px 18px; display: flex; align-items: center; gap: 12px;
-          font-size: 13px; opacity: 0; transform: translateY(20px);
-          animation: v3PopupIn 0.5s ease 3s forwards; max-width: 280px;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+          position: fixed; top: 16px; left: 24px; z-index: 999;
+          background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3);
+          border-radius: 16px; padding: 12px 18px;
+          display: flex; align-items: center; gap: 12px; max-width: 340px;
+          opacity: 0; transform: translateY(-20px); animation: v3PopupIn 0.6s ease forwards 2s;
+          backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
         @keyframes v3PopupIn { to { opacity: 1; transform: translateY(0); } }
         .v3-popup-avatar {
           width: 36px; height: 36px; border-radius: 50%;
-          background: linear-gradient(135deg, var(--cyan), #7B2FFF);
+          background: linear-gradient(135deg, #10b981, #059669);
           display: flex; align-items: center; justify-content: center;
-          font-weight: 700; font-size: 14px; flex-shrink: 0;
+          font-weight: 700; font-size: 14px; flex-shrink: 0; color: #fff;
         }
         .v3-popup-dot {
-          width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+          width: 8px; height: 8px; border-radius: 50%; background: #10b981;
           flex-shrink: 0; animation: v3Pulse 2s infinite;
         }
         @keyframes v3Pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.3)} }
