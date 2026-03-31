@@ -216,15 +216,36 @@ const GeradorPersonagemTool: React.FC = () => {
     return () => clearInterval(interval);
   }, [status]);
 
-  const uploadToStorage = async (file: File | Blob, prefix: string): Promise<string> => {
+  const uploadToStorage = async (file: File | Blob, prefix: string, attempt = 1): Promise<string> => {
+    const MAX_RETRIES = 3;
+    const BACKOFF = [1000, 3000, 5000];
+
     if (!user?.id) throw new Error('User not authenticated');
     const timestamp = Date.now();
     const fileName = `${prefix}-${timestamp}.jpg`;
     const filePath = `character-generator/${user.id}/${fileName}`;
-    const { error } = await supabase.storage.from('artes-cloudinary').upload(filePath, file, { contentType: 'image/jpeg', upsert: true });
-    if (error) throw error;
-    const { data: urlData } = supabase.storage.from('artes-cloudinary').getPublicUrl(filePath);
-    return urlData.publicUrl;
+
+    try {
+      const { error } = await supabase.storage.from('artes-cloudinary').upload(filePath, file, { contentType: 'image/jpeg', upsert: true });
+      if (error) {
+        // On auth/permission errors, try refreshing session once
+        if (attempt === 1 && (error.message?.includes('401') || error.message?.includes('403') || error.message?.includes('Unauthorized') || error.message?.includes('security'))) {
+          console.warn(`[CharGen Upload] Auth error on attempt ${attempt}, refreshing session...`);
+          await supabase.auth.refreshSession();
+        }
+        throw error;
+      }
+      const { data: urlData } = supabase.storage.from('artes-cloudinary').getPublicUrl(filePath);
+      return urlData.publicUrl;
+    } catch (err: any) {
+      if (attempt < MAX_RETRIES) {
+        const delay = BACKOFF[attempt - 1] || 3000;
+        console.warn(`[CharGen Upload] Retry ${attempt}/${MAX_RETRIES} for ${prefix} in ${delay}ms:`, err.message);
+        await new Promise(r => setTimeout(r, delay));
+        return uploadToStorage(file, prefix, attempt + 1);
+      }
+      throw new Error(`Upload falhou após ${MAX_RETRIES} tentativas (${prefix}): ${err.message}`);
+    }
   };
 
   const handleProcess = async () => {
