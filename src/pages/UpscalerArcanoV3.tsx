@@ -1618,15 +1618,18 @@ const UpscalerArcanoV3 = () => {
             </div>
 
             {/* TRUST ROW */}
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 32, marginTop: 40, flexWrap: "wrap" as const }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--muted)" }}>
-                <span style={{ color: "var(--green)" }}>⚡</span> Acesso imediato
+            <div className="v3-trust-badges-row">
+              <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.1s" }}>
+                <span className="v3-trust-badge-icon">⚡</span>
+                <span>Acesso imediato</span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--muted)" }}>
-                <span style={{ color: "var(--green)" }}>💬</span> Suporte 24/7
+              <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.25s" }}>
+                <span className="v3-trust-badge-icon">💬</span>
+                <span>Suporte 24/7</span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "var(--muted)" }}>
-                <span style={{ color: "var(--green)" }}>🔒</span> Pagamento seguro · Mercado Pago
+              <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.4s" }}>
+                <span className="v3-trust-badge-icon">🔒</span>
+                <span>Pagamento seguro · Mercado Pago</span>
               </div>
             </div>
           </div>
