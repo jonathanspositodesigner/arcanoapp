@@ -1277,39 +1277,39 @@ const UpscalerArcanoV3 = () => {
         {/* STICKY CTA */}
         <div className={`v3-sticky-cta ${stickyVisible ? "visible" : ""}`}>
           <div style={{ fontSize: 14, color: "var(--muted2)" }}>
-            <strong style={{ color: "var(--white)", fontFamily: "'Syne', sans-serif" }}>Upscaler Arcano V3</strong>{!isMobile && <> — R$ 24,90 pra começar</>}
+            <strong style={{ color: "var(--white)", fontFamily: "'Syne', sans-serif" }}>Upscaler Arcano V3</strong>{!isMobile && <> — Desde R$ 24,90</>}
           </div>
           {isMobile ? (
-            <button className="v3-sticky-btn" onClick={scrollToPrice}>Ver Planos →</button>
+            <button className="v3-sticky-btn" onClick={scrollToPrice}>Ver Planes →</button>
           ) : (
-            <button className="v3-sticky-btn" onClick={scrollToPrice}>Garantir Acesso →</button>
+            <button className="v3-sticky-btn" onClick={scrollToPrice}>Obtener Acceso →</button>
           )}
         </div>
 
         {/* HERO */}
         <section className="v3-hero">
           <div className="v3-hero-badge">
-            <span style={{ animation: "v3Blink 1.5s infinite" }}>●</span> &nbsp;Versão 3 disponível agora
+            <span style={{ animation: "v3Blink 1.5s infinite" }}>●</span> &nbsp;Versión 3 disponible ahora
           </div>
-          <h1>Foto ruim é<br /><em>problema do passado.</em></h1>
+          <h1>Foto mala es<br /><em>problema del pasado.</em></h1>
           <p className="v3-hero-sub">
             {isMobile ? (
-              <>Rápido. Simples. Resultado profissional em 60 segundos.</>
+              <>Rápido. Simple. Resultado profesional en 60 segundos.</>
             ) : (
-              <>O Upscaler Arcano transforma qualquer imagem em qualidade 4K com IA.<br />
-              Rápido. Simples. Resultado profissional em 60 segundos.</>
+              <>El Upscaler Arcano transforma cualquier imagen en calidad 4K con IA.<br />
+              Rápido. Simple. Resultado profesional en 60 segundos.</>
             )}
           </p>
 
           <div className="v3-stats-row">
             <div>
               <div className="v3-stat-num">+3.2<span>mil</span></div>
-              <div className="v3-stat-label">Profissionais ativos</div>
+              <div className="v3-stat-label">Profesionales activos</div>
             </div>
             <div className="v3-stat-divider" />
             <div>
               <div className="v3-stat-num">+14<span>mil</span></div>
-              <div className="v3-stat-label">Imagens melhoradas</div>
+              <div className="v3-stat-label">Imágenes mejoradas</div>
             </div>
             <div className="v3-stat-divider" />
             <div>
@@ -1320,19 +1320,19 @@ const UpscalerArcanoV3 = () => {
 
           <div className="v3-cta-group">
             <button className="v3-btn-primary" onClick={scrollToPrice}>
-              Quero qualidade 4K agora <span>→</span>
+              Quiero calidad 4K ahora <span>→</span>
             </button>
             <div className="v3-hero-micro">
               <span className="dot" />
-              Acesso imediato · Resultado em 60s · Qualidade 4K
+              Acceso inmediato · Resultado en 60s · Calidad 4K
             </div>
           </div>
 
           {/* BEFORE/AFTER SLIDER CAROUSEL */}
           <div className="v3-slider-wrapper">
             <div className="v3-slider-label">
-              <span style={{ color: "var(--red)" }}>← Antes: baixa qualidade</span>
-              <span style={{ color: "var(--cyan)" }}>Depois: 4K nítido →</span>
+              <span style={{ color: "var(--red)" }}>← Antes: baja calidad</span>
+              <span style={{ color: "var(--cyan)" }}>Después: 4K nítido →</span>
             </div>
             <div style={{ position: "relative" }}>
               <div
