@@ -1018,15 +1018,124 @@ const UpscalerArcanoV3 = () => {
           .v3-proof-numbers { grid-template-columns: 1fr; }
         }
         @media (max-width: 600px) {
+          /* Grids to single column */
           .v3-feature-cards, .v3-audience-grid, .v3-testimonials, .v3-pricing-grid, .v3-gallery-grid { grid-template-columns: 1fr; }
           .v3-depo-grid { columns: 1; }
           .v3-real-grid { grid-template-columns: 1fr; }
           .v3-pain-grid { grid-template-columns: 1fr; }
-          .v3-topbar { gap: 14px; padding: 10px 16px; }
-          .v3-stats-row { gap: 24px; }
-          .v3-plan.featured { transform: none; }
+
+          /* 1. Topbar - more compact */
+          .v3-topbar { gap: 10px; padding: 8px 14px; }
+          .v3-topbar-logo { font-size: 13px; }
+          .v3-topbar-badge { font-size: 9px; padding: 2px 8px; }
+          .v3-topbar-cta { font-size: 11px; padding: 6px 14px; }
+
+          /* 2. Hero - breathing room */
+          .v3-hero { padding: 80px 16px 40px; min-height: auto; }
+          .v3-hero h1 { font-size: clamp(32px, 9vw, 48px); letter-spacing: -1px; margin-bottom: 14px; }
+          .v3-hero-sub { font-size: 15px; margin-bottom: 28px; }
+          .v3-hero-badge { font-size: 10px; padding: 5px 12px; margin-bottom: 20px; }
+
+          /* 3. Stats row */
+          .v3-stats-row { gap: 16px; margin-bottom: 32px; }
+          .v3-stat-num { font-size: 22px; }
+          .v3-stat-label { font-size: 10px; }
+          .v3-stat-divider { height: 28px; }
+
+          /* 4. CTA button */
+          .v3-btn-primary { font-size: 15px; padding: 14px 32px; }
+          .v3-cta-group { margin-bottom: 32px; }
+
+          /* 5. Before/after slider */
+          .v3-before-after { height: 280px; border-radius: 14px; }
+          .v3-drag-circle { width: 36px; height: 36px; font-size: 14px; }
+
+          /* 6. Social popup above sticky CTA */
+          .v3-social-popup { bottom: 76px; left: 12px; max-width: 260px; padding: 10px 14px; font-size: 12px; }
+          .v3-popup-avatar { width: 30px; height: 30px; font-size: 12px; }
+
+          /* 7. Section padding reduction */
+          .v3-features, .v3-audience, .v3-real-results { padding: 60px 16px; }
+          .v3-proof { padding: 60px 16px; }
+          .v3-pricing { padding: 60px 16px; }
+          .v3-faq { padding: 60px 16px; }
+          .v3-pain-strip { padding: 40px 16px; }
+
+          /* 8. Section titles */
+          .v3-section-title { font-size: clamp(26px, 7vw, 36px); margin-bottom: 36px; letter-spacing: -1px; }
+          .v3-section-tag { font-size: 10px; letter-spacing: 1.5px; margin-bottom: 10px; }
+
+          /* 9. Feature cards */
+          .v3-feature-visual { height: 200px; }
+          .v3-feature-content { padding: 20px; }
+          .v3-feature-title { font-size: 20px; }
+          .v3-feature-desc { font-size: 13px; margin-bottom: 14px; }
+          .v3-feature-label { font-size: 10px; }
+          .v3-turbo-ring { width: 120px; height: 120px; margin-bottom: 14px; }
+          .v3-turbo-count { font-size: 38px; }
+          .v3-batch-count { font-size: 32px; }
+
+          /* 10. Pain cards */
+          .v3-pain-card { padding: 18px; gap: 10px; }
+          .v3-pain-title { font-size: 12px; margin-bottom: 32px; }
+
+          /* 11. Audience cards */
+          .v3-audience-card { padding: 20px; }
+          .v3-audience-emoji { font-size: 28px; margin-bottom: 10px; }
+          .v3-audience-role { font-size: 16px; }
+          .v3-audience-desc { font-size: 13px; }
+
+          /* 12. Gallery items */
+          .v3-gallery { padding: 60px 16px; }
+          .v3-gallery-label strong { font-size: 14px; }
+
+          /* 13. Proof numbers */
+          .v3-proof-num-card { padding: 24px 16px; }
+          .v3-proof-number { font-size: 36px; }
+          .v3-proof-num-label { font-size: 12px; }
+
+          /* 14. Testimonials */
+          .v3-testimonial { padding: 20px; }
+          .v3-testimonial-text { font-size: 14px; }
+
+          /* 15. Pricing cards */
+          .v3-plan { padding: 22px; }
+          .v3-plan.featured { transform: none; box-shadow: 0 0 40px rgba(0,212,255,0.1), 0 20px 40px rgba(0,0,0,0.3); }
           .v3-plan.featured.v3-visible { transform: none; }
-          .v3-guarantee-card { flex-direction: column; text-align: center; padding: 28px; }
+          .v3-plan.featured:hover { transform: none !important; }
+          .v3-plan-price .amount { font-size: 36px; }
+          .v3-plan-name { font-size: 18px; }
+
+          /* 16. Guarantee */
+          .v3-guarantee-strip { padding: 32px 16px; }
+          .v3-guarantee-card { flex-direction: column; text-align: center; padding: 24px 20px; }
+          .v3-guarantee-icon { font-size: 44px; }
+          .v3-guarantee-title { font-size: 18px; }
+          .v3-guarantee-text { font-size: 13px; }
+
+          /* 17. Real results cards */
+          .v3-real-card-slider { aspect-ratio: 3/4; }
+          .v3-real-card-info { padding: 16px; }
+          .v3-real-card-text { font-size: 12px; margin-top: 10px; }
+
+          /* 18. FAQ */
+          .v3-faq-question { font-size: 15px; gap: 14px; }
+          .v3-faq-icon { width: 24px; height: 24px; font-size: 14px; }
+          .v3-faq-answer { font-size: 13px; }
+
+          /* 19. Final CTA */
+          .v3-final-cta { padding: 60px 16px; }
+          .v3-final-cta p { font-size: 15px; margin-bottom: 32px; }
+
+          /* 20. Footer */
+          .v3-footer { padding: 24px 16px; font-size: 12px; }
+
+          /* 21. Sticky CTA bar */
+          .v3-sticky-cta { padding: 10px 16px; }
+          .v3-sticky-btn { font-size: 12px; padding: 10px 20px; }
+
+          /* 22. Depo grid cards */
+          .v3-depo-grid > div { border-radius: 12px; }
         }
       `}</style>
 
