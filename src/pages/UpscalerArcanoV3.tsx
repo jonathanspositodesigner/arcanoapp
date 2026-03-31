@@ -23,6 +23,7 @@ import galleryBefore2 from "@/assets/upscaler/2a.webp";
 import galleryAfter2 from "@/assets/upscaler/2d.webp";
 import galleryBefore3 from "@/assets/upscaler/3a.webp";
 import galleryAfter3 from "@/assets/upscaler/3d.webp";
+import turboBgImage from "@/assets/upscaler-v3-turbo-bg.webp";
 
 // Hero carousel slides
 const heroSlides = [
@@ -487,7 +488,7 @@ const UpscalerArcanoV3 = () => {
           text-transform: uppercase; letter-spacing: 2px; margin-bottom: 48px;
         }
         .v3-pain-grid {
-          display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          display: grid; grid-template-columns: repeat(3, 1fr);
           gap: 16px; max-width: 1100px; margin: 0 auto;
         }
         .v3-pain-card {
@@ -602,7 +603,7 @@ const UpscalerArcanoV3 = () => {
         }
         .v3-feature-card.v3-visible { opacity: 1; transform: translateY(0); }
         .v3-feature-card:hover { border-color: rgba(0,212,255,0.2); }
-        .v3-feature-card.turbo { background: linear-gradient(145deg, #0A0A1E, #050510); }
+        .v3-feature-card.turbo { background: linear-gradient(145deg, #0A0A1E, #050510); position: relative; }
         .v3-feature-card.batch { background: linear-gradient(145deg, #0D0A20, #080515); }
         .v3-feature-visual {
           height: 300px; position: relative; overflow: hidden;
@@ -864,6 +865,7 @@ const UpscalerArcanoV3 = () => {
         /* RESPONSIVE */
         @media (max-width: 900px) {
           .v3-feature-cards, .v3-audience-grid, .v3-testimonials, .v3-pricing-grid { grid-template-columns: 1fr 1fr; }
+          .v3-pain-grid { grid-template-columns: repeat(2, 1fr); }
           .v3-steps { grid-template-columns: 1fr; }
           .v3-steps::before { display: none; }
           .v3-gallery-grid { grid-template-columns: repeat(2, 1fr); }
@@ -871,6 +873,7 @@ const UpscalerArcanoV3 = () => {
         }
         @media (max-width: 600px) {
           .v3-feature-cards, .v3-audience-grid, .v3-testimonials, .v3-pricing-grid, .v3-gallery-grid { grid-template-columns: 1fr; }
+          .v3-pain-grid { grid-template-columns: 1fr; }
           .v3-topbar { gap: 14px; padding: 10px 16px; }
           .v3-stats-row { gap: 24px; }
           .v3-plan.featured { transform: none; }
@@ -1097,14 +1100,24 @@ const UpscalerArcanoV3 = () => {
                     <div className="v3-turbo-speed">⚡ 10x mais rápido</div>
                   </div>
                 </div>
-                <div className="v3-feature-content">
-                  <div className="v3-feature-label">⚡ Modo Turbo</div>
-                  <div className="v3-feature-title">Resultado em menos de 1 minuto</div>
-                  <div className="v3-feature-desc">Enquanto o cliente ainda está no WhatsApp, a imagem já está pronta. Mesmo motor de IA. Mesma qualidade 4K. Só que agora em tempo recorde.</div>
-                  <div className="v3-feature-pills">
-                    <span className="v3-pill">Velocidade 10x</span>
-                    <span className="v3-pill">4K preservado</span>
-                    <span className="v3-pill">Entregas urgentes</span>
+                <div className="v3-feature-content" style={{ position: "relative", overflow: "hidden" }}>
+                  <img 
+                    src={turboBgImage} 
+                    alt="" 
+                    style={{ 
+                      position: "absolute", inset: 0, width: "100%", height: "100%", 
+                      objectFit: "cover", opacity: 0.15, zIndex: 0, pointerEvents: "none" 
+                    }} 
+                  />
+                  <div style={{ position: "relative", zIndex: 1 }}>
+                    <div className="v3-feature-label">⚡ Modo Turbo</div>
+                    <div className="v3-feature-title">Resultado em menos de 1 minuto</div>
+                    <div className="v3-feature-desc">Enquanto o cliente ainda está no WhatsApp, a imagem já está pronta. Mesmo motor de IA. Mesma qualidade 4K. Só que agora em tempo recorde.</div>
+                    <div className="v3-feature-pills">
+                      <span className="v3-pill">Velocidade 10x</span>
+                      <span className="v3-pill">4K preservado</span>
+                      <span className="v3-pill">Entregas urgentes</span>
+                    </div>
                   </div>
                 </div>
               </div>
