@@ -1047,8 +1047,15 @@ const UpscalerArcanoV3 = () => {
           .v3-before-after { height: 280px; border-radius: 14px; }
           .v3-drag-circle { width: 36px; height: 36px; font-size: 14px; }
 
-          /* 6. Social popup above sticky CTA */
-          .v3-social-popup { bottom: 76px; left: 12px; max-width: 260px; padding: 10px 14px; font-size: 12px; }
+          /* 6. Social popup - cycling notification */
+          .v3-social-popup {
+            bottom: 76px; left: 12px; right: 12px; max-width: none;
+            padding: 10px 14px; font-size: 12px;
+            animation: none; opacity: 0; transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+          }
+          .v3-social-popup.v3-notif-visible { opacity: 1; transform: translateY(0); }
+          .v3-social-popup.v3-notif-hidden { opacity: 0; transform: translateY(20px); }
           .v3-popup-avatar { width: 30px; height: 30px; font-size: 12px; }
 
           /* 7. Section padding reduction */
