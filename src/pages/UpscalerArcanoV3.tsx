@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useMPCheckout } from "@/hooks/useMPCheckout";
 import { ShieldCheck, Rocket, Flame, Crown, Infinity } from "lucide-react";
 
 // Image imports for before/after and gallery
