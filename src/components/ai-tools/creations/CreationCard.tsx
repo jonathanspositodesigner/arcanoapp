@@ -67,23 +67,25 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
   const isVideo = creation.media_type === 'video';
   
   // Função para obter URL de preview via proxy quando necessário
-  const getProxiedUrl = (url: string): string => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    if (!supabaseUrl) return url;
-    if (url.includes('supabase.co')) return url;
-    return `${supabaseUrl}/functions/v1/download-proxy?url=${encodeURIComponent(url)}`;
-  };
-
   const getPreviewUrl = (): string => {
+    // Se tem thumbnail local, usar (rápido, sem CORS)
     if (creation.thumbnail_url) {
       return creation.thumbnail_url;
     }
-    return getProxiedUrl(creation.output_url);
+    
+    // Se não tem thumbnail, usar proxy para buscar do CDN chinês
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) return creation.output_url;
+    
+    // Já é do nosso storage? Usar direto
+    if (creation.output_url.includes('supabase.co')) {
+      return creation.output_url;
+    }
+    
+    // Usar proxy Edge Function para evitar CORS
+    return `${supabaseUrl}/functions/v1/download-proxy?url=${encodeURIComponent(creation.output_url)}`;
   };
-
-  // For videos: use actual output_url (proxied if needed), thumbnail as poster
-  const videoSrc = isVideo ? getProxiedUrl(creation.output_url) : '';
-  const videoPoster = isVideo && creation.thumbnail_url ? creation.thumbnail_url : undefined;
+  
   const previewUrl = getPreviewUrl();
   
   // Download usando hook resiliente (funciona no Safari)
@@ -121,8 +123,7 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
           </div>
         ) : isVideo ? (
           <video
-            src={videoSrc}
-            poster={videoPoster}
+            src={previewUrl}
             className="w-full h-full object-contain"
             controls
             preload="metadata"

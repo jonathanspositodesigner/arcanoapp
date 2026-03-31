@@ -15,7 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ToolType, JobStatus, JobUpdate, TABLE_MAP, queryJobStatus } from '@/ai/JobManager';
 
 // Timeouts diferenciados por tipo de ferramenta
-const VIDEO_TOOLS: ToolType[] = ['video_generator', 'movieled_maker'];
+const VIDEO_TOOLS: ToolType[] = ['video_generator'];
 const TIMEOUT_DEFAULT_MS = 600000;  // 10 min para ferramentas padrão
 const TIMEOUT_VIDEO_MS = 900000;    // 15 min para vídeo (Veo pode demorar)
 
