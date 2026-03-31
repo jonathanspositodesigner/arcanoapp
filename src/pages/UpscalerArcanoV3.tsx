@@ -286,7 +286,7 @@ const UpscalerArcanoV3 = () => {
           position: relative;
         }
         .v3-page * { box-sizing: border-box; }
-        .v3-page h1, .v3-page h2, .v3-page h3, .v3-page h4 { font-family: 'Syne', sans-serif; }
+        .v3-page h1, .v3-page h2, .v3-page h3, .v3-page h4 { font-family: 'Plus Jakarta Sans', sans-serif; }
 
         .v3-page::before {
           content: '';
