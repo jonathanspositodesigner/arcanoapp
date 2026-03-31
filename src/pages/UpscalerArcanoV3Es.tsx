@@ -1343,7 +1343,7 @@ const UpscalerArcanoV3 = () => {
               >
                 {/* Before layer - full */}
                 <div className="v3-ba-layer">
-                  <img src={heroSlides[currentSlide].before} alt="Antes - baixa qualidade" />
+                  <img src={heroSlides[currentSlide].before} alt="Antes - baja calidad" />
                 </div>
                 {/* After layer - clipped */}
                 <div className="v3-ba-layer" style={{ clipPath: `inset(0 ${100 - sliderPct}% 0 0)` }}>
