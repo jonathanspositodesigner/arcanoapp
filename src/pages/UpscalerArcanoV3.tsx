@@ -149,6 +149,9 @@ const UpscalerArcanoV3 = () => {
   const [stickyVisible, setStickyVisible] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  const [notifData, setNotifData] = useState<{ name: string; initial: string; time: string; city: string } | null>(null);
+  const [notifVisible, setNotifVisible] = useState(false);
   const sliderRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
   const autoRef = useRef(true);
@@ -322,6 +325,44 @@ const UpscalerArcanoV3 = () => {
     e.preventDefault();
     document.getElementById("v3-pricing")?.scrollIntoView({ behavior: "smooth" });
   };
+
+  // Mobile detection
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 600);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Cycling social proof notifications (mobile only)
+  useEffect(() => {
+    if (!isMobile) return;
+    const people = [
+      { name: "Mariana S.", initial: "M", time: "há 3 minutos", city: "São Paulo, SP" },
+      { name: "Carlos R.", initial: "C", time: "há 5 minutos", city: "Belo Horizonte, MG" },
+      { name: "Rafael T.", initial: "R", time: "há 1 minuto", city: "Rio de Janeiro, RJ" },
+      { name: "Ana Luiza F.", initial: "A", time: "há 8 minutos", city: "Curitiba, PR" },
+      { name: "Wellington P.", initial: "W", time: "há 2 minutos", city: "Recife, PE" },
+      { name: "Juliana M.", initial: "J", time: "há 4 minutos", city: "Porto Alegre, RS" },
+      { name: "Rodrigo L.", initial: "R", time: "há 6 minutos", city: "Florianópolis, SC" },
+      { name: "Clara V.", initial: "C", time: "há 1 minuto", city: "Brasília, DF" },
+    ];
+    let idx = 0;
+    const show = () => {
+      const person = people[idx % people.length];
+      const times = ["há 1 minuto", "há 2 minutos", "há 3 minutos", "há 5 minutos", "há poucos segundos"];
+      setNotifData({ ...person, time: times[Math.floor(Math.random() * times.length)] });
+      setNotifVisible(true);
+      idx++;
+      setTimeout(() => setNotifVisible(false), 4000);
+    };
+    const initialDelay = setTimeout(() => {
+      show();
+      const interval = setInterval(() => show(), 7000 + Math.random() * 8000);
+      return () => clearInterval(interval);
+    }, 5000);
+    return () => clearTimeout(initialDelay);
+  }, [isMobile]);
 
   const batchEmojis = ["🏔️", "🎸", "👗", "🍕", "🏠", "💍", "🚗", "🌺", "📱", "🎨"];
 
@@ -1024,11 +1065,8 @@ const UpscalerArcanoV3 = () => {
           .v3-real-grid { grid-template-columns: 1fr; }
           .v3-pain-grid { grid-template-columns: 1fr; }
 
-          /* 1. Topbar - more compact */
-          .v3-topbar { gap: 10px; padding: 8px 14px; }
-          .v3-topbar-logo { font-size: 13px; }
-          .v3-topbar-badge { font-size: 9px; padding: 2px 8px; }
-          .v3-topbar-cta { font-size: 11px; padding: 6px 14px; }
+          /* 1. Topbar - hidden on mobile */
+          .v3-topbar { display: none; }
 
           /* 2. Hero - breathing room */
           .v3-hero { padding: 80px 16px 40px; min-height: auto; }
@@ -1050,8 +1088,15 @@ const UpscalerArcanoV3 = () => {
           .v3-before-after { height: 280px; border-radius: 14px; }
           .v3-drag-circle { width: 36px; height: 36px; font-size: 14px; }
 
-          /* 6. Social popup above sticky CTA */
-          .v3-social-popup { bottom: 76px; left: 12px; max-width: 260px; padding: 10px 14px; font-size: 12px; }
+          /* 6. Social popup - cycling notification */
+          .v3-social-popup {
+            bottom: 76px; left: 12px; right: 12px; max-width: none;
+            padding: 10px 14px; font-size: 12px;
+            animation: none; opacity: 0; transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+          }
+          .v3-social-popup.v3-notif-visible { opacity: 1; transform: translateY(0); }
+          .v3-social-popup.v3-notif-hidden { opacity: 0; transform: translateY(20px); }
           .v3-popup-avatar { width: 30px; height: 30px; font-size: 12px; }
 
           /* 7. Section padding reduction */
@@ -1147,22 +1192,39 @@ const UpscalerArcanoV3 = () => {
           <button className="v3-topbar-cta" onClick={scrollToPrice}>Ver Planos</button>
         </nav>
 
-        {/* SOCIAL POPUP */}
-        <div className="v3-social-popup">
-          <div className="v3-popup-avatar">M</div>
-          <div>
-            <strong style={{ color: "var(--white)", display: "block", fontSize: 13 }}>Mariana S. acabou de comprar</strong>
-            <span style={{ color: "var(--muted2)", fontSize: 12 }}>há 3 minutos · São Paulo, SP</span>
+        {/* SOCIAL POPUP - Desktop: static, Mobile: cycling */}
+        {isMobile ? (
+          notifData && (
+            <div className={`v3-social-popup ${notifVisible ? 'v3-notif-visible' : 'v3-notif-hidden'}`}>
+              <div className="v3-popup-avatar">{notifData.initial}</div>
+              <div>
+                <strong style={{ color: "var(--white)", display: "block", fontSize: 13 }}>{notifData.name} acabou de comprar</strong>
+                <span style={{ color: "var(--muted2)", fontSize: 12 }}>{notifData.time} · {notifData.city}</span>
+              </div>
+              <div className="v3-popup-dot" />
+            </div>
+          )
+        ) : (
+          <div className="v3-social-popup">
+            <div className="v3-popup-avatar">M</div>
+            <div>
+              <strong style={{ color: "var(--white)", display: "block", fontSize: 13 }}>Mariana S. acabou de comprar</strong>
+              <span style={{ color: "var(--muted2)", fontSize: 12 }}>há 3 minutos · São Paulo, SP</span>
+            </div>
+            <div className="v3-popup-dot" />
           </div>
-          <div className="v3-popup-dot" />
-        </div>
+        )}
 
         {/* STICKY CTA */}
         <div className={`v3-sticky-cta ${stickyVisible ? "visible" : ""}`}>
           <div style={{ fontSize: 14, color: "var(--muted2)" }}>
-            <strong style={{ color: "var(--white)", fontFamily: "'Syne', sans-serif" }}>Upscaler Arcano V3</strong> — R$ 24,90 pra começar
+            <strong style={{ color: "var(--white)", fontFamily: "'Syne', sans-serif" }}>Upscaler Arcano V3</strong>{!isMobile && <> — R$ 24,90 pra começar</>}
           </div>
-          <button className="v3-sticky-btn" onClick={scrollToPrice}>Garantir Acesso →</button>
+          {isMobile ? (
+            <a href="/planos-upscaler-arcano-69" className="v3-sticky-btn" style={{ textDecoration: 'none' }}>Ver Planos →</a>
+          ) : (
+            <button className="v3-sticky-btn" onClick={scrollToPrice}>Garantir Acesso →</button>
+          )}
         </div>
 
         {/* HERO */}
