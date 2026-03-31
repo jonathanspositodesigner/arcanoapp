@@ -1271,7 +1271,7 @@ const UpscalerArcanoV3 = () => {
             <strong style={{ color: "var(--white)", fontFamily: "'Syne', sans-serif" }}>Upscaler Arcano V3</strong>{!isMobile && <> — R$ 24,90 pra começar</>}
           </div>
           {isMobile ? (
-            <a href="/planos-upscaler-arcano-69" className="v3-sticky-btn" style={{ textDecoration: 'none' }}>Ver Planos →</a>
+            <button className="v3-sticky-btn" onClick={scrollToPrice}>Ver Planos →</button>
           ) : (
             <button className="v3-sticky-btn" onClick={scrollToPrice}>Garantir Acesso →</button>
           )}
