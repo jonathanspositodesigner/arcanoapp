@@ -326,6 +326,44 @@ const UpscalerArcanoV3 = () => {
     document.getElementById("v3-pricing")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Mobile detection
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 600);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Cycling social proof notifications (mobile only)
+  useEffect(() => {
+    if (!isMobile) return;
+    const people = [
+      { name: "Mariana S.", initial: "M", time: "há 3 minutos", city: "São Paulo, SP" },
+      { name: "Carlos R.", initial: "C", time: "há 5 minutos", city: "Belo Horizonte, MG" },
+      { name: "Rafael T.", initial: "R", time: "há 1 minuto", city: "Rio de Janeiro, RJ" },
+      { name: "Ana Luiza F.", initial: "A", time: "há 8 minutos", city: "Curitiba, PR" },
+      { name: "Wellington P.", initial: "W", time: "há 2 minutos", city: "Recife, PE" },
+      { name: "Juliana M.", initial: "J", time: "há 4 minutos", city: "Porto Alegre, RS" },
+      { name: "Rodrigo L.", initial: "R", time: "há 6 minutos", city: "Florianópolis, SC" },
+      { name: "Clara V.", initial: "C", time: "há 1 minuto", city: "Brasília, DF" },
+    ];
+    let idx = 0;
+    const show = () => {
+      const person = people[idx % people.length];
+      const times = ["há 1 minuto", "há 2 minutos", "há 3 minutos", "há 5 minutos", "há poucos segundos"];
+      setNotifData({ ...person, time: times[Math.floor(Math.random() * times.length)] });
+      setNotifVisible(true);
+      idx++;
+      setTimeout(() => setNotifVisible(false), 4000);
+    };
+    const initialDelay = setTimeout(() => {
+      show();
+      const interval = setInterval(() => show(), 7000 + Math.random() * 8000);
+      return () => clearInterval(interval);
+    }, 5000);
+    return () => clearTimeout(initialDelay);
+  }, [isMobile]);
+
   const batchEmojis = ["🏔️", "🎸", "👗", "🍕", "🏠", "💍", "🚗", "🌺", "📱", "🎨"];
 
   const galleryItems = [
