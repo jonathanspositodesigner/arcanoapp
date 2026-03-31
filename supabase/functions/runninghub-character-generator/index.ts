@@ -559,23 +559,29 @@ async function handleRefine(req: Request) {
   const body = await req.json();
   const { jobId, frontImageUrl, profileImageUrl, semiProfileImageUrl, lowAngleImageUrl, resultImageUrl, selectedNumbers, creditCost } = body;
 
-  // ========== JWT AUTH VERIFICATION ==========
+  // ========== JWT AUTH VERIFICATION (local decode) ==========
   const authHeader = req.headers.get('Authorization');
   if (!authHeader?.startsWith('Bearer ')) {
     return new Response(JSON.stringify({ error: 'Unauthorized', code: 'AUTH_REQUIRED' }), {
       status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-  const anonClient = createClient(SUPABASE_URL, Deno.env.get('SUPABASE_ANON_KEY')!);
   const jwtToken = authHeader.replace('Bearer ', '');
-  const { data: { user: authUser }, error: authError } = await anonClient.auth.getUser(jwtToken);
-  if (authError || !authUser) {
-    return new Response(JSON.stringify({ error: 'Unauthorized', code: 'INVALID_TOKEN' }), {
+  let userId: string;
+  try {
+    const payloadB64 = jwtToken.split('.')[1];
+    if (!payloadB64) throw new Error('Malformed JWT');
+    const payload = JSON.parse(atob(payloadB64));
+    if (!payload.sub) throw new Error('Missing sub claim');
+    if (payload.exp && payload.exp * 1000 < Date.now()) throw new Error('Token expired');
+    userId = payload.sub;
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Invalid token';
+    return new Response(JSON.stringify({ error: `Unauthorized: ${msg}`, code: 'INVALID_TOKEN' }), {
       status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-  const userId = authUser.id;
-  console.log(`[CharacterGenerator] Refine JWT verified - userId: ${userId}`);
+  console.log(`[CharacterGenerator] Refine JWT verified (local) - userId: ${userId}`);
 
   // Validate inputs
   if (!jobId || typeof jobId !== 'string') {

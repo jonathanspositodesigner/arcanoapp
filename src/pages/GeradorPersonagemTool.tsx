@@ -288,22 +288,25 @@ const GeradorPersonagemTool: React.FC = () => {
     setDebugErrorMessage(null);
 
     try {
-      // Compress & upload 4 images
+      // Revalidate session before uploads
       setProgress(5);
-      setCurrentStep('compressing_images');
+      setCurrentStep('validating_session');
+      const { data: { user: freshUser }, error: sessionError } = await supabase.auth.getUser();
+      if (sessionError || !freshUser) {
+        // Try refreshing session
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) throw new Error('Sessão expirada. Faça login novamente.');
+      }
 
-      const [compFront, compProfile, compSemi, compLow] = await Promise.all([
-        optimizeForAI(frontFile), optimizeForAI(profileFile), optimizeForAI(semiProfileFile), optimizeForAI(lowAngleFile),
-      ]);
-
-      setProgress(20);
+      // Images already optimized in AngleUploadCard — upload directly (no double optimization)
+      setProgress(15);
       setCurrentStep('uploading_images');
 
       const [frontUrl, profileUrl, semiProfileUrl, lowAngleUrl] = await Promise.all([
-        uploadToStorage(compFront.file, 'front'),
-        uploadToStorage(compProfile.file, 'profile'),
-        uploadToStorage(compSemi.file, 'semi-profile'),
-        uploadToStorage(compLow.file, 'low-angle'),
+        uploadToStorage(frontFile, 'front'),
+        uploadToStorage(profileFile, 'profile'),
+        uploadToStorage(semiProfileFile, 'semi-profile'),
+        uploadToStorage(lowAngleFile, 'low-angle'),
       ]);
 
       // Save storage URLs for refine reuse
