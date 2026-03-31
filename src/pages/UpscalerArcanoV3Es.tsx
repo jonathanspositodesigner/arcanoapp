@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useMPCheckout } from "@/hooks/useMPCheckout";
-import { ShieldCheck, Rocket, Flame, Crown, Infinity } from "lucide-react";
+import { ShieldCheck, Infinity } from "lucide-react";
 
 // Image imports for before/after and gallery
 import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
@@ -408,11 +408,12 @@ const UpscalerArcanoV3 = () => {
 
   const faqs = [
     { q: "¿Tengo que pagar mensualidad?", a: "No. El Upscaler Arcano funciona con acceso vitalicio — pagás una vez y lo usás para siempre. Sin cobros recurrentes, sin sorpresas." },
+    { q: "¿El uso es realmente ilimitado?", a: "Sí, 100%. Con el plan Vitalicio podés mejorar cuantas imágenes quieras, sin límite de uso. No consume créditos ni tiene restricciones de cantidad." },
     { q: "¿Funciona con cualquier tipo de imagen?", a: "Sí. Fotos de sesión, logos, renders 3D, fotos antiguas, imágenes generadas por IA, comida, productos — Arcano procesa cualquier tipo de imagen." },
     { q: "¿Cuánto tiempo tarda en procesar?", a: "Con el Modo Turbo del V3, menos de 60 segundos por imagen. En lote, procesás hasta 10 imágenes en paralelo al mismo tiempo." },
-    { q: "¿Los créditos expiran?", a: "No. Los créditos que comprás quedan en tu cuenta para siempre. Usalos a tu ritmo, sin presión de fecha de vencimiento." },
     { q: "¿Qué es el Modo Turbo? ¿Es igual al resultado normal?", a: "El Modo Turbo es exclusivo del V3 y entrega el mismo motor de IA, misma calidad 4K, pero en menos de 1 minuto — hasta 10x más rápido que el procesamiento estándar." },
     { q: "¿Hay que instalar algún programa?", a: "No. El Upscaler Arcano es 100% online. Accedé directo desde el navegador, sin instalar nada, desde cualquier computadora." },
+    { q: "¿Consume créditos cada vez que uso?", a: "No. El plan Vitalicio no consume créditos. Una vez que accedés, el uso es completamente ilimitado y sin costo adicional." },
   ];
 
   return (
@@ -1587,77 +1588,7 @@ const UpscalerArcanoV3 = () => {
               <div className="v3-section-title" style={{ marginTop: 12 }}>Empezá ahora.<br /><span>Acceso inmediato.</span></div>
             </div>
 
-            <div className="v3-pricing-grid">
-              {/* STARTER */}
-              <div className="v3-plan v3-reveal">
-                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-                  <Rocket size={32} style={{ color: "rgba(255,255,255,0.5)" }} />
-                </div>
-                <div className="v3-plan-name">Starter</div>
-                <div className="v3-plan-tagline">Para probar</div>
-                <div className="v3-plan-price">
-                  <span className="currency">R$</span>
-                  <span className="amount">24</span>
-                  <span className="cents">,90</span>
-                  <span className="period">acceso vitalicio</span>
-                </div>
-                <button className="v3-plan-cta outline" onClick={() => openCheckout("upscaler-arcano-starter")}>Empezar →</button>
-                <div className="v3-plan-divider" />
-                <div className="v3-plan-feature"><span className="check">✓</span> 25 imágenes</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> 1.500 créditos</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Soporte vía WhatsApp</div>
-              </div>
-
-              {/* PRO */}
-              <div className="v3-plan v3-reveal">
-                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-                  <Flame size={32} style={{ color: "#d946ef" }} />
-                </div>
-                <div className="v3-plan-name">Pro</div>
-                <div className="v3-plan-tagline">3x más por R$12 extra</div>
-                <div className="v3-plan-price">
-                  <span className="currency">R$</span>
-                  <span className="amount">37</span>
-                  <span className="cents">,00</span>
-                  <span className="period">acceso vitalicio</span>
-                </div>
-                <button className="v3-plan-cta outline" onClick={() => openCheckout("upscaler-arcano-pro")}>Empezar →</button>
-                <div className="v3-plan-divider" />
-                <div className="v3-plan-feature"><span className="check">✓</span> 70 imágenes</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> 4.200 créditos</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> NanoBanana Pro</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Veo 3 (generación de video)</div>
-              </div>
-
-              {/* ULTIMATE */}
-              <div className="v3-plan featured v3-reveal">
-                <div className="v3-plan-popular">⚡ Más vendido</div>
-                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
-                  <Crown size={32} style={{ color: "#84cc16" }} />
-                </div>
-                <div className="v3-plan-name">Ultimate</div>
-                <div className="v3-plan-tagline">Ideal para creadores activos</div>
-                <div className="v3-plan-price">
-                  <span className="currency">R$</span>
-                  <span className="amount">79</span>
-                  <span className="cents">,90</span>
-                  <span className="period">acceso vitalicio</span>
-                </div>
-                <button className="v3-plan-cta filled" onClick={() => openCheckout("upscaler-arcano-ultimate")}>Obtener Acceso →</button>
-                <div className="v3-plan-divider" />
-                <div className="v3-plan-feature"><span className="check">✓</span> 233 imágenes</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> 14.000 créditos</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> NanoBanana Pro</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Veo 3 (generación de video)</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Soporte prioritario</div>
-              </div>
-
+            <div className="v3-pricing-grid" style={{ gridTemplateColumns: "1fr", maxWidth: 420, margin: "0 auto" }}>
               {/* VITALÍCIO */}
               <div className="v3-plan v3-plan-lifetime v3-reveal">
                 <div className="v3-plan-popular v3-plan-popular-gold">♾ Vitalicio</div>
@@ -1667,19 +1598,19 @@ const UpscalerArcanoV3 = () => {
                 <div className="v3-plan-name">Ilimitado</div>
                 <div className="v3-plan-tagline">Acceso permanente a todo</div>
                 <div className="v3-plan-price">
-                  <span className="currency">R$</span>
-                  <span className="amount">99</span>
+                  <span className="currency">$</span>
+                  <span className="amount">19</span>
                   <span className="cents">,90</span>
-                  <span className="period">pagás una vez · usás para siempre</span>
+                  <span className="period">USD · pagás una vez · usás para siempre</span>
                 </div>
                 <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => openCheckout("upscaler-arcano-v3")}>Obtener Vitalicio →</button>
                 <div className="v3-plan-divider" />
-                <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Acceso vitalicio completo</strong></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Todas las herramientas</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Uso ilimitado · sin créditos</strong></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Agrega detalles y texturas de piel ultra realistas</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> NanoBanana Pro + Veo 3</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> Todas las actualizaciones futuras</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Soporte prioritario vía WhatsApp</div>
               </div>
             </div>
 
