@@ -958,9 +958,10 @@ const UpscalerArcanoV3 = () => {
         }
 
         .v3-plan-popular {
+          position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
           background: linear-gradient(135deg, var(--cyan), #0099CC); color: #000;
           font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-          padding: 4px 12px; border-radius: 100px; display: inline-block; margin-bottom: 16px;
+          padding: 4px 12px; border-radius: 100px; white-space: nowrap; z-index: 2;
         }
         .v3-plan-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
         .v3-plan-tagline { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
