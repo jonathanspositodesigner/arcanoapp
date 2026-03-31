@@ -924,6 +924,38 @@ const UpscalerArcanoV3 = () => {
         }
         .v3-plan.featured.v3-visible { transform: translateY(-12px); }
         .v3-plan.featured:hover { transform: translateY(-16px) !important; }
+        
+        /* Lifetime card highlight */
+        .v3-plan-lifetime {
+          background: linear-gradient(145deg, #1A1500, #0F0D05); border-color: var(--gold);
+          transform: translateY(-12px); box-shadow: 0 0 60px rgba(245,200,66,0.12), 0 40px 80px rgba(0,0,0,0.5);
+        }
+        .v3-plan-lifetime.v3-visible { transform: translateY(-12px); }
+        .v3-plan-lifetime:hover { transform: translateY(-16px) !important; border-color: var(--gold) !important; }
+        .v3-plan-popular-gold {
+          background: linear-gradient(135deg, var(--gold), #CC9900) !important; color: #000 !important;
+        }
+        .v3-plan-cta-gold {
+          background: linear-gradient(135deg, var(--gold), #CC9900) !important; color: #000 !important;
+        }
+        .v3-plan-cta-gold:hover { opacity: 0.9; }
+        
+        /* Trust badges */
+        .v3-trust-badges-row {
+          display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 40; flex-wrap: wrap;
+        }
+        .v3-trust-badge {
+          display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted);
+          background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 12px; padding: 12px 20px; backdrop-filter: blur(8px);
+          opacity: 0; animation: trustFadeIn 0.5s ease-out forwards;
+        }
+        .v3-trust-badge-icon { font-size: 18px; }
+        @keyframes trustFadeIn {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
         .v3-plan-popular {
           background: linear-gradient(135deg, var(--cyan), #0099CC); color: #000;
           font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
