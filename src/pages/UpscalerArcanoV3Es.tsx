@@ -994,7 +994,7 @@ const UpscalerArcanoV3 = () => {
         .v3-plan-cta {
           display: block; text-align: center; font-family: 'Syne', sans-serif; font-weight: 700;
           font-size: 15px; padding: 14px; border-radius: 14px; text-decoration: none;
-          margin-bottom: 24px; transition: all 0.2s; cursor: pointer;
+          margin: 0 auto 24px auto; max-width: 320px; transition: all 0.2s; cursor: pointer;
         }
         .v3-plan-cta.outline { border: 1px solid var(--card-border); color: var(--white); background: transparent; }
         .v3-plan-cta.outline:hover { border-color: var(--cyan); color: var(--cyan); }
