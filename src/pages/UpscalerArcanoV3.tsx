@@ -1655,6 +1655,9 @@ const UpscalerArcanoV3 = () => {
               {/* VITALÍCIO */}
               <div className="v3-plan v3-plan-lifetime v3-reveal">
                 <div className="v3-plan-popular v3-plan-popular-gold">♾ Vitalício</div>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                  <Infinity size={32} style={{ color: "#f5c842" }} />
+                </div>
                 <div className="v3-plan-name">Ilimitado</div>
                 <div className="v3-plan-tagline">Acesso permanente a tudo</div>
                 <div className="v3-plan-price">
