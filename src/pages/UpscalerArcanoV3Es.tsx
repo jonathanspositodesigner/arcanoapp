@@ -1515,13 +1515,13 @@ const UpscalerArcanoV3 = () => {
                   </div>
                 </div>
                 <div className="v3-feature-content">
-                  <div className="v3-feature-label" style={{ color: "#9B6FFF" }}>🗂 Upscale em Lote</div>
-                  <div className="v3-feature-title">Até 10 imagens simultâneas</div>
-                  <div className="v3-feature-desc">Chega de processar uma por uma. Selecione tudo de uma vez, clique uma vez, e deixa a IA trabalhar enquanto você descansa.</div>
+                  <div className="v3-feature-label" style={{ color: "#9B6FFF" }}>🗂 Upscale en Lote</div>
+                  <div className="v3-feature-title">Hasta 10 imágenes simultáneas</div>
+                  <div className="v3-feature-desc">Basta de procesar una por una. Seleccioná todo de una vez, hacé clic una vez, y dejá que la IA trabaje mientras descansás.</div>
                   <div className="v3-feature-pills">
-                    <span className="v3-pill">10 imagens juntas</span>
-                    <span className="v3-pill">Processamento paralelo</span>
-                    <span className="v3-pill">Download em lote</span>
+                    <span className="v3-pill">10 imágenes juntas</span>
+                    <span className="v3-pill">Procesamiento paralelo</span>
+                    <span className="v3-pill">Descarga en lote</span>
                   </div>
                 </div>
               </div>
