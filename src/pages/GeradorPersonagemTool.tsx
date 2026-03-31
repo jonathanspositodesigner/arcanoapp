@@ -22,7 +22,7 @@ import RefinementCarousel, { type RefinementHistoryItem } from '@/components/cha
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
-import { optimizeForAI } from '@/hooks/useImageOptimizer';
+// optimizeForAI removed — images are already optimized in AngleUploadCard
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
