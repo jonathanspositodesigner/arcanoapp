@@ -306,7 +306,7 @@ const UpscalerArcanoV3 = () => {
           padding: 12px 24px; display: flex; align-items: center; gap: 32px;
         }
         .v3-topbar-logo {
-          font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; letter-spacing: -0.5px;
+          font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 15px; letter-spacing: -0.5px;
           background: linear-gradient(135deg, var(--cyan), var(--white));
           -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
@@ -316,7 +316,7 @@ const UpscalerArcanoV3 = () => {
           border-radius: 100px; letter-spacing: 0.5px;
         }
         .v3-topbar-cta {
-          background: var(--cyan); color: #000; font-family: 'Syne', sans-serif;
+          background: var(--cyan); color: #000; font-family: 'Plus Jakarta Sans', sans-serif;
           font-weight: 700; font-size: 13px; padding: 8px 20px; border-radius: 100px;
           text-decoration: none; cursor: pointer; border: none;
         }
@@ -355,7 +355,7 @@ const UpscalerArcanoV3 = () => {
         .v3-sticky-cta.visible { transform: translateY(0); }
         .v3-sticky-btn {
           background: linear-gradient(135deg, var(--cyan), #0099CC);
-          color: #000; font-family: 'Syne', sans-serif; font-weight: 700;
+          color: #000; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;
           font-size: 14px; padding: 12px 28px; border-radius: 100px;
           text-decoration: none; white-space: nowrap; cursor: pointer; border: none;
         }
@@ -400,7 +400,7 @@ const UpscalerArcanoV3 = () => {
           animation: v3FadeDown 0.7s ease 0.4s both;
         }
         .v3-stat-num {
-          font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--white); text-align: center;
+          font-family: 'Plus Jakarta Sans', sans-serif; font-size: 28px; font-weight: 800; color: var(--white); text-align: center;
         }
         .v3-stat-num span { color: var(--cyan); }
         .v3-stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; text-align: center; }
@@ -413,7 +413,7 @@ const UpscalerArcanoV3 = () => {
 
         .v3-btn-primary {
           background: linear-gradient(135deg, var(--cyan), #0099CC); color: #000;
-          font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px;
+          font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 17px;
           padding: 18px 48px; border-radius: 100px; text-decoration: none;
           display: inline-flex; align-items: center; gap: 10px;
           box-shadow: 0 0 40px rgba(0,212,255,0.3); cursor: pointer; border: none;
@@ -528,7 +528,7 @@ const UpscalerArcanoV3 = () => {
         .v3-step-num {
           width: 60px; height: 60px; border-radius: 50%; background: var(--surface2);
           border: 1px solid var(--cyan); display: flex; align-items: center; justify-content: center;
-          margin: 0 auto 24px; font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;
+          margin: 0 auto 24px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800;
           color: var(--cyan); position: relative; z-index: 1; box-shadow: 0 0 30px var(--cyan-glow);
         }
         .v3-step-icon-area {
@@ -536,7 +536,7 @@ const UpscalerArcanoV3 = () => {
           border: 1px solid var(--card-border); display: flex; align-items: center;
           justify-content: center; font-size: 56px; margin-bottom: 20px; overflow: hidden;
         }
-        .v3-step-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .v3-step-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
         .v3-step-desc { font-size: 14px; color: var(--muted2); line-height: 1.6; }
 
         /* Upload anim */
@@ -576,7 +576,7 @@ const UpscalerArcanoV3 = () => {
         }
         @keyframes v3CheckPop { from{transform:scale(0)} to{transform:scale(1)} }
         .v3-download-label { font-size: 12px; color: var(--green); font-weight: 600; }
-        .v3-download-quality { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; }
+        .v3-download-quality { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; }
         .v3-download-quality span { color: var(--cyan); }
 
         /* FEATURES */
@@ -629,7 +629,7 @@ const UpscalerArcanoV3 = () => {
         }
         @keyframes v3RingFill { 0%{stroke-dashoffset:502} 70%{stroke-dashoffset:50} 100%{stroke-dashoffset:50} }
         .v3-turbo-count {
-          font-family: 'Syne', sans-serif; font-size: 52px; font-weight: 800;
+          font-family: 'Plus Jakarta Sans', sans-serif; font-size: 52px; font-weight: 800;
           color: var(--cyan); text-shadow: 0 0 40px var(--cyan-glow); line-height: 1;
         }
         .v3-turbo-unit { font-size: 16px; color: var(--muted2); margin-top: 4px; }
@@ -653,7 +653,7 @@ const UpscalerArcanoV3 = () => {
           font-size: 8px; color: var(--green); font-weight: 700;
         }
         .v3-batch-count {
-          font-family: 'Syne', sans-serif; font-size: 42px; font-weight: 800;
+          font-family: 'Plus Jakarta Sans', sans-serif; font-size: 42px; font-weight: 800;
           color: #7B2FFF; text-shadow: 0 0 40px rgba(123,47,255,0.5); text-align: center;
         }
         .v3-batch-count span { color: var(--white); }
@@ -664,7 +664,7 @@ const UpscalerArcanoV3 = () => {
           color: var(--cyan); margin-bottom: 10px;
         }
         .v3-feature-title {
-          font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800;
+          font-family: 'Plus Jakarta Sans', sans-serif; font-size: 26px; font-weight: 800;
           margin-bottom: 10px; letter-spacing: -0.5px;
         }
         .v3-feature-desc { font-size: 15px; color: var(--muted2); line-height: 1.6; margin-bottom: 20px; }
@@ -695,7 +695,7 @@ const UpscalerArcanoV3 = () => {
           z-index: 1;
         }
         .v3-gallery-label { position: absolute; bottom: 16px; left: 16px; right: 16px; z-index: 2; }
-        .v3-gallery-label strong { display: block; font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+        .v3-gallery-label strong { display: block; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 4px; }
         .v3-gallery-label span { font-size: 12px; color: var(--muted2); }
         .v3-gallery-badge {
           position: absolute; top: 14px; right: 14px; z-index: 2;
@@ -719,7 +719,7 @@ const UpscalerArcanoV3 = () => {
         .v3-audience-card.v3-visible { opacity: 1; transform: translateY(0); }
         .v3-audience-card:hover { border-color: rgba(0,212,255,0.2); background: var(--surface2); transform: translateY(-4px) !important; }
         .v3-audience-emoji { font-size: 36px; margin-bottom: 16px; display: block; }
-        .v3-audience-role { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .v3-audience-role { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 700; margin-bottom: 8px; }
         .v3-audience-desc { font-size: 14px; color: var(--muted2); line-height: 1.6; }
 
         /* PROOF */
@@ -731,7 +731,7 @@ const UpscalerArcanoV3 = () => {
         }
         .v3-proof-num-card { background: var(--surface2); padding: 40px; text-align: center; }
         .v3-proof-number {
-          font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800; line-height: 1; margin-bottom: 8px;
+          font-family: 'Plus Jakarta Sans', sans-serif; font-size: 48px; font-weight: 800; line-height: 1; margin-bottom: 8px;
         }
         .v3-proof-number.cyan { color: var(--cyan); text-shadow: 0 0 40px var(--cyan-glow); }
         .v3-proof-number.gold { color: var(--gold); text-shadow: 0 0 40px rgba(245,200,66,0.3); }
@@ -779,14 +779,14 @@ const UpscalerArcanoV3 = () => {
           font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
           padding: 4px 12px; border-radius: 100px; display: inline-block; margin-bottom: 16px;
         }
-        .v3-plan-name { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+        .v3-plan-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
         .v3-plan-tagline { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
         .v3-plan-price { margin-bottom: 24px; }
-        .v3-plan-price .amount { font-family: 'Syne', sans-serif; font-size: 42px; font-weight: 800; line-height: 1; }
+        .v3-plan-price .amount { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 42px; font-weight: 800; line-height: 1; }
         .v3-plan-price .currency { font-size: 20px; font-weight: 600; vertical-align: top; margin-top: 8px; display: inline-block; color: var(--muted2); }
         .v3-plan-price .period { font-size: 13px; color: var(--muted); display: block; margin-top: 4px; }
         .v3-plan-cta {
-          display: block; text-align: center; font-family: 'Syne', sans-serif; font-weight: 700;
+          display: block; text-align: center; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700;
           font-size: 15px; padding: 14px; border-radius: 14px; text-decoration: none;
           margin-bottom: 24px; transition: all 0.2s; cursor: pointer;
         }
@@ -809,7 +809,7 @@ const UpscalerArcanoV3 = () => {
           padding: 40px 48px; display: flex; align-items: center; gap: 32px;
         }
         .v3-guarantee-icon { font-size: 56px; flex-shrink: 0; }
-        .v3-guarantee-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+        .v3-guarantee-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 8px; }
         .v3-guarantee-text { font-size: 15px; color: var(--muted2); line-height: 1.6; max-width: 560px; }
 
         /* FAQ */
@@ -821,7 +821,7 @@ const UpscalerArcanoV3 = () => {
         .v3-faq-item { border-bottom: 1px solid var(--card-border); padding: 24px 0; cursor: pointer; }
         .v3-faq-question {
           display: flex; justify-content: space-between; align-items: center;
-          font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 700;
+          font-family: 'Plus Jakarta Sans', sans-serif; font-size: 17px; font-weight: 700;
           color: var(--white); gap: 20px;
         }
         .v3-faq-icon {
