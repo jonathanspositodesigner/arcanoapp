@@ -217,12 +217,13 @@ const UpscalerArcanoV3 = () => {
   const batchEmojis = ["🏔️", "🎸", "👗", "🍕", "🏠", "💍", "🚗", "🌺", "📱", "🎨"];
 
   const galleryItems = [
-    { img: upscalerFotoDepois, label: "Fotos de Ensaio", desc: "Recupere grain, ruído e baixa luz", badge: "Popular", bg: "linear-gradient(135deg,#1a1a2e,#2d1b4e)" },
-    { img: render3dDepois, label: "Renders 3D", desc: "Upscale sem perder geometria", bg: "linear-gradient(135deg,#0d1a2e,#1a2d4e)" },
-    { img: upscalerProdutoDepois, label: "Fotos de Produto", desc: "Catálogos e e-commerce em 4K", bg: "linear-gradient(135deg,#1a2e0d,#2d4e1b)" },
-    { img: upscalerLogoDepois, label: "Logos e Artes", desc: "Vetores e brandmarks ampliados", bg: "linear-gradient(135deg,#2e1a0d,#4e2d1b)" },
-    { img: upscalerAntigaDepois, label: "Fotos Antigas", desc: "Memórias restauradas com IA", bg: "linear-gradient(135deg,#2e0d1a,#4e1b2d)" },
-    { img: upscalerFoodDepois, label: "Fotos de Alimento", desc: "Corrija artefatos, amplie, refine", badge: "V3", bg: "linear-gradient(135deg,#1a0d2e,#2d1b4e)" },
+    { before: upscalerFotoAntes, after: upscalerFotoDepois, label: "Fotos de Ensaio", desc: "Recupere grain, ruído e baixa luz", badge: "Popular" },
+    { before: render3dAntes, after: render3dDepois, label: "Renders 3D", desc: "Upscale sem perder geometria" },
+    { before: upscalerProdutoAntes, after: upscalerProdutoDepois, label: "Fotos de Produto", desc: "Catálogos e e-commerce em 4K" },
+    { before: upscalerLogoAntes, after: upscalerLogoDepois, label: "Logos e Artes", desc: "Vetores e brandmarks ampliados" },
+    { before: upscalerAntigaAntes, after: upscalerAntigaDepois, label: "Fotos Antigas", desc: "Memórias restauradas com IA" },
+    { before: upscalerFoodAntes, after: upscalerFoodDepois, label: "Fotos de Alimento", desc: "Corrija artefatos, amplie, refine", badge: "V3" },
+  ];
   ];
 
   const painCards = [
