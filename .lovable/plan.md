@@ -1,50 +1,46 @@
 
 
-# Plano de Correção — Gerador de Avatar (Auditoria Completa)
+## O que entendi do pedido
 
-## Problemas Identificados
+Você quer configurar os 4 botões de checkout na página `/upscalerarcanov3`:
 
-1. **Otimização dupla de imagens**: `AngleUploadCard` comprime via `optimizeForAI()` no upload, e `handleProcess` comprime novamente os mesmos arquivos — degradação de qualidade + lentidão desnecessária.
+### Botões Starter, Pro e Ultimate
+- Usam os **mesmos slugs** que já existem na página `/planos-upscaler-arcano-69`:
+  - **Starter** → slug `upscaler-arcano-starter` (R$24,90)
+  - **Pro** → slug `upscaler-arcano-pro` (R$37,00)
+  - **Ultimate** → slug `upscaler-arcano-ultimate` (R$79,90)
+- Liberam **exatamente as mesmas coisas** que já liberam na página 69 (créditos conforme o plano, acesso ao pack upscaler-arcano, etc.)
+- Checkout via Mercado Pago com modal de coleta de dados (Nome, Email, CPF)
 
-2. **Auth frágil na Edge Function**: Tanto `/run` quanto `/refine` usam `getUser(jwtToken)` (lookup remoto) que falha com `session_not_found`. Deve usar validação local de JWT.
+### Botão Ilimitado (Garantir Vitalício)
+- Usa o slug **`upscaler-arcano-v3`** (R$99,90) — produto que **já existe** no banco e nos webhooks
+- Libera:
+  - Acesso ao pack **`upscaller-arcano-v3`** (V3)
+  - Acesso ao pack **`upscaller-arcano`** (V2) como bônus
+  - **Não** concede 10k créditos (diferente do V2 antigo)
+  - **Não** concede image/video generation
+- E-mail de boas-vindas específico do V3 (já implementado no webhook)
+- Estorno revoga V3 + bônus V2 atomicamente (já implementado)
 
-3. **Upload sem retry**: `uploadToStorage()` no client faz uma tentativa única — qualquer falha temporária de rede mata o processo inteiro.
+### O que será feito
 
-4. **Upload sem revalidação de sessão**: Não chama `supabase.auth.getUser()` antes dos uploads para garantir token fresco.
+**1. Integrar `useMPCheckout` na página `UpscalerArcanoV3.tsx`**
+- Importar o hook e renderizar `<MPCheckoutModal />`
+- Substituir os 4 `<a href="#">` por `<button>` com `onClick={() => openCheckout(slug)}`
 
-5. **`fetchWithRetry` incompleta**: Falta status codes 500, 520-525 (Cloudflare) na lista de retryable, e não trata erros de rede no catch.
+**2. Mapear slugs nos botões:**
 
-6. **Downloads sem timeout**: `downloadAndUploadToRH()` faz `fetch(imageUrl)` sem `AbortController` — pode travar indefinidamente.
+| Card | Slug | Preço |
+|------|------|-------|
+| Starter | `upscaler-arcano-starter` | R$24,90 |
+| Pro | `upscaler-arcano-pro` | R$37,00 |
+| Ultimate | `upscaler-arcano-ultimate` | R$79,90 |
+| Ilimitado | `upscaler-arcano-v3` | R$99,90 |
 
----
+**3. Nenhuma alteração necessária no backend** — todos os produtos e lógicas de webhook já existem e funcionam.
 
-## Correções Planejadas
+### Resumo do que cada botão libera
 
-### 1. Remover otimização dupla (AngleUploadCard.tsx → sem mudança, GeradorPersonagemTool.tsx → remover)
-- Remover as chamadas `optimizeForAI()` em `handleProcess()` (linhas 274-276) — as imagens já vêm otimizadas do `AngleUploadCard`
-- Usar `frontFile, profileFile, semiProfileFile, lowAngleFile` diretamente no upload
-
-### 2. Upload com retry e revalidação de sessão (GeradorPersonagemTool.tsx)
-- Antes de iniciar uploads, chamar `supabase.auth.getUser()` para forçar refresh do token
-- Criar helper `uploadWithRetry()` que tenta 3x com backoff (1s, 3s, 5s), e tenta `refreshSession()` no primeiro erro 401/403
-
-### 3. Auth local na Edge Function (runninghub-character-generator/index.ts)
-- Em `/run` e `/refine`: trocar `anonClient.auth.getUser(jwtToken)` por decodificação local do JWT (extrair `sub` do payload base64)
-- Manter validação de expiração (`exp`)
-
-### 4. Expandir `fetchWithRetry` na Edge Function
-- Adicionar status 500, 520, 521, 522, 523, 524, 525 à lista de retryable
-- Adicionar try/catch no fetch interno para capturar erros de socket (http2 stream error, connection reset) e fazer retry
-
-### 5. Timeout nos downloads de imagem (Edge Function)
-- Adicionar `AbortController` com timeout de 30s em `downloadAndUploadToRH()`
-
----
-
-## Arquivos Afetados
-
-| Arquivo | Mudança |
-|---------|---------|
-| `src/pages/GeradorPersonagemTool.tsx` | Remover `optimizeForAI` duplo em `handleProcess`; adicionar `getUser()` antes de uploads; retry 3x no `uploadToStorage` |
-| `supabase/functions/runninghub-character-generator/index.ts` | JWT local em `/run` e `/refine`; expandir `fetchWithRetry`; AbortController 30s nos downloads |
+- **Starter/Pro/Ultimate**: Mesma lógica da página 69 — créditos proporcionais ao plano, acesso ao upscaler, features conforme configurado no `mp_products`
+- **Ilimitado (V3)**: Acesso vitalício completo ao Upscaler V3 + V2, sem créditos bônus de 10k, e-mail de boas-vindas customizado V3
 
