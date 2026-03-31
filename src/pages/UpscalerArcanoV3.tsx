@@ -25,6 +25,60 @@ import galleryBefore3 from "@/assets/upscaler/3a.webp";
 import galleryAfter3 from "@/assets/upscaler/3d.webp";
 import turboBgImage from "@/assets/upscaler-v3-turbo-bg.webp";
 
+// Gallery before/after mini slider component
+const GalleryBeforeAfter = ({ item }: { item: { before: string; after: string; label: string; desc: string; badge?: string } }) => {
+  const [pct, setPct] = useState(50);
+  const ref = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+
+  const update = useCallback((clientX: number) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    setPct(Math.min(Math.max(((clientX - rect.left) / rect.width) * 100, 5), 95));
+  }, []);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => { if (dragging.current) update(e.clientX); };
+    const onTouchMove = (e: TouchEvent) => { if (dragging.current) update(e.touches[0].clientX); };
+    const onUp = () => { dragging.current = false; };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onUp);
+    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); window.removeEventListener("touchmove", onTouchMove); window.removeEventListener("touchend", onUp); };
+  }, [update]);
+
+  return (
+    <div className="v3-gallery-item v3-reveal">
+      <div
+        ref={ref}
+        style={{ width: "100%", height: "100%", position: "relative", cursor: "ew-resize", userSelect: "none" }}
+        onMouseDown={(e) => { dragging.current = true; update(e.clientX); }}
+        onTouchStart={(e) => { dragging.current = true; update(e.touches[0].clientX); }}
+      >
+        {/* Before (full) */}
+        <img src={item.before} alt={`${item.label} antes`} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+        {/* After (clipped) */}
+        <div style={{ position: "absolute", inset: 0, clipPath: `inset(0 ${100 - pct}% 0 0)` }}>
+          <img src={item.after} alt={`${item.label} depois`} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+        </div>
+        {/* Handle */}
+        <div style={{ position: "absolute", top: 0, bottom: 0, left: `${pct}%`, transform: "translateX(-50%)", width: 2, background: "rgba(255,255,255,0.7)", zIndex: 5 }}>
+          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 24, height: 24, borderRadius: "50%", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.4)", fontSize: 10, color: "#000", fontWeight: 700 }}>⟺</div>
+        </div>
+        {/* Labels */}
+        <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(0,0,0,0.6)", color: "rgba(255,255,255,0.8)", fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 100, zIndex: 6 }}>ANTES</div>
+        <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.8)", fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 100, zIndex: 6 }}>DEPOIS</div>
+      </div>
+      {item.badge && <div className="v3-gallery-badge">{item.badge}</div>}
+      <div className="v3-gallery-label">
+        <strong>{item.label}</strong>
+        <span>{item.desc}</span>
+      </div>
+    </div>
+  );
+};
+
 // Hero carousel slides
 const heroSlides = [
   { before: upscalerHeroAntes, after: upscalerHeroDepois },
