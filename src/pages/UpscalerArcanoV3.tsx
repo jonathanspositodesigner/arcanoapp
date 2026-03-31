@@ -1122,14 +1122,13 @@ const UpscalerArcanoV3 = () => {
 
               {/* BATCH */}
               <div className="v3-feature-card batch v3-reveal">
-                <div className="v3-feature-visual">
+                <div className="v3-feature-visual" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <div style={{ width: "100%", padding: 24 }}>
                     <div className="v3-batch-grid">
                       {batchEmojis.map((emoji, i) => (
                         <div key={i} className={`v3-batch-img ${batchLoaded[i] ? "loaded" : ""}`}>{emoji}</div>
                       ))}
                     </div>
-                    <div className="v3-batch-count" style={{ marginTop: 16 }}><span>10</span> imagens de uma vez</div>
                   </div>
                 </div>
                 <div className="v3-feature-content">
