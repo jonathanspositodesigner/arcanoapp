@@ -1150,6 +1150,7 @@ const UpscalerArcanoV3 = () => {
           .v3-plan.featured.v3-visible { transform: none; }
           .v3-plan.featured:hover { transform: none !important; }
           .v3-plan-price .amount { font-size: 36px; }
+          .v3-plan-price .cents { font-size: 18px; }
           .v3-plan-name { font-size: 18px; }
 
           /* 16. Guarantee */
