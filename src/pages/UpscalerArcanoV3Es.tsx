@@ -1461,10 +1461,10 @@ const UpscalerArcanoV3 = () => {
             <div className="v3-features-header">
               <div>
                 <div className="v3-badge">✦ &nbsp;Exclusivo V3</div>
-                <div className="v3-section-title" style={{ marginBottom: 0 }}>Dois novos recursos<br /><span>recém adicionados</span></div>
+                <div className="v3-section-title" style={{ marginBottom: 0 }}>Dos nuevas funciones<br /><span>recién agregadas</span></div>
               </div>
               <p style={{ maxWidth: 280, color: "var(--muted2)", fontSize: 15, lineHeight: 1.6 }}>
-                A versão 3 chegou com duas inovações que mudam completamente o seu fluxo de trabalho.
+                La versión 3 llegó con dos innovaciones que cambian completamente tu flujo de trabajo.
               </p>
             </div>
 
