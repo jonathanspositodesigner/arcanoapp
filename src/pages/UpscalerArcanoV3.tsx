@@ -459,6 +459,24 @@ const UpscalerArcanoV3 = () => {
         }
         @keyframes v3HintFade { to { opacity: 0; } }
 
+        /* CAROUSEL ARROWS */
+        .v3-carousel-arrow {
+          position: absolute; top: 50%; transform: translateY(-50%); z-index: 20;
+          width: 40px; height: 40px; border-radius: 50%;
+          background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+          border: 1px solid rgba(255,255,255,0.15); color: #fff;
+          font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+          transition: all 0.2s ease; line-height: 1;
+        }
+        .v3-carousel-arrow:hover { background: rgba(0,212,255,0.3); border-color: var(--cyan); }
+        .v3-carousel-arrow-left { left: -20px; }
+        .v3-carousel-arrow-right { right: -20px; }
+        @media (max-width: 768px) {
+          .v3-carousel-arrow-left { left: 8px; }
+          .v3-carousel-arrow-right { right: 8px; }
+          .v3-carousel-arrow { width: 36px; height: 36px; font-size: 20px; }
+        }
+
         /* PAIN STRIP */
         .v3-pain-strip {
           background: var(--surface); border-top: 1px solid var(--card-border);
