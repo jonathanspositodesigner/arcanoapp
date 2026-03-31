@@ -1248,7 +1248,7 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, maxWidth: 1100, margin: "0 auto" }}>
+          <div className="v3-depo-grid">
             {[
               "/images/depo-v3-1.webp",
               "/images/depo-v3-7.webp",
