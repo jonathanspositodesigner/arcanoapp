@@ -1732,7 +1732,7 @@ const UpscalerArcanoV3 = () => {
               <span>Teste Grátis</span>
             </div>
             <div className="v3-section-title" style={{ marginTop: 12, marginBottom: 12 }}>
-              Teste o Upscaler Arcano V3<br /><span>grátis agora mesmo.</span>
+              Teste o Upscaler Arcano V3 <span>grátis agora mesmo.</span>
             </div>
             <p style={{ fontSize: 16, color: "var(--muted2)", lineHeight: 1.6, marginBottom: 32, maxWidth: 480, margin: "0 auto 32px" }}>
               Experimente o Upscaler Arcano V3 e veja o poder da melhoria de imagens com IA — sem compromisso.
