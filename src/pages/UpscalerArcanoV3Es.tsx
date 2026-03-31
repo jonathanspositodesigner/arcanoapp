@@ -1573,7 +1573,7 @@ const UpscalerArcanoV3 = () => {
               "/images/depo-v3-8.webp",
             ].map((src, i) => (
               <div key={i} className="v3-reveal" style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--card-border)" }}>
-                <img src={src} alt={`Depoimento real ${i + 1}`} loading="lazy" style={{ width: "100%", height: "auto", display: "block" }} />
+                <img src={src} alt={`Testimonio real ${i + 1}`} loading="lazy" style={{ width: "100%", height: "auto", display: "block" }} />
               </div>
             ))}
           </div>
