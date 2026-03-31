@@ -1204,7 +1204,7 @@ const UpscalerArcanoV3 = () => {
           /* 16. Guarantee */
           .v3-guarantee-strip { padding: 32px 16px; }
           .v3-guarantee-card { flex-direction: column; text-align: center; padding: 24px 20px; }
-          .v3-guarantee-icon { font-size: 44px; }
+          .v3-guarantee-icon-wrap { width: 60px; height: 60px; border-radius: 16px; }
           .v3-guarantee-title { font-size: 18px; }
           .v3-guarantee-text { font-size: 13px; }
 
