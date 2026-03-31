@@ -127,6 +127,8 @@ const AdminAIToolsUsageTab = () => {
   const [selectedJob, setSelectedJob] = useState<UsageRecord | null>(null);
   const [jobOutputUrl, setJobOutputUrl] = useState<string | null>(null);
   const [jobInputUrl, setJobInputUrl] = useState<string | null>(null);
+  const [jobPrompt, setJobPrompt] = useState<string | null>(null);
+  const [jobInputImages, setJobInputImages] = useState<string[]>([]);
   const [isLoadingOutput, setIsLoadingOutput] = useState(false);
   const [isOutputExpired, setIsOutputExpired] = useState(false);
   const [outputModalOpen, setOutputModalOpen] = useState(false);
@@ -198,6 +200,8 @@ const AdminAIToolsUsageTab = () => {
     setIsOutputExpired(false);
     setJobOutputUrl(null);
     setJobInputUrl(null);
+    setJobPrompt(null);
+    setJobInputImages([]);
     setShowFullscreen(false);
     setErrorDetails(null);
 
@@ -209,7 +213,9 @@ const AdminAIToolsUsageTab = () => {
       try {
         const tableName = getTableName(record.tool_name);
         const inputCol = getInputColumn(record.tool_name);
-        const selectFields = inputCol ? `output_url, thumbnail_url, ${inputCol}` : 'output_url, thumbnail_url';
+        const isImageGen = tableName === 'image_generator_jobs';
+        let selectFields = inputCol ? `output_url, thumbnail_url, ${inputCol}` : 'output_url, thumbnail_url';
+        if (isImageGen) selectFields += ', prompt, input_urls';
 
         const { data, error } = await supabase
           .from(tableName as any)
@@ -220,6 +226,11 @@ const AdminAIToolsUsageTab = () => {
         if (!error && data) {
           setJobOutputUrl((data as any)?.output_url || null);
           setJobInputUrl(inputCol ? (data as any)?.[inputCol] || null : null);
+          if (isImageGen) {
+            setJobPrompt((data as any)?.prompt || null);
+            const urls = (data as any)?.input_urls;
+            setJobInputImages(Array.isArray(urls) ? urls.filter((u: any) => typeof u === 'string') : []);
+          }
         }
       } catch (err) {
         console.error("Error fetching input for failed job:", err);
@@ -233,7 +244,9 @@ const AdminAIToolsUsageTab = () => {
     try {
       const tableName = getTableName(record.tool_name);
       const inputCol = getInputColumn(record.tool_name);
-      const selectFields = inputCol ? `output_url, ${inputCol}` : 'output_url';
+      const isImageGen = tableName === 'image_generator_jobs';
+      let selectFields = inputCol ? `output_url, ${inputCol}` : 'output_url';
+      if (isImageGen) selectFields += ', prompt, input_urls';
 
       const { data, error } = await supabase
         .from(tableName as any)
@@ -248,6 +261,11 @@ const AdminAIToolsUsageTab = () => {
 
       setJobOutputUrl(outputUrl);
       setJobInputUrl(inputUrl);
+      if (isImageGen) {
+        setJobPrompt((data as any)?.prompt || null);
+        const urls = (data as any)?.input_urls;
+        setJobInputImages(Array.isArray(urls) ? urls.filter((u: any) => typeof u === 'string') : []);
+      }
     } catch (err) {
       console.error("Error fetching output_url:", err);
       setJobOutputUrl(null);
@@ -1019,6 +1037,32 @@ const AdminAIToolsUsageTab = () => {
                     </Button>
                   </div>
                 )}
+
+                {/* Prompt used (Gerar Imagem) */}
+                {jobPrompt && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Prompt Usado</p>
+                    <p className="text-sm bg-muted/50 rounded p-3 font-mono break-all border border-border">{jobPrompt}</p>
+                  </div>
+                )}
+
+                {/* Input images (Gerar Imagem) */}
+                {jobInputImages.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Imagens de Referência ({jobInputImages.length})</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {jobInputImages.map((url, idx) => (
+                        <img
+                          key={idx}
+                          src={url}
+                          alt={`Referência ${idx + 1}`}
+                          className="w-full rounded-md max-h-[300px] object-contain border border-border cursor-pointer"
+                          onClick={() => window.open(url, '_blank')}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </>
             ) : isLoadingOutput ? (
               <div className="flex items-center justify-center py-12">
@@ -1054,6 +1098,30 @@ const AdminAIToolsUsageTab = () => {
                 className="w-full rounded-md max-h-[500px] object-contain"
                 onError={() => setIsOutputExpired(true)}
               />
+            )}
+
+            {/* Prompt and input images for completed image generator jobs */}
+            {selectedJob?.status === "completed" && jobPrompt && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Prompt Usado</p>
+                <p className="text-sm bg-muted/50 rounded p-3 font-mono break-all border border-border">{jobPrompt}</p>
+              </div>
+            )}
+            {selectedJob?.status === "completed" && jobInputImages.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Imagens de Referência ({jobInputImages.length})</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {jobInputImages.map((url, idx) => (
+                    <img
+                      key={idx}
+                      src={url}
+                      alt={`Referência ${idx + 1}`}
+                      className="w-full rounded-md max-h-[300px] object-contain border border-border cursor-pointer"
+                      onClick={() => window.open(url, '_blank')}
+                    />
+                  ))}
+                </div>
+              </div>
             )}
           </div>
 
