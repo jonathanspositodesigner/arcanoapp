@@ -316,7 +316,7 @@ const UpscalerArcanoV3 = () => {
           border-radius: 100px; letter-spacing: 0.5px;
         }
         .v3-topbar-cta {
-          background: var(--cyan); color: #000; font-family: 'Plus Jakarta Sans', sans-serif;
+          background: var(--cyan); color: #000; font-family: 'Syne', sans-serif;
           font-weight: 700; font-size: 13px; padding: 8px 20px; border-radius: 100px;
           text-decoration: none; cursor: pointer; border: none;
         }
