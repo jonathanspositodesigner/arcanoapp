@@ -408,11 +408,12 @@ const UpscalerArcanoV3 = () => {
 
   const faqs = [
     { q: "¿Tengo que pagar mensualidad?", a: "No. El Upscaler Arcano funciona con acceso vitalicio — pagás una vez y lo usás para siempre. Sin cobros recurrentes, sin sorpresas." },
+    { q: "¿El uso es realmente ilimitado?", a: "Sí, 100%. Con el plan Vitalicio podés mejorar cuantas imágenes quieras, sin límite de uso. No consume créditos ni tiene restricciones de cantidad." },
     { q: "¿Funciona con cualquier tipo de imagen?", a: "Sí. Fotos de sesión, logos, renders 3D, fotos antiguas, imágenes generadas por IA, comida, productos — Arcano procesa cualquier tipo de imagen." },
     { q: "¿Cuánto tiempo tarda en procesar?", a: "Con el Modo Turbo del V3, menos de 60 segundos por imagen. En lote, procesás hasta 10 imágenes en paralelo al mismo tiempo." },
-    { q: "¿Los créditos expiran?", a: "No. Los créditos que comprás quedan en tu cuenta para siempre. Usalos a tu ritmo, sin presión de fecha de vencimiento." },
     { q: "¿Qué es el Modo Turbo? ¿Es igual al resultado normal?", a: "El Modo Turbo es exclusivo del V3 y entrega el mismo motor de IA, misma calidad 4K, pero en menos de 1 minuto — hasta 10x más rápido que el procesamiento estándar." },
     { q: "¿Hay que instalar algún programa?", a: "No. El Upscaler Arcano es 100% online. Accedé directo desde el navegador, sin instalar nada, desde cualquier computadora." },
+    { q: "¿Consume créditos cada vez que uso?", a: "No. El plan Vitalicio no consume créditos. Una vez que accedés, el uso es completamente ilimitado y sin costo adicional." },
   ];
 
   return (
