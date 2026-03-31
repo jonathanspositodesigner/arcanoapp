@@ -1488,15 +1488,15 @@ const UpscalerArcanoV3 = () => {
                         <div className="v3-turbo-unit">segundos</div>
                       </div>
                     </div>
-                    <div className="v3-turbo-speed">⚡ 10x mais rápido</div>
+                    <div className="v3-turbo-speed">⚡ 10x más rápido</div>
                   </div>
                 </div>
                 <div className="v3-feature-content">
                   <div className="v3-feature-label">⚡ Modo Turbo</div>
-                  <div className="v3-feature-title">Resultado em menos de 1 minuto</div>
-                  <div className="v3-feature-desc">Enquanto o cliente ainda está no WhatsApp, a imagem já está pronta. Mesmo motor de IA. Mesma qualidade 4K. Só que agora em tempo recorde.</div>
+                  <div className="v3-feature-title">Resultado en menos de 1 minuto</div>
+                  <div className="v3-feature-desc">Mientras el cliente todavía está en WhatsApp, la imagen ya está lista. Mismo motor de IA. Misma calidad 4K. Solo que ahora en tiempo récord.</div>
                   <div className="v3-feature-pills">
-                    <span className="v3-pill">Velocidade 10x</span>
+                    <span className="v3-pill">Velocidad 10x</span>
                     <span className="v3-pill">4K preservado</span>
                     <span className="v3-pill">Entregas urgentes</span>
                   </div>
