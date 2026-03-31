@@ -1584,6 +1584,9 @@ const UpscalerArcanoV3 = () => {
             <div className="v3-pricing-grid">
               {/* STARTER */}
               <div className="v3-plan v3-reveal">
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                  <Rocket size={32} style={{ color: "rgba(255,255,255,0.5)" }} />
+                </div>
                 <div className="v3-plan-name">Starter</div>
                 <div className="v3-plan-tagline">Para experimentar</div>
                 <div className="v3-plan-price">
