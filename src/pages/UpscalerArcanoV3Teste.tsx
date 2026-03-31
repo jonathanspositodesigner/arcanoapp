@@ -1225,6 +1225,7 @@ const UpscalerArcanoV3 = () => {
           .v3-plan { padding: 22px; text-align: center; }
           .v3-plan-price { justify-content: center; }
           .v3-plan-feature { justify-content: center; }
+          .v3-plan-cta { margin-left: auto; margin-right: auto; }
           .v3-plan.featured { transform: none; box-shadow: 0 0 40px rgba(0,212,255,0.1), 0 20px 40px rgba(0,0,0,0.3); }
           .v3-plan.featured.v3-visible { transform: none; }
           .v3-plan.featured:hover { transform: none !important; }
