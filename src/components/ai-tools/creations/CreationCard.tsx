@@ -121,7 +121,8 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
           </div>
         ) : isVideo ? (
           <video
-            src={previewUrl}
+            src={videoSrc}
+            poster={videoPoster}
             className="w-full h-full object-contain"
             controls
             preload="metadata"
