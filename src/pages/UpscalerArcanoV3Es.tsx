@@ -1543,21 +1543,21 @@ const UpscalerArcanoV3 = () => {
 
         {/* SOCIAL PROOF */}
         <section className="v3-proof">
-          <div className="v3-section-tag">Resultados reais</div>
-          <div className="v3-section-title" style={{ marginBottom: 48 }}>Números que<br /><span>falam por si.</span></div>
+          <div className="v3-section-tag">Resultados reales</div>
+          <div className="v3-section-title" style={{ marginBottom: 48 }}>Números que<br /><span>hablan por sí solos.</span></div>
 
           <div className="v3-proof-numbers">
             <div className="v3-proof-num-card">
               <div className="v3-proof-number cyan" data-target="3200">0</div>
-              <div className="v3-proof-num-label">Profissionais que já usam o Arcano</div>
+              <div className="v3-proof-num-label">Profesionales que ya usan Arcano</div>
             </div>
             <div className="v3-proof-num-card">
               <div className="v3-proof-number gold" data-target="14000">0</div>
-              <div className="v3-proof-num-label">Imagens melhoradas com sucesso</div>
+              <div className="v3-proof-num-label">Imágenes mejoradas con éxito</div>
             </div>
             <div className="v3-proof-num-card">
               <div className="v3-proof-number green" data-target="100">0</div>
-              <div className="v3-proof-num-label">% de satisfação dos clientes</div>
+              <div className="v3-proof-num-label">% de satisfacción de los clientes</div>
             </div>
           </div>
 
