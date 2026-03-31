@@ -200,6 +200,8 @@ const AdminAIToolsUsageTab = () => {
     setIsOutputExpired(false);
     setJobOutputUrl(null);
     setJobInputUrl(null);
+    setJobPrompt(null);
+    setJobInputImages([]);
     setShowFullscreen(false);
     setErrorDetails(null);
 
