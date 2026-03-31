@@ -1583,8 +1583,8 @@ const UpscalerArcanoV3 = () => {
         <section className="v3-pricing" id="v3-pricing">
           <div className="v3-pricing-inner">
             <div style={{ textAlign: "center", marginBottom: 60 }}>
-              <div className="v3-section-tag" style={{ display: "inline-block" }}>Planos e Preços</div>
-              <div className="v3-section-title" style={{ marginTop: 12 }}>Comece agora.<br /><span>Acesso imediato.</span></div>
+              <div className="v3-section-tag" style={{ display: "inline-block" }}>Planes y Precios</div>
+              <div className="v3-section-title" style={{ marginTop: 12 }}>Empezá ahora.<br /><span>Acceso inmediato.</span></div>
             </div>
 
             <div className="v3-pricing-grid">
@@ -1594,20 +1594,20 @@ const UpscalerArcanoV3 = () => {
                   <Rocket size={32} style={{ color: "rgba(255,255,255,0.5)" }} />
                 </div>
                 <div className="v3-plan-name">Starter</div>
-                <div className="v3-plan-tagline">Para experimentar</div>
+                <div className="v3-plan-tagline">Para probar</div>
                 <div className="v3-plan-price">
                   <span className="currency">R$</span>
                   <span className="amount">24</span>
                   <span className="cents">,90</span>
-                  <span className="period">acesso vitalício</span>
+                  <span className="period">acceso vitalicio</span>
                 </div>
-                <button className="v3-plan-cta outline" onClick={() => openCheckout("upscaler-arcano-starter")}>Começar →</button>
+                <button className="v3-plan-cta outline" onClick={() => openCheckout("upscaler-arcano-starter")}>Empezar →</button>
                 <div className="v3-plan-divider" />
-                <div className="v3-plan-feature"><span className="check">✓</span> 25 imagens</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> 25 imágenes</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> 1.500 créditos</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale em Lote V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Suporte via WhatsApp</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Soporte vía WhatsApp</div>
               </div>
 
               {/* PRO */}
