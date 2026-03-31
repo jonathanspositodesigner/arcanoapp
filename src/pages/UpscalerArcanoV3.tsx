@@ -18,6 +18,12 @@ import upscalerFoodDepois from "@/assets/upscaler-food-depois.webp";
 import upscalerHeroAntes from "@/assets/upscaler-hero-antes.webp";
 import upscalerHeroDepois from "@/assets/upscaler-hero-depois.webp";
 
+// Gallery images for hero carousel
+import galleryBefore2 from "@/assets/upscaler/2a.webp";
+import galleryAfter2 from "@/assets/upscaler/2d.webp";
+import galleryBefore3 from "@/assets/upscaler/3a.webp";
+import galleryAfter3 from "@/assets/upscaler/3d.webp";
+
 const UpscalerArcanoV3 = () => {
   const [sliderPct, setSliderPct] = useState(50);
   const [autoActive, setAutoActive] = useState(true);
