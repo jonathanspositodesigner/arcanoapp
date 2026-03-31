@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Rocket, Flame, Crown, Infinity } from "lucide-react";
 
 // Image imports for before/after and gallery
 import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
@@ -475,22 +475,22 @@ const UpscalerArcanoV3 = () => {
 
         /* SOCIAL POPUP */
         .v3-social-popup {
-          position: fixed; bottom: 24px; left: 24px; z-index: 999;
-          background: var(--surface2); border: 1px solid var(--card-border);
-          border-radius: 16px; padding: 14px 18px; display: flex; align-items: center; gap: 12px;
-          font-size: 13px; opacity: 0; transform: translateY(20px);
-          animation: v3PopupIn 0.5s ease 3s forwards; max-width: 280px;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+          position: fixed; top: 16px; left: 24px; z-index: 999;
+          background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3);
+          border-radius: 16px; padding: 12px 18px;
+          display: flex; align-items: center; gap: 12px; max-width: 340px;
+          opacity: 0; transform: translateY(-20px); animation: v3PopupIn 0.6s ease forwards 2s;
+          backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
         }
         @keyframes v3PopupIn { to { opacity: 1; transform: translateY(0); } }
         .v3-popup-avatar {
           width: 36px; height: 36px; border-radius: 50%;
-          background: linear-gradient(135deg, var(--cyan), #7B2FFF);
+          background: linear-gradient(135deg, #10b981, #059669);
           display: flex; align-items: center; justify-content: center;
-          font-weight: 700; font-size: 14px; flex-shrink: 0;
+          font-weight: 700; font-size: 14px; flex-shrink: 0; color: #fff;
         }
         .v3-popup-dot {
-          width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+          width: 8px; height: 8px; border-radius: 50%; background: #10b981;
           flex-shrink: 0; animation: v3Pulse 2s infinite;
         }
         @keyframes v3Pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.3)} }
@@ -1132,13 +1132,13 @@ const UpscalerArcanoV3 = () => {
 
           /* 6. Social popup - cycling notification */
           .v3-social-popup {
-            bottom: 76px; left: 12px; right: 12px; max-width: none;
+            top: 12px; bottom: auto; left: 12px; right: 12px; max-width: none;
             padding: 10px 14px; font-size: 12px;
-            animation: none; opacity: 0; transform: translateY(20px);
+            animation: none; opacity: 0; transform: translateY(-20px);
             transition: opacity 0.5s ease, transform 0.5s ease;
           }
           .v3-social-popup.v3-notif-visible { opacity: 1; transform: translateY(0); }
-          .v3-social-popup.v3-notif-hidden { opacity: 0; transform: translateY(20px); }
+          .v3-social-popup.v3-notif-hidden { opacity: 0; transform: translateY(-20px); }
           .v3-popup-avatar { width: 30px; height: 30px; font-size: 12px; }
 
           /* 7. Section padding reduction */
@@ -1584,6 +1584,9 @@ const UpscalerArcanoV3 = () => {
             <div className="v3-pricing-grid">
               {/* STARTER */}
               <div className="v3-plan v3-reveal">
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                  <Rocket size={32} style={{ color: "rgba(255,255,255,0.5)" }} />
+                </div>
                 <div className="v3-plan-name">Starter</div>
                 <div className="v3-plan-tagline">Para experimentar</div>
                 <div className="v3-plan-price">
@@ -1603,6 +1606,9 @@ const UpscalerArcanoV3 = () => {
 
               {/* PRO */}
               <div className="v3-plan v3-reveal">
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                  <Flame size={32} style={{ color: "#d946ef" }} />
+                </div>
                 <div className="v3-plan-name">Pro</div>
                 <div className="v3-plan-tagline">3x mais por R$12 a mais</div>
                 <div className="v3-plan-price">
@@ -1624,6 +1630,9 @@ const UpscalerArcanoV3 = () => {
               {/* ULTIMATE */}
               <div className="v3-plan featured v3-reveal">
                 <div className="v3-plan-popular">⚡ Mais vendido</div>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                  <Crown size={32} style={{ color: "#84cc16" }} />
+                </div>
                 <div className="v3-plan-name">Ultimate</div>
                 <div className="v3-plan-tagline">Ideal para criadores ativos</div>
                 <div className="v3-plan-price">
@@ -1646,6 +1655,9 @@ const UpscalerArcanoV3 = () => {
               {/* VITALÍCIO */}
               <div className="v3-plan v3-plan-lifetime v3-reveal">
                 <div className="v3-plan-popular v3-plan-popular-gold">♾ Vitalício</div>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                  <Infinity size={32} style={{ color: "#f5c842" }} />
+                </div>
                 <div className="v3-plan-name">Ilimitado</div>
                 <div className="v3-plan-tagline">Acesso permanente a tudo</div>
                 <div className="v3-plan-price">
