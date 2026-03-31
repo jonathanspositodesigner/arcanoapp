@@ -1660,26 +1660,26 @@ const UpscalerArcanoV3 = () => {
 
               {/* VITALÍCIO */}
               <div className="v3-plan v3-plan-lifetime v3-reveal">
-                <div className="v3-plan-popular v3-plan-popular-gold">♾ Vitalício</div>
+                <div className="v3-plan-popular v3-plan-popular-gold">♾ Vitalicio</div>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
                   <Infinity size={32} style={{ color: "#f5c842" }} />
                 </div>
                 <div className="v3-plan-name">Ilimitado</div>
-                <div className="v3-plan-tagline">Acesso permanente a tudo</div>
+                <div className="v3-plan-tagline">Acceso permanente a todo</div>
                 <div className="v3-plan-price">
                   <span className="currency">R$</span>
                   <span className="amount">99</span>
                   <span className="cents">,90</span>
-                  <span className="period">paga uma vez · usa para sempre</span>
+                  <span className="period">pagás una vez · usás para siempre</span>
                 </div>
-                <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => openCheckout("upscaler-arcano-v3")}>Garantir Vitalício →</button>
+                <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => openCheckout("upscaler-arcano-v3")}>Obtener Vitalicio →</button>
                 <div className="v3-plan-divider" />
-                <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Acesso vitalício completo</strong></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Todas as ferramentas</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Acceso vitalicio completo</strong></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Todas las herramientas</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
-                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale em Lote V3</span></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> NanoBanana Pro + Veo 3</div>
-                <div className="v3-plan-feature"><span className="check">✓</span> Todas as atualizações futuras</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Todas las actualizaciones futuras</div>
               </div>
             </div>
 
@@ -1687,15 +1687,15 @@ const UpscalerArcanoV3 = () => {
             <div className="v3-trust-badges-row">
               <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.1s" }}>
                 <span className="v3-trust-badge-icon">⚡</span>
-                <span>Acesso imediato</span>
+                <span>Acceso inmediato</span>
               </div>
               <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.25s" }}>
                 <span className="v3-trust-badge-icon">💬</span>
-                <span>Suporte 24/7</span>
+                <span>Soporte 24/7</span>
               </div>
               <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.4s" }}>
                 <span className="v3-trust-badge-icon">🔒</span>
-                <span>Pagamento seguro · Mercado Pago</span>
+                <span>Pago seguro · Mercado Pago</span>
               </div>
             </div>
           </div>
