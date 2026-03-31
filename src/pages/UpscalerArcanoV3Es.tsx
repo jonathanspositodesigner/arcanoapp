@@ -1561,23 +1561,6 @@ const UpscalerArcanoV3 = () => {
               <div className="v3-proof-num-label">% de satisfacción de los clientes</div>
             </div>
           </div>
-
-          <div className="v3-depo-grid">
-            {[
-              "/images/depo-v3-1.webp",
-              "/images/depo-v3-7.webp",
-              "/images/depo-v3-3.webp",
-              "/images/depo-v3-4.webp",
-              "/images/depo-v3-5.webp",
-              "/images/depo-v3-2.webp",
-              "/images/depo-v3-6.webp",
-              "/images/depo-v3-8.webp",
-            ].map((src, i) => (
-              <div key={i} className="v3-reveal" style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--card-border)" }}>
-                <img src={src} alt={`Testimonio real ${i + 1}`} loading="lazy" style={{ width: "100%", height: "auto", display: "block" }} />
-              </div>
-            ))}
-          </div>
         </section>
 
         {/* PRICING */}
