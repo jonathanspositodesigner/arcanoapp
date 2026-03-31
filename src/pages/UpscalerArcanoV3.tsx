@@ -916,10 +916,14 @@ const UpscalerArcanoV3 = () => {
           text-align: center; color: var(--muted); font-size: 13px;
         }
 
+        /* DEPO GRID */
+        .v3-depo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 1100px; margin: 0 auto; }
+
         /* RESPONSIVE */
         @media (max-width: 900px) {
           .v3-feature-cards, .v3-audience-grid, .v3-testimonials, .v3-pricing-grid { grid-template-columns: 1fr 1fr; }
           .v3-pain-grid { grid-template-columns: repeat(2, 1fr); }
+          .v3-depo-grid { grid-template-columns: repeat(2, 1fr); }
           .v3-steps { grid-template-columns: 1fr; }
           .v3-steps::before { display: none; }
           .v3-gallery-grid { grid-template-columns: repeat(2, 1fr); }
