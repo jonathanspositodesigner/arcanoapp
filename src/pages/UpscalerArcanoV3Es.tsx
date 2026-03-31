@@ -1733,7 +1733,7 @@ const UpscalerArcanoV3 = () => {
                   after: "/images/mauricio-depois.webp",
                   name: "Maurício",
                   handle: "@ventus.studio",
-                  text: "Como fotógrafo já perdi inúmeras fotos por saírem desfocadas na hora da correria dos ensaios, e essa ferramenta literalmente me salvou!",
+                  text: "Como fotógrafo ya perdí muchas fotos por salir desenfocadas en la correría de las sesiones, ¡y esta herramienta literalmente me salvó!",
                   avatar: "/images/mauricio-avatar.png"
                 },
                 {
@@ -1741,7 +1741,7 @@ const UpscalerArcanoV3 = () => {
                   after: "/images/mariana-depois.webp",
                   name: "Mariana Costa",
                   handle: "@mari.visualarts",
-                  text: "Restaurei fotos antigas da minha família que estavam super pixeladas. O resultado ficou lindo, parecia foto nova.",
+                  text: "Restauré fotos antiguas de mi familia que estaban súper pixeladas. El resultado quedó hermoso, parecían fotos nuevas.",
                   avatar: "/images/mariana-avatar.png"
                 },
                 {
@@ -1749,7 +1749,7 @@ const UpscalerArcanoV3 = () => {
                   after: "/images/rodrigo-depois.webp",
                   name: "Rodrigo Mélius",
                   handle: "@melius.arquitetura",
-                  text: "Nenhuma outra ferramenta que testei conseguiu reproduzir meus projetos com a fidelidade que essa ferramenta faz!",
+                  text: "¡Ninguna otra herramienta que probé logró reproducir mis proyectos con la fidelidad que esta herramienta tiene!",
                   avatar: "/images/rodrigo-avatar.png"
                 }
               ].map((item, i) => (
