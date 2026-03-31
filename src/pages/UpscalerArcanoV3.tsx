@@ -1315,7 +1315,7 @@ const UpscalerArcanoV3 = () => {
             </button>
             <div className="v3-hero-micro">
               <span className="dot" />
-              Acesso imediato · Sem mensalidade · Paga uma vez
+              Acesso imediato · Resultado em 60s · Qualidade 4K
             </div>
           </div>
 
