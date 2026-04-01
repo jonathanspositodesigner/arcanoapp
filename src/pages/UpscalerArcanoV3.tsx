@@ -336,7 +336,7 @@ const UpscalerArcanoV3 = () => {
                   <img src={heroSlides[currentSlide].before} alt="Antes - baixa qualidade" width={720} height={401} />
                 </div>
                 <div className="v3-ba-layer" ref={afterLayerRef} style={{ clipPath: "inset(0 50% 0 0)" }}>
-                  <img src={heroSlides[currentSlide].after} alt="Depois - qualidade 4K" />
+                  <img src={heroSlides[currentSlide].after} alt="Depois - qualidade 4K" width={720} height={400} fetchPriority="high" />
                 </div>
                 <div className="v3-drag-handle" ref={handleRef} style={{ left: "50%" }}>
                   <div className="v3-drag-circle">⟺</div>
