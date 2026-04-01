@@ -152,7 +152,7 @@ const landingPlans: Plan[] = [
 ];
 
 const LandingPricingSection = () => {
-  const { openCheckout, isLoading, MPCheckoutModal } = useMPCheckout({ source_page: "arcanocloner-teste" });
+  const { openCheckout, isLoading, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "arcanocloner-teste" });
 
   return (
     <AnimatedSection className="px-4 py-16 md:py-20">

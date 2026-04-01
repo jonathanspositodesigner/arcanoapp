@@ -126,7 +126,7 @@ const UpscalerArcanoV3 = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const { openCheckout, MPCheckoutModal } = useMPCheckout({ source_page: "upscalerarcanov3" });
+  const { openCheckout, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "upscalerarcanov3" });
 
   // Hero slider refs for direct DOM manipulation (no state rerenders)
   const sliderRef = useRef<HTMLDivElement>(null);

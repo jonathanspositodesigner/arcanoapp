@@ -4,7 +4,7 @@ import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 const PRODUCT_SLUG = "combo-1ao3-vitalicio";
 
 export const GuaranteeSectionCombo = () => {
-  const { openCheckout, isLoading: isCheckoutSubmitting, MPCheckoutModal } = useMPCheckout({ source_page: "combo-artes" });
+  const { openCheckout, isLoading: isCheckoutSubmitting, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "combo-artes" });
 
   return (
     <section className="py-16 px-4 bg-gradient-to-b from-black to-[#0a0505]">

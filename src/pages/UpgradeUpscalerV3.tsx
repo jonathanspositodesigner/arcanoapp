@@ -339,7 +339,7 @@ const LazyFakePurchaseNotifications = () => {
 };
 
 const UpgradeUpscalerV3 = () => {
-  const { openCheckout, MPCheckoutModal } = useMPCheckout({ source_page: 'upgrade-v3' });
+  const { openCheckout, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: 'upgrade-v3' });
 
   // Lazy section refs for below-the-fold content
   const [comparativoRef, showComparativo] = useLazySection("400px");

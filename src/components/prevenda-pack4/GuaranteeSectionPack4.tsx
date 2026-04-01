@@ -4,7 +4,7 @@ import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 const PRODUCT_SLUG = "pack4-vitalicio";
 
 export const GuaranteeSectionPack4 = () => {
-  const { openCheckout, isLoading: isCheckoutSubmitting, MPCheckoutModal } = useMPCheckout({ source_page: "prevenda-pack4" });
+  const { openCheckout, isLoading: isCheckoutSubmitting, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "prevenda-pack4" });
 
   return (
     <section className="py-16 px-4 bg-gradient-to-b from-black to-[#0a0505]">

@@ -50,7 +50,7 @@ const PRODUCT_SLUG = "combo-1ao3-vitalicio";
 
 export const MotionsGallerySection = () => {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
-  const { openCheckout, isLoading: isCheckoutSubmitting, MPCheckoutModal } = useMPCheckout({ source_page: "combo-artes" });
+  const { openCheckout, isLoading: isCheckoutSubmitting, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "combo-artes" });
 
   return <section className="py-5 md:py-10 px-4 bg-black">
       <div className="max-w-6xl mx-auto">

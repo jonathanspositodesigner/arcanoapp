@@ -137,7 +137,7 @@ const UpscalerArcanoV3 = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const { openCheckout, MPCheckoutModal } = useMPCheckout({ source_page: "upscalerarcanov3" });
+  const { openCheckout, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "upscalerarcanov3" });
 
   // Trial button state
   const [showTrialModal, setShowTrialModal] = useState(false);

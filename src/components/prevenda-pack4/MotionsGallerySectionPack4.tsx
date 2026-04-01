@@ -50,7 +50,7 @@ const PRODUCT_SLUG = "pack4-vitalicio";
 
 export const MotionsGallerySectionPack4 = () => {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
-  const { openCheckout, isLoading: isCheckoutSubmitting, MPCheckoutModal } = useMPCheckout({ source_page: "prevenda-pack4" });
+  const { openCheckout, isLoading: isCheckoutSubmitting, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "prevenda-pack4" });
 
   return <section className="py-5 md:py-10 px-4 bg-black">
       <div className="max-w-6xl mx-auto">

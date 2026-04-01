@@ -73,7 +73,7 @@ const PlanosArtes = () => {
   
   const { isActive: isPromoActive, loading: promoLoading } = useYearEndPromo();
 
-  const { openCheckout, isLoading: isCheckoutSubmitting, MPCheckoutModal } = useMPCheckout({ source_page: "planos-artes" });
+  const { openCheckout, isLoading: isCheckoutSubmitting, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "planos-artes" });
   const [selectedAccessType, setSelectedAccessType] = useState('vitalicio');
   const [arteCount, setArteCount] = useState<number | null>(null);
 

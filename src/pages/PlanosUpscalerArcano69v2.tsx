@@ -355,7 +355,7 @@ const upscalerPlans: UpscalerPlan[] = [
 ];
 
 const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; tool: ToolData | null; t: (key: string) => string }) => {
-  const { openCheckout, MPCheckoutModal } = useMPCheckout();
+  const { openCheckout, PagarmeCheckoutModal } = usePagarmeCheckout();
 
   const handlePurchase = (plan: UpscalerPlan) => {
     if (typeof window !== "undefined" && (window as any).fbq) {

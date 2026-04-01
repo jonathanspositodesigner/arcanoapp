@@ -89,7 +89,7 @@ const plans: PricingPlan[] = [
 ];
 
 export const PricingCardsSectionPack4 = () => {
-  const { openCheckout, isLoading: isCheckoutSubmitting, MPCheckoutModal } = useMPCheckout({ source_page: "prevenda-pack4" });
+  const { openCheckout, isLoading: isCheckoutSubmitting, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "prevenda-pack4" });
 
   return (
     <section id="pricing" className="py-16 px-2 md:px-4 bg-gradient-to-b from-black to-[#0a0505]">

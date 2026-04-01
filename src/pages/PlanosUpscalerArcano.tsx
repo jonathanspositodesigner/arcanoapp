@@ -317,7 +317,7 @@ const PlanosUpscalerArcano = () => {
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
-  const { openCheckout, MPCheckoutModal } = useMPCheckout();
+  const { openCheckout, PagarmeCheckoutModal } = usePagarmeCheckout();
 
   // Countdown timer - 48 minutes
   const [timeLeft, setTimeLeft] = useState(() => {
