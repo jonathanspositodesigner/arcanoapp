@@ -252,7 +252,7 @@ const UpscalerArcanoV3 = () => {
 
   return (
     <>
-      <div className="v3-page">
+      <main className="v3-page">
         {/* TOPBAR */}
         <nav className="v3-topbar">
           <div className="v3-topbar-logo">⬆ Upscaler Arcano</div>
@@ -328,10 +328,10 @@ const UpscalerArcanoV3 = () => {
                 onTouchStart={(e) => { draggingRef.current = true; stopAuto(); updateSlider(e.touches[0].clientX); }}
               >
                 <div className="v3-ba-layer">
-                  <img src={heroSlides[currentSlide].before} alt="Antes - baja calidad" />
+                  <img src={heroSlides[currentSlide].before} alt="Antes - baja calidad" width={900} height={675} fetchPriority="high" decoding="sync" />
                 </div>
                 <div className="v3-ba-layer" ref={afterLayerRef} style={{ clipPath: "inset(0 50% 0 0)" }}>
-                  <img src={heroSlides[currentSlide].after} alt="Después - calidad 4K" />
+                  <img src={heroSlides[currentSlide].after} alt="Después - calidad 4K" width={900} height={675} fetchPriority="high" decoding="sync" />
                 </div>
                 <div className="v3-drag-handle" ref={handleRef} style={{ left: "50%" }}>
                   <div className="v3-drag-circle">⟺</div>
@@ -359,6 +359,7 @@ const UpscalerArcanoV3 = () => {
         </section>
 
         {/* AUDIENCE */}
+        <V3LazySection minHeight={400}>
         <section className="v3-audience">
           <div className="v3-audience-inner">
             <div className="v3-section-tag">¿Para quién es?</div>
@@ -374,6 +375,7 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
         </section>
+        </V3LazySection>
 
         {/* HOW IT WORKS */}
         <V3LazySection minHeight={600}>
@@ -457,7 +459,7 @@ const UpscalerArcanoV3 = () => {
               {/* TURBO */}
               <div className="v3-feature-card turbo v3-reveal">
                 <div className="v3-feature-visual" style={{ position: "relative" }}>
-                  <img src={turboBgImage} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.2, zIndex: 0, pointerEvents: "none" }} />
+                  <img src={turboBgImage} alt="" width={600} height={300} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.2, zIndex: 0, pointerEvents: "none" }} loading="lazy" decoding="async" />
                   <div style={{ textAlign: "center", position: "relative", zIndex: 1 }}>
                     <div className="v3-turbo-ring">
                       <svg viewBox="0 0 168 168"><circle cx="84" cy="84" r="78" /></svg>
@@ -628,6 +630,7 @@ const UpscalerArcanoV3 = () => {
         </V3LazySection>
 
         {/* FAQ */}
+        <V3LazySection minHeight={400}>
         <section className="v3-faq">
           <div className="v3-faq-inner">
             <div style={{ textAlign: "center", marginBottom: 60 }}>
@@ -649,8 +652,10 @@ const UpscalerArcanoV3 = () => {
             ))}
           </div>
         </section>
+        </V3LazySection>
 
         {/* FINAL CTA */}
+        <V3LazySection minHeight={300}>
         <section className="v3-final-cta">
           <h2>Tu próxima imagen<br />merece ser <em>perfecta.</em></h2>
           <p>+3.200 profesionales ya lo saben. Ahora es tu turno.</p>
@@ -664,11 +669,12 @@ const UpscalerArcanoV3 = () => {
             <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Pagás una vez</div>
           </div>
         </section>
+        </V3LazySection>
 
         <footer className="v3-footer">
           <span>© 2026 Upscaler Arcano · Todos los derechos reservados</span>
         </footer>
-      </div>
+      </main>
       <MPCheckoutModal />
     </>
   );
