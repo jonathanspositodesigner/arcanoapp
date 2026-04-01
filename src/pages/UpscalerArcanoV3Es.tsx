@@ -316,14 +316,9 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
 
-          <div className="v3-cta-group">
-            <button className="v3-btn-primary" onClick={scrollToPrice}>
-              Quiero calidad 4K ahora <span>→</span>
-            </button>
-            <div className="v3-hero-micro">
-              <span className="dot" />
-              Acceso inmediato · Resultado en 60s · Calidad 4K
-            </div>
+          <div className="v3-hero-micro">
+            <span className="dot" />
+            Acceso inmediato · Resultado en 60s · Calidad 4K
           </div>
 
           {/* BEFORE/AFTER SLIDER CAROUSEL */}
