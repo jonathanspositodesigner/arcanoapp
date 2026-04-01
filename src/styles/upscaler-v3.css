@@ -282,7 +282,7 @@
 .v3-upload-anim { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; padding: 20px; }
 .v3-upload-box {
   border: 2px dashed rgba(0,212,255,0.4); border-radius: 12px; padding: 20px 32px;
-  color: var(--cyan); font-size: 13px; font-weight: 500; animation: v3UploadPulse 2s ease infinite;
+  color: var(--cyan); font-size: 13px; font-weight: 500;
 }
 @keyframes v3UploadPulse { 0%,100%{border-color:rgba(0,212,255,0.2)} 50%{border-color:rgba(0,212,255,0.6)} }
 .v3-upload-files { display: flex; gap: 6px; margin-top: 6px; }
@@ -301,7 +301,7 @@
 .v3-process-bar-wrap { width: 80%; height: 6px; background: var(--surface); border-radius: 100px; overflow: hidden; }
 .v3-process-bar {
   height: 100%; background: linear-gradient(90deg, var(--cyan), #7B2FFF);
-  border-radius: 100px; animation: v3LoadBar 2s ease infinite;
+  border-radius: 100px; width: 80%;
 }
 @keyframes v3LoadBar { 0%{width:0%} 60%{width:90%} 100%{width:100%} }
 .v3-process-label { font-size: 11px; color: var(--cyan); font-weight: 500; letter-spacing: 1px; }
