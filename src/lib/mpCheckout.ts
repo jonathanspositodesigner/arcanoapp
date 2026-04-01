@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { getSanitizedUtms } from "@/lib/utmUtils";
 import { getMetaCookies } from "@/lib/metaCookies";
 
-const CHECKOUT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-mp-checkout`;
+const CHECKOUT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-pagarme-checkout-v2`;
 const TIMEOUT_MS = 20_000;
 
 export async function redirectToMPCheckout(
@@ -50,15 +50,12 @@ export async function redirectToMPCheckout(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         product_slug: productSlug.trim(),
-        user_email: email.trim().toLowerCase(),
-        user_name: name.trim(),
-        user_document: document.replace(/\D/g, ""),
+        customer_email: email.trim().toLowerCase(),
+        customer_name: name.trim(),
+        customer_document: document.replace(/\D/g, ""),
         utm_data: utmData,
         fbp,
         fbc,
-        user_agent: navigator.userAgent,
-        event_id: eventId,
-        ...(options?.source_page ? { source_page: options.source_page } : {}),
       }),
       signal: controller.signal,
     });
