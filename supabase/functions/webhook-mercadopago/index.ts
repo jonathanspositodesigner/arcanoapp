@@ -1029,34 +1029,6 @@ serve(async (req) => {
         // Estorno de créditos avulsos NÃO revoga packs — são independentes
       }
 
-      // === REFUND: Revogar bônus vitalício Upscaler Arcano (SÓ vitalício, NÃO V3) ===
-      if (order.user_id && product.slug === 'upscaller-arcano-vitalicio') {
-        console.log(`   ├─ 📋 Revogando bônus vitalício Upscaler Arcano...`)
-        
-        // Revogar 10.000 créditos bônus
-        const { data: revokeBonus, error: revokeBonusErr } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
-          _user_id: order.user_id,
-          _amount: 10000,
-          _description: `Reembolso MP: bônus vitalício Upscaler Arcano`
-        })
-        if (revokeBonusErr) {
-          console.error(`   ├─ ❌ Erro ao revogar créditos bônus:`, revokeBonusErr)
-        } else {
-          const r = revokeBonus?.[0] || revokeBonus
-          console.log(`   ├─ ✅ Créditos bônus revogados: ${r?.amount_revoked || 10000}`)
-        }
-
-        // Desabilitar image/video generation
-        await supabase
-          .from('planos2_subscriptions')
-          .update({
-            has_image_generation: false,
-            has_video_generation: false,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', order.user_id)
-        console.log(`   ├─ ✅ Ferramentas gerar-imagem e gerar-video desabilitadas`)
-      }
 
       // === REFUND V3: Revogar pack V3 + bônus V2 (sem créditos, sem image/video) ===
       if (order.user_id && product.slug === 'upscaler-arcano-v3') {
