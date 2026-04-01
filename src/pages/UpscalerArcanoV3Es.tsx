@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { useMPCheckout } from "@/hooks/useMPCheckout";
 import { ShieldCheck, Infinity } from "lucide-react";
 import "@/styles/upscaler-v3.css";
-import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar, V3PromoCountdown } from "@/components/upscaler-v3/V3IsolatedComponents";
+import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar, V3PromoCountdown, V3GalleryBeforeAfter, V3RealResultCard, V3LazySection } from "@/components/upscaler-v3/V3IsolatedComponents";
 
 // Image imports for before/after and gallery
 import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
@@ -29,112 +29,7 @@ import galleryBefore3 from "@/assets/upscaler/3a.webp";
 import galleryAfter3 from "@/assets/upscaler/3d.webp";
 import turboBgImage from "@/assets/upscaler-v3-turbo-bg.webp";
 
-// Gallery before/after mini slider component
-const GalleryBeforeAfter = memo(({ item }: { item: { before: string; after: string; label: string; desc: string; badge?: string } }) => {
-  const [pct, setPct] = useState(50);
-  const ref = useRef<HTMLDivElement>(null);
-  const dragging = useRef(false);
-
-  const update = useCallback((clientX: number) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    setPct(Math.min(Math.max(((clientX - rect.left) / rect.width) * 100, 5), 95));
-  }, []);
-
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => { if (dragging.current) update(e.clientX); };
-    const onTouchMove = (e: TouchEvent) => { if (dragging.current) update(e.touches[0].clientX); };
-    const onUp = () => { dragging.current = false; };
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-    window.addEventListener("touchmove", onTouchMove, { passive: true });
-    window.addEventListener("touchend", onUp);
-    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); window.removeEventListener("touchmove", onTouchMove); window.removeEventListener("touchend", onUp); };
-  }, [update]);
-
-  return (
-    <div className="v3-gallery-item v3-reveal">
-      <div
-        ref={ref}
-        style={{ width: "100%", height: "100%", position: "relative", cursor: "ew-resize", userSelect: "none" }}
-        onMouseDown={(e) => { dragging.current = true; update(e.clientX); }}
-        onTouchStart={(e) => { dragging.current = true; update(e.touches[0].clientX); }}
-      >
-        <img src={item.before} alt={`${item.label} antes`} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
-        <div style={{ position: "absolute", inset: 0, clipPath: `inset(0 ${100 - pct}% 0 0)` }}>
-          <img src={item.after} alt={`${item.label} después`} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
-        </div>
-        <div style={{ position: "absolute", top: 0, bottom: 0, left: `${pct}%`, transform: "translateX(-50%)", width: 2, background: "rgba(255,255,255,0.7)", zIndex: 5 }}>
-          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 24, height: 24, borderRadius: "50%", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.4)", fontSize: 10, color: "#000", fontWeight: 700 }}>⟺</div>
-        </div>
-        <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(0,0,0,0.6)", color: "rgba(255,255,255,0.8)", fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 100, zIndex: 6 }}>ANTES</div>
-        <div style={{ position: "absolute", top: 8, right: 8, background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.8)", fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 100, zIndex: 6 }}>DESPUÉS</div>
-      </div>
-      {item.badge && <div className="v3-gallery-badge">{item.badge}</div>}
-      <div className="v3-gallery-label">
-        <strong>{item.label}</strong>
-        <span>{item.desc}</span>
-      </div>
-    </div>
-  );
-});
-GalleryBeforeAfter.displayName = "GalleryBeforeAfter";
-
-// Real result card with before/after slider + testimonial
-const RealResultCard = memo(({ item }: { item: { before: string; after: string; name: string; handle: string; text: string; avatar: string } }) => {
-  const [pct, setPct] = useState(50);
-  const ref = useRef<HTMLDivElement>(null);
-  const dragging = useRef(false);
-
-  const update = useCallback((clientX: number) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    setPct(Math.min(Math.max(((clientX - rect.left) / rect.width) * 100, 5), 95));
-  }, []);
-
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => { if (dragging.current) update(e.clientX); };
-    const onTouchMove = (e: TouchEvent) => { if (dragging.current) update(e.touches[0].clientX); };
-    const onUp = () => { dragging.current = false; };
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-    window.addEventListener("touchmove", onTouchMove, { passive: true });
-    window.addEventListener("touchend", onUp);
-    return () => { window.removeEventListener("mousemove", onMove); window.removeEventListener("mouseup", onUp); window.removeEventListener("touchmove", onTouchMove); window.removeEventListener("touchend", onUp); };
-  }, [update]);
-
-  return (
-    <div className="v3-real-card v3-reveal">
-      <div
-        ref={ref}
-        className="v3-real-card-slider"
-        onMouseDown={(e) => { dragging.current = true; update(e.clientX); }}
-        onTouchStart={(e) => { dragging.current = true; update(e.touches[0].clientX); }}
-      >
-        <img src={item.before} alt="Antes" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
-        <div style={{ position: "absolute", inset: 0, clipPath: `inset(0 ${100 - pct}% 0 0)` }}>
-          <img src={item.after} alt="Después" style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
-        </div>
-        <div className="v3-real-handle-line" style={{ left: `${pct}%` }}>
-          <div className="v3-real-handle-knob">⟺</div>
-        </div>
-        <div className="v3-real-label" style={{ left: 8 }}>ANTES</div>
-        <div className="v3-real-label" style={{ right: 8 }}>DESPUÉS</div>
-      </div>
-      <div className="v3-real-card-info">
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <img src={item.avatar} alt={item.name} className="v3-real-card-avatar" loading="lazy" />
-          <div>
-            <div className="v3-real-card-name">{item.name}</div>
-            <div className="v3-real-card-handle">{item.handle}</div>
-          </div>
-        </div>
-        <p className="v3-real-card-text">"{item.text}"</p>
-      </div>
-    </div>
-  );
-});
-RealResultCard.displayName = "RealResultCard";
+// Gallery and RealResult sliders now come from V3IsolatedComponents (DOM-only, no global listeners)
 
 // ── Static data hoisted outside component ──
 const heroSlides = [
@@ -301,8 +196,9 @@ const UpscalerArcanoV3 = () => {
     document.querySelectorAll(".v3-plan").forEach((el, i) => { (el as HTMLElement).style.transitionDelay = i * 0.1 + "s"; });
   }, []);
 
-  // Auto-slide using direct DOM - NO setState
+  // Auto-slide using direct DOM - DISABLED on mobile
   useEffect(() => {
+    if (window.innerWidth <= 600) return;
     autoRef.current = true;
     let raf: number;
     const autoSlide = () => {
@@ -342,7 +238,7 @@ const UpscalerArcanoV3 = () => {
     const el = document.getElementById("v3-pricing");
     if (el) {
       const y = el.getBoundingClientRect().top + window.scrollY - 20;
-      window.scrollTo({ top: y, behavior: "smooth" });
+      window.scrollTo({ top: y, behavior: window.innerWidth <= 600 ? "auto" : "smooth" });
     }
   }, []);
 
@@ -597,7 +493,7 @@ const UpscalerArcanoV3 = () => {
           <div className="v3-section-title" style={{ marginBottom: 40 }}>Mejora imágenes<br /><span>de todo tipo</span></div>
           <div className="v3-gallery-grid">
             {galleryItems.map((item, i) => (
-              <GalleryBeforeAfter key={i} item={item} />
+              <V3GalleryBeforeAfter key={i} item={item} />
             ))}
           </div>
         </section>
@@ -715,7 +611,7 @@ const UpscalerArcanoV3 = () => {
 
             <div className="v3-real-grid">
               {realResults.map((item, i) => (
-                <RealResultCard key={i} item={item} />
+                <V3RealResultCard key={i} item={item} beforeLabel="ANTES" afterLabel="DESPUÉS" />
               ))}
             </div>
           </div>
