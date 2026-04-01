@@ -818,11 +818,11 @@
 /* ─── MOBILE PERFORMANCE: kill expensive effects ─── */
 @media (max-width: 600px) {
   /* Kill all infinite animations on mobile */
-  .v3-process-ring { animation: none; border-top-color: var(--cyan); transform: rotate(45deg); }
+  .v3-process-ring { animation: v3Spin 1s linear infinite; border-top-color: var(--cyan); }
   .v3-turbo-ring circle { animation: none; stroke-dashoffset: 100; }
   .v3-popup-dot { animation: none; }
   .v3-upload-box { animation: none; }
-  .v3-process-bar { animation: none; width: 80%; }
+  .v3-process-bar { animation: v3LoadBar 2.5s ease-in-out infinite; width: 0%; }
 
   /* Disable hover effects that cause layout thrash on mobile */
   .v3-pain-card:hover,
