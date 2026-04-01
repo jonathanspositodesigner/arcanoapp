@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
-import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
+import { useCheckout } from "@/hooks/useCheckout";
 import { ShieldCheck, Infinity } from "lucide-react";
 import "@/styles/upscaler-v3.css";
 import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar, V3PromoCountdown, V3GalleryBeforeAfter, V3RealResultCard, V3LazySection } from "@/components/upscaler-v3/V3IsolatedComponents";
@@ -134,7 +134,7 @@ const UpscalerArcanoV3 = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const heroSlides = isMobile ? heroSlidesMobile : heroSlidesDesktop;
-  const { openCheckout, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "upscalerarcanov3" });
+  const { executeCheckout, isLoading, PagarmeCheckoutModal } = useCheckout({ source_page: "upscalerarcanov3-es" });
 
   // Hero slider refs for direct DOM manipulation (no state rerenders)
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -599,7 +599,7 @@ const UpscalerArcanoV3 = () => {
                     <div style={{ fontSize: 12, color: "var(--muted2)", marginTop: 8, fontWeight: 500 }}>Pagás una vez · usás para siempre</div>
                   </div>
 
-                  <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => openCheckout("upscaler-arcano-v3")}>Obtener Vitalicio →</button>
+                  <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => executeCheckout("upscaler-arcano-v3-es")} disabled={isLoading}>{isLoading ? 'Procesando...' : 'Obtener Vitalicio →'}</button>
                   <div className="v3-plan-divider" />
                   <div style={{ flex: 1 }}>
                     <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Uso ilimitado · sin créditos</strong></div>
