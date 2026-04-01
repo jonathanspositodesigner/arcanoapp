@@ -12,7 +12,7 @@ const CheckoutSucesso = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center space-y-6">
         <div className="flex justify-center">
-          <CheckCircle className="w-20 h-20 text-green-500" />
+          <CheckCircle className="w-20 h-20 text-emerald-500" />
         </div>
         <h1 className="text-2xl font-bold text-foreground">
           Pagamento confirmado!

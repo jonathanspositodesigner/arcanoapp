@@ -7,7 +7,7 @@ const CheckoutCancelado = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center space-y-6">
         <div className="flex justify-center">
-          <XCircle className="w-20 h-20 text-red-500" />
+          <XCircle className="w-20 h-20 text-destructive" />
         </div>
         <h1 className="text-2xl font-bold text-foreground">
           Pagamento cancelado

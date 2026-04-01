@@ -368,6 +368,9 @@ const AppContent = () => {
            <Route path="/obrigado-arcanocloner" element={<ObrigadoArcanoCloner />} />
           
            <Route path="/prevenda-pack4" element={<PrevendaPack4 />} />
+           {/* Stripe Checkout return routes */}
+           <Route path="/checkout-sucesso" element={<CheckoutSucesso />} />
+           <Route path="/checkout-cancelado" element={<CheckoutCancelado />} />
            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
            <Route path="*" element={<NotFound />} />
         </Routes>
