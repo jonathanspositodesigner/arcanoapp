@@ -115,6 +115,7 @@ export default defineConfig(({ mode }) => ({
     dedupe: ["react", "react-dom", "react/jsx-runtime"],
   },
   build: {
+    target: 'es2020',
     rollupOptions: {
       output: {
         manualChunks: {
