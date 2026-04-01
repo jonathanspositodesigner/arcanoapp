@@ -667,24 +667,6 @@ const UpscalerArcanoV3 = () => {
           </div>
         </section>
 
-        {/* RESULTADOS REAIS */}
-        <section className="v3-real-results">
-          <div className="v3-real-results-inner">
-            <div style={{ textAlign: "center", marginBottom: 60 }}>
-              <div className="v3-section-tag" style={{ display: "inline-block" }}>Resultados Reais</div>
-              <div className="v3-section-title" style={{ marginTop: 12 }}>Veja o que nossos usuários<br /><span>estão alcançando.</span></div>
-              <p style={{ fontSize: 16, color: "var(--muted2)", marginTop: 12, maxWidth: 600, margin: "12px auto 0" }}>
-                Antes e depois reais enviados por profissionais que usam o Upscaler Arcano no dia a dia.
-              </p>
-            </div>
-
-            <div className="v3-real-grid">
-              {realResults.map((item, i) => (
-                <V3RealResultCard key={i} item={item} />
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* FAQ */}
         <section className="v3-faq">
