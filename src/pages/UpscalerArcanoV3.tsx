@@ -502,7 +502,7 @@ const UpscalerArcanoV3 = () => {
           <div className="v3-section-title" style={{ marginBottom: 40 }}>Melhora imagens<br /><span>de todo tipo</span></div>
           <div className="v3-gallery-grid">
             {galleryItems.map((item, i) => (
-              <GalleryBeforeAfter key={i} item={item} />
+              <V3GalleryBeforeAfter key={i} item={item} />
             ))}
           </div>
         </section>
