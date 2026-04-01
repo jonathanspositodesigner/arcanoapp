@@ -1486,33 +1486,6 @@ serve(async (req) => {
           }
         }
 
-        // === REFUND: Revogar bônus vitalício Upscaler Arcano (SÓ vitalício antigo) ===
-        if (order.user_id && product.slug === 'upscaller-arcano-vitalicio') {
-          console.log(`   ├─ 📋 Revogando bônus vitalício Upscaler Arcano...`)
-          
-          // Revoke 10,000 lifetime credits
-          const { error: revokeError } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
-            _user_id: order.user_id,
-            _amount: 10000,
-            _description: 'Reembolso: revogação dos 10.000 créditos bônus Upscaler Arcano Vitalício'
-          })
-          if (revokeError) {
-            console.error(`   ├─ ❌ Erro ao revogar créditos bônus:`, revokeError)
-          } else {
-            console.log(`   ├─ ✅ 10.000 créditos bônus revogados`)
-          }
-
-          // Disable image/video generation
-          await supabase
-            .from('planos2_subscriptions')
-            .update({
-              has_image_generation: false,
-              has_video_generation: false,
-              updated_at: new Date().toISOString()
-            })
-            .eq('user_id', order.user_id)
-          console.log(`   ├─ ✅ Ferramentas gerar-imagem e gerar-video desabilitadas`)
-        }
 
         // === REFUND V3: Revogar pack V3 + bônus V2 (SEM créditos, SEM image/video) ===
         if (order.user_id && product.slug === 'upscaler-arcano-v3') {
