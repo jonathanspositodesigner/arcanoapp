@@ -40,7 +40,7 @@ const Planos2 = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [showSignupModal, setShowSignupModal] = useState(false);
   const { planSlug: activePlanSlug } = usePlanos2Access(userId || undefined);
-  const { openCheckout, isLoading: isMPLoading, MPCheckoutModal } = useMPCheckout({ source_page: "planos-2" });
+  const { openCheckout, isLoading: isMPLoading, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "planos-2" });
 
   // Check auth and profile on mount
   useEffect(() => {
