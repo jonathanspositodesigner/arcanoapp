@@ -536,6 +536,27 @@ const UpscalerArcanoV3 = () => {
         </section>
         </V3LazySection>
 
+        {/* RESULTADOS REAIS DE USUÁRIOS */}
+        <V3LazySection minHeight={600}>
+        <section className="v3-real-results">
+          <div className="v3-real-results-inner">
+            <div style={{ textAlign: "center", marginBottom: 60 }}>
+              <div className="v3-section-tag" style={{ display: "inline-block" }}>Resultados Reales</div>
+              <div className="v3-section-title" style={{ marginTop: 12 }}>Mirá lo que nuestros usuarios<br /><span>están logrando.</span></div>
+              <p style={{ fontSize: 16, color: "var(--muted2)", marginTop: 12, maxWidth: 600, margin: "12px auto 0" }}>
+                Antes y después reales enviados por profesionales que usan el Upscaler Arcano todos los días.
+              </p>
+            </div>
+
+            <div className="v3-real-grid">
+              {realResults.map((item, i) => (
+                <V3RealResultCard key={i} item={item} beforeLabel="ANTES" afterLabel="DESPUÉS" />
+              ))}
+            </div>
+          </div>
+        </section>
+        </V3LazySection>
+
         {/* PRICING */}
         <section className="v3-pricing" id="v3-pricing">
           <div className="v3-pricing-inner">
@@ -624,27 +645,6 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
         </section>
-
-        {/* RESULTADOS REAIS DE USUÁRIOS */}
-        <V3LazySection minHeight={600}>
-        <section className="v3-real-results">
-          <div className="v3-real-results-inner">
-            <div style={{ textAlign: "center", marginBottom: 60 }}>
-              <div className="v3-section-tag" style={{ display: "inline-block" }}>Resultados Reales</div>
-              <div className="v3-section-title" style={{ marginTop: 12 }}>Mirá lo que nuestros usuarios<br /><span>están logrando.</span></div>
-              <p style={{ fontSize: 16, color: "var(--muted2)", marginTop: 12, maxWidth: 600, margin: "12px auto 0" }}>
-                Antes y después reales enviados por profesionales que usan el Upscaler Arcano todos los días.
-              </p>
-            </div>
-
-            <div className="v3-real-grid">
-              {realResults.map((item, i) => (
-                <V3RealResultCard key={i} item={item} beforeLabel="ANTES" afterLabel="DESPUÉS" />
-              ))}
-            </div>
-          </div>
-        </section>
-        </V3LazySection>
 
         {/* FAQ */}
         <V3LazySection minHeight={400}>
