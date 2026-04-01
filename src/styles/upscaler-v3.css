@@ -806,3 +806,35 @@
 
   .v3-depo-grid > div { border-radius: 12px; }
 }
+
+/* ─── MOBILE PERFORMANCE: kill expensive effects ─── */
+@media (max-width: 600px) {
+  /* Kill all infinite animations on mobile */
+  .v3-process-ring { animation: none; border-top-color: var(--cyan); transform: rotate(45deg); }
+  .v3-turbo-ring circle { animation: none; stroke-dashoffset: 100; }
+  .v3-popup-dot { animation: none; }
+  .v3-upload-box { animation: none; }
+  .v3-process-bar { animation: none; width: 80%; }
+
+  /* Disable hover effects that cause layout thrash on mobile */
+  .v3-pain-card:hover,
+  .v3-audience-card:hover,
+  .v3-gallery-item:hover,
+  .v3-feature-card:hover,
+  .v3-plan:hover,
+  .v3-real-card:hover { transform: none !important; }
+
+  /* Remove noise overlay on mobile - saves compositing */
+  .v3-page::before { display: none; }
+
+  /* Reduce hero glow */
+  .v3-hero::after { display: none; }
+  .v3-final-cta::before { display: none; }
+
+  /* Simplify box-shadows on mobile */
+  .v3-btn-primary { box-shadow: none; }
+  .v3-plan.featured { box-shadow: 0 0 20px rgba(0,212,255,0.1); }
+  .v3-plan-lifetime { box-shadow: 0 0 20px rgba(245,200,66,0.1); }
+  .v3-before-after { box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+  .v3-step-num { box-shadow: none; }
+}
