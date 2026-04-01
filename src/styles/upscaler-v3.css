@@ -363,8 +363,7 @@
 .v3-turbo-ring svg { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); transform: rotate(-90deg); }
 .v3-turbo-ring circle {
   fill: none; stroke: var(--cyan); stroke-width: 4; stroke-linecap: round;
-  stroke-dasharray: 502; stroke-dashoffset: 502; animation: v3RingFill 3s ease-in-out infinite;
-  filter: drop-shadow(0 0 8px var(--cyan));
+  stroke-dasharray: 502; stroke-dashoffset: 100;
 }
 @keyframes v3RingFill { 0%{stroke-dashoffset:502} 70%{stroke-dashoffset:50} 100%{stroke-dashoffset:50} }
 .v3-turbo-count {
