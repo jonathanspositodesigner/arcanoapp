@@ -264,9 +264,9 @@ export const V3RealResultCard = memo(({ item, beforeLabel, afterLabel }: { item:
         onMouseDown={(e) => startDrag(e.clientX)}
         onTouchStart={(e) => startDrag(e.touches[0].clientX)}
       >
-        <img src={item.before} alt={`${item.name} antes`} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" decoding="async" />
+        <img src={item.before} alt={`${item.name} antes`} width={400} height={600} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" decoding="async" />
         <div ref={afterRef} style={{ position: "absolute", inset: 0, clipPath: "inset(0 50% 0 0)" }}>
-          <img src={item.after} alt={`${item.name} depois`} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" decoding="async" />
+          <img src={item.after} alt={`${item.name} depois`} width={400} height={600} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" decoding="async" />
         </div>
         <div ref={lineRef} className="v3-real-handle-line" style={{ left: "50%" }}>
           <div className="v3-real-handle-knob">⟺</div>
