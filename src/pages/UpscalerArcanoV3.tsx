@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 import { ShieldCheck, Rocket, Flame, Crown, Infinity } from "lucide-react";
 import "@/styles/upscaler-v3.css";
 import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar, V3GalleryBeforeAfter, V3RealResultCard, V3LazySection } from "@/components/upscaler-v3/V3IsolatedComponents";
