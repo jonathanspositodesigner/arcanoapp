@@ -301,9 +301,12 @@
 .v3-process-bar-wrap { width: 80%; height: 6px; background: var(--surface); border-radius: 100px; overflow: hidden; }
 .v3-process-bar {
   height: 100%; background: linear-gradient(90deg, var(--cyan), #7B2FFF);
-  border-radius: 100px; width: 80%;
+  border-radius: 100px; width: 100%;
+  transform-origin: left center;
+  transform: scaleX(0.8);
+  will-change: transform;
 }
-@keyframes v3LoadBar { 0%{width:0%} 60%{width:90%} 100%{width:100%} }
+@keyframes v3LoadBar { 0%{transform:scaleX(0)} 60%{transform:scaleX(0.9)} 100%{transform:scaleX(1)} }
 .v3-process-label { font-size: 11px; color: var(--cyan); font-weight: 500; letter-spacing: 1px; }
 
 /* Download anim */
