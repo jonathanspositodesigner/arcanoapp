@@ -409,8 +409,10 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
         </section>
+        </V3LazySection>
 
         {/* GALLERY */}
+        <V3LazySection minHeight={800}>
         <section className="v3-gallery">
           <div className="v3-section-tag">Funciona com tudo</div>
           <div className="v3-section-title" style={{ marginBottom: 40 }}>Melhora imagens<br /><span>de todo tipo</span></div>
