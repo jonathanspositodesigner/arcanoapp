@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, useCallback, memo } from "react";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { useEffect, useRef, useState, useCallback, lazy, Suspense } from "react";
 import { ShieldCheck, Rocket, Flame, Crown, Infinity } from "lucide-react";
 import "@/styles/upscaler-v3.css";
-import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar } from "@/components/upscaler-v3/V3IsolatedComponents";
+import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar, V3GalleryBeforeAfter, V3RealResultCard, V3LazySection } from "@/components/upscaler-v3/V3IsolatedComponents";
+
+const MPCheckoutLazy = lazy(() => import("@/hooks/useMPCheckout").then(m => ({ default: () => { const { MPCheckoutModal } = m.useMPCheckout({ source_page: "upscalerarcanov3" }); return <MPCheckoutModal />; } })));
 
 // Image imports for before/after and gallery
 import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
