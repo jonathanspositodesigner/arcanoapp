@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Play, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 
 const motions = [{
   thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/AGENDA-HERIQUE-E-JULIANO.webp",
