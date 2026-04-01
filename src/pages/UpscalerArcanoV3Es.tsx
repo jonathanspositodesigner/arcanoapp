@@ -252,7 +252,7 @@ const UpscalerArcanoV3 = () => {
 
   return (
     <>
-      <div className="v3-page">
+      <main className="v3-page">
         {/* TOPBAR */}
         <nav className="v3-topbar">
           <div className="v3-topbar-logo">⬆ Upscaler Arcano</div>
