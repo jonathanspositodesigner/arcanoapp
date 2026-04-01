@@ -376,6 +376,7 @@ const UpscalerArcanoV3 = () => {
         </section>
 
         {/* HOW IT WORKS */}
+        <V3LazySection minHeight={600}>
         <section style={{ padding: "100px 24px" }}>
           <div style={{ maxWidth: 1100, margin: "0 auto" }}>
             <div className="v3-section-tag">Cómo funciona</div>
