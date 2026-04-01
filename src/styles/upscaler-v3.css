@@ -585,12 +585,19 @@
 .v3-plan-feature .check { color: var(--green); flex-shrink: 0; }
 .v3-plan-feature .special { color: var(--cyan); }
 
-/* GUARANTEE */
-/* Desktop: guarantee beside price */
+/* GUARANTEE - Desktop side-by-side layout */
+.v3-pricing-guarantee-row {
+  display: flex; gap: 24px; max-width: 900px; margin: 0 auto; align-items: stretch;
+}
+.v3-pricing-card-col { flex: 1; display: flex; min-width: 0; }
+.v3-pricing-card-col .v3-pricing-grid { grid-template-columns: 1fr; flex: 1; margin: 0; }
+.v3-pricing-card-col .v3-plan { margin: 0; }
+.v3-guarantee-card-col { flex: 1; display: flex; min-width: 0; }
 .v3-pricing-guarantee-mobile { display: none; }
 .v3-pricing-guarantee-desktop { display: flex; }
 @media (max-width: 768px) {
   .v3-pricing-guarantee-row { flex-direction: column !important; }
+  .v3-pricing-card-col, .v3-guarantee-card-col { flex: unset; }
   .v3-pricing-guarantee-desktop { display: none !important; }
   .v3-pricing-guarantee-mobile { display: block; margin-top: 24px; }
 }
