@@ -361,6 +361,7 @@ const UpscalerArcanoV3 = () => {
         </section>
 
         {/* HOW IT WORKS */}
+        <V3LazySection minHeight={600}>
         <section style={{ padding: "100px 24px" }}>
           <div style={{ maxWidth: 1100, margin: "0 auto" }}>
             <div className="v3-section-tag">Como funciona</div>
@@ -408,8 +409,10 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
         </section>
+        </V3LazySection>
 
         {/* GALLERY */}
+        <V3LazySection minHeight={800}>
         <section className="v3-gallery">
           <div className="v3-section-tag">Funciona com tudo</div>
           <div className="v3-section-title" style={{ marginBottom: 40 }}>Melhora imagens<br /><span>de todo tipo</span></div>
@@ -419,8 +422,10 @@ const UpscalerArcanoV3 = () => {
             ))}
           </div>
         </section>
+        </V3LazySection>
 
         {/* V3 FEATURES */}
+        <V3LazySection minHeight={600}>
         <section className="v3-features">
           <div className="v3-features-inner">
             <div className="v3-features-header">
@@ -482,8 +487,10 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
         </section>
+        </V3LazySection>
 
         {/* SOCIAL PROOF */}
+        <V3LazySection minHeight={500}>
         <section className="v3-proof">
           <div className="v3-section-tag">Resultados reais</div>
           <div className="v3-section-title" style={{ marginBottom: 48 }}>Números que<br /><span>falam por si.</span></div>
@@ -511,8 +518,10 @@ const UpscalerArcanoV3 = () => {
             ))}
           </div>
         </section>
+        </V3LazySection>
 
         {/* RESULTADOS REAIS */}
+        <V3LazySection minHeight={600}>
         <section className="v3-real-results">
           <div className="v3-real-results-inner">
             <div style={{ textAlign: "center", marginBottom: 60 }}>
@@ -530,6 +539,7 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
         </section>
+        </V3LazySection>
 
         {/* PRICING */}
         <section className="v3-pricing" id="v3-pricing">
