@@ -205,7 +205,7 @@ export const V3GalleryBeforeAfter = memo(({ item }: { item: GalleryItemData }) =
         <div ref={afterRef} style={{ position: "absolute", inset: 0, clipPath: "inset(0 50% 0 0)" }}>
           <img src={item.after} alt={`${item.label} depois`} width={400} height={667} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" decoding="async" />
         </div>
-        <div ref={lineRef} style={{ position: "absolute", top: 0, bottom: 0, left: "50%", transform: "translateX(-50%)", width: 2, background: "rgba(255,255,255,0.7)", zIndex: 5 }}>
+        <div ref={lineRef} style={{ position: "absolute", top: 0, bottom: 0, left: 0, transform: "translateX(calc(50% - 50%))", width: 2, background: "rgba(255,255,255,0.7)", zIndex: 5 }}>
           <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 24, height: 24, borderRadius: "50%", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.4)", fontSize: 10, color: "#000", fontWeight: 700 }}>⟺</div>
         </div>
         <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(0,0,0,0.6)", color: "rgba(255,255,255,0.8)", fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 100, zIndex: 6 }}>ANTES</div>
