@@ -108,6 +108,6 @@ export const MotionsGallerySectionPack4 = () => {
         </DialogContent>
       </Dialog>
 
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </section>;
 };

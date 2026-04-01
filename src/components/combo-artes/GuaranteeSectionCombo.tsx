@@ -76,7 +76,7 @@ export const GuaranteeSectionCombo = () => {
         </div>
       </div>
 
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </section>
   );
 };

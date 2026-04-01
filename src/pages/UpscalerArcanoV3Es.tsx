@@ -675,7 +675,7 @@ const UpscalerArcanoV3 = () => {
           <span>© 2026 Upscaler Arcano · Todos los derechos reservados</span>
         </footer>
       </main>
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </>
   );
 };

@@ -193,7 +193,7 @@ export const PricingCardsSectionPack4 = () => {
         </div>
       </div>
 
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </section>
   );
 };

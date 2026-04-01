@@ -520,7 +520,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
       </div>
 
       {/* PreCheckout Modal */}
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </AnimatedSection>
   );
 };

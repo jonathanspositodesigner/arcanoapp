@@ -1001,7 +1001,7 @@ const PlanosUpscalerArcano = () => {
 
 
       {/* Modal Checkout Customer */}
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
 
       {/* Modal Fullscreen */}
       {modalImages && (

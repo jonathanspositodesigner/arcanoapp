@@ -548,7 +548,7 @@ const PlanosArtes = () => {
         </div>
       </div>
 
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </div>
   );
 };

@@ -428,7 +428,7 @@ const PlanosArtesMembro = () => {
         )}
       </div>
 
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </div>
   );
 };

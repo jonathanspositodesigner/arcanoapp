@@ -295,7 +295,7 @@ const LandingPricingSection = () => {
         </div>
       </div>
 
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
 
     </AnimatedSection>
   );

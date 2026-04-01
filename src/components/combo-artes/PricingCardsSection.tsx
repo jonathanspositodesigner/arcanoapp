@@ -240,7 +240,7 @@ export const PricingCardsSection = () => {
         </div>
       </div>
 
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </section>
   );
 };

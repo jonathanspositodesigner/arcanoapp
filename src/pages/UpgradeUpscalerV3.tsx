@@ -799,7 +799,7 @@ const UpgradeUpscalerV3 = () => {
         <p>© {new Date().getFullYear()} Arcano · Todos os direitos reservados</p>
       </footer>
 
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </div>
   );
 };
