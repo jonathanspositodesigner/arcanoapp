@@ -700,66 +700,6 @@ serve(async (req) => {
         }
       }
 
-      // === BÔNUS VITALÍCIO UPSCALER ARCANO: 10.000 créditos + gerar-imagem/gerar-video (SÓ vitalício, NÃO V3) ===
-      if (product.slug === 'upscaller-arcano-vitalicio') {
-        console.log(`   ├─ 🎁 Bônus vitalício Upscaler Arcano: +10.000 créditos + image/video generation`)
-        
-        // 1. Add 10,000 lifetime credits
-        const bonusCreditDesc = `Bônus Upscaler Arcano Vitalício MP [${order.id}]: 10.000 créditos para NanoBanana e Veo 3`
-        const { data: existingBonus } = await supabase
-          .from('upscaler_credit_transactions')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('description', bonusCreditDesc)
-          .maybeSingle()
-
-        if (!existingBonus) {
-          const { error: bonusCreditsError } = await supabase.rpc('add_lifetime_credits', {
-            _user_id: userId,
-            _amount: 10000,
-            _description: bonusCreditDesc
-          })
-          if (bonusCreditsError) {
-            console.error(`   ├─ ❌ Erro ao adicionar créditos bônus:`, bonusCreditsError)
-          } else {
-            console.log(`   ├─ ✅ +10.000 créditos bônus adicionados`)
-          }
-        } else {
-          console.log(`   ├─ ℹ️ Créditos bônus vitalício já aplicados`)
-        }
-
-        // 2. Enable image/video generation in planos2_subscriptions
-        const { data: existingSub } = await supabase
-          .from('planos2_subscriptions')
-          .select('id, has_image_generation, has_video_generation')
-          .eq('user_id', userId)
-          .maybeSingle()
-
-        if (existingSub) {
-          await supabase
-            .from('planos2_subscriptions')
-            .update({
-              has_image_generation: true,
-              has_video_generation: true,
-              updated_at: new Date().toISOString()
-            })
-            .eq('user_id', userId)
-          console.log(`   ├─ ✅ Ferramentas gerar-imagem e gerar-video habilitadas`)
-        } else {
-          await supabase.from('planos2_subscriptions').insert({
-            user_id: userId,
-            plan_slug: 'free',
-            is_active: true,
-            credits_per_month: 0,
-            daily_prompt_limit: null,
-            has_image_generation: true,
-            has_video_generation: true,
-            cost_multiplier: 1.0,
-            expires_at: null
-          })
-          console.log(`   ├─ ✅ Subscription criada com image/video generation habilitado`)
-        }
-      }
 
       // === SUBSCRIPTION PLAN ACTIVATION ===
       if (product.type === 'subscription' && product.plan_slug) {
@@ -1089,34 +1029,6 @@ serve(async (req) => {
         // Estorno de créditos avulsos NÃO revoga packs — são independentes
       }
 
-      // === REFUND: Revogar bônus vitalício Upscaler Arcano (SÓ vitalício, NÃO V3) ===
-      if (order.user_id && product.slug === 'upscaller-arcano-vitalicio') {
-        console.log(`   ├─ 📋 Revogando bônus vitalício Upscaler Arcano...`)
-        
-        // Revogar 10.000 créditos bônus
-        const { data: revokeBonus, error: revokeBonusErr } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
-          _user_id: order.user_id,
-          _amount: 10000,
-          _description: `Reembolso MP: bônus vitalício Upscaler Arcano`
-        })
-        if (revokeBonusErr) {
-          console.error(`   ├─ ❌ Erro ao revogar créditos bônus:`, revokeBonusErr)
-        } else {
-          const r = revokeBonus?.[0] || revokeBonus
-          console.log(`   ├─ ✅ Créditos bônus revogados: ${r?.amount_revoked || 10000}`)
-        }
-
-        // Desabilitar image/video generation
-        await supabase
-          .from('planos2_subscriptions')
-          .update({
-            has_image_generation: false,
-            has_video_generation: false,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', order.user_id)
-        console.log(`   ├─ ✅ Ferramentas gerar-imagem e gerar-video desabilitadas`)
-      }
 
       // === REFUND V3: Revogar pack V3 + bônus V2 (sem créditos, sem image/video) ===
       if (order.user_id && product.slug === 'upscaler-arcano-v3') {
