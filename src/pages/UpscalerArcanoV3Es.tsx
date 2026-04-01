@@ -674,7 +674,7 @@ const UpscalerArcanoV3 = () => {
         <footer className="v3-footer">
           <span>© 2026 Upscaler Arcano · Todos los derechos reservados</span>
         </footer>
-      </div>
+      </main>
       <MPCheckoutModal />
     </>
   );
