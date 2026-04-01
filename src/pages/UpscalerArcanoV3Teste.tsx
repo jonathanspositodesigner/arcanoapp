@@ -273,7 +273,7 @@ const UpscalerArcanoV3 = () => {
     const el = document.getElementById("v3-pricing");
     if (el) {
       const y = el.getBoundingClientRect().top + window.scrollY - 20;
-      window.scrollTo({ top: y, behavior: "smooth" });
+      window.scrollTo({ top: y, behavior: window.innerWidth <= 600 ? "auto" : "smooth" });
     }
   }, []);
 
