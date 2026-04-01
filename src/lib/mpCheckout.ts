@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { getSanitizedUtms } from "@/lib/utmUtils";
 import { getMetaCookies } from "@/lib/metaCookies";
 
-const CHECKOUT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-mp-checkout`;
+const CHECKOUT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-pagarme-checkout-v2`;
 const TIMEOUT_MS = 20_000;
 
 export async function redirectToMPCheckout(
