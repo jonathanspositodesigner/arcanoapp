@@ -409,6 +409,17 @@ const UpscalerArcanoV3 = () => {
           </div>
         </section>
 
+        {/* GALLERY */}
+        <section className="v3-gallery">
+          <div className="v3-section-tag">Funciona com tudo</div>
+          <div className="v3-section-title" style={{ marginBottom: 40 }}>Melhora imagens<br /><span>de todo tipo</span></div>
+          <div className="v3-gallery-grid">
+            {galleryItems.map((item, i) => (
+              <V3GalleryBeforeAfter key={i} item={item} />
+            ))}
+          </div>
+        </section>
+
         {/* V3 FEATURES */}
         <section className="v3-features">
           <div className="v3-features-inner">
@@ -469,17 +480,6 @@ const UpscalerArcanoV3 = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* GALLERY */}
-        <section className="v3-gallery">
-          <div className="v3-section-tag">Funciona com tudo</div>
-          <div className="v3-section-title" style={{ marginBottom: 40 }}>Melhora imagens<br /><span>de todo tipo</span></div>
-          <div className="v3-gallery-grid">
-            {galleryItems.map((item, i) => (
-              <V3GalleryBeforeAfter key={i} item={item} />
-            ))}
           </div>
         </section>
 
