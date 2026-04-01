@@ -50,15 +50,12 @@ export async function redirectToMPCheckout(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         product_slug: productSlug.trim(),
-        user_email: email.trim().toLowerCase(),
-        user_name: name.trim(),
-        user_document: document.replace(/\D/g, ""),
+        customer_email: email.trim().toLowerCase(),
+        customer_name: name.trim(),
+        customer_document: document.replace(/\D/g, ""),
         utm_data: utmData,
         fbp,
         fbc,
-        user_agent: navigator.userAgent,
-        event_id: eventId,
-        ...(options?.source_page ? { source_page: options.source_page } : {}),
       }),
       signal: controller.signal,
     });
