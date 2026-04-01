@@ -356,10 +356,10 @@
   display: flex; align-items: center; justify-content: center;
 }
 .v3-feature-card.turbo .v3-feature-visual {
-  background: radial-gradient(ellipse at 50% 60%, rgba(0,212,255,0.12) 0%, transparent 70%);
+  background: radial-gradient(ellipse at 50% 60%, rgba(0,160,255,0.2) 0%, transparent 70%);
 }
 .v3-feature-card.batch .v3-feature-visual {
-  background: radial-gradient(ellipse at 50% 60%, rgba(123,47,255,0.15) 0%, transparent 70%);
+  background: radial-gradient(ellipse at 50% 60%, rgba(0,160,255,0.2) 0%, transparent 70%);
 }
 
 /* Turbo */
