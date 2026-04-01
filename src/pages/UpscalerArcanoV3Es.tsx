@@ -669,6 +669,7 @@ const UpscalerArcanoV3 = () => {
             <div className="v3-trust-item"><span style={{ color: "var(--green)", fontSize: 16 }}>✓</span> Pagás una vez</div>
           </div>
         </section>
+        </V3LazySection>
 
         <footer className="v3-footer">
           <span>© 2026 Upscaler Arcano · Todos los derechos reservados</span>
