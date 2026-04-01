@@ -586,6 +586,15 @@
 .v3-plan-feature .special { color: var(--cyan); }
 
 /* GUARANTEE */
+/* Desktop: guarantee beside price */
+.v3-pricing-guarantee-mobile { display: none; }
+.v3-pricing-guarantee-desktop { display: flex; }
+@media (max-width: 768px) {
+  .v3-pricing-guarantee-row { flex-direction: column !important; }
+  .v3-pricing-guarantee-desktop { display: none !important; }
+  .v3-pricing-guarantee-mobile { display: block; margin-top: 24px; }
+}
+
 .v3-guarantee-strip { padding: 48px 24px; max-width: 1100px; margin: 0 auto; }
 .v3-guarantee-card {
   background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, rgba(16,185,129,0.02) 100%);
