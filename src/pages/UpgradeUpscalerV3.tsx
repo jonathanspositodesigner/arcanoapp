@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef, lazy, Suspense } from "react"
 import { createPortal } from "react-dom";
 import { Zap, Layers, Check, X, Shield, ChevronDown, Rocket, Sparkles, Clock, ArrowRight, Timer, Play, ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, FadeIn } from "@/hooks/useScrollAnimation";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 
 /**
  * Hook: lazy-render a section only when near viewport.
