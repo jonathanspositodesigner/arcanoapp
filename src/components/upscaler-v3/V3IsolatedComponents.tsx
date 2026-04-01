@@ -141,3 +141,25 @@ export const V3StickyBar = memo(({ scrollToPrice, label, desktopSuffix, mobileBu
   );
 });
 V3StickyBar.displayName = "V3StickyBar";
+
+/* ─── 30-min Countdown (ES page) ─── */
+export const V3PromoCountdown = memo(() => {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let count = 30 * 60;
+    const interval = setInterval(() => {
+      if (count <= 0) { clearInterval(interval); return; }
+      count--;
+      const m = Math.floor(count / 60);
+      const s = count % 60;
+      if (ref.current) ref.current.textContent = `00:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+  return (
+    <div ref={ref} style={{ fontSize: 28, fontWeight: 800, color: "#F5C842", fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: 2, fontVariantNumeric: "tabular-nums" }}>
+      00:30:00
+    </div>
+  );
+});
+V3PromoCountdown.displayName = "V3PromoCountdown";
