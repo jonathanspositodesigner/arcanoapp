@@ -487,8 +487,10 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
         </section>
+        </V3LazySection>
 
         {/* SOCIAL PROOF */}
+        <V3LazySection minHeight={500}>
         <section className="v3-proof">
           <div className="v3-section-tag">Resultados reais</div>
           <div className="v3-section-title" style={{ marginBottom: 48 }}>Números que<br /><span>falam por si.</span></div>
