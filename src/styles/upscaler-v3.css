@@ -452,7 +452,7 @@
 .v3-audience-card {
   background: var(--bg); border: 1px solid var(--card-border); border-radius: 20px;
   padding: 28px; opacity: 0; transform: translateY(20px);
-  transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.3s, background 0.3s;
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 .v3-audience-card.v3-visible { opacity: 1; transform: translateY(0); }
 .v3-audience-card:hover { border-color: rgba(0,212,255,0.2); background: var(--surface2); transform: translateY(-4px) !important; }
