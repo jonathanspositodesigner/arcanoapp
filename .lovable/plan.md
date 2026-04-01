@@ -1,105 +1,81 @@
 
-Objetivo
 
-Deixar `/upscalerarcanov3`, `/upscalerarcanov3-es` e `/upscalerarcanov3-teste` o mais rápidas possível no celular, priorizando clique instantâneo, scroll imediato e carregamento muito mais leve.
+# Plano de Otimização de Performance — `/upscalerarcanov3-es`
 
-Diagnóstico real encontrado
+Baseado na análise completa do relatório PageSpeed Insights e da estrutura atual do código.
 
-- O gargalo ainda é frontend/mobile, não só checkout.
-- Perfil mobile mostrou números ruins para landing: FCP ~5.8s, 171 recursos, 1817 nós, 351 listeners, 4.54s de task time.
-- No CPU profile, o `autoSlide` do hero ainda aparece consumindo tempo, e o Clarity também pesa.
-- No código, os gargalos concretos são:
-  - `requestAnimationFrame` + `clip-path` no hero
-  - muitos efeitos infinitos no CSS
-  - sliders menores com listeners globais permanentes
-  - imagens grandes demais para mobile
-  - Google Fonts via `@import` dentro do CSS da landing
-  - providers globais e scripts extras carregando mesmo em páginas públicas
-  - script anti-inspect no `index.html` rodando com `setInterval`
+---
 
-Plano de implementação
+## Contexto
 
-1. Criar um “modo mobile lite” nas 3 páginas
-- Desligar o auto-slide do hero no mobile.
-- Trocar o reveal por `transform/scaleX` ou largura, evitando `clip-path` em loop.
-- No mobile, deixar elementos decorativos em versão estática ou muito mais leve:
-  - batch grid sem loop contínuo
-  - popup social simplificado ou desativado
-  - trust badges sem animação
-  - remover `transition: all`, sombras gigantes e efeitos infinitos
+O relatório identifica 14 problemas, com scores mobile críticos: FCP 4.9s, LCP ERRO, TBT ERRO, Performance < 49. A página ES já tem `V3LazySection` em seções abaixo da dobra e auto-slide desativado no mobile, mas faltam otimizações fundamentais de imagens, fontes e estrutura HTML.
 
-2. Cortar o peso acima da dobra
-- Trocar hero e comparações para assets mobile dedicados.
-- Comprimir/substituir os arquivos mais pesados já identificados:
-  - hero depois
-  - turbo background
-  - avatares e imagens de depoimento
-- Usar `picture`/source mobile e `decoding="async"`.
-- Reusar o padrão existente de lazy render (`LazySection`) para tudo que é abaixo da dobra, mantendo o `#v3-pricing` sempre montado para o botão “Ver Planos” funcionar na hora.
+---
 
-3. Simplificar os sliders internos
-- Refatorar `GalleryBeforeAfter` e `RealResultCard` para um componente compartilhado mais leve.
-- Remover listeners globais permanentes; listeners só existem durante o drag.
-- No mobile, reduzir complexidade: comparação por toque/arraste simples, sem custo contínuo.
+## Etapas de Implementação (por prioridade)
 
-4. Baratear os botões internos no celular
-- `scrollToPrice` no mobile vira scroll imediato ou muito curto.
-- Se necessário, subir a seção de preços na ordem mobile para reduzir o percurso e a sensação de travamento.
+### 1. Corrigir LCP no mobile — `fetchpriority="high"` + preload
+- Nas imagens do hero slider (`upscalerHeroAntes`, `upscalerHeroDepois`), adicionar `fetchpriority="high"` e **remover** `loading="lazy"` se existir.
+- Na imagem de background turbo (`turboBgImage`), adicionar `fetchpriority="high"`.
+- Adicionar no `index.html` um `<link rel="preload">` condicional para a imagem principal do hero (o asset WebP do antes/depois).
 
-5. Reduzir JS e CSS carregado sem necessidade
-- Tirar o `@import` de fontes de `src/styles/upscaler-v3.css` e carregar fontes de forma otimizada, com menos famílias/pesos.
-- Lazy load do `MPEmailModal` e do código de checkout só quando clicar em comprar.
-- Remover dependência desnecessária de ícones pesados nessas landings, ou trocar por SVG inline/local.
+### 2. Adicionar `width` e `height` em TODAS as `<img>` da página
+- Hero slider images: definir dimensões reais.
+- Gallery before/after (em `V3GalleryBeforeAfter` e `V3RealResultCard`): adicionar `width` e `height` nas tags `<img>`.
+- Turbo background image: adicionar dimensões.
+- Avatares de testimonials: adicionar dimensões.
+- Total: ~32 tags `<img>` precisam de dimensões explícitas.
 
-6. Tirar peso global dessas rotas
-- Em `src/App.tsx`, separar essas landings públicas da árvore pesada de providers quando possível.
-- Evitar que `AuthProvider`, `CreditsProvider`, realtime e consultas de créditos/auth subam junto com essas páginas.
-- Em `index.html`, desativar ou adiar nessas 3 rotas:
-  - Microsoft Clarity
-  - script anti-inspect
-- Manter apenas o tracking realmente crítico para conversão.
+### 3. Garantir `loading="lazy"` em TODAS as imagens abaixo da dobra
+- As imagens nos componentes `V3GalleryBeforeAfter` e `V3RealResultCard` já têm `loading="lazy"` — confirmar.
+- Imagens de avatares nos resultados reais: adicionar `loading="lazy"` e `decoding="async"`.
 
-Arquivos principais
+### 4. Adicionar elemento `<main>` na estrutura HTML
+- No componente `UpscalerArcanoV3Es.tsx`, trocar o `<div className="v3-page">` por `<main className="v3-page">` (ou envolver o conteúdo com `<main>`).
 
-- `src/pages/UpscalerArcanoV3.tsx`
-- `src/pages/UpscalerArcanoV3Es.tsx`
-- `src/pages/UpscalerArcanoV3Teste.tsx`
-- `src/components/upscaler-v3/V3IsolatedComponents.tsx`
-- `src/styles/upscaler-v3.css`
-- `src/components/combo-artes/LazySection.tsx` ou equivalente reaproveitado
-- `src/hooks/useMPCheckout.tsx`
-- `src/lib/mpCheckout.ts`
-- `src/App.tsx`
-- `index.html`
+### 5. Otimizar fontes — preconnect + display=swap
+- As fontes `Plus Jakarta Sans`, `DM Sans` e `Syne` são usadas no CSS da V3 mas **não estão sendo preloaded** no `index.html` (só Bebas Neue e Space Grotesk estão).
+- Adicionar no `index.html`:
+  - `<link rel="preload">` para Plus Jakarta Sans (peso mais usado: 700, 800).
+  - Garantir `display=swap` na URL do Google Fonts.
+- Alternativa: adicionar um preload async específico para as fontes da V3 diretamente no componente da página ES.
 
-Validação
+### 6. Adiar scripts não-críticos para a landing
+- O `index.html` carrega **Meta Pixel**, **Microsoft Clarity** e **Anti-Inspect** de forma síncrona/bloqueante.
+- Mover Clarity e Anti-Inspect para carregar com `defer` ou via `setTimeout` (adiar ~3s).
+- Meta Pixel já tem `t.async=!0`, mas o script inline de init roda de forma síncrona — mover para depois do conteúdo ou envolver em `requestIdleCallback`.
 
-- Testar mobile nas 3 rotas.
-- Confirmar resposta imediata em:
-  - “Ver Planos”
-  - sticky CTA
-  - CTA final
-  - botões de compra abrindo modal rápido
-- Reperfilar para confirmar queda forte em:
-  - FCP
-  - task time
-  - listeners
-  - recursos carregados
-  - CPU contínua em idle
+### 7. Build target para ES2020 (reduz ~35 KiB de polyfills)
+- No `vite.config.ts`, adicionar `build: { target: 'es2020' }` (atualmente não tem target definido).
 
-Detalhes técnicos
+### 8. Reduzir imports de lucide-react
+- A página ES importa `ShieldCheck` e `Infinity` de `lucide-react`. Confirmar que são named imports (já são). Isso é ok, mas o chunk `lucide-icons` inteiro pode estar sendo carregado — verificar se o tree-shaking funciona corretamente com o `manualChunks` atual.
 
-- Evidências concretas do projeto:
-  - `autoSlide` com `requestAnimationFrame` ainda ativo
-  - `clip-path` sendo atualizado continuamente
-  - 9 sliders menores adicionando muitos listeners de janela
-  - `lucide-react` e modal de checkout entrando cedo demais
-  - `@import` de Google Fonts dentro do CSS da própria landing
-  - assets mobile ainda não priorizados nessas páginas
-  - `AuthProvider`/`CreditsProvider` montados globalmente
-  - Clarity e anti-inspect rodando desde o `index.html`
-- O maior ganho virá de quatro cortes principais:
-  1. parar animação contínua no mobile
-  2. reduzir bytes de imagem/fonte
-  3. lazy render abaixo da dobra
-  4. impedir que código global pesado suba junto com landing pública
+### 9. Corrigir reflow no slider antes/depois
+- No `updateSlider`, o código lê `getBoundingClientRect()` e depois escreve `.style.clipPath` e `.style.left`. Isso pode causar layout thrashing.
+- Usar `transform: translateX()` no handle em vez de `left` para evitar reflow.
+
+### 10. Envolver seções Audience e FAQ com `V3LazySection`
+- A seção "¿Para quién es?" (Audience) está acima do "Como funciona" mas abaixo do hero — envolver com `V3LazySection`.
+- A seção FAQ e Final CTA também não estão em lazy sections — envolver.
+
+---
+
+## Arquivos que serão editados
+
+| Arquivo | Mudança |
+|---------|---------|
+| `src/pages/UpscalerArcanoV3Es.tsx` | fetchpriority, width/height em imgs, `<main>`, lazy sections extras |
+| `src/components/upscaler-v3/V3IsolatedComponents.tsx` | width/height nas imgs dos sliders, transform no handle |
+| `index.html` | Adiar Clarity/Anti-Inspect, preload fontes V3, preload hero image |
+| `vite.config.ts` | `build.target: 'es2020'` |
+| `src/styles/upscaler-v3.css` | Nenhuma mudança visual — apenas ajustes se necessário para transform no handle |
+
+---
+
+## O que NÃO muda
+
+- Nenhuma alteração visual/design.
+- Cache-Control (#3 do relatório) depende da configuração do hosting (Lovable/Vercel) — não é alterável via código do projeto.
+- Compressão de imagens (#11) requer re-exportar os assets externamente — pode ser feito como etapa separada.
+
