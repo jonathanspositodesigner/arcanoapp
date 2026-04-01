@@ -622,6 +622,8 @@ const UpscalerArcanoV3 = () => {
                 <span className="v3-guarantee-badge">✓ RIESGO CERO</span>
               </div>
             </div>
+          </div>
+        </section>
 
         {/* RESULTADOS REAIS DE USUÁRIOS */}
         <V3LazySection minHeight={600}>
