@@ -557,21 +557,21 @@ const UpscalerArcanoV3 = () => {
 
             <div className="v3-pricing-grid" style={{ gridTemplateColumns: "1fr", maxWidth: 420, margin: "0 auto" }}>
               {/* VITALÍCIO */}
-              <div className="v3-plan v3-plan-lifetime v3-reveal">
+              <div className="v3-plan v3-plan-lifetime v3-reveal" style={{ textAlign: "center" }}>
                 <div className="v3-plan-popular v3-plan-popular-gold">♾ Vitalicio</div>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
                   <Infinity size={32} style={{ color: "#f5c842" }} />
                 </div>
-                <div className="v3-plan-name">Ilimitado</div>
-                <div className="v3-plan-tagline">Acceso permanente a todo</div>
+                <div className="v3-plan-name" style={{ textAlign: "center" }}>Ilimitado</div>
+                <div className="v3-plan-tagline" style={{ textAlign: "center" }}>Acceso permanente a todo</div>
                 <div style={{ textAlign: "center", marginBottom: 4 }}>
                   <span style={{ fontSize: 16, color: "var(--muted)", textDecoration: "line-through", fontWeight: 500 }}>$49,90 USD</span>
                 </div>
-                <div className="v3-plan-price">
+                <div className="v3-plan-price" style={{ justifyContent: "center", textAlign: "center" }}>
                   <span className="currency">$</span>
                   <span className="amount">19</span>
                   <span className="cents">,90</span>
-                  <span className="period">USD · pagás una vez · usás para siempre</span>
+                  <span className="period" style={{ display: "block", width: "100%", textAlign: "center" }}>USD · pagás una vez · usás para siempre</span>
                 </div>
                 <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => openCheckout("upscaler-arcano-v3")}>Obtener Vitalicio →</button>
                 <div className="v3-plan-divider" />
