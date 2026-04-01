@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 import { AnimatedSection, FadeIn } from "@/hooks/useScrollAnimation";
 import { useLocale } from "@/contexts/LocaleContext";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 
 // Slugs MP para preço normal
 const MP_PACK_SLUGS: Record<string, Record<string, string>> = {
