@@ -771,7 +771,7 @@ const Planos2 = () => {
         </DialogContent>
       </Dialog>
 
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
 
       {/* Signup Modal for Free plan */}
       <HomeAuthModal
