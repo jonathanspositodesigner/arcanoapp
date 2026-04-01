@@ -589,12 +589,14 @@
 .v3-pricing-guarantee-row {
   display: flex; gap: 24px; max-width: 900px; margin: 0 auto; align-items: stretch;
 }
-.v3-pricing-card-col { flex: 1; display: flex; min-width: 0; }
+.v3-pricing-card-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 .v3-pricing-card-col .v3-pricing-grid { grid-template-columns: 1fr; flex: 1; margin: 0; }
-.v3-pricing-card-col .v3-plan { margin: 0; }
-.v3-guarantee-card-col { flex: 1; display: flex; min-width: 0; }
+.v3-pricing-card-col .v3-plan { margin: 0; flex: 1; }
+.v3-guarantee-card-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.v3-guarantee-card-col > div { flex: 1; }
 .v3-pricing-guarantee-mobile { display: none; }
-.v3-pricing-guarantee-desktop { display: flex; }
+.v3-pricing-guarantee-desktop { display: flex; flex-direction: column; flex: 1; }
+.v3-pricing-guarantee-desktop > div { flex: 1; }
 @media (max-width: 768px) {
   .v3-pricing-guarantee-row { flex-direction: column !important; }
   .v3-pricing-card-col, .v3-guarantee-card-col { flex: unset; }
