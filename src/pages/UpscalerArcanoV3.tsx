@@ -53,12 +53,12 @@ const SOCIAL_PEOPLE = [
 const SOCIAL_TIMES = ["há poucos segundos", "há 1 minuto", "há 2 minutos", "há 3 minutos", "há 5 minutos"];
 
 const galleryItems = [
-  { before: upscalerFotoAntes, after: upscalerFotoDepois, label: "Fotos de Ensaio", desc: "Recupere grain, ruído e baixa luz" },
-  { before: render3dAntes, after: render3dDepois, label: "Renders 3D", desc: "Upscale sem perder geometria" },
-  { before: upscalerProdutoAntes, after: upscalerProdutoDepois, label: "Fotos de Produto", desc: "Catálogos e e-commerce em 4K" },
-  { before: upscalerLogoAntes, after: upscalerLogoDepois, label: "Logos e Artes", desc: "Vetores e brandmarks ampliados" },
-  { before: upscalerAntigaAntes, after: upscalerAntigaDepois, label: "Fotos Antigas", desc: "Memórias restauradas com IA" },
   { before: upscalerFoodAntes, after: upscalerFoodDepois, label: "Fotos de Alimento", desc: "Corrija artefatos, amplie, refine" },
+  { before: upscalerFotoAntes, after: upscalerFotoDepois, label: "Fotos de Ensaio", desc: "Recupere grain, ruído e baixa luz" },
+  { before: upscalerProdutoAntes, after: upscalerProdutoDepois, label: "Fotos de Produto", desc: "Catálogos e e-commerce em 4K" },
+  { before: render3dAntes, after: render3dDepois, label: "Renders 3D", desc: "Upscale sem perder geometria" },
+  { before: upscalerAntigaAntes, after: upscalerAntigaDepois, label: "Fotos Antigas", desc: "Memórias restauradas com IA" },
+  { before: upscalerLogoAntes, after: upscalerLogoDepois, label: "Logos e Artes", desc: "Vetores e brandmarks ampliados" },
 ];
 
 const painCards = [
