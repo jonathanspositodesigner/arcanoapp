@@ -518,6 +518,7 @@ const UpscalerArcanoV3 = () => {
             ))}
           </div>
         </section>
+        </V3LazySection>
 
         {/* RESULTADOS REAIS */}
         <section className="v3-real-results">
