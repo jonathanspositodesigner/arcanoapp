@@ -140,7 +140,7 @@ const UpscalerArcanoV3 = () => {
   // Direct DOM update for slider position - NO setState
   const setSliderDOM = useCallback((pct: number) => {
     if (afterLayerRef.current) afterLayerRef.current.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
-    if (handleRef.current) handleRef.current.style.transform = `translateX(-50%) translateX(${pct}vw)`;
+    if (handleRef.current) handleRef.current.style.left = `${pct}%`;
   }, []);
 
   const goToSlide = useCallback((dir: 1 | -1) => {

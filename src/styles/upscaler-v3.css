@@ -182,7 +182,7 @@
 .v3-ba-layer img { width: 100%; height: 100%; object-fit: cover; }
 .v3-drag-handle {
   position: absolute; top: 0; bottom: 0; width: 2px; background: var(--white);
-  z-index: 10; cursor: ew-resize; left: 0; will-change: transform;
+  z-index: 10; cursor: ew-resize; transform: translateX(-50%); will-change: left;
 }
 .v3-drag-circle {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
