@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { AnimatedSection, StaggeredAnimation } from "@/hooks/useScrollAnimation";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { supabase } from "@/integrations/supabase/client";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 
 const socialProofImages = [
   "/images/social-proof-1.webp",
@@ -152,7 +152,7 @@ const landingPlans: Plan[] = [
 ];
 
 const LandingPricingSection = () => {
-  const { openCheckout, isLoading, MPCheckoutModal } = useMPCheckout({ source_page: "arcanocloner-teste" });
+  const { openCheckout, isLoading, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "arcanocloner-teste" });
 
   return (
     <AnimatedSection className="px-4 py-16 md:py-20">
@@ -295,7 +295,7 @@ const LandingPricingSection = () => {
         </div>
       </div>
 
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
 
     </AnimatedSection>
   );

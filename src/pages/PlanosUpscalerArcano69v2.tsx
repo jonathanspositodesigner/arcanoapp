@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MessageCircle, ZoomIn, X, User, Rocket, PenTool, Flame, ShieldCheck, Headset, Image, Video, Award, MousePointerClick } from "lucide-react";
 import { toast } from "sonner";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
@@ -355,7 +355,7 @@ const upscalerPlans: UpscalerPlan[] = [
 ];
 
 const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; tool: ToolData | null; t: (key: string) => string }) => {
-  const { openCheckout, MPCheckoutModal } = useMPCheckout();
+  const { openCheckout, PagarmeCheckoutModal } = usePagarmeCheckout();
 
   const handlePurchase = (plan: UpscalerPlan) => {
     if (typeof window !== "undefined" && (window as any).fbq) {
@@ -520,7 +520,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
       </div>
 
       {/* PreCheckout Modal */}
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </AnimatedSection>
   );
 };

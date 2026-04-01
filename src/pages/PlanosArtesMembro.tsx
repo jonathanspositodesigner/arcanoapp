@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 import { useLocale } from "@/contexts/LocaleContext";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 
 // Mapeamento de slugs MP para desconto de membro (20% OFF)
 const MP_MEMBER_SLUGS: Record<string, Record<string, string>> = {
@@ -55,7 +55,7 @@ const PlanosArtesMembro = () => {
   
   const { isActive: isPromoActive, loading: promoLoading } = useYearEndPromo();
 
-  const { openCheckout, isLoading: isCheckoutSubmitting, MPCheckoutModal } = useMPCheckout({ source_page: "planos-artes-membro" });
+  const { openCheckout, isLoading: isCheckoutSubmitting, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "planos-artes-membro" });
   const [selectedAccessType, setSelectedAccessType] = useState('vitalicio');
   const [arteCount, setArteCount] = useState<number | null>(null);
 
@@ -428,7 +428,7 @@ const PlanosArtesMembro = () => {
         )}
       </div>
 
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </div>
   );
 };

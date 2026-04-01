@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Check, Star, Gift, Clock, CreditCard } from "lucide-react";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 
 interface PricingFeature {
   text: string;
@@ -97,7 +97,7 @@ const plans: PricingPlan[] = [
 
 export const PricingCardsSection = () => {
   const [timeLeft, setTimeLeft] = useState(0);
-  const { openCheckout, isLoading: isCheckoutSubmitting, MPCheckoutModal } = useMPCheckout({ source_page: "combo-artes" });
+  const { openCheckout, isLoading: isCheckoutSubmitting, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "combo-artes" });
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -240,7 +240,7 @@ export const PricingCardsSection = () => {
         </div>
       </div>
 
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </section>
   );
 };

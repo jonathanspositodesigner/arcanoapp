@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, ArrowLeft, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, ArrowRight, Shield, Clock, Star, CreditCard, MousePointerClick, MessageCircle, ZoomIn, X, User, Rocket, PenTool, Image as ImageIcon, Award, Flame, ShoppingCart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -317,7 +317,7 @@ const PlanosUpscalerArcano = () => {
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
-  const { openCheckout, MPCheckoutModal } = useMPCheckout();
+  const { openCheckout, PagarmeCheckoutModal } = usePagarmeCheckout();
 
   // Countdown timer - 48 minutes
   const [timeLeft, setTimeLeft] = useState(() => {
@@ -1001,7 +1001,7 @@ const PlanosUpscalerArcano = () => {
 
 
       {/* Modal Checkout Customer */}
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
 
       {/* Modal Fullscreen */}
       {modalImages && (

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 import { ShieldCheck, Infinity } from "lucide-react";
 import "@/styles/upscaler-v3.css";
 import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar, V3PromoCountdown, V3GalleryBeforeAfter, V3RealResultCard, V3LazySection } from "@/components/upscaler-v3/V3IsolatedComponents";
@@ -126,7 +126,7 @@ const UpscalerArcanoV3 = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const { openCheckout, MPCheckoutModal } = useMPCheckout({ source_page: "upscalerarcanov3" });
+  const { openCheckout, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "upscalerarcanov3" });
 
   // Hero slider refs for direct DOM manipulation (no state rerenders)
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -675,7 +675,7 @@ const UpscalerArcanoV3 = () => {
           <span>© 2026 Upscaler Arcano · Todos los derechos reservados</span>
         </footer>
       </main>
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </>
   );
 };

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 import { ShieldCheck, Rocket, Flame, Crown, Infinity, Gift } from "lucide-react";
 import ArcanoClonerAuthModal from "@/components/arcano-cloner/ArcanoClonerAuthModal";
 import "@/styles/upscaler-v3.css";
@@ -137,7 +137,7 @@ const UpscalerArcanoV3 = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
-  const { openCheckout, MPCheckoutModal } = useMPCheckout({ source_page: "upscalerarcanov3" });
+  const { openCheckout, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "upscalerarcanov3" });
 
   // Trial button state
   const [showTrialModal, setShowTrialModal] = useState(false);
@@ -776,7 +776,7 @@ const UpscalerArcanoV3 = () => {
           <span>© 2026 Upscaler Arcano · Todos os direitos reservados</span>
         </footer>
       </div>
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </>
   );
 };

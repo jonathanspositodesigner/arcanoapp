@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 import { AnimatedSection, FadeIn } from "@/hooks/useScrollAnimation";
 import { useLocale } from "@/contexts/LocaleContext";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 
 // Slugs MP para preço normal
 const MP_PACK_SLUGS: Record<string, Record<string, string>> = {
@@ -73,7 +73,7 @@ const PlanosArtes = () => {
   
   const { isActive: isPromoActive, loading: promoLoading } = useYearEndPromo();
 
-  const { openCheckout, isLoading: isCheckoutSubmitting, MPCheckoutModal } = useMPCheckout({ source_page: "planos-artes" });
+  const { openCheckout, isLoading: isCheckoutSubmitting, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "planos-artes" });
   const [selectedAccessType, setSelectedAccessType] = useState('vitalicio');
   const [arteCount, setArteCount] = useState<number | null>(null);
 
@@ -548,7 +548,7 @@ const PlanosArtes = () => {
         </div>
       </div>
 
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </div>
   );
 };

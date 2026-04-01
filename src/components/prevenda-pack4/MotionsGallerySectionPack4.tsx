@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Play, X } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 
 const motions = [{
   thumbnail: "https://voxvisual.com.br/wp-content/uploads/2025/11/AGENDA-HERIQUE-E-JULIANO.webp",
@@ -50,7 +50,7 @@ const PRODUCT_SLUG = "pack4-vitalicio";
 
 export const MotionsGallerySectionPack4 = () => {
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
-  const { openCheckout, isLoading: isCheckoutSubmitting, MPCheckoutModal } = useMPCheckout({ source_page: "prevenda-pack4" });
+  const { openCheckout, isLoading: isCheckoutSubmitting, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "prevenda-pack4" });
 
   return <section className="py-5 md:py-10 px-4 bg-black">
       <div className="max-w-6xl mx-auto">
@@ -108,6 +108,6 @@ export const MotionsGallerySectionPack4 = () => {
         </DialogContent>
       </Dialog>
 
-      <MPCheckoutModal />
+      <PagarmeCheckoutModal />
     </section>;
 };
