@@ -590,10 +590,6 @@ const ArcanoClonerTeste = () => {
         <FeedbackCarousel />
       </LazySection>
 
-      {/* ==================== TESTE GRÁTIS ==================== */}
-      <LazySection>
-        <LandingTrialSignupSection />
-      </LazySection>
 
       {/* ==================== FAQ ==================== */}
       <LazySection>
