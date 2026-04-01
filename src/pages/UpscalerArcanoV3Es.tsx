@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { useMPCheckout } from "@/hooks/useMPCheckout";
 import { ShieldCheck, Infinity } from "lucide-react";
 import "@/styles/upscaler-v3.css";
-import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar, V3PromoCountdown } from "@/components/upscaler-v3/V3IsolatedComponents";
+import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar, V3PromoCountdown, V3GalleryBeforeAfter, V3RealResultCard, V3LazySection } from "@/components/upscaler-v3/V3IsolatedComponents";
 
 // Image imports for before/after and gallery
 import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
