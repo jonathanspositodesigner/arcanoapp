@@ -521,6 +521,7 @@ const UpscalerArcanoV3 = () => {
         </V3LazySection>
 
         {/* RESULTADOS REAIS */}
+        <V3LazySection minHeight={600}>
         <section className="v3-real-results">
           <div className="v3-real-results-inner">
             <div style={{ textAlign: "center", marginBottom: 60 }}>
