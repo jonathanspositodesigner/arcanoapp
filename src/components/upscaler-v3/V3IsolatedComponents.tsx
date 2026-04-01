@@ -276,7 +276,7 @@ export const V3RealResultCard = memo(({ item, beforeLabel, afterLabel }: { item:
       </div>
       <div className="v3-real-card-info">
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <img src={item.avatar} alt={item.name} className="v3-real-card-avatar" loading="lazy" decoding="async" />
+          <img src={item.avatar} alt={item.name} width={40} height={40} className="v3-real-card-avatar" loading="lazy" decoding="async" />
           <div>
             <div className="v3-real-card-name">{item.name}</div>
             <div className="v3-real-card-handle">{item.handle}</div>
