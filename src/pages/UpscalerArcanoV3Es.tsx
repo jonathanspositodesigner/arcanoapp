@@ -375,6 +375,7 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
         </section>
+        </V3LazySection>
 
         {/* HOW IT WORKS */}
         <V3LazySection minHeight={600}>
