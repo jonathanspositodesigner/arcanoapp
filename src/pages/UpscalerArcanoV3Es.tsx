@@ -21,6 +21,8 @@ import upscalerFoodAntes from "@/assets/upscaler-food-antes.webp";
 import upscalerFoodDepois from "@/assets/upscaler-food-depois.webp";
 import upscalerHeroAntes from "@/assets/upscaler-hero-antes.webp";
 import upscalerHeroDepois from "@/assets/upscaler-hero-depois.webp";
+import heroMobileAntes from "@/assets/hero-mobile-antes.webp";
+import heroMobileDepois from "@/assets/hero-mobile-depois.webp";
 
 // Gallery images for hero carousel
 import galleryBefore2 from "@/assets/upscaler/2a.webp";
@@ -32,8 +34,13 @@ import turboBgImage from "@/assets/upscaler-v3-turbo-bg.webp";
 // Gallery and RealResult sliders now come from V3IsolatedComponents (DOM-only, no global listeners)
 
 // ── Static data hoisted outside component ──
-const heroSlides = [
+const heroSlidesDesktop = [
   { before: upscalerHeroAntes, after: upscalerHeroDepois },
+  { before: galleryBefore2, after: galleryAfter2 },
+  { before: galleryBefore3, after: galleryAfter3 },
+];
+const heroSlidesMobile = [
+  { before: heroMobileAntes, after: heroMobileDepois },
   { before: galleryBefore2, after: galleryAfter2 },
   { before: galleryBefore3, after: galleryAfter3 },
 ];
