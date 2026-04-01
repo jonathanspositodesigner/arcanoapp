@@ -9,16 +9,16 @@
  * está configurado como 'stripe' no arquivo checkoutProducts.ts.
  */
 
-import { loadStripe, type Stripe } from '@stripe/stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import type { CheckoutProductConfig } from '@/config/checkoutProducts';
 
-let stripePromise: Promise<Stripe | null> | null = null;
+let stripePromise: ReturnType<typeof loadStripe> | null = null;
 
 /**
  * Carrega o Stripe.js uma única vez (singleton).
  * Lança erro se a chave pública não estiver configurada.
  */
-function getStripe(): Promise<Stripe | null> {
+function getStripe() {
   if (!stripePromise) {
     const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
     if (!key) {
