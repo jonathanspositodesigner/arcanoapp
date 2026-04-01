@@ -359,6 +359,7 @@ const UpscalerArcanoV3 = () => {
         </section>
 
         {/* AUDIENCE */}
+        <V3LazySection minHeight={400}>
         <section className="v3-audience">
           <div className="v3-audience-inner">
             <div className="v3-section-tag">¿Para quién es?</div>
