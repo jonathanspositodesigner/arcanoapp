@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { useYearEndPromo } from "@/hooks/useYearEndPromo";
 import { useLocale } from "@/contexts/LocaleContext";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 
 // Mapeamento de slugs MP para desconto de membro (20% OFF)
 const MP_MEMBER_SLUGS: Record<string, Record<string, string>> = {
