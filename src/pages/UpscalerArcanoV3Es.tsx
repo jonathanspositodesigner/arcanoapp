@@ -625,6 +625,7 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
         </section>
+        </V3LazySection>
 
         {/* FAQ */}
         <section className="v3-faq">
