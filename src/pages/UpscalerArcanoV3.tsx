@@ -160,22 +160,29 @@ const UpscalerArcanoV3 = () => {
     autoRef.current = true;
   }, [setSliderDOM]);
 
-  // Scroll reveal observer
+  // Scroll reveal observer — watches for dynamically added .v3-reveal elements (V3LazySection)
   useEffect(() => {
-    const observer = new IntersectionObserver(
+    const io = new IntersectionObserver(
       (entries) => { entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("v3-visible"); }); },
       { threshold: 0.15 }
     );
-    document.querySelectorAll(".v3-reveal").forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+    const observeAll = () => {
+      document.querySelectorAll(".v3-reveal:not(.v3-visible)").forEach((el) => io.observe(el));
+    };
+    observeAll();
+    const mo = new MutationObserver(() => observeAll());
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => { io.disconnect(); mo.disconnect(); };
   }, []);
 
-  // Counter animation
+  // Counter animation — re-observes when lazy sections load
   useEffect(() => {
+    const observed = new WeakSet<Element>();
     const counterObs = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
-          if (e.isIntersecting) {
+          if (e.isIntersecting && !observed.has(e.target)) {
+            observed.add(e.target);
             const el = e.target as HTMLElement;
             const target = parseInt(el.dataset.target || "0");
             const suffix = target === 100 ? "%" : "+";
@@ -192,18 +199,31 @@ const UpscalerArcanoV3 = () => {
       },
       { threshold: 0.5 }
     );
-    document.querySelectorAll("[data-target]").forEach((el) => counterObs.observe(el));
-    return () => counterObs.disconnect();
+    const observeCounters = () => {
+      document.querySelectorAll("[data-target]").forEach((el) => {
+        if (!observed.has(el)) counterObs.observe(el);
+      });
+    };
+    observeCounters();
+    const mo = new MutationObserver(() => observeCounters());
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => { counterObs.disconnect(); mo.disconnect(); };
   }, []);
 
-  // Staggered delays - run once
+  // Staggered delays — re-applies when lazy sections load
   useEffect(() => {
-    document.querySelectorAll(".v3-pain-card").forEach((el, i) => { (el as HTMLElement).style.transitionDelay = i * 0.08 + "s"; });
-    document.querySelectorAll(".v3-step").forEach((el, i) => { (el as HTMLElement).style.transitionDelay = i * 0.15 + "s"; });
-    document.querySelectorAll(".v3-gallery-item").forEach((el, i) => { (el as HTMLElement).style.transitionDelay = i * 0.08 + "s"; });
-    document.querySelectorAll(".v3-audience-card").forEach((el, i) => { (el as HTMLElement).style.transitionDelay = i * 0.08 + "s"; });
-    document.querySelectorAll(".v3-testimonial").forEach((el, i) => { (el as HTMLElement).style.transitionDelay = i * 0.1 + "s"; });
-    document.querySelectorAll(".v3-plan").forEach((el, i) => { (el as HTMLElement).style.transitionDelay = i * 0.1 + "s"; });
+    const applyDelays = () => {
+      document.querySelectorAll(".v3-pain-card").forEach((el, i) => { (el as HTMLElement).style.transitionDelay = i * 0.08 + "s"; });
+      document.querySelectorAll(".v3-step").forEach((el, i) => { (el as HTMLElement).style.transitionDelay = i * 0.15 + "s"; });
+      document.querySelectorAll(".v3-gallery-item").forEach((el, i) => { (el as HTMLElement).style.transitionDelay = i * 0.08 + "s"; });
+      document.querySelectorAll(".v3-audience-card").forEach((el, i) => { (el as HTMLElement).style.transitionDelay = i * 0.08 + "s"; });
+      document.querySelectorAll(".v3-testimonial").forEach((el, i) => { (el as HTMLElement).style.transitionDelay = i * 0.1 + "s"; });
+      document.querySelectorAll(".v3-plan").forEach((el, i) => { (el as HTMLElement).style.transitionDelay = i * 0.1 + "s"; });
+    };
+    applyDelays();
+    const mo = new MutationObserver(() => applyDelays());
+    mo.observe(document.body, { childList: true, subtree: true });
+    return () => mo.disconnect();
   }, []);
 
   // Auto-slide using direct DOM - NO setState - DISABLED on mobile
