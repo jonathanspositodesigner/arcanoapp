@@ -79,7 +79,7 @@
 }
 .v3-popup-dot {
   width: 8px; height: 8px; border-radius: 50%; background: #10b981;
-  flex-shrink: 0; animation: v3Pulse 2s infinite;
+  flex-shrink: 0;
 }
 @keyframes v3Pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.3)} }
 
