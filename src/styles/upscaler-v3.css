@@ -723,7 +723,8 @@
   .v3-social-popup.v3-notif-hidden { opacity: 0; transform: translateY(-20px); }
   .v3-popup-avatar { width: 30px; height: 30px; font-size: 12px; }
 
-  .v3-features, .v3-audience, .v3-real-results { padding: 60px 16px; }
+  .v3-audience { display: none; }
+  .v3-features, .v3-real-results { padding: 60px 16px; }
   .v3-proof { padding: 60px 16px; }
   .v3-pricing { padding: 60px 16px; }
   .v3-faq { padding: 60px 16px; }
