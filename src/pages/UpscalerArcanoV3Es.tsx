@@ -459,7 +459,7 @@ const UpscalerArcanoV3 = () => {
               {/* TURBO */}
               <div className="v3-feature-card turbo v3-reveal">
                 <div className="v3-feature-visual" style={{ position: "relative" }}>
-                  <img src={turboBgImage} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.2, zIndex: 0, pointerEvents: "none" }} />
+                  <img src={turboBgImage} alt="" width={600} height={300} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.2, zIndex: 0, pointerEvents: "none" }} loading="lazy" decoding="async" />
                   <div style={{ textAlign: "center", position: "relative", zIndex: 1 }}>
                     <div className="v3-turbo-ring">
                       <svg viewBox="0 0 168 168"><circle cx="84" cy="84" r="78" /></svg>
