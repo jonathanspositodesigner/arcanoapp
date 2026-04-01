@@ -20,7 +20,7 @@ import { StatsCards } from "@/components/credits/StatsCards";
 
 import { supabase } from "@/integrations/supabase/client";
 import HomeAuthModal from "@/components/HomeAuthModal";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 
 import { usePlanos2Access } from "@/hooks/usePlanos2Access";
 import { toast } from "sonner";
