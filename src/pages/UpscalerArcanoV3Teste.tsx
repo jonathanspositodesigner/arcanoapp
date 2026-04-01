@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 import { ShieldCheck, Rocket, Flame, Crown, Infinity, Gift } from "lucide-react";
 import ArcanoClonerAuthModal from "@/components/arcano-cloner/ArcanoClonerAuthModal";
 import "@/styles/upscaler-v3.css";
