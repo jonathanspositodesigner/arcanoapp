@@ -211,9 +211,10 @@ export function getProductBySlug(slug: string): CheckoutProductConfig | undefine
  * Formata preço em centavos para exibição em BRL.
  * Ex: 2490 → "R$ 24,90"
  */
-export function formatPrice(priceInCents: number): string {
-  return new Intl.NumberFormat('pt-BR', {
+export function formatPrice(priceInCents: number, currency: string = 'BRL'): string {
+  const locale = currency.toUpperCase() === 'BRL' ? 'pt-BR' : 'en-US';
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: 'BRL',
+    currency: currency.toUpperCase(),
   }).format(priceInCents / 100);
 }
