@@ -685,7 +685,7 @@ const UpscalerArcanoV3 = () => {
 
             <div className="v3-real-grid">
               {realResults.map((item, i) => (
-                <RealResultCard key={i} item={item} />
+                <V3RealResultCard key={i} item={item} />
               ))}
             </div>
           </div>
