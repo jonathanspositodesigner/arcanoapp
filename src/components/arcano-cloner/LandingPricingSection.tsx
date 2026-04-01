@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { AnimatedSection, StaggeredAnimation } from "@/hooks/useScrollAnimation";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { supabase } from "@/integrations/supabase/client";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 
 const socialProofImages = [
   "/images/social-proof-1.webp",
