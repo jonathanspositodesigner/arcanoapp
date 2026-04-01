@@ -1,5 +1,5 @@
 import { ShieldCheck, Award, Lock } from "lucide-react";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 
 const PRODUCT_SLUG = "combo-1ao3-vitalicio";
 
