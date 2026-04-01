@@ -328,10 +328,10 @@ const UpscalerArcanoV3 = () => {
                 onTouchStart={(e) => { draggingRef.current = true; stopAuto(); updateSlider(e.touches[0].clientX); }}
               >
                 <div className="v3-ba-layer">
-                  <img src={heroSlides[currentSlide].before} alt="Antes - baja calidad" />
+                  <img src={heroSlides[currentSlide].before} alt="Antes - baja calidad" width={900} height={675} fetchPriority="high" decoding="sync" />
                 </div>
                 <div className="v3-ba-layer" ref={afterLayerRef} style={{ clipPath: "inset(0 50% 0 0)" }}>
-                  <img src={heroSlides[currentSlide].after} alt="Después - calidad 4K" />
+                  <img src={heroSlides[currentSlide].after} alt="Después - calidad 4K" width={900} height={675} fetchPriority="high" decoding="sync" />
                 </div>
                 <div className="v3-drag-handle" ref={handleRef} style={{ left: "50%" }}>
                   <div className="v3-drag-circle">⟺</div>
