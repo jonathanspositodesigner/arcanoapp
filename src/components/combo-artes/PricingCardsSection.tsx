@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Check, Star, Gift, Clock, CreditCard } from "lucide-react";
-import { useMPCheckout } from "@/hooks/useMPCheckout";
+import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 
 interface PricingFeature {
   text: string;
