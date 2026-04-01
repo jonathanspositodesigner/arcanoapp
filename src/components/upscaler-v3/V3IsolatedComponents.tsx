@@ -171,7 +171,7 @@ export const V3GalleryBeforeAfter = memo(({ item }: { item: GalleryItemData }) =
     const rect = containerRef.current.getBoundingClientRect();
     const pct = Math.min(Math.max(((clientX - rect.left) / rect.width) * 100, 5), 95);
     if (afterRef.current) afterRef.current.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
-    if (lineRef.current) lineRef.current.style.left = `${pct}%`;
+    if (lineRef.current) lineRef.current.style.transform = `translateX(calc(${pct}% - 50%))`;
   }, []);
 
   // Only add global listeners during drag
