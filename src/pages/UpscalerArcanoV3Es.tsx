@@ -652,8 +652,10 @@ const UpscalerArcanoV3 = () => {
             ))}
           </div>
         </section>
+        </V3LazySection>
 
         {/* FINAL CTA */}
+        <V3LazySection minHeight={300}>
         <section className="v3-final-cta">
           <h2>Tu próxima imagen<br />merece ser <em>perfecta.</em></h2>
           <p>+3.200 profesionales ya lo saben. Ahora es tu turno.</p>
