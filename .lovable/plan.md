@@ -1,70 +1,110 @@
 
 
-# Auditoria Completa: Produtos Mercado Pago vs Pagar.me
+# Plano: Corrigir todas as seções quebradas nas páginas V3
 
-## Resultado: TUDO PRONTO no banco de dados
+## Causa raiz
 
-Todos os **78 produtos** na tabela `mp_products` estão ativos, com `pack_slug`, `access_type`, `credits_amount`, `plan_slug` e `billing_period` corretamente preenchidos. A edge function `create-pagarme-checkout-v2` busca produtos dinamicamente dessa tabela, e o `webhook-pagarme` processa todos os 4 tipos: `pack`, `credits`, `subscription`, `landing_bundle`.
+O problema é uma **incompatibilidade entre o `V3LazySection` e o IntersectionObserver de scroll reveal**.
 
-Nenhum produto está faltando no banco de dados.
+Todos os elementos com classe `.v3-reveal` começam com `opacity: 0` no CSS (invisíveis). Eles só aparecem quando recebem a classe `.v3-visible`, que é adicionada por um IntersectionObserver configurado no `useEffect([], [])` — ou seja, **roda uma única vez no mount da página**.
 
----
+O problema: elementos dentro de `V3LazySection` **não existem no DOM** quando esse observer roda, porque o `V3LazySection` só renderiza o conteúdo quando o usuário scrolla perto. Resultado: os elementos lazy nunca são observados → nunca recebem `.v3-visible` → ficam invisíveis para sempre.
 
-## O que FALTA: 13 páginas/componentes ainda usam `useMPCheckout`
+Mesmo problema acontece com o **counter animation** (`data-target`) — os números dentro de seções lazy nunca são observados e ficam parados em "0".
 
-Apenas a `/planos-2` foi migrada. Todas as demais ainda chamam o Mercado Pago:
+### Seções afetadas (ambas páginas)
 
-| Página/Componente | Slugs usados | Tipo |
-|---|---|---|
-| `UpscalerArcanoV3.tsx` | upscaler-arcano-starter/pro/ultimate, upscaler-arcano-v3 | credits + pack |
-| `UpscalerArcanoV3Es.tsx` | upscaler-arcano-v3 | pack |
-| `UpscalerArcanoV3Teste.tsx` | upscaler-arcano-starter/pro/ultimate, upscaler-arcano-v3 | credits + pack |
-| `PlanosUpscalerArcano.tsx` | upscaler-arcano-starter/pro/ultimate, upscaller-arcano-vitalicio | credits + pack |
-| `PlanosUpscalerArcano69v2.tsx` | mesmos 4 slugs | credits + pack |
-| `PlanosArtes.tsx` | ~72 slugs de packs (vol1-4, carnaval, halloween, saojoao, fimdeano, agendas × 3 períodos × normal/renov/membro) | pack |
-| `PricingCardsSection.tsx` (combo) | combo-1e2-1ano, combo-1ao3-vitalicio, combo-vol1-1ano | pack |
-| `GuaranteeSectionCombo.tsx` | combo-1ao3-vitalicio | pack |
-| `PricingCardsSectionPack4.tsx` | pack4-6meses/1ano/vitalicio | pack |
-| `GuaranteeSectionPack4.tsx` | pack4-vitalicio | pack |
-| `MotionsGallerySectionPack4.tsx` | pack4-vitalicio | pack |
-| `LandingPricingSection.tsx` (arcano-cloner) | landing-starter/pro/ultimate-avulso | landing_bundle |
-| `UpgradeUpscalerV3.tsx` | usa useMPCheckout | - |
+| Seção | Problema |
+|---|---|
+| Como funciona (steps) | `.v3-step.v3-reveal` → opacity: 0 permanente |
+| Galeria antes/depois | `.v3-gallery-item.v3-reveal` → opacity: 0 permanente |
+| Dois novos recursos (Turbo/Batch) | `.v3-feature-card.v3-reveal` → opacity: 0 permanente |
+| Resultados reais (números) | `data-target` → contagem não inicia |
+| Resultados reais (cards) | `.v3-real-card.v3-reveal` → opacity: 0 permanente |
 
 ---
 
-## Plano de Migração (substituição mecânica em 13 arquivos)
+## Correção
 
-Para cada arquivo acima, a mudança é idêntica e puramente mecânica:
+Trocar o observer de "roda uma vez no mount" para um **MutationObserver** que detecta automaticamente novos elementos `.v3-reveal` e `[data-target]` conforme aparecem no DOM.
 
-1. Trocar `import { useMPCheckout }` → `import { usePagarmeCheckout }`
-2. Trocar `useMPCheckout(...)` → `usePagarmeCheckout(...)`
-3. Trocar `MPCheckoutModal` → `PagarmeCheckoutModal` (no destructuring e no JSX)
-4. Trocar `isMPLoading` → `isLoading` (onde aplicável)
+### Arquivo: `src/pages/UpscalerArcanoV3.tsx` e `src/pages/UpscalerArcanoV3Es.tsx`
 
-Nenhuma mudança de slug, nenhuma mudança visual, nenhuma mudança de preço, nenhuma mudança no banco de dados.
+Substituir os dois `useEffect` (scroll reveal + counter animation) por uma versão que usa `MutationObserver` para re-observar elementos novos:
+
+```typescript
+// Scroll reveal observer — watches for dynamically added .v3-reveal elements
+useEffect(() => {
+  const io = new IntersectionObserver(
+    (entries) => { entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("v3-visible"); }); },
+    { threshold: 0.15 }
+  );
+  
+  const observeAll = () => {
+    document.querySelectorAll(".v3-reveal:not(.v3-visible)").forEach((el) => io.observe(el));
+  };
+  
+  observeAll(); // observe existing elements
+  
+  // Watch for new elements added by V3LazySection
+  const mo = new MutationObserver(() => observeAll());
+  mo.observe(document.body, { childList: true, subtree: true });
+  
+  return () => { io.disconnect(); mo.disconnect(); };
+}, []);
+
+// Counter animation — same pattern
+useEffect(() => {
+  const observed = new WeakSet();
+  const counterObs = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting && !observed.has(e.target)) {
+          observed.add(e.target);
+          const el = e.target as HTMLElement;
+          const target = parseInt(el.dataset.target || "0");
+          const suffix = target === 100 ? "%" : "+";
+          let current = 0;
+          const step = target / 60;
+          const timer = setInterval(() => {
+            current = Math.min(current + step, target);
+            el.textContent = Math.floor(current).toLocaleString("pt-BR") + suffix;
+            if (current >= target) clearInterval(timer);
+          }, 25);
+          counterObs.unobserve(el);
+        }
+      });
+    },
+    { threshold: 0.5 }
+  );
+  
+  const observeCounters = () => {
+    document.querySelectorAll("[data-target]").forEach((el) => {
+      if (!observed.has(el)) counterObs.observe(el);
+    });
+  };
+  
+  observeCounters();
+  
+  const mo = new MutationObserver(() => observeCounters());
+  mo.observe(document.body, { childList: true, subtree: true });
+  
+  return () => { counterObs.disconnect(); mo.disconnect(); };
+}, []);
+```
+
+Mesma mudança nos dois `useEffect` de staggered delays — precisam re-aplicar quando novos elementos aparecem.
 
 ### Arquivos editados
 
 | Arquivo | Mudança |
 |---|---|
-| `src/pages/UpscalerArcanoV3.tsx` | Hook MP → Pagar.me |
-| `src/pages/UpscalerArcanoV3Es.tsx` | Hook MP → Pagar.me |
-| `src/pages/UpscalerArcanoV3Teste.tsx` | Hook MP → Pagar.me |
-| `src/pages/PlanosUpscalerArcano.tsx` | Hook MP → Pagar.me |
-| `src/pages/PlanosUpscalerArcano69v2.tsx` | Hook MP → Pagar.me |
-| `src/pages/PlanosArtes.tsx` | Hook MP → Pagar.me |
-| `src/pages/UpgradeUpscalerV3.tsx` | Hook MP → Pagar.me |
-| `src/components/combo-artes/PricingCardsSection.tsx` | Hook MP → Pagar.me |
-| `src/components/combo-artes/GuaranteeSectionCombo.tsx` | Hook MP → Pagar.me |
-| `src/components/prevenda-pack4/PricingCardsSectionPack4.tsx` | Hook MP → Pagar.me |
-| `src/components/prevenda-pack4/GuaranteeSectionPack4.tsx` | Hook MP → Pagar.me |
-| `src/components/prevenda-pack4/MotionsGallerySectionPack4.tsx` | Hook MP → Pagar.me |
-| `src/components/arcano-cloner/LandingPricingSection.tsx` | Hook MP → Pagar.me |
+| `src/pages/UpscalerArcanoV3.tsx` | Trocar scroll reveal, counter e stagger observers por versão com MutationObserver |
+| `src/pages/UpscalerArcanoV3Es.tsx` | Mesma troca (código espelho) |
 
 ### O que NÃO muda
-- Nenhum produto no banco de dados
-- Nenhuma edge function
-- Nenhum webhook
-- Nenhuma mudança visual
-- O `PreCheckoutModal.tsx` (usado no app interno) já chama Pagar.me diretamente
+- Nenhum CSS
+- Nenhum componente (`V3IsolatedComponents.tsx`)
+- Nenhuma mudança visual/design
+- Nenhuma mudança de checkout ou backend
 
