@@ -3,7 +3,7 @@ import { useMPCheckout } from "@/hooks/useMPCheckout";
 import { ShieldCheck, Rocket, Flame, Crown, Infinity, Gift } from "lucide-react";
 import ArcanoClonerAuthModal from "@/components/arcano-cloner/ArcanoClonerAuthModal";
 import "@/styles/upscaler-v3.css";
-import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar } from "@/components/upscaler-v3/V3IsolatedComponents";
+import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar, V3GalleryBeforeAfter, V3RealResultCard, V3LazySection } from "@/components/upscaler-v3/V3IsolatedComponents";
 
 // Image imports for before/after and gallery
 import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
