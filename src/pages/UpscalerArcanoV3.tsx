@@ -264,24 +264,7 @@ const UpscalerArcanoV3 = () => {
   return (
     <>
       <div className="v3-page">
-        {/* TOPBAR */}
-        <nav className="v3-topbar">
-          <div className="v3-topbar-logo">⬆ Upscaler Arcano</div>
-          <div className="v3-topbar-badge">✦ V3 NOVO</div>
-          <button className="v3-topbar-cta" onClick={scrollToPrice}>Ver Planos</button>
-        </nav>
-
         {/* SOCIAL POPUP - isolated component */}
-        <V3SocialPopup people={SOCIAL_PEOPLE} times={SOCIAL_TIMES} purchaseText="acabou de comprar" />
-
-        {/* STICKY CTA - isolated component */}
-        <V3StickyBar
-          scrollToPrice={scrollToPrice}
-          label="Upscaler Arcano V3"
-          desktopSuffix="R$ 24,90 pra começar"
-          mobileButtonText="Ver Planos →"
-          desktopButtonText="Garantir Acesso →"
-        />
 
         {/* HERO */}
         <section className="v3-hero">
