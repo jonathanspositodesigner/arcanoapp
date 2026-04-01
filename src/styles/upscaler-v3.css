@@ -503,7 +503,7 @@
   position: relative; display: flex; flex-direction: column;
   background: var(--bg); border: 1px solid var(--card-border); border-radius: 24px;
   padding: 28px; padding-top: 36px; opacity: 0; transform: translateY(24px);
-  transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.3s;
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 .v3-plan.v3-visible { opacity: 1; transform: translateY(0); }
 .v3-plan:hover { border-color: rgba(0,212,255,0.15); }
