@@ -54,7 +54,7 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true, // Allow new SW to take control immediately
         skipWaiting: false, // Manual control via SKIP_WAITING message
         cleanupOutdatedCaches: true,
-        cacheId: "arcanoapp-v5.3.0",
+        cacheId: "arcanoapp-v5.4.0",
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api/, /^\/supabase/],
         runtimeCaching: [
