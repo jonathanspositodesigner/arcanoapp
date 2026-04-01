@@ -156,7 +156,7 @@
   padding: 18px 48px; border-radius: 100px; text-decoration: none;
   display: inline-flex; align-items: center; gap: 10px;
   box-shadow: 0 0 40px rgba(0,212,255,0.3); cursor: pointer; border: none;
-  transition: all 0.25s;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 .v3-btn-primary:hover { transform: scale(1.04); box-shadow: 0 0 60px rgba(0,212,255,0.5); }
 
