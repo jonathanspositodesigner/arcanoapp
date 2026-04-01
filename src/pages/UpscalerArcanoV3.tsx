@@ -206,8 +206,9 @@ const UpscalerArcanoV3 = () => {
     document.querySelectorAll(".v3-plan").forEach((el, i) => { (el as HTMLElement).style.transitionDelay = i * 0.1 + "s"; });
   }, []);
 
-  // Auto-slide using direct DOM - NO setState
+  // Auto-slide using direct DOM - NO setState - DISABLED on mobile
   useEffect(() => {
+    if (window.innerWidth <= 600) return; // Skip autoSlide on mobile for performance
     autoRef.current = true;
     let raf: number;
     const autoSlide = () => {
