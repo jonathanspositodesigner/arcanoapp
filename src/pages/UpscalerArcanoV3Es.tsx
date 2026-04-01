@@ -599,7 +599,7 @@ const UpscalerArcanoV3 = () => {
                     <div style={{ fontSize: 12, color: "var(--muted2)", marginTop: 8, fontWeight: 500 }}>Pagás una vez · usás para siempre</div>
                   </div>
 
-                  <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => openCheckout("upscaler-arcano-v3")}>Obtener Vitalicio →</button>
+                  <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => executeCheckout("upscaler-arcano-v3-es")} disabled={isLoading}>{isLoading ? 'Procesando...' : 'Obtener Vitalicio →'}</button>
                   <div className="v3-plan-divider" />
                   <div style={{ flex: 1 }}>
                     <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Uso ilimitado · sin créditos</strong></div>

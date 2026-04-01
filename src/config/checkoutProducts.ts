@@ -158,6 +158,7 @@ export const checkoutProducts: CheckoutProductConfig[] = [
   { slug: 'saojoao-vitalicio', title: 'Pack São João - Vitalício', priceInCents: 4700, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'saojoao-vitalicio', stripePriceId: '', stripeMode: 'payment', isActive: true, type: 'pack' },
 
   // ─── UPSCALER ARCANO ───
+  { slug: 'upscaler-arcano-v3-es', title: 'Upscaler Arcano V3 - Acceso Vitalicio (LATAM)', priceInCents: 1990, currency: 'usd', provider: 'stripe', currentCheckoutSlug: '', stripePriceId: 'price_1THYRTL0tOYcQz0tT7ay9iQh', stripeMode: 'payment', isActive: true, type: 'landing_bundle' },
   { slug: 'upscaler-arcano-pro', title: 'Upscaler Arcano - Pro', priceInCents: 3700, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'upscaler-arcano-pro', stripePriceId: '', stripeMode: 'payment', isActive: true, type: 'credits' },
   { slug: 'upscaler-arcano-starter', title: 'Upscaler Arcano - Starter', priceInCents: 2490, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'upscaler-arcano-starter', stripePriceId: '', stripeMode: 'payment', isActive: true, type: 'credits' },
   { slug: 'upscaler-arcano-ultimate', title: 'Upscaler Arcano - Ultimate', priceInCents: 7990, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'upscaler-arcano-ultimate', stripePriceId: '', stripeMode: 'payment', isActive: true, type: 'credits' },
