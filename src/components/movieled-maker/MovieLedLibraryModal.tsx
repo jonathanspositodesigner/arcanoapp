@@ -46,7 +46,6 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
   const [allItems, setAllItems] = useState<MovieLedItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const { searchTerm, setSearchTerm, expandedTerms } = useSmartSearch();
 
