@@ -65,6 +65,8 @@ const GerarImagemTool = () => {
   const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
   const [showActiveJobModal, setShowActiveJobModal] = useState(false);
   const [activeJobToolName, setActiveJobToolName] = useState('');
+  const [activeJobId, setActiveJobId] = useState<string | undefined>();
+  const [activeStatus, setActiveStatus] = useState<string | undefined>();
   const [showReconcileButton, setShowReconcileButton] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
