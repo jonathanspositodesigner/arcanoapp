@@ -42,6 +42,14 @@ export function getAIErrorMessage(errorMessage: string | null): {
     };
   }
 
+  // SSL/NanoBanana errors (RunningHub can't reach Google API)
+  if (error.includes('sslerror') || error.includes('unexpected_eof_while_reading') || error.includes('nanobanana') || error.includes('nano_banana')) {
+    return {
+      message: 'Google NanoBanana temporariamente indisponível',
+      solution: 'O servidor de IA está com instabilidade temporária. Seus créditos foram estornados. Tente novamente em alguns minutos.'
+    };
+  }
+
   // RunningHub infrastructure errors (server filesystem issues)
   if (error.includes('stale file handle') || error.includes('errno 116') || error.includes('errno 5') || 
       error.includes('oserror') || error.includes('filenotfounderror') || error.includes('input/output error')) {
