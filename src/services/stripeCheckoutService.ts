@@ -2,45 +2,24 @@
  * Serviço de integração com Stripe Checkout (client-side).
  *
  * Responsável por:
- * - Carregar o Stripe.js via chave pública (VITE_STRIPE_PUBLISHABLE_KEY)
- * - Criar uma Checkout Session via Edge Function e redirecionar
+ * - Criar uma Checkout Session via Edge Function
+ * - Redirecionar o navegador para a URL retornada pelo Stripe Checkout
  *
  * IMPORTANTE: Este serviço só é chamado quando o provider do produto
  * está configurado como 'stripe' no arquivo checkoutProducts.ts.
  *
  * O fluxo é:
  * 1. Client chama a Edge Function 'create-stripe-checkout' com o slug do produto
- * 2. A Edge Function cria uma Checkout Session no Stripe e retorna o sessionId
- * 3. Client usa stripe.redirectToCheckout({ sessionId }) para redirecionar
+ * 2. A Edge Function cria uma Checkout Session no Stripe e retorna a URL da sessão
+ * 3. Client redireciona o navegador diretamente para essa URL
  *
  * NOTA: A Edge Function 'create-stripe-checkout' será criada quando o primeiro
  * produto for migrado para Stripe. Enquanto nenhum produto usar Stripe,
  * este serviço nunca será chamado.
  */
 
-import { loadStripe } from '@stripe/stripe-js';
 import type { CheckoutProductConfig } from '@/config/checkoutProducts';
 import { supabase } from '@/integrations/supabase/client';
-
-let stripePromise: ReturnType<typeof loadStripe> | null = null;
-
-/**
- * Carrega o Stripe.js uma única vez (singleton).
- * Lança erro se a chave pública não estiver configurada.
- */
-function getStripe() {
-  if (!stripePromise) {
-    const key = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-    if (!key) {
-      throw new Error(
-        'VITE_STRIPE_PUBLISHABLE_KEY não está configurada. ' +
-        'Adicione a chave pública do Stripe ao arquivo .env antes de ativar qualquer produto.'
-      );
-    }
-    stripePromise = loadStripe(key);
-  }
-  return stripePromise;
-}
 
 /**
  * Redireciona o usuário para o Stripe Checkout.
@@ -59,12 +38,6 @@ export async function redirectToStripeCheckout(product: CheckoutProductConfig): 
       `Stripe Price ID não configurado para o produto "${product.slug}". ` +
       'Preencha o campo stripePriceId no arquivo checkoutProducts.ts.'
     );
-  }
-
-  // Garante que o Stripe.js está carregado (valida a chave pública)
-  const stripe = await getStripe();
-  if (!stripe) {
-    throw new Error('Falha ao carregar o Stripe. Verifique sua conexão e tente novamente.');
   }
 
   const origin = window.location.origin;
