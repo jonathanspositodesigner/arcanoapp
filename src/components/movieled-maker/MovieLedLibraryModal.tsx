@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Loader2, Upload, Search, Lock, Crown, AlertCircle, Video } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Loader2, Upload, Search, AlertCircle, Video } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
