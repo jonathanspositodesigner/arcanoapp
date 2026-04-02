@@ -246,15 +246,6 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
                         className="absolute inset-0 w-full h-full object-cover"
                       />
 
-                      {item.is_premium && (
-                        <div className="absolute top-1.5 right-1.5 z-10 flex items-center gap-0.5">
-                          {!isPremiumUser && <Lock className="w-3 h-3 text-purple-300" />}
-                          <Badge className="bg-purple-600/80 text-white text-[8px] px-1.5 py-0 border-0 gap-0.5">
-                            <Crown className="w-2.5 h-2.5" />
-                            Premium
-                          </Badge>
-                        </div>
-                      )}
 
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
