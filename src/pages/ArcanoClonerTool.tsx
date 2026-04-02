@@ -1196,7 +1196,7 @@ const ArcanoClonerTool: React.FC = () => {
         onClose={() => setShowPhotoLibrary(false)}
         onSelectPhoto={handleSelectFromLibrary}
         onUploadPhoto={handleUploadFromModal}
-        isPremiumUser={isPremium}
+        
       />
 
       {/* No Credits Modal */}

@@ -333,40 +333,6 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
       </DialogContent>
     </Dialog>
 
-    {/* Premium Upsell Modal */}
-    <Dialog open={showPremiumModal} onOpenChange={setShowPremiumModal}>
-      <DialogContent className="max-w-sm bg-[#1A0A2E] border border-purple-500/40 text-white p-6 rounded-xl">
-        <div className="flex flex-col items-center text-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-purple-600/20 flex items-center justify-center">
-            <Crown className="w-7 h-7 text-purple-400" />
-          </div>
-          <h3 className="text-lg font-bold text-white">Foto Exclusiva Premium</h3>
-          <p className="text-sm text-purple-300/80">
-            Esta foto de referência é exclusiva para assinantes Premium. Assine agora para desbloquear todas as fotos e recursos avançados!
-          </p>
-          <div className="flex gap-2 w-full mt-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowPremiumModal(false)}
-              className="flex-1 bg-transparent border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
-            >
-              Voltar
-            </Button>
-            <Button
-              onClick={() => {
-                setShowPremiumModal(false);
-                onClose();
-                navigate('/planos-2');
-              }}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white border-0"
-            >
-              <Crown className="w-4 h-4 mr-1.5" />
-              Torne-se Premium
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
   </>
   );
 };
