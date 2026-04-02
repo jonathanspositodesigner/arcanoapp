@@ -242,6 +242,8 @@ const GerarImagemTool = () => {
       const activeCheck = await checkActiveJob(user.id);
       if (activeCheck.hasActiveJob) {
         setActiveJobToolName(activeCheck.activeTool || 'outra ferramenta');
+        setActiveJobId(activeCheck.activeJobId);
+        setActiveStatus(activeCheck.activeStatus);
         setShowActiveJobModal(true);
         endSubmit();
         return;
