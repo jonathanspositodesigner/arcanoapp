@@ -43,9 +43,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   onClose,
   onSelectPhoto,
   onUploadPhoto,
-  isPremiumUser = false,
 }) => {
-  const navigate = useNavigate();
   const [filter, setFilter] = useState<GenderFilter>('masculino');
   const [allPhotos, setAllPhotos] = useState<PhotoItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
