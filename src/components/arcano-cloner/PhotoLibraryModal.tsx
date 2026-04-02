@@ -24,7 +24,6 @@ interface PhotoItem {
   image_url: string;
   thumbnail_url?: string | null;
   gender?: string | null;
-  is_premium?: boolean;
 }
 
 const ITEMS_PER_PAGE = 20;
