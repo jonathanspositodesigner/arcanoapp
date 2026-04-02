@@ -63,7 +63,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
       while (true) {
         let query = supabase
           .from('admin_prompts')
-          .select('id, title, image_url, thumbnail_url, gender, tags, is_premium')
+          .select('id, title, image_url, thumbnail_url, gender, tags')
           .eq('category', 'Fotos')
           .eq('gender', filter)
           .order('created_at', { ascending: false })
