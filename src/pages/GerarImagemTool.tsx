@@ -65,6 +65,8 @@ const GerarImagemTool = () => {
   const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
   const [showActiveJobModal, setShowActiveJobModal] = useState(false);
   const [activeJobToolName, setActiveJobToolName] = useState('');
+  const [activeJobId, setActiveJobId] = useState<string | undefined>();
+  const [activeStatus, setActiveStatus] = useState<string | undefined>();
   const [showReconcileButton, setShowReconcileButton] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -240,6 +242,8 @@ const GerarImagemTool = () => {
       const activeCheck = await checkActiveJob(user.id);
       if (activeCheck.hasActiveJob) {
         setActiveJobToolName(activeCheck.activeTool || 'outra ferramenta');
+        setActiveJobId(activeCheck.activeJobId);
+        setActiveStatus(activeCheck.activeStatus);
         setShowActiveJobModal(true);
         endSubmit();
         return;
@@ -626,7 +630,7 @@ const GerarImagemTool = () => {
         </div>
 
         <NoCreditsModal isOpen={showNoCreditsModal} onClose={() => setShowNoCreditsModal(false)} reason={noCreditsReason} />
-        <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeJobToolName} />
+        <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeJobToolName} activeJobId={activeJobId} activeStatus={activeStatus} onCancelJob={centralCancelJob} />
         <NotificationPromptToast toolName="gerar imagem" />
       </div>
     </AppLayout>
