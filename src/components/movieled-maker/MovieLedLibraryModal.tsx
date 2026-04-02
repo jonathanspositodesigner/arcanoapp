@@ -22,7 +22,6 @@ export interface MovieLedItem {
   thumbnail_url?: string | null;
   reference_images?: string[] | null;
   prompt?: string;
-  is_premium?: boolean;
 }
 
 const ITEMS_PER_PAGE = 20;
