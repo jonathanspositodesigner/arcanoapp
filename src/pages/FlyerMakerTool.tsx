@@ -828,7 +828,7 @@ const FlyerMakerTool: React.FC = () => {
 
         <FlyerLibraryModal isOpen={showPhotoLibrary} onClose={() => setShowPhotoLibrary(false)} onSelectPhoto={(url) => { handleReferenceImageChange(url); setShowPhotoLibrary(false); }} onUploadPhoto={(dataUrl, file) => { handleReferenceImageChange(dataUrl, file); setShowPhotoLibrary(false); }} />
         <NoCreditsModal isOpen={showNoCreditsModal} onClose={() => setShowNoCreditsModal(false)} reason={noCreditsReason} />
-        <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeToolName} activeStatus={activeStatus} />
+        <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeToolName} activeJobId={activeJobId} activeStatus={activeStatus} onCancelJob={centralCancelJob} />
         
       </div>
     </AppLayout>
