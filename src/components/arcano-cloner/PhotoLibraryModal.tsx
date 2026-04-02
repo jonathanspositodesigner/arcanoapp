@@ -118,10 +118,6 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   };
 
   const handleSelectPhoto = (photo: PhotoItem) => {
-    if (photo.is_premium && !isPremiumUser) {
-      setShowPremiumModal(true);
-      return;
-    }
     onSelectPhoto(photo.image_url);
     onClose();
   };
