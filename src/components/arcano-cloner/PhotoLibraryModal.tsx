@@ -48,7 +48,6 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   const [allPhotos, setAllPhotos] = useState<PhotoItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const { searchTerm, setSearchTerm, debouncedSearch, expandedTerms } = useSmartSearch();
   
