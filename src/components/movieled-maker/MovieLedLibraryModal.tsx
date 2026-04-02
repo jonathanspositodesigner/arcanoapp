@@ -13,8 +13,6 @@ interface MovieLedLibraryModalProps {
   onClose: () => void;
   onSelectItem: (item: MovieLedItem) => void;
   onUploadPhoto?: (dataUrl: string, file: File) => void;
-  isPremiumUser?: boolean;
-  freeOnly?: boolean;
 }
 
 export interface MovieLedItem {
