@@ -42,7 +42,6 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
   onSelectItem,
   onUploadPhoto,
 }) => {
-  const navigate = useNavigate();
   const [allItems, setAllItems] = useState<MovieLedItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
