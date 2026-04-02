@@ -14,7 +14,6 @@ interface PhotoLibraryModalProps {
   onClose: () => void;
   onSelectPhoto: (imageUrl: string) => void;
   onUploadPhoto?: (dataUrl: string, file: File) => void;
-  isPremiumUser?: boolean;
 }
 
 type GenderFilter = 'masculino' | 'feminino';
