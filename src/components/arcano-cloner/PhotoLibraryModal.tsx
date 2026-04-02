@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { User, Loader2, ImageIcon, Upload, Search, Lock, Crown } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { User, Loader2, ImageIcon, Upload, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -16,7 +14,6 @@ interface PhotoLibraryModalProps {
   onClose: () => void;
   onSelectPhoto: (imageUrl: string) => void;
   onUploadPhoto?: (dataUrl: string, file: File) => void;
-  isPremiumUser?: boolean;
 }
 
 type GenderFilter = 'masculino' | 'feminino';
@@ -27,7 +24,6 @@ interface PhotoItem {
   image_url: string;
   thumbnail_url?: string | null;
   gender?: string | null;
-  is_premium?: boolean;
 }
 
 const ITEMS_PER_PAGE = 20;
@@ -47,14 +43,11 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   onClose,
   onSelectPhoto,
   onUploadPhoto,
-  isPremiumUser = false,
 }) => {
-  const navigate = useNavigate();
   const [filter, setFilter] = useState<GenderFilter>('masculino');
   const [allPhotos, setAllPhotos] = useState<PhotoItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const { searchTerm, setSearchTerm, debouncedSearch, expandedTerms } = useSmartSearch();
   
@@ -70,7 +63,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
       while (true) {
         let query = supabase
           .from('admin_prompts')
-          .select('id, title, image_url, thumbnail_url, gender, tags, is_premium')
+          .select('id, title, image_url, thumbnail_url, gender, tags')
           .eq('category', 'Fotos')
           .eq('gender', filter)
           .order('created_at', { ascending: false })
@@ -125,10 +118,6 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   };
 
   const handleSelectPhoto = (photo: PhotoItem) => {
-    if (photo.is_premium && !isPremiumUser) {
-      setShowPremiumModal(true);
-      return;
-    }
     onSelectPhoto(photo.image_url);
     onClose();
   };
@@ -292,17 +281,6 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
                       loading="lazy"
                     />
 
-                    {/* Premium badge (top-right) for both premium and non-premium users */}
-                    {photo.is_premium && (
-                      <div className="absolute top-1.5 right-1.5 z-10 flex items-center gap-0.5">
-                        {!isPremiumUser && <Lock className="w-3 h-3 text-purple-300" />}
-                        <Badge className="bg-purple-600/80 text-white text-[8px] px-1.5 py-0 border-0 gap-0.5">
-                          <Crown className="w-2.5 h-2.5" />
-                          Premium
-                        </Badge>
-                      </div>
-                    )}
-                    
                     {/* Gradient overlay for readability */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
@@ -355,40 +333,6 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
       </DialogContent>
     </Dialog>
 
-    {/* Premium Upsell Modal */}
-    <Dialog open={showPremiumModal} onOpenChange={setShowPremiumModal}>
-      <DialogContent className="max-w-sm bg-[#1A0A2E] border border-purple-500/40 text-white p-6 rounded-xl">
-        <div className="flex flex-col items-center text-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-purple-600/20 flex items-center justify-center">
-            <Crown className="w-7 h-7 text-purple-400" />
-          </div>
-          <h3 className="text-lg font-bold text-white">Foto Exclusiva Premium</h3>
-          <p className="text-sm text-purple-300/80">
-            Esta foto de referência é exclusiva para assinantes Premium. Assine agora para desbloquear todas as fotos e recursos avançados!
-          </p>
-          <div className="flex gap-2 w-full mt-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowPremiumModal(false)}
-              className="flex-1 bg-transparent border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
-            >
-              Voltar
-            </Button>
-            <Button
-              onClick={() => {
-                setShowPremiumModal(false);
-                onClose();
-                navigate('/planos-2');
-              }}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white border-0"
-            >
-              <Crown className="w-4 h-4 mr-1.5" />
-              Torne-se Premium
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
   </>
   );
 };
