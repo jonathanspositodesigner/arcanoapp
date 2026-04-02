@@ -112,10 +112,6 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
   };
 
   const handleSelectItem = (item: MovieLedItem) => {
-    if (item.is_premium && !isPremiumUser) {
-      setShowPremiumModal(true);
-      return;
-    }
     onSelectItem(item);
     onClose();
   };
