@@ -21,7 +21,7 @@ import ExpiringSubscriptionModal from "@/components/ExpiringSubscriptionModal";
 import MovieLedAnnouncementModal from "@/components/MovieLedAnnouncementModal";
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 import AppLayout from "@/components/layout/AppLayout";
-
+import { supabase } from "@/integrations/supabase/client";
 import { useSmartSearch } from "@/hooks/useSmartSearch";
 import { removeAccents } from "@/lib/synonyms";
 
@@ -44,6 +44,11 @@ const categoryToSlug = (category: string): string => {
 const slugToCategory = (slug: string, categories: string[]): string | null => {
   return categories.find(cat => categoryToSlug(cat) === slug) || null;
 };
+
+interface PromptCategory {
+  name: string;
+  is_admin_only: boolean;
+}
 
 const BibliotecaPrompts = () => {
   const navigate = useNavigate();
@@ -72,7 +77,7 @@ const BibliotecaPrompts = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
-  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
+  const [dbCategories, setDbCategories] = useState<PromptCategory[]>([]);
   const [premiumModalItem, setPremiumModalItem] = useState<PromptItem | null>(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [showTutorialModal, setShowTutorialModal] = useState(false);
@@ -85,6 +90,51 @@ const BibliotecaPrompts = () => {
 
   const { allPrompts, getFilteredPrompts } = useOptimizedPrompts();
   const { searchTerm, setSearchTerm, expandedTerms, isSearching } = useSmartSearch();
+
+  useEffect(() => {
+    const fetchPromptCategories = async () => {
+      const { data, error } = await supabase
+        .from('prompts_categories')
+        .select('name, is_admin_only')
+        .order('display_order', { ascending: true });
+
+      if (error) {
+        console.error('Error loading prompt categories:', error);
+        return;
+      }
+
+      setDbCategories((data ?? []).map((category) => ({
+        name: category.name,
+        is_admin_only: category.is_admin_only ?? false,
+      })));
+    };
+
+    fetchPromptCategories();
+  }, []);
+
+  const categories = useMemo(() => {
+    const baseCategories = contentType === "exclusive"
+      ? ["Populares", "Ver Tudo", "Novos", "Grátis"]
+      : ["Populares", "Ver Tudo", "Novos"];
+
+    const availablePromptCategories = new Set(
+      allPrompts
+        .filter(prompt => contentType === "exclusive" ? prompt.isExclusive : prompt.isCommunity)
+        .map(prompt => prompt.category)
+        .filter((category): category is string => Boolean(category))
+    );
+
+    const orderedDynamicCategories = dbCategories
+      .filter(category => contentType === "exclusive" || !category.is_admin_only)
+      .map(category => category.name)
+      .filter(categoryName => availablePromptCategories.has(categoryName));
+
+    const fallbackDynamicCategories = Array.from(availablePromptCategories).filter(
+      categoryName => !orderedDynamicCategories.includes(categoryName)
+    );
+
+    return [...baseCategories, ...orderedDynamicCategories, ...fallbackDynamicCategories];
+  }, [allPrompts, contentType, dbCategories]);
 
   useEffect(() => {
     const itemId = searchParams.get("item");
@@ -127,10 +177,6 @@ const BibliotecaPrompts = () => {
     setCurrentPage(1);
   }, [selectedCategory, contentType, expandedTerms]);
 
-  const categories = contentType === "exclusive" 
-    ? ["Populares", "Ver Tudo", "Novos", "Grátis", "Selos 3D", "Fotos", "Cenários", "Logo", "Movies para Telão", "Controles de Câmera"] 
-    : ["Populares", "Ver Tudo", "Novos", "Selos 3D", "Fotos", "Cenários", "Logo"];
-
   const getCategoryDisplayName = (category: string): string => {
     const categoryMap: Record<string, string> = {
       "Populares": t('categories.popular'),
@@ -141,6 +187,7 @@ const BibliotecaPrompts = () => {
       "Fotos": t('categories.photos'),
       "Cenários": t('categories.scenarios'),
       "Logo": t('categories.logo'),
+      "Logos": t('categories.logo'),
       "Movies para Telão": t('categories.moviesForScreen'),
       "Controles de Câmera": t('categories.cameraControls'),
     };
@@ -155,8 +202,7 @@ const BibliotecaPrompts = () => {
         setSelectedCategory(categoryFound);
       }
     }
-    setCategoriesLoaded(true);
-  }, [searchParams, contentType]);
+  }, [searchParams, categories, selectedCategory]);
 
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
