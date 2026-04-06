@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { useCheckout } from "@/hooks/useCheckout";
-import { ShieldCheck, Infinity } from "lucide-react";
+import { ShieldCheck, Infinity, Rocket, Flame, Crown } from "lucide-react";
 import "@/styles/upscaler-v3.css";
 import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar, V3PromoCountdown, V3GalleryBeforeAfter, V3RealResultCard, V3LazySection } from "@/components/upscaler-v3/V3IsolatedComponents";
 
@@ -576,79 +576,125 @@ const UpscalerArcanoV3 = () => {
               </div>
             </div>
 
-            {/* Desktop: two columns side by side */}
-            <div className="v3-pricing-guarantee-row">
-              {/* LEFT: Price card */}
-              <div className="v3-pricing-card-col">
-                <div className="v3-plan v3-plan-lifetime v3-reveal" style={{ textAlign: "center", height: "100%", display: "flex", flexDirection: "column" }}>
-                  <div className="v3-plan-popular v3-plan-popular-gold">♾ Vitalicio</div>
-                  
-                  {/* Price hero block */}
-                  <div style={{ 
-                    background: "linear-gradient(135deg, rgba(245,200,66,0.08), rgba(245,200,66,0.02))",
-                    border: "1px solid rgba(245,200,66,0.15)",
-                    borderRadius: 16, padding: "28px 20px 20px", margin: "8px 0 20px", textAlign: "center"
-                  }}>
-                    <div style={{ fontSize: 13, color: "var(--muted)", textDecoration: "line-through", fontWeight: 500, marginBottom: 8 }}>$49,90 USD</div>
-                    <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: 2 }}>
-                      <span style={{ fontSize: 22, fontWeight: 700, color: "#f5c842" }}>$</span>
-                      <span style={{ fontSize: 56, fontWeight: 800, color: "var(--white)", lineHeight: 1, letterSpacing: "-2px" }}>19</span>
-                      <span style={{ fontSize: 24, fontWeight: 700, color: "#f5c842" }}>,90</span>
-                      <span style={{ fontSize: 14, color: "var(--muted2)", fontWeight: 600, marginLeft: 6, alignSelf: "center" }}>USD</span>
-                    </div>
-                    <div style={{ fontSize: 12, color: "var(--muted2)", marginTop: 8, fontWeight: 500 }}>Pagás una vez · usás para siempre</div>
-                  </div>
-
-                  <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => executeCheckout("upscaler-arcano-v3-es")} disabled={isLoading}>{isLoading ? 'Procesando...' : 'Obtener Vitalicio →'}</button>
-                  <div className="v3-plan-divider" />
-                  <div style={{ flex: 1 }}>
-                    <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Uso ilimitado · sin créditos</strong></div>
-                    <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
-                    <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
-                    <div className="v3-plan-feature"><span className="check">✓</span> Todas las actualizaciones futuras</div>
-                    <div className="v3-plan-feature"><span className="check">✓</span> Soporte prioritario vía WhatsApp</div>
-                  </div>
+            <div className="v3-pricing-grid">
+              {/* STARTER */}
+              <div className="v3-plan v3-reveal">
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                  <Rocket size={32} style={{ color: "rgba(255,255,255,0.5)" }} />
                 </div>
+                <div className="v3-plan-name">Starter</div>
+                <div className="v3-plan-tagline">Para probar</div>
+                <div className="v3-plan-price">
+                  <span className="currency">$</span>
+                  <span className="amount">4</span>
+                  <span className="cents">,90</span>
+                  <span className="period">acceso vitalicio</span>
+                </div>
+                <button className="v3-plan-cta outline" onClick={() => executeCheckout("upscaler-arcano-starter-es")} disabled={isLoading}>Comenzar →</button>
+                <div className="v3-plan-divider" />
+                <div className="v3-plan-feature"><span className="check">✓</span> 25 imágenes</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> 1.500 créditos</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Soporte vía WhatsApp</div>
               </div>
 
-              {/* RIGHT: Guarantee card (desktop only) */}
-              <div className="v3-guarantee-card-col v3-pricing-guarantee-desktop">
-                <div style={{
-                  height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center",
-                  background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: 20, padding: "40px 32px", textAlign: "center",
-                }}>
-                  <div style={{
-                    width: 80, height: 80, borderRadius: "50%",
-                    background: "linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.05))",
-                    border: "1px solid rgba(34,197,94,0.3)",
-                    display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 28,
-                  }}>
-                    <ShieldCheck size={40} strokeWidth={1.8} style={{ color: "#22c55e" }} />
-                  </div>
-                  <div style={{ fontSize: 26, fontWeight: 700, color: "var(--white)", marginBottom: 16 }}>Garantía de 7 días</div>
-                  <div style={{ fontSize: 15, color: "var(--muted2)", lineHeight: 1.8, marginBottom: 24, maxWidth: 300 }}>
-                    Si no te gusta el resultado, te devolvemos el 100% de tu dinero. Sin preguntas, sin burocracia. Es confianza total en lo que entregamos.
-                  </div>
-                  <span style={{
-                    display: "inline-block", padding: "10px 24px", borderRadius: 10,
-                    background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)",
-                    color: "#22c55e", fontSize: 14, fontWeight: 700, letterSpacing: 0.5,
-                  }}>✓ RIESGO CERO</span>
+              {/* PRO */}
+              <div className="v3-plan v3-reveal">
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                  <Flame size={32} style={{ color: "#d946ef" }} />
                 </div>
+                <div className="v3-plan-name">Pro</div>
+                <div className="v3-plan-tagline">3x más por $2 más</div>
+                <div className="v3-plan-price">
+                  <span className="currency">$</span>
+                  <span className="amount">6</span>
+                  <span className="cents">,90</span>
+                  <span className="period">acceso vitalicio</span>
+                </div>
+                <button className="v3-plan-cta outline" onClick={() => executeCheckout("upscaler-arcano-pro-es")} disabled={isLoading}>Comenzar →</button>
+                <div className="v3-plan-divider" />
+                <div className="v3-plan-feature"><span className="check">✓</span> 70 imágenes</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> 4.200 créditos</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
+              </div>
+
+              {/* ULTIMATE */}
+              <div className="v3-plan featured v3-reveal">
+                <div className="v3-plan-popular">⚡ Más vendido</div>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                  <Crown size={32} style={{ color: "#84cc16" }} />
+                </div>
+                <div className="v3-plan-name">Ultimate</div>
+                <div className="v3-plan-tagline">Ideal para creadores activos</div>
+                <div className="v3-plan-price">
+                  <span className="currency">$</span>
+                  <span className="amount">14</span>
+                  <span className="cents">,90</span>
+                  <span className="period">acceso vitalicio</span>
+                </div>
+                <button className="v3-plan-cta filled" onClick={() => executeCheckout("upscaler-arcano-ultimate-es")} disabled={isLoading}>Obtener Acceso →</button>
+                <div className="v3-plan-divider" />
+                <div className="v3-plan-feature"><span className="check">✓</span> 233 imágenes</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> 14.000 créditos</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Soporte prioritario</div>
+              </div>
+
+              {/* VITALÍCIO */}
+              <div className="v3-plan v3-plan-lifetime v3-reveal">
+                <div className="v3-plan-popular v3-plan-popular-gold">♾ Vitalicio</div>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+                  <Infinity size={32} style={{ color: "#f5c842" }} />
+                </div>
+                <div className="v3-plan-name">Ilimitado</div>
+                <div className="v3-plan-tagline">Acceso permanente a todo</div>
+                <div className="v3-plan-price">
+                  <span className="currency">$</span>
+                  <span className="amount">19</span>
+                  <span className="cents">,90</span>
+                  <span className="period">pagás una vez · usás para siempre</span>
+                </div>
+                <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => executeCheckout("upscaler-arcano-v3-es")} disabled={isLoading}>{isLoading ? 'Procesando...' : 'Obtener Vitalicio →'}</button>
+                <div className="v3-plan-divider" />
+                <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Uso ilimitado · sin créditos</strong></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Todas las herramientas</div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> Todas las actualizaciones futuras</div>
               </div>
             </div>
 
-            {/* Mobile: guarantee below (hidden on desktop via CSS) */}
-            <div className="v3-pricing-guarantee-mobile">
-              <div className="v3-guarantee-card" style={{ textAlign: "center" }}>
-                <div className="v3-guarantee-icon-wrap" style={{ margin: "0 auto 12px" }}>
-                  <ShieldCheck size={32} strokeWidth={1.8} />
-                </div>
-                <div className="v3-guarantee-title">Garantía de 7 días</div>
-                <div className="v3-guarantee-text">Si no te gusta el resultado, te devolvemos el 100% de tu dinero. Sin preguntas, sin burocracia.</div>
-                <span className="v3-guarantee-badge">✓ RIESGO CERO</span>
+            {/* TRUST ROW */}
+            <div className="v3-trust-badges-row">
+              <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.1s" }}>
+                <span className="v3-trust-badge-icon">⚡</span>
+                <span>Acceso inmediato</span>
               </div>
+              <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.25s" }}>
+                <span className="v3-trust-badge-icon">💬</span>
+                <span>Soporte 24/7</span>
+              </div>
+              <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.4s" }}>
+                <span className="v3-trust-badge-icon">🔒</span>
+                <span>Pago seguro · Stripe</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* GUARANTEE - separate section below pricing */}
+        <section className="v3-guarantee-strip">
+          <div className="v3-guarantee-card">
+            <div className="v3-guarantee-icon-wrap">
+              <ShieldCheck size={32} strokeWidth={1.8} />
+            </div>
+            <div>
+              <div className="v3-guarantee-title">Garantía de 7 días</div>
+              <div className="v3-guarantee-text">Si no te gusta el resultado, te devolvemos el 100% de tu dinero. Sin preguntas, sin burocracia. Es confianza total en lo que entregamos.</div>
+              <span className="v3-guarantee-badge">✓ RIESGO CERO</span>
             </div>
           </div>
         </section>
