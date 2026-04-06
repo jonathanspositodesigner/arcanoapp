@@ -4036,6 +4036,77 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_orders: {
+        Row: {
+          amount: number
+          amount_usd: number | null
+          created_at: string | null
+          currency: string
+          id: string
+          net_amount: number | null
+          paid_at: string | null
+          payment_method: string | null
+          product_id: string | null
+          product_slug: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          updated_at: string | null
+          user_email: string | null
+          user_id: string | null
+          user_name: string | null
+          utm_data: Json | null
+        }
+        Insert: {
+          amount: number
+          amount_usd?: number | null
+          created_at?: string | null
+          currency?: string
+          id?: string
+          net_amount?: number | null
+          paid_at?: string | null
+          payment_method?: string | null
+          product_id?: string | null
+          product_slug?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string | null
+          user_email?: string | null
+          user_id?: string | null
+          user_name?: string | null
+          utm_data?: Json | null
+        }
+        Update: {
+          amount?: number
+          amount_usd?: number | null
+          created_at?: string | null
+          currency?: string
+          id?: string
+          net_amount?: number | null
+          paid_at?: string | null
+          payment_method?: string | null
+          product_id?: string | null
+          product_slug?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string | null
+          user_email?: string | null
+          user_id?: string | null
+          user_name?: string | null
+          utm_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stripe_orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "mp_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscription_billing_reminders: {
         Row: {
           checkout_url: string | null
