@@ -270,24 +270,31 @@ const UpscalerArcanoVersionSelect = () => {
 
                 {/* Content */}
                 <div className="p-4">
-                  <h2 className={`text-lg md:text-xl font-bold mb-3 ${hasVersionAccess ? 'text-foreground' : 'text-gray-400'}`}>
+                  <h2 className={`text-lg md:text-xl font-bold mb-3 text-foreground`}>
                     {t('upscaler.title')} {isV3 ? 'V3' : ''}
                   </h2>
 
                   <Button 
-                    disabled={!hasVersionAccess}
                     className={`w-full ${hasVersionAccess 
                       ? 'bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white group-hover:scale-[1.02] transition-transform' 
-                      : 'bg-gray-600 text-gray-300 cursor-not-allowed'
+                      : isV3
+                        ? 'bg-gradient-to-r from-purple-600 to-fuchsia-500 hover:opacity-90 text-white group-hover:scale-[1.02] transition-transform'
+                        : 'bg-gray-600 text-gray-300 cursor-not-allowed'
                     }`}
+                    disabled={!hasVersionAccess && !isV3}
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (!hasVersionAccess) return;
-                      navigate(`/ferramenta-ia-artes/upscaller-arcano/${version.slug}`);
+                      if (hasVersionAccess) {
+                        navigate(`/ferramenta-ia-artes/upscaller-arcano/${version.slug}`);
+                      } else if (isV3) {
+                        window.open('https://arcanoapp.voxvisual.com.br/upscalerarcanov3', '_blank');
+                      }
                     }}
                   >
                     {hasVersionAccess ? (
                       <>{t('ferramentas.accessTool')} <ChevronRight className="h-4 w-4 ml-1" /></>
+                    ) : isV3 ? (
+                      <>Veja as Novidades <Sparkles className="h-4 w-4 ml-1" /></>
                     ) : (
                       <>Em Breve</>
                     )}
