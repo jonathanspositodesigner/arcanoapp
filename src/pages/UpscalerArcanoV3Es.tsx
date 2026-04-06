@@ -630,7 +630,7 @@ const UpscalerArcanoV3 = () => {
                 <div className="v3-plan-tagline">Ideal para creadores activos</div>
                 <div className="v3-plan-price">
                   <span className="currency">$</span>
-                  <span className="amount">14</span>
+                  <span className="amount">16</span>
                   <span className="cents">,90</span>
                   <span className="period">acceso vitalicio</span>
                 </div>
