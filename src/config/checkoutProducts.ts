@@ -159,6 +159,9 @@ export const checkoutProducts: CheckoutProductConfig[] = [
 
   // ─── UPSCALER ARCANO ───
   { slug: 'upscaler-arcano-v3-es', title: 'Upscaler Arcano V3 - Acceso Vitalicio (LATAM)', priceInCents: 1990, currency: 'usd', provider: 'stripe', currentCheckoutSlug: '', stripePriceId: 'price_1THYRTL0tOYcQz0tT7ay9iQh', stripeMode: 'payment', isActive: true, type: 'landing_bundle' },
+  { slug: 'upscaler-arcano-starter-es', title: 'Upscaler Arcano Starter (LATAM)', priceInCents: 690, currency: 'usd', provider: 'stripe', currentCheckoutSlug: '', stripePriceId: 'price_1TJIPBL0tOYcQz0txOPZYdRG', stripeMode: 'payment', isActive: true, type: 'credits' },
+  { slug: 'upscaler-arcano-pro-es', title: 'Upscaler Arcano Pro (LATAM)', priceInCents: 890, currency: 'usd', provider: 'stripe', currentCheckoutSlug: '', stripePriceId: 'price_1TJIPLL0tOYcQz0tJZVVofrD', stripeMode: 'payment', isActive: true, type: 'credits' },
+  { slug: 'upscaler-arcano-ultimate-es', title: 'Upscaler Arcano Ultimate (LATAM)', priceInCents: 1690, currency: 'usd', provider: 'stripe', currentCheckoutSlug: '', stripePriceId: 'price_1TJIPML0tOYcQz0tUWzNkecR', stripeMode: 'payment', isActive: true, type: 'credits' },
   { slug: 'upscaler-arcano-pro', title: 'Upscaler Arcano - Pro', priceInCents: 3700, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'upscaler-arcano-pro', stripePriceId: '', stripeMode: 'payment', isActive: true, type: 'credits' },
   { slug: 'upscaler-arcano-starter', title: 'Upscaler Arcano - Starter', priceInCents: 2490, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'upscaler-arcano-starter', stripePriceId: '', stripeMode: 'payment', isActive: true, type: 'credits' },
   { slug: 'upscaler-arcano-ultimate', title: 'Upscaler Arcano - Ultimate', priceInCents: 7990, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'upscaler-arcano-ultimate', stripePriceId: '', stripeMode: 'payment', isActive: true, type: 'credits' },
