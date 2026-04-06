@@ -40,6 +40,8 @@ function usePlatformBreakdown(approved?: DashboardOrder[]): PlatformBreakdown[] 
         map[platform].fees += o.amount * 0.0499 + 1.0;
       } else if (platform === "hotmart") {
         map[platform].fees += o.amount * 0.099 + 1.0;
+      } else if (platform === "stripe") {
+        map[platform].fees += o.amount - (o.net_amount ?? o.amount);
       } else {
         map[platform].fees += o.amount - (o.net_amount ?? o.amount);
       }
