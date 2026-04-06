@@ -93,13 +93,14 @@ const testimonials = [
 ];
 
 const faqs = [
-  { q: "¿Tengo que pagar mensualidad?", a: "No. El Upscaler Arcano funciona con acceso vitalicio — pagás una vez y lo usás para siempre. Sin cobros recurrentes, sin sorpresas." },
-  { q: "¿El uso es realmente ilimitado?", a: "Sí, 100%. Con el plan Vitalicio podés mejorar cuantas imágenes quieras, sin límite de uso. No consume créditos ni tiene restricciones de cantidad." },
+  { q: "¿Cuál es la diferencia entre los planes con créditos y el plan Vitalicio?", a: "Los planes Starter, Pro y Ultimate incluyen una cantidad fija de créditos para usar en el Upscaler Arcano. El plan Vitalicio es un pago único que te da acceso ilimitado para siempre — sin créditos, sin límites, sin mensualidad." },
+  { q: "¿Tengo que pagar mensualidad?", a: "No. Ninguno de nuestros planes cobra mensualidad. Los planes con créditos son un pago único por un paquete de créditos. El plan Vitalicio también es un pago único con uso ilimitado para siempre." },
+  { q: "¿Qué pasa cuando se me acaban los créditos?", a: "Si elegiste un plan con créditos (Starter, Pro o Ultimate), podés comprar un nuevo paquete en cualquier momento. Si preferís no preocuparte por créditos, el plan Vitalicio te da uso ilimitado sin restricciones." },
   { q: "¿Funciona con cualquier tipo de imagen?", a: "Sí. Fotos de sesión, logos, renders 3D, fotos antiguas, imágenes generadas por IA, comida, productos — Arcano procesa cualquier tipo de imagen." },
   { q: "¿Cuánto tiempo tarda en procesar?", a: "Con el Modo Turbo del V3, menos de 60 segundos por imagen. En lote, procesás hasta 10 imágenes en paralelo al mismo tiempo." },
   { q: "¿Qué es el Modo Turbo? ¿Es igual al resultado normal?", a: "El Modo Turbo es exclusivo del V3 y entrega el mismo motor de IA, misma calidad 4K, pero en menos de 1 minuto — hasta 10x más rápido que el procesamiento estándar." },
   { q: "¿Hay que instalar algún programa?", a: "No. El Upscaler Arcano es 100% online. Accedé directo desde el navegador, sin instalar nada, desde cualquier computadora." },
-  { q: "¿Consume créditos cada vez que uso?", a: "No. El plan Vitalicio no consume créditos. Una vez que accedés, el uso es completamente ilimitado y sin costo adicional." },
+  { q: "¿Puedo hacer upgrade del plan con créditos al Vitalicio?", a: "¡Sí! Podés comprar el plan Vitalicio en cualquier momento y pasar a tener uso ilimitado. Los créditos que ya tengas seguirán disponibles además del acceso ilimitado." },
 ];
 
 const realResults = [
