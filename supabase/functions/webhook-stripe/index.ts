@@ -284,265 +284,240 @@ serve(async (req) => {
 
       console.log(`   ├─ amount_usd: $${amountUsd} | rate: ${rateToBrl} | amount_brl: R$${amountBrl} | net: R$${netAmountBrl}`)
 
-      // 1. Create or find user
+      // ES products: record-only, NO user creation/provisioning/email
+      const ES_RECORD_ONLY_SLUGS = [
+        'upscaler-arcano-starter-es',
+        'upscaler-arcano-pro-es',
+        'upscaler-arcano-ultimate-es',
+        'upscaler-arcano-v3-es',
+      ]
+      const isRecordOnly = ES_RECORD_ONLY_SLUGS.includes(productSlug)
+
       let userId: string | null = null
 
-      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-        email, password: email, email_confirm: true
-      })
+      if (!isRecordOnly) {
+        // 1. Create or find user
+        const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+          email, password: email, email_confirm: true
+        })
 
-      if (createError) {
-        if (createError.message?.includes('email') || (createError as any).code === 'email_exists') {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('id')
-            .ilike('email', email)
-            .maybeSingle()
+        if (createError) {
+          if (createError.message?.includes('email') || (createError as any).code === 'email_exists') {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('id')
+              .ilike('email', email)
+              .maybeSingle()
 
-          if (profile) {
-            userId = profile.id
-            console.log(`   ├─ 👤 Existing user (profile): ${userId}`)
-          } else {
-            let page = 1
-            while (!userId && page <= 10) {
-              const { data: usersPage } = await supabase.auth.admin.listUsers({ page, perPage: 1000 })
-              const found = usersPage?.users?.find((u: any) => u.email?.toLowerCase() === email)
-              if (found) userId = found.id
-              if (!usersPage?.users?.length || usersPage.users.length < 1000) break
-              page++
+            if (profile) {
+              userId = profile.id
+              console.log(`   ├─ 👤 Existing user (profile): ${userId}`)
+            } else {
+              let page = 1
+              while (!userId && page <= 10) {
+                const { data: usersPage } = await supabase.auth.admin.listUsers({ page, perPage: 1000 })
+                const found = usersPage?.users?.find((u: any) => u.email?.toLowerCase() === email)
+                if (found) userId = found.id
+                if (!usersPage?.users?.length || usersPage.users.length < 1000) break
+                page++
+              }
+              if (userId) console.log(`   ├─ 👤 Existing user (auth): ${userId}`)
             }
-            if (userId) console.log(`   ├─ 👤 Existing user (auth): ${userId}`)
-          }
 
-          if (!userId) {
-            console.error(`   ├─ ❌ User exists but not found`)
-            return new Response('OK', { status: 200, headers: corsHeaders })
+            if (!userId) {
+              console.error(`   ├─ ❌ User exists but not found`)
+              return new Response('OK', { status: 200, headers: corsHeaders })
+            }
+          } else {
+            throw createError
           }
         } else {
-          throw createError
+          userId = newUser.user.id
+          console.log(`   ├─ ✅ New user created: ${userId}`)
         }
-      } else {
-        userId = newUser.user.id
-        console.log(`   ├─ ✅ New user created: ${userId}`)
-      }
 
-      // 2. Upsert profile
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('name')
-        .eq('id', userId)
-        .maybeSingle()
-
-      const profileData: Record<string, unknown> = {
-        id: userId,
-        email,
-        name: existingProfile?.name || customerName || null,
-        email_verified: true,
-        updated_at: new Date().toISOString()
-      }
-      if (!existingProfile) {
-        profileData.password_changed = false
-      }
-      await supabase.from('profiles').upsert(profileData, { onConflict: 'id' })
-      console.log(`   ├─ ✅ Profile upserted`)
-
-      // 3. Provision product access
-      if (product.type === 'pack' && product.pack_slug) {
-        const { data: existingPurchase } = await supabase
-          .from('user_pack_purchases')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('pack_slug', product.pack_slug)
-          .eq('is_active', true)
+        // 2. Upsert profile
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('id', userId)
           .maybeSingle()
 
-        if (!existingPurchase) {
-          await supabase.from('user_pack_purchases').insert({
-            user_id: userId,
-            pack_slug: product.pack_slug,
-            access_type: product.access_type || 'vitalicio',
-            has_bonus_access: true,
-            expires_at: null,
-            product_name: product.title,
-            platform: 'stripe'
-          })
-          console.log(`   ├─ ✅ Pack access granted: ${product.pack_slug}`)
-        } else {
-          console.log(`   ├─ ℹ️ Pack access already exists: ${product.pack_slug}`)
+        const profileData: Record<string, unknown> = {
+          id: userId,
+          email,
+          name: existingProfile?.name || customerName || null,
+          email_verified: true,
+          updated_at: new Date().toISOString()
         }
+        if (!existingProfile) {
+          profileData.password_changed = false
+        }
+        await supabase.from('profiles').upsert(profileData, { onConflict: 'id' })
+        console.log(`   ├─ ✅ Profile upserted`)
 
-        // V3 bonus: grant V2 pack
-        if (productSlug === 'upscaler-arcano-v3-es') {
-          const { data: existingV2 } = await supabase
+        // 3. Provision product access
+        if (product.type === 'pack' && product.pack_slug) {
+          const { data: existingPurchase } = await supabase
             .from('user_pack_purchases')
             .select('id')
             .eq('user_id', userId)
-            .eq('pack_slug', 'upscaller-arcano')
+            .eq('pack_slug', product.pack_slug)
             .eq('is_active', true)
             .maybeSingle()
 
-          if (!existingV2) {
+          if (!existingPurchase) {
             await supabase.from('user_pack_purchases').insert({
               user_id: userId,
-              pack_slug: 'upscaller-arcano',
-              access_type: 'vitalicio',
-              is_active: true,
-              has_bonus_access: false,
-              product_name: 'Bônus V3: acesso V2 (Stripe)',
+              pack_slug: product.pack_slug,
+              access_type: product.access_type || 'vitalicio',
+              has_bonus_access: true,
+              expires_at: null,
+              product_name: product.title,
               platform: 'stripe'
             })
-            console.log(`   ├─ ✅ V3 bonus: V2 pack granted`)
+            console.log(`   ├─ ✅ Pack access granted: ${product.pack_slug}`)
+          } else {
+            console.log(`   ├─ ℹ️ Pack access already exists: ${product.pack_slug}`)
+          }
+
+          if (productSlug === 'upscaler-arcano-v3-es') {
+            const { data: existingV2 } = await supabase
+              .from('user_pack_purchases')
+              .select('id')
+              .eq('user_id', userId)
+              .eq('pack_slug', 'upscaller-arcano')
+              .eq('is_active', true)
+              .maybeSingle()
+
+            if (!existingV2) {
+              await supabase.from('user_pack_purchases').insert({
+                user_id: userId,
+                pack_slug: 'upscaller-arcano',
+                access_type: 'vitalicio',
+                is_active: true,
+                has_bonus_access: false,
+                product_name: 'Bônus V3: acesso V2 (Stripe)',
+                platform: 'stripe'
+              })
+              console.log(`   ├─ ✅ V3 bonus: V2 pack granted`)
+            }
           }
         }
-      }
 
-      if (product.type === 'credits' && product.credits_amount > 0) {
-        const { error: creditsError } = await supabase.rpc('add_lifetime_credits', {
-          _user_id: userId,
-          _amount: product.credits_amount,
-          _description: `Compra Stripe: ${product.title}`
-        })
-        if (creditsError) {
-          console.error(`   ├─ ❌ Credits error:`, creditsError)
-        } else {
-          console.log(`   ├─ ✅ +${product.credits_amount} credits added`)
-        }
-      }
-
-      // Landing bundle activation (credits + permanent premium)
-      if (product.type === 'landing_bundle' && product.plan_slug) {
-        console.log(`   ├─ 🎁 Landing bundle: ${product.plan_slug} (${product.credits_amount} lifetime credits)`)
-
-        const PLAN_CONFIG_BUNDLE: Record<string, {
-          has_image_generation: boolean;
-          has_video_generation: boolean;
-          cost_multiplier: number;
-        }> = {
-          'starter': { has_image_generation: false, has_video_generation: false, cost_multiplier: 1.0 },
-          'pro': { has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
-          'ultimate': { has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
-        }
-
-        if (product.credits_amount > 0) {
+        if (product.type === 'credits' && product.credits_amount > 0) {
           const { error: creditsError } = await supabase.rpc('add_lifetime_credits', {
             _user_id: userId,
             _amount: product.credits_amount,
-            _description: `Landing bundle Stripe: ${product.title}`
+            _description: `Compra Stripe: ${product.title}`
           })
           if (creditsError) {
             console.error(`   ├─ ❌ Credits error:`, creditsError)
           } else {
-            console.log(`   ├─ ✅ +${product.credits_amount} lifetime credits added`)
+            console.log(`   ├─ ✅ +${product.credits_amount} credits added`)
           }
         }
 
-        const bundleConfig = PLAN_CONFIG_BUNDLE[product.plan_slug]
-        if (bundleConfig) {
-          const PLAN_RANK: Record<string, number> = { 'free': 0, 'starter': 1, 'pro': 2, 'ultimate': 3, 'unlimited': 4 }
+        if (product.type === 'landing_bundle' && product.plan_slug) {
+          console.log(`   ├─ 🎁 Landing bundle: ${product.plan_slug} (${product.credits_amount} lifetime credits)`)
 
-          const { data: existingSub } = await supabase
-            .from('planos2_subscriptions')
-            .select('plan_slug')
-            .eq('user_id', userId)
-            .maybeSingle()
-
-          const existingRank = PLAN_RANK[existingSub?.plan_slug || 'free'] || 0
-          const newRank = PLAN_RANK[product.plan_slug] || 0
-
-          if (newRank >= existingRank) {
-            await supabase.from('planos2_subscriptions').upsert({
-              user_id: userId,
-              plan_slug: product.plan_slug,
-              is_active: true,
-              credits_per_month: 0,
-              daily_prompt_limit: null,
-              has_image_generation: bundleConfig.has_image_generation,
-              has_video_generation: bundleConfig.has_video_generation,
-              cost_multiplier: bundleConfig.cost_multiplier,
-              expires_at: null,
-              pagarme_subscription_id: null,
-              updated_at: new Date().toISOString(),
-            }, { onConflict: 'user_id' })
-            console.log(`   ├─ ✅ Permanent premium activated: ${product.plan_slug}`)
-          } else {
-            console.log(`   ├─ ℹ️ Higher plan already active (${existingSub?.plan_slug}), keeping`)
+          const PLAN_CONFIG_BUNDLE: Record<string, {
+            has_image_generation: boolean;
+            has_video_generation: boolean;
+            cost_multiplier: number;
+          }> = {
+            'starter': { has_image_generation: false, has_video_generation: false, cost_multiplier: 1.0 },
+            'pro': { has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
+            'ultimate': { has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
           }
-        }
-      }
 
-      // 4. Insert stripe_orders record
-      await supabase.from('stripe_orders').insert({
-        stripe_session_id: session.id,
-        stripe_payment_intent_id: (session.payment_intent as string) || null,
-        status: 'paid',
-        amount: amountBrl,
-        amount_usd: amountUsd,
-        net_amount: netAmountBrl,
-        currency,
-        payment_method: session.payment_method_types?.[0] || 'card',
-        user_email: email,
-        user_name: customerName || null,
-        product_slug: productSlug,
-        product_id: product.id,
-        user_id: userId,
-        paid_at: new Date().toISOString(),
-      })
-      console.log(`   ├─ ✅ stripe_orders record created`)
-
-      // 5. Log in webhook_logs for consistency
-      await supabase.from('webhook_logs').insert({
-        platform: 'stripe',
-        event_type: event.type,
-        transaction_id: event.id,
-        status: 'paid',
-        email,
-        product_name: product.title,
-        amount: amountBrl,
-        payment_method: 'card',
-        payload: JSON.parse(rawBody),
-      })
-
-      // 6. Send purchase email (ES locale)
-      try {
-        const ctaLink = product.pack_slug === 'upscaller-arcano-v3' || product.type === 'pack'
-          ? 'https://arcanoapp.voxvisual.com.br/ferramentas-ia-es'
-          : 'https://arcanoapp.voxvisual.com.br/ferramentas-ia-es'
-
-        const isUpscalerOrCredits = product.pack_slug === 'upscaller-arcano' || product.type === 'credits'
-        const isLandingBundle = product.type === 'landing_bundle'
-
-        const html = buildPurchaseEmailHtml(email, product.title, ctaLink, isUpscalerOrCredits, isLandingBundle)
-        const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
-        const token = await getSendPulseToken()
-
-        const emailRes = await fetch("https://api.sendpulse.com/smtp/emails", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-          body: JSON.stringify({
-            email: {
-              html: htmlBase64,
-              text: "",
-              subject: `✅ ¡Compra confirmada! - ${product.title}`,
-              from: { name: "Vox Visual", email: "contato@voxvisual.com.br" },
-              to: [{ name: email, email }]
+          if (product.credits_amount > 0) {
+            const { error: creditsError } = await supabase.rpc('add_lifetime_credits', {
+              _user_id: userId,
+              _amount: product.credits_amount,
+              _description: `Landing bundle Stripe: ${product.title}`
+            })
+            if (creditsError) {
+              console.error(`   ├─ ❌ Credits error:`, creditsError)
+            } else {
+              console.log(`   ├─ ✅ +${product.credits_amount} lifetime credits added`)
             }
-          })
-        })
-        console.log(`   ├─ 📧 Purchase email: ${emailRes.ok ? 'sent' : 'failed'}`)
+          }
 
-        // Log email
-        await supabase.from('welcome_email_logs').insert({
-          email,
-          template_used: `stripe_purchase_${product.title}`,
-          dedup_key: `stripe_session_${session.id}`,
-          tracking_id: crypto.randomUUID(),
-          status: emailRes.ok ? 'sent' : 'failed',
-          sent_at: new Date().toISOString(),
-          product_info: product.title,
-          platform: 'stripe',
-        })
-      } catch (emailErr: any) {
-        console.error(`   ├─ ⚠️ Email error (non-critical): ${emailErr.message}`)
+          const bundleConfig = PLAN_CONFIG_BUNDLE[product.plan_slug]
+          if (bundleConfig) {
+            const PLAN_RANK: Record<string, number> = { 'free': 0, 'starter': 1, 'pro': 2, 'ultimate': 3, 'unlimited': 4 }
+
+            const { data: existingSub } = await supabase
+              .from('planos2_subscriptions')
+              .select('plan_slug')
+              .eq('user_id', userId)
+              .maybeSingle()
+
+            const existingRank = PLAN_RANK[existingSub?.plan_slug || 'free'] || 0
+            const newRank = PLAN_RANK[product.plan_slug] || 0
+
+            if (newRank >= existingRank) {
+              await supabase.from('planos2_subscriptions').upsert({
+                user_id: userId,
+                plan_slug: product.plan_slug,
+                is_active: true,
+                credits_per_month: 0,
+                daily_prompt_limit: null,
+                has_image_generation: bundleConfig.has_image_generation,
+                has_video_generation: bundleConfig.has_video_generation,
+                cost_multiplier: bundleConfig.cost_multiplier,
+                expires_at: null,
+                pagarme_subscription_id: null,
+                updated_at: new Date().toISOString(),
+              }, { onConflict: 'user_id' })
+              console.log(`   ├─ ✅ Permanent premium activated: ${product.plan_slug}`)
+            } else {
+              console.log(`   ├─ ℹ️ Higher plan already active (${existingSub?.plan_slug}), keeping`)
+            }
+          }
+        }
+
+        // Send purchase email (ES locale)
+        try {
+          const ctaLink = 'https://arcanoapp.voxvisual.com.br/ferramentas-ia-es'
+          const isUpscalerOrCredits = product.pack_slug === 'upscaller-arcano' || product.type === 'credits'
+          const isLandingBundle = product.type === 'landing_bundle'
+
+          const html = buildPurchaseEmailHtml(email, product.title, ctaLink, isUpscalerOrCredits, isLandingBundle)
+          const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
+          const token = await getSendPulseToken()
+
+          const emailRes = await fetch("https://api.sendpulse.com/smtp/emails", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({
+              email: {
+                html: htmlBase64,
+                text: "",
+                subject: `✅ ¡Compra confirmada! - ${product.title}`,
+                from: { name: "Vox Visual", email: "contato@voxvisual.com.br" },
+                to: [{ name: email, email }]
+              }
+            })
+          })
+          console.log(`   ├─ 📧 Purchase email: ${emailRes.ok ? 'sent' : 'failed'}`)
+
+          await supabase.from('welcome_email_logs').insert({
+            email,
+            template_used: `stripe_purchase_${product.title}`,
+            dedup_key: `stripe_session_${session.id}`,
+            tracking_id: crypto.randomUUID(),
+            status: emailRes.ok ? 'sent' : 'failed',
+            sent_at: new Date().toISOString(),
+            product_info: product.title,
+            platform: 'stripe',
+          })
+        } catch (emailErr: any) {
+          console.error(`   ├─ ⚠️ Email error (non-critical): ${emailErr.message}`)
+        }
+      } else {
+        console.log(`   ├─ 📊 Record-only mode (ES product) — no user/provisioning/email`)
       }
 
       // 7. Admin notification
