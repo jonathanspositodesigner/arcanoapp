@@ -361,7 +361,7 @@ async function sendPurchaseEmail(
     ctaLink: string
     requestId: string
     paidAtIso: string
-    options?: { packSlug?: string; productType?: string; accessType?: string }
+    options?: { packSlug?: string; productType?: string; accessType?: string; billingPeriod?: string }
   }
 ): Promise<PurchaseEmailDispatchResult> {
   const maxAttempts = 3
