@@ -1164,6 +1164,7 @@ serve(async (req) => {
           packSlug: product.pack_slug,
           productType: product.type,
           accessType: product.access_type,
+          billingPeriod: product.billing_period,
         }
       })
 
