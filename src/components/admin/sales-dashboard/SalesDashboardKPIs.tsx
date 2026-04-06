@@ -25,6 +25,7 @@ const PLATFORM_LABELS: Record<string, string> = {
   greenn: "Greenn",
   hotmart: "Hotmart",
   pagarme: "Pagar.me",
+  stripe: "Stripe",
 };
 
 function usePlatformBreakdown(approved?: DashboardOrder[]): PlatformBreakdown[] {
