@@ -214,7 +214,7 @@ const UpscalerArcanoVersionSelect = () => {
                   <img 
                      src={getVersionImage(version)} 
                     alt={`Upscaler Arcano ${version.name}`} 
-                    className={`w-full h-full object-cover transition-transform duration-300 ${hasVersionAccess ? 'group-hover:scale-105' : 'grayscale opacity-60'}`}
+                    className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105`}
                   />
                   
                   {/* Badges at bottom of image */}
