@@ -1,0 +1,1 @@
+UPDATE mp_products SET access_type = NULL WHERE type = 'subscription';
