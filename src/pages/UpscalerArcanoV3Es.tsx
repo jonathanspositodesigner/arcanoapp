@@ -608,7 +608,7 @@ const UpscalerArcanoV3 = () => {
                 <div className="v3-plan-tagline">3x más por $2 más</div>
                 <div className="v3-plan-price">
                   <span className="currency">$</span>
-                  <span className="amount">6</span>
+                  <span className="amount">8</span>
                   <span className="cents">,90</span>
                   <span className="period">acceso vitalicio</span>
                 </div>
