@@ -239,7 +239,12 @@ const UpscalerArcanoVersionSelect = () => {
 
                  {/* Status Badge - top right */}
                  <div className="absolute top-4 right-4 flex flex-col gap-2">
-                   {!hasVersionAccess ? (
+                   {!hasVersionAccess && isV3 ? (
+                     <div className="flex items-center gap-1.5 bg-purple-500/20 backdrop-blur-sm text-purple-300 px-3 py-1 rounded-full text-xs font-medium">
+                       <Sparkles className="h-3 w-3" />
+                       Novidades
+                     </div>
+                   ) : !hasVersionAccess ? (
                      <div className="flex items-center gap-1.5 bg-yellow-500/20 backdrop-blur-sm text-yellow-300 px-3 py-1 rounded-full text-xs font-medium">
                        <Lock className="h-3 w-3" />
                        Em Breve
