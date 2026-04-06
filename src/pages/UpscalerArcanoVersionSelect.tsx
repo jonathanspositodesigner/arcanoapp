@@ -200,14 +200,12 @@ const UpscalerArcanoVersionSelect = () => {
             return (
               <Card 
                 key={version.id + '-' + version.name}
-                className={`relative overflow-hidden transition-all ${
-                  hasVersionAccess 
-                    ? 'cursor-pointer group bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-purple-500/30 hover:border-purple-400/50' 
-                    : 'bg-gradient-to-br from-gray-900/50 to-gray-800/30 border-gray-500/30'
-                }`}
+                className={`relative overflow-hidden transition-all cursor-pointer group bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-purple-500/30 hover:border-purple-400/50`}
                 onClick={() => {
                   if (hasVersionAccess) {
                     handleVersionClick(version);
+                  } else if (isV3) {
+                    window.open('https://arcanoapp.voxvisual.com.br/upscalerarcanov3', '_blank');
                   }
                 }}
               >
@@ -216,7 +214,7 @@ const UpscalerArcanoVersionSelect = () => {
                   <img 
                      src={getVersionImage(version)} 
                     alt={`Upscaler Arcano ${version.name}`} 
-                    className={`w-full h-full object-cover transition-transform duration-300 ${hasVersionAccess ? 'group-hover:scale-105' : 'grayscale opacity-60'}`}
+                    className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105`}
                   />
                   
                   {/* Badges at bottom of image */}
@@ -241,7 +239,12 @@ const UpscalerArcanoVersionSelect = () => {
 
                  {/* Status Badge - top right */}
                  <div className="absolute top-4 right-4 flex flex-col gap-2">
-                   {!hasVersionAccess ? (
+                   {!hasVersionAccess && isV3 ? (
+                     <div className="flex items-center gap-1.5 bg-purple-500/20 backdrop-blur-sm text-purple-300 px-3 py-1 rounded-full text-xs font-medium">
+                       <Sparkles className="h-3 w-3" />
+                       Novidades
+                     </div>
+                   ) : !hasVersionAccess ? (
                      <div className="flex items-center gap-1.5 bg-yellow-500/20 backdrop-blur-sm text-yellow-300 px-3 py-1 rounded-full text-xs font-medium">
                        <Lock className="h-3 w-3" />
                        Em Breve
@@ -260,31 +263,38 @@ const UpscalerArcanoVersionSelect = () => {
 
                 {/* Version Badge - top left */}
                 <div className="absolute top-4 left-4">
-                  <div className={`px-4 py-1.5 rounded-full text-sm font-black shadow-lg ${hasVersionAccess ? 'bg-white text-purple-900' : 'bg-gray-300 text-gray-700'}`}>
+                  <div className={`px-4 py-1.5 rounded-full text-sm font-black shadow-lg bg-white text-purple-900`}>
                     {getVersionName(version)}
                   </div>
                 </div>
 
                 {/* Content */}
                 <div className="p-4">
-                  <h2 className={`text-lg md:text-xl font-bold mb-3 ${hasVersionAccess ? 'text-foreground' : 'text-gray-400'}`}>
+                  <h2 className={`text-lg md:text-xl font-bold mb-3 text-foreground`}>
                     {t('upscaler.title')} {isV3 ? 'V3' : ''}
                   </h2>
 
                   <Button 
-                    disabled={!hasVersionAccess}
                     className={`w-full ${hasVersionAccess 
                       ? 'bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white group-hover:scale-[1.02] transition-transform' 
-                      : 'bg-gray-600 text-gray-300 cursor-not-allowed'
+                      : isV3
+                        ? 'bg-gradient-to-r from-purple-600 to-fuchsia-500 hover:opacity-90 text-white group-hover:scale-[1.02] transition-transform'
+                        : 'bg-gray-600 text-gray-300 cursor-not-allowed'
                     }`}
+                    disabled={!hasVersionAccess && !isV3}
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (!hasVersionAccess) return;
-                      navigate(`/ferramenta-ia-artes/upscaller-arcano/${version.slug}`);
+                      if (hasVersionAccess) {
+                        navigate(`/ferramenta-ia-artes/upscaller-arcano/${version.slug}`);
+                      } else if (isV3) {
+                        window.open('https://arcanoapp.voxvisual.com.br/upscalerarcanov3', '_blank');
+                      }
                     }}
                   >
                     {hasVersionAccess ? (
                       <>{t('ferramentas.accessTool')} <ChevronRight className="h-4 w-4 ml-1" /></>
+                    ) : isV3 ? (
+                      <>Veja as Novidades <Sparkles className="h-4 w-4 ml-1" /></>
                     ) : (
                       <>Em Breve</>
                     )}
