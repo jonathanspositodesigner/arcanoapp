@@ -200,14 +200,12 @@ const UpscalerArcanoVersionSelect = () => {
             return (
               <Card 
                 key={version.id + '-' + version.name}
-                className={`relative overflow-hidden transition-all ${
-                  hasVersionAccess 
-                    ? 'cursor-pointer group bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-purple-500/30 hover:border-purple-400/50' 
-                    : 'bg-gradient-to-br from-gray-900/50 to-gray-800/30 border-gray-500/30'
-                }`}
+                className={`relative overflow-hidden transition-all cursor-pointer group bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-purple-500/30 hover:border-purple-400/50`}
                 onClick={() => {
                   if (hasVersionAccess) {
                     handleVersionClick(version);
+                  } else if (isV3) {
+                    window.open('https://arcanoapp.voxvisual.com.br/upscalerarcanov3', '_blank');
                   }
                 }}
               >
