@@ -258,7 +258,7 @@ async function sendPurchaseEmailAttempt(
     ctaLink: string
     requestId: string
     paidAtIso: string
-    options?: { packSlug?: string; productType?: string; accessType?: string }
+    options?: { packSlug?: string; productType?: string; accessType?: string; billingPeriod?: string }
   }
 ): Promise<PurchaseEmailDispatchResult> {
   const normalizedEmail = params.email.toLowerCase().trim()
