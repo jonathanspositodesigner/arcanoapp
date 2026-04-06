@@ -121,14 +121,18 @@ function getUnsubscribeLink(email: string): string {
   return `${baseUrl}/functions/v1/email-unsubscribe?email=${encodeURIComponent(email)}`
 }
 
-function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: string, options?: { packSlug?: string; productType?: string; accessType?: string }): string {
+function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: string, options?: { packSlug?: string; productType?: string; accessType?: string; billingPeriod?: string }): string {
   const unsubscribeLink = getUnsubscribeLink(email)
   const isUpscalerOrCredits = options?.packSlug === 'upscaler-arcano' || options?.productType === 'credits'
   const isLandingBundle = options?.productType === 'landing_bundle'
+  const isSubscription = options?.productType === 'subscription'
   
   // Determine access label
   let accessLabel = 'Vitalício'
-  if (options?.accessType === '6_meses') accessLabel = '6 Meses'
+  if (isSubscription) {
+    // Subscriptions show billing period, NOT access_type
+    accessLabel = options?.billingPeriod === 'anual' ? 'Anual' : 'Mensal'
+  } else if (options?.accessType === '6_meses') accessLabel = '6 Meses'
   else if (options?.accessType === '1_ano') accessLabel = '1 Ano'
   else if (options?.accessType === 'vitalicio') accessLabel = 'Vitalício'
 
@@ -142,6 +146,14 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
     benefitBlock = `<div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">
         <p style="color:#4ade80;font-size:15px;font-weight:700;margin:0 0 8px;">🎉 Acesso Vitalício Ativado!</p>
         <p style="color:#bbf7d0;font-size:13px;margin:0;line-height:1.6;">Você <strong>NÃO precisa comprar créditos</strong> para usar o Upscaler Arcano. Seu acesso vitalício já inclui uso ilimitado da ferramenta!</p>
+      </div>`
+  } else if (isSubscription) {
+    const renewalText = options?.billingPeriod === 'anual'
+      ? 'Sua assinatura será renovada automaticamente a cada 12 meses.'
+      : 'Sua assinatura será renovada automaticamente a cada mês.'
+    benefitBlock = `<div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">
+        <p style="color:#4ade80;font-size:15px;font-weight:700;margin:0 0 8px;">🎉 ${productName} Ativado!</p>
+        <p style="color:#bbf7d0;font-size:13px;margin:0;line-height:1.6;">Seus créditos e ferramentas de IA já estão disponíveis! ${renewalText}</p>
       </div>`
   } else {
     benefitBlock = `<div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">
