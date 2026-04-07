@@ -159,6 +159,7 @@ const CheckoutCancelado = lazy(() => import("./pages/CheckoutCancelado"));
 const UpscalerArcanoV3 = lazy(() => import("./pages/UpscalerArcanoV3"));
 const UpscalerArcanoV3Es = lazy(() => import("./pages/UpscalerArcanoV3Es"));
 const UpscalerArcanoV3Teste = lazy(() => import("./pages/UpscalerArcanoV3Teste"));
+const SelfieNaLua = lazy(() => import("./pages/SelfieNaLua"));
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
 
@@ -371,6 +372,7 @@ const AppContent = () => {
            {/* Stripe Checkout return routes */}
            <Route path="/checkout-sucesso" element={<CheckoutSucesso />} />
            <Route path="/checkout-cancelado" element={<CheckoutCancelado />} />
+           <Route path="/selfie-na-lua" element={<SelfieNaLua />} />
            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
            <Route path="*" element={<NotFound />} />
         </Routes>
