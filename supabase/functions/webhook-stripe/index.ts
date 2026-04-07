@@ -238,6 +238,12 @@ serve(async (req) => {
       const productSlug = session.metadata?.product_slug || ''
       const email = (session.customer_details?.email || session.customer_email || '').toLowerCase().trim()
       const customerName = session.customer_details?.name || ''
+      
+      // Extract Meta tracking data from session metadata
+      const metaFbp = session.metadata?.meta_fbp || null
+      const metaFbc = session.metadata?.meta_fbc || null
+      const metaUserAgent = session.metadata?.meta_user_agent || null
+      const metaEventSourceUrl = session.metadata?.meta_event_source_url || null
 
       console.log(`   ├─ product_slug: ${productSlug}`)
       console.log(`   ├─ email: ${email}`)
