@@ -50,6 +50,18 @@ export async function redirectToStripeCheckout(product: CheckoutProductConfig): 
   const userAgent = navigator.userAgent || '';
   const eventSourceUrl = window.location.href;
 
+  // Gera event_id para deduplicação Pixel ↔ CAPI
+  const eventId = `ic_stripe_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+
+  // Dispara Pixel InitiateCheckout no browser (com eventID para dedup)
+  if (typeof window !== 'undefined' && (window as any).fbq) {
+    (window as any).fbq('track', 'InitiateCheckout', {
+      content_name: product.slug,
+      content_category: 'Stripe Checkout',
+      currency: 'USD',
+    }, { eventID: eventId });
+  }
+
   // Chama Edge Function para criar a Checkout Session
   const { data, error } = await supabase.functions.invoke('create-stripe-checkout', {
     body: {
@@ -62,6 +74,7 @@ export async function redirectToStripeCheckout(product: CheckoutProductConfig): 
       fbc,
       userAgent,
       eventSourceUrl,
+      eventId,
     },
   });
 

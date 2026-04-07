@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, mode, productSlug, successUrl, cancelUrl, fbp, fbc, userAgent, eventSourceUrl } = await req.json();
+    const { priceId, mode, productSlug, successUrl, cancelUrl, fbp, fbc, userAgent, eventSourceUrl, eventId } = await req.json();
 
     if (!priceId || !successUrl || !cancelUrl) {
       return new Response(
@@ -43,6 +43,30 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create(sessionParams);
 
     console.log(`[Stripe Checkout] Session created: ${session.id} for product: ${productSlug}`);
+
+    // Fire-and-forget: Meta CAPI InitiateCheckout (dedup com Pixel via eventId)
+    if (fbp || fbc || eventId) {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      if (supabaseUrl && supabaseServiceKey) {
+        fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({
+            event_name: 'InitiateCheckout',
+            event_id: eventId || undefined,
+            event_source_url: eventSourceUrl || undefined,
+            fbp: fbp || undefined,
+            fbc: fbc || undefined,
+            client_user_agent: userAgent || undefined,
+            client_ip_address: req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || undefined,
+          }),
+        }).catch((err) => console.warn('[Stripe Checkout] CAPI fire-and-forget error:', err.message));
+      }
+    }
 
     return new Response(
       JSON.stringify({ url: session.url, sessionId: session.id }),
