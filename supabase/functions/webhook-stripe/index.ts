@@ -543,6 +543,9 @@ serve(async (req) => {
         product_id: product.id,
         user_id: userId,
         utm_data: session.metadata || null,
+        meta_fbp: metaFbp,
+        meta_fbc: metaFbc,
+        meta_user_agent: metaUserAgent,
         paid_at: new Date().toISOString(),
       })
 
@@ -550,6 +553,36 @@ serve(async (req) => {
         console.error(`   ├─ ❌ stripe_orders insert error: ${insertError.message}`)
       } else {
         console.log(`   ├─ ✅ stripe_orders record inserted`)
+      }
+
+      // 6c. Fire Meta CAPI Purchase event
+      try {
+        const capiEventId = `purchase_stripe_${session.id}`
+        const capiPayload = {
+          event_name: 'Purchase',
+          email,
+          value: amountUsd,
+          currency: 'USD',
+          event_id: capiEventId,
+          event_source_url: metaEventSourceUrl || `https://arcanoapp.lovable.app/checkout-sucesso?product=${productSlug}`,
+          fbp: metaFbp,
+          fbc: metaFbc,
+          client_user_agent: metaUserAgent,
+          event_time: Math.floor(Date.now() / 1000),
+          utm_data: session.metadata || null,
+        }
+
+        const capiRes = await fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+          },
+          body: JSON.stringify(capiPayload),
+        })
+        console.log(`   ├─ 📊 Meta CAPI Purchase: ${capiRes.ok ? '✅ sent' : `❌ ${capiRes.status}`} | event_id: ${capiEventId} | fbp: ${metaFbp ? '✅' : '❌'} | fbc: ${metaFbc ? '✅' : '❌'}`)
+      } catch (capiErr: any) {
+        console.error(`   ├─ ⚠️ Meta CAPI error (non-critical): ${capiErr.message}`)
       }
 
       // 6b. Log to webhook_logs
