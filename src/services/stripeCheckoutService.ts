@@ -45,6 +45,11 @@ export async function redirectToStripeCheckout(product: CheckoutProductConfig): 
   const successUrl = `${origin}/checkout-sucesso?product=${encodeURIComponent(product.slug)}`;
   const cancelUrl = `${origin}/checkout-cancelado?product=${encodeURIComponent(product.slug)}`;
 
+  // Captura cookies Meta para atribuição CAPI
+  const { fbp, fbc } = getMetaCookies();
+  const userAgent = navigator.userAgent || '';
+  const eventSourceUrl = window.location.href;
+
   // Chama Edge Function para criar a Checkout Session
   const { data, error } = await supabase.functions.invoke('create-stripe-checkout', {
     body: {
@@ -53,6 +58,10 @@ export async function redirectToStripeCheckout(product: CheckoutProductConfig): 
       productSlug: product.slug,
       successUrl,
       cancelUrl,
+      fbp,
+      fbc,
+      userAgent,
+      eventSourceUrl,
     },
   });
 
