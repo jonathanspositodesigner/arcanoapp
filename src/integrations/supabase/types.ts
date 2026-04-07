@@ -4043,6 +4043,9 @@ export type Database = {
           created_at: string | null
           currency: string
           id: string
+          meta_fbc: string | null
+          meta_fbp: string | null
+          meta_user_agent: string | null
           net_amount: number | null
           paid_at: string | null
           payment_method: string | null
@@ -4063,6 +4066,9 @@ export type Database = {
           created_at?: string | null
           currency?: string
           id?: string
+          meta_fbc?: string | null
+          meta_fbp?: string | null
+          meta_user_agent?: string | null
           net_amount?: number | null
           paid_at?: string | null
           payment_method?: string | null
@@ -4083,6 +4089,9 @@ export type Database = {
           created_at?: string | null
           currency?: string
           id?: string
+          meta_fbc?: string | null
+          meta_fbp?: string | null
+          meta_user_agent?: string | null
           net_amount?: number | null
           paid_at?: string | null
           payment_method?: string | null

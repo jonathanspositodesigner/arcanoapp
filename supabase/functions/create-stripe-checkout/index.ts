@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, mode, productSlug, successUrl, cancelUrl } = await req.json();
+    const { priceId, mode, productSlug, successUrl, cancelUrl, fbp, fbc, userAgent, eventSourceUrl } = await req.json();
 
     if (!priceId || !successUrl || !cancelUrl) {
       return new Response(
@@ -33,6 +33,10 @@ serve(async (req) => {
       cancel_url: cancelUrl,
       metadata: {
         product_slug: productSlug || "",
+        meta_fbp: fbp || "",
+        meta_fbc: fbc || "",
+        meta_user_agent: userAgent || "",
+        meta_event_source_url: eventSourceUrl || "",
       },
     };
 
