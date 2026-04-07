@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, mode, productSlug, successUrl, cancelUrl, fbp, fbc, userAgent, eventSourceUrl } = await req.json();
+    const { priceId, mode, productSlug, successUrl, cancelUrl, fbp, fbc, userAgent, eventSourceUrl, eventId } = await req.json();
 
     if (!priceId || !successUrl || !cancelUrl) {
       return new Response(
