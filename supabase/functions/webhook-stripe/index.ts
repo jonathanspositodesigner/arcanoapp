@@ -244,6 +244,22 @@ serve(async (req) => {
       const metaFbc = session.metadata?.meta_fbc || null
       const metaUserAgent = session.metadata?.meta_user_agent || null
       const metaEventSourceUrl = session.metadata?.meta_event_source_url || null
+      const metaClientIp = session.metadata?.meta_client_ip || null
+      const metaFbclid = session.metadata?.meta_fbclid || null
+
+      // Reconstruct fbc from fbclid if fbc is missing (fallback)
+      let finalFbc = metaFbc
+      if (!finalFbc && metaFbclid) {
+        finalFbc = `fb.1.${Date.now()}.${metaFbclid}`
+        console.log(`   ├─ 🔄 fbc reconstructed from fbclid`)
+      }
+
+      // Generate pseudo fbp if missing but fbclid exists
+      let finalFbp = metaFbp
+      if (!finalFbp && metaFbclid) {
+        finalFbp = `fb.1.${Date.now()}.${Math.floor(Math.random() * 2147483647)}`
+        console.log(`   ├─ 🔄 fbp generated from fbclid presence`)
+      }
 
       console.log(`   ├─ product_slug: ${productSlug}`)
       console.log(`   ├─ email: ${email}`)
