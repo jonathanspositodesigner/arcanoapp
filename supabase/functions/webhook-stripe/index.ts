@@ -559,8 +559,8 @@ serve(async (req) => {
         product_id: product.id,
         user_id: userId,
         utm_data: session.metadata || null,
-        meta_fbp: metaFbp,
-        meta_fbc: metaFbc,
+        meta_fbp: finalFbp,
+        meta_fbc: finalFbc,
         meta_user_agent: metaUserAgent,
         paid_at: new Date().toISOString(),
       })
