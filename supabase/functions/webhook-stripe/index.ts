@@ -244,6 +244,22 @@ serve(async (req) => {
       const metaFbc = session.metadata?.meta_fbc || null
       const metaUserAgent = session.metadata?.meta_user_agent || null
       const metaEventSourceUrl = session.metadata?.meta_event_source_url || null
+      const metaClientIp = session.metadata?.meta_client_ip || null
+      const metaFbclid = session.metadata?.meta_fbclid || null
+
+      // Reconstruct fbc from fbclid if fbc is missing (fallback)
+      let finalFbc = metaFbc
+      if (!finalFbc && metaFbclid) {
+        finalFbc = `fb.1.${Date.now()}.${metaFbclid}`
+        console.log(`   ├─ 🔄 fbc reconstructed from fbclid`)
+      }
+
+      // Generate pseudo fbp if missing but fbclid exists
+      let finalFbp = metaFbp
+      if (!finalFbp && metaFbclid) {
+        finalFbp = `fb.1.${Date.now()}.${Math.floor(Math.random() * 2147483647)}`
+        console.log(`   ├─ 🔄 fbp generated from fbclid presence`)
+      }
 
       console.log(`   ├─ product_slug: ${productSlug}`)
       console.log(`   ├─ email: ${email}`)
@@ -543,8 +559,8 @@ serve(async (req) => {
         product_id: product.id,
         user_id: userId,
         utm_data: session.metadata || null,
-        meta_fbp: metaFbp,
-        meta_fbc: metaFbc,
+        meta_fbp: finalFbp,
+        meta_fbc: finalFbc,
         meta_user_agent: metaUserAgent,
         paid_at: new Date().toISOString(),
       })
@@ -555,19 +571,20 @@ serve(async (req) => {
         console.log(`   ├─ ✅ stripe_orders record inserted`)
       }
 
-      // 6c. Fire Meta CAPI Purchase event
+      // 6c. Fire Meta CAPI Purchase event (BRL value for consistency with other platforms)
       try {
         const capiEventId = `purchase_stripe_${session.id}`
         const capiPayload = {
           event_name: 'Purchase',
           email,
-          value: amountUsd,
-          currency: 'USD',
+          value: amountBrl,
+          currency: 'BRL',
           event_id: capiEventId,
           event_source_url: metaEventSourceUrl || `https://arcanoapp.lovable.app/checkout-sucesso?product=${productSlug}`,
-          fbp: metaFbp,
-          fbc: metaFbc,
-          client_user_agent: metaUserAgent,
+          fbp: finalFbp || undefined,
+          fbc: finalFbc || undefined,
+          client_user_agent: metaUserAgent || undefined,
+          client_ip_address: metaClientIp || undefined,
           event_time: Math.floor(Date.now() / 1000),
           utm_data: session.metadata || null,
         }
@@ -576,11 +593,11 @@ serve(async (req) => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+            'Authorization': `Bearer ${supabaseServiceKey}`,
           },
           body: JSON.stringify(capiPayload),
         })
-        console.log(`   ├─ 📊 Meta CAPI Purchase: ${capiRes.ok ? '✅ sent' : `❌ ${capiRes.status}`} | event_id: ${capiEventId} | fbp: ${metaFbp ? '✅' : '❌'} | fbc: ${metaFbc ? '✅' : '❌'}`)
+        console.log(`   ├─ 📊 Meta CAPI Purchase: ${capiRes.ok ? '✅ sent' : `❌ ${capiRes.status}`} | event_id: ${capiEventId} | value: R$${amountBrl} | fbp: ${finalFbp ? '✅' : '❌'} | fbc: ${finalFbc ? '✅' : '❌'} | ip: ${metaClientIp ? '✅' : '❌'}`)
       } catch (capiErr: any) {
         console.error(`   ├─ ⚠️ Meta CAPI error (non-critical): ${capiErr.message}`)
       }

@@ -1,21 +1,6 @@
 /**
  * Serviço de integração com Stripe Checkout (client-side).
- *
- * Responsável por:
- * - Criar uma Checkout Session via Edge Function
- * - Redirecionar o navegador para a URL retornada pelo Stripe Checkout
- *
- * IMPORTANTE: Este serviço só é chamado quando o provider do produto
- * está configurado como 'stripe' no arquivo checkoutProducts.ts.
- *
- * O fluxo é:
- * 1. Client chama a Edge Function 'create-stripe-checkout' com o slug do produto
- * 2. A Edge Function cria uma Checkout Session no Stripe e retorna a URL da sessão
- * 3. Client redireciona o navegador diretamente para essa URL
- *
- * NOTA: A Edge Function 'create-stripe-checkout' será criada quando o primeiro
- * produto for migrado para Stripe. Enquanto nenhum produto usar Stripe,
- * este serviço nunca será chamado.
+ * Captura atribuição Meta (fbp, fbc, fbclid, IP) antes do redirect.
  */
 
 import type { CheckoutProductConfig } from '@/config/checkoutProducts';
@@ -24,14 +9,6 @@ import { getMetaCookies } from '@/lib/metaCookies';
 
 /**
  * Redireciona o usuário para o Stripe Checkout.
- *
- * Fluxo:
- * 1. Chama Edge Function para criar Checkout Session
- * 2. Recebe URL de redirect
- * 3. Redireciona o navegador
- *
- * @param product - Configuração do produto (deve ter stripePriceId preenchido)
- * @throws Error se stripePriceId estiver vazio, session falhar, etc.
  */
 export async function redirectToStripeCheckout(product: CheckoutProductConfig): Promise<void> {
   if (!product.stripePriceId) {
@@ -49,6 +26,13 @@ export async function redirectToStripeCheckout(product: CheckoutProductConfig): 
   const { fbp, fbc } = getMetaCookies();
   const userAgent = navigator.userAgent || '';
   const eventSourceUrl = window.location.href;
+
+  // Captura fbclid da URL para reconstrução de fbc no backend se cookies falharem
+  let fbclid: string | null = null;
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    fbclid = urlParams.get('fbclid');
+  } catch { /* ignore */ }
 
   // Gera event_id para deduplicação Pixel ↔ CAPI
   const eventId = `ic_stripe_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
@@ -70,8 +54,9 @@ export async function redirectToStripeCheckout(product: CheckoutProductConfig): 
       productSlug: product.slug,
       successUrl,
       cancelUrl,
-      fbp,
-      fbc,
+      fbp: fbp || '',
+      fbc: fbc || '',
+      fbclid: fbclid || '',
       userAgent,
       eventSourceUrl,
       eventId,
@@ -87,6 +72,5 @@ export async function redirectToStripeCheckout(product: CheckoutProductConfig): 
   }
 
   // Redireciona para a página de checkout do Stripe
-  // Usa window.location.href para compatibilidade com WebViews
   window.location.href = data.url;
 }
