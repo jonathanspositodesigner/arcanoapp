@@ -20,6 +20,7 @@
 
 import type { CheckoutProductConfig } from '@/config/checkoutProducts';
 import { supabase } from '@/integrations/supabase/client';
+import { getMetaCookies } from '@/lib/metaCookies';
 
 /**
  * Redireciona o usuário para o Stripe Checkout.
