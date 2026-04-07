@@ -217,21 +217,36 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // ===== IDEMPOTENCY =====
-    const { data: existingOrder } = await supabase
-      .from('stripe_orders')
-      .select('id')
-      .eq('stripe_session_id', (event.data.object as any).id || event.id)
-      .maybeSingle()
-
     // =============================================
     // CHECKOUT SESSION COMPLETED
     // =============================================
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session
+      const paymentIntentId = session.payment_intent as string || null
+
+      const duplicateFilters = [`stripe_session_id.eq.${session.id}`]
+      if (paymentIntentId) {
+        duplicateFilters.push(`stripe_payment_intent_id.eq.${paymentIntentId}`)
+      }
+
+      const { data: existingOrders, error: existingOrderError } = await supabase
+        .from('stripe_orders')
+        .select('id, stripe_session_id, stripe_payment_intent_id, created_at')
+        .or(duplicateFilters.join(','))
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      if (existingOrderError) {
+        console.error(`   ├─ ❌ Error checking existing stripe order: ${existingOrderError.message}`)
+      }
+
+      const existingOrder = existingOrders?.[0]
 
       if (existingOrder) {
-        console.log(`   ├─ ⏭️ Session already processed: ${session.id}`)
+        const duplicateReason = existingOrder.stripe_session_id === session.id
+          ? 'session_id'
+          : 'payment_intent_id'
+        console.log(`   ├─ ⏭️ Order already processed via ${duplicateReason}: ${existingOrder.id}`)
         return new Response('OK', { status: 200, headers: corsHeaders })
       }
 
@@ -543,7 +558,6 @@ serve(async (req) => {
       }
 
       // 6. Insert into stripe_orders
-      const paymentIntentId = session.payment_intent as string || null
       const { error: insertError } = await supabase.from('stripe_orders').insert({
         stripe_session_id: session.id,
         stripe_payment_intent_id: paymentIntentId,
@@ -633,11 +647,19 @@ serve(async (req) => {
       console.log(`   ├─ 🔄 Refund for payment_intent: ${paymentIntentId}`)
 
       // Find the stripe_order by payment_intent
-      const { data: stripeOrder } = await supabase
+      const { data: stripeOrders, error: stripeOrderError } = await supabase
         .from('stripe_orders')
         .select('*, mp_products(*)')
         .eq('stripe_payment_intent_id', paymentIntentId)
-        .maybeSingle()
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      if (stripeOrderError) {
+        console.error(`   ├─ ❌ Error loading stripe_order for refund: ${stripeOrderError.message}`)
+        return new Response('OK', { status: 200, headers: corsHeaders })
+      }
+
+      const stripeOrder = stripeOrders?.[0]
 
       if (!stripeOrder) {
         console.log(`   ├─ ⏭️ No matching stripe_order for refund`)
