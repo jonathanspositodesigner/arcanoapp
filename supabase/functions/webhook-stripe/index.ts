@@ -520,6 +520,46 @@ serve(async (req) => {
         console.log(`   ├─ 📊 Record-only mode (ES product) — no user/provisioning/email`)
       }
 
+      // 6. Insert into stripe_orders
+      const paymentIntentId = session.payment_intent as string || null
+      const { error: insertError } = await supabase.from('stripe_orders').insert({
+        stripe_session_id: session.id,
+        stripe_payment_intent_id: paymentIntentId,
+        status: 'paid',
+        amount: amountBrl,
+        amount_usd: amountUsd,
+        net_amount: netAmountBrl,
+        currency: currency,
+        payment_method: session.payment_method_types?.[0] || 'card',
+        user_email: email,
+        user_name: customerName || null,
+        product_slug: productSlug,
+        product_id: product.id,
+        user_id: userId,
+        utm_data: session.metadata || null,
+        paid_at: new Date().toISOString(),
+      })
+
+      if (insertError) {
+        console.error(`   ├─ ❌ stripe_orders insert error: ${insertError.message}`)
+      } else {
+        console.log(`   ├─ ✅ stripe_orders record inserted`)
+      }
+
+      // 6b. Log to webhook_logs
+      await supabase.from('webhook_logs').insert({
+        platform: 'stripe',
+        event_type: event.type,
+        transaction_id: session.id,
+        status: 'paid',
+        email,
+        product_name: product.title,
+        amount: amountBrl,
+        payload: JSON.parse(rawBody),
+      }).then(({ error: logErr }) => {
+        if (logErr) console.warn(`   ├─ ⚠️ webhook_logs insert error: ${logErr.message}`)
+      })
+
       // 7. Admin notification
       await sendAdminNotification(product.title, amountUsd, currency, email, customerName)
 
