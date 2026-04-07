@@ -13,13 +13,31 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, mode, productSlug, successUrl, cancelUrl, fbp, fbc, userAgent, eventSourceUrl, eventId } = await req.json();
+    const { priceId, mode, productSlug, successUrl, cancelUrl, fbp, fbc, fbclid, userAgent, eventSourceUrl, eventId } = await req.json();
 
     if (!priceId || !successUrl || !cancelUrl) {
       return new Response(
         JSON.stringify({ error: "Missing required fields: priceId, successUrl, cancelUrl" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Capture real client IP from proxy headers
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || req.headers.get('cf-connecting-ip')
+      || req.headers.get('x-real-ip')
+      || '';
+
+    // If fbc is missing but fbclid is present, reconstruct fbc
+    let finalFbc = fbc || '';
+    if (!finalFbc && fbclid) {
+      finalFbc = `fb.1.${Date.now()}.${fbclid}`;
+    }
+
+    // If fbp is missing but we have fbclid, generate a pseudo fbp
+    let finalFbp = fbp || '';
+    if (!finalFbp && fbclid) {
+      finalFbp = `fb.1.${Date.now()}.${Math.floor(Math.random() * 2147483647)}`;
     }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -33,19 +51,21 @@ serve(async (req) => {
       cancel_url: cancelUrl,
       metadata: {
         product_slug: productSlug || "",
-        meta_fbp: fbp || "",
-        meta_fbc: fbc || "",
+        meta_fbp: finalFbp,
+        meta_fbc: finalFbc,
         meta_user_agent: userAgent || "",
         meta_event_source_url: eventSourceUrl || "",
+        meta_client_ip: clientIp,
+        meta_fbclid: fbclid || "",
       },
     };
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
-    console.log(`[Stripe Checkout] Session created: ${session.id} for product: ${productSlug}`);
+    console.log(`[Stripe Checkout] Session created: ${session.id} | product: ${productSlug} | fbp: ${finalFbp ? '✅' : '❌'} | fbc: ${finalFbc ? '✅' : '❌'} | ip: ${clientIp ? '✅' : '❌'}`);
 
     // Fire-and-forget: Meta CAPI InitiateCheckout (dedup com Pixel via eventId)
-    if (fbp || fbc || eventId) {
+    if (finalFbp || finalFbc || eventId) {
       const supabaseUrl = Deno.env.get('SUPABASE_URL');
       const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
       if (supabaseUrl && supabaseServiceKey) {
@@ -59,10 +79,10 @@ serve(async (req) => {
             event_name: 'InitiateCheckout',
             event_id: eventId || undefined,
             event_source_url: eventSourceUrl || undefined,
-            fbp: fbp || undefined,
-            fbc: fbc || undefined,
+            fbp: finalFbp || undefined,
+            fbc: finalFbc || undefined,
             client_user_agent: userAgent || undefined,
-            client_ip_address: req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || undefined,
+            client_ip_address: clientIp || undefined,
           }),
         }).catch((err) => console.warn('[Stripe Checkout] CAPI fire-and-forget error:', err.message));
       }
