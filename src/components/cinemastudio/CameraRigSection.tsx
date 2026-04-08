@@ -40,9 +40,9 @@ const SegmentedControl: React.FC<{
 const CameraRigSection: React.FC<Props> = ({ settings, updateSettings }) => {
   return (
     <div className="space-y-2.5">
-      {/* Body */}
+      {/* Corpo */}
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Body</span>
+        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Corpo</span>
         <Select value={settings.cameraBody} onValueChange={v => updateSettings({ cameraBody: v })}>
           <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
             <SelectValue />
@@ -57,9 +57,9 @@ const CameraRigSection: React.FC<Props> = ({ settings, updateSettings }) => {
         </Select>
       </div>
 
-      {/* Lens */}
+      {/* Lente */}
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Lens</span>
+        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Lente</span>
         <Select value={settings.lensType} onValueChange={v => updateSettings({ lensType: v })}>
           <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
             <SelectValue />
@@ -83,9 +83,9 @@ const CameraRigSection: React.FC<Props> = ({ settings, updateSettings }) => {
         suffix="mm"
       />
 
-      {/* Aperture */}
+      {/* Abertura */}
       <SegmentedControl
-        label="Aperture"
+        label="Abertura"
         options={APERTURES}
         value={settings.aperture}
         onChange={v => updateSettings({ aperture: v })}

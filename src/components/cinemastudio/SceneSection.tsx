@@ -13,14 +13,14 @@ const SceneSection: React.FC<Props> = ({ settings, updateSettings }) => {
       <Textarea
         value={settings.scenePrompt}
         onChange={e => updateSettings({ scenePrompt: e.target.value.slice(0, 500) })}
-        placeholder="Describe the scene..."
+        placeholder="Descreva a cena..."
         rows={3}
         className="bg-black/20 border-white/[0.06] text-gray-300 text-[12px] min-h-[60px] resize-none placeholder:text-gray-600 focus:min-h-[100px] transition-all duration-200"
       />
       <Textarea
         value={settings.subject}
         onChange={e => updateSettings({ subject: e.target.value })}
-        placeholder="Subject / character..."
+        placeholder="Sujeito / personagem..."
         rows={2}
         className="bg-black/20 border-white/[0.06] text-gray-300 text-[12px] min-h-[40px] resize-none placeholder:text-gray-600"
       />

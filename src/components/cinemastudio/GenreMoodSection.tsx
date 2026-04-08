@@ -13,9 +13,9 @@ interface Props {
 const GenreMoodSection: React.FC<Props> = ({ settings, updateSettings }) => {
   return (
     <div className="space-y-2.5">
-      {/* Genre */}
+      {/* Gênero */}
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Genre</span>
+        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Gênero</span>
         <Select value={settings.genre} onValueChange={v => updateSettings({ genre: v })}>
           <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
             <SelectValue />
@@ -28,15 +28,15 @@ const GenreMoodSection: React.FC<Props> = ({ settings, updateSettings }) => {
         </Select>
       </div>
 
-      {/* Mood */}
+      {/* Tom */}
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Mood</span>
+        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Tom</span>
         <Select value={settings.mood || 'none'} onValueChange={v => updateSettings({ mood: v === 'none' ? '' : v })}>
           <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
-            <SelectValue placeholder="None" />
+            <SelectValue placeholder="Nenhum" />
           </SelectTrigger>
           <SelectContent className="bg-[#141420] border-white/[0.06]">
-            <SelectItem value="none" className="text-gray-300 text-[11px]">None</SelectItem>
+            <SelectItem value="none" className="text-gray-300 text-[11px]">Nenhum</SelectItem>
             {MOODS.map(m => (
               <SelectItem key={m} value={m} className="text-gray-300 text-[11px]">{m}</SelectItem>
             ))}
@@ -44,9 +44,9 @@ const GenreMoodSection: React.FC<Props> = ({ settings, updateSettings }) => {
         </Select>
       </div>
 
-      {/* Color Grade */}
+      {/* Colorização */}
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Grade</span>
+        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Cor</span>
         <Select value={settings.colorGrade} onValueChange={v => updateSettings({ colorGrade: v })}>
           <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
             <SelectValue />

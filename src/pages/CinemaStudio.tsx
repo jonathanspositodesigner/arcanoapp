@@ -39,7 +39,7 @@ const CinemaStudio: React.FC = () => {
                 studio.mode === 'photo' ? 'bg-white/[0.08] text-gray-200' : 'text-gray-500 hover:text-gray-300'
               }`}
             >
-              <Camera className="w-3 h-3" /> Photo
+              <Camera className="w-3 h-3" /> Foto
             </button>
             <button
               onClick={() => studio.setMode('video')}
@@ -47,7 +47,7 @@ const CinemaStudio: React.FC = () => {
                 studio.mode === 'video' ? 'bg-white/[0.08] text-gray-200' : 'text-gray-500 hover:text-gray-300'
               }`}
             >
-              <Film className="w-3 h-3" /> Video
+              <Film className="w-3 h-3" /> Vídeo
             </button>
           </div>
 
@@ -69,7 +69,7 @@ const CinemaStudio: React.FC = () => {
                 ) : (
                   <>
                     <Sparkles className="w-3 h-3 mr-1" />
-                    Generate
+                    Gerar
                     <span className="ml-1.5 text-gray-500 flex items-center gap-0.5">
                       <Coins className="w-2.5 h-2.5" />{studio.estimatedCredits}
                     </span>
@@ -89,7 +89,7 @@ const CinemaStudio: React.FC = () => {
                 mobileTab === 'controls' ? 'text-gray-200 border-b border-gray-400' : 'text-gray-600'
               }`}
             >
-              Controls
+              Controles
             </button>
             <button
               onClick={() => setMobileTab('preview')}
@@ -97,7 +97,7 @@ const CinemaStudio: React.FC = () => {
                 mobileTab === 'preview' ? 'text-gray-200 border-b border-gray-400' : 'text-gray-600'
               }`}
             >
-              Preview
+              Pré-visualização
             </button>
           </div>
         )}

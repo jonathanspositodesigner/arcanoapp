@@ -62,24 +62,24 @@ const ControlPanel: React.FC<Props> = ({
 
   return (
     <div className="space-y-0">
-      {/* Scene — always visible, no header */}
+      {/* Cena — sempre visível, sem cabeçalho */}
       <SceneSection settings={settings} updateSettings={updateSettings} />
 
       <div className="border-t border-white/[0.04] my-1" />
 
-      <Section title="Camera" emoji="🎥" defaultOpen={true}>
+      <Section title="Câmera" emoji="🎥" defaultOpen={true}>
         <CameraRigSection settings={settings} updateSettings={updateSettings} />
       </Section>
 
       <div className="border-t border-white/[0.04]" />
 
-      <Section title="Movement" emoji="🎬" defaultOpen={true}>
+      <Section title="Movimento" emoji="🎬" defaultOpen={true}>
         <CameraMovementSection settings={settings} updateSettings={updateSettings} />
       </Section>
 
       <div className="border-t border-white/[0.04]" />
 
-      <Section title="Style" emoji="🎨" defaultOpen={false}>
+      <Section title="Estilo" emoji="🎨" defaultOpen={false}>
         <GenreMoodSection settings={settings} updateSettings={updateSettings} />
       </Section>
 
@@ -87,14 +87,14 @@ const ControlPanel: React.FC<Props> = ({
 
       {mode === 'video' && (
         <>
-          <Section title="Output" emoji="⚙️" defaultOpen={false}>
+          <Section title="Saída" emoji="⚙️" defaultOpen={false}>
             <VideoSettingsSection settings={settings} updateSettings={updateSettings} />
           </Section>
           <div className="border-t border-white/[0.04]" />
         </>
       )}
 
-      <Section title="References" emoji="🖼" defaultOpen={false}>
+      <Section title="Referências" emoji="🖼" defaultOpen={false}>
         <ReferenceSection
           images={referenceImages}
           previews={referenceImagePreviews}
@@ -105,14 +105,14 @@ const ControlPanel: React.FC<Props> = ({
 
       <div className="border-t border-white/[0.04]" />
 
-      {/* Assembled Prompt Toggle */}
+      {/* Toggle do prompt montado */}
       <div className="pt-1">
         <button
           onClick={() => setShowPrompt(!showPrompt)}
           className="flex items-center gap-1.5 text-[10px] text-gray-600 hover:text-gray-400 transition-colors py-1"
         >
           {showPrompt ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-          {showPrompt ? 'Hide prompt' : 'View prompt'}
+          {showPrompt ? 'Ocultar prompt' : 'Ver prompt montado'}
         </button>
         {showPrompt && (
           <div className="mt-1 relative">
