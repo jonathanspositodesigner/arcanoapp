@@ -81,7 +81,7 @@ export function useCinemaStudio() {
   const [settings, setSettings] = useState<CinemaSettings>(getDefaultSettings());
   const [referenceImages, setReferenceImages] = useState<File[]>([]);
   const [referenceImagePreviews, setReferenceImagePreviews] = useState<string[]>([]);
-  const [selectedCharacter, setSelectedCharacter] = useState<SelectedAsset | null>(null);
+  const [selectedCharacters, setSelectedCharacters] = useState<SelectedAsset[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<SelectedAsset | null>(null);
 
   // Processing
@@ -117,7 +117,9 @@ export function useCinemaStudio() {
   // ━━━ Computed ━━━
   const basePrompt = buildCinemaPrompt(settings);
   const extraParts: string[] = [];
-  if (selectedCharacter?.description) extraParts.push(`character: ${selectedCharacter.description}`);
+  selectedCharacters.forEach(char => {
+    if (char.description) extraParts.push(`character: ${char.description}`);
+  });
   if (selectedScenario?.description) extraParts.push(`scenario: ${selectedScenario.description}`);
   const assembledPrompt = extraParts.length > 0 ? `${basePrompt}, ${extraParts.join(', ')}` : basePrompt;
 
@@ -336,10 +338,10 @@ export function useCinemaStudio() {
         setProgress(5 + Math.round((i + 1) / Math.max(referenceImages.length, 1) * 10));
       }
 
-      // 2. Character image (already hosted in cinema-assets)
-      if (selectedCharacter?.image_url) {
-        uploadedUrls.push(selectedCharacter.image_url);
-      }
+      // 2. Character images (already hosted in cinema-assets)
+      selectedCharacters.forEach(char => {
+        if (char.image_url) uploadedUrls.push(char.image_url);
+      });
 
       // 3. Scenario image (already hosted in cinema-assets)
       if (selectedScenario?.image_url) {
@@ -437,7 +439,9 @@ export function useCinemaStudio() {
       }
 
       // Add character and scenario image URLs (already hosted)
-      if (selectedCharacter?.image_url) uploadedImageUrls.push(selectedCharacter.image_url);
+      selectedCharacters.forEach(char => {
+        if (char.image_url) uploadedImageUrls.push(char.image_url);
+      });
       if (selectedScenario?.image_url) uploadedImageUrls.push(selectedScenario.image_url);
 
       setProgress(30);
@@ -591,7 +595,7 @@ export function useCinemaStudio() {
     settings, updateSettings,
     referenceImages, referenceImagePreviews, maxRefImages,
     addReferenceImages, removeReferenceImage,
-    selectedCharacter, setSelectedCharacter,
+    selectedCharacters, setSelectedCharacters,
     selectedScenario, setSelectedScenario,
     status, progress, outputUrl, errorMessage,
     elapsedTime, isProcessing, isSubmitting,

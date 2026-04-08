@@ -17,17 +17,19 @@ interface SavedItem {
 interface Props {
   settings: { scenePrompt: string; subject: string };
   updateSettings: (p: Partial<{ scenePrompt: string; subject: string }>) => void;
-  onCharacterChange?: (item: SavedItem | null) => void;
+  onCharactersChange?: (items: SavedItem[]) => void;
   onScenarioChange?: (item: SavedItem | null) => void;
 }
 
 type ModalType = 'character' | 'scenario' | null;
 
-const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, onCharacterChange, onScenarioChange }) => {
+const MAX_CHARACTERS = 3;
+
+const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, onCharactersChange, onScenarioChange }) => {
   const [modalType, setModalType] = useState<ModalType>(null);
   const [characters, setCharacters] = useState<SavedItem[]>([]);
   const [scenarios, setScenarios] = useState<SavedItem[]>([]);
-  const [selectedChar, setSelectedChar] = useState<SavedItem | null>(null);
+  const [selectedChars, setSelectedChars] = useState<SavedItem[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<SavedItem | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -116,23 +118,39 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
   const handleDelete = async (id: string, type: 'character' | 'scenario') => {
     const table = type === 'character' ? 'cinema_characters' : 'cinema_scenarios';
     await supabase.from(table).delete().eq('id', id);
-    if (type === 'character' && selectedChar?.id === id) setSelectedChar(null);
-    if (type === 'scenario' && selectedScenario?.id === id) setSelectedScenario(null);
+    if (type === 'character') {
+      const filtered = selectedChars.filter(c => c.id !== id);
+      setSelectedChars(filtered);
+      onCharactersChange?.(filtered);
+    }
+    if (type === 'scenario' && selectedScenario?.id === id) {
+      setSelectedScenario(null);
+      onScenarioChange?.(null);
+    }
     await fetchItems();
     toast.success('Removido!');
   };
 
   const selectItem = (item: SavedItem) => {
     if (modalType === 'character') {
-      const isSame = selectedChar?.id === item.id;
-      const newVal = isSame ? null : item;
-      setSelectedChar(newVal);
-      onCharacterChange?.(newVal);
-      if (!isSame && item.description) {
-        updateSettings({ subject: item.description });
-      } else if (isSame) {
-        updateSettings({ subject: '' });
+      const alreadySelected = selectedChars.some(c => c.id === item.id);
+      let newChars: SavedItem[];
+      if (alreadySelected) {
+        newChars = selectedChars.filter(c => c.id !== item.id);
+      } else {
+        if (selectedChars.length >= MAX_CHARACTERS) {
+          toast.error(`Máximo de ${MAX_CHARACTERS} personagens`);
+          return;
+        }
+        newChars = [...selectedChars, item];
       }
+      setSelectedChars(newChars);
+      onCharactersChange?.(newChars);
+      // Update subject with all character descriptions
+      const descriptions = newChars.map(c => c.description).filter(Boolean).join('; ');
+      updateSettings({ subject: descriptions });
+      // Don't close modal so user can pick more
+      if (!alreadySelected && newChars.length < MAX_CHARACTERS) return;
     } else {
       const isSame = selectedScenario?.id === item.id;
       const newVal = isSame ? null : item;
@@ -142,38 +160,70 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
     setModalType(null);
   };
 
+  const removeChar = (id: string) => {
+    const filtered = selectedChars.filter(c => c.id !== id);
+    setSelectedChars(filtered);
+    onCharactersChange?.(filtered);
+    const descriptions = filtered.map(c => c.description).filter(Boolean).join('; ');
+    updateSettings({ subject: descriptions });
+  };
+
   const items = modalType === 'character' ? characters : scenarios;
-  const selected = modalType === 'character' ? selectedChar : selectedScenario;
 
   return (
     <>
       <div className="space-y-1.5">
-        {/* Personagem selector */}
+        {/* Personagens selecionados */}
+        {selectedChars.length > 0 && (
+          <div className="space-y-1">
+            {selectedChars.map(char => (
+              <div
+                key={char.id}
+                className="flex items-center gap-2 w-full p-1.5 rounded-md bg-white/[0.03] border border-white/[0.06]"
+              >
+                {char.image_url ? (
+                  <img src={char.image_url} alt="" className="w-7 h-7 rounded object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-7 h-7 rounded bg-white/[0.04] flex items-center justify-center flex-shrink-0">
+                    <User className="w-3 h-3 text-gray-600" />
+                  </div>
+                )}
+                <span className="text-[11px] text-gray-300 truncate flex-1">{char.name}</span>
+                <button
+                  onClick={() => removeChar(char.id)}
+                  className="p-0.5 hover:bg-white/10 rounded"
+                >
+                  <X className="w-3 h-3 text-gray-600" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Botão adicionar personagem */}
         <button
           onClick={() => openModal('character')}
           className="flex items-center gap-2 w-full p-2 rounded-md bg-black/20 border border-white/[0.06] hover:border-white/[0.12] transition-colors"
         >
-          {selectedChar?.image_url ? (
-            <img src={selectedChar.image_url} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
-          ) : (
-            <div className="w-8 h-8 rounded bg-white/[0.04] flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 rounded bg-white/[0.04] flex items-center justify-center flex-shrink-0">
+            {selectedChars.length > 0 ? (
+              <Plus className="w-3.5 h-3.5 text-gray-600" />
+            ) : (
               <User className="w-3.5 h-3.5 text-gray-600" />
-            </div>
-          )}
+            )}
+          </div>
           <div className="text-left min-w-0 flex-1">
-            <span className="text-[9px] text-gray-600 uppercase tracking-wider block">Personagem</span>
+            <span className="text-[9px] text-gray-600 uppercase tracking-wider block">
+              Personagem ({selectedChars.length}/{MAX_CHARACTERS})
+            </span>
             <span className="text-[11px] text-gray-300 truncate block">
-              {selectedChar ? selectedChar.name : 'Selecionar...'}
+              {selectedChars.length === 0
+                ? 'Selecionar...'
+                : selectedChars.length < MAX_CHARACTERS
+                  ? 'Adicionar mais...'
+                  : 'Limite atingido'}
             </span>
           </div>
-          {selectedChar && (
-            <button
-              onClick={e => { e.stopPropagation(); setSelectedChar(null); updateSettings({ subject: '' }); onCharacterChange?.(null); }}
-              className="p-0.5 hover:bg-white/10 rounded"
-            >
-              <X className="w-3 h-3 text-gray-600" />
-            </button>
-          )}
         </button>
 
         {/* Cenário selector */}
@@ -210,9 +260,15 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
         <DialogContent className="bg-[#141420] border-white/[0.08] max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-gray-200 text-sm">
-              {modalType === 'character' ? '👤 Personagens' : '🏔 Cenários'}
+              {modalType === 'character' ? `👤 Personagens (${selectedChars.length}/${MAX_CHARACTERS})` : '🏔 Cenários'}
             </DialogTitle>
           </DialogHeader>
+
+          {modalType === 'character' && selectedChars.length >= MAX_CHARACTERS && (
+            <div className="text-[11px] text-amber-400/80 bg-amber-500/10 rounded-md px-3 py-2">
+              Limite de {MAX_CHARACTERS} personagens atingido. Remova um para adicionar outro.
+            </div>
+          )}
 
           {showCreate ? (
             <div className="space-y-3 pt-2">
@@ -276,6 +332,16 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                 {modalType === 'character' ? 'Criar novo personagem' : 'Criar novo cenário'}
               </Button>
 
+              {modalType === 'character' && selectedChars.length > 0 && (
+                <Button
+                  onClick={() => setModalType(null)}
+                  size="sm"
+                  className="w-full bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-[11px]"
+                >
+                  Confirmar seleção ({selectedChars.length})
+                </Button>
+              )}
+
               {loading ? (
                 <div className="py-8 flex justify-center">
                   <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
@@ -286,37 +352,46 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                 </p>
               ) : (
                 <div className="space-y-1">
-                  {items.map(item => (
-                    <div
-                      key={item.id}
-                      className={`flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-colors group ${
-                        selected?.id === item.id
-                          ? 'bg-white/[0.06] border-l-2 border-purple-500'
-                          : 'hover:bg-white/[0.03] border-l-2 border-transparent'
-                      }`}
-                      onClick={() => selectItem(item)}
-                    >
-                      {item.image_url ? (
-                        <img src={item.image_url} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0" />
-                      ) : (
-                        <div className="w-10 h-10 rounded bg-white/[0.04] flex-shrink-0 flex items-center justify-center">
-                          {modalType === 'character' ? <User className="w-4 h-4 text-gray-600" /> : <MapPin className="w-4 h-4 text-gray-600" />}
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <span className="text-[11px] font-medium text-gray-300 block truncate">{item.name}</span>
-                        {item.description && (
-                          <span className="text-[9px] text-gray-600 block truncate">{item.description}</span>
-                        )}
-                      </div>
-                      <button
-                        onClick={e => { e.stopPropagation(); handleDelete(item.id, modalType!); }}
-                        className="p-1 rounded hover:bg-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                  {items.map(item => {
+                    const isCharSelected = modalType === 'character' && selectedChars.some(c => c.id === item.id);
+                    const isScenSelected = modalType === 'scenario' && selectedScenario?.id === item.id;
+                    const isSelected = isCharSelected || isScenSelected;
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={`flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-colors group ${
+                          isSelected
+                            ? 'bg-white/[0.06] border-l-2 border-purple-500'
+                            : 'hover:bg-white/[0.03] border-l-2 border-transparent'
+                        }`}
+                        onClick={() => selectItem(item)}
                       >
-                        <Trash2 className="w-3 h-3 text-red-400/60" />
-                      </button>
-                    </div>
-                  ))}
+                        {item.image_url ? (
+                          <img src={item.image_url} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0" />
+                        ) : (
+                          <div className="w-10 h-10 rounded bg-white/[0.04] flex-shrink-0 flex items-center justify-center">
+                            {modalType === 'character' ? <User className="w-4 h-4 text-gray-600" /> : <MapPin className="w-4 h-4 text-gray-600" />}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[11px] font-medium text-gray-300 block truncate">{item.name}</span>
+                          {item.description && (
+                            <span className="text-[9px] text-gray-600 block truncate">{item.description}</span>
+                          )}
+                        </div>
+                        {isCharSelected && (
+                          <span className="text-[9px] text-purple-400 font-semibold flex-shrink-0">✓</span>
+                        )}
+                        <button
+                          onClick={e => { e.stopPropagation(); handleDelete(item.id, modalType!); }}
+                          className="p-1 rounded hover:bg-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="w-3 h-3 text-red-400/60" />
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
