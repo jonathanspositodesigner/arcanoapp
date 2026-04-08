@@ -151,6 +151,13 @@ const GenreMoodPhotoSection: React.FC<Props> = ({ settings, updateSettings }) =>
   return (
     <div className="space-y-2">
       <StyleDropdown
+        label="Tipo"
+        options={IMAGE_STYLE_OPTIONS}
+        selectedValue={settings.imageStyle || 'Cinematic'}
+        onSelect={v => updateSettings({ imageStyle: v || 'Cinematic' })}
+        defaultValue="Cinematic"
+      />
+      <StyleDropdown
         label="Gênero"
         options={GENRE_OPTIONS}
         selectedValue={settings.genre}
@@ -163,13 +170,6 @@ const GenreMoodPhotoSection: React.FC<Props> = ({ settings, updateSettings }) =>
         selectedValue={settings.mood || ''}
         onSelect={v => updateSettings({ mood: v })}
         defaultValue=""
-      />
-      <StyleDropdown
-        label="Tipo"
-        options={IMAGE_STYLE_OPTIONS}
-        selectedValue={settings.imageStyle || 'Cinematic'}
-        onSelect={v => updateSettings({ imageStyle: v || 'Cinematic' })}
-        defaultValue="Cinematic"
       />
       <StyleDropdown
         label="Cor"
