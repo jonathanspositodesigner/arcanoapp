@@ -10,6 +10,7 @@ import {
 interface Props {
   settings: CinemaSettings;
   updateSettings: (p: Partial<CinemaSettings>) => void;
+  mode?: 'video' | 'photo';
 }
 
 const SegmentedControl: React.FC<{
@@ -39,23 +40,29 @@ const SegmentedControl: React.FC<{
   </div>
 );
 
-const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings }) => {
+const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings, mode = 'video' }) => {
+  const isPhoto = mode === 'photo';
+
   return (
     <div className="space-y-2.5">
-      <SegmentedControl
-        label="Duração"
-        options={DURATIONS}
-        value={settings.duration}
-        onChange={v => updateSettings({ duration: v })}
-        suffix="s"
-      />
+      {!isPhoto && (
+        <SegmentedControl
+          label="Duração"
+          options={DURATIONS}
+          value={settings.duration}
+          onChange={v => updateSettings({ duration: v })}
+          suffix="s"
+        />
+      )}
 
-      <SegmentedControl
-        label="Qualidade"
-        options={QUALITIES}
-        value={settings.quality}
-        onChange={v => updateSettings({ quality: v })}
-      />
+      {!isPhoto && (
+        <SegmentedControl
+          label="Qualidade"
+          options={QUALITIES}
+          value={settings.quality}
+          onChange={v => updateSettings({ quality: v })}
+        />
+      )}
 
       <SegmentedControl
         label="Proporção"
@@ -64,60 +71,64 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings }) => 
         onChange={v => updateSettings({ aspectRatio: v })}
       />
 
-      {/* Velocidade */}
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Veloc.</span>
-        <div className="flex-1 flex bg-white/[0.02] rounded-md p-0.5 gap-0.5">
-          <button
-            onClick={() => updateSettings({ modelSpeed: 'standard' })}
-            className={`flex-1 py-1 text-[10px] rounded transition-all ${
-              settings.modelSpeed === 'standard' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-gray-600 hover:text-gray-400'
-            }`}
-          >
-            Padrão
-          </button>
-          <button
-            onClick={() => updateSettings({ modelSpeed: 'fast' })}
-            className={`flex-1 py-1 text-[10px] rounded transition-all flex items-center justify-center gap-0.5 ${
-              settings.modelSpeed === 'fast' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-gray-600 hover:text-gray-400'
-            }`}
-          >
-            Rápido <Zap className="w-2.5 h-2.5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Rampa de velocidade */}
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Rampa</span>
-        <Select value={settings.speedRamp} onValueChange={v => updateSettings({ speedRamp: v })}>
-          <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-[#141420] border-white/[0.06]">
-            {SPEED_RAMPS.map(s => (
-              <SelectItem key={s} value={s} className="text-gray-300 text-[11px]">{s}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Áudio */}
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Áudio</span>
-        <div className="flex-1 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Switch
-              checked={settings.generateAudio}
-              onCheckedChange={v => updateSettings({ generateAudio: v })}
-              className="data-[state=checked]:bg-white/20 data-[state=unchecked]:bg-white/[0.06] scale-75 origin-left [&>span]:bg-white"
-            />
-            {settings.generateAudio && (
-              <span className="text-[9px] text-green-500/70 font-medium">grátis</span>
-            )}
+      {!isPhoto && (
+        <>
+          {/* Velocidade */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Veloc.</span>
+            <div className="flex-1 flex bg-white/[0.02] rounded-md p-0.5 gap-0.5">
+              <button
+                onClick={() => updateSettings({ modelSpeed: 'standard' })}
+                className={`flex-1 py-1 text-[10px] rounded transition-all ${
+                  settings.modelSpeed === 'standard' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-gray-600 hover:text-gray-400'
+                }`}
+              >
+                Padrão
+              </button>
+              <button
+                onClick={() => updateSettings({ modelSpeed: 'fast' })}
+                className={`flex-1 py-1 text-[10px] rounded transition-all flex items-center justify-center gap-0.5 ${
+                  settings.modelSpeed === 'fast' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-gray-600 hover:text-gray-400'
+                }`}
+              >
+                Rápido <Zap className="w-2.5 h-2.5" />
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
+
+          {/* Rampa de velocidade */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Rampa</span>
+            <Select value={settings.speedRamp} onValueChange={v => updateSettings({ speedRamp: v })}>
+              <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#141420] border-white/[0.06]">
+                {SPEED_RAMPS.map(s => (
+                  <SelectItem key={s} value={s} className="text-gray-300 text-[11px]">{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Áudio */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Áudio</span>
+            <div className="flex-1 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Switch
+                  checked={settings.generateAudio}
+                  onCheckedChange={v => updateSettings({ generateAudio: v })}
+                  className="data-[state=checked]:bg-white/20 data-[state=unchecked]:bg-white/[0.06] scale-75 origin-left [&>span]:bg-white"
+                />
+                {settings.generateAudio && (
+                  <span className="text-[9px] text-green-500/70 font-medium">grátis</span>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
