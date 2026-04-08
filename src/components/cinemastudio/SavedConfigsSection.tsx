@@ -6,25 +6,33 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { CinemaSettings } from '@/utils/cinemaPromptBuilder';
-import type { StudioMode } from '@/hooks/useCinemaStudio';
+import type { StudioMode, SelectedAsset } from '@/hooks/useCinemaStudio';
+
+interface SavedConfigData {
+  settings: CinemaSettings;
+  characters?: SelectedAsset[];
+  scenario?: SelectedAsset | null;
+}
 
 interface SavedConfig {
   id: string;
   name: string;
   mode: string;
-  settings: CinemaSettings;
+  settings: SavedConfigData;
   created_at: string;
 }
 
 interface Props {
   mode: StudioMode;
   settings: CinemaSettings;
-  onLoad: (settings: Partial<CinemaSettings>) => void;
+  selectedCharacters: SelectedAsset[];
+  selectedScenario: SelectedAsset | null;
+  onLoad: (data: { settings: Partial<CinemaSettings>; characters?: SelectedAsset[]; scenario?: SelectedAsset | null }) => void;
 }
 
 const MAX_CONFIGS = 20;
 
-const SavedConfigsSection: React.FC<Props> = ({ mode, settings, onLoad }) => {
+const SavedConfigsSection: React.FC<Props> = ({ mode, settings, selectedCharacters, selectedScenario, onLoad }) => {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [showLoadDialog, setShowLoadDialog] = useState(false);
   const [configs, setConfigs] = useState<SavedConfig[]>([]);
@@ -46,7 +54,7 @@ const SavedConfigsSection: React.FC<Props> = ({ mode, settings, onLoad }) => {
       .order('created_at', { ascending: false });
 
     if (!error && data) {
-      setConfigs(data.map(d => ({ ...d, settings: d.settings as unknown as CinemaSettings })));
+      setConfigs(data.map(d => ({ ...d, settings: d.settings as unknown as SavedConfigData })));
     }
     setLoading(false);
   };
@@ -62,7 +70,6 @@ const SavedConfigsSection: React.FC<Props> = ({ mode, settings, onLoad }) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { toast.error('Faça login primeiro'); setSaving(false); return; }
 
-    // Check limit
     const { count } = await supabase
       .from('cinema_saved_configs')
       .select('*', { count: 'exact', head: true })
@@ -75,11 +82,17 @@ const SavedConfigsSection: React.FC<Props> = ({ mode, settings, onLoad }) => {
       return;
     }
 
+    const configData: SavedConfigData = {
+      settings: JSON.parse(JSON.stringify(settings)),
+      characters: selectedCharacters.length > 0 ? selectedCharacters : undefined,
+      scenario: selectedScenario || undefined,
+    };
+
     const { error } = await supabase.from('cinema_saved_configs').insert([{
       user_id: user.id,
       name: configName.trim(),
       mode,
-      settings: JSON.parse(JSON.stringify(settings)),
+      settings: JSON.parse(JSON.stringify(configData)),
     }]);
 
     if (error) {
@@ -105,7 +118,18 @@ const SavedConfigsSection: React.FC<Props> = ({ mode, settings, onLoad }) => {
   };
 
   const handleLoad = (config: SavedConfig) => {
-    onLoad(config.settings);
+    const data = config.settings;
+    // Support both old format (just CinemaSettings) and new format (with characters/scenario)
+    if ('settings' in data && typeof data.settings === 'object') {
+      onLoad({
+        settings: data.settings,
+        characters: data.characters,
+        scenario: data.scenario ?? null,
+      });
+    } else {
+      // Legacy: settings field IS the CinemaSettings directly
+      onLoad({ settings: data as unknown as Partial<CinemaSettings> });
+    }
     setShowLoadDialog(false);
     toast.success(`"${config.name}" carregada`);
   };
