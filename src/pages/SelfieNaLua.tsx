@@ -265,7 +265,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
                 <div
                   key={item.key}
                   className={`snl-upload-item${u.done ? " done" : ""}`}
-                  onClick={() => fileRefs[item.key].current?.click()}
+                  onClick={(e) => { if ((e.target as HTMLElement).tagName !== 'INPUT') fileRefs[item.key].current?.click(); }}
                 >
                   <input
                     type="file"
