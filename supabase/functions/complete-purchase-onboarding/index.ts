@@ -124,9 +124,7 @@ Deno.serve(async (req) => {
         );
       }
 
-      // Preserve password_changed status for existing profiles
-      const passwordChangedValue = existingProfile.password_changed;
-
+      // Mark password_changed = true since user is actively setting their password
       await supabaseAdmin
         .from("profiles")
         .upsert(
@@ -134,7 +132,7 @@ Deno.serve(async (req) => {
             id: userId,
             email: trimmedEmail,
             email_verified: true,
-            password_changed: passwordChangedValue,
+            password_changed: true,
             updated_at: new Date().toISOString(),
           },
           { onConflict: "id" }
