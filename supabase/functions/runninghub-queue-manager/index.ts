@@ -1525,19 +1525,47 @@ async function startJobOnRunningHub(
     }
 
     case 'image_generator_jobs': {
-      webappId = WEBAPP_IDS.image_generator_jobs;
-      const refFiles = p.referenceFileNames || [];
-      const imageNodes = ['58', '147', '148', '149', '62', '150'];
-      nodeInfoList = [
-        { nodeId: "145", fieldName: "aspectRatio", fieldValue: p.aspectRatio || job.aspect_ratio || '4:3' },
-        { nodeId: "135", fieldName: "text", fieldValue: p.prompt || job.prompt || '' },
-      ];
-      for (let i = 0; i < imageNodes.length; i++) {
+      const isCinemaStudio = p.source === 'cinema_studio_photo';
+      const imgGenIds = WEBAPP_IDS.image_generator_jobs as Record<string, string>;
+      
+      if (isCinemaStudio) {
+        // Cinema Studio: new WebApp with 10 reference image nodes
+        webappId = imgGenIds.cinema_studio;
+        const cinemaImageNodes = ['58', '150', '151', '152', '153', '154', '155', '147', '148', '149'];
+        const refFiles = p.referenceFileNames || [];
+        nodeInfoList = [
+          { nodeId: "145", fieldName: "aspectRatio", fieldValue: p.aspectRatio || job.aspect_ratio || '4:3' },
+          { nodeId: "135", fieldName: "text", fieldValue: p.prompt || job.prompt || '' },
+        ];
+        for (let i = 0; i < cinemaImageNodes.length; i++) {
+          nodeInfoList.push({
+            nodeId: cinemaImageNodes[i],
+            fieldName: "image",
+            fieldValue: refFiles[i] || 'example.png',
+          });
+        }
+        // Also send node 62 as fallback placeholder
         nodeInfoList.push({
-          nodeId: imageNodes[i],
+          nodeId: "62",
           fieldName: "image",
-          fieldValue: refFiles[i] || 'example.png',
+          fieldValue: refFiles[10] || 'example.png',
         });
+      } else {
+        // Standard Gerar Imagem: original 6-node workflow
+        webappId = imgGenIds.standard;
+        const refFiles = p.referenceFileNames || [];
+        const imageNodes = ['58', '147', '148', '149', '62', '150'];
+        nodeInfoList = [
+          { nodeId: "145", fieldName: "aspectRatio", fieldValue: p.aspectRatio || job.aspect_ratio || '4:3' },
+          { nodeId: "135", fieldName: "text", fieldValue: p.prompt || job.prompt || '' },
+        ];
+        for (let i = 0; i < imageNodes.length; i++) {
+          nodeInfoList.push({
+            nodeId: imageNodes[i],
+            fieldName: "image",
+            fieldValue: refFiles[i] || 'example.png',
+          });
+        }
       }
       break;
     }
