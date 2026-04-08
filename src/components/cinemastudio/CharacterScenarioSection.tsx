@@ -1,0 +1,323 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Plus, X, User, MapPin, Loader2, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+
+interface SavedItem {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+}
+
+interface Props {
+  settings: { scenePrompt: string; subject: string };
+  updateSettings: (p: Partial<{ scenePrompt: string; subject: string }>) => void;
+}
+
+type ModalType = 'character' | 'scenario' | null;
+
+const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings }) => {
+  const [modalType, setModalType] = useState<ModalType>(null);
+  const [characters, setCharacters] = useState<SavedItem[]>([]);
+  const [scenarios, setScenarios] = useState<SavedItem[]>([]);
+  const [selectedChar, setSelectedChar] = useState<SavedItem | null>(null);
+  const [selectedScenario, setSelectedScenario] = useState<SavedItem | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Create form state
+  const [newName, setNewName] = useState('');
+  const [newDesc, setNewDesc] = useState('');
+  const [newImage, setNewImage] = useState<File | null>(null);
+  const [newImagePreview, setNewImagePreview] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const fetchItems = async () => {
+    setLoading(true);
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) { setLoading(false); return; }
+
+    const [charRes, scenRes] = await Promise.all([
+      supabase.from('cinema_characters').select('*').eq('user_id', user.user.id).order('created_at', { ascending: false }),
+      supabase.from('cinema_scenarios').select('*').eq('user_id', user.user.id).order('created_at', { ascending: false }),
+    ]);
+    if (charRes.data) setCharacters(charRes.data);
+    if (scenRes.data) setScenarios(scenRes.data);
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchItems(); }, []);
+
+  const openModal = (type: ModalType) => {
+    setModalType(type);
+    setShowCreate(false);
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setNewName('');
+    setNewDesc('');
+    setNewImage(null);
+    setNewImagePreview('');
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setNewImage(file);
+    setNewImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleSave = async () => {
+    if (!newName.trim()) { toast.error('Nome é obrigatório'); return; }
+    setSaving(true);
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) { setSaving(false); return; }
+
+    let imageUrl: string | null = null;
+    if (newImage) {
+      const ext = newImage.name.split('.').pop();
+      const path = `${user.user.id}/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from('cinema-assets').upload(path, newImage);
+      if (!error) {
+        const { data: urlData } = supabase.storage.from('cinema-assets').getPublicUrl(path);
+        imageUrl = urlData.publicUrl;
+      }
+    }
+
+    const table = modalType === 'character' ? 'cinema_characters' : 'cinema_scenarios';
+    const { error } = await supabase.from(table).insert({
+      user_id: user.user.id,
+      name: newName.trim(),
+      description: newDesc.trim() || null,
+      image_url: imageUrl,
+    });
+
+    if (error) {
+      toast.error('Erro ao salvar');
+    } else {
+      toast.success(modalType === 'character' ? 'Personagem criado!' : 'Cenário criado!');
+      await fetchItems();
+      setShowCreate(false);
+      resetForm();
+    }
+    setSaving(false);
+  };
+
+  const handleDelete = async (id: string, type: 'character' | 'scenario') => {
+    const table = type === 'character' ? 'cinema_characters' : 'cinema_scenarios';
+    await supabase.from(table).delete().eq('id', id);
+    if (type === 'character' && selectedChar?.id === id) setSelectedChar(null);
+    if (type === 'scenario' && selectedScenario?.id === id) setSelectedScenario(null);
+    await fetchItems();
+    toast.success('Removido!');
+  };
+
+  const selectItem = (item: SavedItem) => {
+    if (modalType === 'character') {
+      const isSame = selectedChar?.id === item.id;
+      setSelectedChar(isSame ? null : item);
+      if (!isSame && item.description) {
+        updateSettings({ subject: item.description });
+      } else if (isSame) {
+        updateSettings({ subject: '' });
+      }
+    } else {
+      const isSame = selectedScenario?.id === item.id;
+      setSelectedScenario(isSame ? null : item);
+    }
+    setModalType(null);
+  };
+
+  const items = modalType === 'character' ? characters : scenarios;
+  const selected = modalType === 'character' ? selectedChar : selectedScenario;
+
+  return (
+    <>
+      <div className="space-y-1.5">
+        {/* Personagem selector */}
+        <button
+          onClick={() => openModal('character')}
+          className="flex items-center gap-2 w-full p-2 rounded-md bg-black/20 border border-white/[0.06] hover:border-white/[0.12] transition-colors"
+        >
+          {selectedChar?.image_url ? (
+            <img src={selectedChar.image_url} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+          ) : (
+            <div className="w-8 h-8 rounded bg-white/[0.04] flex items-center justify-center flex-shrink-0">
+              <User className="w-3.5 h-3.5 text-gray-600" />
+            </div>
+          )}
+          <div className="text-left min-w-0 flex-1">
+            <span className="text-[9px] text-gray-600 uppercase tracking-wider block">Personagem</span>
+            <span className="text-[11px] text-gray-300 truncate block">
+              {selectedChar ? selectedChar.name : 'Selecionar...'}
+            </span>
+          </div>
+          {selectedChar && (
+            <button
+              onClick={e => { e.stopPropagation(); setSelectedChar(null); updateSettings({ subject: '' }); }}
+              className="p-0.5 hover:bg-white/10 rounded"
+            >
+              <X className="w-3 h-3 text-gray-600" />
+            </button>
+          )}
+        </button>
+
+        {/* Cenário selector */}
+        <button
+          onClick={() => openModal('scenario')}
+          className="flex items-center gap-2 w-full p-2 rounded-md bg-black/20 border border-white/[0.06] hover:border-white/[0.12] transition-colors"
+        >
+          {selectedScenario?.image_url ? (
+            <img src={selectedScenario.image_url} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+          ) : (
+            <div className="w-8 h-8 rounded bg-white/[0.04] flex items-center justify-center flex-shrink-0">
+              <MapPin className="w-3.5 h-3.5 text-gray-600" />
+            </div>
+          )}
+          <div className="text-left min-w-0 flex-1">
+            <span className="text-[9px] text-gray-600 uppercase tracking-wider block">Cenário</span>
+            <span className="text-[11px] text-gray-300 truncate block">
+              {selectedScenario ? selectedScenario.name : 'Selecionar...'}
+            </span>
+          </div>
+          {selectedScenario && (
+            <button
+              onClick={e => { e.stopPropagation(); setSelectedScenario(null); }}
+              className="p-0.5 hover:bg-white/10 rounded"
+            >
+              <X className="w-3 h-3 text-gray-600" />
+            </button>
+          )}
+        </button>
+      </div>
+
+      {/* Modal */}
+      <Dialog open={modalType !== null} onOpenChange={open => { if (!open) setModalType(null); }}>
+        <DialogContent className="bg-[#141420] border-white/[0.08] max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-gray-200 text-sm">
+              {modalType === 'character' ? '👤 Personagens' : '🏔 Cenários'}
+            </DialogTitle>
+          </DialogHeader>
+
+          {showCreate ? (
+            <div className="space-y-3 pt-2">
+              <div
+                onClick={() => fileRef.current?.click()}
+                className="w-full h-32 rounded-lg border border-dashed border-white/[0.1] bg-black/20 flex items-center justify-center cursor-pointer hover:border-white/[0.2] transition-colors overflow-hidden"
+              >
+                {newImagePreview ? (
+                  <img src={newImagePreview} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="text-center">
+                    <Plus className="w-5 h-5 text-gray-600 mx-auto mb-1" />
+                    <span className="text-[10px] text-gray-600">Adicionar imagem</span>
+                  </div>
+                )}
+              </div>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+
+              <Input
+                value={newName}
+                onChange={e => setNewName(e.target.value)}
+                placeholder="Nome"
+                className="bg-black/20 border-white/[0.08] text-gray-300 text-[12px]"
+              />
+              <Textarea
+                value={newDesc}
+                onChange={e => setNewDesc(e.target.value)}
+                placeholder="Descrição..."
+                rows={3}
+                className="bg-black/20 border-white/[0.08] text-gray-300 text-[12px] resize-none"
+              />
+
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { setShowCreate(false); resetForm(); }}
+                  className="flex-1 text-gray-400 text-[11px]"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={saving || !newName.trim()}
+                  className="flex-1 bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 text-[11px]"
+                >
+                  {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Salvar'}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2 pt-2">
+              <Button
+                onClick={() => setShowCreate(true)}
+                variant="outline"
+                size="sm"
+                className="w-full border-dashed border-white/[0.1] text-gray-400 text-[11px] hover:bg-white/[0.04]"
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                {modalType === 'character' ? 'Criar novo personagem' : 'Criar novo cenário'}
+              </Button>
+
+              {loading ? (
+                <div className="py-8 flex justify-center">
+                  <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
+                </div>
+              ) : items.length === 0 ? (
+                <p className="text-[11px] text-gray-600 text-center py-6">
+                  Nenhum {modalType === 'character' ? 'personagem' : 'cenário'} salvo ainda.
+                </p>
+              ) : (
+                <div className="space-y-1">
+                  {items.map(item => (
+                    <div
+                      key={item.id}
+                      className={`flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-colors group ${
+                        selected?.id === item.id
+                          ? 'bg-white/[0.06] border-l-2 border-purple-500'
+                          : 'hover:bg-white/[0.03] border-l-2 border-transparent'
+                      }`}
+                      onClick={() => selectItem(item)}
+                    >
+                      {item.image_url ? (
+                        <img src={item.image_url} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 rounded bg-white/[0.04] flex-shrink-0 flex items-center justify-center">
+                          {modalType === 'character' ? <User className="w-4 h-4 text-gray-600" /> : <MapPin className="w-4 h-4 text-gray-600" />}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[11px] font-medium text-gray-300 block truncate">{item.name}</span>
+                        {item.description && (
+                          <span className="text-[9px] text-gray-600 block truncate">{item.description}</span>
+                        )}
+                      </div>
+                      <button
+                        onClick={e => { e.stopPropagation(); handleDelete(item.id, modalType!); }}
+                        className="p-1 rounded hover:bg-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="w-3 h-3 text-red-400/60" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
+export default CharacterScenarioSection;
