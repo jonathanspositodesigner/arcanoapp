@@ -14,6 +14,7 @@ import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 import { getAIErrorMessage } from '@/utils/errorMessages';
+import { translatePromptToChinese } from '@/utils/translateToChineseForVideo';
 import {
   type CinemaSettings,
   buildCinemaPrompt,
@@ -166,7 +167,7 @@ export function useCinemaStudio() {
   }, []);
 
   // ━━━ Reference Images ━━━
-  const maxRefImages = mode === 'photo' ? 3 : 9;
+  const maxRefImages = mode === 'photo' ? 3 : 10;
   const addReferenceImages = useCallback((files: FileList | null) => {
     if (!files) return;
     const max = maxRefImages - referenceImages.length;
@@ -504,7 +505,13 @@ export function useCinemaStudio() {
 
       setProgress(30);
 
-      const finalPrompt = assembledPrompt;
+      // Translate prompt to Chinese for better Seedance efficiency
+      toast.info('Traduzindo prompt para chinês...');
+      const finalPrompt = await translatePromptToChinese(assembledPrompt);
+      console.log('[CinemaStudio] Original prompt:', assembledPrompt.substring(0, 100));
+      console.log('[CinemaStudio] Chinese prompt:', finalPrompt.substring(0, 100));
+
+      setProgress(35);
 
       const { data: job, error: jobError } = await supabase
         .from('seedance_jobs')
