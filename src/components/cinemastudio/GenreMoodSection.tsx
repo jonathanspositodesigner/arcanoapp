@@ -1,7 +1,7 @@
 import React from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   GENRES, MOODS, COLOR_GRADES,
-  GENRE_ICONS, COLOR_GRADE_SWATCHES,
   type CinemaSettings,
 } from '@/utils/cinemaPromptBuilder';
 
@@ -12,70 +12,51 @@ interface Props {
 
 const GenreMoodSection: React.FC<Props> = ({ settings, updateSettings }) => {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       {/* Genre */}
-      <div>
-        <label className="text-xs font-medium text-white mb-1.5 block">Gênero</label>
-        <div className="grid grid-cols-4 gap-1.5">
-          {GENRES.map(g => (
-            <button
-              key={g}
-              onClick={() => updateSettings({ genre: g })}
-              className={`py-1.5 px-1 text-[10px] rounded-lg transition-all flex flex-col items-center gap-0.5 ${
-                settings.genre === g
-                  ? 'bg-purple-500/20 border border-purple-500/40 text-white'
-                  : 'bg-black/30 border border-white/5 text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <span className="text-sm">{GENRE_ICONS[g]}</span>
-              <span>{g}</span>
-            </button>
-          ))}
-        </div>
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Genre</span>
+        <Select value={settings.genre} onValueChange={v => updateSettings({ genre: v })}>
+          <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-[#141420] border-white/[0.06]">
+            {GENRES.map(g => (
+              <SelectItem key={g} value={g} className="text-gray-300 text-[11px]">{g}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Mood */}
-      <div>
-        <label className="text-xs font-medium text-white mb-1.5 block">Tom / Humor</label>
-        <div className="flex flex-wrap gap-1.5">
-          {MOODS.map(m => (
-            <button
-              key={m}
-              onClick={() => updateSettings({ mood: settings.mood === m ? '' : m })}
-              className={`py-1 px-2.5 text-[10px] rounded-full transition-all ${
-                settings.mood === m
-                  ? 'bg-purple-500/30 border border-purple-500/40 text-white font-medium'
-                  : 'bg-black/30 border border-white/5 text-gray-400 hover:text-white'
-              }`}
-            >
-              {m}
-            </button>
-          ))}
-        </div>
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Mood</span>
+        <Select value={settings.mood || 'none'} onValueChange={v => updateSettings({ mood: v === 'none' ? '' : v })}>
+          <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
+            <SelectValue placeholder="None" />
+          </SelectTrigger>
+          <SelectContent className="bg-[#141420] border-white/[0.06]">
+            <SelectItem value="none" className="text-gray-300 text-[11px]">None</SelectItem>
+            {MOODS.map(m => (
+              <SelectItem key={m} value={m} className="text-gray-300 text-[11px]">{m}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Color Grade */}
-      <div>
-        <label className="text-xs font-medium text-white mb-1.5 block">Color Grade</label>
-        <div className="grid grid-cols-3 gap-1.5">
-          {COLOR_GRADES.map(c => (
-            <button
-              key={c}
-              onClick={() => updateSettings({ colorGrade: c })}
-              className={`py-1.5 px-2 text-[10px] rounded-lg transition-all flex items-center gap-1.5 ${
-                settings.colorGrade === c
-                  ? 'bg-purple-500/20 border border-purple-500/40 text-white'
-                  : 'bg-black/30 border border-white/5 text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              <span
-                className="w-3 h-3 rounded-full flex-shrink-0 border border-white/10"
-                style={{ backgroundColor: COLOR_GRADE_SWATCHES[c] }}
-              />
-              <span className="truncate">{c}</span>
-            </button>
-          ))}
-        </div>
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Grade</span>
+        <Select value={settings.colorGrade} onValueChange={v => updateSettings({ colorGrade: v })}>
+          <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-[#141420] border-white/[0.06]">
+            {COLOR_GRADES.map(c => (
+              <SelectItem key={c} value={c} className="text-gray-300 text-[11px]">{c}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

@@ -28,42 +28,33 @@ const CameraMovementSection: React.FC<Props> = ({ settings, updateSettings }) =>
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {movements.map((layer, i) => (
-        <div key={i} className="bg-black/20 rounded-lg p-2.5 space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-500 w-12">Layer {i + 1}</span>
-            <Select value={layer.type} onValueChange={v => updateLayer(i, { type: v })}>
-              <SelectTrigger className="flex-1 bg-black/40 border-white/10 text-white text-xs h-7">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-[#1a1a2e] border-white/10 max-h-48">
-                {MOVEMENT_TYPES.map(m => (
-                  <SelectItem key={m} value={m} className="text-white text-xs">{m}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {movements.length > 1 && (
-              <button onClick={() => removeLayer(i)} className="text-gray-500 hover:text-red-400 transition-colors">
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
+        <div key={i} className="flex items-center gap-1.5">
+          <Select value={layer.type} onValueChange={v => updateLayer(i, { type: v })}>
+            <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-[#141420] border-white/[0.06] max-h-48">
+              {MOVEMENT_TYPES.map(m => (
+                <SelectItem key={m} value={m} className="text-gray-300 text-[11px]">{m}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {layer.type !== 'None' && (
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-[10px] text-gray-500">Subtle</span>
-                <span className="text-[10px] text-gray-500">Dramatic</span>
-              </div>
+            <div className="w-20 flex-shrink-0">
               <Slider
-                min={0}
-                max={100}
-                step={1}
+                min={0} max={100} step={1}
                 value={[layer.intensity]}
                 onValueChange={([v]) => updateLayer(i, { intensity: v })}
-                className="[&_[data-radix-slider-track]]:bg-white/10 [&_[data-radix-slider-range]]:bg-blue-500 [&_[data-radix-slider-thumb]]:border-blue-500 [&_[data-radix-slider-thumb]]:h-3.5 [&_[data-radix-slider-thumb]]:w-3.5"
+                className="[&_[data-radix-slider-track]]:bg-white/[0.06] [&_[data-radix-slider-track]]:h-1 [&_[data-radix-slider-range]]:bg-gray-500 [&_[data-radix-slider-thumb]]:border-gray-500 [&_[data-radix-slider-thumb]]:h-2.5 [&_[data-radix-slider-thumb]]:w-2.5"
               />
             </div>
+          )}
+          {movements.length > 1 && (
+            <button onClick={() => removeLayer(i)} className="text-gray-700 hover:text-gray-400 transition-colors flex-shrink-0">
+              <X className="w-3 h-3" />
+            </button>
           )}
         </div>
       ))}
@@ -71,9 +62,9 @@ const CameraMovementSection: React.FC<Props> = ({ settings, updateSettings }) =>
       {movements.length < 3 && (
         <button
           onClick={addLayer}
-          className="w-full py-1.5 rounded-lg border border-dashed border-white/15 flex items-center justify-center gap-1.5 text-xs text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+          className="flex items-center gap-1 text-[10px] text-gray-600 hover:text-gray-400 transition-colors pt-0.5"
         >
-          <Plus className="w-3.5 h-3.5" /> Adicionar Camada
+          <Plus className="w-3 h-3" /> Add movement
         </button>
       )}
     </div>
