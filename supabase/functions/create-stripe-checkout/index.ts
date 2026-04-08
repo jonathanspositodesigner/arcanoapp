@@ -44,19 +44,22 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
+    // Truncate all metadata values to stay within Stripe's 500-char limit
+    const trunc = (val: string, max = 490) => (val || '').substring(0, max);
+
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: mode === "subscription" ? "subscription" : "payment",
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: {
-        product_slug: productSlug || "",
-        meta_fbp: finalFbp,
-        meta_fbc: finalFbc,
-        meta_user_agent: userAgent || "",
-        meta_event_source_url: eventSourceUrl || "",
-        meta_client_ip: clientIp,
-        meta_fbclid: fbclid || "",
+        product_slug: trunc(productSlug || '', 100),
+        meta_fbp: trunc(finalFbp, 490),
+        meta_fbc: trunc(finalFbc, 490),
+        meta_user_agent: trunc(userAgent || '', 490),
+        meta_event_source_url: trunc(eventSourceUrl || '', 490),
+        meta_client_ip: trunc(clientIp, 100),
+        meta_fbclid: trunc(fbclid || '', 200),
       },
     };
 
