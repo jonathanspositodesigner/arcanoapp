@@ -677,6 +677,52 @@ export function useCinemaStudio() {
     }
   }, [storyboard]);
 
+  // ━━━ Animate All Scenes → Video Mode ━━━
+  const animateAllScenes = useCallback(async () => {
+    const generated = storyboard.filter(s => !!s.outputUrl);
+    if (generated.length === 0) {
+      toast.error('Nenhuma cena gerada para animar.');
+      return;
+    }
+
+    // Clear current video references
+    referenceImagePreviews.forEach(url => URL.revokeObjectURL(url));
+    setReferenceImages([]);
+    setReferenceImagePreviews([]);
+
+    // Fetch scene images as File objects and create previews (max 9 for video)
+    const scenesToUse = generated.slice(0, 9);
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+
+    for (const scene of scenesToUse) {
+      try {
+        const response = await fetch(scene.outputUrl!);
+        const blob = await response.blob();
+        const file = new File([blob], `${scene.name}.png`, { type: blob.type || 'image/png' });
+        newFiles.push(file);
+        newPreviews.push(URL.createObjectURL(file));
+      } catch {
+        // Skip failed fetches
+        console.warn(`Failed to fetch scene image: ${scene.name}`);
+      }
+    }
+
+    if (newFiles.length === 0) {
+      toast.error('Não foi possível carregar as imagens das cenas.');
+      return;
+    }
+
+    // Switch to video mode with images as references
+    setMode('video');
+    setReferenceImages(newFiles);
+    setReferenceImagePreviews(newPreviews);
+    setOutputUrl(null);
+    setStatus('idle');
+    setProgress(0);
+    toast.success(`${newFiles.length} cena(s) carregada(s) como referência de vídeo`);
+  }, [storyboard, referenceImagePreviews]);
+
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
