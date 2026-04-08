@@ -75,12 +75,12 @@ const SavedConfigsSection: React.FC<Props> = ({ mode, settings, onLoad }) => {
       return;
     }
 
-    const { error } = await supabase.from('cinema_saved_configs').insert({
+    const { error } = await supabase.from('cinema_saved_configs').insert([{
       user_id: user.id,
       name: configName.trim(),
       mode,
       settings: settings as unknown as Record<string, unknown>,
-    });
+    }]);
 
     if (error) {
       toast.error('Erro ao salvar');
