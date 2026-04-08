@@ -96,8 +96,17 @@ const CinemaStudio: React.FC = () => {
     }
   }, [projectManager, studio]);
 
-  // Handle creating a project — passed to picker, which calls projectManager.createProject directly
-  // The picker's onCreateProject already returns the project, and onSelectProject handles loading
+  // Handle creating a project
+  const handleCreateProject = useCallback(async (name: string) => {
+    const project = await projectManager.createProject(name);
+    if (!project) return null;
+    // Clear localStorage storyboard for fresh state
+    localStorage.removeItem(STORYBOARD_KEY);
+    setView('studio');
+    // Reload to reset studio hook state
+    window.location.reload();
+    return project;
+  }, [projectManager]);
 
   // Handle back to picker
   const handleBackToPicker = useCallback(async () => {
