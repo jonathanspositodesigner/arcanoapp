@@ -588,16 +588,8 @@ export function useCinemaStudio() {
   }, [endSubmit, clearGlobalJob]);
 
   // ━━━ Storyboard ━━━
-  // Auto-save result to active slot when generation completes
-  useEffect(() => {
-    if (status === 'completed' && outputUrl && activeSceneId) {
-      setStoryboard(prev => prev.map(s =>
-        s.id === activeSceneId
-          ? { ...s, thumbnailUrl: outputUrl, outputUrl, settings: { ...settings }, type: mode, createdAt: new Date().toISOString() }
-          : s
-      ));
-    }
-  }, [status, outputUrl, activeSceneId]);
+  // Auto-save is now handled directly in the completion callbacks (useJobStatusSync + startPolling)
+  // so this useEffect is no longer needed.
 
   const addToStoryboard = useCallback(() => {
     // no-op — auto-saved now
