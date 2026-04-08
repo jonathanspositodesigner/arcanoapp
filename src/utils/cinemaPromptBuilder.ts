@@ -21,6 +21,7 @@ export interface CinemaSettings {
   focalLength: number;
   aperture: string;
   cameraAngle: string;
+  cameraDistance: string;
 
   // Camera Movement
   movements: CameraMovementLayer[];
@@ -94,6 +95,20 @@ const CAMERA_ANGLE_PROMPTS: Record<string, string> = {
   'Over the Shoulder': 'over the shoulder shot, OTS framing, depth, conversation perspective',
   'Hip Level': 'hip level shot, waist height camera, western style, cowboy framing',
   'Ground Level': 'ground level shot, camera at floor level, dramatic foreground, insects perspective',
+};
+
+// ━━━ Camera Distance Prompts ━━━
+const CAMERA_DISTANCE_PROMPTS: Record<string, string> = {
+  'Medium Shot': '',
+  'Extreme Close-Up': 'extreme close-up shot, ECU, filling frame with detail, eyes or texture only',
+  'Close-Up': 'close-up shot, face or object filling the frame, intimate detail',
+  'Medium Close-Up': 'medium close-up, chest and head framing, emotional connection',
+  'Cowboy Shot': 'cowboy shot, mid-thigh framing, western style, action-ready',
+  'Medium Wide': 'medium wide shot, full torso with environment context',
+  'Full Shot': 'full shot, entire body visible, head to toe framing',
+  'Wide Shot': 'wide shot, subject small in frame, environment dominant',
+  'Extreme Wide': 'extreme wide shot, vast landscape, subject tiny, epic scale',
+  'Establishing Shot': 'establishing shot, wide overview, setting the scene, location reveal',
 };
 
 // ━━━ Color Grade Prompts ━━━
@@ -198,6 +213,10 @@ export function buildCinemaPrompt(s: CinemaSettings): string {
   const anglePrompt = CAMERA_ANGLE_PROMPTS[s.cameraAngle];
   if (anglePrompt) parts.push(anglePrompt);
 
+  // Camera distance
+  const distancePrompt = CAMERA_DISTANCE_PROMPTS[s.cameraDistance];
+  if (distancePrompt) parts.push(distancePrompt);
+
   // Camera movements (max 3)
   const movementParts = s.movements
     .filter(m => m.type !== 'None' && m.type !== '')
@@ -239,6 +258,7 @@ export function getDefaultSettings(): CinemaSettings {
     focalLength: 35,
     aperture: 'f/2.8',
     cameraAngle: 'Eye Level',
+    cameraDistance: 'Medium Shot',
     movements: [{ type: 'None', intensity: 50 }],
     genre: 'General',
     mood: '',
@@ -300,6 +320,12 @@ export const SPEED_RAMPS = [
 export const CAMERA_ANGLES = [
   'Eye Level', 'Low Angle', 'High Angle', 'Dutch Angle', "Bird's Eye",
   "Worm's Eye", 'POV', 'Over the Shoulder', 'Hip Level', 'Ground Level',
+];
+
+export const CAMERA_DISTANCES = [
+  'Medium Shot', 'Extreme Close-Up', 'Close-Up', 'Medium Close-Up',
+  'Cowboy Shot', 'Medium Wide', 'Full Shot', 'Wide Shot',
+  'Extreme Wide', 'Establishing Shot',
 ];
 
 export const ASPECT_RATIOS = ['16:9', '9:16', '1:1', '4:3', '21:9'];

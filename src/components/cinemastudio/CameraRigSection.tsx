@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  CAMERA_BODIES, LENS_TYPES, FOCAL_PRESETS, APERTURES, CAMERA_ANGLES,
+  CAMERA_BODIES, LENS_TYPES, FOCAL_PRESETS, APERTURES, CAMERA_ANGLES, CAMERA_DISTANCES,
   type CinemaSettings,
 } from '@/utils/cinemaPromptBuilder';
 
@@ -11,14 +11,14 @@ interface Props {
   updateSettings: (p: Partial<CinemaSettings>) => void;
 }
 
-interface AngleOption {
+interface StyleOption {
   value: string;
   seed: string;
   label: string;
   description: string;
 }
 
-const ANGLE_OPTIONS: AngleOption[] = [
+const ANGLE_OPTIONS: StyleOption[] = [
   { value: 'Eye Level', seed: 'eye-level-neutral', label: 'Eye Level', description: 'Neutro, natural, à altura dos olhos' },
   { value: 'Low Angle', seed: 'low-angle-power', label: 'Low Angle', description: 'De baixo para cima, imponente' },
   { value: 'High Angle', seed: 'high-angle-above', label: 'High Angle', description: 'De cima para baixo, vulnerável' },
@@ -31,12 +31,27 @@ const ANGLE_OPTIONS: AngleOption[] = [
   { value: 'Ground Level', seed: 'ground-level-floor', label: 'Ground Level', description: 'Câmera no chão, dramático' },
 ];
 
-const AngleDropdown: React.FC<{
+const DISTANCE_OPTIONS: StyleOption[] = [
+  { value: 'Medium Shot', seed: 'medium-shot-balanced', label: 'Medium Shot', description: 'Cintura pra cima, equilibrado' },
+  { value: 'Extreme Close-Up', seed: 'extreme-closeup-eye', label: 'Extreme Close-Up', description: 'Detalhe extremo, olhos ou textura' },
+  { value: 'Close-Up', seed: 'closeup-face-detail', label: 'Close-Up', description: 'Rosto preenchendo o quadro' },
+  { value: 'Medium Close-Up', seed: 'medium-closeup-chest', label: 'Medium Close-Up', description: 'Peito e cabeça, conexão emocional' },
+  { value: 'Cowboy Shot', seed: 'cowboy-shot-western', label: 'Cowboy Shot', description: 'Meio da coxa, estilo western' },
+  { value: 'Medium Wide', seed: 'medium-wide-torso', label: 'Medium Wide', description: 'Torso completo com contexto' },
+  { value: 'Full Shot', seed: 'full-shot-body', label: 'Full Shot', description: 'Corpo inteiro, cabeça aos pés' },
+  { value: 'Wide Shot', seed: 'wide-shot-landscape', label: 'Wide Shot', description: 'Sujeito pequeno, ambiente domina' },
+  { value: 'Extreme Wide', seed: 'extreme-wide-epic', label: 'Extreme Wide', description: 'Paisagem vasta, escala épica' },
+  { value: 'Establishing Shot', seed: 'establishing-overview', label: 'Establishing Shot', description: 'Visão geral, revelação do local' },
+];
+
+const CameraStyleDropdown: React.FC<{
+  label: string;
+  options: StyleOption[];
   selectedValue: string;
   onSelect: (value: string) => void;
-}> = ({ selectedValue, onSelect }) => {
+}> = ({ label, options, selectedValue, onSelect }) => {
   const [open, setOpen] = useState(false);
-  const selected = ANGLE_OPTIONS.find(o => o.value === selectedValue);
+  const selected = options.find(o => o.value === selectedValue);
 
   return (
     <div className="relative">
@@ -45,7 +60,7 @@ const AngleDropdown: React.FC<{
         className="flex items-center justify-between w-full py-1.5 px-2 rounded-md bg-black/20 border border-white/[0.06] hover:border-white/[0.12] transition-colors"
       >
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-[9px] text-gray-600 uppercase tracking-[0.12em] font-semibold w-12 flex-shrink-0">Ângulo</span>
+          <span className="text-[9px] text-gray-600 uppercase tracking-[0.12em] font-semibold w-12 flex-shrink-0">{label}</span>
           {selected && (
             <div className="flex items-center gap-1.5 min-w-0">
               <img
@@ -65,7 +80,7 @@ const AngleDropdown: React.FC<{
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-[#141420] border border-white/[0.08] rounded-lg shadow-xl max-h-[280px] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
-            {ANGLE_OPTIONS.map(opt => {
+            {options.map(opt => {
               const isSelected = opt.value === selectedValue;
               return (
                 <button
@@ -133,9 +148,19 @@ const CameraRigSection: React.FC<Props> = ({ settings, updateSettings }) => {
   return (
     <div className="space-y-2.5">
       {/* Ângulo / Perspectiva */}
-      <AngleDropdown
+      <CameraStyleDropdown
+        label="Ângulo"
+        options={ANGLE_OPTIONS}
         selectedValue={settings.cameraAngle}
         onSelect={v => updateSettings({ cameraAngle: v })}
+      />
+
+      {/* Distância */}
+      <CameraStyleDropdown
+        label="Dist."
+        options={DISTANCE_OPTIONS}
+        selectedValue={settings.cameraDistance}
+        onSelect={v => updateSettings({ cameraDistance: v })}
       />
 
       {/* Corpo */}
