@@ -44,12 +44,14 @@ const DISTANCE_OPTIONS: StyleOption[] = [
   { value: 'Establishing Shot', seed: 'establishing-overview', label: 'Establishing Shot', description: 'Visão geral, revelação do local' },
 ];
 
-const AngleDropdown: React.FC<{
+const CameraStyleDropdown: React.FC<{
+  label: string;
+  options: StyleOption[];
   selectedValue: string;
   onSelect: (value: string) => void;
-}> = ({ selectedValue, onSelect }) => {
+}> = ({ label, options, selectedValue, onSelect }) => {
   const [open, setOpen] = useState(false);
-  const selected = ANGLE_OPTIONS.find(o => o.value === selectedValue);
+  const selected = options.find(o => o.value === selectedValue);
 
   return (
     <div className="relative">
@@ -58,7 +60,7 @@ const AngleDropdown: React.FC<{
         className="flex items-center justify-between w-full py-1.5 px-2 rounded-md bg-black/20 border border-white/[0.06] hover:border-white/[0.12] transition-colors"
       >
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-[9px] text-gray-600 uppercase tracking-[0.12em] font-semibold w-12 flex-shrink-0">Ângulo</span>
+          <span className="text-[9px] text-gray-600 uppercase tracking-[0.12em] font-semibold w-12 flex-shrink-0">{label}</span>
           {selected && (
             <div className="flex items-center gap-1.5 min-w-0">
               <img
@@ -78,7 +80,7 @@ const AngleDropdown: React.FC<{
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-[#141420] border border-white/[0.08] rounded-lg shadow-xl max-h-[280px] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
-            {ANGLE_OPTIONS.map(opt => {
+            {options.map(opt => {
               const isSelected = opt.value === selectedValue;
               return (
                 <button
