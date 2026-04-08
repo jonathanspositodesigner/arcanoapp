@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Loader2, Download, RefreshCw } from "lucide-react";
+import defaultSceneRef from "@/assets/selfie-lua-default-scene.png";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
@@ -50,6 +51,12 @@ const STYLE_OPTIONS = [
   { label: "NASA", value: "NASA documentary style, desaturated, authentic space photography, archival quality" },
 ];
 
+const SIZE_OPTIONS = [
+  { label: "Wide", value: "16:9", desc: "16:9" },
+  { label: "Feed Vert.", value: "3:4", desc: "3:4" },
+  { label: "Stories", value: "9:16", desc: "9:16" },
+];
+
 interface UploadState {
   done: boolean;
   thumb: string;
@@ -67,11 +74,12 @@ export default function SelfieNaLua() {
   const [uploads, setUploads] = useState<Record<string, UploadState>>({
     face: { done: false, thumb: "", file: null },
     place: { done: false, thumb: "", file: null },
-    ref: { done: false, thumb: "", file: null },
+    ref: { done: true, thumb: defaultSceneRef, file: null },
   });
   const [placeType, setPlaceType] = useState(PLACE_OPTIONS[0].value);
   const [expression, setExpression] = useState(EXPRESSION_OPTIONS[0].value);
   const [activeStyle, setActiveStyle] = useState(0);
+  const [activeSize, setActiveSize] = useState(0);
 
   // Job state — cloned from GerarImagemTool
   const [jobId, setJobId] = useState<string | null>(null);
@@ -97,6 +105,17 @@ export default function SelfieNaLua() {
   const fileRefs: Record<string, React.RefObject<HTMLInputElement>> = {
     face: faceRef, place: placeRef, ref: refRef,
   };
+
+  // Load default scene reference as File on mount
+  useEffect(() => {
+    fetch(defaultSceneRef)
+      .then(res => res.blob())
+      .then(blob => {
+        const file = new File([blob], 'default-scene.png', { type: 'image/png' });
+        setUploads(prev => ({ ...prev, ref: { done: true, thumb: defaultSceneRef, file } }));
+      })
+      .catch(() => {});
+  }, []);
 
   const creditCost = getCreditCost('gerar_imagem', 100);
   const isProcessing = ['pending', 'starting', 'running', 'queued'].includes(status);
@@ -171,6 +190,7 @@ export default function SelfieNaLua() {
 
   const buildPrompt = useCallback(() => {
     const style = STYLE_OPTIONS[activeStyle].value;
+    const sizeInfo = SIZE_OPTIONS[activeSize];
     return `POV extreme close-up selfie shot of an astronaut on the lunar surface. The astronaut's face must match the reference face exactly — same facial structure, skin texture, beard stubble and eye color. Expression: ${expression}. Face fills the lower-center frame pressed close to the camera lens, fisheye wide-angle perspective.
 
 Spacesuit: heavily weathered NASA-style EVA suit, grey-white with dust and grime, mission patches on shoulders, chest control unit with toggle switches. One gloved hand reaching toward the camera in the foreground, slightly motion-blurred.
@@ -181,8 +201,8 @@ Sky: deep absolute black, zero atmosphere. Milky Way galaxy core visible as a lu
 
 Lighting: single harsh directional sunlight from upper-left, sharp hard-edged shadows with no diffusion. Strong rim light on the right side of the spacesuit. Helmet visor partially reflects the lunar landscape. Face lit by two small interior helmet LED lights. No ambient light, extreme contrast.
 
-Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, background sharp with slight depth-of-field fall-off. ${style}.`;
-  }, [placeType, expression, activeStyle]);
+Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, background sharp with slight depth-of-field fall-off. Image aspect ratio: ${sizeInfo.desc}. ${style}.`;
+  }, [placeType, expression, activeStyle, activeSize]);
 
   const resetJobState = () => {
     setJobId(null);
@@ -239,7 +259,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
       }
 
       const prompt = buildPrompt();
-      const aspectRatio = '4:3';
+      const aspectRatio = SIZE_OPTIONS[activeSize].value;
 
       // Create job in DB
       const { jobId: newJobId, error: createError } = await createJob('image_generator', user.id, sessionIdRef.current, {
@@ -542,6 +562,22 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
                   onClick={() => setActiveStyle(i)}
                 >
                   {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="snl-field">
+            <span className="snl-label">Tamanho da imagem</span>
+            <div className="snl-style-pills">
+              {SIZE_OPTIONS.map((s, i) => (
+                <button
+                  key={s.value}
+                  className={`snl-style-pill${activeSize === i ? " on" : ""}`}
+                  onClick={() => setActiveSize(i)}
+                >
+                  {s.label}
+                  <span style={{ display: 'block', fontSize: 9, opacity: 0.6, marginTop: 2 }}>{s.desc}</span>
                 </button>
               ))}
             </div>
