@@ -119,6 +119,9 @@ export function useCinemaStudio() {
   const [storyboard, setStoryboard] = useState<StoryboardScene[]>(loadStoryboard);
   const [activeSceneId, setActiveSceneId] = useState<string>('slot-0');
 
+  // Track which scene owns the currently running job
+  const generatingSceneIdRef = useRef<string | null>(null);
+
   // Modals
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
