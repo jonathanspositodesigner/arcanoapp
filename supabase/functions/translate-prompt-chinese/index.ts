@@ -21,39 +21,41 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
+    const EVOLINK_API_KEY = Deno.env.get("EVOLINK_API_KEY");
+    if (!EVOLINK_API_KEY) {
+      console.error("[translate] EVOLINK_API_KEY not configured");
       return new Response(
         JSON.stringify({ translatedPrompt: prompt }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          {
-            role: "system",
-            content: "You are a professional translator specializing in Chinese. Translate the given cinematic/video prompt to Simplified Chinese (中文). Keep technical camera terms in English. Output ONLY the translated text, nothing else.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        max_tokens: 2048,
-        temperature: 0.2,
-      }),
-    });
+    const response = await fetch(
+      "https://api.evolink.ai/v1beta/models/gemini-2.5-flash-lite:generateContent",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${EVOLINK_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  text: `You are a professional translator specializing in Chinese. Translate the following cinematic/video prompt to Simplified Chinese (中文). Keep technical camera terms in English. Output ONLY the translated text, nothing else.\n\n${prompt}`,
+                },
+              ],
+            },
+          ],
+        }),
+      }
+    );
 
     if (!response.ok) {
-      console.error("[translate] AI Gateway error:", response.status);
+      const errorText = await response.text();
+      console.error("[translate] Evolink API error:", response.status, errorText);
       return new Response(
         JSON.stringify({ translatedPrompt: prompt }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -61,7 +63,8 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const translatedPrompt = data?.choices?.[0]?.message?.content?.trim() || prompt;
+    const translatedPrompt =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || prompt;
 
     return new Response(
       JSON.stringify({ translatedPrompt }),
