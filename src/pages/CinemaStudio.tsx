@@ -168,6 +168,7 @@ const CinemaStudio: React.FC = () => {
               onLoad={studio.loadScene}
               onRemove={studio.removeFromStoryboard}
               onAddNew={studio.addNewScene}
+              onAnimateAll={studio.animateAllScenes}
             />
           </div>
         </div>
