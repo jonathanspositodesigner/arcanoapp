@@ -140,6 +140,7 @@ export default function ArcanoClonerAuthModal({
   isOpen,
   onClose,
   onAuthSuccess,
+  redirectPath = '/arcano-cloner-tool',
 }: ArcanoClonerAuthModalProps) {
   const [step, setStep] = useState<ModalStep>('email');
   const [email, setEmail] = useState('');
@@ -385,7 +386,7 @@ export default function ArcanoClonerAuthModal({
         email: normalizedEmail,
         password: signupData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/arcano-cloner-tool`,
+          emailRedirectTo: `${window.location.origin}${redirectPath}`,
         },
       });
 
