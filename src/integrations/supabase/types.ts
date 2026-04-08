@@ -4039,6 +4039,72 @@ export type Database = {
         }
         Relationships: []
       }
+      seedance_jobs: {
+        Row: {
+          aspect_ratio: string | null
+          cancelled_at: string | null
+          completed_at: string | null
+          created_at: string | null
+          credits_charged: number | null
+          duration: number | null
+          error_message: string | null
+          generate_audio: boolean | null
+          id: string
+          input_audio_urls: string[] | null
+          input_image_urls: string[] | null
+          input_video_urls: string[] | null
+          model: string
+          output_url: string | null
+          prompt: string
+          quality: string | null
+          status: string | null
+          task_id: string | null
+          user_id: string
+        }
+        Insert: {
+          aspect_ratio?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          credits_charged?: number | null
+          duration?: number | null
+          error_message?: string | null
+          generate_audio?: boolean | null
+          id?: string
+          input_audio_urls?: string[] | null
+          input_image_urls?: string[] | null
+          input_video_urls?: string[] | null
+          model: string
+          output_url?: string | null
+          prompt: string
+          quality?: string | null
+          status?: string | null
+          task_id?: string | null
+          user_id: string
+        }
+        Update: {
+          aspect_ratio?: string | null
+          cancelled_at?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          credits_charged?: number | null
+          duration?: number | null
+          error_message?: string | null
+          generate_audio?: boolean | null
+          id?: string
+          input_audio_urls?: string[] | null
+          input_image_urls?: string[] | null
+          input_video_urls?: string[] | null
+          model?: string
+          output_url?: string | null
+          prompt?: string
+          quality?: string | null
+          status?: string | null
+          task_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       stripe_orders: {
         Row: {
           amount: number

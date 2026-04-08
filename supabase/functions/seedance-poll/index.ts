@@ -1,0 +1,116 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "No auth" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const evolinkKey = Deno.env.get("EVOLINK_API_KEY");
+
+    if (!evolinkKey) {
+      return new Response(JSON.stringify({ error: "EVOLINK_API_KEY not configured" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Verify JWT
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { taskId, jobId, creditsToCharge } = await req.json();
+
+    if (!taskId || !jobId) {
+      return new Response(JSON.stringify({ error: "Missing taskId or jobId" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Poll Evolink API
+    const pollResponse = await fetch(`https://api.evolink.ai/v1/tasks/${taskId}`, {
+      headers: { "Authorization": `Bearer ${evolinkKey}` },
+    });
+
+    const pollData = await pollResponse.json();
+    console.log("[seedance-poll] Status:", pollData.status, "Progress:", pollData.progress);
+
+    if (pollData.status === "completed") {
+      const outputUrl = pollData.results?.[0] || null;
+
+      // Update job
+      await supabase.from("seedance_jobs").update({
+        status: "completed",
+        output_url: outputUrl,
+        completed_at: new Date().toISOString(),
+        credits_charged: creditsToCharge || 0,
+      }).eq("id", jobId);
+
+      // Charge credits
+      if (creditsToCharge && creditsToCharge > 0) {
+        await supabase.rpc("consume_upscaler_credits", {
+          _user_id: user.id,
+          _amount: creditsToCharge,
+          _description: "Cinema Studio - Seedance 2",
+        });
+      }
+
+      return new Response(JSON.stringify({
+        status: "completed",
+        outputUrl,
+        progress: 100,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (pollData.status === "failed") {
+      await supabase.from("seedance_jobs").update({
+        status: "failed",
+        error_message: pollData.error || "Generation failed",
+      }).eq("id", jobId);
+
+      return new Response(JSON.stringify({
+        status: "failed",
+        error: pollData.error || "Generation failed",
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Still processing
+    return new Response(JSON.stringify({
+      status: pollData.status || "running",
+      progress: pollData.progress || 0,
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+
+  } catch (error) {
+    console.error("[seedance-poll] Error:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
