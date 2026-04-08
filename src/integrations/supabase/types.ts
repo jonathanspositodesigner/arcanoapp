@@ -1815,6 +1815,7 @@ export type Database = {
           email: string
           expires_at: string
           id: string
+          redirect_path: string | null
           token: string
           used_at: string | null
           user_id: string
@@ -1824,6 +1825,7 @@ export type Database = {
           email: string
           expires_at?: string
           id?: string
+          redirect_path?: string | null
           token: string
           used_at?: string | null
           user_id: string
@@ -1833,6 +1835,7 @@ export type Database = {
           email?: string
           expires_at?: string
           id?: string
+          redirect_path?: string | null
           token?: string
           used_at?: string | null
           user_id?: string
