@@ -247,6 +247,10 @@ export function buildCinemaPrompt(s: CinemaSettings): string {
 
   if (s.mood) parts.push(`${s.mood.toLowerCase()} mood`);
 
+  // Image style
+  const stylePrompt = IMAGE_STYLE_PROMPTS[s.imageStyle];
+  if (stylePrompt) parts.push(stylePrompt);
+
   // Color grade
   const colorPrompt = COLOR_GRADE_PROMPTS[s.colorGrade];
   if (colorPrompt) parts.push(colorPrompt);
