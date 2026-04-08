@@ -148,9 +148,19 @@ const CameraRigSection: React.FC<Props> = ({ settings, updateSettings }) => {
   return (
     <div className="space-y-2.5">
       {/* Ângulo / Perspectiva */}
-      <AngleDropdown
+      <CameraStyleDropdown
+        label="Ângulo"
+        options={ANGLE_OPTIONS}
         selectedValue={settings.cameraAngle}
         onSelect={v => updateSettings({ cameraAngle: v })}
+      />
+
+      {/* Distância */}
+      <CameraStyleDropdown
+        label="Dist."
+        options={DISTANCE_OPTIONS}
+        selectedValue={settings.cameraDistance}
+        onSelect={v => updateSettings({ cameraDistance: v })}
       />
 
       {/* Corpo */}
