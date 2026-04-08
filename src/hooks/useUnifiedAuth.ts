@@ -158,6 +158,7 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       let passwordChanged = profileCheck?.[0]?.password_changed || false;
       const profileCreatedAt = profileCheck?.[0]?.created_at;
       const hasLoggedIn = profileCheck?.[0]?.has_logged_in || false;
+      const existsInAuth = profileCheck?.[0]?.exists_in_auth || false;
       
       // Legacy accounts created before 2026-03-12 should skip first-access flow
       // BUT only if they have actually logged in before
@@ -167,9 +168,21 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
         passwordChanged = true;
       }
       
-      console.log('[UnifiedAuth] Profile check:', { profileExists, passwordChanged, hasLoggedIn });
+      console.log('[UnifiedAuth] Profile check:', { profileExists, passwordChanged, hasLoggedIn, existsInAuth });
       
-      // Case 1: Email not found → go to signup
+      // Case 0: Exists in auth but NOT in profiles → auto-create profile and go to password
+      if (!profileExists && existsInAuth) {
+        console.log('[UnifiedAuth] User exists in auth but missing profile, going to password step');
+        setState(prev => ({
+          ...prev,
+          step: 'password',
+          verifiedEmail: normalizedEmail,
+          isLoading: false,
+        }));
+        return;
+      }
+      
+      // Case 1: Email not found anywhere → go to signup
       if (!profileExists) {
         console.log('[UnifiedAuth] Email not found, going to signup');
         toast.info(t('errors.emailNotFoundSignup'));
