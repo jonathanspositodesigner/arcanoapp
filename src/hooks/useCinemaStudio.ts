@@ -55,6 +55,13 @@ function saveStoryboard(scenes: StoryboardScene[]) {
   localStorage.setItem(STORYBOARD_KEY, JSON.stringify(scenes));
 }
 
+export interface SelectedAsset {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+}
+
 export function useCinemaStudio() {
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useCredits();
@@ -67,6 +74,8 @@ export function useCinemaStudio() {
   const [settings, setSettings] = useState<CinemaSettings>(getDefaultSettings());
   const [referenceImages, setReferenceImages] = useState<File[]>([]);
   const [referenceImagePreviews, setReferenceImagePreviews] = useState<string[]>([]);
+  const [selectedCharacter, setSelectedCharacter] = useState<SelectedAsset | null>(null);
+  const [selectedScenario, setSelectedScenario] = useState<SelectedAsset | null>(null);
 
   // Processing
   const [status, setStatus] = useState<ProcessingStatus>('idle');
