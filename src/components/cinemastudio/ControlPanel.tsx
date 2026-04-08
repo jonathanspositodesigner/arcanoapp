@@ -120,10 +120,8 @@ const ControlPanel: React.FC<Props> = ({
 
           {/* 5. Saída */}
           <Section title="Saída" emoji="⚙️" defaultOpen={false}>
-            <VideoSettingsSection settings={settings} updateSettings={updateSettings} />
+            <VideoSettingsSection settings={settings} updateSettings={updateSettings} mode="photo" />
           </Section>
-
-          {/* MOVIMENTO: não renderizado em Photo */}
         </>
       ) : (
         /* ===== VIDEO MODE LAYOUT (intocado) ===== */

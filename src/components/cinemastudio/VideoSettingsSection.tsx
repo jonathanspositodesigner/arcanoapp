@@ -10,6 +10,7 @@ import {
 interface Props {
   settings: CinemaSettings;
   updateSettings: (p: Partial<CinemaSettings>) => void;
+  mode?: 'video' | 'photo';
 }
 
 const SegmentedControl: React.FC<{
