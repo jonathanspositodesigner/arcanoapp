@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import type { CinemaSettings } from '@/utils/cinemaPromptBuilder';
 
 interface Props {
@@ -51,87 +52,112 @@ const COLOR_GRADE_OPTIONS: StyleOption[] = [
   { value: 'High Contrast', seed: 'high-contrast-bold', label: 'Alto Contraste', description: 'Pretos profundos, luzes estouradas' },
 ];
 
-const StyleOptionCard: React.FC<{
-  option: StyleOption;
-  isSelected: boolean;
-  onSelect: () => void;
-}> = ({ option, isSelected, onSelect }) => (
-  <button
-    onClick={onSelect}
-    className={`flex items-center gap-2.5 w-full p-1.5 rounded-md transition-colors ${
-      isSelected
-        ? 'bg-white/[0.06] border-l-2 border-purple-500'
-        : 'hover:bg-white/[0.03] border-l-2 border-transparent'
-    }`}
-  >
-    {option.seed ? (
-      <img
-        src={`https://picsum.photos/seed/${option.seed}/56/56`}
-        alt={option.label}
-        className="w-[42px] h-[42px] rounded object-cover flex-shrink-0"
-        loading="lazy"
-      />
-    ) : (
-      <div className="w-[42px] h-[42px] rounded bg-white/[0.04] flex-shrink-0 flex items-center justify-center">
-        <span className="text-gray-600 text-[9px]">—</span>
-      </div>
-    )}
-    <div className="text-left min-w-0">
-      <span className={`text-[11px] font-medium block ${isSelected ? 'text-gray-200' : 'text-gray-400'}`}>
-        {option.label}
-      </span>
-      <span className="text-[9px] text-gray-600 block truncate">{option.description}</span>
+const StyleDropdown: React.FC<{
+  label: string;
+  options: StyleOption[];
+  selectedValue: string;
+  onSelect: (value: string) => void;
+  defaultValue?: string;
+}> = ({ label, options, selectedValue, onSelect, defaultValue = '' }) => {
+  const [open, setOpen] = useState(false);
+  const selected = options.find(o => o.value === selectedValue);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between w-full py-1.5 px-2 rounded-md bg-black/20 border border-white/[0.06] hover:border-white/[0.12] transition-colors"
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-[9px] text-gray-600 uppercase tracking-[0.12em] font-semibold w-12 flex-shrink-0">{label}</span>
+          {selected && (
+            <div className="flex items-center gap-1.5 min-w-0">
+              {selected.seed && (
+                <img
+                  src={`https://picsum.photos/seed/${selected.seed}/56/56`}
+                  alt=""
+                  className="w-5 h-5 rounded object-cover flex-shrink-0"
+                  loading="lazy"
+                />
+              )}
+              <span className="text-[11px] text-gray-300 truncate">{selected.label}</span>
+            </div>
+          )}
+        </div>
+        <ChevronDown className={`w-3 h-3 text-gray-600 flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-[#141420] border border-white/[0.08] rounded-lg shadow-xl max-h-[280px] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+            {options.map(opt => {
+              const isSelected = opt.value === selectedValue;
+              return (
+                <button
+                  key={opt.value || '_none'}
+                  onClick={() => {
+                    onSelect(isSelected ? (defaultValue ?? '') : opt.value);
+                    setOpen(false);
+                  }}
+                  className={`flex items-center gap-2.5 w-full px-2 py-2 transition-colors ${
+                    isSelected
+                      ? 'bg-white/[0.06] border-l-2 border-purple-500'
+                      : 'hover:bg-white/[0.04] border-l-2 border-transparent'
+                  }`}
+                >
+                  {opt.seed ? (
+                    <img
+                      src={`https://picsum.photos/seed/${opt.seed}/56/56`}
+                      alt={opt.label}
+                      className="w-[40px] h-[40px] rounded object-cover flex-shrink-0"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-[40px] h-[40px] rounded bg-white/[0.04] flex-shrink-0 flex items-center justify-center">
+                      <span className="text-gray-600 text-[9px]">—</span>
+                    </div>
+                  )}
+                  <div className="text-left min-w-0">
+                    <span className={`text-[11px] font-medium block ${isSelected ? 'text-gray-200' : 'text-gray-400'}`}>
+                      {opt.label}
+                    </span>
+                    <span className="text-[9px] text-gray-600 block">{opt.description}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
-  </button>
-);
+  );
+};
 
 const GenreMoodPhotoSection: React.FC<Props> = ({ settings, updateSettings }) => {
   return (
-    <div className="space-y-4">
-      {/* Gênero */}
-      <div>
-        <span className="text-[9px] text-gray-600 uppercase tracking-[0.15em] font-semibold mb-1.5 block">Gênero</span>
-        <div className="space-y-0.5">
-          {GENRE_OPTIONS.map(opt => (
-            <StyleOptionCard
-              key={opt.value}
-              option={opt}
-              isSelected={settings.genre === opt.value}
-              onSelect={() => updateSettings({ genre: settings.genre === opt.value ? 'General' : opt.value })}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Tom */}
-      <div>
-        <span className="text-[9px] text-gray-600 uppercase tracking-[0.15em] font-semibold mb-1.5 block">Tom</span>
-        <div className="space-y-0.5">
-          {MOOD_OPTIONS.map(opt => (
-            <StyleOptionCard
-              key={opt.value || 'none'}
-              option={opt}
-              isSelected={(settings.mood || '') === opt.value}
-              onSelect={() => updateSettings({ mood: (settings.mood || '') === opt.value ? '' : opt.value })}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Grade de Cor */}
-      <div>
-        <span className="text-[9px] text-gray-600 uppercase tracking-[0.15em] font-semibold mb-1.5 block">Grade de Cor</span>
-        <div className="space-y-0.5">
-          {COLOR_GRADE_OPTIONS.map(opt => (
-            <StyleOptionCard
-              key={opt.value}
-              option={opt}
-              isSelected={settings.colorGrade === opt.value}
-              onSelect={() => updateSettings({ colorGrade: settings.colorGrade === opt.value ? 'Natural' : opt.value })}
-            />
-          ))}
-        </div>
-      </div>
+    <div className="space-y-2">
+      <StyleDropdown
+        label="Gênero"
+        options={GENRE_OPTIONS}
+        selectedValue={settings.genre}
+        onSelect={v => updateSettings({ genre: v || 'General' })}
+        defaultValue="General"
+      />
+      <StyleDropdown
+        label="Tom"
+        options={MOOD_OPTIONS}
+        selectedValue={settings.mood || ''}
+        onSelect={v => updateSettings({ mood: v })}
+        defaultValue=""
+      />
+      <StyleDropdown
+        label="Cor"
+        options={COLOR_GRADE_OPTIONS}
+        selectedValue={settings.colorGrade}
+        onSelect={v => updateSettings({ colorGrade: v || 'Natural' })}
+        defaultValue="Natural"
+      />
     </div>
   );
 };
