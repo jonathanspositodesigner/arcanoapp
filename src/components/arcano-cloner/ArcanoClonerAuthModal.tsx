@@ -132,6 +132,8 @@ interface ArcanoClonerAuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAuthSuccess: () => void;
+  /** Path to redirect after email confirmation (default: /arcano-cloner-tool) */
+  redirectPath?: string;
 }
 
 export default function ArcanoClonerAuthModal({
