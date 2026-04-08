@@ -133,7 +133,7 @@ const ToolVersionLessons = () => {
   const currentPath = `/ferramenta-ia-artes/${toolSlug}/${versionSlug}`;
   const loginPath = `/login-artes?redirect=${encodeURIComponent(currentPath)}`;
   const toolSelectPath = `/ferramenta-ia-artes/${toolSlug}`;
-  const plansPath = locale === 'es' ? `/planos-upscaler-arcano-69-es` : `/planos-${toolSlug}`;
+  const plansPath = locale === 'es' ? `/planos-upscaler-arcano-69-es` : `/upscalerarcanov3`;
   
   // Smart back navigation - for ES keep original behavior, for PT use smart back
   const { goBack } = useSmartBackNavigation({ fallback: toolSelectPath });
