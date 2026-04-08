@@ -405,13 +405,16 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
           --purple:#7c3aed;--purple-lt:#a78bfa;
           --text-1:#eeeef5;--text-2:#7b7fa8;--text-3:#3d4060;
           --green:#34d399;--radius:12px;
-          display:grid;grid-template-columns:320px 1fr;height:calc(100vh - 56px);
+          display:flex;flex-direction:column;height:calc(100vh - 56px);
           font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text-1);background:var(--bg);
           overflow:hidden;
         }
+        .snl-body{
+          flex:1;display:grid;grid-template-columns:320px 1fr;overflow:hidden;
+        }
         .snl-sidebar{
           background:var(--panel);border-right:1px solid var(--border);
-          display:flex;flex-direction:column;padding:32px 24px 28px;gap:26px;overflow-y:auto;
+          display:flex;flex-direction:column;overflow:hidden;
         }
         .snl-brand{display:flex;flex-direction:column;gap:4px}
         .snl-brand-tag{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--purple-lt);opacity:0.65}
@@ -465,8 +468,14 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
         }
         .snl-style-pill:hover{border-color:rgba(124,58,237,0.3);color:var(--text-1)}
         .snl-style-pill.on{background:rgba(124,58,237,0.14);border-color:var(--border-hl);color:var(--purple-lt)}
+        .snl-sidebar-scroll{
+          flex:1;overflow-y:auto;padding:32px 24px 16px;display:flex;flex-direction:column;gap:26px;
+        }
+        .snl-sidebar-footer{
+          flex-shrink:0;padding:12px 24px 24px;
+        }
         .snl-cta{
-          margin-top:auto;width:100%;padding:13px 0;border:none;border-radius:var(--radius);
+          width:100%;padding:13px 0;border:none;border-radius:var(--radius);
           background:var(--purple);color:#fff;font-family:'Syne',sans-serif;
           font-size:13.5px;font-weight:700;letter-spacing:0.3px;cursor:pointer;
           display:flex;align-items:center;justify-content:center;gap:8px;
@@ -475,7 +484,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
         .snl-cta:hover{opacity:0.87}
         .snl-cta:active{transform:scale(0.98)}
         .snl-cta:disabled{opacity:0.5;cursor:not-allowed;transform:none}
-        .snl-main{display:flex;flex-direction:column;background:var(--bg);min-height:100vh;overflow-y:auto}
+        .snl-main{display:flex;flex-direction:column;background:var(--bg);overflow-y:auto}
         .snl-topbar{
           display:flex;align-items:center;padding:20px 36px;
           border-bottom:1px solid var(--border);gap:7px;
@@ -501,11 +510,23 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
           display:inline-flex;align-items:center;gap:4px;
           font-size:11px;color:var(--purple-lt);opacity:0.8;
         }
+        @media (max-width: 768px) {
+          .snl-body{grid-template-columns:1fr;grid-template-rows:auto 1fr;overflow-y:auto;}
+          .snl-sidebar{border-right:none;border-bottom:1px solid var(--border);}
+          .snl-sidebar-scroll{padding:20px 16px 12px;gap:20px;}
+          .snl-sidebar-footer{padding:8px 16px 16px;}
+          .snl-main{min-height:50vh;}
+          .snl-content{padding:24px 16px 40px;}
+          .snl-topbar{padding:14px 16px;}
+          .snl-style-pills{flex-wrap:wrap;}
+        }
       `}</style>
 
       <ToolsHeader title="Moon Selfie" subtitle="Gere selfies épicas na lua com IA" showBackButton={true} />
       <div className="snl-app">
+       <div className="snl-body">
         <aside className="snl-sidebar">
+         <div className="snl-sidebar-scroll">
           <div className="snl-brand">
             <span className="snl-brand-tag">Arcano · VoxVisual</span>
             <h1>Moon Selfie</h1>
@@ -599,28 +620,32 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
             </div>
           </div>
 
-          <button
-            className="snl-cta"
-            onClick={handleGenerate}
-            disabled={isSubmitting || isProcessing}
-          >
-            {isSubmitting || isProcessing ? (
-              <>
-                <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} />
-                {status === 'queued' ? 'Na fila...' : 'Gerando...'}
-              </>
-            ) : (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                </svg>
-                Gerar Selfie
-                <span className="snl-credit-badge">
-                  ✦ {creditCost}
-                </span>
-              </>
-            )}
-          </button>
+          </div>{/* end snl-sidebar-scroll */}
+
+          <div className="snl-sidebar-footer">
+            <button
+              className="snl-cta"
+              onClick={handleGenerate}
+              disabled={isSubmitting || isProcessing}
+            >
+              {isSubmitting || isProcessing ? (
+                <>
+                  <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} />
+                  {status === 'queued' ? 'Na fila...' : 'Gerando...'}
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                  </svg>
+                  Gerar Selfie
+                  <span className="snl-credit-badge">
+                    ✦ {creditCost}
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
         </aside>
 
         <main className="snl-main">
@@ -724,7 +749,8 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
             )}
           </div>
         </main>
-      </div>
+       </div>{/* end snl-body */}
+      </div>{/* end snl-app */}
 
       <ArcanoClonerAuthModal
         isOpen={showAuthModal}
