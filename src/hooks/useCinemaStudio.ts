@@ -103,7 +103,13 @@ export function useCinemaStudio() {
   const elapsedIntervalRef = useRef<number | null>(null);
 
   // ━━━ Computed ━━━
-  const assembledPrompt = buildCinemaPrompt(settings);
+  const basePrompt = buildCinemaPrompt(settings);
+  // Inject character and scenario descriptions
+  const extraParts: string[] = [];
+  if (selectedCharacter?.description) extraParts.push(`character: ${selectedCharacter.description}`);
+  if (selectedScenario?.description) extraParts.push(`scenario: ${selectedScenario.description}`);
+  const assembledPrompt = extraParts.length > 0 ? `${basePrompt}, ${extraParts.join(', ')}` : basePrompt;
+
   const hasHeroFrame = referenceImages.length > 0;
   const genType = hasHeroFrame ? 'i2v' : 't2v';
   const modelKey = `${settings.modelSpeed}-${genType}` as keyof typeof MODELS;
