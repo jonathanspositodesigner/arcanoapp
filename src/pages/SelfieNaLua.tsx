@@ -1,5 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Loader2, Download, RefreshCw } from "lucide-react";
+import { Loader2, Download, RefreshCw, Coins } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ToolsHeader } from "@/components/ToolsHeader";
 import defaultSceneRef from "@/assets/selfie-lua-default-scene.png";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
