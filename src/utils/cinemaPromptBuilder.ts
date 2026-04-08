@@ -283,6 +283,7 @@ export function getDefaultSettings(): CinemaSettings {
     movements: [{ type: 'None', intensity: 50 }],
     genre: 'General',
     mood: '',
+    imageStyle: 'Cinematic',
     colorGrade: 'Natural',
     speedRamp: 'Linear',
     duration: 5,
