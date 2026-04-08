@@ -696,6 +696,23 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
                 <p style={{ fontSize: 12, textAlign: 'center', color: 'rgba(248,113,113,0.7)' }}>{(() => { const info = getAIErrorMessage(errorMessage || ''); return info.solution; })()}</p>
                 <button onClick={resetJobState} style={{ fontSize: 12, color: '#a78bfa', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}>Tentar novamente</button>
               </div>
+            ) : showNoCredits ? (
+              <div className="snl-empty">
+                <div className="snl-empty-icon"><Coins style={{ width: 28, height: 28, color: '#f59e0b' }} /></div>
+                <h2>Créditos insuficientes</h2>
+                <p>Você não tem créditos suficientes para gerar uma selfie. Recarregue seus créditos para continuar.</p>
+                <button
+                  onClick={() => navigate('/planos-2')}
+                  style={{
+                    marginTop: 8, padding: '10px 24px', borderRadius: 10,
+                    background: 'linear-gradient(135deg, #7c3aed, #3b82f6)', color: '#fff',
+                    border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 13,
+                    fontFamily: "'Syne', sans-serif",
+                  }}
+                >
+                  Recarregar créditos
+                </button>
+              </div>
             ) : (
               <div className="snl-empty">
                 <div className="snl-empty-icon">🌙</div>
