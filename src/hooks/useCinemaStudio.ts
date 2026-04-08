@@ -56,12 +56,29 @@ export interface SelectedAsset {
 }
 
 const STORYBOARD_KEY = 'cinemastudio_storyboard';
+const MAX_SCENES = 10;
+
+function createEmptyScenes(): StoryboardScene[] {
+  return Array.from({ length: MAX_SCENES }, (_, i) => ({
+    id: `slot-${i}`,
+    name: `Cena ${i + 1}`,
+    settings: getDefaultSettings(),
+    thumbnailUrl: null,
+    outputUrl: null,
+    type: 'photo' as StudioMode,
+    createdAt: '',
+  }));
+}
 
 function loadStoryboard(): StoryboardScene[] {
   try {
     const raw = localStorage.getItem(STORYBOARD_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
+    if (raw) {
+      const parsed: StoryboardScene[] = JSON.parse(raw);
+      if (parsed.length === MAX_SCENES) return parsed;
+    }
+  } catch {}
+  return createEmptyScenes();
 }
 
 function saveStoryboard(scenes: StoryboardScene[]) {
@@ -100,7 +117,7 @@ export function useCinemaStudio() {
 
   // Storyboard
   const [storyboard, setStoryboard] = useState<StoryboardScene[]>(loadStoryboard);
-  const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
+  const [activeSceneId, setActiveSceneId] = useState<string>('slot-0');
 
   // Modals
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
