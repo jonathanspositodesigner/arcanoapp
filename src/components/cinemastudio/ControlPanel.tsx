@@ -140,8 +140,25 @@ const ControlPanel: React.FC<Props> = ({
           <SavedConfigsSection mode="photo" settings={settings} selectedCharacters={selectedCharacters} selectedScenario={selectedScenario} onLoad={handleLoadConfig} />
         </>
       ) : (
-        /* ===== VIDEO MODE LAYOUT (intocado) ===== */
+        /* ===== VIDEO MODE LAYOUT ===== */
         <>
+          {/* 1. Referências — sempre aberta, sem toggle, até 10 imagens */}
+          <div className="pb-2">
+            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-[0.12em] flex items-center gap-1.5 py-2">
+              <span className="text-xs">🖼</span> Referências
+            </span>
+            <ReferenceSection
+              images={referenceImages}
+              previews={referenceImagePreviews}
+              onAdd={addReferenceImages}
+              onRemove={removeReferenceImage}
+              maxImages={maxReferences}
+            />
+          </div>
+
+          <div className="border-t border-white/[0.04] my-1" />
+
+          {/* 2. Prompt único */}
           <SceneSection settings={settings} updateSettings={updateSettings} />
 
           <div className="border-t border-white/[0.04] my-1" />
@@ -172,17 +189,6 @@ const ControlPanel: React.FC<Props> = ({
 
           <Section title="Saída" emoji="⚙️" defaultOpen={false}>
             <VideoSettingsSection settings={settings} updateSettings={updateSettings} />
-          </Section>
-
-          <div className="border-t border-white/[0.04]" />
-
-          <Section title="Referências" emoji="🖼" defaultOpen={false}>
-            <ReferenceSection
-              images={referenceImages}
-              previews={referenceImagePreviews}
-              onAdd={addReferenceImages}
-              onRemove={removeReferenceImage}
-            />
           </Section>
 
           <div className="border-t border-white/[0.04] my-1" />

@@ -166,7 +166,7 @@ export function useCinemaStudio() {
   }, []);
 
   // ━━━ Reference Images ━━━
-  const maxRefImages = mode === 'photo' ? 3 : 9;
+  const maxRefImages = mode === 'photo' ? 3 : 10;
   const addReferenceImages = useCallback((files: FileList | null) => {
     if (!files) return;
     const max = maxRefImages - referenceImages.length;
