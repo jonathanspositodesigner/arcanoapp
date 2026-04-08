@@ -69,6 +69,12 @@ const ControlPanel: React.FC<Props> = ({
     toast.success('Prompt copiado!');
   };
 
+  const handleLoadConfig = (data: { settings: Partial<CinemaSettings>; characters?: SelectedAsset[]; scenario?: SelectedAsset | null }) => {
+    updateSettings(data.settings);
+    if (data.characters && onCharactersChange) onCharactersChange(data.characters);
+    if (data.scenario !== undefined && onScenarioChange) onScenarioChange(data.scenario ?? null);
+  };
+
   const isPhoto = mode === 'photo';
 
   return (
