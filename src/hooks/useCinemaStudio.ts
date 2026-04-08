@@ -276,9 +276,9 @@ export function useCinemaStudio() {
 
   // PHOTO MODE: Pending watchdog
   useJobPendingWatchdog({
-    jobId: mode === 'photo' ? jobId : null,
+    jobId: generatingMode === 'photo' ? jobId : null,
     toolType: 'image_generator',
-    enabled: mode === 'photo' && photoJobStatus === 'pending',
+    enabled: generatingMode === 'photo' && photoJobStatus === 'pending',
     onJobFailed: (msg: string) => {
       setPhotoJobStatus('failed');
       setStatus('error');
