@@ -13,6 +13,7 @@ import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
+import { getAIErrorMessage } from '@/utils/errorMessages';
 import { translatePromptToChinese } from '@/utils/translateToChineseForVideo';
 import {
   type CinemaSettings,
