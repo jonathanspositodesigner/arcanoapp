@@ -218,6 +218,13 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
   // Generate — cloned from GerarImagemTool
   const handleGenerate = async () => {
     if (!user?.id) { setShowAuthModal(true); return; }
+    
+    // Validate required uploads
+    if (!uploads.face.done || !uploads.face.file) {
+      toast.error('Envie a foto do seu rosto antes de gerar.');
+      return;
+    }
+    
     if (!startSubmit()) return;
 
     resetJobState();
