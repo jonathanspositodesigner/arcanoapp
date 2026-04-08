@@ -9,6 +9,7 @@ import GenreMoodSection from './GenreMoodSection';
 import GenreMoodPhotoSection from './GenreMoodPhotoSection';
 import VideoSettingsSection from './VideoSettingsSection';
 import ReferenceSection from './ReferenceSection';
+import SavedConfigsSection from './SavedConfigsSection';
 import CharacterScenarioSection from './CharacterScenarioSection';
 import type { CinemaSettings } from '@/utils/cinemaPromptBuilder';
 import type { StudioMode } from '@/hooks/useCinemaStudio';
@@ -127,6 +128,8 @@ const ControlPanel: React.FC<Props> = ({
           <Section title="Saída" emoji="⚙️" defaultOpen={false}>
             <VideoSettingsSection settings={settings} updateSettings={updateSettings} mode="photo" />
           </Section>
+          <div className="border-t border-white/[0.04] my-1" />
+          <SavedConfigsSection mode="photo" settings={settings} onLoad={updateSettings} />
         </>
       ) : (
         /* ===== VIDEO MODE LAYOUT (intocado) ===== */
@@ -173,6 +176,9 @@ const ControlPanel: React.FC<Props> = ({
               onRemove={removeReferenceImage}
             />
           </Section>
+
+          <div className="border-t border-white/[0.04] my-1" />
+          <SavedConfigsSection mode="video" settings={settings} onLoad={updateSettings} />
         </>
       )}
 
