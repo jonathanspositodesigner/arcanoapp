@@ -322,6 +322,12 @@ export const CAMERA_ANGLES = [
   "Worm's Eye", 'POV', 'Over the Shoulder', 'Hip Level', 'Ground Level',
 ];
 
+export const CAMERA_DISTANCES = [
+  'Medium Shot', 'Extreme Close-Up', 'Close-Up', 'Medium Close-Up',
+  'Cowboy Shot', 'Medium Wide', 'Full Shot', 'Wide Shot',
+  'Extreme Wide', 'Establishing Shot',
+];
+
 export const ASPECT_RATIOS = ['16:9', '9:16', '1:1', '4:3', '21:9'];
 export const QUALITIES = ['480p', '720p'];
 export const DURATIONS = [4, 5, 8, 10, 15];
