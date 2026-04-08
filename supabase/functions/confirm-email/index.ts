@@ -192,10 +192,15 @@ serve(async (req) => {
       console.error("[confirm-email] Error granting free credits (non-blocking):", freeErr);
     }
 
-    // Redirect directly to the app homepage
+    // Determine redirect URL from token's redirect_path
+    const redirectUrl = tokenData.redirect_path
+      ? `https://arcanoapp.voxvisual.com.br${tokenData.redirect_path}`
+      : "https://arcanoapp.voxvisual.com.br/";
+
+    // Redirect directly to the app
     return new Response(null, {
       status: 302,
-      headers: { "Location": "https://arcanoapp.voxvisual.com.br/" },
+      headers: { "Location": redirectUrl },
     });
   } catch (error: any) {
     console.error("[confirm-email] Error:", error);

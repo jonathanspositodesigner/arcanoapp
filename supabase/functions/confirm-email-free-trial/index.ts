@@ -78,7 +78,7 @@ serve(async (req) => {
     const token = url.searchParams.get("token");
 
     if (!token) {
-      return new Response(buildErrorHtml("Token não fornecido."), {
+      return new Response(buildErrorHtml("Token não fornecido.", DEFAULT_REDIRECT_URL), {
         status: 400,
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });
@@ -100,16 +100,21 @@ serve(async (req) => {
 
     if (tokenError || !tokenData) {
       console.error("[confirm-email-free-trial] Token not found:", tokenError);
-      return new Response(buildErrorHtml("Link inválido ou já utilizado. Tente criar uma nova conta."), {
+      return new Response(buildErrorHtml("Link inválido ou já utilizado. Tente criar uma nova conta.", DEFAULT_REDIRECT_URL), {
         status: 400,
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });
     }
 
+    // Determine redirect URL from token's redirect_path or use default
+    const redirectUrl = tokenData.redirect_path
+      ? `${BASE_URL}${tokenData.redirect_path}`
+      : DEFAULT_REDIRECT_URL;
+
     // Check if already used - still show success since it was already processed
     if (tokenData.used_at) {
       console.log("[confirm-email-free-trial] Token already used, redirecting to login");
-      return new Response(buildSuccessHtml(), {
+      return new Response(buildSuccessHtml(redirectUrl), {
         status: 200,
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });
@@ -118,7 +123,7 @@ serve(async (req) => {
     // Check expiration
     if (new Date(tokenData.expires_at) < new Date()) {
       console.log("[confirm-email-free-trial] Token expired");
-      return new Response(buildErrorHtml("Este link expirou. Tente criar uma nova conta para receber um novo link."), {
+      return new Response(buildErrorHtml("Este link expirou. Tente criar uma nova conta para receber um novo link.", redirectUrl), {
         status: 400,
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });
@@ -138,7 +143,7 @@ serve(async (req) => {
 
     if (updateError) {
       console.error("[confirm-email-free-trial] Profile update error:", updateError);
-      return new Response(buildErrorHtml("Erro ao confirmar email. Tente novamente."), {
+      return new Response(buildErrorHtml("Erro ao confirmar email. Tente novamente.", redirectUrl), {
         status: 500,
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });
@@ -173,7 +178,6 @@ serve(async (req) => {
       try {
         console.log(`[confirm-email-free-trial] Fallback: direct insert for ${tokenData.user_id}`);
 
-        // Insert into arcano_cloner_free_trials
         await supabaseAdmin
           .from("arcano_cloner_free_trials")
           .insert({
@@ -182,7 +186,6 @@ serve(async (req) => {
             credits_granted: 300,
           });
 
-        // UPSERT into upscaler_credits
         const { error: creditError } = await supabaseAdmin
           .from("upscaler_credits")
           .upsert(
@@ -199,7 +202,6 @@ serve(async (req) => {
         if (creditError) {
           console.error("[confirm-email-free-trial] Fallback credit upsert error:", creditError);
         } else {
-          // Record transaction
           await supabaseAdmin
             .from("upscaler_credit_transactions")
             .insert({
@@ -223,24 +225,22 @@ serve(async (req) => {
         type: 'magiclink',
         email: tokenData.email,
         options: {
-          redirectTo: REDIRECT_URL,
+          redirectTo: redirectUrl,
         },
       });
 
       if (linkError || !linkData) {
         console.error("[confirm-email-free-trial] Magic link error:", linkError);
-        // Fallback: redirect to tool page (user will need to login manually)
-        return new Response(buildSuccessHtml(), {
+        return new Response(buildSuccessHtml(redirectUrl), {
           status: 200,
           headers: { "Content-Type": "text/html; charset=utf-8" },
         });
       }
 
-      // The hashed_token from generateLink needs to be used with the Supabase auth verify endpoint
       const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-      const magicLinkRedirect = `${supabaseUrl}/auth/v1/verify?token=${linkData.properties.hashed_token}&type=magiclink&redirect_to=${encodeURIComponent(REDIRECT_URL)}`;
+      const magicLinkRedirect = `${supabaseUrl}/auth/v1/verify?token=${linkData.properties.hashed_token}&type=magiclink&redirect_to=${encodeURIComponent(redirectUrl)}`;
 
-      console.log(`[confirm-email-free-trial] Redirecting to magic link for auto-login`);
+      console.log(`[confirm-email-free-trial] Redirecting to magic link for auto-login -> ${redirectUrl}`);
 
       return new Response(null, {
         status: 302,
@@ -248,15 +248,14 @@ serve(async (req) => {
       });
     } catch (magicErr) {
       console.error("[confirm-email-free-trial] Magic link exception:", magicErr);
-      // Fallback: show success page with login button
-      return new Response(buildSuccessHtml(), {
+      return new Response(buildSuccessHtml(redirectUrl), {
         status: 200,
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });
     }
   } catch (error: any) {
     console.error("[confirm-email-free-trial] Error:", error);
-    return new Response(buildErrorHtml("Erro interno. Tente novamente mais tarde."), {
+    return new Response(buildErrorHtml("Erro interno. Tente novamente mais tarde.", DEFAULT_REDIRECT_URL), {
       status: 500,
       headers: { "Content-Type": "text/html; charset=utf-8" },
     });
