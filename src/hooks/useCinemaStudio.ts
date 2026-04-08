@@ -57,7 +57,7 @@ export interface SelectedAsset {
 }
 
 const STORYBOARD_KEY = 'cinemastudio_storyboard';
-const MAX_SCENES = 10;
+const MAX_SCENES = 9;
 
 function createEmptyScenes(): StoryboardScene[] {
   return Array.from({ length: MAX_SCENES }, (_, i) => ({
