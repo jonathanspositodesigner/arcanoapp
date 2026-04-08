@@ -269,7 +269,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
 
       {/* Modal */}
       <Dialog open={modalType !== null} onOpenChange={open => { if (!open) setModalType(null); }}>
-        <DialogContent className="bg-[#141420] border-white/[0.08] max-w-md max-h-[80vh] overflow-y-auto">
+        <DialogContent className="bg-[#141420] border-white/[0.08] max-w-[360px] w-[90vw] max-h-[80vh] overflow-y-auto p-4">
           <DialogHeader>
             <DialogTitle className="text-gray-200 text-sm">
               {modalType === 'character' ? `👤 Personagens (${selectedChars.length}/${MAX_CHARACTERS})` : '🏔 Cenários'}
@@ -286,7 +286,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
             <div className="space-y-3 pt-2">
               <div
                 onClick={() => fileRef.current?.click()}
-                className="w-full h-32 rounded-lg border border-dashed border-white/[0.1] bg-black/20 flex items-center justify-center cursor-pointer hover:border-white/[0.2] transition-colors overflow-hidden"
+                className="w-full aspect-square rounded-lg border border-dashed border-white/[0.1] bg-black/20 flex items-center justify-center cursor-pointer hover:border-white/[0.2] transition-colors overflow-hidden"
               >
                 {newImagePreview ? (
                   <img src={newImagePreview} alt="" className="w-full h-full object-cover" />
@@ -333,7 +333,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
               </div>
             </div>
           ) : (
-            <div className="space-y-2 pt-2">
+            <div className="space-y-3 pt-2">
               <Button
                 onClick={() => setShowCreate(true)}
                 variant="outline"
@@ -363,7 +363,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                   Nenhum {modalType === 'character' ? 'personagem' : 'cenário'} salvo ainda.
                 </p>
               ) : (
-                <div className="space-y-1">
+                <div className="grid grid-cols-2 gap-2">
                   {items.map(item => {
                     const isCharSelected = modalType === 'character' && selectedChars.some(c => c.id === item.id);
                     const isScenSelected = modalType === 'scenario' && selectedScenario?.id === item.id;
@@ -372,35 +372,36 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                     return (
                       <div
                         key={item.id}
-                        className={`flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-colors group ${
+                        className={`relative rounded-lg overflow-hidden cursor-pointer transition-all group ${
                           isSelected
-                            ? 'bg-white/[0.06] border-l-2 border-purple-500'
-                            : 'hover:bg-white/[0.03] border-l-2 border-transparent'
+                            ? 'ring-2 ring-purple-500 ring-offset-1 ring-offset-[#141420]'
+                            : 'hover:ring-1 hover:ring-white/20'
                         }`}
                         onClick={() => selectItem(item)}
                       >
-                        {item.image_url ? (
-                          <img src={item.image_url} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0" />
-                        ) : (
-                          <div className="w-10 h-10 rounded bg-white/[0.04] flex-shrink-0 flex items-center justify-center">
-                            {modalType === 'character' ? <User className="w-4 h-4 text-gray-600" /> : <MapPin className="w-4 h-4 text-gray-600" />}
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <span className="text-[11px] font-medium text-gray-300 block truncate">{item.name}</span>
-                          {item.description && (
-                            <span className="text-[9px] text-gray-600 block truncate">{item.description}</span>
+                        <div className="aspect-square bg-white/[0.04] relative">
+                          {item.image_url ? (
+                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              {modalType === 'character' ? <User className="w-6 h-6 text-gray-600" /> : <MapPin className="w-6 h-6 text-gray-600" />}
+                            </div>
                           )}
+                          {isSelected && (
+                            <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
+                              <span className="text-[10px] text-white font-bold">✓</span>
+                            </div>
+                          )}
+                          <button
+                            onClick={e => { e.stopPropagation(); handleDelete(item.id, modalType!); }}
+                            className="absolute top-1.5 left-1.5 p-1 rounded bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Trash2 className="w-3 h-3 text-red-400" />
+                          </button>
                         </div>
-                        {isCharSelected && (
-                          <span className="text-[9px] text-purple-400 font-semibold flex-shrink-0">✓</span>
-                        )}
-                        <button
-                          onClick={e => { e.stopPropagation(); handleDelete(item.id, modalType!); }}
-                          className="p-1 rounded hover:bg-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <Trash2 className="w-3 h-3 text-red-400/60" />
-                        </button>
+                        <div className="px-1.5 py-1.5 bg-black/40">
+                          <span className="text-[10px] text-gray-300 font-medium block truncate text-center">{item.name}</span>
+                        </div>
                       </div>
                     );
                   })}
