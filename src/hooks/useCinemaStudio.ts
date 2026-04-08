@@ -132,7 +132,22 @@ export function useCinemaStudio() {
   const activeSceneId = mode === 'photo' ? activePhotoSceneId : activeVideoSceneId;
   const setActiveSceneId = mode === 'photo' ? setActivePhotoSceneId : setActiveVideoSceneId;
 
-  // Track which scene owns the currently running job
+  // Wrap setMode to restore scene state when switching
+  const setMode = useCallback((newMode: StudioMode) => {
+    setModeRaw(newMode);
+    // Reset output display when switching modes (jobs keep running in background)
+    if (!generatingSceneIdRef.current) {
+      setOutputUrl(null);
+      setStatus('idle');
+      setPhotoJobStatus('idle');
+      setProgress(0);
+    }
+    // Clear file-based references when switching (they belong to the previous mode)
+    referenceImagePreviews.forEach(url => URL.revokeObjectURL(url));
+    setReferenceImages([]);
+    setReferenceImagePreviews([]);
+  }, [referenceImagePreviews]);
+
   const generatingSceneIdRef = useRef<string | null>(null);
   // Track the mode of the active generation (so sync hooks stay alive even if user browses another mode)
   const [generatingMode, setGeneratingMode] = useState<StudioMode | null>(null);
