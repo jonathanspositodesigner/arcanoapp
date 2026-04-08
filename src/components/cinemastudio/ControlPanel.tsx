@@ -170,7 +170,7 @@ const ControlPanel: React.FC<Props> = ({
           <div className="border-t border-white/[0.04]" />
 
           <Section title="Câmera" emoji="🎥" defaultOpen={false}>
-            <CameraRigSection settings={settings} updateSettings={updateSettings} />
+            <CameraRigSection settings={settings} updateSettings={updateSettings} mode="video" />
           </Section>
 
           <div className="border-t border-white/[0.04]" />
