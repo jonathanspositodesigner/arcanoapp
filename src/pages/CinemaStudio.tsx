@@ -446,14 +446,6 @@ const CinemaStudio: React.FC = () => {
                 <p className="text-xs text-gray-400 mt-1">Seedance 2 · AI Video Generation</p>
               </div>
 
-              {/* Credits badge */}
-              <div className="flex items-center gap-2 bg-black/40 rounded-lg px-3 py-2">
-                <Coins className="w-4 h-4 text-yellow-400" />
-                <span className="text-sm text-white font-medium">
-                  {creditsLoading ? '...' : credits}
-                </span>
-                <span className="text-xs text-gray-400">créditos</span>
-              </div>
 
               {/* Speed selector */}
               <div>
@@ -633,19 +625,21 @@ const CinemaStudio: React.FC = () => {
               <div className="space-y-3">
                 {/* Duration */}
                 <div>
-                  <span className="text-xs font-medium text-white mb-1.5 block">Duration</span>
-                  <div className="flex gap-1">
-                    {DURATIONS.map(d => (
-                      <button
-                        key={d}
-                        onClick={() => setDuration(d)}
-                        className={`flex-1 py-1.5 text-xs rounded-md transition-all ${
-                          duration === d ? 'bg-white/10 text-white font-medium' : 'text-gray-400 hover:text-white'
-                        }`}
-                      >
-                        {d}s
-                      </button>
-                    ))}
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-medium text-white">Duration</span>
+                    <span className="text-xs text-purple-300 font-medium">{duration}s</span>
+                  </div>
+                  <Slider
+                    min={4}
+                    max={15}
+                    step={1}
+                    value={[duration]}
+                    onValueChange={([v]) => setDuration(v)}
+                    className="w-full [&_[data-radix-slider-track]]:bg-white/10 [&_[data-radix-slider-range]]:bg-purple-500 [&_[data-radix-slider-thumb]]:border-purple-500"
+                  />
+                  <div className="flex justify-between mt-1">
+                    <span className="text-[10px] text-gray-500">4s</span>
+                    <span className="text-[10px] text-gray-500">15s</span>
                   </div>
                 </div>
 
