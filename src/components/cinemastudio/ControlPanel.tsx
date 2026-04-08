@@ -62,7 +62,7 @@ const Section: React.FC<SectionProps> = ({ title, emoji, defaultOpen = true, chi
 const ControlPanel: React.FC<Props> = ({
   mode, settings, updateSettings, assembledPrompt, showPrompt, setShowPrompt,
   referenceImages, referenceImagePreviews, addReferenceImages, removeReferenceImage,
-  onCharactersChange, onScenarioChange, maxReferences = 9,
+  onCharactersChange, onScenarioChange, selectedCharacters, selectedScenario, maxReferences = 9,
 }) => {
   const copyPrompt = () => {
     navigator.clipboard.writeText(assembledPrompt);
