@@ -30,6 +30,7 @@ const PLACE_OPTIONS = [
   { label: "Academia", value: "academia gym com logo e janelas de vidro" },
   { label: "Restaurante", value: "restaurante com fachada rústica e placa iluminada" },
   { label: "Hotel", value: "hotel com entrada principal e marquise iluminada" },
+  { label: "Outro", value: "__outro__" },
 ];
 
 const EXPRESSION_OPTIONS = [
@@ -195,7 +196,7 @@ export default function SelfieNaLua() {
 
 Spacesuit: heavily weathered NASA-style EVA suit, grey-white with dust and grime, mission patches on shoulders, chest control unit with toggle switches. One gloved hand reaching toward the camera in the foreground, slightly motion-blurred.
 
-Background: a fully built ${placeType} constructed directly on the lunar surface — same architecture, signage and proportions as in the reference image, adapted to the lunar environment with no atmosphere, hard single-source solar shadows and vacuum blackness above. The structure sits naturally on grey cratered regolith.
+Background: ${placeType === '__outro__' ? 'the exact building/establishment shown in the uploaded place reference photo, reproduced faithfully on the lunar surface — same architecture, signage, colors and proportions as in the reference image' : `a fully built ${placeType}`} constructed directly on the lunar surface — same architecture, signage and proportions as in the reference image, adapted to the lunar environment with no atmosphere, hard single-source solar shadows and vacuum blackness above. The structure sits naturally on grey cratered regolith.
 
 Sky: deep absolute black, zero atmosphere. Milky Way galaxy core visible as a luminous streak in the upper frame. Earth in the upper-left corner — vivid blue oceans and white cloud systems against the void.
 
