@@ -152,6 +152,13 @@ const GenreMoodPhotoSection: React.FC<Props> = ({ settings, updateSettings }) =>
         defaultValue=""
       />
       <StyleDropdown
+        label="Tipo"
+        options={IMAGE_STYLE_OPTIONS}
+        selectedValue={settings.imageStyle || 'Cinematic'}
+        onSelect={v => updateSettings({ imageStyle: v || 'Cinematic' })}
+        defaultValue="Cinematic"
+      />
+      <StyleDropdown
         label="Cor"
         options={COLOR_GRADE_OPTIONS}
         selectedValue={settings.colorGrade}
