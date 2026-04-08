@@ -50,6 +50,12 @@ const STYLE_OPTIONS = [
   { label: "NASA", value: "NASA documentary style, desaturated, authentic space photography, archival quality" },
 ];
 
+const SIZE_OPTIONS = [
+  { label: "Wide", value: "16:9", desc: "16:9" },
+  { label: "Feed Vert.", value: "3:4", desc: "3:4" },
+  { label: "Stories", value: "9:16", desc: "9:16" },
+];
+
 interface UploadState {
   done: boolean;
   thumb: string;
