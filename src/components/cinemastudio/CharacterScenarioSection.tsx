@@ -363,7 +363,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                   Nenhum {modalType === 'character' ? 'personagem' : 'cenário'} salvo ainda.
                 </p>
               ) : (
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-4 gap-2">
                   {items.map(item => {
                     const isCharSelected = modalType === 'character' && selectedChars.some(c => c.id === item.id);
                     const isScenSelected = modalType === 'scenario' && selectedScenario?.id === item.id;
@@ -384,27 +384,41 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                             <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                              {modalType === 'character' ? <User className="w-6 h-6 text-gray-600" /> : <MapPin className="w-6 h-6 text-gray-600" />}
+                              {modalType === 'character' ? <User className="w-5 h-5 text-gray-600" /> : <MapPin className="w-5 h-5 text-gray-600" />}
                             </div>
                           )}
                           {isSelected && (
-                            <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-purple-500 flex items-center justify-center">
-                              <span className="text-[10px] text-white font-bold">✓</span>
+                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
+                              <span className="text-[8px] text-white font-bold">✓</span>
                             </div>
                           )}
                           <button
                             onClick={e => { e.stopPropagation(); handleDelete(item.id, modalType!); }}
-                            className="absolute top-1.5 left-1.5 p-1 rounded bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-1 left-1 p-0.5 rounded bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <Trash2 className="w-3 h-3 text-red-400" />
+                            <Trash2 className="w-2.5 h-2.5 text-red-400" />
                           </button>
                         </div>
-                        <div className="px-1.5 py-1.5 bg-black/40">
-                          <span className="text-[10px] text-gray-300 font-medium block truncate text-center">{item.name}</span>
+                        <div className="px-1 py-1 bg-black/40">
+                          <span className="text-[9px] text-gray-300 font-medium block truncate text-center">{item.name}</span>
                         </div>
                       </div>
                     );
                   })}
+                  {/* Empty slots */}
+                  {Array.from({ length: 20 - items.length }).map((_, i) => (
+                    <div
+                      key={`empty-${i}`}
+                      className="rounded-lg overflow-hidden border border-dashed border-white/[0.06]"
+                    >
+                      <div className="aspect-square bg-white/[0.02] flex items-center justify-center">
+                        <div className="w-3 h-3 rounded-full border border-white/[0.08]" />
+                      </div>
+                      <div className="px-1 py-1 bg-black/20">
+                        <span className="text-[9px] text-gray-700 block text-center">—</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
