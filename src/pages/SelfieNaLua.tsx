@@ -93,6 +93,7 @@ export default function SelfieNaLua() {
   const [progress, setProgress] = useState(0);
 
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showNoCredits, setShowNoCredits] = useState(false);
   const [showActiveJobModal, setShowActiveJobModal] = useState(false);
   const [activeJobToolName, setActiveJobToolName] = useState('');
   const [activeJobId, setActiveJobId] = useState<string | undefined>();
@@ -246,10 +247,12 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
       // Check credits
       const freshCredits = await checkBalance();
       if (freshCredits < creditCost) {
-        setShowAuthModal(true);
+        toast.error('Créditos insuficientes para gerar a selfie.');
+        setShowNoCredits(true);
         endSubmit();
         return;
       }
+      setShowNoCredits(false);
 
       setStatus('pending');
       setProgress(5);
@@ -400,9 +403,9 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
           --purple:#7c3aed;--purple-lt:#a78bfa;
           --text-1:#eeeef5;--text-2:#7b7fa8;--text-3:#3d4060;
           --green:#34d399;--radius:12px;
-          display:grid;grid-template-columns:320px 1fr;min-height:100vh;
+          display:grid;grid-template-columns:320px 1fr;height:calc(100vh - 56px);
           font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text-1);background:var(--bg);
-          position:fixed;inset:0;z-index:9999;overflow:hidden;
+          overflow:hidden;
         }
         .snl-sidebar{
           background:var(--panel);border-right:1px solid var(--border);
@@ -498,6 +501,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
         }
       `}</style>
 
+      <ToolsHeader title="Moon Selfie" subtitle="Gere selfies épicas na lua com IA" showBackButton={true} />
       <div className="snl-app">
         <aside className="snl-sidebar">
           <div className="snl-brand">
