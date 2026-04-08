@@ -24,7 +24,7 @@ interface Props {
   referenceImagePreviews: string[];
   addReferenceImages: (files: FileList | null) => void;
   removeReferenceImage: (index: number) => void;
-  onCharacterChange?: (item: { id: string; name: string; description: string | null; image_url: string | null } | null) => void;
+  onCharactersChange?: (items: { id: string; name: string; description: string | null; image_url: string | null }[]) => void;
   onScenarioChange?: (item: { id: string; name: string; description: string | null; image_url: string | null } | null) => void;
   maxReferences?: number;
 }
@@ -59,7 +59,7 @@ const Section: React.FC<SectionProps> = ({ title, emoji, defaultOpen = true, chi
 const ControlPanel: React.FC<Props> = ({
   mode, settings, updateSettings, assembledPrompt, showPrompt, setShowPrompt,
   referenceImages, referenceImagePreviews, addReferenceImages, removeReferenceImage,
-  onCharacterChange, onScenarioChange, maxReferences = 9,
+  onCharactersChange, onScenarioChange, maxReferences = 9,
 }) => {
   const copyPrompt = () => {
     navigator.clipboard.writeText(assembledPrompt);
@@ -104,7 +104,7 @@ const ControlPanel: React.FC<Props> = ({
 
           {/* Personagem e Cenário */}
           <Section title="Personagem e Cenário" emoji="👤" defaultOpen={false}>
-            <CharacterScenarioSection settings={settings} updateSettings={updateSettings} onCharacterChange={onCharacterChange} onScenarioChange={onScenarioChange} />
+            <CharacterScenarioSection settings={settings} updateSettings={updateSettings} onCharactersChange={onCharactersChange} onScenarioChange={onScenarioChange} />
           </Section>
 
           <div className="border-t border-white/[0.04]" />
@@ -136,7 +136,7 @@ const ControlPanel: React.FC<Props> = ({
           <div className="border-t border-white/[0.04] my-1" />
 
           <Section title="Personagem e Cenário" emoji="👤" defaultOpen={false}>
-            <CharacterScenarioSection settings={settings} updateSettings={updateSettings} onCharacterChange={onCharacterChange} onScenarioChange={onScenarioChange} />
+            <CharacterScenarioSection settings={settings} updateSettings={updateSettings} onCharactersChange={onCharactersChange} onScenarioChange={onScenarioChange} />
           </Section>
 
           <div className="border-t border-white/[0.04]" />
