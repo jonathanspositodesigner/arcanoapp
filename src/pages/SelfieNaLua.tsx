@@ -15,7 +15,7 @@ import { useResilientDownload } from "@/hooks/useResilientDownload";
 import { optimizeForAI } from "@/hooks/useImageOptimizer";
 import { createJob, startJob, checkActiveJob, cancelJob as centralCancelJob, uploadToStorage } from "@/ai/JobManager";
 import { getAIErrorMessage } from "@/utils/errorMessages";
-import NoCreditsModal from "@/components/upscaler/NoCreditsModal";
+import ArcanoClonerAuthModal from "@/components/arcano-cloner/ArcanoClonerAuthModal";
 import ActiveJobBlockModal from "@/components/ai-tools/ActiveJobBlockModal";
 import { DownloadProgressOverlay } from "@/components/ai-tools";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
@@ -81,8 +81,7 @@ export default function SelfieNaLua() {
   const [queuePosition, setQueuePosition] = useState<number>(0);
   const [progress, setProgress] = useState(0);
 
-  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
-  const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [showActiveJobModal, setShowActiveJobModal] = useState(false);
   const [activeJobToolName, setActiveJobToolName] = useState('');
   const [activeJobId, setActiveJobId] = useState<string | undefined>();
@@ -197,7 +196,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
 
   // Generate — cloned from GerarImagemTool
   const handleGenerate = async () => {
-    if (!user?.id) { setNoCreditsReason('not_logged'); setShowNoCreditsModal(true); return; }
+    if (!user?.id) { setShowAuthModal(true); return; }
     if (!startSubmit()) return;
 
     resetJobState();
@@ -217,8 +216,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
       // Check credits
       const freshCredits = await checkBalance();
       if (freshCredits < creditCost) {
-        setNoCreditsReason('insufficient');
-        setShowNoCreditsModal(true);
+        setShowAuthModal(true);
         endSubmit();
         return;
       }
@@ -268,8 +266,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
 
       if (!result.success) {
         if (result.code === 'INSUFFICIENT_CREDITS') {
-          setNoCreditsReason('insufficient');
-          setShowNoCreditsModal(true);
+          setShowAuthModal(true);
           resetJobState();
         } else {
           setStatus('failed');
@@ -660,7 +657,12 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
         </main>
       </div>
 
-      <NoCreditsModal isOpen={showNoCreditsModal} onClose={() => setShowNoCreditsModal(false)} reason={noCreditsReason} />
+      <ArcanoClonerAuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={() => { setShowAuthModal(false); refetchCredits(); }}
+        redirectPath="/selfie-na-lua"
+      />
       <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeJobToolName} activeJobId={activeJobId} activeStatus={activeStatus} onCancelJob={centralCancelJob} />
 
       <style>{`
