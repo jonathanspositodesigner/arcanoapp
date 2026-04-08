@@ -81,6 +81,14 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
   const handleSave = async () => {
     if (!newName.trim()) { toast.error('Nome é obrigatório'); return; }
     if (!newImage) { toast.error('Imagem é obrigatória'); return; }
+
+    // Check limit of 20 per type
+    const currentList = modalType === 'character' ? characters : scenarios;
+    if (currentList.length >= 20) {
+      toast.error(`Limite de 20 ${modalType === 'character' ? 'personagens' : 'cenários'} atingido. Delete um existente para criar outro.`);
+      return;
+    }
+
     setSaving(true);
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) { setSaving(false); return; }
@@ -105,7 +113,11 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
     });
 
     if (error) {
-      toast.error('Erro ao salvar');
+      if (error.message?.includes('Limite de 20')) {
+        toast.error(`Limite de 20 ${modalType === 'character' ? 'personagens' : 'cenários'} atingido.`);
+      } else {
+        toast.error('Erro ao salvar');
+      }
     } else {
       toast.success(modalType === 'character' ? 'Personagem criado!' : 'Cenário criado!');
       await fetchItems();
