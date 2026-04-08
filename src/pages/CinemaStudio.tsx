@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 const CinemaStudio: React.FC = () => {
   const isMobile = useIsMobile();
   const isTabletViewport = useIsTabletViewport();
+  const isCompactLayout = isTabletViewport;
   const [mobileTab, setMobileTab] = React.useState<'controls' | 'preview'>('preview');
   const studio = useCinemaStudio();
   const navigate = useNavigate();
@@ -78,7 +79,7 @@ const CinemaStudio: React.FC = () => {
           </div>
         </div>
 
-        {isMobile && (
+        {isCompactLayout && (
           <div className="flex flex-shrink-0 border-b border-white/[0.04] bg-[#0c0c16]">
             <button
               onClick={() => setMobileTab('controls')}
@@ -101,13 +102,13 @@ const CinemaStudio: React.FC = () => {
 
         <div className="flex-1 min-h-0 overflow-hidden">
           <div className={`grid h-full min-h-0 overflow-hidden ${
-            isMobile ? 'grid-cols-1' : isTabletViewport ? 'grid-cols-[260px_minmax(0,1fr)]' : 'grid-cols-[280px_minmax(0,1fr)]'
+            isCompactLayout ? 'grid-cols-1' : 'grid-cols-[280px_minmax(0,1fr)]'
           }`}>
             <div className={`${
-              isMobile
+              isCompactLayout
                 ? mobileTab === 'controls' ? 'flex min-h-0 flex-col' : 'hidden'
                 : 'flex min-h-0 flex-col border-r border-white/[0.04] bg-[#0c0c16]'
-            } ${!isMobile ? '' : 'bg-[#0c0c16]'}`}>
+            } bg-[#0c0c16]`}>
               <div className="flex-1 overflow-y-auto px-3 py-3" style={{ scrollbarWidth: 'none' }}>
                 <ControlPanel
                   mode={studio.mode}
@@ -130,7 +131,7 @@ const CinemaStudio: React.FC = () => {
             </div>
 
             <div className={`${
-              isMobile
+              isCompactLayout
                 ? mobileTab === 'preview' ? 'flex min-h-0 flex-col' : 'hidden'
                 : 'flex min-h-0 flex-col'
             } min-w-0 overflow-hidden bg-[#08080f]`}>
