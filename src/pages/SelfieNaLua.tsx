@@ -67,6 +67,7 @@ interface UploadState {
 }
 
 export default function SelfieNaLua() {
+  const navigate = useNavigate();
   const { user } = usePremiumStatus();
   const { refetch: refetchCredits, checkBalance } = useCredits();
   const { getCreditCost } = useAIToolSettings();
