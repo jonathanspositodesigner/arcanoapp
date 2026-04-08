@@ -121,9 +121,7 @@ const PreviewPanel: React.FC<Props> = ({
       {status === 'idle' && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
           <span className="text-[10px] text-gray-700">
-            {mode === 'video'
-              ? `≈ ${estimatedCredits} créditos`
-              : 'Modo foto'}
+            ≈ {estimatedCredits} créditos
           </span>
         </div>
       )}
