@@ -749,7 +749,8 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
             )}
           </div>
         </main>
-      </div>
+       </div>{/* end snl-body */}
+      </div>{/* end snl-app */}
 
       <ArcanoClonerAuthModal
         isOpen={showAuthModal}
