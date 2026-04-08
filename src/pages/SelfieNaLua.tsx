@@ -21,7 +21,7 @@ import { getAIErrorMessage } from "@/utils/errorMessages";
 import ArcanoClonerAuthModal from "@/components/arcano-cloner/ArcanoClonerAuthModal";
 import ActiveJobBlockModal from "@/components/ai-tools/ActiveJobBlockModal";
 import { DownloadProgressOverlay } from "@/components/ai-tools";
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+
 
 const PLACE_OPTIONS = [
   { label: "McDonald's", value: "McDonald's com arcos dourados icônicos, letreiro iluminado e fachada reconhecível" },
@@ -405,7 +405,8 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
           --purple:#7c3aed;--purple-lt:#a78bfa;
           --text-1:#eeeef5;--text-2:#7b7fa8;--text-3:#3d4060;
           --green:#34d399;--radius:12px;
-          display:flex;flex-direction:column;height:calc(100vh - 56px);
+          display:flex;flex-direction:column;height:calc(100vh - 56px);height:calc(100dvh - 56px);
+          min-height:calc(100vh - 56px);min-height:calc(100dvh - 56px);
           font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text-1);background:var(--bg);
           overflow:hidden;
         }
@@ -511,11 +512,12 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
           font-size:11px;color:var(--purple-lt);opacity:0.8;
         }
         @media (max-width: 768px) {
-          .snl-body{grid-template-columns:1fr;grid-template-rows:auto 1fr;overflow-y:auto;}
+          .snl-app{height:auto;min-height:calc(100dvh - 56px);overflow:visible;}
+          .snl-body{grid-template-columns:1fr;grid-template-rows:auto auto;overflow:visible;}
           .snl-sidebar{border-right:none;border-bottom:1px solid var(--border);overflow:visible;}
           .snl-sidebar-scroll{padding:20px 16px 12px;gap:20px;}
           .snl-sidebar-footer{padding:8px 16px 16px;position:static;}
-          .snl-main{min-height:50vh;}
+          .snl-main{min-height:auto;overflow:visible;}
           .snl-content{padding:24px 16px 40px;}
           .snl-topbar{display:none;}
           .snl-style-pills{flex-wrap:wrap;}
@@ -677,15 +679,17 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
           <div className="snl-content">
             {isDownloading && <DownloadProgressOverlay isVisible={isDownloading} progress={downloadProgress} />}
 
-            {resultUrl ? (
-              <div style={{ width: '100%', maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(124,58,237,0.2)', background: 'rgba(0,0,0,0.3)' }}>
-                  <TransformWrapper>
-                    <TransformComponent wrapperStyle={{ width: '100%' }} contentStyle={{ width: '100%' }}>
-                      <img src={resultUrl} alt="Selfie na Lua" style={{ width: '100%', height: 'auto', display: 'block' }} />
-                    </TransformComponent>
-                  </TransformWrapper>
-                </div>
+             {resultUrl ? (
+               <div style={{ width: '100%', maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                 <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(124,58,237,0.2)', background: 'rgba(0,0,0,0.3)' }}>
+                   <img
+                     src={resultUrl}
+                     alt="Selfie na Lua"
+                     style={{ width: '100%', height: 'auto', display: 'block', objectFit: 'contain', touchAction: 'pan-y' }}
+                     loading="eager"
+                     decoding="async"
+                   />
+                 </div>
               </div>
             ) : isProcessing ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, color: '#a78bfa' }}>
