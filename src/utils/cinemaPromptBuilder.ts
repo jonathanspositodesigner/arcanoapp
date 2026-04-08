@@ -202,7 +202,7 @@ const WEATHER_PROMPTS: Record<string, string> = {
 };
 
 // ━━━ MAIN BUILDER ━━━
-export function buildCinemaPrompt(s: CinemaSettings): string {
+export function buildCinemaPrompt(s: CinemaSettings, mode?: 'photo' | 'video'): string {
   const parts: string[] = [];
 
   // Scene content
@@ -217,8 +217,8 @@ export function buildCinemaPrompt(s: CinemaSettings): string {
 
   if (s.scenePrompt) parts.push(s.scenePrompt);
 
-  // Camera rig (advanced only)
-  if (s.advancedCamera) {
+  // Camera rig (always for video, advanced-only for photo)
+  if (s.advancedCamera || mode === 'video') {
     const cameraPrompt = CAMERA_BODY_PROMPTS[s.cameraBody];
     if (cameraPrompt) parts.push(cameraPrompt);
 
