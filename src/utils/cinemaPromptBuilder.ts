@@ -22,6 +22,7 @@ export interface CinemaSettings {
   aperture: string;
   cameraAngle: string;
   cameraDistance: string;
+  advancedCamera: boolean;
 
   // Style
   imageStyle: string;
@@ -216,15 +217,17 @@ export function buildCinemaPrompt(s: CinemaSettings): string {
 
   if (s.scenePrompt) parts.push(s.scenePrompt);
 
-  // Camera rig
-  const cameraPrompt = CAMERA_BODY_PROMPTS[s.cameraBody];
-  if (cameraPrompt) parts.push(cameraPrompt);
+  // Camera rig (advanced only)
+  if (s.advancedCamera) {
+    const cameraPrompt = CAMERA_BODY_PROMPTS[s.cameraBody];
+    if (cameraPrompt) parts.push(cameraPrompt);
 
-  const lensPrompt = LENS_TYPE_PROMPTS[s.lensType];
-  if (lensPrompt) parts.push(lensPrompt);
+    const lensPrompt = LENS_TYPE_PROMPTS[s.lensType];
+    if (lensPrompt) parts.push(lensPrompt);
 
-  parts.push(`${s.focalLength}mm`);
-  parts.push(s.aperture);
+    parts.push(`${s.focalLength}mm`);
+    parts.push(s.aperture);
+  }
 
   // Camera angle
   const anglePrompt = CAMERA_ANGLE_PROMPTS[s.cameraAngle];
@@ -280,6 +283,7 @@ export function getDefaultSettings(): CinemaSettings {
     aperture: 'f/2.8',
     cameraAngle: 'Eye Level',
     cameraDistance: 'Medium Shot',
+    advancedCamera: false,
     movements: [{ type: 'None', intensity: 50 }],
     genre: 'General',
     mood: '',

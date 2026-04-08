@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Settings2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   CAMERA_BODIES, LENS_TYPES, FOCAL_PRESETS, APERTURES, CAMERA_ANGLES, CAMERA_DISTANCES,
@@ -145,6 +145,8 @@ const SegmentedControl: React.FC<{
 );
 
 const CameraRigSection: React.FC<Props> = ({ settings, updateSettings }) => {
+  const advancedOpen = settings.advancedCamera;
+
   return (
     <div className="space-y-2.5">
       {/* Ângulo / Perspectiva */}
@@ -163,56 +165,74 @@ const CameraRigSection: React.FC<Props> = ({ settings, updateSettings }) => {
         onSelect={v => updateSettings({ cameraDistance: v })}
       />
 
-      {/* Corpo */}
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Corpo</span>
-        <Select value={settings.cameraBody} onValueChange={v => updateSettings({ cameraBody: v })}>
-          <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-[#141420] border-white/[0.06]">
-            {CAMERA_BODIES.map(c => (
-              <SelectItem key={c.value} value={c.value} className="text-gray-300 text-[11px]">
-                {c.value}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Botão Opções Avançadas */}
+      <button
+        onClick={() => updateSettings({ advancedCamera: !advancedOpen })}
+        className={`flex items-center gap-1.5 w-full py-1.5 px-2 rounded-md border transition-colors text-[10px] ${
+          advancedOpen
+            ? 'bg-purple-500/10 border-purple-500/30 text-purple-400'
+            : 'bg-black/20 border-white/[0.06] text-gray-600 hover:text-gray-400 hover:border-white/[0.12]'
+        }`}
+      >
+        <Settings2 className="w-3 h-3" />
+        <span className="uppercase tracking-[0.12em] font-semibold">Opções Avançadas</span>
+        <ChevronDown className={`w-3 h-3 ml-auto transition-transform duration-200 ${advancedOpen ? 'rotate-180' : ''}`} />
+      </button>
 
-      {/* Lente */}
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Lente</span>
-        <Select value={settings.lensType} onValueChange={v => updateSettings({ lensType: v })}>
-          <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-[#141420] border-white/[0.06]">
-            {LENS_TYPES.map(l => (
-              <SelectItem key={l} value={l} className="text-gray-300 text-[11px]">
-                {l}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {advancedOpen && (
+        <div className="space-y-2.5 pl-1 border-l border-purple-500/20 ml-1">
+          {/* Corpo */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Corpo</span>
+            <Select value={settings.cameraBody} onValueChange={v => updateSettings({ cameraBody: v })}>
+              <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#141420] border-white/[0.06]">
+                {CAMERA_BODIES.map(c => (
+                  <SelectItem key={c.value} value={c.value} className="text-gray-300 text-[11px]">
+                    {c.value}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      {/* Focal */}
-      <SegmentedControl
-        label="Focal"
-        options={FOCAL_PRESETS}
-        value={settings.focalLength}
-        onChange={v => updateSettings({ focalLength: v })}
-        suffix="mm"
-      />
+          {/* Lente */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Lente</span>
+            <Select value={settings.lensType} onValueChange={v => updateSettings({ lensType: v })}>
+              <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-[#141420] border-white/[0.06]">
+                {LENS_TYPES.map(l => (
+                  <SelectItem key={l} value={l} className="text-gray-300 text-[11px]">
+                    {l}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      {/* Abertura */}
-      <SegmentedControl
-        label="Abertura"
-        options={APERTURES}
-        value={settings.aperture}
-        onChange={v => updateSettings({ aperture: v })}
-      />
+          {/* Focal */}
+          <SegmentedControl
+            label="Focal"
+            options={FOCAL_PRESETS}
+            value={settings.focalLength}
+            onChange={v => updateSettings({ focalLength: v })}
+            suffix="mm"
+          />
+
+          {/* Abertura */}
+          <SegmentedControl
+            label="Abertura"
+            options={APERTURES}
+            value={settings.aperture}
+            onChange={v => updateSettings({ aperture: v })}
+          />
+        </div>
+      )}
     </div>
   );
 };
