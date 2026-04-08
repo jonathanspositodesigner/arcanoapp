@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, Eye, EyeOff, Copy } from 'lucide-react';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { ChevronDown, Eye, EyeOff, Copy } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import SceneSection from './SceneSection';
@@ -25,27 +24,30 @@ interface Props {
   removeReferenceImage: (index: number) => void;
 }
 
-interface SectionWrapperProps {
+interface SectionProps {
   title: string;
   emoji: string;
   defaultOpen?: boolean;
   children: React.ReactNode;
 }
 
-const SectionWrapper: React.FC<SectionWrapperProps> = ({ title, emoji, defaultOpen = true, children }) => {
+const Section: React.FC<SectionProps> = ({ title, emoji, defaultOpen = true, children }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="flex items-center justify-between w-full py-2 px-1 hover:bg-white/5 rounded-lg transition-colors">
-        <span className="text-xs font-semibold text-white flex items-center gap-1.5">
-          <span>{emoji}</span> {title}
+    <div>
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between w-full py-2 group"
+      >
+        <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-[0.12em] flex items-center gap-1.5">
+          <span className="text-xs">{emoji}</span> {title}
         </span>
-        {open ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" /> : <ChevronRight className="w-3.5 h-3.5 text-gray-400" />}
-      </CollapsibleTrigger>
-      <CollapsibleContent className="pt-1 pb-2">
+        <ChevronDown className={`w-3 h-3 text-gray-600 transition-transform duration-200 ${open ? '' : '-rotate-90'}`} />
+      </button>
+      <div className={`overflow-hidden transition-all duration-200 ${open ? 'max-h-[2000px] opacity-100 pb-2' : 'max-h-0 opacity-0'}`}>
         {children}
-      </CollapsibleContent>
-    </Collapsible>
+      </div>
+    </div>
   );
 };
 
@@ -59,78 +61,71 @@ const ControlPanel: React.FC<Props> = ({
   };
 
   return (
-    <div className="space-y-1">
-      {/* Section 1 — Scene */}
-      <SectionWrapper title="Cena" emoji="🎬">
-        <SceneSection settings={settings} updateSettings={updateSettings} />
-      </SectionWrapper>
+    <div className="space-y-0">
+      {/* Scene — always visible, no header */}
+      <SceneSection settings={settings} updateSettings={updateSettings} />
 
-      <div className="border-t border-white/5" />
+      <div className="border-t border-white/[0.04] my-1" />
 
-      {/* Section 2 — Camera Rig */}
-      <SectionWrapper title="Câmera" emoji="📷">
+      <Section title="Camera" emoji="🎥" defaultOpen={true}>
         <CameraRigSection settings={settings} updateSettings={updateSettings} />
-      </SectionWrapper>
+      </Section>
 
-      <div className="border-t border-white/5" />
+      <div className="border-t border-white/[0.04]" />
 
-      {/* Section 3 — Camera Movement */}
-      <SectionWrapper title="Movimento" emoji="🎥">
+      <Section title="Movement" emoji="🎬" defaultOpen={true}>
         <CameraMovementSection settings={settings} updateSettings={updateSettings} />
-      </SectionWrapper>
+      </Section>
 
-      <div className="border-t border-white/5" />
+      <div className="border-t border-white/[0.04]" />
 
-      {/* Section 4 — Genre & Mood */}
-      <SectionWrapper title="Gênero & Humor" emoji="🎭">
+      <Section title="Style" emoji="🎨" defaultOpen={false}>
         <GenreMoodSection settings={settings} updateSettings={updateSettings} />
-      </SectionWrapper>
+      </Section>
 
-      <div className="border-t border-white/5" />
+      <div className="border-t border-white/[0.04]" />
 
-      {/* Section 5 — Video Settings (only in video mode) */}
       {mode === 'video' && (
         <>
-          <SectionWrapper title="Config. de Vídeo" emoji="⚙️">
+          <Section title="Output" emoji="⚙️" defaultOpen={false}>
             <VideoSettingsSection settings={settings} updateSettings={updateSettings} />
-          </SectionWrapper>
-          <div className="border-t border-white/5" />
+          </Section>
+          <div className="border-t border-white/[0.04]" />
         </>
       )}
 
-      {/* Section 6 — Reference Images */}
-      <SectionWrapper title="Referências" emoji="🖼️">
+      <Section title="References" emoji="🖼" defaultOpen={false}>
         <ReferenceSection
           images={referenceImages}
           previews={referenceImagePreviews}
           onAdd={addReferenceImages}
           onRemove={removeReferenceImage}
         />
-      </SectionWrapper>
+      </Section>
 
-      <div className="border-t border-white/5" />
+      <div className="border-t border-white/[0.04]" />
 
       {/* Assembled Prompt Toggle */}
-      <div>
+      <div className="pt-1">
         <button
           onClick={() => setShowPrompt(!showPrompt)}
-          className="flex items-center gap-1.5 text-[10px] text-gray-500 hover:text-gray-300 transition-colors py-1"
+          className="flex items-center gap-1.5 text-[10px] text-gray-600 hover:text-gray-400 transition-colors py-1"
         >
           {showPrompt ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-          {showPrompt ? 'Ocultar prompt montado' : 'Ver prompt montado'}
+          {showPrompt ? 'Hide prompt' : 'View prompt'}
         </button>
         {showPrompt && (
           <div className="mt-1 relative">
             <Textarea
               value={assembledPrompt}
               readOnly
-              className="bg-black/40 border-white/10 text-gray-300 text-[10px] min-h-[80px] resize-none font-mono"
+              className="bg-black/30 border-white/[0.06] text-gray-500 text-[10px] min-h-[60px] resize-none font-mono"
             />
             <button
               onClick={copyPrompt}
-              className="absolute top-1.5 right-1.5 p-1 bg-black/60 rounded hover:bg-white/10 transition-colors"
+              className="absolute top-1.5 right-1.5 p-1 rounded hover:bg-white/5 transition-colors"
             >
-              <Copy className="w-3 h-3 text-gray-400" />
+              <Copy className="w-3 h-3 text-gray-600" />
             </button>
           </div>
         )}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Zap } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   SPEED_RAMPS, ASPECT_RATIOS, QUALITIES, DURATIONS,
   type CinemaSettings,
@@ -12,121 +12,110 @@ interface Props {
   updateSettings: (p: Partial<CinemaSettings>) => void;
 }
 
+const SegmentedControl: React.FC<{
+  label: string;
+  options: (string | number)[];
+  value: string | number;
+  onChange: (v: any) => void;
+  suffix?: string;
+}> = ({ label, options, value, onChange, suffix = '' }) => (
+  <div className="flex items-center gap-2">
+    <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">{label}</span>
+    <div className="flex-1 flex bg-white/[0.02] rounded-md p-0.5 gap-0.5">
+      {options.map(o => (
+        <button
+          key={o}
+          onClick={() => onChange(o)}
+          className={`flex-1 py-1 text-[10px] rounded transition-all ${
+            String(value) === String(o)
+              ? 'bg-white/[0.08] text-gray-200 font-medium'
+              : 'text-gray-600 hover:text-gray-400'
+          }`}
+        >
+          {o}{suffix}
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
 const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings }) => {
   return (
-    <div className="space-y-3">
-      {/* Speed Ramp */}
-      <div>
-        <label className="text-xs font-medium text-white mb-1.5 block">Speed Ramp</label>
-        <div className="grid grid-cols-4 gap-1.5">
-          {SPEED_RAMPS.map(s => (
-            <button
-              key={s}
-              onClick={() => updateSettings({ speedRamp: s })}
-              className={`py-1.5 px-1 text-[10px] rounded-lg transition-all ${
-                settings.speedRamp === s
-                  ? 'bg-blue-500/20 border border-blue-500/40 text-white font-medium'
-                  : 'bg-black/30 border border-white/5 text-gray-400 hover:text-white hover:bg-white/5'
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="space-y-2.5">
+      <SegmentedControl
+        label="Duration"
+        options={DURATIONS}
+        value={settings.duration}
+        onChange={v => updateSettings({ duration: v })}
+        suffix="s"
+      />
 
-      {/* Duration */}
-      <div>
-        <div className="flex items-center justify-between mb-1.5">
-          <label className="text-xs font-medium text-white">Duração</label>
-          <span className="text-xs text-purple-300 font-medium">{settings.duration}s</span>
-        </div>
-        <div className="grid grid-cols-5 gap-1">
-          {DURATIONS.map(d => (
-            <button
-              key={d}
-              onClick={() => updateSettings({ duration: d })}
-              className={`py-1.5 text-[10px] rounded-md transition-all ${
-                settings.duration === d
-                  ? 'bg-purple-500/30 text-white font-medium'
-                  : 'bg-black/30 text-gray-400 hover:text-white'
-              }`}
-            >
-              {d}s
-            </button>
-          ))}
-        </div>
-      </div>
+      <SegmentedControl
+        label="Quality"
+        options={QUALITIES}
+        value={settings.quality}
+        onChange={v => updateSettings({ quality: v })}
+      />
 
-      {/* Quality + Aspect Ratio */}
-      <div className="flex gap-3">
-        <div className="flex-1">
-          <label className="text-xs font-medium text-white mb-1.5 block">Qualidade</label>
-          <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1">
-            {QUALITIES.map(q => (
-              <button
-                key={q}
-                onClick={() => updateSettings({ quality: q })}
-                className={`py-1.5 text-[10px] rounded-md transition-all ${
-                  settings.quality === q ? 'bg-white/10 text-white font-medium' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="flex-1">
-          <label className="text-xs font-medium text-white mb-1.5 block">Aspect Ratio</label>
-          <div className="grid grid-cols-3 gap-1">
-            {ASPECT_RATIOS.map(a => (
-              <button
-                key={a}
-                onClick={() => updateSettings({ aspectRatio: a })}
-                className={`py-1.5 text-[10px] rounded-md transition-all ${
-                  settings.aspectRatio === a ? 'bg-purple-500/30 text-white font-medium' : 'bg-black/30 text-gray-400 hover:text-white'
-                }`}
-              >
-                {a}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      <SegmentedControl
+        label="Ratio"
+        options={ASPECT_RATIOS}
+        value={settings.aspectRatio}
+        onChange={v => updateSettings({ aspectRatio: v })}
+      />
 
-      {/* Audio Toggle */}
-      <div className="flex items-center justify-between bg-black/30 rounded-lg px-3 py-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-white">Gerar Áudio</span>
-          <span className="text-[10px] bg-green-500/20 text-green-300 px-1.5 py-0.5 rounded-full">Free</span>
-        </div>
-        <Switch
-          checked={settings.generateAudio}
-          onCheckedChange={v => updateSettings({ generateAudio: v })}
-          className="data-[state=checked]:bg-white/30 data-[state=unchecked]:bg-white/10 [&>span]:bg-white"
-        />
-      </div>
-
-      {/* Model Speed */}
-      <div>
-        <label className="text-xs font-medium text-white mb-1.5 block">Velocidade do Modelo</label>
-        <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1">
+      {/* Speed toggle */}
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Speed</span>
+        <div className="flex-1 flex bg-white/[0.02] rounded-md p-0.5 gap-0.5">
           <button
             onClick={() => updateSettings({ modelSpeed: 'standard' })}
-            className={`py-2 text-xs rounded-md transition-all font-medium ${
-              settings.modelSpeed === 'standard' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'
+            className={`flex-1 py-1 text-[10px] rounded transition-all ${
+              settings.modelSpeed === 'standard' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-gray-600 hover:text-gray-400'
             }`}
           >
             Standard
           </button>
           <button
             onClick={() => updateSettings({ modelSpeed: 'fast' })}
-            className={`py-2 text-xs rounded-md transition-all font-medium flex items-center justify-center gap-1 ${
-              settings.modelSpeed === 'fast' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white'
+            className={`flex-1 py-1 text-[10px] rounded transition-all flex items-center justify-center gap-0.5 ${
+              settings.modelSpeed === 'fast' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-gray-600 hover:text-gray-400'
             }`}
           >
-            Fast <Zap className="w-3 h-3" />
+            Fast <Zap className="w-2.5 h-2.5" />
           </button>
+        </div>
+      </div>
+
+      {/* Speed Ramp */}
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Ramp</span>
+        <Select value={settings.speedRamp} onValueChange={v => updateSettings({ speedRamp: v })}>
+          <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-[#141420] border-white/[0.06]">
+            {SPEED_RAMPS.map(s => (
+              <SelectItem key={s} value={s} className="text-gray-300 text-[11px]">{s}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Audio */}
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Audio</span>
+        <div className="flex-1 flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Switch
+              checked={settings.generateAudio}
+              onCheckedChange={v => updateSettings({ generateAudio: v })}
+              className="data-[state=checked]:bg-white/20 data-[state=unchecked]:bg-white/[0.06] scale-75 origin-left [&>span]:bg-white"
+            />
+            {settings.generateAudio && (
+              <span className="text-[9px] text-green-500/70 font-medium">free</span>
+            )}
+          </div>
         </div>
       </div>
     </div>
