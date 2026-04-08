@@ -238,6 +238,7 @@ export function getDefaultSettings(): CinemaSettings {
     lensType: 'Anamorphic',
     focalLength: 35,
     aperture: 'f/2.8',
+    cameraAngle: 'Eye Level',
     movements: [{ type: 'None', intensity: 50 }],
     genre: 'General',
     mood: '',
@@ -294,6 +295,11 @@ export const COLOR_GRADES = [
 export const SPEED_RAMPS = [
   'Linear', 'Auto', 'Flash In', 'Flash Out',
   'Slow-mo', 'Bullet Time', 'Impact', 'Ramp Up',
+];
+
+export const CAMERA_ANGLES = [
+  'Eye Level', 'Low Angle', 'High Angle', 'Dutch Angle', "Bird's Eye",
+  "Worm's Eye", 'POV', 'Over the Shoulder', 'Hip Level', 'Ground Level',
 ];
 
 export const ASPECT_RATIOS = ['16:9', '9:16', '1:1', '4:3', '21:9'];
