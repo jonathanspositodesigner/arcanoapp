@@ -114,6 +114,20 @@ const CAMERA_DISTANCE_PROMPTS: Record<string, string> = {
   'Establishing Shot': 'establishing shot, wide overview, setting the scene, location reveal',
 };
 
+// ━━━ Image Style Prompts ━━━
+const IMAGE_STYLE_PROMPTS: Record<string, string> = {
+  'Cinematic': '',
+  'Ultra Realistic': 'ultra realistic, photorealistic, hyper-detailed, lifelike',
+  'Anime': 'anime style, Japanese animation, cel-shaded, vibrant colors',
+  'Cartoon': 'cartoon style, stylized, bold outlines, exaggerated features',
+  'Unreal Engine': 'Unreal Engine 5 render, ray tracing, photorealistic 3D, volumetric lighting',
+  'Oil Painting': 'oil painting style, brushstrokes, classical art, rich textures',
+  'Watercolor': 'watercolor painting, soft washes, fluid colors, delicate details',
+  'Pixel Art': 'pixel art style, retro 8-bit, blocky, nostalgic game aesthetic',
+  'Comic Book': 'comic book style, halftone dots, bold ink lines, graphic novel',
+  'Concept Art': 'concept art, digital painting, matte painting, detailed illustration',
+};
+
 // ━━━ Color Grade Prompts ━━━
 const COLOR_GRADE_PROMPTS: Record<string, string> = {
   'Natural': '',
