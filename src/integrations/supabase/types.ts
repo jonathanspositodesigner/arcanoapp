@@ -5056,6 +5056,7 @@ export type Database = {
         Args: { check_email: string }
         Returns: {
           created_at: string
+          exists_in_auth: boolean
           exists_in_db: boolean
           has_logged_in: boolean
           password_changed: boolean
