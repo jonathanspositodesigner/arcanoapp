@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 const DEFAULT_REDIRECT_URL = "https://arcanoapp.voxvisual.com.br/ferramentas-ia-aplicativo";
 const BASE_URL = "https://arcanoapp.voxvisual.com.br";
 
-function buildSuccessHtml(): string {
+function buildSuccessHtml(redirectUrl: string): string {
   return `
 <!DOCTYPE html>
 <html>
@@ -27,7 +27,7 @@ function buildSuccessHtml(): string {
           </p>
         </td></tr>
         <tr><td align="center" style="padding-bottom:24px;">
-          <a href="${REDIRECT_URL}" style="display:inline-block;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:16px;font-weight:bold;">
+          <a href="${redirectUrl}" style="display:inline-block;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:16px;font-weight:bold;">
             Ir para as Ferramentas de IA
           </a>
         </td></tr>
@@ -38,7 +38,7 @@ function buildSuccessHtml(): string {
 </html>`;
 }
 
-function buildErrorHtml(message: string): string {
+function buildErrorHtml(message: string, redirectUrl: string): string {
   return `
 <!DOCTYPE html>
 <html>
@@ -61,7 +61,7 @@ function buildErrorHtml(message: string): string {
           </p>
         </td></tr>
         <tr><td align="center" style="padding-bottom:24px;">
-          <a href="${REDIRECT_URL}" style="display:inline-block;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:16px;font-weight:bold;">
+          <a href="${redirectUrl}" style="display:inline-block;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:16px;font-weight:bold;">
             Ir para a Plataforma
           </a>
         </td></tr>
