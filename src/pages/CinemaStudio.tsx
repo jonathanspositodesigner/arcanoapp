@@ -96,23 +96,8 @@ const CinemaStudio: React.FC = () => {
     }
   }, [projectManager, studio]);
 
-  // Handle creating a project
-  const handleCreateProject = useCallback(async (name: string) => {
-    const project = await projectManager.createProject(name);
-    if (!project) return null;
-
-    // Clear storyboard for fresh project
-    const { createEmptyScenes } = await import('@/hooks/useCinemaStudio').then(m => {
-      // We can't import createEmptyScenes directly, but we can clear localStorage
-      localStorage.removeItem(STORYBOARD_KEY);
-      return { createEmptyScenes: null };
-    });
-
-    setView('studio');
-    // Force page reload to reset studio state for fresh project
-    window.location.reload();
-    return project;
-  }, [projectManager]);
+  // Handle creating a project — passed to picker, which calls projectManager.createProject directly
+  // The picker's onCreateProject already returns the project, and onSelectProject handles loading
 
   // Handle back to picker
   const handleBackToPicker = useCallback(async () => {
