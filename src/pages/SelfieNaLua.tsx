@@ -510,6 +510,16 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
           display:inline-flex;align-items:center;gap:4px;
           font-size:11px;color:var(--purple-lt);opacity:0.8;
         }
+        @media (max-width: 768px) {
+          .snl-body{grid-template-columns:1fr;grid-template-rows:auto 1fr;overflow-y:auto;}
+          .snl-sidebar{border-right:none;border-bottom:1px solid var(--border);}
+          .snl-sidebar-scroll{padding:20px 16px 12px;gap:20px;}
+          .snl-sidebar-footer{padding:8px 16px 16px;}
+          .snl-main{min-height:50vh;}
+          .snl-content{padding:24px 16px 40px;}
+          .snl-topbar{padding:14px 16px;}
+          .snl-style-pills{flex-wrap:wrap;}
+        }
       `}</style>
 
       <ToolsHeader title="Moon Selfie" subtitle="Gere selfies épicas na lua com IA" showBackButton={true} />
