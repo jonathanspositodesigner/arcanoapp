@@ -99,7 +99,20 @@ const SucessoUpscalerArcano = () => {
         }
       );
 
-      if (error || !data?.success) {
+      if (error) {
+        let errorMsg = "Erro ao criar acesso. Tente novamente.";
+        try {
+          if (error.context && typeof error.context.json === "function") {
+            const body = await error.context.json();
+            if (body?.error) errorMsg = body.error;
+          }
+        } catch (_) {}
+        console.error("Onboarding error:", error);
+        toast.error(errorMsg);
+        return;
+      }
+
+      if (!data?.success) {
         toast.error(data?.error || "Erro ao criar acesso. Tente novamente.");
         return;
       }
