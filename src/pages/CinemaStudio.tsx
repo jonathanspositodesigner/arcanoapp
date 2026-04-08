@@ -180,12 +180,11 @@ const CinemaStudio: React.FC = () => {
           activeStatus={studio.activeStatusState}
         />
 
-        {studio.isDownloading && (
-          <DownloadProgressOverlay
-            progress={studio.downloadProgress}
-            onCancel={studio.cancelDownload}
-          />
-        )}
+        <DownloadProgressOverlay
+          isVisible={studio.isDownloading}
+          progress={studio.downloadProgress}
+          onCancel={studio.cancelDownload}
+        />
       </div>
     </AppLayout>
   );
