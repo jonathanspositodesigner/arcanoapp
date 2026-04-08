@@ -138,7 +138,7 @@ export function useCinemaStudio() {
   const elapsedIntervalRef = useRef<number | null>(null);
 
   // ━━━ Computed ━━━
-  const basePrompt = buildCinemaPrompt(settings);
+  const basePrompt = buildCinemaPrompt(settings, mode);
   const extraParts: string[] = [];
   selectedCharacters.forEach(char => {
     if (char.description) extraParts.push(`character: ${char.description}`);
