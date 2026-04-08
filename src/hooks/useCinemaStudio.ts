@@ -56,34 +56,37 @@ export interface SelectedAsset {
   image_url: string | null;
 }
 
-const STORYBOARD_KEY = 'cinemastudio_storyboard';
+const STORYBOARD_PHOTO_KEY = 'cinemastudio_storyboard_photo';
+const STORYBOARD_VIDEO_KEY = 'cinemastudio_storyboard_video';
 const MAX_SCENES = 9;
 
-function createEmptyScenes(): StoryboardScene[] {
+function createEmptyScenes(type: StudioMode): StoryboardScene[] {
   return Array.from({ length: MAX_SCENES }, (_, i) => ({
-    id: `slot-${i}`,
+    id: `${type}-slot-${i}`,
     name: `Cena ${i + 1}`,
     settings: getDefaultSettings(),
     thumbnailUrl: null,
     outputUrl: null,
-    type: 'photo' as StudioMode,
+    type,
     createdAt: '',
   }));
 }
 
-function loadStoryboard(): StoryboardScene[] {
+function loadStoryboard(type: StudioMode): StoryboardScene[] {
+  const key = type === 'photo' ? STORYBOARD_PHOTO_KEY : STORYBOARD_VIDEO_KEY;
   try {
-    const raw = localStorage.getItem(STORYBOARD_KEY);
+    const raw = localStorage.getItem(key);
     if (raw) {
       const parsed: StoryboardScene[] = JSON.parse(raw);
       if (parsed.length === MAX_SCENES) return parsed;
     }
   } catch {}
-  return createEmptyScenes();
+  return createEmptyScenes(type);
 }
 
-function saveStoryboard(scenes: StoryboardScene[]) {
-  localStorage.setItem(STORYBOARD_KEY, JSON.stringify(scenes));
+function saveStoryboard(scenes: StoryboardScene[], type: StudioMode) {
+  const key = type === 'photo' ? STORYBOARD_PHOTO_KEY : STORYBOARD_VIDEO_KEY;
+  localStorage.setItem(key, JSON.stringify(scenes));
 }
 
 export function useCinemaStudio() {
