@@ -5,10 +5,12 @@ import {
   CAMERA_BODIES, LENS_TYPES, FOCAL_PRESETS, APERTURES, CAMERA_ANGLES, CAMERA_DISTANCES,
   type CinemaSettings,
 } from '@/utils/cinemaPromptBuilder';
+import type { StudioMode } from '@/hooks/useCinemaStudio';
 
 interface Props {
   settings: CinemaSettings;
   updateSettings: (p: Partial<CinemaSettings>) => void;
+  mode?: StudioMode;
 }
 
 interface StyleOption {
@@ -144,94 +146,112 @@ const SegmentedControl: React.FC<{
   </div>
 );
 
-const CameraRigSection: React.FC<Props> = ({ settings, updateSettings }) => {
+const CameraControls: React.FC<{ settings: CinemaSettings; updateSettings: (p: Partial<CinemaSettings>) => void }> = ({ settings, updateSettings }) => (
+  <div className="space-y-2.5">
+    {/* Corpo */}
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Corpo</span>
+      <Select value={settings.cameraBody} onValueChange={v => updateSettings({ cameraBody: v })}>
+        <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="bg-[#141420] border-white/[0.06]">
+          {CAMERA_BODIES.map(c => (
+            <SelectItem key={c.value} value={c.value} className="text-gray-300 text-[11px]">
+              {c.value}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+
+    {/* Lente */}
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Lente</span>
+      <Select value={settings.lensType} onValueChange={v => updateSettings({ lensType: v })}>
+        <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="bg-[#141420] border-white/[0.06]">
+          {LENS_TYPES.map(l => (
+            <SelectItem key={l} value={l} className="text-gray-300 text-[11px]">
+              {l}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+
+    {/* Focal */}
+    <SegmentedControl
+      label="Focal"
+      options={FOCAL_PRESETS}
+      value={settings.focalLength}
+      onChange={v => updateSettings({ focalLength: v })}
+      suffix="mm"
+    />
+
+    {/* Abertura */}
+    <SegmentedControl
+      label="Abertura"
+      options={APERTURES}
+      value={settings.aperture}
+      onChange={v => updateSettings({ aperture: v })}
+    />
+  </div>
+);
+
+const CameraRigSection: React.FC<Props> = ({ settings, updateSettings, mode = 'photo' }) => {
   const advancedOpen = settings.advancedCamera;
+  const isVideo = mode === 'video';
 
   return (
     <div className="space-y-2.5">
-      {/* Ângulo / Perspectiva */}
-      <CameraStyleDropdown
-        label="Ângulo"
-        options={ANGLE_OPTIONS}
-        selectedValue={settings.cameraAngle}
-        onSelect={v => updateSettings({ cameraAngle: v })}
-      />
-
-      {/* Distância */}
-      <CameraStyleDropdown
-        label="Dist."
-        options={DISTANCE_OPTIONS}
-        selectedValue={settings.cameraDistance}
-        onSelect={v => updateSettings({ cameraDistance: v })}
-      />
-
-      {/* Botão Opções Avançadas */}
-      <button
-        onClick={() => updateSettings({ advancedCamera: !advancedOpen })}
-        className={`flex items-center gap-1.5 w-full py-1.5 px-2 rounded-md border transition-colors text-[10px] ${
-          advancedOpen
-            ? 'bg-purple-500/10 border-purple-500/30 text-purple-400'
-            : 'bg-black/20 border-white/[0.06] text-gray-600 hover:text-gray-400 hover:border-white/[0.12]'
-        }`}
-      >
-        <Settings2 className="w-3 h-3" />
-        <span className="uppercase tracking-[0.12em] font-semibold">Opções Avançadas</span>
-        <ChevronDown className={`w-3 h-3 ml-auto transition-transform duration-200 ${advancedOpen ? 'rotate-180' : ''}`} />
-      </button>
-
-      {advancedOpen && (
-        <div className="space-y-2.5 pl-1 border-l border-purple-500/20 ml-1">
-          {/* Corpo */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Corpo</span>
-            <Select value={settings.cameraBody} onValueChange={v => updateSettings({ cameraBody: v })}>
-              <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-[#141420] border-white/[0.06]">
-                {CAMERA_BODIES.map(c => (
-                  <SelectItem key={c.value} value={c.value} className="text-gray-300 text-[11px]">
-                    {c.value}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Lente */}
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Lente</span>
-            <Select value={settings.lensType} onValueChange={v => updateSettings({ lensType: v })}>
-              <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-[#141420] border-white/[0.06]">
-                {LENS_TYPES.map(l => (
-                  <SelectItem key={l} value={l} className="text-gray-300 text-[11px]">
-                    {l}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Focal */}
-          <SegmentedControl
-            label="Focal"
-            options={FOCAL_PRESETS}
-            value={settings.focalLength}
-            onChange={v => updateSettings({ focalLength: v })}
-            suffix="mm"
+      {/* Ângulo e Distância — somente no modo foto */}
+      {!isVideo && (
+        <>
+          <CameraStyleDropdown
+            label="Ângulo"
+            options={ANGLE_OPTIONS}
+            selectedValue={settings.cameraAngle}
+            onSelect={v => updateSettings({ cameraAngle: v })}
           />
-
-          {/* Abertura */}
-          <SegmentedControl
-            label="Abertura"
-            options={APERTURES}
-            value={settings.aperture}
-            onChange={v => updateSettings({ aperture: v })}
+          <CameraStyleDropdown
+            label="Dist."
+            options={DISTANCE_OPTIONS}
+            selectedValue={settings.cameraDistance}
+            onSelect={v => updateSettings({ cameraDistance: v })}
           />
-        </div>
+        </>
+      )}
+
+      {/* Modo foto: controles avançados atrás de toggle */}
+      {!isVideo && (
+        <>
+          <button
+            onClick={() => updateSettings({ advancedCamera: !advancedOpen })}
+            className={`flex items-center gap-1.5 w-full py-1.5 px-2 rounded-md border transition-colors text-[10px] ${
+              advancedOpen
+                ? 'bg-purple-500/10 border-purple-500/30 text-purple-400'
+                : 'bg-black/20 border-white/[0.06] text-gray-600 hover:text-gray-400 hover:border-white/[0.12]'
+            }`}
+          >
+            <Settings2 className="w-3 h-3" />
+            <span className="uppercase tracking-[0.12em] font-semibold">Opções Avançadas</span>
+            <ChevronDown className={`w-3 h-3 ml-auto transition-transform duration-200 ${advancedOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {advancedOpen && (
+            <div className="pl-1 border-l border-purple-500/20 ml-1">
+              <CameraControls settings={settings} updateSettings={updateSettings} />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Modo vídeo: controles de câmera visíveis diretamente */}
+      {isVideo && (
+        <CameraControls settings={settings} updateSettings={updateSettings} />
       )}
     </div>
   );
