@@ -484,7 +484,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
         .snl-cta:hover{opacity:0.87}
         .snl-cta:active{transform:scale(0.98)}
         .snl-cta:disabled{opacity:0.5;cursor:not-allowed;transform:none}
-        .snl-main{display:flex;flex-direction:column;background:var(--bg);overflow-y:auto}
+        .snl-main{display:flex;flex-direction:column;background:var(--bg);overflow-y:auto;min-height:0}
         .snl-topbar{
           display:flex;align-items:center;padding:20px 36px;
           border-bottom:1px solid var(--border);gap:7px;
@@ -493,7 +493,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
         .snl-d-r{background:#ef4444}.snl-d-y{background:#f59e0b}.snl-d-g{background:#22c55e}
         .snl-content{
           flex:1;display:flex;align-items:flex-start;justify-content:center;
-          padding:44px 36px 60px;
+          padding:44px 36px 60px;min-height:0;
         }
         .snl-empty{
           display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -681,8 +681,8 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
               <div style={{ width: '100%', maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(124,58,237,0.2)', background: 'rgba(0,0,0,0.3)' }}>
                   <TransformWrapper>
-                    <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
-                      <img src={resultUrl} alt="Selfie na Lua" style={{ width: '100%', height: 'auto' }} />
+                    <TransformComponent wrapperStyle={{ width: '100%' }} contentStyle={{ width: '100%' }}>
+                      <img src={resultUrl} alt="Selfie na Lua" style={{ width: '100%', height: 'auto', display: 'block' }} />
                     </TransformComponent>
                   </TransformWrapper>
                 </div>
