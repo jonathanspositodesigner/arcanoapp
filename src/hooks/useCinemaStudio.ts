@@ -612,20 +612,36 @@ export function useCinemaStudio() {
   const loadScene = useCallback((id: string) => {
     const scene = storyboard.find(s => s.id === id);
     if (!scene) return;
+
+    const isGenerating = !!generatingSceneIdRef.current;
+    const switchingToGeneratingScene = generatingSceneIdRef.current === id;
+
     setActiveSceneId(id);
+
+    if (switchingToGeneratingScene) {
+      // Returning to the scene that is actively generating — restore processing UI
+      // Don't touch status/progress/jobId — they're still live
+      setOutputUrl(null);
+      return;
+    }
+
     if (scene.outputUrl) {
-      // Show saved result
+      // Show saved result (only change UI state, don't kill job)
       setOutputUrl(scene.outputUrl);
-      setStatus('completed');
-      setProgress(100);
+      if (!isGenerating) {
+        setStatus('completed');
+        setProgress(100);
+      }
       setSettings(scene.settings);
       setMode(scene.type);
     } else {
-      // Empty slot — clear for new generation
+      // Empty slot — show idle UI but don't kill active job
       setOutputUrl(null);
-      setStatus('idle');
-      setPhotoJobStatus('idle');
-      setProgress(0);
+      if (!isGenerating) {
+        setStatus('idle');
+        setPhotoJobStatus('idle');
+        setProgress(0);
+      }
     }
   }, [storyboard]);
 
