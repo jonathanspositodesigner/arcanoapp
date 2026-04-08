@@ -556,6 +556,22 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
             </div>
           </div>
 
+          <div className="snl-field">
+            <span className="snl-label">Tamanho da imagem</span>
+            <div className="snl-style-pills">
+              {SIZE_OPTIONS.map((s, i) => (
+                <button
+                  key={s.value}
+                  className={`snl-style-pill${activeSize === i ? " on" : ""}`}
+                  onClick={() => setActiveSize(i)}
+                >
+                  {s.label}
+                  <span style={{ display: 'block', fontSize: 9, opacity: 0.6, marginTop: 2 }}>{s.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <button
             className="snl-cta"
             onClick={handleGenerate}
