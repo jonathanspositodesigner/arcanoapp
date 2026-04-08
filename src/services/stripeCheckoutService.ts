@@ -24,14 +24,16 @@ export async function redirectToStripeCheckout(product: CheckoutProductConfig): 
 
   // Captura cookies Meta para atribuição CAPI
   const { fbp, fbc } = getMetaCookies();
-  const userAgent = navigator.userAgent || '';
-  const eventSourceUrl = window.location.href;
+  const userAgent = (navigator.userAgent || '').substring(0, 490);
 
-  // Captura fbclid da URL para reconstrução de fbc no backend se cookies falharem
-  let fbclid: string | null = null;
+  // Send clean origin URL without UTM/fbclid bloat (those go as separate metadata)
+  const eventSourceUrl = window.location.origin + window.location.pathname;
+
+  // Extract fbclid and UTM params individually (truncated for Stripe 500-char limit)
+  let fbclid = '';
   try {
     const urlParams = new URLSearchParams(window.location.search);
-    fbclid = urlParams.get('fbclid');
+    fbclid = (urlParams.get('fbclid') || '').substring(0, 200);
   } catch { /* ignore */ }
 
   // Gera event_id para deduplicação Pixel ↔ CAPI
