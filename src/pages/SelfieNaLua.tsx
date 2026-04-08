@@ -1,4 +1,24 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Loader2, Download, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { useCredits } from "@/contexts/CreditsContext";
+import { useAIToolSettings } from "@/hooks/useAIToolSettings";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProcessingButton } from "@/hooks/useProcessingButton";
+import { useQueueSessionCleanup } from "@/hooks/useQueueSessionCleanup";
+import { useJobStatusSync } from "@/hooks/useJobStatusSync";
+import { useJobPendingWatchdog } from "@/hooks/useJobPendingWatchdog";
+import { useAIJob } from "@/contexts/AIJobContext";
+import { useResilientDownload } from "@/hooks/useResilientDownload";
+import { optimizeForAI } from "@/hooks/useImageOptimizer";
+import { createJob, startJob, checkActiveJob, cancelJob as centralCancelJob, uploadToStorage } from "@/ai/JobManager";
+import { getAIErrorMessage } from "@/utils/errorMessages";
+import NoCreditsModal from "@/components/upscaler/NoCreditsModal";
+import ActiveJobBlockModal from "@/components/ai-tools/ActiveJobBlockModal";
+import { DownloadProgressOverlay } from "@/components/ai-tools";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 const PLACE_OPTIONS = [
   { label: "McDonald's", value: "McDonald's com arcos dourados icônicos, letreiro iluminado e fachada reconhecível" },
@@ -30,62 +50,129 @@ const STYLE_OPTIONS = [
   { label: "NASA", value: "NASA documentary style, desaturated, authentic space photography, archival quality" },
 ];
 
-const INPAINT_STEPS: [string, string][] = [
-  ["Rosto", "Selecione a região do rosto dentro do capacete e use inpainting com a foto de referência. Preserve o reflexo do visor e as luzes do capacete."],
-  ["Local", "Selecione a estrutura ao fundo e substitua pela fachada do local enviado. Mantenha iluminação fria e sombras na mesma direção do sol."],
-  ["Sombras", "Astronauta e local devem ter sombras na mesma direção — luz vem do canto superior esquerdo."],
-  ["Color grading", "Sombras frias (azul/cinza), highlights dourados no rosto. Grain ISO 800 sutil. Sem HDR ou oversaturation."],
-  ["Detalhe final", "Partículas de poeira lunar flutuando ao redor da mão em movimento. Detalhe que diferencia o resultado."],
-];
-
-const CONFIG_STEPS = [
-  { n: 1, text: <><strong>Image 1 · Character Reference</strong> — sua foto do rosto. Define quem é o astronauta.</> },
-  { n: 2, text: <><strong>Image 2 · Scene Reference</strong> — foto do local. Define o que aparece ao fundo na lua.</> },
-  { n: 3, text: <><strong>Image 3 · Composition Reference</strong> — imagem do astronauta. Define enquadramento e ângulo.</> },
-  { n: 4, text: <>Cole o prompt e selecione o modo <strong>Image-to-Image + Inpainting</strong>.</> },
-];
-
 interface UploadState {
   done: boolean;
   thumb: string;
+  file: File | null;
 }
 
 export default function SelfieNaLua() {
+  const { user } = usePremiumStatus();
+  const { refetch: refetchCredits, checkBalance } = useCredits();
+  const { getCreditCost } = useAIToolSettings();
+  const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
+  const { registerJob } = useAIJob();
+  const { isDownloading, progress: downloadProgress, download: resilientDownload } = useResilientDownload();
+
   const [uploads, setUploads] = useState<Record<string, UploadState>>({
-    face: { done: false, thumb: "" },
-    place: { done: false, thumb: "" },
-    ref: { done: false, thumb: "" },
+    face: { done: false, thumb: "", file: null },
+    place: { done: false, thumb: "", file: null },
+    ref: { done: false, thumb: "", file: null },
   });
   const [placeType, setPlaceType] = useState(PLACE_OPTIONS[0].value);
   const [expression, setExpression] = useState(EXPRESSION_OPTIONS[0].value);
   const [activeStyle, setActiveStyle] = useState(0);
-  const [generated, setGenerated] = useState(false);
-  const [promptText, setPromptText] = useState("");
-  const [inpaintPlain, setInpaintPlain] = useState("");
-  const [copyStates, setCopyStates] = useState<Record<string, string>>({});
+
+  // Job state — cloned from GerarImagemTool
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>("idle");
+  const [resultUrl, setResultUrl] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [queuePosition, setQueuePosition] = useState<number>(0);
+  const [progress, setProgress] = useState(0);
+
+  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
+  const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
+  const [showActiveJobModal, setShowActiveJobModal] = useState(false);
+  const [activeJobToolName, setActiveJobToolName] = useState('');
+  const [activeJobId, setActiveJobId] = useState<string | undefined>();
+  const [activeStatus, setActiveStatus] = useState<string | undefined>();
+  const [showReconcileButton, setShowReconcileButton] = useState(false);
 
   const faceRef = useRef<HTMLInputElement>(null);
   const placeRef = useRef<HTMLInputElement>(null);
   const refRef = useRef<HTMLInputElement>(null);
-  const resultRef = useRef<HTMLDivElement>(null);
+  const sessionIdRef = useRef(crypto.randomUUID());
+  const reconcileTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const fileRefs: Record<string, React.RefObject<HTMLInputElement>> = {
     face: faceRef, place: placeRef, ref: refRef,
   };
+
+  const creditCost = getCreditCost('gerar_imagem', 100);
+  const isProcessing = ['pending', 'starting', 'running', 'queued'].includes(status);
+
+  // Session cleanup
+  useQueueSessionCleanup(sessionIdRef.current, status);
+
+  // Triple sync
+  useJobStatusSync({
+    jobId,
+    toolType: 'image_generator',
+    enabled: isProcessing && !!jobId,
+    onStatusChange: (update) => {
+      setStatus(update.status);
+      if (update.position !== undefined) setQueuePosition(update.position);
+      if (update.currentStep) {
+        const stepProgress: Record<string, number> = {
+          'validating': 10, 'downloading_ref_image_1': 15, 'uploading_ref_image_1': 20,
+          'consuming_credits': 30, 'delegating_to_queue': 40, 'starting': 50, 'running': 60,
+        };
+        setProgress(stepProgress[update.currentStep] || progress);
+      }
+      if (update.status === 'completed' && update.outputUrl) {
+        setResultUrl(update.outputUrl);
+        setProgress(100);
+        refetchCredits();
+        toast.success('Selfie gerada com sucesso!');
+      } else if (update.status === 'failed') {
+        setErrorMessage(update.errorMessage || 'Erro ao gerar selfie');
+        const errInfo = getAIErrorMessage(update.errorMessage || 'Erro desconhecido');
+        toast.error(errInfo.message);
+        refetchCredits();
+      }
+    },
+    onGlobalStatusChange: (s) => {
+      if (jobId) registerJob(jobId, 'image_generator', s);
+    },
+  });
+
+  // Pending watchdog
+  useJobPendingWatchdog({
+    jobId,
+    toolType: 'image_generator',
+    enabled: status === 'pending',
+    onJobFailed: (msg: string) => {
+      setStatus('failed');
+      setErrorMessage(msg || 'Servidor não respondeu. Tente novamente.');
+      refetchCredits();
+    },
+  });
+
+  // Reconcile timer
+  useEffect(() => {
+    if (reconcileTimerRef.current) clearTimeout(reconcileTimerRef.current);
+    if (isProcessing && jobId) {
+      reconcileTimerRef.current = setTimeout(() => setShowReconcileButton(true), 60000);
+    } else {
+      setShowReconcileButton(false);
+    }
+    return () => { if (reconcileTimerRef.current) clearTimeout(reconcileTimerRef.current); };
+  }, [isProcessing, jobId]);
 
   const handleUpload = useCallback((key: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-      setUploads((prev) => ({ ...prev, [key]: { done: true, thumb: ev.target?.result as string } }));
+      setUploads((prev) => ({ ...prev, [key]: { done: true, thumb: ev.target?.result as string, file } }));
     };
     reader.readAsDataURL(file);
   }, []);
 
-  const generate = useCallback(() => {
+  const buildPrompt = useCallback(() => {
     const style = STYLE_OPTIONS[activeStyle].value;
-    const prompt = `POV extreme close-up selfie shot of an astronaut on the lunar surface. The astronaut's face must match the reference face exactly — same facial structure, skin texture, beard stubble and eye color. Expression: ${expression}. Face fills the lower-center frame pressed close to the camera lens, fisheye wide-angle perspective.
+    return `POV extreme close-up selfie shot of an astronaut on the lunar surface. The astronaut's face must match the reference face exactly — same facial structure, skin texture, beard stubble and eye color. Expression: ${expression}. Face fills the lower-center frame pressed close to the camera lens, fisheye wide-angle perspective.
 
 Spacesuit: heavily weathered NASA-style EVA suit, grey-white with dust and grime, mission patches on shoulders, chest control unit with toggle switches. One gloved hand reaching toward the camera in the foreground, slightly motion-blurred.
 
@@ -96,19 +183,178 @@ Sky: deep absolute black, zero atmosphere. Milky Way galaxy core visible as a lu
 Lighting: single harsh directional sunlight from upper-left, sharp hard-edged shadows with no diffusion. Strong rim light on the right side of the spacesuit. Helmet visor partially reflects the lunar landscape. Face lit by two small interior helmet LED lights. No ambient light, extreme contrast.
 
 Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, background sharp with slight depth-of-field fall-off. ${style}.`;
-
-    setPromptText(prompt);
-    setInpaintPlain(INPAINT_STEPS.map(([t, d], i) => `${i + 1}. ${t}: ${d}`).join("\n"));
-    setGenerated(true);
-    setTimeout(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
   }, [placeType, expression, activeStyle]);
 
-  const copyBlock = useCallback((text: string, key: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopyStates((prev) => ({ ...prev, [key]: "✓ Copiado" }));
-      setTimeout(() => setCopyStates((prev) => ({ ...prev, [key]: "" })), 1800);
-    });
-  }, []);
+  const resetJobState = () => {
+    setJobId(null);
+    setStatus('idle');
+    setResultUrl(null);
+    setErrorMessage(null);
+    setQueuePosition(0);
+    setProgress(0);
+    setShowReconcileButton(false);
+  };
+
+  // Generate — cloned from GerarImagemTool
+  const handleGenerate = async () => {
+    if (!user?.id) { setNoCreditsReason('not_logged'); setShowNoCreditsModal(true); return; }
+    if (!startSubmit()) return;
+
+    resetJobState();
+
+    try {
+      // Check active job
+      const activeCheck = await checkActiveJob(user.id);
+      if (activeCheck.hasActiveJob) {
+        setActiveJobToolName(activeCheck.activeTool || 'outra ferramenta');
+        setActiveJobId(activeCheck.activeJobId);
+        setActiveStatus(activeCheck.activeStatus);
+        setShowActiveJobModal(true);
+        endSubmit();
+        return;
+      }
+
+      // Check credits
+      const freshCredits = await checkBalance();
+      if (freshCredits < creditCost) {
+        setNoCreditsReason('insufficient');
+        setShowNoCreditsModal(true);
+        endSubmit();
+        return;
+      }
+
+      setStatus('pending');
+      setProgress(5);
+
+      // Collect uploaded files and optimize/upload them
+      const uploadKeys = ['face', 'place', 'ref'];
+      const uploadedUrls: string[] = [];
+      const filesToUpload = uploadKeys.filter(k => uploads[k].done && uploads[k].file).map(k => uploads[k].file!);
+
+      for (let i = 0; i < filesToUpload.length; i++) {
+        toast.info(`Otimizando imagem ${i + 1}/${filesToUpload.length}...`);
+        const optimized = await optimizeForAI(filesToUpload[i]);
+        const uploadResult = await uploadToStorage(optimized.file, 'image-generator', user.id);
+        if (!uploadResult.url) throw new Error(`Falha ao enviar imagem ${i + 1}`);
+        uploadedUrls.push(uploadResult.url);
+        setProgress(5 + Math.round((i + 1) / filesToUpload.length * 15));
+      }
+
+      const prompt = buildPrompt();
+      const aspectRatio = '4:3';
+
+      // Create job in DB
+      const { jobId: newJobId, error: createError } = await createJob('image_generator', user.id, sessionIdRef.current, {
+        prompt: prompt.trim(),
+        aspect_ratio: aspectRatio,
+        model: 'runninghub',
+        input_urls: uploadedUrls,
+      });
+
+      if (createError || !newJobId) {
+        throw new Error(createError || 'Falha ao criar job');
+      }
+
+      setJobId(newJobId);
+      registerJob(newJobId, 'image_generator', 'pending');
+
+      // Start job via edge function
+      const result = await startJob('image_generator', newJobId, {
+        referenceImageUrls: uploadedUrls,
+        aspectRatio,
+        creditCost,
+        prompt: prompt.trim(),
+      });
+
+      if (!result.success) {
+        if (result.code === 'INSUFFICIENT_CREDITS') {
+          setNoCreditsReason('insufficient');
+          setShowNoCreditsModal(true);
+          resetJobState();
+        } else {
+          setStatus('failed');
+          setErrorMessage(result.error || 'Erro desconhecido');
+          const errInfo = getAIErrorMessage(result.error || 'Erro desconhecido');
+          toast.error(errInfo.message);
+        }
+        endSubmit();
+        return;
+      }
+
+      if (result.queued) {
+        setStatus('queued');
+        setQueuePosition(result.position || 0);
+        toast.info(`Na fila — posição ${result.position}`);
+      }
+
+    } catch (error: any) {
+      console.error('[SelfieNaLua] Error:', error);
+      setStatus('failed');
+      setErrorMessage(error.message || 'Erro ao gerar selfie');
+      const errInfo = getAIErrorMessage(error.message || 'Erro desconhecido');
+      toast.error(errInfo.message);
+
+      if (jobId) {
+        try {
+          await supabase.rpc('mark_pending_job_as_failed' as any, { p_table_name: 'image_generator_jobs', p_job_id: jobId });
+        } catch {}
+      }
+    } finally {
+      endSubmit();
+    }
+  };
+
+  const handleReconcile = async () => {
+    if (!jobId) return;
+    toast.info('Verificando status...');
+    try {
+      const { data } = await supabase.functions.invoke('runninghub-image-generator/reconcile', {
+        body: { jobId },
+      });
+      if (data?.reconciled && data?.status === 'completed' && data?.outputUrl) {
+        setStatus('completed');
+        setResultUrl(data.outputUrl);
+        setProgress(100);
+        toast.success('Selfie recuperada!');
+        refetchCredits();
+      } else if (data?.reconciled && data?.status === 'failed') {
+        setStatus('failed');
+        setErrorMessage('Falha confirmada pelo servidor');
+        toast.error('Geração falhou.');
+        refetchCredits();
+      } else if (data?.alreadyFinalized) {
+        if (data.status === 'completed' && data.outputUrl) {
+          setStatus('completed');
+          setResultUrl(data.outputUrl);
+          setProgress(100);
+        }
+      } else {
+        toast.info('Ainda processando...');
+      }
+    } catch {
+      toast.error('Erro ao verificar status');
+    }
+  };
+
+  const handleDownload = () => {
+    if (resultUrl) {
+      resilientDownload({ url: resultUrl, filename: `selfie-lua-${Date.now()}.png` });
+    }
+  };
+
+  const handleNewGeneration = () => {
+    resetJobState();
+  };
+
+  const handleCancel = async () => {
+    if (!jobId) return;
+    const result = await centralCancelJob('image_generator', jobId);
+    if (result.success) {
+      resetJobState();
+      toast.success(result.refundedAmount > 0 ? `Cancelado. ${result.refundedAmount} créditos estornados.` : 'Cancelado.');
+      refetchCredits();
+    }
+  };
 
   const uploadItems: { key: string; emoji: string; name: string; sub: string }[] = [
     { key: "face", emoji: "👤", name: "Seu rosto", sub: "Substitui o astronauta" },
@@ -196,6 +442,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
         }
         .snl-cta:hover{opacity:0.87}
         .snl-cta:active{transform:scale(0.98)}
+        .snl-cta:disabled{opacity:0.5;cursor:not-allowed;transform:none}
         .snl-main{display:flex;flex-direction:column;background:var(--bg);min-height:100vh;overflow-y:auto}
         .snl-topbar{
           display:flex;align-items:center;padding:20px 36px;
@@ -218,34 +465,10 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
         }
         .snl-empty h2{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text-1)}
         .snl-empty p{font-size:13px;color:var(--text-2);max-width:260px;line-height:1.7}
-        .snl-result{display:flex;flex-direction:column;gap:14px;width:100%;max-width:720px}
-        .snl-r-block{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden}
-        .snl-r-head{
-          display:flex;align-items:center;justify-content:space-between;
-          padding:13px 18px;border-bottom:1px solid var(--border);
+        .snl-credit-badge{
+          display:inline-flex;align-items:center;gap:4px;
+          font-size:11px;color:var(--purple-lt);opacity:0.8;
         }
-        .snl-r-title{font-family:'Syne',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-2)}
-        .snl-copy-btn{
-          padding:4px 12px;border-radius:7px;border:1px solid var(--border-hl);
-          background:rgba(124,58,237,0.1);color:var(--purple-lt);font-size:11.5px;
-          font-weight:600;cursor:pointer;transition:background 0.15s;
-        }
-        .snl-copy-btn:hover{background:rgba(124,58,237,0.22)}
-        .snl-r-body{
-          padding:20px;font-size:13px;line-height:1.85;color:var(--text-1);
-          white-space:pre-wrap;font-weight:300;
-        }
-        .snl-steps{padding:18px 20px;display:flex;flex-direction:column;gap:13px}
-        .snl-step{display:flex;gap:13px;align-items:flex-start}
-        .snl-step-n{
-          width:20px;height:20px;border-radius:50%;
-          background:rgba(124,58,237,0.15);border:1px solid var(--border-hl);
-          display:flex;align-items:center;justify-content:center;
-          font-family:'Syne',sans-serif;font-size:10px;font-weight:700;
-          color:var(--purple-lt);flex-shrink:0;margin-top:2px;
-        }
-        .snl-step-t{font-size:13px;color:var(--text-1);line-height:1.75;font-weight:300}
-        .snl-step-t strong{color:var(--purple-lt);font-weight:500}
       `}</style>
 
       <div className="snl-app">
@@ -327,11 +550,27 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
             </div>
           </div>
 
-          <button className="snl-cta" onClick={generate}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-            </svg>
-            Gerar Prompt
+          <button
+            className="snl-cta"
+            onClick={handleGenerate}
+            disabled={isSubmitting || isProcessing}
+          >
+            {isSubmitting || isProcessing ? (
+              <>
+                <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} />
+                {status === 'queued' ? 'Na fila...' : 'Gerando...'}
+              </>
+            ) : (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+                Gerar Selfie
+                <span className="snl-credit-badge">
+                  ✦ {creditCost}
+                </span>
+              </>
+            )}
           </button>
         </aside>
 
@@ -343,59 +582,93 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
           </div>
 
           <div className="snl-content">
-            {!generated ? (
-              <div className="snl-empty">
-                <div className="snl-empty-icon">🌙</div>
-                <h2>Prompt aparece aqui</h2>
-                <p>Configure as opções ao lado e clique em Gerar Prompt.</p>
+            {isDownloading && <DownloadProgressOverlay isVisible={isDownloading} progress={downloadProgress} />}
+
+            {resultUrl ? (
+              <div style={{ width: '100%', maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(124,58,237,0.2)', background: 'rgba(0,0,0,0.3)' }}>
+                  <TransformWrapper>
+                    <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
+                      <img src={resultUrl} alt="Selfie na Lua" style={{ width: '100%', height: 'auto' }} />
+                    </TransformComponent>
+                  </TransformWrapper>
+                </div>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+                  <button
+                    onClick={handleDownload}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
+                      borderRadius: 9, border: '1px solid rgba(52,211,153,0.4)', background: 'rgba(52,211,153,0.15)',
+                      color: '#34d399', fontFamily: "'Syne',sans-serif", fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                    }}
+                  >
+                    <Download style={{ width: 14, height: 14 }} /> Baixar
+                  </button>
+                  <button
+                    onClick={handleNewGeneration}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
+                      borderRadius: 9, border: '1px solid rgba(124,58,237,0.3)', background: 'rgba(124,58,237,0.1)',
+                      color: '#a78bfa', fontFamily: "'Syne',sans-serif", fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                    }}
+                  >
+                    Nova Selfie
+                  </button>
+                </div>
+              </div>
+            ) : isProcessing ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, color: '#a78bfa' }}>
+                <div style={{ width: 80, height: 80, borderRadius: '50%', border: '2px solid rgba(124,58,237,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Loader2 style={{ width: 32, height: 32, color: '#d946ef', animation: 'spin 1s linear infinite' }} />
+                </div>
+                {status === 'queued' && queuePosition > 0 ? (
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ fontSize: 14, fontWeight: 500 }}>Na fila — posição {queuePosition}</p>
+                    <p style={{ fontSize: 12, color: '#7b7fa8', marginTop: 4 }}>Aguardando vaga...</p>
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 14 }}>Gerando sua selfie...</p>
+                )}
+                <div style={{ width: 192, height: 6, borderRadius: 9999, background: 'rgba(124,58,237,0.2)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', borderRadius: 9999, background: '#d946ef', transition: 'width 0.7s', width: `${progress}%` }} />
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {status === 'queued' && (
+                    <button onClick={handleCancel} style={{ fontSize: 12, color: '#f87171', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}>Cancelar</button>
+                  )}
+                  {showReconcileButton && (
+                    <button onClick={handleReconcile} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#a78bfa', background: 'none', border: 'none', cursor: 'pointer' }}>
+                      <RefreshCw style={{ width: 12, height: 12 }} /> Verificar status
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : status === 'failed' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, color: '#f87171' }}>
+                <p style={{ fontSize: 14, textAlign: 'center', fontWeight: 500 }}>{(() => { const info = getAIErrorMessage(errorMessage || ''); return info.message; })()}</p>
+                <p style={{ fontSize: 12, textAlign: 'center', color: 'rgba(248,113,113,0.7)' }}>{(() => { const info = getAIErrorMessage(errorMessage || ''); return info.solution; })()}</p>
+                <button onClick={resetJobState} style={{ fontSize: 12, color: '#a78bfa', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}>Tentar novamente</button>
               </div>
             ) : (
-              <div className="snl-result" ref={resultRef}>
-                <div className="snl-r-block">
-                  <div className="snl-r-head">
-                    <span className="snl-r-title">Prompt principal — Nano Banana</span>
-                    <button className="snl-copy-btn" onClick={() => copyBlock(promptText, "prompt")}>
-                      {copyStates["prompt"] || "Copiar"}
-                    </button>
-                  </div>
-                  <div className="snl-r-body">{promptText}</div>
-                </div>
-
-                <div className="snl-r-block">
-                  <div className="snl-r-head">
-                    <span className="snl-r-title">Inpainting — passo a passo</span>
-                    <button className="snl-copy-btn" onClick={() => copyBlock(inpaintPlain, "inpaint")}>
-                      {copyStates["inpaint"] || "Copiar"}
-                    </button>
-                  </div>
-                  <div className="snl-steps">
-                    {INPAINT_STEPS.map(([t, d], i) => (
-                      <div className="snl-step" key={i}>
-                        <span className="snl-step-n">{i + 1}</span>
-                        <span className="snl-step-t"><strong>{t}:</strong> {d}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="snl-r-block">
-                  <div className="snl-r-head">
-                    <span className="snl-r-title">Como configurar no Nano Banana</span>
-                  </div>
-                  <div className="snl-steps">
-                    {CONFIG_STEPS.map((s) => (
-                      <div className="snl-step" key={s.n}>
-                        <span className="snl-step-n">{s.n}</span>
-                        <span className="snl-step-t">{s.text}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+              <div className="snl-empty">
+                <div className="snl-empty-icon">🌙</div>
+                <h2>Sua selfie aparece aqui</h2>
+                <p>Configure as opções ao lado e clique em Gerar Selfie.</p>
               </div>
             )}
           </div>
         </main>
       </div>
+
+      <NoCreditsModal isOpen={showNoCreditsModal} onClose={() => setShowNoCreditsModal(false)} reason={noCreditsReason} />
+      <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeJobToolName} activeJobId={activeJobId} activeStatus={activeStatus} onCancelJob={centralCancelJob} />
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </>
   );
 }
