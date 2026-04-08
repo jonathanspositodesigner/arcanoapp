@@ -1,0 +1,1 @@
+UPDATE public.artes_packs SET is_visible = false WHERE slug = 'upscaler-arcano-v3';
