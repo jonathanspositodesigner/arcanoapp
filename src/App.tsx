@@ -374,6 +374,7 @@ const AppContent = () => {
            <Route path="/checkout-sucesso" element={<CheckoutSucesso />} />
            <Route path="/checkout-cancelado" element={<CheckoutCancelado />} />
            <Route path="/selfie-na-lua" element={<SelfieNaLua />} />
+           <Route path="/cinemastudio" element={<CinemaStudio />} />
            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
            <Route path="*" element={<NotFound />} />
         </Routes>
