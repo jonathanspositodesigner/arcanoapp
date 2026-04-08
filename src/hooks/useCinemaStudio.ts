@@ -119,9 +119,18 @@ export function useCinemaStudio() {
   const [queuePosition, setQueuePosition] = useState(0);
   const sessionIdRef = useRef(crypto.randomUUID());
 
-  // Storyboard
-  const [storyboard, setStoryboard] = useState<StoryboardScene[]>(loadStoryboard);
-  const [activeSceneId, setActiveSceneId] = useState<string>('slot-0');
+  // Separate storyboards per mode
+  const [photoStoryboard, setPhotoStoryboard] = useState<StoryboardScene[]>(() => loadStoryboard('photo'));
+  const [videoStoryboard, setVideoStoryboard] = useState<StoryboardScene[]>(() => loadStoryboard('video'));
+
+  // Active storyboard based on current mode
+  const storyboard = mode === 'photo' ? photoStoryboard : videoStoryboard;
+  const setStoryboard = mode === 'photo' ? setPhotoStoryboard : setVideoStoryboard;
+
+  const [activePhotoSceneId, setActivePhotoSceneId] = useState<string>('photo-slot-0');
+  const [activeVideoSceneId, setActiveVideoSceneId] = useState<string>('video-slot-0');
+  const activeSceneId = mode === 'photo' ? activePhotoSceneId : activeVideoSceneId;
+  const setActiveSceneId = mode === 'photo' ? setActivePhotoSceneId : setActiveVideoSceneId;
 
   // Track which scene owns the currently running job
   const generatingSceneIdRef = useRef<string | null>(null);
