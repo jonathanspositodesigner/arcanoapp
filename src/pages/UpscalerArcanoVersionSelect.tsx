@@ -89,7 +89,7 @@ const UpscalerArcanoVersionSelect = () => {
   
   // Unified path for all locales
   const toolsHomePath = '/ferramentas-ia-aplicativo';
-  const upscalerPlansPath = locale === 'es' ? '/planos-upscaler-arcano-69-es' : '/planos-upscaler-arcano-69';
+  const upscalerPlansPath = locale === 'es' ? '/planos-upscaler-arcano-69-es' : '/upscalerarcanov3';
   const loginPath = `/login-artes?redirect=${encodeURIComponent('/ferramenta-ia-artes/upscaller-arcano')}`;
   
   // Smart back navigation - for ES keep original behavior, for PT use smart back

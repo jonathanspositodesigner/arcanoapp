@@ -193,7 +193,7 @@ const FerramentasIAAplicativo = () => {
       if (hostname.includes("arcanoappes")) {
         return "/planos-upscaler-arcano-69-es";
       }
-      return "/planos-upscaler-arcano-69";
+      return "/upscalerarcanov3";
     }
     if (tool.slug === "forja-selos-3d-ilimitada") {
       return "/planos-forja-selos-3d";
