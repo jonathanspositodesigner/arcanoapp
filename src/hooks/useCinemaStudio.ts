@@ -343,6 +343,7 @@ export function useCinemaStudio() {
     setStatus('uploading');
     setPhotoJobStatus('pending');
     setProgress(5);
+    generatingSceneIdRef.current = activeSceneId;
 
     try {
       // Collect and optimize all reference images
