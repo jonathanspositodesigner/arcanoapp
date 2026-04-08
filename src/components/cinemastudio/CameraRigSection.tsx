@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  CAMERA_BODIES, LENS_TYPES, FOCAL_PRESETS, APERTURES, CAMERA_ANGLES,
+  CAMERA_BODIES, LENS_TYPES, FOCAL_PRESETS, APERTURES, CAMERA_ANGLES, CAMERA_DISTANCES,
   type CinemaSettings,
 } from '@/utils/cinemaPromptBuilder';
 
@@ -11,14 +11,14 @@ interface Props {
   updateSettings: (p: Partial<CinemaSettings>) => void;
 }
 
-interface AngleOption {
+interface StyleOption {
   value: string;
   seed: string;
   label: string;
   description: string;
 }
 
-const ANGLE_OPTIONS: AngleOption[] = [
+const ANGLE_OPTIONS: StyleOption[] = [
   { value: 'Eye Level', seed: 'eye-level-neutral', label: 'Eye Level', description: 'Neutro, natural, à altura dos olhos' },
   { value: 'Low Angle', seed: 'low-angle-power', label: 'Low Angle', description: 'De baixo para cima, imponente' },
   { value: 'High Angle', seed: 'high-angle-above', label: 'High Angle', description: 'De cima para baixo, vulnerável' },
@@ -29,6 +29,19 @@ const ANGLE_OPTIONS: AngleOption[] = [
   { value: 'Over the Shoulder', seed: 'over-shoulder-ots', label: 'Over the Shoulder', description: 'Por cima do ombro, profundidade' },
   { value: 'Hip Level', seed: 'hip-level-western', label: 'Hip Level', description: 'Altura da cintura, estilo western' },
   { value: 'Ground Level', seed: 'ground-level-floor', label: 'Ground Level', description: 'Câmera no chão, dramático' },
+];
+
+const DISTANCE_OPTIONS: StyleOption[] = [
+  { value: 'Medium Shot', seed: 'medium-shot-balanced', label: 'Medium Shot', description: 'Cintura pra cima, equilibrado' },
+  { value: 'Extreme Close-Up', seed: 'extreme-closeup-eye', label: 'Extreme Close-Up', description: 'Detalhe extremo, olhos ou textura' },
+  { value: 'Close-Up', seed: 'closeup-face-detail', label: 'Close-Up', description: 'Rosto preenchendo o quadro' },
+  { value: 'Medium Close-Up', seed: 'medium-closeup-chest', label: 'Medium Close-Up', description: 'Peito e cabeça, conexão emocional' },
+  { value: 'Cowboy Shot', seed: 'cowboy-shot-western', label: 'Cowboy Shot', description: 'Meio da coxa, estilo western' },
+  { value: 'Medium Wide', seed: 'medium-wide-torso', label: 'Medium Wide', description: 'Torso completo com contexto' },
+  { value: 'Full Shot', seed: 'full-shot-body', label: 'Full Shot', description: 'Corpo inteiro, cabeça aos pés' },
+  { value: 'Wide Shot', seed: 'wide-shot-landscape', label: 'Wide Shot', description: 'Sujeito pequeno, ambiente domina' },
+  { value: 'Extreme Wide', seed: 'extreme-wide-epic', label: 'Extreme Wide', description: 'Paisagem vasta, escala épica' },
+  { value: 'Establishing Shot', seed: 'establishing-overview', label: 'Establishing Shot', description: 'Visão geral, revelação do local' },
 ];
 
 const AngleDropdown: React.FC<{
