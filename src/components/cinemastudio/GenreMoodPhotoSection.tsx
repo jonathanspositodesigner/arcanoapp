@@ -52,6 +52,19 @@ const COLOR_GRADE_OPTIONS: StyleOption[] = [
   { value: 'High Contrast', seed: 'high-contrast-bold', label: 'Alto Contraste', description: 'Pretos profundos, luzes estouradas' },
 ];
 
+const IMAGE_STYLE_OPTIONS: StyleOption[] = [
+  { value: 'Cinematic', seed: 'cinematic-film-look', label: 'Cinematográfico', description: 'Visual de cinema, profissional' },
+  { value: 'Ultra Realistic', seed: 'ultra-realistic-photo', label: 'Ultra Realista', description: 'Fotorrealismo extremo, hiper-detalhado' },
+  { value: 'Anime', seed: 'anime-japanese-style', label: 'Anime', description: 'Animação japonesa, cel-shaded' },
+  { value: 'Cartoon', seed: 'cartoon-stylized-art', label: 'Cartoon', description: 'Estilizado, traços marcantes' },
+  { value: 'Unreal Engine', seed: 'unreal-engine-render', label: 'Unreal Engine', description: 'Render 3D, ray tracing, volumétrico' },
+  { value: 'Oil Painting', seed: 'oil-painting-classic', label: 'Pintura a Óleo', description: 'Pinceladas clássicas, texturas ricas' },
+  { value: 'Watercolor', seed: 'watercolor-soft-wash', label: 'Aquarela', description: 'Suave, fluido, delicado' },
+  { value: 'Pixel Art', seed: 'pixel-art-retro-game', label: 'Pixel Art', description: 'Retrô 8-bit, nostálgico' },
+  { value: 'Comic Book', seed: 'comic-book-halftone', label: 'HQ / Comic', description: 'Graphic novel, linhas de tinta' },
+  { value: 'Concept Art', seed: 'concept-art-digital', label: 'Concept Art', description: 'Pintura digital, ilustração detalhada' },
+];
+
 const StyleDropdown: React.FC<{
   label: string;
   options: StyleOption[];
@@ -150,6 +163,13 @@ const GenreMoodPhotoSection: React.FC<Props> = ({ settings, updateSettings }) =>
         selectedValue={settings.mood || ''}
         onSelect={v => updateSettings({ mood: v })}
         defaultValue=""
+      />
+      <StyleDropdown
+        label="Tipo"
+        options={IMAGE_STYLE_OPTIONS}
+        selectedValue={settings.imageStyle || 'Cinematic'}
+        onSelect={v => updateSettings({ imageStyle: v || 'Cinematic' })}
+        defaultValue="Cinematic"
       />
       <StyleDropdown
         label="Cor"

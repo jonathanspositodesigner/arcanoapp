@@ -23,6 +23,9 @@ export interface CinemaSettings {
   cameraAngle: string;
   cameraDistance: string;
 
+  // Style
+  imageStyle: string;
+
   // Camera Movement
   movements: CameraMovementLayer[];
 
@@ -109,6 +112,20 @@ const CAMERA_DISTANCE_PROMPTS: Record<string, string> = {
   'Wide Shot': 'wide shot, subject small in frame, environment dominant',
   'Extreme Wide': 'extreme wide shot, vast landscape, subject tiny, epic scale',
   'Establishing Shot': 'establishing shot, wide overview, setting the scene, location reveal',
+};
+
+// ━━━ Image Style Prompts ━━━
+const IMAGE_STYLE_PROMPTS: Record<string, string> = {
+  'Cinematic': '',
+  'Ultra Realistic': 'ultra realistic, photorealistic, hyper-detailed, lifelike',
+  'Anime': 'anime style, Japanese animation, cel-shaded, vibrant colors',
+  'Cartoon': 'cartoon style, stylized, bold outlines, exaggerated features',
+  'Unreal Engine': 'Unreal Engine 5 render, ray tracing, photorealistic 3D, volumetric lighting',
+  'Oil Painting': 'oil painting style, brushstrokes, classical art, rich textures',
+  'Watercolor': 'watercolor painting, soft washes, fluid colors, delicate details',
+  'Pixel Art': 'pixel art style, retro 8-bit, blocky, nostalgic game aesthetic',
+  'Comic Book': 'comic book style, halftone dots, bold ink lines, graphic novel',
+  'Concept Art': 'concept art, digital painting, matte painting, detailed illustration',
 };
 
 // ━━━ Color Grade Prompts ━━━
@@ -230,6 +247,10 @@ export function buildCinemaPrompt(s: CinemaSettings): string {
 
   if (s.mood) parts.push(`${s.mood.toLowerCase()} mood`);
 
+  // Image style
+  const stylePrompt = IMAGE_STYLE_PROMPTS[s.imageStyle];
+  if (stylePrompt) parts.push(stylePrompt);
+
   // Color grade
   const colorPrompt = COLOR_GRADE_PROMPTS[s.colorGrade];
   if (colorPrompt) parts.push(colorPrompt);
@@ -262,6 +283,7 @@ export function getDefaultSettings(): CinemaSettings {
     movements: [{ type: 'None', intensity: 50 }],
     genre: 'General',
     mood: '',
+    imageStyle: 'Cinematic',
     colorGrade: 'Natural',
     speedRamp: 'Linear',
     duration: 5,
