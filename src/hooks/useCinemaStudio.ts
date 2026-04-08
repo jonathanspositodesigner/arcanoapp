@@ -56,34 +56,37 @@ export interface SelectedAsset {
   image_url: string | null;
 }
 
-const STORYBOARD_KEY = 'cinemastudio_storyboard';
+const STORYBOARD_PHOTO_KEY = 'cinemastudio_storyboard_photo';
+const STORYBOARD_VIDEO_KEY = 'cinemastudio_storyboard_video';
 const MAX_SCENES = 9;
 
-function createEmptyScenes(): StoryboardScene[] {
+function createEmptyScenes(type: StudioMode): StoryboardScene[] {
   return Array.from({ length: MAX_SCENES }, (_, i) => ({
-    id: `slot-${i}`,
+    id: `${type}-slot-${i}`,
     name: `Cena ${i + 1}`,
     settings: getDefaultSettings(),
     thumbnailUrl: null,
     outputUrl: null,
-    type: 'photo' as StudioMode,
+    type,
     createdAt: '',
   }));
 }
 
-function loadStoryboard(): StoryboardScene[] {
+function loadStoryboard(type: StudioMode): StoryboardScene[] {
+  const key = type === 'photo' ? STORYBOARD_PHOTO_KEY : STORYBOARD_VIDEO_KEY;
   try {
-    const raw = localStorage.getItem(STORYBOARD_KEY);
+    const raw = localStorage.getItem(key);
     if (raw) {
       const parsed: StoryboardScene[] = JSON.parse(raw);
       if (parsed.length === MAX_SCENES) return parsed;
     }
   } catch {}
-  return createEmptyScenes();
+  return createEmptyScenes(type);
 }
 
-function saveStoryboard(scenes: StoryboardScene[]) {
-  localStorage.setItem(STORYBOARD_KEY, JSON.stringify(scenes));
+function saveStoryboard(scenes: StoryboardScene[], type: StudioMode) {
+  const key = type === 'photo' ? STORYBOARD_PHOTO_KEY : STORYBOARD_VIDEO_KEY;
+  localStorage.setItem(key, JSON.stringify(scenes));
 }
 
 export function useCinemaStudio() {
@@ -95,7 +98,7 @@ export function useCinemaStudio() {
   const { getCreditCost } = useAIToolSettings();
 
   // ━━━ Core State ━━━
-  const [mode, setMode] = useState<StudioMode>('photo');
+  const [mode, setModeRaw] = useState<StudioMode>('photo');
   const [settings, setSettings] = useState<CinemaSettings>(getDefaultSettings());
   const [referenceImages, setReferenceImages] = useState<File[]>([]);
   const [referenceImagePreviews, setReferenceImagePreviews] = useState<string[]>([]);
@@ -116,11 +119,35 @@ export function useCinemaStudio() {
   const [queuePosition, setQueuePosition] = useState(0);
   const sessionIdRef = useRef(crypto.randomUUID());
 
-  // Storyboard
-  const [storyboard, setStoryboard] = useState<StoryboardScene[]>(loadStoryboard);
-  const [activeSceneId, setActiveSceneId] = useState<string>('slot-0');
+  // Separate storyboards per mode
+  const [photoStoryboard, setPhotoStoryboard] = useState<StoryboardScene[]>(() => loadStoryboard('photo'));
+  const [videoStoryboard, setVideoStoryboard] = useState<StoryboardScene[]>(() => loadStoryboard('video'));
 
-  // Track which scene owns the currently running job
+  // Active storyboard based on current mode
+  const storyboard = mode === 'photo' ? photoStoryboard : videoStoryboard;
+  const setStoryboard = mode === 'photo' ? setPhotoStoryboard : setVideoStoryboard;
+
+  const [activePhotoSceneId, setActivePhotoSceneId] = useState<string>('photo-slot-0');
+  const [activeVideoSceneId, setActiveVideoSceneId] = useState<string>('video-slot-0');
+  const activeSceneId = mode === 'photo' ? activePhotoSceneId : activeVideoSceneId;
+  const setActiveSceneId = mode === 'photo' ? setActivePhotoSceneId : setActiveVideoSceneId;
+
+  // Wrap setMode to restore scene state when switching
+  const setMode = useCallback((newMode: StudioMode) => {
+    setModeRaw(newMode);
+    // Reset output display when switching modes (jobs keep running in background)
+    if (!generatingSceneIdRef.current) {
+      setOutputUrl(null);
+      setStatus('idle');
+      setPhotoJobStatus('idle');
+      setProgress(0);
+    }
+    // Clear file-based references when switching (they belong to the previous mode)
+    referenceImagePreviews.forEach(url => URL.revokeObjectURL(url));
+    setReferenceImages([]);
+    setReferenceImagePreviews([]);
+  }, [referenceImagePreviews]);
+
   const generatingSceneIdRef = useRef<string | null>(null);
   // Track the mode of the active generation (so sync hooks stay alive even if user browses another mode)
   const [generatingMode, setGeneratingMode] = useState<StudioMode | null>(null);
@@ -222,7 +249,8 @@ export function useCinemaStudio() {
   }, []);
 
   // Save storyboard
-  useEffect(() => { saveStoryboard(storyboard); }, [storyboard]);
+  useEffect(() => { saveStoryboard(photoStoryboard, 'photo'); }, [photoStoryboard]);
+  useEffect(() => { saveStoryboard(videoStoryboard, 'video'); }, [videoStoryboard]);
 
   // ━━━ PHOTO MODE: Job Status Sync (clone from GerarImagemTool) ━━━
   useJobStatusSync({
