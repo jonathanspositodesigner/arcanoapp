@@ -77,7 +77,7 @@ export default function SelfieNaLua() {
     place: { done: false, thumb: "", file: null },
     ref: { done: true, thumb: defaultSceneRef, file: null },
   });
-  const [placeType, setPlaceType] = useState(PLACE_OPTIONS[0].value);
+  const [placeType, setPlaceType] = useState("__outro__");
   const [expression, setExpression] = useState(EXPRESSION_OPTIONS[0].value);
   const [activeStyle, setActiveStyle] = useState(0);
   const [activeSize, setActiveSize] = useState(0);
