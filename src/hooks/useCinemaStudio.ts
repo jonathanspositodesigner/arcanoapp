@@ -234,7 +234,8 @@ export function useCinemaStudio() {
   }, []);
 
   // Save storyboard
-  useEffect(() => { saveStoryboard(storyboard); }, [storyboard]);
+  useEffect(() => { saveStoryboard(photoStoryboard, 'photo'); }, [photoStoryboard]);
+  useEffect(() => { saveStoryboard(videoStoryboard, 'video'); }, [videoStoryboard]);
 
   // ━━━ PHOTO MODE: Job Status Sync (clone from GerarImagemTool) ━━━
   useJobStatusSync({
