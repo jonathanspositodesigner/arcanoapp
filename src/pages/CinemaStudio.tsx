@@ -20,7 +20,7 @@ const CinemaStudio: React.FC = () => {
 
   return (
     <AppLayout fullScreen>
-      <div className="flex flex-col h-[100dvh] overflow-hidden bg-[#08080f]">
+      <div className="flex flex-col h-full overflow-hidden bg-[#08080f]">
         {/* ━━━ TOP BAR — 48px ━━━ */}
         <div className="h-12 flex-shrink-0 flex items-center justify-between px-3 bg-[#0c0c16]" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
           {/* Left */}
