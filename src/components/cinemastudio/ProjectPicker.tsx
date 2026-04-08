@@ -52,13 +52,7 @@ const ProjectPicker: React.FC<Props> = ({
     if (result) setShowNewModal(false);
   };
 
-  const handleNewClick = () => {
-    if (atLimit) {
-      const { toast } = await_toast();
-      return;
-    }
-    setShowNewModal(true);
-  };
+  // handleNewClick is no longer needed; the button directly opens modal or is disabled
 
   const handleRenameSubmit = async (projectId: string) => {
     const trimmed = renameValue.trim();
