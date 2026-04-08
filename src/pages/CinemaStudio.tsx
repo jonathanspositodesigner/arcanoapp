@@ -125,7 +125,7 @@ const CinemaStudio: React.FC = () => {
                 referenceImagePreviews={studio.referenceImagePreviews}
                 addReferenceImages={studio.addReferenceImages}
                 removeReferenceImage={studio.removeReferenceImage}
-                onCharacterChange={studio.setSelectedCharacter}
+                onCharactersChange={studio.setSelectedCharacters}
                 onScenarioChange={studio.setSelectedScenario}
                 maxReferences={studio.maxRefImages}
               />
