@@ -412,8 +412,10 @@ export function useCinemaStudio() {
     // State
     mode, setMode,
     settings, updateSettings,
-    referenceImages, referenceImagePreviews,
+    referenceImages, referenceImagePreviews, maxRefImages,
     addReferenceImages, removeReferenceImage,
+    selectedCharacter, setSelectedCharacter,
+    selectedScenario, setSelectedScenario,
     status, progress, outputUrl, errorMessage,
     elapsedTime, isProcessing, isSubmitting,
     credits, creditsLoading,
