@@ -176,6 +176,9 @@ const ControlPanel: React.FC<Props> = ({
               onRemove={removeReferenceImage}
             />
           </Section>
+
+          <div className="border-t border-white/[0.04] my-1" />
+          <SavedConfigsSection mode="video" settings={settings} onLoad={updateSettings} />
         </>
       )}
 
