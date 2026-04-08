@@ -79,7 +79,7 @@ const SavedConfigsSection: React.FC<Props> = ({ mode, settings, onLoad }) => {
       user_id: user.id,
       name: configName.trim(),
       mode,
-      settings: settings as unknown as Record<string, unknown>,
+      settings: JSON.parse(JSON.stringify(settings)),
     }]);
 
     if (error) {
