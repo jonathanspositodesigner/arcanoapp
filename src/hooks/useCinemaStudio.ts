@@ -6,15 +6,21 @@ import { useCredits } from '@/contexts/CreditsContext';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { useAIJob } from '@/contexts/AIJobContext';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
-import { checkActiveJob } from '@/ai/JobManager';
-import { uploadToStorage } from '@/hooks/useStorageUpload';
+import { checkActiveJob, createJob, startJob } from '@/ai/JobManager';
+import { uploadToStorage as uploadToStorageLegacy } from '@/hooks/useStorageUpload';
+import { uploadToStorage as uploadToStorageJM } from '@/ai/JobManager';
+import { optimizeForAI } from '@/hooks/useImageOptimizer';
+import { useJobStatusSync } from '@/hooks/useJobStatusSync';
+import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
+import { useAIToolSettings } from '@/hooks/useAIToolSettings';
+import { getAIErrorMessage } from '@/utils/errorMessages';
 import {
   type CinemaSettings,
   buildCinemaPrompt,
   getDefaultSettings,
 } from '@/utils/cinemaPromptBuilder';
 
-// ━━━ Models ━━━
+// ━━━ Models (video mode) ━━━
 const MODELS = {
   'standard-t2v': 'seedance-2.0-text-to-video',
   'standard-i2v': 'seedance-2.0-image-to-video',
@@ -42,6 +48,13 @@ export interface StoryboardScene {
   createdAt: string;
 }
 
+export interface SelectedAsset {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+}
+
 const STORYBOARD_KEY = 'cinemastudio_storyboard';
 
 function loadStoryboard(): StoryboardScene[] {
@@ -55,19 +68,13 @@ function saveStoryboard(scenes: StoryboardScene[]) {
   localStorage.setItem(STORYBOARD_KEY, JSON.stringify(scenes));
 }
 
-export interface SelectedAsset {
-  id: string;
-  name: string;
-  description: string | null;
-  image_url: string | null;
-}
-
 export function useCinemaStudio() {
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useCredits();
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
   const { isDownloading, progress: downloadProgress, download, cancel: cancelDownload } = useResilientDownload();
+  const { getCreditCost } = useAIToolSettings();
 
   // ━━━ Core State ━━━
   const [mode, setMode] = useState<StudioMode>('video');
@@ -85,6 +92,11 @@ export function useCinemaStudio() {
   const [jobId, setJobId] = useState<string | null>(null);
   const [taskId, setTaskId] = useState<string | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+
+  // Photo mode job tracking
+  const [photoJobStatus, setPhotoJobStatus] = useState<string>('idle');
+  const [queuePosition, setQueuePosition] = useState(0);
+  const sessionIdRef = useRef(crypto.randomUUID());
 
   // Storyboard
   const [storyboard, setStoryboard] = useState<StoryboardScene[]>(loadStoryboard);
@@ -104,7 +116,6 @@ export function useCinemaStudio() {
 
   // ━━━ Computed ━━━
   const basePrompt = buildCinemaPrompt(settings);
-  // Inject character and scenario descriptions
   const extraParts: string[] = [];
   if (selectedCharacter?.description) extraParts.push(`character: ${selectedCharacter.description}`);
   if (selectedScenario?.description) extraParts.push(`scenario: ${selectedScenario.description}`);
@@ -115,10 +126,15 @@ export function useCinemaStudio() {
   const modelKey = `${settings.modelSpeed}-${genType}` as keyof typeof MODELS;
   const selectedModel = MODELS[modelKey];
   const costPerSecond = CREDIT_COSTS[settings.modelSpeed][settings.quality] || 10;
-  const estimatedCredits = Math.ceil(costPerSecond * settings.duration);
-  const isProcessing = status === 'processing' || status === 'uploading';
+  const videoCreditEstimate = Math.ceil(costPerSecond * settings.duration);
+  const photoCreditCost = getCreditCost('gerar_imagem', 100);
+  const estimatedCredits = mode === 'photo' ? photoCreditCost : videoCreditEstimate;
 
-  const canGenerate = assembledPrompt.length > 30 && !isSubmitting && !isProcessing;
+  const isPhotoProcessing = ['pending', 'starting', 'running', 'queued'].includes(photoJobStatus);
+  const isVideoProcessing = status === 'processing' || status === 'uploading';
+  const isProcessing = mode === 'photo' ? isPhotoProcessing : isVideoProcessing;
+
+  const canGenerate = assembledPrompt.length > 10 && !isSubmitting && !isProcessing;
 
   // ━━━ Settings updater ━━━
   const updateSettings = useCallback((partial: Partial<CinemaSettings>) => {
@@ -160,7 +176,7 @@ export function useCinemaStudio() {
     return () => { if (elapsedIntervalRef.current) clearInterval(elapsedIntervalRef.current); };
   }, [isProcessing]);
 
-  // Progress animation
+  // Progress animation (video mode)
   useEffect(() => {
     if (status !== 'processing') return;
     const iv = setInterval(() => setProgress(p => p >= 90 ? p : p + 1), 3000);
@@ -169,8 +185,8 @@ export function useCinemaStudio() {
 
   // Register job
   useEffect(() => {
-    if (jobId) registerJob(jobId, 'Cinema Studio', 'pending');
-  }, [jobId, registerJob]);
+    if (jobId && mode === 'video') registerJob(jobId, 'Cinema Studio', 'pending');
+  }, [jobId, registerJob, mode]);
 
   // Cleanup
   useEffect(() => {
@@ -183,7 +199,54 @@ export function useCinemaStudio() {
   // Save storyboard
   useEffect(() => { saveStoryboard(storyboard); }, [storyboard]);
 
-  // ━━━ Polling ━━━
+  // ━━━ PHOTO MODE: Job Status Sync (clone from GerarImagemTool) ━━━
+  useJobStatusSync({
+    jobId: mode === 'photo' ? jobId : null,
+    toolType: 'image_generator',
+    enabled: mode === 'photo' && isPhotoProcessing && !!jobId,
+    onStatusChange: (update) => {
+      setPhotoJobStatus(update.status);
+      if (update.position !== undefined) setQueuePosition(update.position);
+      if (update.currentStep) {
+        const stepProgress: Record<string, number> = {
+          'validating': 10, 'downloading_ref_image_1': 15, 'uploading_ref_image_1': 20,
+          'consuming_credits': 30, 'delegating_to_queue': 40, 'starting': 50, 'running': 60,
+        };
+        setProgress(stepProgress[update.currentStep] || progress);
+      }
+      if (update.status === 'completed' && update.outputUrl) {
+        setOutputUrl(update.outputUrl);
+        setStatus('completed');
+        setProgress(100);
+        refetchCredits();
+        toast.success('Imagem gerada com sucesso!');
+      } else if (update.status === 'failed') {
+        setStatus('error');
+        setErrorMessage(update.errorMessage || 'Erro ao gerar imagem');
+        const errInfo = getAIErrorMessage(update.errorMessage || 'Erro desconhecido');
+        toast.error(errInfo.message);
+        refetchCredits();
+      }
+    },
+    onGlobalStatusChange: (s) => {
+      if (jobId) registerJob(jobId, 'image_generator', s);
+    },
+  });
+
+  // PHOTO MODE: Pending watchdog
+  useJobPendingWatchdog({
+    jobId: mode === 'photo' ? jobId : null,
+    toolType: 'image_generator',
+    enabled: mode === 'photo' && photoJobStatus === 'pending',
+    onJobFailed: (msg: string) => {
+      setPhotoJobStatus('failed');
+      setStatus('error');
+      setErrorMessage(msg || 'Servidor não respondeu. Tente novamente.');
+      refetchCredits();
+    },
+  });
+
+  // ━━━ VIDEO MODE: Polling ━━━
   const startPolling = useCallback((tId: string, jId: string, creditsToCharge: number) => {
     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     pollIntervalRef.current = window.setInterval(async () => {
@@ -245,19 +308,129 @@ export function useCinemaStudio() {
       return;
     }
 
+    if (mode === 'photo') {
+      await handleGeneratePhoto();
+    } else {
+      await handleGenerateVideo();
+    }
+  };
+
+  // ━━━ PHOTO: Generate via RunningHub image_generator (clone) ━━━
+  const handleGeneratePhoto = async () => {
+    setErrorMessage(null);
+    setStatus('uploading');
+    setPhotoJobStatus('pending');
+    setProgress(5);
+
+    try {
+      // Collect and optimize all reference images
+      const uploadedUrls: string[] = [];
+
+      // 1. User reference images
+      for (let i = 0; i < referenceImages.length; i++) {
+        toast.info(`Otimizando imagem ${i + 1}/${referenceImages.length}...`);
+        const optimized = await optimizeForAI(referenceImages[i]);
+        const uploadResult = await uploadToStorageJM(optimized.file, 'image-generator', user!.id);
+        if (!uploadResult.url) throw new Error(`Falha ao enviar imagem ${i + 1}`);
+        uploadedUrls.push(uploadResult.url);
+        setProgress(5 + Math.round((i + 1) / Math.max(referenceImages.length, 1) * 10));
+      }
+
+      // 2. Character image (already hosted in cinema-assets)
+      if (selectedCharacter?.image_url) {
+        uploadedUrls.push(selectedCharacter.image_url);
+      }
+
+      // 3. Scenario image (already hosted in cinema-assets)
+      if (selectedScenario?.image_url) {
+        uploadedUrls.push(selectedScenario.image_url);
+      }
+
+      setProgress(20);
+
+      // Create job in image_generator_jobs (exact same as GerarImagemTool)
+      const { jobId: newJobId, error: createError } = await createJob('image_generator', user!.id, sessionIdRef.current, {
+        prompt: assembledPrompt,
+        aspect_ratio: settings.aspectRatio,
+        model: 'runninghub',
+        input_urls: uploadedUrls,
+      });
+
+      if (createError || !newJobId) {
+        throw new Error(createError || 'Falha ao criar job');
+      }
+
+      setJobId(newJobId);
+      registerJob(newJobId, 'image_generator', 'pending');
+      setProgress(30);
+
+      // Start job via edge function (exact same as GerarImagemTool)
+      const result = await startJob('image_generator', newJobId, {
+        referenceImageUrls: uploadedUrls,
+        aspectRatio: settings.aspectRatio,
+        creditCost: photoCreditCost,
+        prompt: assembledPrompt,
+        source: 'cinema_studio_photo',
+      });
+
+      if (!result.success) {
+        if (result.code === 'INSUFFICIENT_CREDITS') {
+          setNoCreditsReason('insufficient');
+          setShowNoCreditsModal(true);
+          resetTool();
+        } else {
+          setStatus('error');
+          setPhotoJobStatus('failed');
+          setErrorMessage(result.error || 'Erro desconhecido');
+          const errInfo = getAIErrorMessage(result.error || 'Erro desconhecido');
+          toast.error(errInfo.message);
+        }
+        endSubmit();
+        return;
+      }
+
+      if (result.queued) {
+        setPhotoJobStatus('queued');
+        setQueuePosition(result.position || 0);
+        toast.info(`Na fila — posição ${result.position}`);
+      }
+
+      setStatus('processing');
+      // useJobStatusSync handles the rest automatically
+
+    } catch (error: any) {
+      console.error('[CinemaStudio Photo] Error:', error);
+      setStatus('error');
+      setPhotoJobStatus('failed');
+      setErrorMessage(error.message || 'Erro ao gerar imagem');
+      const errInfo = getAIErrorMessage(error.message || 'Erro desconhecido');
+      toast.error(errInfo.message);
+
+      if (jobId) {
+        try {
+          await supabase.rpc('mark_pending_job_as_failed' as any, { p_table_name: 'image_generator_jobs', p_job_id: jobId });
+        } catch {}
+      }
+    } finally {
+      endSubmit();
+    }
+  };
+
+  // ━━━ VIDEO: Generate via Seedance (existing flow, untouched) ━━━
+  const handleGenerateVideo = async () => {
     setErrorMessage(null);
     setStatus('uploading');
     setProgress(5);
 
     try {
       const timestamp = Date.now();
-      const folder = `seedance/${user.id}/${timestamp}`;
+      const folder = `seedance/${user!.id}/${timestamp}`;
       const uploadedImageUrls: string[] = [];
 
       if (referenceImages.length > 0) {
         setProgress(10);
         for (const file of referenceImages) {
-          const result = await uploadToStorage(file, folder);
+          const result = await uploadToStorageLegacy(file, folder);
           if (result.success && result.url) uploadedImageUrls.push(result.url);
           else throw new Error(`Upload failed: ${result.error}`);
         }
@@ -274,7 +447,7 @@ export function useCinemaStudio() {
       const { data: job, error: jobError } = await supabase
         .from('seedance_jobs')
         .insert({
-          user_id: user.id,
+          user_id: user!.id,
           model: selectedModel,
           prompt: finalPrompt,
           duration: settings.duration,
@@ -326,26 +499,29 @@ export function useCinemaStudio() {
   // ━━━ Download ━━━
   const downloadResult = useCallback(async () => {
     if (!outputUrl) return;
+    const isPhoto = mode === 'photo';
     await download({
       url: outputUrl,
-      filename: `cinema-studio-${Date.now()}.mp4`,
-      mediaType: 'video',
+      filename: `cinema-studio-${Date.now()}.${isPhoto ? 'png' : 'mp4'}`,
+      mediaType: isPhoto ? 'image' : 'video',
       timeout: 30000,
       onSuccess: () => toast.success('Download concluído!'),
       locale: 'pt',
     });
-  }, [outputUrl, download]);
+  }, [outputUrl, download, mode]);
 
   // ━━━ Reset ━━━
   const resetTool = useCallback(() => {
     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     setStatus('idle');
+    setPhotoJobStatus('idle');
     setProgress(0);
     setOutputUrl(null);
     setErrorMessage(null);
     setJobId(null);
     setTaskId(null);
     setElapsedTime(0);
+    setQueuePosition(0);
     endSubmit();
     clearGlobalJob();
   }, [endSubmit, clearGlobalJob]);
@@ -354,6 +530,7 @@ export function useCinemaStudio() {
   const cancelGeneration = useCallback(() => {
     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     setStatus('idle');
+    setPhotoJobStatus('idle');
     setProgress(0);
     endSubmit();
     clearGlobalJob();
@@ -389,7 +566,6 @@ export function useCinemaStudio() {
   }, [storyboard]);
 
   const addNewScene = useCallback(() => {
-    // Keep camera/genre settings, clear scene-specific
     setSettings(prev => ({
       ...prev,
       sceneName: '',
@@ -400,6 +576,7 @@ export function useCinemaStudio() {
     setActiveSceneId(null);
     setOutputUrl(null);
     setStatus('idle');
+    setPhotoJobStatus('idle');
   }, []);
 
   const formatTime = (seconds: number) => {

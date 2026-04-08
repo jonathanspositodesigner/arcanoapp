@@ -32,11 +32,19 @@ const PreviewPanel: React.FC<Props> = ({
       <div className="flex-1 flex items-center justify-center min-h-0">
         {status === 'completed' && outputUrl ? (
           <div className="w-full h-full relative flex items-center justify-center">
-            <video
-              src={outputUrl}
-              autoPlay muted controls loop playsInline
-              className="max-w-full max-h-full object-contain"
-            />
+            {mode === 'photo' ? (
+              <img
+                src={outputUrl}
+                alt="Resultado"
+                className="max-w-full max-h-full object-contain"
+              />
+            ) : (
+              <video
+                src={outputUrl}
+                autoPlay muted controls loop playsInline
+                className="max-w-full max-h-full object-contain"
+              />
+            )}
             {/* Barra inferior */}
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-4 py-3 flex items-center justify-between">
               <span className="text-[10px] text-amber-400/80 flex items-center gap-1">
@@ -113,9 +121,7 @@ const PreviewPanel: React.FC<Props> = ({
       {status === 'idle' && (
         <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
           <span className="text-[10px] text-gray-700">
-            {mode === 'video'
-              ? `≈ ${estimatedCredits} créditos`
-              : 'Modo foto'}
+            ≈ {estimatedCredits} créditos
           </span>
         </div>
       )}
