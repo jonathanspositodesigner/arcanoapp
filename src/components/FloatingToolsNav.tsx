@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Sparkles, BookOpen, FolderOpen, User, Coins } from "lucide-react";
+import { Home, BookOpen, FolderOpen, User, Coins } from "lucide-react";
 import { cn } from "@/lib/utils";
 import MyCreationsModal from "@/components/ai-tools/creations/MyCreationsModal";
 
 const navItems = [
-  { icon: Sparkles, label: "Ferramentas IA", path: "/ferramentas-ia-aplicativo" },
+  { icon: Home, label: "Início", path: "/" },
   { icon: BookOpen, label: "Prompts", path: "/biblioteca-prompts" },
   { icon: FolderOpen, label: "Criações", action: "creations" as const },
   { icon: Coins, label: "Recarregar", path: "/planos-2" },
