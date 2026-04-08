@@ -512,7 +512,7 @@ export default function ArcanoClonerAuthModal({
                 email={verifiedEmail}
                 onSubmit={handleLogin}
                 onChangeEmail={() => setStep('email')}
-                forgotPasswordUrl={`/forgot-password?email=${encodeURIComponent(verifiedEmail)}&redirect=/arcano-cloner-tool`}
+                forgotPasswordUrl={`/forgot-password?email=${encodeURIComponent(verifiedEmail)}&redirect=${encodeURIComponent(redirectPath)}`}
                 isLoading={isLoading}
                 variant="purple"
                 labels={{
