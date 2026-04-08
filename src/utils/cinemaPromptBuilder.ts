@@ -20,6 +20,7 @@ export interface CinemaSettings {
   lensType: string;
   focalLength: number;
   aperture: string;
+  cameraAngle: string;
 
   // Camera Movement
   movements: CameraMovementLayer[];
@@ -79,6 +80,20 @@ export const APERTURE_DESCRIPTIONS: Record<string, string> = {
   'f/5.6': 'Sharper background',
   'f/8': 'Deep focus, detailed',
   'f/11': 'Everything sharp, landscape',
+};
+
+// ━━━ Camera Angle Prompts ━━━
+const CAMERA_ANGLE_PROMPTS: Record<string, string> = {
+  'Eye Level': '',
+  'Low Angle': 'low angle shot, looking up at subject, empowering, dominant',
+  'High Angle': 'high angle shot, looking down at subject, vulnerability, overview',
+  'Dutch Angle': 'dutch angle, tilted frame, disorientation, tension, unease',
+  'Bird\'s Eye': 'bird\'s eye view, directly overhead, top-down perspective, god\'s view',
+  'Worm\'s Eye': 'worm\'s eye view, extreme low angle from ground level, towering perspective',
+  'POV': 'POV shot, first-person perspective, through the eyes of the character',
+  'Over the Shoulder': 'over the shoulder shot, OTS framing, depth, conversation perspective',
+  'Hip Level': 'hip level shot, waist height camera, western style, cowboy framing',
+  'Ground Level': 'ground level shot, camera at floor level, dramatic foreground, insects perspective',
 };
 
 // ━━━ Color Grade Prompts ━━━
@@ -178,6 +193,10 @@ export function buildCinemaPrompt(s: CinemaSettings): string {
 
   parts.push(`${s.focalLength}mm`);
   parts.push(s.aperture);
+
+  // Camera angle
+  const anglePrompt = CAMERA_ANGLE_PROMPTS[s.cameraAngle];
+  if (anglePrompt) parts.push(anglePrompt);
 
   // Camera movements (max 3)
   const movementParts = s.movements
