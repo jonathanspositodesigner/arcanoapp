@@ -137,7 +137,7 @@ const ControlPanel: React.FC<Props> = ({
             <VideoSettingsSection settings={settings} updateSettings={updateSettings} mode="photo" />
           </Section>
           <div className="border-t border-white/[0.04] my-1" />
-          <SavedConfigsSection mode="photo" settings={settings} onLoad={updateSettings} />
+          <SavedConfigsSection mode="photo" settings={settings} selectedCharacters={selectedCharacters} selectedScenario={selectedScenario} onLoad={handleLoadConfig} />
         </>
       ) : (
         /* ===== VIDEO MODE LAYOUT (intocado) ===== */
@@ -186,7 +186,7 @@ const ControlPanel: React.FC<Props> = ({
           </Section>
 
           <div className="border-t border-white/[0.04] my-1" />
-          <SavedConfigsSection mode="video" settings={settings} onLoad={updateSettings} />
+          <SavedConfigsSection mode="video" settings={settings} selectedCharacters={selectedCharacters} selectedScenario={selectedScenario} onLoad={handleLoadConfig} />
         </>
       )}
 
