@@ -6,6 +6,7 @@ import SceneSection from './SceneSection';
 import CameraRigSection from './CameraRigSection';
 import CameraMovementSection from './CameraMovementSection';
 import GenreMoodSection from './GenreMoodSection';
+import GenreMoodPhotoSection from './GenreMoodPhotoSection';
 import VideoSettingsSection from './VideoSettingsSection';
 import ReferenceSection from './ReferenceSection';
 import type { CinemaSettings } from '@/utils/cinemaPromptBuilder';
@@ -44,7 +45,7 @@ const Section: React.FC<SectionProps> = ({ title, emoji, defaultOpen = true, chi
         </span>
         <ChevronDown className={`w-3 h-3 text-gray-600 transition-transform duration-200 ${open ? '' : '-rotate-90'}`} />
       </button>
-      <div className={`overflow-hidden transition-all duration-200 ${open ? 'max-h-[2000px] opacity-100 pb-2' : 'max-h-0 opacity-0'}`}>
+      <div className={`overflow-hidden transition-all duration-200 ${open ? 'max-h-[4000px] opacity-100 pb-2' : 'max-h-0 opacity-0'}`}>
         {children}
       </div>
     </div>
@@ -60,48 +61,103 @@ const ControlPanel: React.FC<Props> = ({
     toast.success('Prompt copiado!');
   };
 
+  const isPhoto = mode === 'photo';
+
   return (
     <div className="space-y-0">
-      {/* Cena — sempre visível, sem cabeçalho */}
-      <SceneSection settings={settings} updateSettings={updateSettings} />
-
-      <div className="border-t border-white/[0.04] my-1" />
-
-      <Section title="Câmera" emoji="🎥" defaultOpen={true}>
-        <CameraRigSection settings={settings} updateSettings={updateSettings} />
-      </Section>
-
-      <div className="border-t border-white/[0.04]" />
-
-      <Section title="Movimento" emoji="🎬" defaultOpen={true}>
-        <CameraMovementSection settings={settings} updateSettings={updateSettings} />
-      </Section>
-
-      <div className="border-t border-white/[0.04]" />
-
-      <Section title="Estilo" emoji="🎨" defaultOpen={false}>
-        <GenreMoodSection settings={settings} updateSettings={updateSettings} />
-      </Section>
-
-      <div className="border-t border-white/[0.04]" />
-
-      {mode === 'video' && (
+      {/* ===== PHOTO MODE LAYOUT ===== */}
+      {isPhoto ? (
         <>
+          {/* 1. Referências — sempre aberta, sem toggle */}
+          <div className="pb-2">
+            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-[0.12em] flex items-center gap-1.5 py-2">
+              <span className="text-xs">🖼</span> Referências
+            </span>
+            <ReferenceSection
+              images={referenceImages}
+              previews={referenceImagePreviews}
+              onAdd={addReferenceImages}
+              onRemove={removeReferenceImage}
+            />
+          </div>
+
+          <div className="border-t border-white/[0.04] my-1" />
+
+          {/* 2. Textarea única */}
+          <div className="space-y-2 pb-1">
+            <Textarea
+              value={settings.scenePrompt}
+              onChange={e => updateSettings({ scenePrompt: e.target.value.slice(0, 500) })}
+              placeholder="Descreva sua cena, personagem e ambiente..."
+              rows={3}
+              className="bg-black/20 border-white/[0.06] text-gray-300 text-[12px] min-h-[60px] resize-none placeholder:text-gray-600 focus:min-h-[100px] transition-all duration-200"
+            />
+          </div>
+
+          <div className="border-t border-white/[0.04] my-1" />
+
+          {/* 3. Câmera */}
+          <Section title="Câmera" emoji="🎥" defaultOpen={true}>
+            <CameraRigSection settings={settings} updateSettings={updateSettings} />
+          </Section>
+
+          <div className="border-t border-white/[0.04]" />
+
+          {/* 4. Estilo — com thumbnails visuais */}
+          <Section title="Estilo" emoji="🎨" defaultOpen={false}>
+            <GenreMoodPhotoSection settings={settings} updateSettings={updateSettings} />
+          </Section>
+
+          <div className="border-t border-white/[0.04]" />
+
+          {/* 5. Saída */}
           <Section title="Saída" emoji="⚙️" defaultOpen={false}>
             <VideoSettingsSection settings={settings} updateSettings={updateSettings} />
           </Section>
+
+          {/* MOVIMENTO: não renderizado em Photo */}
+        </>
+      ) : (
+        /* ===== VIDEO MODE LAYOUT (intocado) ===== */
+        <>
+          <SceneSection settings={settings} updateSettings={updateSettings} />
+
+          <div className="border-t border-white/[0.04] my-1" />
+
+          <Section title="Câmera" emoji="🎥" defaultOpen={true}>
+            <CameraRigSection settings={settings} updateSettings={updateSettings} />
+          </Section>
+
           <div className="border-t border-white/[0.04]" />
+
+          <Section title="Movimento" emoji="🎬" defaultOpen={true}>
+            <CameraMovementSection settings={settings} updateSettings={updateSettings} />
+          </Section>
+
+          <div className="border-t border-white/[0.04]" />
+
+          <Section title="Estilo" emoji="🎨" defaultOpen={false}>
+            <GenreMoodSection settings={settings} updateSettings={updateSettings} />
+          </Section>
+
+          <div className="border-t border-white/[0.04]" />
+
+          <Section title="Saída" emoji="⚙️" defaultOpen={false}>
+            <VideoSettingsSection settings={settings} updateSettings={updateSettings} />
+          </Section>
+
+          <div className="border-t border-white/[0.04]" />
+
+          <Section title="Referências" emoji="🖼" defaultOpen={false}>
+            <ReferenceSection
+              images={referenceImages}
+              previews={referenceImagePreviews}
+              onAdd={addReferenceImages}
+              onRemove={removeReferenceImage}
+            />
+          </Section>
         </>
       )}
-
-      <Section title="Referências" emoji="🖼" defaultOpen={false}>
-        <ReferenceSection
-          images={referenceImages}
-          previews={referenceImagePreviews}
-          onAdd={addReferenceImages}
-          onRemove={removeReferenceImage}
-        />
-      </Section>
 
       <div className="border-t border-white/[0.04]" />
 
