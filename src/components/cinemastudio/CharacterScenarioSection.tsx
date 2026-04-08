@@ -65,15 +65,24 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
   };
 
   const resetForm = () => {
+    if (newImagePreview) {
+      URL.revokeObjectURL(newImagePreview);
+    }
     setNewName('');
     setNewDesc('');
     setNewImage(null);
     setNewImagePreview('');
+    if (fileRef.current) {
+      fileRef.current.value = '';
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (newImagePreview) {
+      URL.revokeObjectURL(newImagePreview);
+    }
     setNewImage(file);
     setNewImagePreview(URL.createObjectURL(file));
   };
@@ -82,7 +91,6 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
     if (!newName.trim()) { toast.error('Nome é obrigatório'); return; }
     if (!newImage) { toast.error('Imagem é obrigatória'); return; }
 
-    // Check limit of 20 per type
     const currentList = modalType === 'character' ? characters : scenarios;
     if (currentList.length >= 20) {
       toast.error(`Limite de 20 ${modalType === 'character' ? 'personagens' : 'cenários'} atingido. Delete um existente para criar outro.`);
@@ -90,41 +98,70 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
     }
 
     setSaving(true);
-    const { data: user } = await supabase.auth.getUser();
-    if (!user.user) { setSaving(false); return; }
+    let uploadedPath: string | null = null;
 
-    let imageUrl: string | null = null;
-    if (newImage) {
-      const ext = newImage.name.split('.').pop();
-      const path = `${user.user.id}/${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from('cinema-assets').upload(path, newImage);
-      if (!error) {
-        const { data: urlData } = supabase.storage.from('cinema-assets').getPublicUrl(path);
-        imageUrl = urlData.publicUrl;
+    try {
+      const { data, error: userError } = await supabase.auth.getUser();
+      const user = data.user;
+
+      if (userError || !user) {
+        toast.error('Faça login novamente para salvar.');
+        return;
       }
-    }
 
-    const table = modalType === 'character' ? 'cinema_characters' : 'cinema_scenarios';
-    const { error } = await supabase.from(table).insert({
-      user_id: user.user.id,
-      name: newName.trim(),
-      description: newDesc.trim() || null,
-      image_url: imageUrl,
-    });
+      const ext = newImage.name.split('.').pop()?.toLowerCase() || 'png';
+      uploadedPath = `${user.id}/${crypto.randomUUID()}.${ext}`;
 
-    if (error) {
-      if (error.message?.includes('Limite de 20')) {
-        toast.error(`Limite de 20 ${modalType === 'character' ? 'personagens' : 'cenários'} atingido.`);
-      } else {
-        toast.error('Erro ao salvar');
+      const { error: uploadError } = await supabase.storage.from('cinema-assets').upload(uploadedPath, newImage, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: newImage.type || undefined,
+      });
+
+      if (uploadError) {
+        toast.error('Erro ao enviar a imagem. Tente novamente.');
+        return;
       }
-    } else {
+
+      const { data: urlData } = supabase.storage.from('cinema-assets').getPublicUrl(uploadedPath);
+      const imageUrl = urlData.publicUrl;
+
+      if (!imageUrl) {
+        await supabase.storage.from('cinema-assets').remove([uploadedPath]);
+        toast.error('Não foi possível obter a imagem enviada.');
+        return;
+      }
+
+      const table = modalType === 'character' ? 'cinema_characters' : 'cinema_scenarios';
+      const { error } = await supabase.from(table).insert({
+        user_id: user.id,
+        name: newName.trim(),
+        description: newDesc.trim() || null,
+        image_url: imageUrl,
+      });
+
+      if (error) {
+        await supabase.storage.from('cinema-assets').remove([uploadedPath]);
+        if (error.message?.includes('Limite de 20')) {
+          toast.error(`Limite de 20 ${modalType === 'character' ? 'personagens' : 'cenários'} atingido.`);
+        } else {
+          toast.error('Erro ao salvar');
+        }
+        return;
+      }
+
       toast.success(modalType === 'character' ? 'Personagem criado!' : 'Cenário criado!');
       await fetchItems();
       setShowCreate(false);
       resetForm();
+    } catch (error) {
+      if (uploadedPath) {
+        await supabase.storage.from('cinema-assets').remove([uploadedPath]);
+      }
+      toast.error('Erro ao salvar imagem e dados.');
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const handleDelete = async (id: string, type: 'character' | 'scenario') => {
