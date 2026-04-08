@@ -315,6 +315,7 @@ export function useCinemaStudio() {
             ));
           }
           generatingSceneIdRef.current = null;
+          setGeneratingMode(null);
         } else if (data.status === 'failed') {
           clearInterval(pollIntervalRef.current!);
           pollIntervalRef.current = null;
@@ -323,6 +324,8 @@ export function useCinemaStudio() {
           updateJobStatus('failed');
           toast.error('Erro na geração');
           endSubmit();
+          generatingSceneIdRef.current = null;
+          setGeneratingMode(null);
         } else if (data.progress) {
           setProgress(prev => Math.max(prev, data.progress));
         }
@@ -373,6 +376,7 @@ export function useCinemaStudio() {
     setPhotoJobStatus('pending');
     setProgress(5);
     generatingSceneIdRef.current = activeSceneId;
+    setGeneratingMode('photo');
 
     try {
       // Collect and optimize all reference images
