@@ -76,6 +76,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings })
 
   const handleSave = async () => {
     if (!newName.trim()) { toast.error('Nome é obrigatório'); return; }
+    if (!newImage) { toast.error('Imagem é obrigatória'); return; }
     setSaving(true);
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) { setSaving(false); return; }
