@@ -148,7 +148,7 @@ const CinemaStudio: React.FC = () => {
         projects={projectManager.projects}
         isLoading={projectManager.isLoading}
         projectCount={projectManager.projectCount}
-        onCreateProject={projectManager.createProject}
+        onCreateProject={handleCreateProject}
         onSelectProject={handleSelectProject}
         onDeleteProject={projectManager.deleteProject}
         onRenameProject={projectManager.renameProject}
