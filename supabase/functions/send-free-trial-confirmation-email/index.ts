@@ -94,7 +94,7 @@ serve(async (req) => {
   }
 
   try {
-    const { email, user_id } = await req.json();
+    const { email, user_id, redirect_path } = await req.json();
 
     if (!email || !user_id) {
       return new Response(
@@ -144,6 +144,7 @@ serve(async (req) => {
         email: normalizedEmail,
         token,
         expires_at: expiresAt,
+        redirect_path: redirect_path || null,
       });
 
     if (insertError) {

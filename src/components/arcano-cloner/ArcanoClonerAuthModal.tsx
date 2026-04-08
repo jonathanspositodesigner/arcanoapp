@@ -188,9 +188,9 @@ export default function ArcanoClonerAuthModal({
     return () => subscription.unsubscribe();
   }, [isOpen, step, onAuthSuccess]);
 
-  const sendConfirmationEmail = useCallback(async (targetEmail: string, userId: string) => {
+  const sendConfirmationEmail = useCallback(async (targetEmail: string, userId: string, redirectTo?: string) => {
     const { data, error } = await supabase.functions.invoke('send-free-trial-confirmation-email', {
-      body: { email: targetEmail, user_id: userId },
+      body: { email: targetEmail, user_id: userId, redirect_path: redirectTo || null },
     });
 
     if (error || !data?.success) {
@@ -412,7 +412,7 @@ export default function ArcanoClonerAuthModal({
 
         setPendingUserId(authData.user.id);
 
-        const emailResult = await sendConfirmationEmail(normalizedEmail, authData.user.id);
+        const emailResult = await sendConfirmationEmail(normalizedEmail, authData.user.id, redirectPath);
 
         // Sign out immediately - user must confirm email first
         await supabase.auth.signOut();

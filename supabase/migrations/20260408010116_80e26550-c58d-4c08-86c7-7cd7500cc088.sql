@@ -1,0 +1,1 @@
+ALTER TABLE public.email_confirmation_tokens ADD COLUMN redirect_path TEXT DEFAULT NULL;
