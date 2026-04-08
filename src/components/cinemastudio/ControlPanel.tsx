@@ -9,6 +9,7 @@ import GenreMoodSection from './GenreMoodSection';
 import GenreMoodPhotoSection from './GenreMoodPhotoSection';
 import VideoSettingsSection from './VideoSettingsSection';
 import ReferenceSection from './ReferenceSection';
+import SavedConfigsSection from './SavedConfigsSection';
 import CharacterScenarioSection from './CharacterScenarioSection';
 import type { CinemaSettings } from '@/utils/cinemaPromptBuilder';
 import type { StudioMode } from '@/hooks/useCinemaStudio';
