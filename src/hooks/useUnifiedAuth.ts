@@ -158,6 +158,7 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       let passwordChanged = profileCheck?.[0]?.password_changed || false;
       const profileCreatedAt = profileCheck?.[0]?.created_at;
       const hasLoggedIn = profileCheck?.[0]?.has_logged_in || false;
+      const existsInAuth = profileCheck?.[0]?.exists_in_auth || false;
       
       // Legacy accounts created before 2026-03-12 should skip first-access flow
       // BUT only if they have actually logged in before
