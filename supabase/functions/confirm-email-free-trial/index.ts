@@ -1,7 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const REDIRECT_URL = "https://arcanoapp.voxvisual.com.br/ferramentas-ia-aplicativo";
+const DEFAULT_REDIRECT_URL = "https://arcanoapp.voxvisual.com.br/ferramentas-ia-aplicativo";
+const BASE_URL = "https://arcanoapp.voxvisual.com.br";
 
 function buildSuccessHtml(): string {
   return `
