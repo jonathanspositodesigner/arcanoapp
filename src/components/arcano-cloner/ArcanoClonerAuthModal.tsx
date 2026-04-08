@@ -448,7 +448,7 @@ export default function ArcanoClonerAuthModal({
     setIsResendingEmail(true);
 
     try {
-      const resendResult = await sendConfirmationEmail(emailToResend, pendingUserId);
+      const resendResult = await sendConfirmationEmail(emailToResend, pendingUserId, redirectPath);
 
       if (!resendResult.success) {
         setEmailSendError(resendResult.error);
