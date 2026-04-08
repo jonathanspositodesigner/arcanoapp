@@ -119,6 +119,11 @@ export function useCinemaStudio() {
   const [storyboard, setStoryboard] = useState<StoryboardScene[]>(loadStoryboard);
   const [activeSceneId, setActiveSceneId] = useState<string>('slot-0');
 
+  // Track which scene owns the currently running job
+  const generatingSceneIdRef = useRef<string | null>(null);
+  // Track the mode of the active generation (so sync hooks stay alive even if user browses another mode)
+  const [generatingMode, setGeneratingMode] = useState<StudioMode | null>(null);
+
   // Modals
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
@@ -151,7 +156,7 @@ export function useCinemaStudio() {
 
   const isPhotoProcessing = ['pending', 'starting', 'running', 'queued'].includes(photoJobStatus);
   const isVideoProcessing = status === 'processing' || status === 'uploading';
-  const isProcessing = mode === 'photo' ? isPhotoProcessing : isVideoProcessing;
+  const isProcessing = isPhotoProcessing || isVideoProcessing;
 
   const canGenerate = assembledPrompt.length > 10 && !isSubmitting && !isProcessing;
 
@@ -220,9 +225,9 @@ export function useCinemaStudio() {
 
   // ━━━ PHOTO MODE: Job Status Sync (clone from GerarImagemTool) ━━━
   useJobStatusSync({
-    jobId: mode === 'photo' ? jobId : null,
+    jobId: (generatingMode === 'photo' || mode === 'photo') ? jobId : null,
     toolType: 'image_generator',
-    enabled: mode === 'photo' && isPhotoProcessing && !!jobId,
+    enabled: (generatingMode === 'photo') && isPhotoProcessing && !!jobId,
     onStatusChange: (update) => {
       setPhotoJobStatus(update.status);
       if (update.position !== undefined) setQueuePosition(update.position);
@@ -239,12 +244,29 @@ export function useCinemaStudio() {
         setProgress(100);
         refetchCredits();
         toast.success('Imagem gerada com sucesso!');
+        // Save to the scene that started the generation
+        const targetScene = generatingSceneIdRef.current;
+        if (targetScene) {
+          setStoryboard(prev => prev.map(s =>
+            s.id === targetScene
+              ? { ...s, thumbnailUrl: update.outputUrl!, outputUrl: update.outputUrl!, settings: { ...settings }, type: 'photo' as StudioMode, createdAt: new Date().toISOString() }
+              : s
+          ));
+          // If user navigated away, don't overwrite their current view — but if still on same scene, show it
+          if (activeSceneId !== targetScene) {
+            // User is viewing another scene; result saved silently
+          }
+        }
+        generatingSceneIdRef.current = null;
+        setGeneratingMode(null);
       } else if (update.status === 'failed') {
         setStatus('error');
         setErrorMessage(update.errorMessage || 'Erro ao gerar imagem');
         const errInfo = getAIErrorMessage(update.errorMessage || 'Erro desconhecido');
         toast.error(errInfo.message);
         refetchCredits();
+        generatingSceneIdRef.current = null;
+        setGeneratingMode(null);
       }
     },
     onGlobalStatusChange: (s) => {
@@ -254,9 +276,9 @@ export function useCinemaStudio() {
 
   // PHOTO MODE: Pending watchdog
   useJobPendingWatchdog({
-    jobId: mode === 'photo' ? jobId : null,
+    jobId: generatingMode === 'photo' ? jobId : null,
     toolType: 'image_generator',
-    enabled: mode === 'photo' && photoJobStatus === 'pending',
+    enabled: generatingMode === 'photo' && photoJobStatus === 'pending',
     onJobFailed: (msg: string) => {
       setPhotoJobStatus('failed');
       setStatus('error');
@@ -283,6 +305,17 @@ export function useCinemaStudio() {
           updateJobStatus('completed');
           refetchCredits();
           toast.success('Geração concluída!');
+          // Save to the scene that started the generation
+          const targetScene = generatingSceneIdRef.current;
+          if (targetScene) {
+            setStoryboard(prev => prev.map(s =>
+              s.id === targetScene
+                ? { ...s, thumbnailUrl: data.outputUrl, outputUrl: data.outputUrl, settings: { ...settings }, type: 'video' as StudioMode, createdAt: new Date().toISOString() }
+                : s
+            ));
+          }
+          generatingSceneIdRef.current = null;
+          setGeneratingMode(null);
         } else if (data.status === 'failed') {
           clearInterval(pollIntervalRef.current!);
           pollIntervalRef.current = null;
@@ -291,6 +324,8 @@ export function useCinemaStudio() {
           updateJobStatus('failed');
           toast.error('Erro na geração');
           endSubmit();
+          generatingSceneIdRef.current = null;
+          setGeneratingMode(null);
         } else if (data.progress) {
           setProgress(prev => Math.max(prev, data.progress));
         }
@@ -340,6 +375,8 @@ export function useCinemaStudio() {
     setStatus('uploading');
     setPhotoJobStatus('pending');
     setProgress(5);
+    generatingSceneIdRef.current = activeSceneId;
+    setGeneratingMode('photo');
 
     try {
       // Collect and optimize all reference images
@@ -424,6 +461,8 @@ export function useCinemaStudio() {
       setErrorMessage(error.message || 'Erro ao gerar imagem');
       const errInfo = getAIErrorMessage(error.message || 'Erro desconhecido');
       toast.error(errInfo.message);
+      generatingSceneIdRef.current = null;
+      setGeneratingMode(null);
 
       if (jobId) {
         try {
@@ -440,6 +479,8 @@ export function useCinemaStudio() {
     setErrorMessage(null);
     setStatus('uploading');
     setProgress(5);
+    generatingSceneIdRef.current = activeSceneId;
+    setGeneratingMode('video');
 
     try {
       const timestamp = Date.now();
@@ -514,6 +555,8 @@ export function useCinemaStudio() {
       setErrorMessage(error.message || 'Erro desconhecido');
       toast.error('Erro ao gerar');
       endSubmit();
+      generatingSceneIdRef.current = null;
+      setGeneratingMode(null);
     }
   };
 
@@ -545,6 +588,8 @@ export function useCinemaStudio() {
     setQueuePosition(0);
     endSubmit();
     clearGlobalJob();
+    generatingSceneIdRef.current = null;
+    setGeneratingMode(null);
   }, [endSubmit, clearGlobalJob]);
 
   // ━━━ Cancel ━━━
@@ -555,20 +600,14 @@ export function useCinemaStudio() {
     setProgress(0);
     endSubmit();
     clearGlobalJob();
+    generatingSceneIdRef.current = null;
+    setGeneratingMode(null);
     toast.info('Geração cancelada');
   }, [endSubmit, clearGlobalJob]);
 
   // ━━━ Storyboard ━━━
-  // Auto-save result to active slot when generation completes
-  useEffect(() => {
-    if (status === 'completed' && outputUrl && activeSceneId) {
-      setStoryboard(prev => prev.map(s =>
-        s.id === activeSceneId
-          ? { ...s, thumbnailUrl: outputUrl, outputUrl, settings: { ...settings }, type: mode, createdAt: new Date().toISOString() }
-          : s
-      ));
-    }
-  }, [status, outputUrl, activeSceneId]);
+  // Auto-save is now handled directly in the completion callbacks (useJobStatusSync + startPolling)
+  // so this useEffect is no longer needed.
 
   const addToStoryboard = useCallback(() => {
     // no-op — auto-saved now
@@ -591,20 +630,36 @@ export function useCinemaStudio() {
   const loadScene = useCallback((id: string) => {
     const scene = storyboard.find(s => s.id === id);
     if (!scene) return;
+
+    const isGenerating = !!generatingSceneIdRef.current;
+    const switchingToGeneratingScene = generatingSceneIdRef.current === id;
+
     setActiveSceneId(id);
+
+    if (switchingToGeneratingScene) {
+      // Returning to the scene that is actively generating — restore processing UI
+      // Don't touch status/progress/jobId — they're still live
+      setOutputUrl(null);
+      return;
+    }
+
     if (scene.outputUrl) {
-      // Show saved result
+      // Show saved result (only change UI state, don't kill job)
       setOutputUrl(scene.outputUrl);
-      setStatus('completed');
-      setProgress(100);
+      if (!isGenerating) {
+        setStatus('completed');
+        setProgress(100);
+      }
       setSettings(scene.settings);
       setMode(scene.type);
     } else {
-      // Empty slot — clear for new generation
+      // Empty slot — show idle UI but don't kill active job
       setOutputUrl(null);
-      setStatus('idle');
-      setPhotoJobStatus('idle');
-      setProgress(0);
+      if (!isGenerating) {
+        setStatus('idle');
+        setPhotoJobStatus('idle');
+        setProgress(0);
+      }
     }
   }, [storyboard]);
 
