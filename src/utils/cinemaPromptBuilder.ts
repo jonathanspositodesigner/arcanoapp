@@ -23,6 +23,9 @@ export interface CinemaSettings {
   cameraAngle: string;
   cameraDistance: string;
 
+  // Style
+  imageStyle: string;
+
   // Camera Movement
   movements: CameraMovementLayer[];
 
