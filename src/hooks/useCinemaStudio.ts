@@ -225,9 +225,9 @@ export function useCinemaStudio() {
 
   // ━━━ PHOTO MODE: Job Status Sync (clone from GerarImagemTool) ━━━
   useJobStatusSync({
-    jobId: mode === 'photo' ? jobId : null,
+    jobId: (generatingMode === 'photo' || mode === 'photo') ? jobId : null,
     toolType: 'image_generator',
-    enabled: mode === 'photo' && isPhotoProcessing && !!jobId,
+    enabled: (generatingMode === 'photo') && isPhotoProcessing && !!jobId,
     onStatusChange: (update) => {
       setPhotoJobStatus(update.status);
       if (update.position !== undefined) setQueuePosition(update.position);
