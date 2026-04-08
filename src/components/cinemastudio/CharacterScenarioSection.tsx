@@ -17,11 +17,13 @@ interface SavedItem {
 interface Props {
   settings: { scenePrompt: string; subject: string };
   updateSettings: (p: Partial<{ scenePrompt: string; subject: string }>) => void;
+  onCharacterChange?: (item: SavedItem | null) => void;
+  onScenarioChange?: (item: SavedItem | null) => void;
 }
 
 type ModalType = 'character' | 'scenario' | null;
 
-const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings }) => {
+const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, onCharacterChange, onScenarioChange }) => {
   const [modalType, setModalType] = useState<ModalType>(null);
   const [characters, setCharacters] = useState<SavedItem[]>([]);
   const [scenarios, setScenarios] = useState<SavedItem[]>([]);
@@ -123,7 +125,9 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings })
   const selectItem = (item: SavedItem) => {
     if (modalType === 'character') {
       const isSame = selectedChar?.id === item.id;
-      setSelectedChar(isSame ? null : item);
+      const newVal = isSame ? null : item;
+      setSelectedChar(newVal);
+      onCharacterChange?.(newVal);
       if (!isSame && item.description) {
         updateSettings({ subject: item.description });
       } else if (isSame) {
@@ -131,7 +135,9 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings })
       }
     } else {
       const isSame = selectedScenario?.id === item.id;
-      setSelectedScenario(isSame ? null : item);
+      const newVal = isSame ? null : item;
+      setSelectedScenario(newVal);
+      onScenarioChange?.(newVal);
     }
     setModalType(null);
   };
@@ -162,7 +168,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings })
           </div>
           {selectedChar && (
             <button
-              onClick={e => { e.stopPropagation(); setSelectedChar(null); updateSettings({ subject: '' }); }}
+              onClick={e => { e.stopPropagation(); setSelectedChar(null); updateSettings({ subject: '' }); onCharacterChange?.(null); }}
               className="p-0.5 hover:bg-white/10 rounded"
             >
               <X className="w-3 h-3 text-gray-600" />
@@ -190,7 +196,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings })
           </div>
           {selectedScenario && (
             <button
-              onClick={e => { e.stopPropagation(); setSelectedScenario(null); }}
+              onClick={e => { e.stopPropagation(); setSelectedScenario(null); onScenarioChange?.(null); }}
               className="p-0.5 hover:bg-white/10 rounded"
             >
               <X className="w-3 h-3 text-gray-600" />

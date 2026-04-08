@@ -55,6 +55,13 @@ function saveStoryboard(scenes: StoryboardScene[]) {
   localStorage.setItem(STORYBOARD_KEY, JSON.stringify(scenes));
 }
 
+export interface SelectedAsset {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+}
+
 export function useCinemaStudio() {
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useCredits();
@@ -67,6 +74,8 @@ export function useCinemaStudio() {
   const [settings, setSettings] = useState<CinemaSettings>(getDefaultSettings());
   const [referenceImages, setReferenceImages] = useState<File[]>([]);
   const [referenceImagePreviews, setReferenceImagePreviews] = useState<string[]>([]);
+  const [selectedCharacter, setSelectedCharacter] = useState<SelectedAsset | null>(null);
+  const [selectedScenario, setSelectedScenario] = useState<SelectedAsset | null>(null);
 
   // Processing
   const [status, setStatus] = useState<ProcessingStatus>('idle');
@@ -94,7 +103,13 @@ export function useCinemaStudio() {
   const elapsedIntervalRef = useRef<number | null>(null);
 
   // ━━━ Computed ━━━
-  const assembledPrompt = buildCinemaPrompt(settings);
+  const basePrompt = buildCinemaPrompt(settings);
+  // Inject character and scenario descriptions
+  const extraParts: string[] = [];
+  if (selectedCharacter?.description) extraParts.push(`character: ${selectedCharacter.description}`);
+  if (selectedScenario?.description) extraParts.push(`scenario: ${selectedScenario.description}`);
+  const assembledPrompt = extraParts.length > 0 ? `${basePrompt}, ${extraParts.join(', ')}` : basePrompt;
+
   const hasHeroFrame = referenceImages.length > 0;
   const genType = hasHeroFrame ? 'i2v' : 't2v';
   const modelKey = `${settings.modelSpeed}-${genType}` as keyof typeof MODELS;
@@ -111,9 +126,10 @@ export function useCinemaStudio() {
   }, []);
 
   // ━━━ Reference Images ━━━
+  const maxRefImages = mode === 'photo' ? 3 : 9;
   const addReferenceImages = useCallback((files: FileList | null) => {
     if (!files) return;
-    const max = 9 - referenceImages.length;
+    const max = maxRefImages - referenceImages.length;
     const newFiles: File[] = [];
     const newPreviews: string[] = [];
     for (let i = 0; i < Math.min(files.length, max); i++) {
@@ -125,7 +141,7 @@ export function useCinemaStudio() {
     }
     setReferenceImages(prev => [...prev, ...newFiles]);
     setReferenceImagePreviews(prev => [...prev, ...newPreviews]);
-  }, [referenceImages.length]);
+  }, [referenceImages.length, maxRefImages]);
 
   const removeReferenceImage = useCallback((index: number) => {
     URL.revokeObjectURL(referenceImagePreviews[index]);
@@ -246,6 +262,10 @@ export function useCinemaStudio() {
           else throw new Error(`Upload failed: ${result.error}`);
         }
       }
+
+      // Add character and scenario image URLs (already hosted)
+      if (selectedCharacter?.image_url) uploadedImageUrls.push(selectedCharacter.image_url);
+      if (selectedScenario?.image_url) uploadedImageUrls.push(selectedScenario.image_url);
 
       setProgress(30);
 
@@ -392,8 +412,10 @@ export function useCinemaStudio() {
     // State
     mode, setMode,
     settings, updateSettings,
-    referenceImages, referenceImagePreviews,
+    referenceImages, referenceImagePreviews, maxRefImages,
     addReferenceImages, removeReferenceImage,
+    selectedCharacter, setSelectedCharacter,
+    selectedScenario, setSelectedScenario,
     status, progress, outputUrl, errorMessage,
     elapsedTime, isProcessing, isSubmitting,
     credits, creditsLoading,
