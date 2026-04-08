@@ -56,12 +56,29 @@ export interface SelectedAsset {
 }
 
 const STORYBOARD_KEY = 'cinemastudio_storyboard';
+const MAX_SCENES = 10;
+
+function createEmptyScenes(): StoryboardScene[] {
+  return Array.from({ length: MAX_SCENES }, (_, i) => ({
+    id: `slot-${i}`,
+    name: `Cena ${i + 1}`,
+    settings: getDefaultSettings(),
+    thumbnailUrl: null,
+    outputUrl: null,
+    type: 'photo' as StudioMode,
+    createdAt: '',
+  }));
+}
 
 function loadStoryboard(): StoryboardScene[] {
   try {
     const raw = localStorage.getItem(STORYBOARD_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch { return []; }
+    if (raw) {
+      const parsed: StoryboardScene[] = JSON.parse(raw);
+      if (parsed.length === MAX_SCENES) return parsed;
+    }
+  } catch {}
+  return createEmptyScenes();
 }
 
 function saveStoryboard(scenes: StoryboardScene[]) {
@@ -100,7 +117,7 @@ export function useCinemaStudio() {
 
   // Storyboard
   const [storyboard, setStoryboard] = useState<StoryboardScene[]>(loadStoryboard);
-  const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
+  const [activeSceneId, setActiveSceneId] = useState<string>('slot-0');
 
   // Modals
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
@@ -542,46 +559,68 @@ export function useCinemaStudio() {
   }, [endSubmit, clearGlobalJob]);
 
   // ━━━ Storyboard ━━━
+  // Auto-save result to active slot when generation completes
+  useEffect(() => {
+    if (status === 'completed' && outputUrl && activeSceneId) {
+      setStoryboard(prev => prev.map(s =>
+        s.id === activeSceneId
+          ? { ...s, thumbnailUrl: outputUrl, outputUrl, settings: { ...settings }, type: mode, createdAt: new Date().toISOString() }
+          : s
+      ));
+    }
+  }, [status, outputUrl, activeSceneId]);
+
   const addToStoryboard = useCallback(() => {
-    if (!outputUrl) return;
-    const scene: StoryboardScene = {
-      id: crypto.randomUUID(),
-      name: settings.sceneName || `Cena ${storyboard.length + 1}`,
-      settings: { ...settings },
-      thumbnailUrl: outputUrl,
-      outputUrl,
-      type: mode,
-      createdAt: new Date().toISOString(),
-    };
-    setStoryboard(prev => [...prev, scene]);
-    toast.success('Adicionado ao storyboard!');
-  }, [outputUrl, settings, storyboard.length, mode]);
+    // no-op — auto-saved now
+  }, []);
 
   const removeFromStoryboard = useCallback((id: string) => {
-    setStoryboard(prev => prev.filter(s => s.id !== id));
-  }, []);
+    // Clear slot instead of removing
+    setStoryboard(prev => prev.map(s =>
+      s.id === id
+        ? { ...s, thumbnailUrl: null, outputUrl: null, createdAt: '' }
+        : s
+    ));
+    if (activeSceneId === id) {
+      setOutputUrl(null);
+      setStatus('idle');
+      setPhotoJobStatus('idle');
+    }
+  }, [activeSceneId]);
 
   const loadScene = useCallback((id: string) => {
     const scene = storyboard.find(s => s.id === id);
     if (!scene) return;
-    setSettings(scene.settings);
     setActiveSceneId(id);
-    setMode(scene.type);
+    if (scene.outputUrl) {
+      // Show saved result
+      setOutputUrl(scene.outputUrl);
+      setStatus('completed');
+      setProgress(100);
+      setSettings(scene.settings);
+      setMode(scene.type);
+    } else {
+      // Empty slot — clear for new generation
+      setOutputUrl(null);
+      setStatus('idle');
+      setPhotoJobStatus('idle');
+      setProgress(0);
+    }
   }, [storyboard]);
 
   const addNewScene = useCallback(() => {
-    setSettings(prev => ({
-      ...prev,
-      sceneName: '',
-      scenePrompt: '',
-      subject: '',
-      environment: '',
-    }));
-    setActiveSceneId(null);
-    setOutputUrl(null);
-    setStatus('idle');
-    setPhotoJobStatus('idle');
-  }, []);
+    // Find first empty slot
+    const emptySlot = storyboard.find(s => !s.outputUrl);
+    if (emptySlot) {
+      setActiveSceneId(emptySlot.id);
+      setOutputUrl(null);
+      setStatus('idle');
+      setPhotoJobStatus('idle');
+      setProgress(0);
+    } else {
+      toast.error('Todas as 10 cenas estão ocupadas. Limpe uma para continuar.');
+    }
+  }, [storyboard]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
