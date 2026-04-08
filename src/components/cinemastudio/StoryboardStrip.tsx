@@ -15,8 +15,8 @@ const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRem
   const generatedCount = scenes.filter(s => !!s.outputUrl).length;
 
   return (
-    <div className="flex-shrink-0 border-t border-white/[0.04] bg-[#0a0a14] px-2 sm:px-3 py-1.5 sm:py-2">
-      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+    <div className="flex-shrink-0 border-t border-white/[0.04] bg-[#0a0a14] px-2 py-2 sm:px-3">
+      <div className="flex items-center gap-1.5 overflow-x-auto overflow-y-hidden pb-1 sm:gap-2" style={{ scrollbarWidth: 'thin' }}>
         {scenes.map((scene, index) => {
           const hasContent = !!scene.outputUrl;
           const isActive = activeSceneId === scene.id;
@@ -26,7 +26,7 @@ const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRem
               key={scene.id}
               onClick={() => onLoad(scene.id)}
               className={`flex-shrink-0 rounded overflow-hidden cursor-pointer group relative transition-all
-                w-16 h-10 sm:w-20 sm:h-12 md:w-28 md:h-16
+                w-[68px] h-[46px] sm:w-[86px] sm:h-[56px] lg:w-[112px] lg:h-[72px]
                 ${isActive
                   ? 'ring-1 ring-gray-400/40'
                   : 'border border-white/[0.04] hover:border-white/[0.08]'
@@ -45,30 +45,27 @@ const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRem
                 </div>
               )}
 
-              {/* Scene number label */}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1 sm:px-1.5 py-0.5 sm:py-1">
-                <p className="text-[7px] sm:text-[9px] text-gray-300 truncate">Cena {index + 1}</p>
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-1 py-1 sm:px-1.5">
+                <p className="text-[8px] sm:text-[9px] text-gray-300 truncate">Cena {index + 1}</p>
               </div>
 
-              {/* Clear button on hover (only if has content) */}
               {hasContent && (
                 <button
                   onClick={e => { e.stopPropagation(); onRemove(scene.id); }}
-                  className="absolute top-0.5 right-0.5 p-0.5 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-0.5 right-0.5 p-0.5 bg-black/50 rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                 >
-                  <X className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-gray-400" />
+                  <X className="w-2.5 h-2.5 text-gray-400" />
                 </button>
               )}
             </div>
           );
         })}
 
-        {/* Animate All button */}
         {generatedCount > 0 && onAnimateAll && (
           <button
             onClick={onAnimateAll}
             className="flex-shrink-0 rounded border border-gray-600/30 hover:border-gray-500/50 bg-white/[0.03] hover:bg-white/[0.06] flex flex-col items-center justify-center gap-1 transition-all
-              w-16 h-10 sm:w-20 sm:h-12 md:w-28 md:h-16"
+              w-[68px] h-[46px] sm:w-[86px] sm:h-[56px] lg:w-[112px] lg:h-[72px]"
           >
             <Play className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
             <span className="text-[7px] sm:text-[9px] text-gray-400 font-medium">Animar ({generatedCount})</span>
