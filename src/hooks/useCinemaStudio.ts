@@ -461,6 +461,8 @@ export function useCinemaStudio() {
       setErrorMessage(error.message || 'Erro ao gerar imagem');
       const errInfo = getAIErrorMessage(error.message || 'Erro desconhecido');
       toast.error(errInfo.message);
+      generatingSceneIdRef.current = null;
+      setGeneratingMode(null);
 
       if (jobId) {
         try {
@@ -584,6 +586,8 @@ export function useCinemaStudio() {
     setQueuePosition(0);
     endSubmit();
     clearGlobalJob();
+    generatingSceneIdRef.current = null;
+    setGeneratingMode(null);
   }, [endSubmit, clearGlobalJob]);
 
   // ━━━ Cancel ━━━
@@ -594,6 +598,8 @@ export function useCinemaStudio() {
     setProgress(0);
     endSubmit();
     clearGlobalJob();
+    generatingSceneIdRef.current = null;
+    setGeneratingMode(null);
     toast.info('Geração cancelada');
   }, [endSubmit, clearGlobalJob]);
 
