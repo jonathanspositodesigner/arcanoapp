@@ -524,7 +524,9 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
 
       <ToolsHeader title="Moon Selfie" subtitle="Gere selfies épicas na lua com IA" showBackButton={true} />
       <div className="snl-app">
+       <div className="snl-body">
         <aside className="snl-sidebar">
+         <div className="snl-sidebar-scroll">
           <div className="snl-brand">
             <span className="snl-brand-tag">Arcano · VoxVisual</span>
             <h1>Moon Selfie</h1>
