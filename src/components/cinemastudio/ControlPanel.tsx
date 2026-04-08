@@ -12,7 +12,7 @@ import ReferenceSection from './ReferenceSection';
 import SavedConfigsSection from './SavedConfigsSection';
 import CharacterScenarioSection from './CharacterScenarioSection';
 import type { CinemaSettings } from '@/utils/cinemaPromptBuilder';
-import type { StudioMode } from '@/hooks/useCinemaStudio';
+import type { StudioMode, SelectedAsset } from '@/hooks/useCinemaStudio';
 
 interface Props {
   mode: StudioMode;
@@ -25,8 +25,10 @@ interface Props {
   referenceImagePreviews: string[];
   addReferenceImages: (files: FileList | null) => void;
   removeReferenceImage: (index: number) => void;
-  onCharactersChange?: (items: { id: string; name: string; description: string | null; image_url: string | null }[]) => void;
-  onScenarioChange?: (item: { id: string; name: string; description: string | null; image_url: string | null } | null) => void;
+  onCharactersChange?: (items: SelectedAsset[]) => void;
+  onScenarioChange?: (item: SelectedAsset | null) => void;
+  selectedCharacters: SelectedAsset[];
+  selectedScenario: SelectedAsset | null;
   maxReferences?: number;
 }
 
