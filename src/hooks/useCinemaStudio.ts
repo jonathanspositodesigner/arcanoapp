@@ -121,6 +121,8 @@ export function useCinemaStudio() {
 
   // Track which scene owns the currently running job
   const generatingSceneIdRef = useRef<string | null>(null);
+  // Track the mode of the active generation (so sync hooks stay alive even if user browses another mode)
+  const [generatingMode, setGeneratingMode] = useState<StudioMode | null>(null);
 
   // Modals
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
