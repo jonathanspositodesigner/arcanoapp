@@ -24,6 +24,9 @@ interface Props {
   referenceImagePreviews: string[];
   addReferenceImages: (files: FileList | null) => void;
   removeReferenceImage: (index: number) => void;
+  onCharacterChange?: (item: { id: string; name: string; description: string | null; image_url: string | null } | null) => void;
+  onScenarioChange?: (item: { id: string; name: string; description: string | null; image_url: string | null } | null) => void;
+  maxReferences?: number;
 }
 
 interface SectionProps {
@@ -56,6 +59,7 @@ const Section: React.FC<SectionProps> = ({ title, emoji, defaultOpen = true, chi
 const ControlPanel: React.FC<Props> = ({
   mode, settings, updateSettings, assembledPrompt, showPrompt, setShowPrompt,
   referenceImages, referenceImagePreviews, addReferenceImages, removeReferenceImage,
+  onCharacterChange, onScenarioChange, maxReferences = 9,
 }) => {
   const copyPrompt = () => {
     navigator.clipboard.writeText(assembledPrompt);
