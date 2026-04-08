@@ -128,6 +128,8 @@ const ControlPanel: React.FC<Props> = ({
           <Section title="Saída" emoji="⚙️" defaultOpen={false}>
             <VideoSettingsSection settings={settings} updateSettings={updateSettings} mode="photo" />
           </Section>
+          <div className="border-t border-white/[0.04] my-1" />
+          <SavedConfigsSection mode="photo" settings={settings} onLoad={updateSettings} />
         </>
       ) : (
         /* ===== VIDEO MODE LAYOUT (intocado) ===== */
