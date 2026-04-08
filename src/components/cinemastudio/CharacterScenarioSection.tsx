@@ -251,7 +251,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings })
                 <Button
                   size="sm"
                   onClick={handleSave}
-                  disabled={saving || !newName.trim()}
+                  disabled={saving || !newName.trim() || !newImage}
                   className="flex-1 bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 text-[11px]"
                 >
                   {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Salvar'}
