@@ -555,6 +555,8 @@ export function useCinemaStudio() {
       setErrorMessage(error.message || 'Erro desconhecido');
       toast.error('Erro ao gerar');
       endSubmit();
+      generatingSceneIdRef.current = null;
+      setGeneratingMode(null);
     }
   };
 
