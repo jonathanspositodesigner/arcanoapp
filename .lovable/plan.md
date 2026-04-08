@@ -1,110 +1,36 @@
 
+Objetivo: corrigir o bug do cadastro de senha e destravar a Ingrid para ela conseguir entrar na plataforma.
 
-# Plano: Corrigir todas as seções quebradas nas páginas V3
+O que eu já confirmei no cadastro dela:
+- existe pedido pago para `ingridperondicosta@hotmail.com`;
+- já existe conta de autenticação para ela;
+- já existe profile vinculado;
+- o e-mail dela já está confirmado;
+- ela ainda está no estado `password_changed = false` e `last_sign_in_at = null`.
 
-## Causa raiz
+Conclusão prática:
+- o problema não é falta de compra;
+- o problema não é “email inexistente”;
+- o bug está no fluxo de primeiro acesso/definição de senha, que deixa a cliente num estado incompleto e ainda devolve erro genérico na interface.
 
-O problema é uma **incompatibilidade entre o `V3LazySection` e o IntersectionObserver de scroll reveal**.
+Plano de correção:
+1. Ajustar o backend de finalização de acesso (`complete-purchase-onboarding`) para tratar corretamente o caso “pedido pago + usuário já existente + ainda sem acesso concluído”, sem quebrar quando a cliente já tiver conta criada pelo pagamento.
+2. Padronizar a validação da compra entre a checagem inicial e a etapa final de criação de senha, para não acontecer o cenário “passa na verificação do email” e falha na hora de salvar a senha.
+3. Mover a confirmação final do primeiro acesso para o backend: quando a senha for gravada com sucesso, o sistema já deve marcar o acesso como concluído, sem depender só do login automático do frontend.
+4. Corrigir o frontend das telas que fazem esse fluxo (`SucessoCompra`, `SucessoUpscalerArcano` e `ChangePassword`) para:
+   - parar de mostrar erro genérico;
+   - usar a resposta real do backend;
+   - concluir o login/redirecionamento corretamente depois da senha salva.
+5. Validar especificamente o caso da Ingrid após a correção, simulando exatamente o estado atual dela: pedido pago, usuário existente, e-mail confirmado e primeiro login ainda não concluído.
+6. Fazer teste ponta a ponta nos 3 cenários críticos:
+   - cliente novo;
+   - cliente com conta já criada pelo pagamento mas sem senha concluída;
+   - cliente que já tem conta ativa e só precisa entrar.
 
-Todos os elementos com classe `.v3-reveal` começam com `opacity: 0` no CSS (invisíveis). Eles só aparecem quando recebem a classe `.v3-visible`, que é adicionada por um IntersectionObserver configurado no `useEffect([], [])` — ou seja, **roda uma única vez no mount da página**.
+Resultado esperado:
+- a Ingrid consegue cadastrar a senha e acessar a plataforma;
+- esse bug para de acontecer com clientes que já tiveram o usuário criado antes de concluir o primeiro acesso.
 
-O problema: elementos dentro de `V3LazySection` **não existem no DOM** quando esse observer roda, porque o `V3LazySection` só renderiza o conteúdo quando o usuário scrolla perto. Resultado: os elementos lazy nunca são observados → nunca recebem `.v3-visible` → ficam invisíveis para sempre.
-
-Mesmo problema acontece com o **counter animation** (`data-target`) — os números dentro de seções lazy nunca são observados e ficam parados em "0".
-
-### Seções afetadas (ambas páginas)
-
-| Seção | Problema |
-|---|---|
-| Como funciona (steps) | `.v3-step.v3-reveal` → opacity: 0 permanente |
-| Galeria antes/depois | `.v3-gallery-item.v3-reveal` → opacity: 0 permanente |
-| Dois novos recursos (Turbo/Batch) | `.v3-feature-card.v3-reveal` → opacity: 0 permanente |
-| Resultados reais (números) | `data-target` → contagem não inicia |
-| Resultados reais (cards) | `.v3-real-card.v3-reveal` → opacity: 0 permanente |
-
----
-
-## Correção
-
-Trocar o observer de "roda uma vez no mount" para um **MutationObserver** que detecta automaticamente novos elementos `.v3-reveal` e `[data-target]` conforme aparecem no DOM.
-
-### Arquivo: `src/pages/UpscalerArcanoV3.tsx` e `src/pages/UpscalerArcanoV3Es.tsx`
-
-Substituir os dois `useEffect` (scroll reveal + counter animation) por uma versão que usa `MutationObserver` para re-observar elementos novos:
-
-```typescript
-// Scroll reveal observer — watches for dynamically added .v3-reveal elements
-useEffect(() => {
-  const io = new IntersectionObserver(
-    (entries) => { entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("v3-visible"); }); },
-    { threshold: 0.15 }
-  );
-  
-  const observeAll = () => {
-    document.querySelectorAll(".v3-reveal:not(.v3-visible)").forEach((el) => io.observe(el));
-  };
-  
-  observeAll(); // observe existing elements
-  
-  // Watch for new elements added by V3LazySection
-  const mo = new MutationObserver(() => observeAll());
-  mo.observe(document.body, { childList: true, subtree: true });
-  
-  return () => { io.disconnect(); mo.disconnect(); };
-}, []);
-
-// Counter animation — same pattern
-useEffect(() => {
-  const observed = new WeakSet();
-  const counterObs = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting && !observed.has(e.target)) {
-          observed.add(e.target);
-          const el = e.target as HTMLElement;
-          const target = parseInt(el.dataset.target || "0");
-          const suffix = target === 100 ? "%" : "+";
-          let current = 0;
-          const step = target / 60;
-          const timer = setInterval(() => {
-            current = Math.min(current + step, target);
-            el.textContent = Math.floor(current).toLocaleString("pt-BR") + suffix;
-            if (current >= target) clearInterval(timer);
-          }, 25);
-          counterObs.unobserve(el);
-        }
-      });
-    },
-    { threshold: 0.5 }
-  );
-  
-  const observeCounters = () => {
-    document.querySelectorAll("[data-target]").forEach((el) => {
-      if (!observed.has(el)) counterObs.observe(el);
-    });
-  };
-  
-  observeCounters();
-  
-  const mo = new MutationObserver(() => observeCounters());
-  mo.observe(document.body, { childList: true, subtree: true });
-  
-  return () => { counterObs.disconnect(); mo.disconnect(); };
-}, []);
-```
-
-Mesma mudança nos dois `useEffect` de staggered delays — precisam re-aplicar quando novos elementos aparecem.
-
-### Arquivos editados
-
-| Arquivo | Mudança |
-|---|---|
-| `src/pages/UpscalerArcanoV3.tsx` | Trocar scroll reveal, counter e stagger observers por versão com MutationObserver |
-| `src/pages/UpscalerArcanoV3Es.tsx` | Mesma troca (código espelho) |
-
-### O que NÃO muda
-- Nenhum CSS
-- Nenhum componente (`V3IsolatedComponents.tsx`)
-- Nenhuma mudança visual/design
-- Nenhuma mudança de checkout ou backend
-
+Detalhes técnicos:
+- arquivos principais: `supabase/functions/complete-purchase-onboarding/index.ts`, `src/pages/SucessoCompra.tsx`, `src/pages/SucessoUpscalerArcano.tsx`, `src/pages/ChangePassword.tsx`;
+- se houver divergência entre a checagem de compra e a finalização do onboarding, eu vou unificar a lógica para usar o mesmo critério nos dois lados.
