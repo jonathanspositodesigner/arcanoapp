@@ -156,7 +156,7 @@ export function useCinemaStudio() {
 
   const isPhotoProcessing = ['pending', 'starting', 'running', 'queued'].includes(photoJobStatus);
   const isVideoProcessing = status === 'processing' || status === 'uploading';
-  const isProcessing = mode === 'photo' ? isPhotoProcessing : isVideoProcessing;
+  const isProcessing = isPhotoProcessing || isVideoProcessing;
 
   const canGenerate = assembledPrompt.length > 10 && !isSubmitting && !isProcessing;
 
