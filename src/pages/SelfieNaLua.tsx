@@ -685,6 +685,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
                       <img src={resultUrl} alt="Selfie na Lua" style={{ width: '100%', height: 'auto' }} />
                     </TransformComponent>
                   </TransformWrapper>
+                </div>
               </div>
             ) : isProcessing ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, color: '#a78bfa' }}>
