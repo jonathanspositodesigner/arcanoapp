@@ -512,12 +512,12 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
         }
         @media (max-width: 768px) {
           .snl-body{grid-template-columns:1fr;grid-template-rows:auto 1fr;overflow-y:auto;}
-          .snl-sidebar{border-right:none;border-bottom:1px solid var(--border);}
+          .snl-sidebar{border-right:none;border-bottom:1px solid var(--border);overflow:visible;}
           .snl-sidebar-scroll{padding:20px 16px 12px;gap:20px;}
-          .snl-sidebar-footer{padding:8px 16px 16px;}
+          .snl-sidebar-footer{padding:8px 16px 16px;position:static;}
           .snl-main{min-height:50vh;}
           .snl-content{padding:24px 16px 40px;}
-          .snl-topbar{padding:14px 16px;}
+          .snl-topbar{display:none;}
           .snl-style-pills{flex-wrap:wrap;}
         }
       `}</style>
