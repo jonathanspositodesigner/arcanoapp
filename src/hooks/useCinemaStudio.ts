@@ -300,6 +300,16 @@ export function useCinemaStudio() {
           updateJobStatus('completed');
           refetchCredits();
           toast.success('Geração concluída!');
+          // Save to the scene that started the generation
+          const targetScene = generatingSceneIdRef.current;
+          if (targetScene) {
+            setStoryboard(prev => prev.map(s =>
+              s.id === targetScene
+                ? { ...s, thumbnailUrl: data.outputUrl, outputUrl: data.outputUrl, settings: { ...settings }, type: 'video' as StudioMode, createdAt: new Date().toISOString() }
+                : s
+            ));
+          }
+          generatingSceneIdRef.current = null;
         } else if (data.status === 'failed') {
           clearInterval(pollIntervalRef.current!);
           pollIntervalRef.current = null;
