@@ -97,6 +97,13 @@ const ControlPanel: React.FC<Props> = ({
 
           <div className="border-t border-white/[0.04] my-1" />
 
+          {/* Personagem e Cenário */}
+          <Section title="Personagem e Cenário" emoji="👤" defaultOpen={false}>
+            <CharacterScenarioSection settings={settings} updateSettings={updateSettings} />
+          </Section>
+
+          <div className="border-t border-white/[0.04]" />
+
           {/* 3. Câmera */}
           <Section title="Câmera" emoji="🎥" defaultOpen={true}>
             <CameraRigSection settings={settings} updateSettings={updateSettings} />
