@@ -478,6 +478,7 @@ export function useCinemaStudio() {
     setStatus('uploading');
     setProgress(5);
     generatingSceneIdRef.current = activeSceneId;
+    setGeneratingMode('video');
 
     try {
       const timestamp = Date.now();
