@@ -1,0 +1,422 @@
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { usePremiumStatus } from '@/hooks/usePremiumStatus';
+import { useCredits } from '@/contexts/CreditsContext';
+import { useProcessingButton } from '@/hooks/useProcessingButton';
+import { useAIJob } from '@/contexts/AIJobContext';
+import { useResilientDownload } from '@/hooks/useResilientDownload';
+import { checkActiveJob } from '@/ai/JobManager';
+import { uploadToStorage } from '@/hooks/useStorageUpload';
+import {
+  type CinemaSettings,
+  buildCinemaPrompt,
+  getDefaultSettings,
+} from '@/utils/cinemaPromptBuilder';
+
+// ━━━ Models ━━━
+const MODELS = {
+  'standard-t2v': 'seedance-2.0-text-to-video',
+  'standard-i2v': 'seedance-2.0-image-to-video',
+  'standard-r2v': 'seedance-2.0-reference-to-video',
+  'fast-t2v': 'seedance-2.0-fast-text-to-video',
+  'fast-i2v': 'seedance-2.0-fast-image-to-video',
+  'fast-r2v': 'seedance-2.0-fast-reference-to-video',
+} as const;
+
+const CREDIT_COSTS: Record<string, Record<string, number>> = {
+  standard: { '480p': 4.63, '720p': 10 },
+  fast: { '480p': 2.5, '720p': 5 },
+};
+
+export type StudioMode = 'photo' | 'video';
+export type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'error';
+
+export interface StoryboardScene {
+  id: string;
+  name: string;
+  settings: CinemaSettings;
+  thumbnailUrl: string | null;
+  outputUrl: string | null;
+  type: StudioMode;
+  createdAt: string;
+}
+
+const STORYBOARD_KEY = 'cinemastudio_storyboard';
+
+function loadStoryboard(): StoryboardScene[] {
+  try {
+    const raw = localStorage.getItem(STORYBOARD_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveStoryboard(scenes: StoryboardScene[]) {
+  localStorage.setItem(STORYBOARD_KEY, JSON.stringify(scenes));
+}
+
+export function useCinemaStudio() {
+  const { user } = usePremiumStatus();
+  const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useCredits();
+  const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
+  const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
+  const { isDownloading, progress: downloadProgress, download, cancel: cancelDownload } = useResilientDownload();
+
+  // ━━━ Core State ━━━
+  const [mode, setMode] = useState<StudioMode>('video');
+  const [settings, setSettings] = useState<CinemaSettings>(getDefaultSettings());
+  const [referenceImages, setReferenceImages] = useState<File[]>([]);
+  const [referenceImagePreviews, setReferenceImagePreviews] = useState<string[]>([]);
+
+  // Processing
+  const [status, setStatus] = useState<ProcessingStatus>('idle');
+  const [progress, setProgress] = useState(0);
+  const [outputUrl, setOutputUrl] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [taskId, setTaskId] = useState<string | null>(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+
+  // Storyboard
+  const [storyboard, setStoryboard] = useState<StoryboardScene[]>(loadStoryboard);
+  const [activeSceneId, setActiveSceneId] = useState<string | null>(null);
+
+  // Modals
+  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
+  const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
+  const [showActiveJobModal, setShowActiveJobModal] = useState(false);
+  const [activeToolName, setActiveToolName] = useState('');
+  const [activeJobIdState, setActiveJobIdState] = useState<string | undefined>();
+  const [activeStatusState, setActiveStatusState] = useState<string | undefined>();
+  const [showPrompt, setShowPrompt] = useState(false);
+
+  const pollIntervalRef = useRef<number | null>(null);
+  const elapsedIntervalRef = useRef<number | null>(null);
+
+  // ━━━ Computed ━━━
+  const assembledPrompt = buildCinemaPrompt(settings);
+  const hasHeroFrame = referenceImages.length > 0;
+  const genType = hasHeroFrame ? 'i2v' : 't2v';
+  const modelKey = `${settings.modelSpeed}-${genType}` as keyof typeof MODELS;
+  const selectedModel = MODELS[modelKey];
+  const costPerSecond = CREDIT_COSTS[settings.modelSpeed][settings.quality] || 10;
+  const estimatedCredits = Math.ceil(costPerSecond * settings.duration);
+  const isProcessing = status === 'processing' || status === 'uploading';
+
+  const canGenerate = assembledPrompt.length > 30 && !isSubmitting && !isProcessing;
+
+  // ━━━ Settings updater ━━━
+  const updateSettings = useCallback((partial: Partial<CinemaSettings>) => {
+    setSettings(prev => ({ ...prev, ...partial }));
+  }, []);
+
+  // ━━━ Reference Images ━━━
+  const addReferenceImages = useCallback((files: FileList | null) => {
+    if (!files) return;
+    const max = 9 - referenceImages.length;
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+    for (let i = 0; i < Math.min(files.length, max); i++) {
+      const f = files[i];
+      if (!f.type.startsWith('image/')) continue;
+      if (f.size > 10 * 1024 * 1024) { toast.error(`${f.name} excede 10MB`); continue; }
+      newFiles.push(f);
+      newPreviews.push(URL.createObjectURL(f));
+    }
+    setReferenceImages(prev => [...prev, ...newFiles]);
+    setReferenceImagePreviews(prev => [...prev, ...newPreviews]);
+  }, [referenceImages.length]);
+
+  const removeReferenceImage = useCallback((index: number) => {
+    URL.revokeObjectURL(referenceImagePreviews[index]);
+    setReferenceImages(prev => prev.filter((_, i) => i !== index));
+    setReferenceImagePreviews(prev => prev.filter((_, i) => i !== index));
+  }, [referenceImagePreviews]);
+
+  // ━━━ Elapsed timer ━━━
+  useEffect(() => {
+    if (isProcessing) {
+      setElapsedTime(0);
+      elapsedIntervalRef.current = window.setInterval(() => setElapsedTime(p => p + 1), 1000);
+    } else {
+      if (elapsedIntervalRef.current) clearInterval(elapsedIntervalRef.current);
+    }
+    return () => { if (elapsedIntervalRef.current) clearInterval(elapsedIntervalRef.current); };
+  }, [isProcessing]);
+
+  // Progress animation
+  useEffect(() => {
+    if (status !== 'processing') return;
+    const iv = setInterval(() => setProgress(p => p >= 90 ? p : p + 1), 3000);
+    return () => clearInterval(iv);
+  }, [status]);
+
+  // Register job
+  useEffect(() => {
+    if (jobId) registerJob(jobId, 'Cinema Studio', 'pending');
+  }, [jobId, registerJob]);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+      referenceImagePreviews.forEach(u => URL.revokeObjectURL(u));
+    };
+  }, []);
+
+  // Save storyboard
+  useEffect(() => { saveStoryboard(storyboard); }, [storyboard]);
+
+  // ━━━ Polling ━━━
+  const startPolling = useCallback((tId: string, jId: string, creditsToCharge: number) => {
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    pollIntervalRef.current = window.setInterval(async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('seedance-poll', {
+          body: { taskId: tId, jobId: jId, creditsToCharge },
+        });
+        if (error) return;
+        if (data.status === 'completed' && data.outputUrl) {
+          clearInterval(pollIntervalRef.current!);
+          pollIntervalRef.current = null;
+          setOutputUrl(data.outputUrl);
+          setStatus('completed');
+          setProgress(100);
+          updateJobStatus('completed');
+          refetchCredits();
+          toast.success('Geração concluída!');
+        } else if (data.status === 'failed') {
+          clearInterval(pollIntervalRef.current!);
+          pollIntervalRef.current = null;
+          setStatus('error');
+          setErrorMessage(data.error || 'Falha na geração');
+          updateJobStatus('failed');
+          toast.error('Erro na geração');
+          endSubmit();
+        } else if (data.progress) {
+          setProgress(prev => Math.max(prev, data.progress));
+        }
+      } catch (err) { console.error('[CinemaStudio] Poll error:', err); }
+    }, 5000);
+  }, [endSubmit, refetchCredits, updateJobStatus]);
+
+  // ━━━ Generate ━━━
+  const handleGenerate = async () => {
+    if (!startSubmit()) return;
+
+    if (!user?.id) {
+      setNoCreditsReason('not_logged');
+      setShowNoCreditsModal(true);
+      endSubmit();
+      return;
+    }
+
+    const activeCheck = await checkActiveJob(user.id);
+    if (activeCheck.hasActiveJob && activeCheck.activeTool) {
+      setActiveToolName(activeCheck.activeTool);
+      setActiveJobIdState(activeCheck.activeJobId);
+      setActiveStatusState(activeCheck.activeStatus);
+      setShowActiveJobModal(true);
+      endSubmit();
+      return;
+    }
+
+    const freshCredits = await checkBalance();
+    if (freshCredits < estimatedCredits) {
+      setNoCreditsReason('insufficient');
+      setShowNoCreditsModal(true);
+      endSubmit();
+      return;
+    }
+
+    setErrorMessage(null);
+    setStatus('uploading');
+    setProgress(5);
+
+    try {
+      const timestamp = Date.now();
+      const folder = `seedance/${user.id}/${timestamp}`;
+      const uploadedImageUrls: string[] = [];
+
+      if (referenceImages.length > 0) {
+        setProgress(10);
+        for (const file of referenceImages) {
+          const result = await uploadToStorage(file, folder);
+          if (result.success && result.url) uploadedImageUrls.push(result.url);
+          else throw new Error(`Upload failed: ${result.error}`);
+        }
+      }
+
+      setProgress(30);
+
+      const finalPrompt = assembledPrompt;
+
+      const { data: job, error: jobError } = await supabase
+        .from('seedance_jobs')
+        .insert({
+          user_id: user.id,
+          model: selectedModel,
+          prompt: finalPrompt,
+          duration: settings.duration,
+          quality: settings.quality,
+          aspect_ratio: settings.aspectRatio,
+          generate_audio: settings.generateAudio,
+          input_image_urls: uploadedImageUrls.length > 0 ? uploadedImageUrls : null,
+          status: 'pending',
+        })
+        .select()
+        .single();
+
+      if (jobError || !job) throw new Error('Erro ao criar job: ' + (jobError?.message || 'Unknown'));
+      setJobId(job.id);
+      setProgress(40);
+
+      const { data: response, error: fnError } = await supabase.functions.invoke('seedance-generate', {
+        body: {
+          model: selectedModel,
+          prompt: finalPrompt,
+          imageUrls: uploadedImageUrls,
+          videoUrls: [],
+          audioUrls: [],
+          duration: settings.duration,
+          quality: settings.quality,
+          aspectRatio: settings.aspectRatio,
+          generateAudio: settings.generateAudio,
+          jobId: job.id,
+        },
+      });
+
+      if (fnError) throw new Error('Erro na função: ' + fnError.message);
+      if (!response?.success) throw new Error(response?.error || 'Erro desconhecido');
+
+      setTaskId(response.taskId);
+      setProgress(50);
+      setStatus('processing');
+      startPolling(response.taskId, job.id, estimatedCredits);
+
+    } catch (error: any) {
+      console.error('[CinemaStudio] Error:', error);
+      setStatus('error');
+      setErrorMessage(error.message || 'Erro desconhecido');
+      toast.error('Erro ao gerar');
+      endSubmit();
+    }
+  };
+
+  // ━━━ Download ━━━
+  const downloadResult = useCallback(async () => {
+    if (!outputUrl) return;
+    await download({
+      url: outputUrl,
+      filename: `cinema-studio-${Date.now()}.mp4`,
+      mediaType: 'video',
+      timeout: 30000,
+      onSuccess: () => toast.success('Download concluído!'),
+      locale: 'pt',
+    });
+  }, [outputUrl, download]);
+
+  // ━━━ Reset ━━━
+  const resetTool = useCallback(() => {
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    setStatus('idle');
+    setProgress(0);
+    setOutputUrl(null);
+    setErrorMessage(null);
+    setJobId(null);
+    setTaskId(null);
+    setElapsedTime(0);
+    endSubmit();
+    clearGlobalJob();
+  }, [endSubmit, clearGlobalJob]);
+
+  // ━━━ Cancel ━━━
+  const cancelGeneration = useCallback(() => {
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    setStatus('idle');
+    setProgress(0);
+    endSubmit();
+    clearGlobalJob();
+    toast.info('Geração cancelada');
+  }, [endSubmit, clearGlobalJob]);
+
+  // ━━━ Storyboard ━━━
+  const addToStoryboard = useCallback(() => {
+    if (!outputUrl) return;
+    const scene: StoryboardScene = {
+      id: crypto.randomUUID(),
+      name: settings.sceneName || `Cena ${storyboard.length + 1}`,
+      settings: { ...settings },
+      thumbnailUrl: outputUrl,
+      outputUrl,
+      type: mode,
+      createdAt: new Date().toISOString(),
+    };
+    setStoryboard(prev => [...prev, scene]);
+    toast.success('Adicionado ao storyboard!');
+  }, [outputUrl, settings, storyboard.length, mode]);
+
+  const removeFromStoryboard = useCallback((id: string) => {
+    setStoryboard(prev => prev.filter(s => s.id !== id));
+  }, []);
+
+  const loadScene = useCallback((id: string) => {
+    const scene = storyboard.find(s => s.id === id);
+    if (!scene) return;
+    setSettings(scene.settings);
+    setActiveSceneId(id);
+    setMode(scene.type);
+  }, [storyboard]);
+
+  const addNewScene = useCallback(() => {
+    // Keep camera/genre settings, clear scene-specific
+    setSettings(prev => ({
+      ...prev,
+      sceneName: '',
+      scenePrompt: '',
+      subject: '',
+      environment: '',
+    }));
+    setActiveSceneId(null);
+    setOutputUrl(null);
+    setStatus('idle');
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
+  return {
+    // State
+    mode, setMode,
+    settings, updateSettings,
+    referenceImages, referenceImagePreviews,
+    addReferenceImages, removeReferenceImage,
+    status, progress, outputUrl, errorMessage,
+    elapsedTime, isProcessing, isSubmitting,
+    credits, creditsLoading,
+    assembledPrompt, estimatedCredits,
+    canGenerate, showPrompt, setShowPrompt,
+
+    // Actions
+    handleGenerate, downloadResult, resetTool, cancelGeneration,
+
+    // Storyboard
+    storyboard, activeSceneId,
+    addToStoryboard, removeFromStoryboard, loadScene, addNewScene,
+
+    // Modals
+    showNoCreditsModal, setShowNoCreditsModal, noCreditsReason,
+    showActiveJobModal, setShowActiveJobModal, activeToolName,
+    activeJobIdState, activeStatusState,
+
+    // Download
+    isDownloading, downloadProgress, cancelDownload,
+
+    // Utils
+    formatTime,
+    user,
+  };
+}
