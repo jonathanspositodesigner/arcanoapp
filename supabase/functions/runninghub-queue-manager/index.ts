@@ -58,7 +58,10 @@ const WEBAPP_IDS = {
   character_generator_jobs: '2020943778751713282',
   flyer_maker_jobs: '2025656642724962305',
   bg_remover_jobs: '2031815099811368962',
-  image_generator_jobs: '2036803905421582337',
+  image_generator_jobs: {
+    standard: '2036803905421582337',
+    cinema_studio: '2041980127348789250',
+  },
   video_generator_jobs: {
     'veo3.1': '2037253069662068738',
     'veo3.1_text_only': '2037271484384681986',
