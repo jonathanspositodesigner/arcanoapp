@@ -126,9 +126,10 @@ export function useCinemaStudio() {
   }, []);
 
   // ━━━ Reference Images ━━━
+  const maxRefImages = mode === 'photo' ? 3 : 9;
   const addReferenceImages = useCallback((files: FileList | null) => {
     if (!files) return;
-    const max = 9 - referenceImages.length;
+    const max = maxRefImages - referenceImages.length;
     const newFiles: File[] = [];
     const newPreviews: string[] = [];
     for (let i = 0; i < Math.min(files.length, max); i++) {
@@ -140,7 +141,7 @@ export function useCinemaStudio() {
     }
     setReferenceImages(prev => [...prev, ...newFiles]);
     setReferenceImagePreviews(prev => [...prev, ...newPreviews]);
-  }, [referenceImages.length]);
+  }, [referenceImages.length, maxRefImages]);
 
   const removeReferenceImage = useCallback((index: number) => {
     URL.revokeObjectURL(referenceImagePreviews[index]);
