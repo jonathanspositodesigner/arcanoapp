@@ -300,7 +300,8 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
 
       if (!result.success) {
         if (result.code === 'INSUFFICIENT_CREDITS') {
-          setShowAuthModal(true);
+          toast.error('Créditos insuficientes para gerar a selfie.');
+          setShowNoCredits(true);
           resetJobState();
         } else {
           setStatus('failed');
