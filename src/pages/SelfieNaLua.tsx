@@ -620,28 +620,32 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
             </div>
           </div>
 
-          <button
-            className="snl-cta"
-            onClick={handleGenerate}
-            disabled={isSubmitting || isProcessing}
-          >
-            {isSubmitting || isProcessing ? (
-              <>
-                <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} />
-                {status === 'queued' ? 'Na fila...' : 'Gerando...'}
-              </>
-            ) : (
-              <>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                </svg>
-                Gerar Selfie
-                <span className="snl-credit-badge">
-                  ✦ {creditCost}
-                </span>
-              </>
-            )}
-          </button>
+          </div>{/* end snl-sidebar-scroll */}
+
+          <div className="snl-sidebar-footer">
+            <button
+              className="snl-cta"
+              onClick={handleGenerate}
+              disabled={isSubmitting || isProcessing}
+            >
+              {isSubmitting || isProcessing ? (
+                <>
+                  <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} />
+                  {status === 'queued' ? 'Na fila...' : 'Gerando...'}
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                  </svg>
+                  Gerar Selfie
+                  <span className="snl-credit-badge">
+                    ✦ {creditCost}
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
         </aside>
 
         <main className="snl-main">
