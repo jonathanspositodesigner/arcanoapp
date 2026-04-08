@@ -45,7 +45,7 @@ const Section: React.FC<SectionProps> = ({ title, emoji, defaultOpen = true, chi
         </span>
         <ChevronDown className={`w-3 h-3 text-gray-600 transition-transform duration-200 ${open ? '' : '-rotate-90'}`} />
       </button>
-      <div className={`overflow-hidden transition-all duration-200 ${open ? 'max-h-[4000px] opacity-100 pb-2' : 'max-h-0 opacity-0'}`}>
+      <div className={`transition-all duration-200 ${open ? 'max-h-[4000px] opacity-100 pb-2' : 'max-h-0 opacity-0 overflow-hidden'}`}>
         {children}
       </div>
     </div>
