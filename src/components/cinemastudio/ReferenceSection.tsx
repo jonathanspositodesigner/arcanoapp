@@ -6,9 +6,10 @@ interface Props {
   previews: string[];
   onAdd: (files: FileList | null) => void;
   onRemove: (index: number) => void;
+  maxImages?: number;
 }
 
-const ReferenceSection: React.FC<Props> = ({ images, previews, onAdd, onRemove }) => {
+const ReferenceSection: React.FC<Props> = ({ images, previews, onAdd, onRemove, maxImages = 9 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -30,7 +31,7 @@ const ReferenceSection: React.FC<Props> = ({ images, previews, onAdd, onRemove }
             </button>
           </div>
         ))}
-        {images.length < 9 && (
+        {images.length < maxImages && (
           <button
             onClick={() => inputRef.current?.click()}
             className="aspect-square rounded border border-dashed border-white/[0.08] flex items-center justify-center hover:bg-white/[0.02] transition-colors"
@@ -39,7 +40,7 @@ const ReferenceSection: React.FC<Props> = ({ images, previews, onAdd, onRemove }
           </button>
         )}
       </div>
-      <p className="text-[9px] text-gray-700">Máx. 9 imagens · 10MB cada</p>
+      <p className="text-[9px] text-gray-700">Máx. {maxImages} {maxImages === 1 ? 'imagem' : 'imagens'} · 10MB cada</p>
       <input
         ref={inputRef}
         type="file"
