@@ -31,7 +31,7 @@ const AppLayout = ({ children, fullScreen = false }: AppLayoutProps) => {
   }, [user]);
 
   return (
-    <div className={`${fullScreen ? 'lg:h-screen lg:overflow-hidden min-h-screen' : 'min-h-screen'} bg-[#0D0221]`}>
+    <div className={`${fullScreen ? 'min-h-screen lg:h-screen lg:flex lg:flex-col' : 'min-h-screen'} bg-[#0D0221]`}>
       <AppTopBar
         user={user}
         isPremium={isPremium}
@@ -40,14 +40,15 @@ const AppLayout = ({ children, fullScreen = false }: AppLayoutProps) => {
         onLogout={logout}
         onToggleSidebar={() => setSidebarOpen(prev => !prev)}
       />
-      <div className="flex">
+      <div className={fullScreen ? 'flex flex-1 min-h-0' : 'flex'}>
         <AppSidebar
           user={user}
           isPremium={isPremium}
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
+          fullScreen={fullScreen}
         />
-        <main className={`flex-1 ${fullScreen ? 'lg:h-[calc(100vh-57px)] lg:overflow-hidden' : ''}`}>
+        <main className={`flex-1 min-w-0 ${fullScreen ? 'lg:flex lg:flex-col lg:min-h-0 lg:overflow-hidden' : ''}`}>
           {children}
         </main>
       </div>

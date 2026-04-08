@@ -12,9 +12,10 @@ interface AppSidebarProps {
   isPremium: boolean;
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
+  fullScreen?: boolean;
 }
 
-const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebarProps) => {
+const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen = false }: AppSidebarProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation('prompts');
   const { logout } = useAuth();
@@ -57,7 +58,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen }: AppSidebar
       {/* Sidebar */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-40
-        w-72 min-h-screen bg-[#1A0A2E] border-r border-purple-500/20 p-5 flex flex-col
+        w-72 ${fullScreen ? 'lg:h-full lg:min-h-0' : 'min-h-screen'} bg-[#1A0A2E] border-r border-purple-500/20 p-5 flex flex-col
         transform transition-transform duration-300 ease-in-out
         lg:pt-4
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
