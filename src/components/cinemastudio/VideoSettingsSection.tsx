@@ -43,7 +43,7 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings }) => 
   return (
     <div className="space-y-2.5">
       <SegmentedControl
-        label="Duration"
+        label="Duração"
         options={DURATIONS}
         value={settings.duration}
         onChange={v => updateSettings({ duration: v })}
@@ -51,22 +51,22 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings }) => 
       />
 
       <SegmentedControl
-        label="Quality"
+        label="Qualidade"
         options={QUALITIES}
         value={settings.quality}
         onChange={v => updateSettings({ quality: v })}
       />
 
       <SegmentedControl
-        label="Ratio"
+        label="Proporção"
         options={ASPECT_RATIOS}
         value={settings.aspectRatio}
         onChange={v => updateSettings({ aspectRatio: v })}
       />
 
-      {/* Speed toggle */}
+      {/* Velocidade */}
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Speed</span>
+        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Veloc.</span>
         <div className="flex-1 flex bg-white/[0.02] rounded-md p-0.5 gap-0.5">
           <button
             onClick={() => updateSettings({ modelSpeed: 'standard' })}
@@ -74,7 +74,7 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings }) => 
               settings.modelSpeed === 'standard' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-gray-600 hover:text-gray-400'
             }`}
           >
-            Standard
+            Padrão
           </button>
           <button
             onClick={() => updateSettings({ modelSpeed: 'fast' })}
@@ -82,14 +82,14 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings }) => 
               settings.modelSpeed === 'fast' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-gray-600 hover:text-gray-400'
             }`}
           >
-            Fast <Zap className="w-2.5 h-2.5" />
+            Rápido <Zap className="w-2.5 h-2.5" />
           </button>
         </div>
       </div>
 
-      {/* Speed Ramp */}
+      {/* Rampa de velocidade */}
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Ramp</span>
+        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Rampa</span>
         <Select value={settings.speedRamp} onValueChange={v => updateSettings({ speedRamp: v })}>
           <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
             <SelectValue />
@@ -102,9 +102,9 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings }) => 
         </Select>
       </div>
 
-      {/* Audio */}
+      {/* Áudio */}
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Audio</span>
+        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Áudio</span>
         <div className="flex-1 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <Switch
@@ -113,7 +113,7 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings }) => 
               className="data-[state=checked]:bg-white/20 data-[state=unchecked]:bg-white/[0.06] scale-75 origin-left [&>span]:bg-white"
             />
             {settings.generateAudio && (
-              <span className="text-[9px] text-green-500/70 font-medium">free</span>
+              <span className="text-[9px] text-green-500/70 font-medium">grátis</span>
             )}
           </div>
         </div>

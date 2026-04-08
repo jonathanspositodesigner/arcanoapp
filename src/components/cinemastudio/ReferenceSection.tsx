@@ -19,7 +19,7 @@ const ReferenceSection: React.FC<Props> = ({ images, previews, onAdd, onRemove }
             <img src={url} alt="" className="w-full h-full object-cover" />
             {i === 0 && (
               <span className="absolute top-0.5 left-0.5 bg-white/10 text-[8px] text-gray-300 px-1 py-0.5 rounded flex items-center gap-0.5">
-                <Film className="w-2 h-2" /> Hero
+                <Film className="w-2 h-2" /> Principal
               </span>
             )}
             <button
@@ -39,7 +39,7 @@ const ReferenceSection: React.FC<Props> = ({ images, previews, onAdd, onRemove }
           </button>
         )}
       </div>
-      <p className="text-[9px] text-gray-700">Max 9 images · 10MB each</p>
+      <p className="text-[9px] text-gray-700">Máx. 9 imagens · 10MB cada</p>
       <input
         ref={inputRef}
         type="file"

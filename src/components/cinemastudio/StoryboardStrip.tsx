@@ -38,11 +38,11 @@ const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRem
               <Film className="w-4 h-4 text-gray-800" />
             </div>
           )}
-          {/* Name overlay */}
+          {/* Nome */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1.5 py-1">
             <p className="text-[9px] text-gray-300 truncate">{scene.name}</p>
           </div>
-          {/* Delete on hover */}
+          {/* Excluir ao passar o mouse */}
           <button
             onClick={e => { e.stopPropagation(); onRemove(scene.id); }}
             className="absolute top-0.5 right-0.5 p-0.5 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
@@ -52,7 +52,7 @@ const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRem
         </div>
       ))}
 
-      {/* Add scene */}
+      {/* Adicionar cena */}
       <button
         onClick={onAddNew}
         className="flex-shrink-0 w-28 h-16 rounded border border-dashed border-white/[0.06] flex items-center justify-center hover:bg-white/[0.02] transition-colors"
