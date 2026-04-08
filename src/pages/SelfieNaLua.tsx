@@ -685,29 +685,6 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
                       <img src={resultUrl} alt="Selfie na Lua" style={{ width: '100%', height: 'auto' }} />
                     </TransformComponent>
                   </TransformWrapper>
-                </div>
-                <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
-                  <button
-                    onClick={handleDownload}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
-                      borderRadius: 9, border: '1px solid rgba(52,211,153,0.4)', background: 'rgba(52,211,153,0.15)',
-                      color: '#34d399', fontFamily: "'Syne',sans-serif", fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                    }}
-                  >
-                    <Download style={{ width: 14, height: 14 }} /> Baixar
-                  </button>
-                  <button
-                    onClick={handleNewGeneration}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px',
-                      borderRadius: 9, border: '1px solid rgba(124,58,237,0.3)', background: 'rgba(124,58,237,0.1)',
-                      color: '#a78bfa', fontFamily: "'Syne',sans-serif", fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                    }}
-                  >
-                    Nova Selfie
-                  </button>
-                </div>
               </div>
             ) : isProcessing ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, color: '#a78bfa' }}>
