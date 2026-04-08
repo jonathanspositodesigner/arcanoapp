@@ -1459,6 +1459,39 @@ export type Database = {
         }
         Relationships: []
       }
+      cinema_projects: {
+        Row: {
+          active_scene_index: number
+          cover_url: string | null
+          created_at: string
+          id: string
+          name: string
+          scenes: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active_scene_index?: number
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          scenes?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active_scene_index?: number
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          scenes?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cinema_saved_configs: {
         Row: {
           created_at: string
