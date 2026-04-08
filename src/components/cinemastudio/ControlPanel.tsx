@@ -102,7 +102,7 @@ const ControlPanel: React.FC<Props> = ({
           <div className="space-y-2 pb-1">
             <Textarea
               value={settings.scenePrompt}
-              onChange={e => updateSettings({ scenePrompt: e.target.value.slice(0, 500) })}
+              onChange={e => updateSettings({ scenePrompt: e.target.value.slice(0, 1024) })}
               placeholder="Descreva sua cena, personagem e ambiente..."
               rows={3}
               className="bg-black/20 border-white/[0.06] text-gray-300 text-[12px] min-h-[60px] resize-none placeholder:text-gray-600 focus:min-h-[100px] transition-all duration-200"
