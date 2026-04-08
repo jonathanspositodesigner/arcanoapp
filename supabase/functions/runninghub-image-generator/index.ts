@@ -421,10 +421,11 @@ async function handleRun(req: Request) {
   }
 
   // ========== SAVE JOB PAYLOAD ==========
-  // Pad uploaded files to 6 slots with 'example.png' placeholder
-  const IMAGE_NODES = ['58', '147', '148', '149', '62', '150'];
+  // Cinema Studio uses 10 image slots; standard uses 6
+  const isCinemaStudio = source === 'cinema_studio_photo';
+  const totalSlots = isCinemaStudio ? 10 : 6;
   const paddedFileNames = [...uploadedFileNames];
-  while (paddedFileNames.length < 6) {
+  while (paddedFileNames.length < totalSlots) {
     paddedFileNames.push('example.png');
   }
 
@@ -436,6 +437,7 @@ async function handleRun(req: Request) {
       prompt: prompt.trim(),
       aspectRatio: finalAspectRatio,
       referenceFileNames: paddedFileNames,
+      source: source || 'standard',
     },
   }).eq('id', jobId);
 
