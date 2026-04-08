@@ -258,12 +258,15 @@ export function useCinemaStudio() {
           }
         }
         generatingSceneIdRef.current = null;
+        setGeneratingMode(null);
       } else if (update.status === 'failed') {
         setStatus('error');
         setErrorMessage(update.errorMessage || 'Erro ao gerar imagem');
         const errInfo = getAIErrorMessage(update.errorMessage || 'Erro desconhecido');
         toast.error(errInfo.message);
         refetchCredits();
+        generatingSceneIdRef.current = null;
+        setGeneratingMode(null);
       }
     },
     onGlobalStatusChange: (s) => {
