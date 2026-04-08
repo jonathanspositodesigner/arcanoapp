@@ -98,7 +98,7 @@ export function useCinemaStudio() {
   const { getCreditCost } = useAIToolSettings();
 
   // ━━━ Core State ━━━
-  const [mode, setMode] = useState<StudioMode>('photo');
+  const [mode, setModeRaw] = useState<StudioMode>('photo');
   const [settings, setSettings] = useState<CinemaSettings>(getDefaultSettings());
   const [referenceImages, setReferenceImages] = useState<File[]>([]);
   const [referenceImagePreviews, setReferenceImagePreviews] = useState<string[]>([]);
