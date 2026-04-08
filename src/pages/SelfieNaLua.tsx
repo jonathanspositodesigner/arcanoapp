@@ -106,6 +106,17 @@ export default function SelfieNaLua() {
     face: faceRef, place: placeRef, ref: refRef,
   };
 
+  // Load default scene reference as File on mount
+  useEffect(() => {
+    fetch(defaultSceneRef)
+      .then(res => res.blob())
+      .then(blob => {
+        const file = new File([blob], 'default-scene.png', { type: 'image/png' });
+        setUploads(prev => ({ ...prev, ref: { done: true, thumb: defaultSceneRef, file } }));
+      })
+      .catch(() => {});
+  }, []);
+
   const creditCost = getCreditCost('gerar_imagem', 100);
   const isProcessing = ['pending', 'starting', 'running', 'queued'].includes(status);
 
