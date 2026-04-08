@@ -262,6 +262,10 @@ export function useCinemaStudio() {
         }
       }
 
+      // Add character and scenario image URLs (already hosted)
+      if (selectedCharacter?.image_url) uploadedImageUrls.push(selectedCharacter.image_url);
+      if (selectedScenario?.image_url) uploadedImageUrls.push(selectedScenario.image_url);
+
       setProgress(30);
 
       const finalPrompt = assembledPrompt;
