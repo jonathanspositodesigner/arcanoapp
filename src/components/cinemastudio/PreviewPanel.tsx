@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, Download, RotateCcw, AlertCircle, Film, ArrowRight } from 'lucide-react';
+import { Loader2, Download, RotateCcw, AlertCircle, Film } from 'lucide-react';
 import type { ProcessingStatus, StudioMode } from '@/hooks/useCinemaStudio';
 
 interface Props {
@@ -51,14 +51,6 @@ const PreviewPanel: React.FC<Props> = ({
                 <AlertCircle className="w-3 h-3" /> Expira em 24h
               </span>
               <div className="flex items-center gap-2">
-                {mode === 'photo' && (
-                  <button
-                    onClick={() => setMode('video')}
-                    className="text-[11px] text-gray-300 hover:text-white flex items-center gap-1 transition-colors"
-                  >
-                    <Film className="w-3 h-3" /> Animar <ArrowRight className="w-3 h-3" />
-                  </button>
-                )}
                 <button
                   onClick={downloadResult}
                   className="text-[11px] text-gray-300 hover:text-white flex items-center gap-1 transition-colors"

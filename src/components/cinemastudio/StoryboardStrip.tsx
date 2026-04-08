@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Film } from 'lucide-react';
+import { X, Film, Play } from 'lucide-react';
 import type { StoryboardScene } from '@/hooks/useCinemaStudio';
 
 interface Props {
@@ -8,9 +8,12 @@ interface Props {
   onLoad: (id: string) => void;
   onRemove: (id: string) => void;
   onAddNew: () => void;
+  onAnimateAll?: () => void;
 }
 
-const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRemove }) => {
+const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRemove, onAnimateAll }) => {
+  const generatedCount = scenes.filter(s => !!s.outputUrl).length;
+
   return (
     <div className="h-20 flex-shrink-0 border-t border-white/[0.04] bg-[#0a0a14] px-3 flex items-center gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
       {scenes.map((scene, index) => {
@@ -57,6 +60,17 @@ const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRem
           </div>
         );
       })}
+
+      {/* Animate All button */}
+      {generatedCount > 0 && onAnimateAll && (
+        <button
+          onClick={onAnimateAll}
+          className="flex-shrink-0 w-28 h-16 rounded border border-gray-600/30 hover:border-gray-500/50 bg-white/[0.03] hover:bg-white/[0.06] flex flex-col items-center justify-center gap-1.5 transition-all"
+        >
+          <Play className="w-4 h-4 text-gray-400" />
+          <span className="text-[9px] text-gray-400 font-medium">Animar ({generatedCount})</span>
+        </button>
+      )}
     </div>
   );
 };
