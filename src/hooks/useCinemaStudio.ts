@@ -242,6 +242,20 @@ export function useCinemaStudio() {
         setProgress(100);
         refetchCredits();
         toast.success('Imagem gerada com sucesso!');
+        // Save to the scene that started the generation
+        const targetScene = generatingSceneIdRef.current;
+        if (targetScene) {
+          setStoryboard(prev => prev.map(s =>
+            s.id === targetScene
+              ? { ...s, thumbnailUrl: update.outputUrl!, outputUrl: update.outputUrl!, settings: { ...settings }, type: 'photo' as StudioMode, createdAt: new Date().toISOString() }
+              : s
+          ));
+          // If user navigated away, don't overwrite their current view — but if still on same scene, show it
+          if (activeSceneId !== targetScene) {
+            // User is viewing another scene; result saved silently
+          }
+        }
+        generatingSceneIdRef.current = null;
       } else if (update.status === 'failed') {
         setStatus('error');
         setErrorMessage(update.errorMessage || 'Erro ao gerar imagem');
