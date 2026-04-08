@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Upload, Sparkles, Download, RotateCcw, Loader2, AlertCircle, Coins, X, Film, Zap, Video, Image, Music, FileVideo } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
