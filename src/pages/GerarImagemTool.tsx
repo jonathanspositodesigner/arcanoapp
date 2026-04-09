@@ -53,7 +53,6 @@ const GerarImagemTool = () => {
   const [aspectRatio, setAspectRatio] = useState<string>('4:3');
   const [engine, setEngine] = useState<'flux2_klein' | 'nano_banana'>('flux2_klein');
   const [referenceImages, setReferenceImages] = useState<{ file: File; preview: string }[]>([]);
-  const [referenceImages, setReferenceImages] = useState<{ file: File; preview: string }[]>([]);
 
   // Job state
   const [jobId, setJobId] = useState<string | null>(null);
