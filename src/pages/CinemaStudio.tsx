@@ -100,13 +100,11 @@ const CinemaStudio: React.FC = () => {
   const handleCreateProject = useCallback(async (name: string) => {
     const project = await projectManager.createProject(name);
     if (!project) return null;
-    // Clear localStorage storyboard for fresh state
-    localStorage.removeItem(STORYBOARD_KEY);
+    // Reset storyboard to empty state
+    studio.restoreStoryboard([]);
     setView('studio');
-    // Reload to reset studio hook state
-    window.location.reload();
     return project;
-  }, [projectManager]);
+  }, [projectManager, studio]);
 
   // Handle back to picker
   const handleBackToPicker = useCallback(async () => {
