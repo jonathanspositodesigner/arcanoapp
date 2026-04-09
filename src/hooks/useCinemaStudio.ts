@@ -344,7 +344,7 @@ export function useCinemaStudio() {
           if (targetScene) {
             setStoryboard(prev => prev.map(s =>
               s.id === targetScene
-                ? { ...s, thumbnailUrl: data.outputUrl, outputUrl: data.outputUrl, settings: { ...settings }, type: 'video' as StudioMode, createdAt: new Date().toISOString() }
+                ? { ...s, thumbnailUrl: data.outputUrl, outputUrl: data.outputUrl, settings: { ...settings }, type: 'video' as StudioMode, createdAt: new Date().toISOString(), referenceUrls: [...generatingRefUrlsRef.current] }
                 : s
             ));
           }
