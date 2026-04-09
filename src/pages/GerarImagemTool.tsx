@@ -51,6 +51,8 @@ const GerarImagemTool = () => {
   const [prompt, setPrompt] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [aspectRatio, setAspectRatio] = useState<string>('4:3');
+  const [engine, setEngine] = useState<'flux2_klein' | 'nano_banana'>('flux2_klein');
+  const [referenceImages, setReferenceImages] = useState<{ file: File; preview: string }[]>([]);
   const [referenceImages, setReferenceImages] = useState<{ file: File; preview: string }[]>([]);
 
   // Job state
