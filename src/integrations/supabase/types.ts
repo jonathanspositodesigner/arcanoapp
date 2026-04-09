@@ -3430,6 +3430,7 @@ export type Database = {
           plan_slug: string
           updated_at: string
           user_id: string
+          veo3_trial_started_at: string | null
         }
         Insert: {
           cost_multiplier?: number | null
@@ -3450,6 +3451,7 @@ export type Database = {
           plan_slug?: string
           updated_at?: string
           user_id: string
+          veo3_trial_started_at?: string | null
         }
         Update: {
           cost_multiplier?: number | null
@@ -3470,6 +3472,7 @@ export type Database = {
           plan_slug?: string
           updated_at?: string
           user_id?: string
+          veo3_trial_started_at?: string | null
         }
         Relationships: []
       }
@@ -5277,6 +5280,7 @@ export type Database = {
           reset_at: string
         }[]
       }
+      check_veo3_unlimited_trial: { Args: { _user_id: string }; Returns: Json }
       claim_arcano_free_trial_atomic: {
         Args: { p_email: string; p_user_id: string }
         Returns: {
@@ -5566,6 +5570,7 @@ export type Database = {
       is_premium: { Args: never; Returns: boolean }
       is_premium_artes: { Args: never; Returns: boolean }
       is_premium_musicos: { Args: never; Returns: boolean }
+      is_unlimited_subscriber: { Args: { _user_id: string }; Returns: boolean }
       mark_pending_job_as_failed: {
         Args: {
           p_error_message?: string
