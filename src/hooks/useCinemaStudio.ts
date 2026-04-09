@@ -283,7 +283,7 @@ export function useCinemaStudio() {
         if (targetScene) {
           setStoryboard(prev => prev.map(s =>
             s.id === targetScene
-              ? { ...s, thumbnailUrl: update.outputUrl!, outputUrl: update.outputUrl!, settings: { ...settings }, type: 'photo' as StudioMode, createdAt: new Date().toISOString() }
+              ? { ...s, thumbnailUrl: update.outputUrl!, outputUrl: update.outputUrl!, settings: { ...settings }, type: 'photo' as StudioMode, createdAt: new Date().toISOString(), referenceUrls: [...generatingRefUrlsRef.current] }
               : s
           ));
           // If user navigated away, don't overwrite their current view — but if still on same scene, show it
