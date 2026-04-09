@@ -436,6 +436,7 @@ export function useCinemaStudio() {
         uploadedUrls.push(selectedScenario.image_url);
       }
 
+      generatingRefUrlsRef.current = [...uploadedUrls];
       setProgress(20);
 
       // Create job in image_generator_jobs (exact same as GerarImagemTool)
