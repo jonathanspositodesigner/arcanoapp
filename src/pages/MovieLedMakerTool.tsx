@@ -82,6 +82,7 @@ const MovieLedMakerTool = () => {
   const [tutorialInProgress, setTutorialInProgress] = useState(false);
   
   const sessionIdRef = useRef(crypto.randomUUID());
+  const evolinkPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (isTutorialTestUser) {
