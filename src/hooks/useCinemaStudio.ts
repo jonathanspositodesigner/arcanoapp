@@ -416,7 +416,7 @@ export function useCinemaStudio() {
       // Collect and optimize all reference images
       const uploadedUrls: string[] = [];
 
-      // 1. User reference images
+      // 1. User reference images (files to upload)
       for (let i = 0; i < referenceImages.length; i++) {
         toast.info(`Otimizando imagem ${i + 1}/${referenceImages.length}...`);
         const optimized = await optimizeForAI(referenceImages[i]);
@@ -424,6 +424,11 @@ export function useCinemaStudio() {
         if (!uploadResult.url) throw new Error(`Falha ao enviar imagem ${i + 1}`);
         uploadedUrls.push(uploadResult.url);
         setProgress(5 + Math.round((i + 1) / Math.max(referenceImages.length, 1) * 10));
+      }
+
+      // 1b. Restored reference URLs (already uploaded, from saved scenes)
+      if (referenceImages.length === 0 && referenceImagePreviews.length > 0) {
+        referenceImagePreviews.filter(url => !url.startsWith('blob:')).forEach(url => uploadedUrls.push(url));
       }
 
       // 2. Character images (already hosted in cinema-assets)
