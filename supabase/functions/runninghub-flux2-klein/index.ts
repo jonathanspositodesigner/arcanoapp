@@ -144,7 +144,8 @@ async function handleRun(req: Request) {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-  if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) {
+  // Allow creditCost=0 for Unlimited users
+  if (creditCost !== 0 && (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500)) {
     return new Response(JSON.stringify({ error: 'Invalid credit cost', code: 'INVALID_CREDIT_COST' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -208,31 +209,36 @@ async function handleRun(req: Request) {
     }
   }
 
-  // ========== CONSUME CREDITS ==========
-  await logStep(jobId, 'consuming_credits', { amount: creditCost });
+  // ========== CONSUME CREDITS (skip for Unlimited with cost=0) ==========
+  if (creditCost === 0) {
+    console.log(`[Flux2Klein] Unlimited user — skipping credit consumption for user ${verifiedUserId}`);
+    await logStep(jobId, 'unlimited_skip_credits');
+  } else {
+    await logStep(jobId, 'consuming_credits', { amount: creditCost });
 
-  const { data: creditResult, error: creditError } = await supabase.rpc(
-    'consume_upscaler_credits',
-    { _user_id: verifiedUserId, _amount: creditCost, _description: 'Gerar Imagem' }
-  );
+    const { data: creditResult, error: creditError } = await supabase.rpc(
+      'consume_upscaler_credits',
+      { _user_id: verifiedUserId, _amount: creditCost, _description: 'Gerar Imagem' }
+    );
 
-  if (creditError) {
-    console.error('[Flux2Klein] Credit error:', creditError);
-    await logStep(jobId, 'credit_error', { error: creditError.message });
-    return new Response(JSON.stringify({ error: 'Erro ao processar créditos', code: 'CREDIT_ERROR' }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    if (creditError) {
+      console.error('[Flux2Klein] Credit error:', creditError);
+      await logStep(jobId, 'credit_error', { error: creditError.message });
+      return new Response(JSON.stringify({ error: 'Erro ao processar créditos', code: 'CREDIT_ERROR' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
+      const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
+      await logStep(jobId, 'insufficient_credits', { balance: creditResult?.[0]?.new_balance });
+      return new Response(JSON.stringify({ error: errorMsg, code: 'INSUFFICIENT_CREDITS', currentBalance: creditResult?.[0]?.new_balance }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log(`[Flux2Klein] Credits consumed. New balance: ${creditResult[0].new_balance}`);
   }
-
-  if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
-    const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
-    await logStep(jobId, 'insufficient_credits', { balance: creditResult?.[0]?.new_balance });
-    return new Response(JSON.stringify({ error: errorMsg, code: 'INSUFFICIENT_CREDITS', currentBalance: creditResult?.[0]?.new_balance }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
-  console.log(`[Flux2Klein] Credits consumed. New balance: ${creditResult[0].new_balance}`);
 
   // Mark credits charged
   await supabase.from(TABLE_NAME).update({
