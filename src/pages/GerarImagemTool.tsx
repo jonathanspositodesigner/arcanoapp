@@ -38,6 +38,8 @@ const ASPECT_RATIOS = [
   { ratio: '21:9',  label: 'Ultra',  w: 28, h: 12 },
 ] as const;
 
+const ENGINE_STORAGE_KEY = 'gerar-imagem:selected-engine';
+
 const GerarImagemTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, planType } = usePremiumStatus();
@@ -51,7 +53,14 @@ const GerarImagemTool = () => {
   const [prompt, setPrompt] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [aspectRatio, setAspectRatio] = useState<string>('4:3');
-  const [engine, setEngine] = useState<'flux2_klein' | 'nano_banana'>('flux2_klein');
+  const [engine, setEngine] = useState<'flux2_klein' | 'nano_banana'>(() => {
+    try {
+      const savedEngine = sessionStorage.getItem(ENGINE_STORAGE_KEY);
+      return savedEngine === 'nano_banana' ? 'nano_banana' : 'flux2_klein';
+    } catch {
+      return 'flux2_klein';
+    }
+  });
   const [referenceImages, setReferenceImages] = useState<{ file: File; preview: string }[]>([]);
 
   // Job state
@@ -81,6 +90,12 @@ const GerarImagemTool = () => {
 
   // Session cleanup
   useQueueSessionCleanup(sessionIdRef.current, status);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(ENGINE_STORAGE_KEY, engine);
+    } catch {}
+  }, [engine]);
 
   // Triple sync
   useJobStatusSync({
@@ -186,8 +201,9 @@ const GerarImagemTool = () => {
   // Drag & drop
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation();
+    if (engine !== 'nano_banana') return;
     if (referenceImages.length < 5) setIsDragOver(true);
-  }, [referenceImages.length]);
+  }, [engine, referenceImages.length]);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation();
@@ -197,12 +213,14 @@ const GerarImagemTool = () => {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation();
     setIsDragOver(false);
+    if (engine !== 'nano_banana') return;
     processFiles(Array.from(e.dataTransfer.files));
-  }, [processFiles]);
+  }, [engine, processFiles]);
 
   // Ctrl+V paste
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
+      if (engine !== 'nano_banana') return;
       if (referenceImages.length >= 5) return;
       const items = e.clipboardData?.items;
       if (!items) return;
@@ -217,7 +235,7 @@ const GerarImagemTool = () => {
     };
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
-  }, [processFiles, referenceImages.length]);
+  }, [engine, processFiles, referenceImages.length]);
 
   // Reset state for new generation
   const resetJobState = () => {
@@ -508,7 +526,7 @@ const GerarImagemTool = () => {
           onDrop={handleDrop}
         >
           {/* Drag overlay */}
-          {isDragOver && (
+          {engine === 'nano_banana' && isDragOver && (
             <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-fuchsia-900/60 backdrop-blur-sm border-2 border-dashed border-fuchsia-400 pointer-events-none">
               <ImagePlus className="h-12 w-12 text-fuchsia-300 mb-2" />
               <p className="text-fuchsia-200 font-semibold text-sm">Solte para adicionar referência</p>
@@ -569,7 +587,11 @@ const GerarImagemTool = () => {
             <div className="flex flex-col items-center gap-3 text-purple-500/60">
               <Sparkles className="h-12 w-12" />
               <p className="text-sm text-center">Digite um prompt e clique em Gerar</p>
-              <p className="text-xs text-purple-500/40 text-center">Arraste imagens aqui ou cole com Ctrl+V para adicionar referências</p>
+              <p className="text-xs text-purple-500/40 text-center">
+                {engine === 'nano_banana'
+                  ? 'Arraste imagens aqui ou cole com Ctrl+V para adicionar referências'
+                  : 'Escolha a proporção e gere com Flux2 Klein'}
+              </p>
             </div>
           )}
         </div>
