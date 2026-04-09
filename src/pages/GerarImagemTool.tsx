@@ -298,6 +298,10 @@ const GerarImagemTool = () => {
             console.log('[GerarImagem] Nano Banana limit exceeded, redirecting to Flux2 Klein');
             effectiveEngine = 'flux2_klein';
           }
+          // Increment counter for all nano_banana generations (even redirected ones)
+          supabase.rpc('increment_nano_banana_usage', { _user_id: user.id }).then(() => {
+            console.log('[GerarImagem] Nano Banana usage incremented');
+          }).catch(() => {});
         } catch (err) {
           console.warn('[GerarImagem] Failed to check nano banana limit, proceeding normally:', err);
         }
