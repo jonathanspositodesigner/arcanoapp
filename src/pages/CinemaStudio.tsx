@@ -15,7 +15,7 @@ import { useCinemaStudio } from '@/hooks/useCinemaStudio';
 import { useCinemaProjects } from '@/hooks/useCinemaProjects';
 import { toast } from 'sonner';
 
-const STORYBOARD_KEY = 'cinemastudio_storyboard';
+
 
 const CinemaStudio: React.FC = () => {
   const isMobile = useIsMobile();
@@ -73,12 +73,9 @@ const CinemaStudio: React.FC = () => {
     const project = await projectManager.loadProject(projectId);
     if (!project) return;
 
-    // Restore storyboard from project scenes
+    // Restore storyboard directly into hook state (not via localStorage)
     if (project.scenes && project.scenes.length > 0) {
-      // Write to localStorage so useCinemaStudio picks it up
-      localStorage.setItem(STORYBOARD_KEY, JSON.stringify(project.scenes));
-      // Reload the page state — we need to force useCinemaStudio to re-read
-      // Instead, we'll directly load the scene by navigating to studio
+      studio.restoreStoryboard(project.scenes);
     }
 
     setView('studio');
@@ -88,10 +85,13 @@ const CinemaStudio: React.FC = () => {
       const idx = project.activeSceneIndex || 0;
       const sceneId = project.scenes[idx]?.id;
       if (sceneId) {
-        // Small delay to let the studio mount with localStorage data
+        // Small delay to let the studio process the restored storyboard
         setTimeout(() => {
-          studio.loadScene(sceneId);
-        }, 100);
+          // Find the matching slot ID (restoreStoryboard maps scenes to slot IDs)
+          const type = project.scenes[idx]?.type || 'photo';
+          const slotId = `${type}-slot-${idx}`;
+          studio.loadScene(slotId);
+        }, 150);
       }
     }
   }, [projectManager, studio]);
@@ -100,13 +100,11 @@ const CinemaStudio: React.FC = () => {
   const handleCreateProject = useCallback(async (name: string) => {
     const project = await projectManager.createProject(name);
     if (!project) return null;
-    // Clear localStorage storyboard for fresh state
-    localStorage.removeItem(STORYBOARD_KEY);
+    // Reset storyboard to empty state
+    studio.restoreStoryboard([]);
     setView('studio');
-    // Reload to reset studio hook state
-    window.location.reload();
     return project;
-  }, [projectManager]);
+  }, [projectManager, studio]);
 
   // Handle back to picker
   const handleBackToPicker = useCallback(async () => {

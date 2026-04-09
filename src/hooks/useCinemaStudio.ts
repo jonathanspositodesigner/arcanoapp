@@ -47,6 +47,7 @@ export interface StoryboardScene {
   outputUrl: string | null;
   type: StudioMode;
   createdAt: string;
+  referenceUrls?: string[];
 }
 
 export interface SelectedAsset {
@@ -151,6 +152,8 @@ export function useCinemaStudio() {
   const generatingSceneIdRef = useRef<string | null>(null);
   // Track the mode of the active generation (so sync hooks stay alive even if user browses another mode)
   const [generatingMode, setGeneratingMode] = useState<StudioMode | null>(null);
+  // Track uploaded reference URLs during generation for saving to scene
+  const generatingRefUrlsRef = useRef<string[]>([]);
 
   // Modals
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
@@ -173,7 +176,7 @@ export function useCinemaStudio() {
   if (selectedScenario?.description) extraParts.push(`scenario: ${selectedScenario.description}`);
   const assembledPrompt = extraParts.length > 0 ? `${basePrompt}, ${extraParts.join(', ')}` : basePrompt;
 
-  const hasReferences = referenceImages.length > 0;
+  const hasReferences = referenceImages.length > 0 || referenceImagePreviews.length > 0;
   // reference-to-video when any references exist (supports 0-9 images + 0-3 videos + 0-3 audios)
   // text-to-video when no references
   const genType = hasReferences ? 'r2v' : 't2v';
@@ -280,7 +283,7 @@ export function useCinemaStudio() {
         if (targetScene) {
           setStoryboard(prev => prev.map(s =>
             s.id === targetScene
-              ? { ...s, thumbnailUrl: update.outputUrl!, outputUrl: update.outputUrl!, settings: { ...settings }, type: 'photo' as StudioMode, createdAt: new Date().toISOString() }
+              ? { ...s, thumbnailUrl: update.outputUrl!, outputUrl: update.outputUrl!, settings: { ...settings }, type: 'photo' as StudioMode, createdAt: new Date().toISOString(), referenceUrls: [...generatingRefUrlsRef.current] }
               : s
           ));
           // If user navigated away, don't overwrite their current view — but if still on same scene, show it
@@ -341,7 +344,7 @@ export function useCinemaStudio() {
           if (targetScene) {
             setStoryboard(prev => prev.map(s =>
               s.id === targetScene
-                ? { ...s, thumbnailUrl: data.outputUrl, outputUrl: data.outputUrl, settings: { ...settings }, type: 'video' as StudioMode, createdAt: new Date().toISOString() }
+                ? { ...s, thumbnailUrl: data.outputUrl, outputUrl: data.outputUrl, settings: { ...settings }, type: 'video' as StudioMode, createdAt: new Date().toISOString(), referenceUrls: [...generatingRefUrlsRef.current] }
                 : s
             ));
           }
@@ -413,7 +416,7 @@ export function useCinemaStudio() {
       // Collect and optimize all reference images
       const uploadedUrls: string[] = [];
 
-      // 1. User reference images
+      // 1. User reference images (files to upload)
       for (let i = 0; i < referenceImages.length; i++) {
         toast.info(`Otimizando imagem ${i + 1}/${referenceImages.length}...`);
         const optimized = await optimizeForAI(referenceImages[i]);
@@ -421,6 +424,11 @@ export function useCinemaStudio() {
         if (!uploadResult.url) throw new Error(`Falha ao enviar imagem ${i + 1}`);
         uploadedUrls.push(uploadResult.url);
         setProgress(5 + Math.round((i + 1) / Math.max(referenceImages.length, 1) * 10));
+      }
+
+      // 1b. Restored reference URLs (already uploaded, from saved scenes)
+      if (referenceImages.length === 0 && referenceImagePreviews.length > 0) {
+        referenceImagePreviews.filter(url => !url.startsWith('blob:')).forEach(url => uploadedUrls.push(url));
       }
 
       // 2. Character images (already hosted in cinema-assets)
@@ -433,6 +441,7 @@ export function useCinemaStudio() {
         uploadedUrls.push(selectedScenario.image_url);
       }
 
+      generatingRefUrlsRef.current = [...uploadedUrls];
       setProgress(20);
 
       // Create job in image_generator_jobs (exact same as GerarImagemTool)
@@ -527,12 +536,18 @@ export function useCinemaStudio() {
         }
       }
 
+      // Restored reference URLs (already uploaded, from saved scenes)
+      if (referenceImages.length === 0 && referenceImagePreviews.length > 0) {
+        referenceImagePreviews.filter(url => !url.startsWith('blob:')).forEach(url => uploadedImageUrls.push(url));
+      }
+
       // Add character and scenario image URLs (already hosted)
       selectedCharacters.forEach(char => {
         if (char.image_url) uploadedImageUrls.push(char.image_url);
       });
       if (selectedScenario?.image_url) uploadedImageUrls.push(selectedScenario.image_url);
 
+      generatingRefUrlsRef.current = [...uploadedImageUrls];
       setProgress(30);
 
       // Translate prompt to Chinese for better Seedance efficiency
@@ -698,7 +713,49 @@ export function useCinemaStudio() {
         setProgress(0);
       }
     }
-  }, [storyboard]);
+
+    // Restore saved reference URLs as previews
+    referenceImagePreviews.forEach(url => URL.revokeObjectURL(url));
+    if (scene.referenceUrls && scene.referenceUrls.length > 0) {
+      setReferenceImages([]);
+      setReferenceImagePreviews(scene.referenceUrls);
+    } else {
+      setReferenceImages([]);
+      setReferenceImagePreviews([]);
+    }
+  }, [storyboard, referenceImagePreviews]);
+
+  // ━━━ Restore storyboard from saved project ━━━
+  const restoreStoryboard = useCallback((scenes: StoryboardScene[]) => {
+    // Separate scenes by type and pad to MAX_SCENES
+    const photoScenes = scenes.filter(s => s.type === 'photo');
+    const videoScenes = scenes.filter(s => s.type === 'video');
+    // If no type distinction, treat all as photo
+    const hasTyped = photoScenes.length > 0 || videoScenes.length > 0;
+
+    const padScenes = (items: StoryboardScene[], type: StudioMode): StoryboardScene[] => {
+      const empty = createEmptyScenes(type);
+      return empty.map((slot, i) => items[i] ? { ...items[i], id: slot.id } : slot);
+    };
+
+    if (hasTyped) {
+      setPhotoStoryboard(padScenes(photoScenes, 'photo'));
+      setVideoStoryboard(padScenes(videoScenes, 'video'));
+    } else {
+      // Legacy: all scenes go to photo
+      setPhotoStoryboard(padScenes(scenes, 'photo'));
+      setVideoStoryboard(createEmptyScenes('video'));
+    }
+
+    // Reset UI state
+    setOutputUrl(null);
+    setStatus('idle');
+    setPhotoJobStatus('idle');
+    setProgress(0);
+    referenceImagePreviews.forEach(url => URL.revokeObjectURL(url));
+    setReferenceImages([]);
+    setReferenceImagePreviews([]);
+  }, [referenceImagePreviews]);
 
   const addNewScene = useCallback(() => {
     // Find first empty slot
@@ -785,7 +842,7 @@ export function useCinemaStudio() {
 
     // Storyboard
     storyboard, activeSceneId,
-    addToStoryboard, removeFromStoryboard, loadScene, addNewScene, animateAllScenes,
+    addToStoryboard, removeFromStoryboard, loadScene, addNewScene, animateAllScenes, restoreStoryboard,
 
     // Modals
     showNoCreditsModal, setShowNoCreditsModal, noCreditsReason,
