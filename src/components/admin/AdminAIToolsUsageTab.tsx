@@ -796,9 +796,9 @@ const AdminAIToolsUsageTab = () => {
                   <TableHead className="whitespace-nowrap text-center">Fila?</TableHead>
                   <TableHead className="whitespace-nowrap text-right">Espera</TableHead>
                   <TableHead className="whitespace-nowrap text-right">Processamento</TableHead>
-                  <TableHead className="whitespace-nowrap text-right">Custo RH</TableHead>
-                  <TableHead className="whitespace-nowrap text-right">Crédito Usuário</TableHead>
-                  <TableHead className="whitespace-nowrap text-right">Lucro</TableHead>
+                   <TableHead className="whitespace-nowrap text-right">Custo (R$)</TableHead>
+                   <TableHead className="whitespace-nowrap text-right">Receita (R$)</TableHead>
+                   <TableHead className="whitespace-nowrap text-right">Lucro (R$)</TableHead>
                   <TableHead className="whitespace-nowrap text-center">Ações</TableHead>
                 </TableRow>
               </TableHeader>
