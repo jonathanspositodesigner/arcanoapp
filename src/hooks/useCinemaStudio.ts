@@ -537,6 +537,7 @@ export function useCinemaStudio() {
       });
       if (selectedScenario?.image_url) uploadedImageUrls.push(selectedScenario.image_url);
 
+      generatingRefUrlsRef.current = [...uploadedImageUrls];
       setProgress(30);
 
       // Translate prompt to Chinese for better Seedance efficiency
