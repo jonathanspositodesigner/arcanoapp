@@ -135,8 +135,10 @@ const Planos2 = () => {
         { text: 'Suporte exclusivo via WhatsApp', included: false },
         { text: 'Sem acesso a prompts premium', included: false },
         { text: 'Sem acesso ao conteúdo premium', included: false },
-        { text: 'Geração de Imagem com NanoBanana Pro', included: false },
-        { text: 'Geração de Vídeo com Veo 3', included: false },
+        { text: 'Vídeo Wan 2.2', included: false },
+        { text: 'Imagem Flux 2 Klein', included: false },
+        { text: 'Geração de Imagem com Nano Banana Pro', included: false },
+        { text: 'Geração de Vídeo com Veo 3.1', included: false },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -156,8 +158,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Geração de Imagem com NanoBanana Pro', included: false },
-        { text: 'Geração de Vídeo com Veo 3', included: false },
+        { text: 'Vídeo Wan 2.2', included: true },
+        { text: 'Imagem Flux 2 Klein', included: true },
+        { text: 'Geração de Imagem com Nano Banana Pro', included: false },
+        { text: 'Geração de Vídeo com Veo 3.1', included: false },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -177,8 +181,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
-        { text: 'Geração de Vídeo com Veo 3', included: true },
+        { text: 'Vídeo Wan 2.2', included: true },
+        { text: 'Imagem Flux 2 Klein', included: true },
+        { text: 'Geração de Imagem com Nano Banana Pro', included: true },
+        { text: 'Geração de Vídeo com Veo 3.1', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -200,8 +206,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
-        { text: 'Geração de Vídeo com Veo 3', included: true },
+        { text: 'Vídeo Wan 2.2', included: true },
+        { text: 'Imagem Flux 2 Klein', included: true },
+        { text: 'Geração de Imagem com Nano Banana Pro', included: true },
+        { text: 'Geração de Vídeo com Veo 3.1', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -223,8 +231,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
-        { text: 'Geração de Vídeo com Veo 3', included: true },
+        { text: 'Vídeo Wan 2.2', included: true },
+        { text: 'Imagem Flux 2 Klein', included: true },
+        { text: 'Geração de Imagem com Nano Banana Pro', included: true, badge: 'Ilimitado' },
+        { text: 'Geração de Vídeo com Veo 3.1', included: true, badge: '7 dias ilimitado' },
         { text: 'Fila prioritária nas gerações de IA', included: true }
       ],
       popular: false,
@@ -245,8 +255,10 @@ const Planos2 = () => {
         { text: 'Suporte exclusivo via WhatsApp', included: false },
         { text: 'Sem acesso a prompts premium', included: false },
         { text: 'Sem acesso ao conteúdo premium', included: false },
-        { text: 'Geração de Imagem com NanoBanana Pro', included: false },
-        { text: 'Geração de Vídeo com Veo 3', included: false },
+        { text: 'Vídeo Wan 2.2', included: false },
+        { text: 'Imagem Flux 2 Klein', included: false },
+        { text: 'Geração de Imagem com Nano Banana Pro', included: false },
+        { text: 'Geração de Vídeo com Veo 3.1', included: false },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -267,8 +279,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Geração de Imagem com NanoBanana Pro', included: false },
-        { text: 'Geração de Vídeo com Veo 3', included: false },
+        { text: 'Vídeo Wan 2.2', included: true },
+        { text: 'Imagem Flux 2 Klein', included: true },
+        { text: 'Geração de Imagem com Nano Banana Pro', included: false },
+        { text: 'Geração de Vídeo com Veo 3.1', included: false },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -290,8 +304,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
-        { text: 'Geração de Vídeo com Veo 3', included: true },
+        { text: 'Vídeo Wan 2.2', included: true },
+        { text: 'Imagem Flux 2 Klein', included: true },
+        { text: 'Geração de Imagem com Nano Banana Pro', included: true },
+        { text: 'Geração de Vídeo com Veo 3.1', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -315,8 +331,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
-        { text: 'Geração de Vídeo com Veo 3', included: true },
+        { text: 'Vídeo Wan 2.2', included: true },
+        { text: 'Imagem Flux 2 Klein', included: true },
+        { text: 'Geração de Imagem com Nano Banana Pro', included: true },
+        { text: 'Geração de Vídeo com Veo 3.1', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -340,8 +358,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Geração de Imagem com NanoBanana Pro', included: true },
-        { text: 'Geração de Vídeo com Veo 3', included: true },
+        { text: 'Vídeo Wan 2.2', included: true },
+        { text: 'Imagem Flux 2 Klein', included: true },
+        { text: 'Geração de Imagem com Nano Banana Pro', included: true, badge: 'Ilimitado' },
+        { text: 'Geração de Vídeo com Veo 3.1', included: true, badge: '7 dias ilimitado' },
         { text: 'Fila prioritária nas gerações de IA', included: true }
       ],
       popular: false,
@@ -596,6 +616,11 @@ const Planos2 = () => {
                       )}
                       <span className={`${feature.included ? "text-purple-200" : "text-orange-500"} flex items-center gap-1.5`}>
                         {feature.text}
+                        {(feature as any).badge && (
+                          <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-gradient-to-r from-yellow-400 to-amber-500 text-black leading-none">
+                            {(feature as any).badge}
+                          </span>
+                        )}
                       </span>
                       {(feature as any).isAiTools && (
                         <ChevronDown className={`w-3 h-3 shrink-0 mt-0.5 transition-transform duration-200 ${feature.included ? 'text-purple-400' : 'text-orange-500'} ${expandedAiTools[plan.name] ? 'rotate-180' : ''}`} />
