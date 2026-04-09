@@ -152,6 +152,8 @@ export function useCinemaStudio() {
   const generatingSceneIdRef = useRef<string | null>(null);
   // Track the mode of the active generation (so sync hooks stay alive even if user browses another mode)
   const [generatingMode, setGeneratingMode] = useState<StudioMode | null>(null);
+  // Track uploaded reference URLs during generation for saving to scene
+  const generatingRefUrlsRef = useRef<string[]>([]);
 
   // Modals
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
