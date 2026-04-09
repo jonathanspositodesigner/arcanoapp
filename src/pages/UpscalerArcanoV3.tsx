@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
+import { useGeoRedirect } from "@/hooks/useGeoRedirect";
 import { ShieldCheck, Rocket, Flame, Crown, Infinity } from "lucide-react";
 import "@/styles/upscaler-v3.css";
 import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar, V3GalleryBeforeAfter, V3RealResultCard, V3LazySection } from "@/components/upscaler-v3/V3IsolatedComponents";
@@ -140,6 +141,8 @@ const depoImages = [
 ];
 
 const UpscalerArcanoV3 = () => {
+  // Auto-redirect non-Brazilian visitors to ES version
+  useGeoRedirect("/upscalerarcanov3-es");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
