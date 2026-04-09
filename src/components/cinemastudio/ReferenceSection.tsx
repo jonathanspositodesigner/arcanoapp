@@ -31,7 +31,7 @@ const ReferenceSection: React.FC<Props> = ({ images, previews, onAdd, onRemove, 
             </button>
           </div>
         ))}
-        {images.length < maxImages && (
+        {previews.length < maxImages && (
           <button
             onClick={() => inputRef.current?.click()}
             className="aspect-square rounded border border-dashed border-white/[0.08] flex items-center justify-center hover:bg-white/[0.02] transition-colors"
