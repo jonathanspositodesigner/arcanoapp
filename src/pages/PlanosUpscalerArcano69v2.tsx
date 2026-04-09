@@ -291,8 +291,8 @@ const upscalerPlans: UpscalerPlan[] = [
       { text: "Acesso às Ferramentas de IA", included: true },
       { text: "Suporte exclusivo via WhatsApp", included: true },
       { text: "Prompts premium ilimitados", included: true },
-      { text: "Geração de Imagem com NanoBanana Pro", included: true },
-      { text: "Geração de Vídeo com Veo 3", included: true },
+      { text: "Nano Banana Pro", included: true },
+      { text: "Veo 3.1", included: true },
     ],
   },
   {
@@ -310,8 +310,8 @@ const upscalerPlans: UpscalerPlan[] = [
       { text: "Acesso às Ferramentas de IA", included: true },
       { text: "Suporte exclusivo via WhatsApp", included: true },
       { text: "Prompts premium ilimitados", included: true },
-      { text: "Geração de Imagem com NanoBanana Pro", included: true },
-      { text: "Geração de Vídeo com Veo 3", included: true },
+      { text: "Nano Banana Pro", included: true },
+      { text: "Veo 3.1", included: true },
     ],
   },
   {
@@ -329,8 +329,8 @@ const upscalerPlans: UpscalerPlan[] = [
       { text: "Acesso às Ferramentas de IA", included: true },
       { text: "Suporte exclusivo via WhatsApp", included: true },
       { text: "Prompts premium ilimitados", included: true },
-      { text: "Geração de Imagem com NanoBanana Pro", included: true },
-      { text: "Geração de Vídeo com Veo 3", included: true },
+      { text: "Nano Banana Pro", included: true },
+      { text: "Veo 3.1", included: true },
     ],
   },
   {
@@ -348,8 +348,8 @@ const upscalerPlans: UpscalerPlan[] = [
       { text: "Remova fundos automaticamente", included: true },
       { text: "Acesso vitalício", included: true },
       { text: "Todas as atualizações futuras", included: true },
-      { text: "Geração de Imagem com NanoBanana Pro", included: true },
-      { text: "Geração de Vídeo com Veo 3", included: true },
+      { text: "Nano Banana Pro", included: true },
+      { text: "Veo 3.1", included: true },
     ],
   },
 ];
