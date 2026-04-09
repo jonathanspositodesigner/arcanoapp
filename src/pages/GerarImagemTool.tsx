@@ -101,6 +101,9 @@ const GerarImagemTool = () => {
       if (aspectDropdownRef.current && !aspectDropdownRef.current.contains(e.target as Node)) {
         setAspectDropdownOpen(false);
       }
+      if (engineDropdownRef.current && !engineDropdownRef.current.contains(e.target as Node)) {
+        setEngineDropdownOpen(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
