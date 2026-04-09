@@ -76,6 +76,21 @@ type UserClientType = 'free' | 'bought_credits' | 'redeemed_credits' | 'free_tri
 
 const ITEMS_PER_PAGE = 20;
 
+// Conversion constants
+const CUSTO_POR_RH_COIN = 0.002; // R$ per RH coin
+const RECEITA_POR_CREDITO = 0.0093; // R$ per credit
+
+// API cost map: display tool name → fixed API cost in BRL (from ai_tool_settings)
+const API_COST_MAP: Record<string, number> = {
+  "Arcano Cloner": 0.18,
+  "Gerador Avatar": 0.18,
+  "Gerar Imagem - Flux 2": 0.18,
+  "Gerar Imagem - Nano Banana": 0.18,
+};
+
+const formatBRL = (value: number) =>
+  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
 const DATE_FILTERS = [
   { value: "today", label: "Hoje" },
   { value: "yesterday", label: "Ontem" },
@@ -93,7 +108,8 @@ const TOOL_FILTERS = [
   { value: "Video Upscaler", label: "Video Upscaler" },
   { value: "Arcano Cloner", label: "Arcano Cloner" },
   { value: "Gerador Avatar", label: "Gerador Avatar" },
-  { value: "Gerar Imagem", label: "Gerar Imagem" },
+  { value: "Gerar Imagem - Flux 2", label: "Gerar Imagem - Flux 2" },
+  { value: "Gerar Imagem - Nano Banana", label: "Gerar Imagem - Nano Banana" },
   { value: "Gerar Vídeo", label: "Gerar Vídeo" },
   { value: "Flyer Maker", label: "Flyer Maker" },
   { value: "Remover Fundo", label: "Remover Fundo" },
@@ -147,7 +163,8 @@ const AdminAIToolsUsageTab = () => {
       case "Gerador Avatar": return "front_image_url";
       case "Flyer Maker": return "reference_image_url";
       case "Remover Fundo": return "input_url";
-      case "Gerar Imagem": return null;
+      case "Gerar Imagem - Flux 2": return null;
+      case "Gerar Imagem - Nano Banana": return null;
       case "Gerar Vídeo": return null;
       default: return null;
     }
@@ -161,7 +178,8 @@ const AdminAIToolsUsageTab = () => {
       case "Video Upscaler": return "video_upscaler_jobs";
       case "Arcano Cloner": return "arcano_cloner_jobs";
       case "Gerador Avatar": return "character_generator_jobs";
-      case "Gerar Imagem": return "image_generator_jobs";
+      case "Gerar Imagem - Flux 2": return "image_generator_jobs";
+      case "Gerar Imagem - Nano Banana": return "image_generator_jobs";
       case "Gerar Vídeo": return "video_generator_jobs";
       case "Flyer Maker": return "flyer_maker_jobs";
       case "Remover Fundo": return "bg_remover_jobs";
@@ -442,7 +460,8 @@ const AdminAIToolsUsageTab = () => {
       "Video Upscaler": "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
       "Arcano Cloner": "bg-blue-500/20 text-blue-400 border-blue-500/30",
       "Gerador Avatar": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-      "Gerar Imagem": "bg-amber-500/20 text-amber-400 border-amber-500/30",
+      "Gerar Imagem - Flux 2": "bg-amber-500/20 text-amber-400 border-amber-500/30",
+      "Gerar Imagem - Nano Banana": "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
       "Gerar Vídeo": "bg-rose-500/20 text-rose-400 border-rose-500/30",
       "Flyer Maker": "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
       "Remover Fundo": "bg-teal-500/20 text-teal-400 border-teal-500/30",
@@ -646,8 +665,8 @@ const AdminAIToolsUsageTab = () => {
             <CardContent className="p-4 flex items-center gap-3">
               <Coins className="h-8 w-8 text-yellow-500" />
               <div>
-                <p className="text-xs text-muted-foreground">Custo RH</p>
-                <p className="text-xl font-bold">{summary.total_rh_cost}</p>
+                <p className="text-xs text-muted-foreground">Custo Total (R$)</p>
+                <p className="text-xl font-bold">{formatBRL(summary.total_rh_cost * CUSTO_POR_RH_COIN)}</p>
               </div>
             </CardContent>
           </Card>
@@ -656,8 +675,8 @@ const AdminAIToolsUsageTab = () => {
             <CardContent className="p-4 flex items-center gap-3">
               <Users className="h-8 w-8 text-blue-500" />
               <div>
-                <p className="text-xs text-muted-foreground">Créditos Usuários</p>
-                <p className="text-xl font-bold">{summary.total_user_credits}</p>
+                <p className="text-xs text-muted-foreground">Receita Usuários (R$)</p>
+                <p className="text-xl font-bold">{formatBRL(summary.total_user_credits * RECEITA_POR_CREDITO)}</p>
               </div>
             </CardContent>
           </Card>
@@ -666,8 +685,8 @@ const AdminAIToolsUsageTab = () => {
             <CardContent className="p-4 flex items-center gap-3">
               <TrendingUp className="h-8 w-8 text-green-500" />
               <div>
-                <p className="text-xs text-green-400">Lucro Total</p>
-                <p className="text-xl font-bold text-green-400">{summary.total_profit}</p>
+                <p className="text-xs text-green-400">Lucro Total (R$)</p>
+                <p className="text-xl font-bold text-green-400">{formatBRL(summary.total_user_credits * RECEITA_POR_CREDITO - summary.total_rh_cost * CUSTO_POR_RH_COIN)}</p>
               </div>
             </CardContent>
           </Card>
@@ -777,9 +796,9 @@ const AdminAIToolsUsageTab = () => {
                   <TableHead className="whitespace-nowrap text-center">Fila?</TableHead>
                   <TableHead className="whitespace-nowrap text-right">Espera</TableHead>
                   <TableHead className="whitespace-nowrap text-right">Processamento</TableHead>
-                  <TableHead className="whitespace-nowrap text-right">Custo RH</TableHead>
-                  <TableHead className="whitespace-nowrap text-right">Crédito Usuário</TableHead>
-                  <TableHead className="whitespace-nowrap text-right">Lucro</TableHead>
+                   <TableHead className="whitespace-nowrap text-right">Custo (R$)</TableHead>
+                   <TableHead className="whitespace-nowrap text-right">Receita (R$)</TableHead>
+                   <TableHead className="whitespace-nowrap text-right">Lucro (R$)</TableHead>
                   <TableHead className="whitespace-nowrap text-center">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -827,15 +846,26 @@ const AdminAIToolsUsageTab = () => {
                       <TableCell className="text-right text-sm">
                         {record.processing_seconds > 0 ? formatDuration(record.processing_seconds) : "-"}
                       </TableCell>
-                      <TableCell className="text-right font-mono text-sm">
-                        {record.rh_cost > 0 ? record.rh_cost : "-"}
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-sm">
-                        {record.user_credit_cost > 0 ? record.user_credit_cost : "-"}
-                      </TableCell>
-                      <TableCell className={`text-right font-mono text-sm font-bold ${record.profit > 0 ? 'text-green-400' : record.profit < 0 ? 'text-red-400' : ''}`}>
-                        {record.profit !== 0 ? (record.profit > 0 ? '+' : '') + record.profit : "-"}
-                      </TableCell>
+                      {(() => {
+                        const rhCostBRL = record.rh_cost * CUSTO_POR_RH_COIN;
+                        const apiCost = API_COST_MAP[record.tool_name] || 0;
+                        const totalCost = rhCostBRL + (record.status === 'completed' ? apiCost : 0);
+                        const receita = record.user_credit_cost * RECEITA_POR_CREDITO;
+                        const lucro = receita - totalCost;
+                        return (
+                          <>
+                            <TableCell className="text-right font-mono text-sm">
+                              {totalCost > 0 ? formatBRL(totalCost) : "-"}
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-sm">
+                              {receita > 0 ? formatBRL(receita) : "-"}
+                            </TableCell>
+                            <TableCell className={`text-right font-mono text-sm font-bold ${lucro > 0 ? 'text-green-400' : lucro < 0 ? 'text-red-400' : ''}`}>
+                              {record.user_credit_cost > 0 || totalCost > 0 ? formatBRL(lucro) : "-"}
+                            </TableCell>
+                          </>
+                        );
+                      })()}
                       <TableCell className="text-center">
                         {(record.status === 'running' || record.status === 'queued') ? (
                           <Button
