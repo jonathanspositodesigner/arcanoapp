@@ -47,6 +47,7 @@ export interface StoryboardScene {
   outputUrl: string | null;
   type: StudioMode;
   createdAt: string;
+  referenceUrls?: string[];
 }
 
 export interface SelectedAsset {
