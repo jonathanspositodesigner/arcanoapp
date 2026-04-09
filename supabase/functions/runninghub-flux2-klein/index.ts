@@ -25,18 +25,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// Aspect ratio to dimensions mapping
+// Aspect ratio to Full HD dimensions mapping (node 177: width + height)
 const ASPECT_DIMENSIONS: Record<string, { width: number; height: number }> = {
-  '1:1':  { width: 1024, height: 1024 },
-  '2:3':  { width: 832, height: 1216 },
-  '3:2':  { width: 1216, height: 832 },
-  '3:4':  { width: 896, height: 1152 },
-  '4:3':  { width: 1152, height: 896 },
-  '4:5':  { width: 896, height: 1088 },
-  '5:4':  { width: 1088, height: 896 },
-  '9:16': { width: 768, height: 1344 },
-  '16:9': { width: 1344, height: 768 },
-  '21:9': { width: 1536, height: 640 },
+  '1:1':  { width: 1080, height: 1080 },
+  '3:4':  { width: 1080, height: 1440 },
+  '16:9': { width: 1920, height: 1080 },
+  '9:16': { width: 1080, height: 1920 },
 };
 
 // ========== OBSERVABILITY ==========
