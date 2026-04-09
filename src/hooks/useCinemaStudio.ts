@@ -703,7 +703,17 @@ export function useCinemaStudio() {
         setProgress(0);
       }
     }
-  }, [storyboard]);
+
+    // Restore saved reference URLs as previews
+    referenceImagePreviews.forEach(url => URL.revokeObjectURL(url));
+    if (scene.referenceUrls && scene.referenceUrls.length > 0) {
+      setReferenceImages([]);
+      setReferenceImagePreviews(scene.referenceUrls);
+    } else {
+      setReferenceImages([]);
+      setReferenceImagePreviews([]);
+    }
+  }, [storyboard, referenceImagePreviews]);
 
   const addNewScene = useCallback(() => {
     // Find first empty slot
