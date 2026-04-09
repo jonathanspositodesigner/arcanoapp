@@ -523,8 +523,8 @@ const GerarImagemTool = () => {
           onDrop={handleDrop}
         >
           {/* Drag overlay */}
-          {engine === 'nano_banana' && isDragOver && (
-          {/* Drag overlay */}
+          {isDragOver && (
+            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-fuchsia-900/60 backdrop-blur-sm border-2 border-dashed border-fuchsia-400 pointer-events-none">
               <ImagePlus className="h-12 w-12 text-fuchsia-300 mb-2" />
               <p className="text-fuchsia-200 font-semibold text-sm">Solte para adicionar referência</p>
             </div>
