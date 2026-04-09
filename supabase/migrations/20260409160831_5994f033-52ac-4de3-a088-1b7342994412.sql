@@ -1,0 +1,1 @@
+ALTER TABLE public.planos2_subscriptions ADD COLUMN IF NOT EXISTS nano_banana_usage_count integer NOT NULL DEFAULT 0;

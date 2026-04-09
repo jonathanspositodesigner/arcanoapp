@@ -3424,6 +3424,7 @@ export type Database = {
           id: string
           is_active: boolean
           last_credit_reset_at: string | null
+          nano_banana_usage_count: number
           pagarme_subscription_id: string | null
           plan_slug: string
           updated_at: string
@@ -3442,6 +3443,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_credit_reset_at?: string | null
+          nano_banana_usage_count?: number
           pagarme_subscription_id?: string | null
           plan_slug?: string
           updated_at?: string
@@ -3460,6 +3462,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_credit_reset_at?: string | null
+          nano_banana_usage_count?: number
           pagarme_subscription_id?: string | null
           plan_slug?: string
           updated_at?: string
