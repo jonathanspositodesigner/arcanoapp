@@ -75,8 +75,9 @@ const GerarVideoTool = () => {
         const { data: unlimitedData } = await supabase.rpc('is_unlimited_subscriber', { _user_id: user.id });
         setIsUnlimited(!!unlimitedData);
         if (unlimitedData) {
-          const { data: trialData } = await supabase.rpc('check_veo3_unlimited_trial', { _user_id: user.id });
-          setIsVeo3Trial(!!trialData?.in_trial);
+        const { data: trialData } = await supabase.rpc('check_veo3_unlimited_trial', { _user_id: user.id });
+          const trialResult = trialData as any;
+          setIsVeo3Trial(!!trialResult?.in_trial);
         }
       } catch (e) {
         console.error('[GerarVideo] Error checking unlimited status:', e);
