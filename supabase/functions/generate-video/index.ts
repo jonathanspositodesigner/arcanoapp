@@ -5,8 +5,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
  * GENERATE VIDEO - EDGE FUNCTION
  * 
  * Models:
- * - veo3.1-fast: Veo 3.1 Fast via Evolink API (2500 credits)
- * - veo3.1-pro: Veo 3.1 Pro via Evolink API (5000 credits)
+ * - veo3.1-fast: Veo 3.1 Fast via Evolink API (1500 without audio, 2500 with audio)
+ * - veo3.1-pro: Veo 3.1 Pro via Evolink API (2800 without audio, 5000 with audio)
  * - wan2.2: Wan 2.2 via RunningHub (400 credits)
  * 
  * Endpoints:
