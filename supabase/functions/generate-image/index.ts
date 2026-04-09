@@ -71,6 +71,7 @@ serve(async (req) => {
 
     let creditCost: number;
     let creditDescription: string;
+    let skipCredits = false;
 
     if (source === "arcano_cloner_refine" || source === "flyer_maker_refine") {
       creditCost = 50;
@@ -78,18 +79,15 @@ serve(async (req) => {
         ? "Refinamento Flyer Maker"
         : "Refinamento Arcano Cloner";
     } else {
-      // Standard generation — check premium status
-      const { data: premiumData } = await serviceClient
-        .from("premium_users")
-        .select("plan_type, expires_at")
-        .eq("user_id", userId)
-        .eq("is_active", true)
-        .maybeSingle();
-      const isUnlimited = premiumData?.plan_type === "arcano_unlimited"
-        && (!premiumData?.expires_at || new Date(premiumData.expires_at) > new Date());
+      // Check if user is IA Unlimited (Planos2)
+      const { data: isUnlimitedResult } = await serviceClient.rpc('is_unlimited_subscriber', { _user_id: userId });
+      const isPlanos2Unlimited = !!isUnlimitedResult;
 
-      if (isUnlimited) {
-        creditCost = 100;
+      if (isPlanos2Unlimited) {
+        // All image generation tools are FREE for Unlimited users
+        skipCredits = true;
+        creditCost = 0;
+        console.log(`[generate-image PROXY] Unlimited user ${userId}: image generation is FREE`);
       } else {
         creditCost = 100;
       }

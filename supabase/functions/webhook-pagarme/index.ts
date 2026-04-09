@@ -1013,7 +1013,7 @@ serve(async (req) => {
           'starter': { credits_per_month: 1500, daily_prompt_limit: null, has_image_generation: false, has_video_generation: false, cost_multiplier: 1.0 },
           'pro': { credits_per_month: 5000, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
           'ultimate': { credits_per_month: 14000, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
-          'unlimited': { credits_per_month: 99999, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 0.5 },
+          'unlimited': { credits_per_month: 14000, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
         }
 
         const config = PLAN_CONFIG[product.plan_slug]
@@ -1037,7 +1037,7 @@ serve(async (req) => {
           const preserveVideoGen = config.has_video_generation || (existingSubForPlan?.has_video_generation === true)
 
           // Upsert subscription
-          await supabase.from('planos2_subscriptions').upsert({
+          const upsertData: Record<string, any> = {
             user_id: userId,
             plan_slug: product.plan_slug,
             is_active: true,
@@ -1050,7 +1050,14 @@ serve(async (req) => {
             pagarme_subscription_id: subId,
             last_credit_reset_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
-          }, { onConflict: 'user_id' })
+          }
+
+          // For new unlimited subscriptions, set Veo 3.1 trial start
+          if (product.plan_slug === 'unlimited') {
+            upsertData.veo3_trial_started_at = new Date().toISOString()
+          }
+
+          await supabase.from('planos2_subscriptions').upsert(upsertData, { onConflict: 'user_id' })
 
           // Reset monthly credits to the plan amount
           const { error: resetError } = await supabase.rpc('reset_upscaler_credits', {

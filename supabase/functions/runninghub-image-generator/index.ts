@@ -299,8 +299,8 @@ async function handleRun(req: Request) {
   const validAspectRatios = ['auto', '1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
   const finalAspectRatio = validAspectRatios.includes(aspectRatio) ? aspectRatio : '4:3';
 
-  // BYOK jobs have creditCost=0 — skip validation
-  if (!isByok && (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500)) {
+  // BYOK jobs have creditCost=0, Unlimited users also have creditCost=0 — skip validation
+  if (!isByok && creditCost !== 0 && (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500)) {
     return new Response(JSON.stringify({ error: 'Invalid credit cost', code: 'INVALID_CREDIT_COST' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -384,10 +384,13 @@ async function handleRun(req: Request) {
     });
   }
 
-  // ========== CONSUME CREDITS (skip for BYOK) ==========
+  // ========== CONSUME CREDITS (skip for BYOK and Unlimited with cost=0) ==========
   if (isByok) {
     console.log(`[ImageGenerator] BYOK mode — skipping platform credit consumption for user ${verifiedUserId}`);
     await logStep(jobId, 'byok_skip_credits');
+  } else if (creditCost === 0) {
+    console.log(`[ImageGenerator] Unlimited user — skipping credit consumption for user ${verifiedUserId}`);
+    await logStep(jobId, 'unlimited_skip_credits');
   } else {
     await logStep(jobId, 'consuming_credits', { amount: creditCost });
     
