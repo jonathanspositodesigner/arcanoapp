@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { evolinkGenerate, evolinkPoll, resolveEvolinkModel, isEvolinkModel } from "../_shared/evolink-client.ts";
 
 /**
  * GENERATE VIDEO - EDGE FUNCTION
@@ -40,16 +41,7 @@ const MODEL_COSTS_WITH_AUDIO: Record<string, number> = {
   'veo3.1-pro': 5000,
 };
 
-const EVOLINK_MODEL_MAP: Record<string, string> = {
-  'veo3.1-fast': 'veo-3.1-fast-generate-preview',
-  'veo3.1-pro': 'veo-3.1-generate-preview',
-};
-
-function isEvolinkModel(model: string): boolean {
-  return model === 'veo3.1-fast' || model === 'veo3.1-pro';
-}
-
-// ========== RESILIENT FETCH ==========
+// ========== RESILIENT FETCH (for RunningHub only) ==========
 
 async function fetchWithRetry(
   url: string,
@@ -216,71 +208,7 @@ async function logStepFailure(
   }
 }
 
-// ========== EVOLINK VIDEO GENERATION ==========
-
-async function callEvolinkGenerate(
-  jobId: string,
-  model: string,
-  prompt: string,
-  aspectRatio: string,
-  generateAudio: boolean,
-  imageUrls: string[],
-  generationType: string
-): Promise<{ taskId: string } | { error: string }> {
-  if (!EVOLINK_API_KEY) {
-    return { error: 'EVOLINK_API_KEY not configured' };
-  }
-
-  const evolinkModel = EVOLINK_MODEL_MAP[model];
-  if (!evolinkModel) {
-    return { error: `Unknown Evolink model: ${model}` };
-  }
-
-  const payload: Record<string, unknown> = {
-    model: evolinkModel,
-    prompt,
-    duration: 8,
-    quality: '1080p',
-    aspect_ratio: aspectRatio || '16:9',
-    generate_audio: generateAudio,
-    generation_type: generationType,
-  };
-
-  if (imageUrls.length > 0) {
-    payload.image_urls = imageUrls;
-  }
-
-  console.log(`[VideoGenerator] Calling Evolink:`, JSON.stringify({ model: evolinkModel, generationType, duration: 8, quality: '1080p', aspectRatio, generateAudio, imageCount: imageUrls.length }));
-
-  try {
-    const response = await fetchWithRetry(
-      'https://api.evolink.ai/v1/videos/generations',
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${EVOLINK_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      },
-      'Evolink Generate'
-    );
-
-    const data = await response.json();
-    console.log(`[VideoGenerator] Evolink response:`, JSON.stringify(data));
-
-    if (!response.ok || !data.id) {
-      const errMsg = data.error?.message || data.error?.code || `Evolink API error: ${response.status}`;
-      return { error: errMsg };
-    }
-
-    return { taskId: data.id };
-  } catch (error: any) {
-    return { error: error.message || 'Evolink API call failed' };
-  }
-}
-
-// ========== EVOLINK POLL ==========
+// ========== EVOLINK POLL HANDLER ==========
 
 async function handlePollEvolink(req: Request) {
   const authHeader = req.headers.get('Authorization');
@@ -334,80 +262,63 @@ async function handlePollEvolink(req: Request) {
     });
   }
 
-  // Poll Evolink
-  try {
-    const pollResponse = await fetch(`https://api.evolink.ai/v1/tasks/${job.task_id}`, {
-      headers: { 'Authorization': `Bearer ${EVOLINK_API_KEY}` },
-    });
+  // Poll using shared client
+  const pollResult = await evolinkPoll(EVOLINK_API_KEY, job.task_id);
 
-    const pollData = await pollResponse.json();
-    console.log(`[VideoGenerator] Evolink poll ${job.task_id}: status=${pollData.status}, progress=${pollData.progress}`);
+  if (pollResult.status === 'completed') {
+    await supabase.from(TABLE_NAME).update({
+      status: 'completed',
+      output_url: pollResult.outputUrl,
+      completed_at: new Date().toISOString(),
+      current_step: 'completed',
+    }).eq('id', job_id);
 
-    if (pollData.status === 'completed') {
-      const outputUrl = pollData.results?.[0] || null;
-
-      await supabase.from(TABLE_NAME).update({
-        status: 'completed',
-        output_url: outputUrl,
-        completed_at: new Date().toISOString(),
-        current_step: 'completed',
-      }).eq('id', job_id);
-
-      return new Response(JSON.stringify({
-        status: 'completed',
-        output_url: outputUrl,
-        progress: 100,
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    if (pollData.status === 'failed') {
-      const errMsg = pollData.error?.message || 'Generation failed';
-
-      // Refund credits if charged
-      if (job.credits_charged && job.user_credit_cost && job.user_credit_cost > 0) {
-        try {
-          await supabase.rpc('refund_upscaler_credits', {
-            _user_id: job.user_id,
-            _amount: job.user_credit_cost,
-            _description: `EVOLINK_FAILED_REFUND: ${errMsg.slice(0, 100)}`,
-          });
-          await supabase.from(TABLE_NAME).update({ credits_refunded: true }).eq('id', job_id);
-        } catch (e) {
-          console.error('[VideoGenerator] Refund error:', e);
-        }
-      }
-
-      await supabase.from(TABLE_NAME).update({
-        status: 'failed',
-        error_message: errMsg,
-        current_step: 'failed',
-        failed_at_step: 'evolink_generation',
-        completed_at: new Date().toISOString(),
-      }).eq('id', job_id);
-
-      return new Response(JSON.stringify({
-        status: 'failed',
-        error: errMsg,
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Still processing
     return new Response(JSON.stringify({
-      status: pollData.status || 'processing',
-      progress: pollData.progress || 0,
+      status: 'completed',
+      output_url: pollResult.outputUrl,
+      progress: 100,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-  } catch (error: any) {
-    console.error('[VideoGenerator] Evolink poll error:', error);
-    return new Response(JSON.stringify({ status: 'processing', progress: 0 }), {
+  }
+
+  if (pollResult.status === 'failed') {
+    const errMsg = pollResult.error || 'Generation failed';
+
+    // Refund credits if charged
+    if (job.credits_charged && job.user_credit_cost && job.user_credit_cost > 0) {
+      try {
+        await supabase.rpc('refund_upscaler_credits', {
+          _user_id: job.user_id,
+          _amount: job.user_credit_cost,
+          _description: `EVOLINK_FAILED_REFUND: ${errMsg.slice(0, 100)}`,
+        });
+        await supabase.from(TABLE_NAME).update({ credits_refunded: true }).eq('id', job_id);
+      } catch (e) {
+        console.error('[VideoGenerator] Refund error:', e);
+      }
+    }
+
+    await supabase.from(TABLE_NAME).update({
+      status: 'failed',
+      error_message: errMsg,
+      current_step: 'failed',
+      failed_at_step: 'evolink_generation',
+      completed_at: new Date().toISOString(),
+    }).eq('id', job_id);
+
+    return new Response(JSON.stringify({ status: 'failed', error: errMsg }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
+
+  // Still processing
+  return new Response(JSON.stringify({
+    status: pollResult.status,
+    progress: pollResult.progress,
+  }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
 }
 
 // ========== MAIN HANDLER ==========
@@ -513,12 +424,10 @@ async function handleRun(req: Request) {
 
   if (isPlanos2Unlimited) {
     if (selectedModel === 'wan2.2') {
-      // Wan 2.2 is unlimited — no credit charge
       skipCredits = true;
       creditCost = 0;
       console.log(`[VideoGenerator] Unlimited user ${verifiedUserId}: Wan 2.2 is FREE`);
     } else if (isEvolinkModel(selectedModel)) {
-      // Veo 3.1: charge credits normally for unlimited users
       console.log(`[VideoGenerator] Unlimited user ${verifiedUserId}: Veo 3.1 charges ${creditCost} credits`);
     }
   }
@@ -637,22 +546,22 @@ async function handleRun(req: Request) {
       generationType = imageUrls.length <= 2 ? 'FIRST&LAST' : 'REFERENCE';
     }
 
-    // Audio: respect user choice
     const generateAudio = wantsAudio;
-
     await logStep(jobId, 'calling_evolink', { model: selectedModel, generationType, generateAudio });
 
-    const result = await callEvolinkGenerate(
-      jobId,
-      selectedModel,
-      prompt.trim(),
-      ratio,
+    // Use shared Evolink client
+    const result = await evolinkGenerate(EVOLINK_API_KEY, {
+      model: resolveEvolinkModel(selectedModel),
+      prompt: prompt.trim(),
+      duration: 8,
+      quality: '1080p',
+      aspectRatio: ratio,
       generateAudio,
-      imageUrls,
       generationType,
-    );
+      imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
+    });
 
-    if ('error' in result) {
+    if (!result.success) {
       if (!skipCredits && creditCost > 0) {
         try {
           await supabase.rpc('refund_upscaler_credits', { _user_id: verifiedUserId, _amount: creditCost, _description: `EVOLINK_ERROR_REFUND: ${result.error.slice(0, 100)}` });
