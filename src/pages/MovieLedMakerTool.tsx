@@ -350,7 +350,11 @@ const MovieLedMakerTool = () => {
 
       setJobId(data.job_id);
 
-      if (data.queued) {
+      // If Evolink (Veo 3.1), start client-side polling instead of relying on Realtime/QueueManager
+      if (data.provider === 'evolink') {
+        toast.success('Geração Veo 3.1 iniciada! Aguarde...');
+        startEvolinkPolling(data.job_id);
+      } else if (data.queued) {
         setIsQueued(true);
         setQueuePosition(data.position || 1);
         toast.info(`Você está na fila (posição ${data.position || 1}). Aguarde...`);
