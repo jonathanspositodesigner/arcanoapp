@@ -48,6 +48,8 @@ export interface StoryboardScene {
   type: StudioMode;
   createdAt: string;
   referenceUrls?: string[];
+  selectedCharacters?: SelectedAsset[];
+  selectedScenario?: SelectedAsset | null;
 }
 
 export interface SelectedAsset {
@@ -88,6 +90,22 @@ function loadStoryboard(type: StudioMode): StoryboardScene[] {
 function saveStoryboard(scenes: StoryboardScene[], type: StudioMode) {
   const key = type === 'photo' ? STORYBOARD_PHOTO_KEY : STORYBOARD_VIDEO_KEY;
   localStorage.setItem(key, JSON.stringify(scenes));
+}
+
+function revokeObjectUrls(urls: string[]) {
+  urls.forEach(url => {
+    if (url.startsWith('blob:')) {
+      URL.revokeObjectURL(url);
+    }
+  });
+}
+
+function uniqueUrls(urls: string[]) {
+  return Array.from(new Set(urls.filter(Boolean)));
+}
+
+function getSceneTypeFromId(sceneId: string): StudioMode {
+  return sceneId.startsWith('video-') ? 'video' : 'photo';
 }
 
 export function useCinemaStudio() {
@@ -133,27 +151,155 @@ export function useCinemaStudio() {
   const activeSceneId = mode === 'photo' ? activePhotoSceneId : activeVideoSceneId;
   const setActiveSceneId = mode === 'photo' ? setActivePhotoSceneId : setActiveVideoSceneId;
 
-  // Wrap setMode to restore scene state when switching
-  const setMode = useCallback((newMode: StudioMode) => {
-    setModeRaw(newMode);
-    // Reset output display when switching modes (jobs keep running in background)
-    if (!generatingSceneIdRef.current) {
-      setOutputUrl(null);
-      setStatus('idle');
-      setPhotoJobStatus('idle');
-      setProgress(0);
-    }
-    // Clear file-based references when switching (they belong to the previous mode)
-    referenceImagePreviews.forEach(url => URL.revokeObjectURL(url));
-    setReferenceImages([]);
-    setReferenceImagePreviews([]);
-  }, [referenceImagePreviews]);
-
   const generatingSceneIdRef = useRef<string | null>(null);
   // Track the mode of the active generation (so sync hooks stay alive even if user browses another mode)
   const [generatingMode, setGeneratingMode] = useState<StudioMode | null>(null);
   // Track uploaded reference URLs during generation for saving to scene
   const generatingRefUrlsRef = useRef<string[]>([]);
+  const generatingSceneStateRef = useRef<{
+    settings: CinemaSettings;
+    selectedCharacters: SelectedAsset[];
+    selectedScenario: SelectedAsset | null;
+  } | null>(null);
+  const localReferenceFilesRef = useRef<Record<string, File[]>>({});
+  const localReferencePreviewUrlsRef = useRef<Record<string, string[]>>({});
+
+  const updateSceneInStoryboard = useCallback((sceneId: string, updater: (scene: StoryboardScene) => StoryboardScene) => {
+    const sceneType = getSceneTypeFromId(sceneId);
+    const setScenes = sceneType === 'photo' ? setPhotoStoryboard : setVideoStoryboard;
+    setScenes(prev => prev.map(scene => (
+      scene.id === sceneId ? updater(scene) : scene
+    )));
+  }, []);
+
+  const hydrateSceneEditor = useCallback((
+    sceneId: string,
+    sceneType: StudioMode,
+    sourceStoryboard?: StoryboardScene[],
+    options?: { preserveProcessing?: boolean },
+  ) => {
+    const fallbackScene = createEmptyScenes(sceneType).find(scene => scene.id === sceneId) ?? createEmptyScenes(sceneType)[0];
+    const storyboardForType = sourceStoryboard ?? (sceneType === 'photo' ? photoStoryboard : videoStoryboard);
+    const scene = storyboardForType.find(item => item.id === sceneId) ?? fallbackScene;
+    const localFiles = localReferenceFilesRef.current[sceneId] ?? [];
+    const localPreviews = localReferencePreviewUrlsRef.current[sceneId] ?? [];
+
+    setReferenceImages([...localFiles]);
+    setReferenceImagePreviews([...(scene.referenceUrls ?? []), ...localPreviews]);
+    setSettings(scene.settings);
+    setSelectedCharacters([...(scene.selectedCharacters ?? [])]);
+    setSelectedScenario(scene.selectedScenario ?? null);
+
+    if (options?.preserveProcessing) {
+      setOutputUrl(null);
+      return;
+    }
+
+    if (scene.outputUrl) {
+      setOutputUrl(scene.outputUrl);
+      if (!generatingSceneIdRef.current) {
+        setStatus('completed');
+        setProgress(100);
+      }
+      return;
+    }
+
+    setOutputUrl(null);
+    if (!generatingSceneIdRef.current) {
+      setStatus('idle');
+      setPhotoJobStatus('idle');
+      setProgress(0);
+    }
+  }, [photoStoryboard, videoStoryboard]);
+
+  const buildActiveSceneSnapshot = useCallback(() => {
+    const currentStoryboard = mode === 'photo' ? photoStoryboard : videoStoryboard;
+    const existingScene = currentStoryboard.find(scene => scene.id === activeSceneId);
+    if (!existingScene) return null;
+
+    const nextOutputUrl = outputUrl ?? existingScene.outputUrl;
+
+    return {
+      ...existingScene,
+      settings: { ...settings },
+      thumbnailUrl: nextOutputUrl ?? existingScene.thumbnailUrl,
+      outputUrl: nextOutputUrl,
+      referenceUrls: uniqueUrls(referenceImagePreviews.filter(url => !url.startsWith('blob:'))),
+      selectedCharacters: selectedCharacters.map(character => ({ ...character })),
+      selectedScenario: selectedScenario ? { ...selectedScenario } : null,
+      createdAt: nextOutputUrl ? (existingScene.createdAt || new Date().toISOString()) : existingScene.createdAt,
+    } satisfies StoryboardScene;
+  }, [
+    activeSceneId,
+    mode,
+    outputUrl,
+    photoStoryboard,
+    referenceImagePreviews,
+    selectedCharacters,
+    selectedScenario,
+    settings,
+    videoStoryboard,
+  ]);
+
+  const getSyncedStoryboards = useCallback(() => {
+    const snapshot = buildActiveSceneSnapshot();
+
+    if (!snapshot) {
+      return {
+        photoScenes: photoStoryboard,
+        videoScenes: videoStoryboard,
+        snapshot: null as StoryboardScene | null,
+      };
+    }
+
+    return {
+      photoScenes: mode === 'photo'
+        ? photoStoryboard.map(scene => (scene.id === activeSceneId ? snapshot : scene))
+        : photoStoryboard,
+      videoScenes: mode === 'video'
+        ? videoStoryboard.map(scene => (scene.id === activeSceneId ? snapshot : scene))
+        : videoStoryboard,
+      snapshot,
+    };
+  }, [activeSceneId, buildActiveSceneSnapshot, mode, photoStoryboard, videoStoryboard]);
+
+  const syncCurrentSceneToStoryboard = useCallback(() => {
+    localReferenceFilesRef.current[activeSceneId] = [...referenceImages];
+    localReferencePreviewUrlsRef.current[activeSceneId] = referenceImagePreviews.filter(url => url.startsWith('blob:'));
+
+    const { photoScenes, videoScenes, snapshot } = getSyncedStoryboards();
+    if (!snapshot) return { photoScenes, videoScenes };
+
+    const currentScene = (mode === 'photo' ? photoStoryboard : videoStoryboard)
+      .find(scene => scene.id === activeSceneId);
+
+    if (currentScene && JSON.stringify(currentScene) !== JSON.stringify(snapshot)) {
+      if (mode === 'photo') {
+        setPhotoStoryboard(photoScenes);
+      } else {
+        setVideoStoryboard(videoScenes);
+      }
+    }
+
+    return { photoScenes, videoScenes };
+  }, [
+    activeSceneId,
+    getSyncedStoryboards,
+    mode,
+    photoStoryboard,
+    referenceImagePreviews,
+    referenceImages,
+    videoStoryboard,
+  ]);
+
+  // Wrap setMode to restore scene state when switching
+  const setMode = useCallback((newMode: StudioMode) => {
+    if (newMode === mode) return;
+    syncCurrentSceneToStoryboard();
+    setModeRaw(newMode);
+    const targetSceneId = newMode === 'photo' ? activePhotoSceneId : activeVideoSceneId;
+    hydrateSceneEditor(targetSceneId, newMode);
+  }, [activePhotoSceneId, activeVideoSceneId, hydrateSceneEditor, mode, syncCurrentSceneToStoryboard]);
 
   // Modals
   const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
@@ -202,7 +348,9 @@ export function useCinemaStudio() {
   const maxRefImages = mode === 'photo' ? 3 : 9;
   const addReferenceImages = useCallback((files: FileList | null) => {
     if (!files) return;
-    const max = maxRefImages - referenceImages.length;
+    const max = maxRefImages - referenceImagePreviews.length;
+    if (max <= 0) return;
+
     const newFiles: File[] = [];
     const newPreviews: string[] = [];
     for (let i = 0; i < Math.min(files.length, max); i++) {
@@ -212,15 +360,41 @@ export function useCinemaStudio() {
       newFiles.push(f);
       newPreviews.push(URL.createObjectURL(f));
     }
+
+    localReferenceFilesRef.current[activeSceneId] = [
+      ...(localReferenceFilesRef.current[activeSceneId] ?? []),
+      ...newFiles,
+    ];
+    localReferencePreviewUrlsRef.current[activeSceneId] = [
+      ...(localReferencePreviewUrlsRef.current[activeSceneId] ?? []),
+      ...newPreviews,
+    ];
+
     setReferenceImages(prev => [...prev, ...newFiles]);
     setReferenceImagePreviews(prev => [...prev, ...newPreviews]);
-  }, [referenceImages.length, maxRefImages]);
+  }, [activeSceneId, maxRefImages, referenceImagePreviews.length]);
 
   const removeReferenceImage = useCallback((index: number) => {
-    URL.revokeObjectURL(referenceImagePreviews[index]);
-    setReferenceImages(prev => prev.filter((_, i) => i !== index));
+    const sceneId = activeSceneId;
+    const persistedReferences = storyboard.find(scene => scene.id === sceneId)?.referenceUrls ?? [];
+
+    if (index < persistedReferences.length) {
+      updateSceneInStoryboard(sceneId, scene => ({
+        ...scene,
+        referenceUrls: (scene.referenceUrls ?? []).filter((_, itemIndex) => itemIndex !== index),
+      }));
+    } else {
+      const localIndex = index - persistedReferences.length;
+      const localPreviews = localReferencePreviewUrlsRef.current[sceneId] ?? [];
+      const localFiles = localReferenceFilesRef.current[sceneId] ?? [];
+      revokeObjectUrls([localPreviews[localIndex] ?? '']);
+      localReferencePreviewUrlsRef.current[sceneId] = localPreviews.filter((_, itemIndex) => itemIndex !== localIndex);
+      localReferenceFilesRef.current[sceneId] = localFiles.filter((_, itemIndex) => itemIndex !== localIndex);
+      setReferenceImages(localReferenceFilesRef.current[sceneId]);
+    }
+
     setReferenceImagePreviews(prev => prev.filter((_, i) => i !== index));
-  }, [referenceImagePreviews]);
+  }, [activeSceneId, storyboard, updateSceneInStoryboard]);
 
   // ━━━ Elapsed timer ━━━
   useEffect(() => {
@@ -249,7 +423,7 @@ export function useCinemaStudio() {
   useEffect(() => {
     return () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-      referenceImagePreviews.forEach(u => URL.revokeObjectURL(u));
+      revokeObjectUrls(Object.values(localReferencePreviewUrlsRef.current).flat());
     };
   }, []);
 
@@ -281,17 +455,24 @@ export function useCinemaStudio() {
         // Save to the scene that started the generation
         const targetScene = generatingSceneIdRef.current;
         if (targetScene) {
-          setStoryboard(prev => prev.map(s =>
-            s.id === targetScene
-              ? { ...s, thumbnailUrl: update.outputUrl!, outputUrl: update.outputUrl!, settings: { ...settings }, type: 'photo' as StudioMode, createdAt: new Date().toISOString(), referenceUrls: [...generatingRefUrlsRef.current] }
-              : s
-          ));
+            const generatedSceneState = generatingSceneStateRef.current;
+            updateSceneInStoryboard(targetScene, scene => ({
+              ...scene,
+              thumbnailUrl: update.outputUrl!,
+              outputUrl: update.outputUrl!,
+              settings: generatedSceneState?.settings ?? scene.settings,
+              createdAt: new Date().toISOString(),
+              referenceUrls: uniqueUrls(generatingRefUrlsRef.current),
+              selectedCharacters: generatedSceneState?.selectedCharacters ?? scene.selectedCharacters ?? [],
+              selectedScenario: generatedSceneState?.selectedScenario ?? scene.selectedScenario ?? null,
+            }));
           // If user navigated away, don't overwrite their current view — but if still on same scene, show it
           if (activeSceneId !== targetScene) {
             // User is viewing another scene; result saved silently
           }
         }
         generatingSceneIdRef.current = null;
+          generatingSceneStateRef.current = null;
         setGeneratingMode(null);
       } else if (update.status === 'failed') {
         setStatus('error');
@@ -300,6 +481,7 @@ export function useCinemaStudio() {
         toast.error(errInfo.message);
         refetchCredits();
         generatingSceneIdRef.current = null;
+          generatingSceneStateRef.current = null;
         setGeneratingMode(null);
       }
     },
@@ -342,13 +524,20 @@ export function useCinemaStudio() {
           // Save to the scene that started the generation
           const targetScene = generatingSceneIdRef.current;
           if (targetScene) {
-            setStoryboard(prev => prev.map(s =>
-              s.id === targetScene
-                ? { ...s, thumbnailUrl: data.outputUrl, outputUrl: data.outputUrl, settings: { ...settings }, type: 'video' as StudioMode, createdAt: new Date().toISOString(), referenceUrls: [...generatingRefUrlsRef.current] }
-                : s
-            ));
+            const generatedSceneState = generatingSceneStateRef.current;
+            updateSceneInStoryboard(targetScene, scene => ({
+              ...scene,
+              thumbnailUrl: data.outputUrl,
+              outputUrl: data.outputUrl,
+              settings: generatedSceneState?.settings ?? scene.settings,
+              createdAt: new Date().toISOString(),
+              referenceUrls: uniqueUrls(generatingRefUrlsRef.current),
+              selectedCharacters: generatedSceneState?.selectedCharacters ?? scene.selectedCharacters ?? [],
+              selectedScenario: generatedSceneState?.selectedScenario ?? scene.selectedScenario ?? null,
+            }));
           }
           generatingSceneIdRef.current = null;
+          generatingSceneStateRef.current = null;
           setGeneratingMode(null);
         } else if (data.status === 'failed') {
           clearInterval(pollIntervalRef.current!);
@@ -359,6 +548,7 @@ export function useCinemaStudio() {
           toast.error('Erro na geração');
           endSubmit();
           generatingSceneIdRef.current = null;
+          generatingSceneStateRef.current = null;
           setGeneratingMode(null);
         } else if (data.progress) {
           setProgress(prev => Math.max(prev, data.progress));
@@ -411,6 +601,11 @@ export function useCinemaStudio() {
     setProgress(5);
     generatingSceneIdRef.current = activeSceneId;
     setGeneratingMode('photo');
+    generatingSceneStateRef.current = {
+      settings: { ...settings },
+      selectedCharacters: selectedCharacters.map(character => ({ ...character })),
+      selectedScenario: selectedScenario ? { ...selectedScenario } : null,
+    };
 
     try {
       // Collect and optimize all reference images
@@ -427,9 +622,7 @@ export function useCinemaStudio() {
       }
 
       // 1b. Restored reference URLs (already uploaded, from saved scenes)
-      if (referenceImages.length === 0 && referenceImagePreviews.length > 0) {
-        referenceImagePreviews.filter(url => !url.startsWith('blob:')).forEach(url => uploadedUrls.push(url));
-      }
+      referenceImagePreviews.filter(url => !url.startsWith('blob:')).forEach(url => uploadedUrls.push(url));
 
       // 2. Character images (already hosted in cinema-assets)
       selectedCharacters.forEach(char => {
@@ -441,7 +634,7 @@ export function useCinemaStudio() {
         uploadedUrls.push(selectedScenario.image_url);
       }
 
-      generatingRefUrlsRef.current = [...uploadedUrls];
+      generatingRefUrlsRef.current = uniqueUrls(uploadedUrls);
       setProgress(20);
 
       // Create job in image_generator_jobs (exact same as GerarImagemTool)
@@ -502,6 +695,7 @@ export function useCinemaStudio() {
       const errInfo = getAIErrorMessage(error.message || 'Erro desconhecido');
       toast.error(errInfo.message);
       generatingSceneIdRef.current = null;
+      generatingSceneStateRef.current = null;
       setGeneratingMode(null);
 
       if (jobId) {
@@ -521,6 +715,11 @@ export function useCinemaStudio() {
     setProgress(5);
     generatingSceneIdRef.current = activeSceneId;
     setGeneratingMode('video');
+    generatingSceneStateRef.current = {
+      settings: { ...settings },
+      selectedCharacters: selectedCharacters.map(character => ({ ...character })),
+      selectedScenario: selectedScenario ? { ...selectedScenario } : null,
+    };
 
     try {
       const timestamp = Date.now();
@@ -537,9 +736,7 @@ export function useCinemaStudio() {
       }
 
       // Restored reference URLs (already uploaded, from saved scenes)
-      if (referenceImages.length === 0 && referenceImagePreviews.length > 0) {
-        referenceImagePreviews.filter(url => !url.startsWith('blob:')).forEach(url => uploadedImageUrls.push(url));
-      }
+      referenceImagePreviews.filter(url => !url.startsWith('blob:')).forEach(url => uploadedImageUrls.push(url));
 
       // Add character and scenario image URLs (already hosted)
       selectedCharacters.forEach(char => {
@@ -547,7 +744,7 @@ export function useCinemaStudio() {
       });
       if (selectedScenario?.image_url) uploadedImageUrls.push(selectedScenario.image_url);
 
-      generatingRefUrlsRef.current = [...uploadedImageUrls];
+      generatingRefUrlsRef.current = uniqueUrls(uploadedImageUrls);
       setProgress(30);
 
       // Translate prompt to Chinese for better Seedance efficiency
@@ -608,6 +805,7 @@ export function useCinemaStudio() {
       toast.error('Erro ao gerar');
       endSubmit();
       generatingSceneIdRef.current = null;
+      generatingSceneStateRef.current = null;
       setGeneratingMode(null);
     }
   };
@@ -641,6 +839,7 @@ export function useCinemaStudio() {
     endSubmit();
     clearGlobalJob();
     generatingSceneIdRef.current = null;
+    generatingSceneStateRef.current = null;
     setGeneratingMode(null);
   }, [endSubmit, clearGlobalJob]);
 
@@ -653,6 +852,7 @@ export function useCinemaStudio() {
     endSubmit();
     clearGlobalJob();
     generatingSceneIdRef.current = null;
+    generatingSceneStateRef.current = null;
     setGeneratingMode(null);
     toast.info('Geração cancelada');
   }, [endSubmit, clearGlobalJob]);
@@ -666,67 +866,50 @@ export function useCinemaStudio() {
   }, []);
 
   const removeFromStoryboard = useCallback((id: string) => {
-    // Clear slot instead of removing
-    setStoryboard(prev => prev.map(s =>
-      s.id === id
-        ? { ...s, thumbnailUrl: null, outputUrl: null, createdAt: '' }
-        : s
-    ));
+    revokeObjectUrls(localReferencePreviewUrlsRef.current[id] ?? []);
+    localReferenceFilesRef.current[id] = [];
+    localReferencePreviewUrlsRef.current[id] = [];
+
+    updateSceneInStoryboard(id, scene => ({
+      ...scene,
+      settings: getDefaultSettings(),
+      thumbnailUrl: null,
+      outputUrl: null,
+      createdAt: '',
+      referenceUrls: [],
+      selectedCharacters: [],
+      selectedScenario: null,
+    }));
+
     if (activeSceneId === id) {
+      setReferenceImages([]);
+      setReferenceImagePreviews([]);
+      setSelectedCharacters([]);
+      setSelectedScenario(null);
+      setSettings(getDefaultSettings());
       setOutputUrl(null);
       setStatus('idle');
       setPhotoJobStatus('idle');
     }
-  }, [activeSceneId]);
+  }, [activeSceneId, updateSceneInStoryboard]);
 
   const loadScene = useCallback((id: string) => {
     const scene = storyboard.find(s => s.id === id);
     if (!scene) return;
 
-    const isGenerating = !!generatingSceneIdRef.current;
     const switchingToGeneratingScene = generatingSceneIdRef.current === id;
 
+    syncCurrentSceneToStoryboard();
     setActiveSceneId(id);
-
-    if (switchingToGeneratingScene) {
-      // Returning to the scene that is actively generating — restore processing UI
-      // Don't touch status/progress/jobId — they're still live
-      setOutputUrl(null);
-      return;
-    }
-
-    if (scene.outputUrl) {
-      // Show saved result (only change UI state, don't kill job)
-      setOutputUrl(scene.outputUrl);
-      if (!isGenerating) {
-        setStatus('completed');
-        setProgress(100);
-      }
-      setSettings(scene.settings);
-      // Don't call setMode here — it clears references. Mode is set by the storyboard strip context.
-    } else {
-      // Empty slot — show idle UI but don't kill active job
-      setOutputUrl(null);
-      if (!isGenerating) {
-        setStatus('idle');
-        setPhotoJobStatus('idle');
-        setProgress(0);
-      }
-    }
-
-    // Restore saved reference URLs as previews
-    referenceImagePreviews.forEach(url => URL.revokeObjectURL(url));
-    if (scene.referenceUrls && scene.referenceUrls.length > 0) {
-      setReferenceImages([]);
-      setReferenceImagePreviews(scene.referenceUrls);
-    } else {
-      setReferenceImages([]);
-      setReferenceImagePreviews([]);
-    }
-  }, [storyboard, referenceImagePreviews]);
+    hydrateSceneEditor(id, mode, storyboard, { preserveProcessing: switchingToGeneratingScene });
+  }, [hydrateSceneEditor, mode, setActiveSceneId, storyboard, syncCurrentSceneToStoryboard]);
 
   // ━━━ Restore storyboard from saved project ━━━
   const restoreStoryboard = useCallback((scenes: StoryboardScene[]) => {
+    revokeObjectUrls(Object.values(localReferencePreviewUrlsRef.current).flat());
+    localReferenceFilesRef.current = {};
+    localReferencePreviewUrlsRef.current = {};
+
     // Separate scenes by type and pad to MAX_SCENES
     const photoScenes = scenes.filter(s => s.type === 'photo');
     const videoScenes = scenes.filter(s => s.type === 'video');
@@ -752,24 +935,23 @@ export function useCinemaStudio() {
     setStatus('idle');
     setPhotoJobStatus('idle');
     setProgress(0);
-    referenceImagePreviews.forEach(url => URL.revokeObjectURL(url));
     setReferenceImages([]);
     setReferenceImagePreviews([]);
-  }, [referenceImagePreviews]);
+    setSelectedCharacters([]);
+    setSelectedScenario(null);
+  }, []);
 
   const addNewScene = useCallback(() => {
     // Find first empty slot
     const emptySlot = storyboard.find(s => !s.outputUrl);
     if (emptySlot) {
+      syncCurrentSceneToStoryboard();
       setActiveSceneId(emptySlot.id);
-      setOutputUrl(null);
-      setStatus('idle');
-      setPhotoJobStatus('idle');
-      setProgress(0);
+      hydrateSceneEditor(emptySlot.id, mode, storyboard);
     } else {
       toast.error('Todas as 10 cenas estão ocupadas. Limpe uma para continuar.');
     }
-  }, [storyboard]);
+  }, [hydrateSceneEditor, mode, storyboard, syncCurrentSceneToStoryboard]);
 
   // ━━━ Animate All Scenes → Video Mode ━━━
   const animateAllScenes = useCallback(async () => {
@@ -779,10 +961,11 @@ export function useCinemaStudio() {
       return;
     }
 
-    // Clear current video references
-    referenceImagePreviews.forEach(url => URL.revokeObjectURL(url));
-    setReferenceImages([]);
-    setReferenceImagePreviews([]);
+    const targetSceneId = activeVideoSceneId;
+    revokeObjectUrls(localReferencePreviewUrlsRef.current[targetSceneId] ?? []);
+    localReferenceFilesRef.current[targetSceneId] = [];
+    localReferencePreviewUrlsRef.current[targetSceneId] = [];
+    updateSceneInStoryboard(targetSceneId, scene => ({ ...scene, referenceUrls: [] }));
 
     // Fetch scene images as File objects and create previews (max 9 for video)
     const scenesToUse = generated.slice(0, 9);
@@ -809,13 +992,72 @@ export function useCinemaStudio() {
 
     // Switch to video mode with images as references
     setMode('video');
+    localReferenceFilesRef.current[targetSceneId] = newFiles;
+    localReferencePreviewUrlsRef.current[targetSceneId] = newPreviews;
     setReferenceImages(newFiles);
     setReferenceImagePreviews(newPreviews);
     setOutputUrl(null);
     setStatus('idle');
     setProgress(0);
     toast.success(`${newFiles.length} cena(s) carregada(s) como referência de vídeo`);
-  }, [storyboard, referenceImagePreviews]);
+  }, [activeVideoSceneId, setMode, storyboard, updateSceneInStoryboard]);
+
+  const buildPersistedProjectState = useCallback(async () => {
+    const { photoScenes: syncedPhotoScenes, videoScenes: syncedVideoScenes } = syncCurrentSceneToStoryboard();
+    const syncedScenes = [...syncedPhotoScenes, ...syncedVideoScenes];
+
+    const persistedScenes = await Promise.all(syncedScenes.map(async (scene) => {
+      const localFiles = localReferenceFilesRef.current[scene.id] ?? [];
+      if (!user?.id || localFiles.length === 0) {
+        const normalizedReferenceUrls = uniqueUrls(scene.referenceUrls ?? []);
+        return JSON.stringify(normalizedReferenceUrls) === JSON.stringify(scene.referenceUrls ?? [])
+          ? scene
+          : { ...scene, referenceUrls: normalizedReferenceUrls };
+      }
+
+      const folder = `cinema-studio/${user.id}/${scene.id}`;
+      const uploadedUrls: string[] = [];
+
+      for (const file of localFiles) {
+        const result = await uploadToStorageLegacy(file, folder);
+        if (!result.success || !result.url) {
+          throw new Error(result.error || `Falha ao salvar as referências da ${scene.name}.`);
+        }
+        uploadedUrls.push(result.url);
+      }
+
+      revokeObjectUrls(localReferencePreviewUrlsRef.current[scene.id] ?? []);
+      localReferenceFilesRef.current[scene.id] = [];
+      localReferencePreviewUrlsRef.current[scene.id] = [];
+
+      return {
+        ...scene,
+        referenceUrls: uniqueUrls([...(scene.referenceUrls ?? []), ...uploadedUrls]),
+      } satisfies StoryboardScene;
+    }));
+
+    const hasNormalizedChanges = persistedScenes.some((scene, index) => scene !== syncedScenes[index]);
+    if (hasNormalizedChanges) {
+      const nextPhotoScenes = persistedScenes.filter(scene => scene.type === 'photo');
+      const nextVideoScenes = persistedScenes.filter(scene => scene.type === 'video');
+      setPhotoStoryboard(nextPhotoScenes);
+      setVideoStoryboard(nextVideoScenes);
+
+      const currentSceneId = mode === 'photo' ? activePhotoSceneId : activeVideoSceneId;
+      const currentScene = persistedScenes.find(scene => scene.id === currentSceneId);
+      if (currentScene) {
+        setReferenceImages([]);
+        setReferenceImagePreviews(currentScene.referenceUrls ?? []);
+      }
+    }
+
+    return {
+      scenes: persistedScenes,
+      activeMode: mode,
+      activePhotoSceneId,
+      activeVideoSceneId,
+    };
+  }, [activePhotoSceneId, activeVideoSceneId, mode, syncCurrentSceneToStoryboard, user?.id]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -844,6 +1086,7 @@ export function useCinemaStudio() {
     storyboard, activeSceneId,
     photoStoryboard, videoStoryboard, activePhotoSceneId, activeVideoSceneId,
     addToStoryboard, removeFromStoryboard, loadScene, addNewScene, animateAllScenes, restoreStoryboard,
+    buildPersistedProjectState,
 
     // Modals
     showNoCreditsModal, setShowNoCreditsModal, noCreditsReason,
