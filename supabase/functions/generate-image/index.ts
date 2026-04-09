@@ -73,7 +73,7 @@ serve(async (req) => {
     let creditDescription: string;
 
     if (source === "arcano_cloner_refine" || source === "flyer_maker_refine") {
-      creditCost = 30;
+      creditCost = 50;
       creditDescription = source === "flyer_maker_refine"
         ? "Refinamento Flyer Maker"
         : "Refinamento Arcano Cloner";
