@@ -26,16 +26,10 @@ import AppLayout from '@/components/layout/AppLayout';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 const ASPECT_RATIOS = [
-  { ratio: '9:16',  label: 'Story',  w: 14, h: 22 },
-  { ratio: '1:1',   label: 'Quadrado', w: 18, h: 18 },
-  { ratio: '3:4',   label: 'Retrato', w: 16, h: 20 },
-  { ratio: '4:3',   label: 'Clássico', w: 22, h: 16 },
-  { ratio: '16:9',  label: 'Wide',   w: 26, h: 14 },
-  { ratio: '2:3',   label: '2:3',   w: 14, h: 20 },
-  { ratio: '3:2',   label: '3:2',   w: 20, h: 14 },
-  { ratio: '4:5',   label: '4:5',   w: 16, h: 19 },
-  { ratio: '5:4',   label: '5:4',   w: 19, h: 16 },
-  { ratio: '21:9',  label: 'Ultra',  w: 28, h: 12 },
+  { ratio: '1:1',   label: 'Quadrado',      w: 12, h: 12 },
+  { ratio: '3:4',   label: 'Feed Vertical',  w: 10, h: 13 },
+  { ratio: '16:9',  label: 'Wide',           w: 16, h: 9 },
+  { ratio: '9:16',  label: 'Stories',         w: 9, h: 16 },
 ] as const;
 
 const ENGINE_STORAGE_KEY = 'gerar-imagem:selected-engine';
@@ -52,7 +46,9 @@ const GerarImagemTool = () => {
 
   const [prompt, setPrompt] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
-  const [aspectRatio, setAspectRatio] = useState<string>('4:3');
+  const [aspectRatio, setAspectRatio] = useState<string>('1:1');
+  const [aspectDropdownOpen, setAspectDropdownOpen] = useState(false);
+  const aspectDropdownRef = useRef<HTMLDivElement>(null);
   const [engine, setEngine] = useState<'flux2_klein' | 'nano_banana'>(() => {
     try {
       const savedEngine = sessionStorage.getItem(ENGINE_STORAGE_KEY);
