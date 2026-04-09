@@ -541,7 +541,7 @@ const GerarImagemTool = () => {
                   <p className="text-xs text-purple-400">Aguardando vaga...</p>
                 </div>
               ) : (
-                <p className="text-sm">Gerando sua imagem...</p>
+                <p className="text-sm">Gerando com {engine === 'flux2_klein' ? 'Flux2 Klein' : 'Nano Banana'}...</p>
               )}
               {/* Progress bar */}
               <div className="w-48 h-1.5 rounded-full bg-purple-900/50 overflow-hidden">
