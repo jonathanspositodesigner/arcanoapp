@@ -2186,6 +2186,7 @@ export type Database = {
           credits_charged: boolean | null
           credits_refunded: boolean | null
           current_step: string | null
+          engine: string | null
           error_message: string | null
           failed_at_step: string | null
           id: string
@@ -2200,6 +2201,7 @@ export type Database = {
           raw_webhook_payload: Json | null
           reference_images: Json | null
           rh_cost: number | null
+          runninghub_task_id: string | null
           session_id: string | null
           started_at: string | null
           status: string
@@ -2218,6 +2220,7 @@ export type Database = {
           credits_charged?: boolean | null
           credits_refunded?: boolean | null
           current_step?: string | null
+          engine?: string | null
           error_message?: string | null
           failed_at_step?: string | null
           id?: string
@@ -2232,6 +2235,7 @@ export type Database = {
           raw_webhook_payload?: Json | null
           reference_images?: Json | null
           rh_cost?: number | null
+          runninghub_task_id?: string | null
           session_id?: string | null
           started_at?: string | null
           status?: string
@@ -2250,6 +2254,7 @@ export type Database = {
           credits_charged?: boolean | null
           credits_refunded?: boolean | null
           current_step?: string | null
+          engine?: string | null
           error_message?: string | null
           failed_at_step?: string | null
           id?: string
@@ -2264,6 +2269,7 @@ export type Database = {
           raw_webhook_payload?: Json | null
           reference_images?: Json | null
           rh_cost?: number | null
+          runninghub_task_id?: string | null
           session_id?: string | null
           started_at?: string | null
           status?: string
