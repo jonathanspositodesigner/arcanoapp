@@ -111,30 +111,20 @@ const CinemaStudio: React.FC = () => {
   // Handle back to picker
   const handleBackToPicker = useCallback(async () => {
     if (projectManager.activeProject) {
-      const sceneIndex = studio.storyboard.findIndex(s => s.id === studio.activeSceneId);
-      await projectManager.saveProject(
-        projectManager.activeProject.id,
-        studio.storyboard,
-        sceneIndex >= 0 ? sceneIndex : 0,
-      );
+      await projectManager.saveProject(projectManager.activeProject.id, buildProjectState());
       toast.success('Projeto salvo ✓');
     }
     projectManager.setActiveProject(null);
     setView('picker');
     projectManager.fetchProjects();
-  }, [projectManager, studio]);
+  }, [projectManager, buildProjectState]);
 
   // Handle manual save
   const handleManualSave = useCallback(async () => {
     if (!projectManager.activeProject) return;
-    const sceneIndex = studio.storyboard.findIndex(s => s.id === studio.activeSceneId);
-    await projectManager.saveProject(
-      projectManager.activeProject.id,
-      studio.storyboard,
-      sceneIndex >= 0 ? sceneIndex : 0,
-    );
+    await projectManager.saveProject(projectManager.activeProject.id, buildProjectState());
     toast.success('Projeto salvo ✓');
-  }, [projectManager, studio]);
+  }, [projectManager, buildProjectState]);
 
   // Format last saved
   const lastSavedText = projectManager.lastSavedAt
