@@ -358,8 +358,8 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Wan 2.2', iconType: 'video', included: true },
-        { text: 'Flux 2 Klein', iconType: 'image', included: true },
+        { text: 'Wan 2.2', iconType: 'video', included: true, badge: 'Ilimitado' },
+        { text: 'Flux 2 Klein', iconType: 'image', included: true, badge: 'Ilimitado' },
         { text: 'Nano Banana Pro', iconType: 'image', included: true, badge: 'Ilimitado' },
         { text: 'Veo 3.1', iconType: 'video', included: true, badge: '7 dias ilimitado' },
         { text: 'Fila prioritária nas gerações de IA', included: true }
@@ -615,6 +615,8 @@ const Planos2 = () => {
                         <X className="w-3 h-3 text-orange-500 shrink-0 mt-0.5" />
                       )}
                       <span className={`${feature.included ? "text-purple-200" : "text-orange-500"} flex items-center gap-1.5`}>
+                        {(feature as any).iconType === 'video' && <Video className="w-3 h-3 shrink-0" />}
+                        {(feature as any).iconType === 'image' && <ImageIcon className="w-3 h-3 shrink-0" />}
                         {feature.text}
                         {(feature as any).badge && (
                           <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-gradient-to-r from-yellow-400 to-amber-500 text-black leading-none">
