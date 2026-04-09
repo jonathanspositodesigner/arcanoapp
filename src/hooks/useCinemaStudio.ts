@@ -536,6 +536,11 @@ export function useCinemaStudio() {
         }
       }
 
+      // Restored reference URLs (already uploaded, from saved scenes)
+      if (referenceImages.length === 0 && referenceImagePreviews.length > 0) {
+        referenceImagePreviews.filter(url => !url.startsWith('blob:')).forEach(url => uploadedImageUrls.push(url));
+      }
+
       // Add character and scenario image URLs (already hosted)
       selectedCharacters.forEach(char => {
         if (char.image_url) uploadedImageUrls.push(char.image_url);
