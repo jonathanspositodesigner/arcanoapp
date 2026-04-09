@@ -465,7 +465,7 @@ async function handleRun(req: Request) {
   const verifiedUserId = user.id;
 
   const body = await req.json();
-  const { prompt, aspect_ratio, model, start_frame, end_frame } = body;
+  const { prompt, aspect_ratio, model, start_frame, end_frame, generate_audio: requestAudio } = body;
 
   if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
     return new Response(JSON.stringify({ error: 'Prompt é obrigatório' }), {
