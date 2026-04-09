@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star, ShieldCheck, Headset, Loader2, CreditCard, QrCode } from "lucide-react";
+import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star, ShieldCheck, Headset, Loader2, CreditCard, QrCode, Video, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -231,8 +231,8 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Wan 2.2', iconType: 'video', included: true },
-        { text: 'Flux 2 Klein', iconType: 'image', included: true },
+        { text: 'Wan 2.2', iconType: 'video', included: true, badge: 'Ilimitado' },
+        { text: 'Flux 2 Klein', iconType: 'image', included: true, badge: 'Ilimitado' },
         { text: 'Nano Banana Pro', iconType: 'image', included: true, badge: 'Ilimitado' },
         { text: 'Veo 3.1', iconType: 'video', included: true, badge: '7 dias ilimitado' },
         { text: 'Fila prioritária nas gerações de IA', included: true }
