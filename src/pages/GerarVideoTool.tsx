@@ -127,6 +127,7 @@ const GerarVideoTool = () => {
   const evolinkPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const currentModel = availableModels.find(m => m.id === selectedModel) || availableModels[0];
+  const isVeoModel = selectedModel === 'veo3.1-fast' || selectedModel === 'veo3.1-pro';
   
   // For trial users on veo3.1-fast, cost is 0
   const effectiveCost = (isVeoModel && generateAudio) ? currentModel.costWithAudio : currentModel.cost;
@@ -139,9 +140,7 @@ const GerarVideoTool = () => {
   // Reset audio when switching away from Veo models
   useEffect(() => {
     if (!isVeoModel) setGenerateAudio(false);
-  }, [selectedModel]);
-
-  const isVeoModel = selectedModel === 'veo3.1-fast' || selectedModel === 'veo3.1-pro';
+  }, [selectedModel, isVeoModel]);
 
   // 5 min watchdog for stuck pending jobs
   useJobPendingWatchdog({
