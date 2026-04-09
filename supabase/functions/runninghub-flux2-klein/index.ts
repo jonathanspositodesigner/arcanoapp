@@ -136,7 +136,7 @@ async function handleRun(req: Request) {
   }
   const verifiedUserId = user.id;
 
-  const { jobId, prompt, aspectRatio, creditCost } = await req.json();
+  const { jobId, prompt, aspectRatio, creditCost, referenceImageUrls } = await req.json();
 
   // Validate
   if (!jobId || typeof jobId !== 'string') {
@@ -158,7 +158,10 @@ async function handleRun(req: Request) {
   // Resolve dimensions from aspect ratio
   const dims = ASPECT_DIMENSIONS[aspectRatio] || ASPECT_DIMENSIONS['4:3'];
 
-  await logStep(jobId, 'validating', { aspectRatio, width: dims.width, height: dims.height });
+  // Validate image URLs
+  const imageUrls: string[] = Array.isArray(referenceImageUrls) ? referenceImageUrls.slice(0, 5) : [];
+
+  await logStep(jobId, 'validating', { aspectRatio, width: dims.width, height: dims.height, imageCount: imageUrls.length });
 
   // Load API credentials
   const RUNNINGHUB_API_KEY = (Deno.env.get('RUNNINGHUB_API_KEY') || '').trim();
@@ -169,12 +172,53 @@ async function handleRun(req: Request) {
     });
   }
 
+  // ========== UPLOAD REFERENCE IMAGES TO RUNNINGHUB ==========
+  const uploadedFileNames: string[] = [];
+  if (imageUrls.length > 0) {
+    try {
+      for (let i = 0; i < imageUrls.length; i++) {
+        await logStep(jobId, `downloading_ref_image_${i + 1}`);
+        const imgResponse = await fetch(imageUrls[i]);
+        if (!imgResponse.ok) throw new Error(`Failed to download ref image ${i + 1} (${imgResponse.status})`);
+        const imgBlob = await imgResponse.blob();
+        const imgName = imageUrls[i].split('/').pop() || `ref_${i + 1}.png`;
+        const formData = new FormData();
+        formData.append('apiKey', RUNNINGHUB_API_KEY);
+        formData.append('fileType', 'image');
+        formData.append('file', imgBlob, imgName);
+        await logStep(jobId, `uploading_ref_image_${i + 1}`);
+        const uploadResponse = await fetchWithRetry(
+          'https://www.runninghub.ai/task/openapi/upload',
+          { method: 'POST', body: formData },
+          `Ref image ${i + 1} upload`
+        );
+        const uploadText = await uploadResponse.text();
+        let uploadData: any;
+        try { uploadData = JSON.parse(uploadText); } catch { throw new Error(`Ref upload ${i+1} invalid response`); }
+        if (uploadData.code !== 0) throw new Error(`Ref image ${i + 1} upload failed: ${uploadData.msg || 'Unknown'}`);
+        uploadedFileNames.push(uploadData.data.fileName);
+        console.log(`[Flux2Klein] Ref image ${i + 1} uploaded: ${uploadData.data.fileName}`);
+      }
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : 'Image transfer failed';
+      console.error('[Flux2Klein] Image transfer error:', error);
+      await logStep(jobId, 'image_transfer_failed', { error: errMsg });
+      await supabase.from(TABLE_NAME).update({
+        status: 'failed', error_message: `IMAGE_TRANSFER_ERROR: ${errMsg.slice(0, 200)}`,
+        completed_at: new Date().toISOString(),
+      }).eq('id', jobId);
+      return new Response(JSON.stringify({ error: errMsg, code: 'IMAGE_TRANSFER_ERROR' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+  }
+
   // ========== CONSUME CREDITS ==========
   await logStep(jobId, 'consuming_credits', { amount: creditCost });
 
   const { data: creditResult, error: creditError } = await supabase.rpc(
     'consume_upscaler_credits',
-    { _user_id: verifiedUserId, _amount: creditCost, _description: 'Gerar Imagem - Flux2 Klein' }
+    { _user_id: verifiedUserId, _amount: creditCost, _description: 'Gerar Imagem' }
   );
 
   if (creditError) {
@@ -205,21 +249,29 @@ async function handleRun(req: Request) {
       width: dims.width,
       height: dims.height,
       engine: 'flux2_klein',
+      referenceFileNames: uploadedFileNames,
     },
+    input_urls: imageUrls.length > 0 ? imageUrls : null,
   }).eq('id', jobId);
 
   // ========== SUBMIT TO RUNNINGHUB ==========
   await logStep(jobId, 'submitting_to_runninghub');
 
-  const submitBody = {
-    nodeInfoList: [
-      { nodeId: "129", fieldName: "text", fieldValue: prompt.trim(), description: "PROMPT" },
-      { nodeId: "177", fieldName: "width", fieldValue: String(dims.width), description: "LARGURA" },
-      { nodeId: "177", fieldName: "height", fieldValue: String(dims.height), description: "ALTURA" },
-    ],
-    instanceType: "default",
-    usePersonalQueue: "false",
-  };
+  // Build nodeInfoList — image reference nodes: 186, 187, 122, 123, 129
+  const IMAGE_NODE_IDS = ["186", "187", "122", "123", "129"];
+  const paddedFileNames = [...uploadedFileNames];
+  while (paddedFileNames.length < IMAGE_NODE_IDS.length) {
+    paddedFileNames.push('example.png');
+  }
+  const nodeInfoList: any[] = [];
+  for (let i = 0; i < IMAGE_NODE_IDS.length; i++) {
+    nodeInfoList.push({ nodeId: IMAGE_NODE_IDS[i], fieldName: "image", fieldValue: paddedFileNames[i], description: "image" });
+  }
+  nodeInfoList.push({ nodeId: "128", fieldName: "text", fieldValue: prompt.trim(), description: "PROMPT" });
+  nodeInfoList.push({ nodeId: "177", fieldName: "width", fieldValue: String(dims.width), description: "LARGURA" });
+  nodeInfoList.push({ nodeId: "177", fieldName: "height", fieldValue: String(dims.height), description: "ALTURA" });
+
+  const submitBody = { nodeInfoList, instanceType: "default", usePersonalQueue: "false" };
 
   let taskId: string;
   try {
