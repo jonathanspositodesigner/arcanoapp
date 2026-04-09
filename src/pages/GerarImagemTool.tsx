@@ -279,12 +279,23 @@ const GerarImagemTool = () => {
 
       if (engine === 'flux2_klein') {
         // ========== FLUX2 KLEIN FLOW ==========
-        // Create job in DB with engine field
+        // Optimize and upload reference images
+        const uploadedUrls: string[] = [];
+        for (let i = 0; i < referenceImages.length; i++) {
+          toast.info(`Otimizando imagem ${i + 1}/${referenceImages.length}...`);
+          const optimized = await optimizeForAI(referenceImages[i].file);
+          const uploadResult = await uploadToStorage(optimized.file, 'image-generator', user.id);
+          if (!uploadResult.url) throw new Error(`Falha ao enviar imagem ${i + 1}`);
+          uploadedUrls.push(uploadResult.url);
+          setProgress(5 + Math.round((i + 1) / referenceImages.length * 15));
+        }
+
         const { jobId: newJobId, error: createError } = await createJob('image_generator', user.id, sessionIdRef.current, {
           prompt: prompt.trim(),
           aspect_ratio: aspectRatio,
           model: 'flux2_klein',
           engine: 'flux2_klein',
+          input_urls: uploadedUrls,
         });
 
         if (createError || !newJobId) throw new Error(createError || 'Falha ao criar job');
@@ -301,6 +312,7 @@ const GerarImagemTool = () => {
             prompt: prompt.trim(),
             aspectRatio,
             creditCost,
+            referenceImageUrls: uploadedUrls,
           },
         });
 
@@ -556,7 +568,7 @@ const GerarImagemTool = () => {
                   <p className="text-xs text-purple-400">Aguardando vaga...</p>
                 </div>
               ) : (
-                <p className="text-sm">Gerando com {engine === 'flux2_klein' ? 'Flux2 Klein' : 'Nano Banana'}...</p>
+                <p className="text-sm">Gerando imagem...</p>
               )}
               {/* Progress bar */}
               <div className="w-48 h-1.5 rounded-full bg-purple-900/50 overflow-hidden">
@@ -585,9 +597,7 @@ const GerarImagemTool = () => {
               <Sparkles className="h-12 w-12" />
               <p className="text-sm text-center">Digite um prompt e clique em Gerar</p>
               <p className="text-xs text-purple-500/40 text-center">
-                {engine === 'nano_banana'
-                  ? 'Arraste imagens aqui ou cole com Ctrl+V para adicionar referências'
-                  : 'Escolha a proporção e gere com Flux2 Klein'}
+                Arraste imagens aqui ou cole com Ctrl+V para adicionar referências
               </p>
             </div>
           )}
@@ -646,20 +656,18 @@ const GerarImagemTool = () => {
 
             {/* Prompt input row */}
             <div className="flex items-center gap-2">
-              {engine === 'nano_banana' && (
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isProcessing || referenceImages.length >= 5}
-                  className="relative flex-shrink-0 w-9 h-9 rounded-full border border-purple-500/30 bg-purple-900/30 flex items-center justify-center text-purple-300 hover:text-white hover:border-purple-400/60 transition-colors disabled:opacity-40 self-end mb-0.5"
-                >
-                  <Paperclip className="h-4 w-4" />
-                  {referenceImages.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                      {referenceImages.length}
-                    </span>
-                  )}
-                </button>
-              )}
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isProcessing || referenceImages.length >= 5}
+                className="relative flex-shrink-0 w-9 h-9 rounded-full border border-purple-500/30 bg-purple-900/30 flex items-center justify-center text-purple-300 hover:text-white hover:border-purple-400/60 transition-colors disabled:opacity-40 self-end mb-0.5"
+              >
+                <Paperclip className="h-4 w-4" />
+                {referenceImages.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                    {referenceImages.length}
+                  </span>
+                )}
+              </button>
               <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" />
 
               <textarea
@@ -737,7 +745,7 @@ const GerarImagemTool = () => {
                 ) : (
                   <>
                     <Sparkles className="w-3.5 h-3.5 mr-1" />
-                    {engine === 'flux2_klein' ? 'Gerar com Flux2 Klein' : 'Gerar com Nano Banana'}
+                    Gerar Imagem
                     <span className="ml-1.5 flex items-center gap-0.5 text-xs opacity-90">
                       <Coins className="w-3 h-3" />
                       {creditCost}
