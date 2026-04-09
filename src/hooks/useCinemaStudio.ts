@@ -176,7 +176,7 @@ export function useCinemaStudio() {
   if (selectedScenario?.description) extraParts.push(`scenario: ${selectedScenario.description}`);
   const assembledPrompt = extraParts.length > 0 ? `${basePrompt}, ${extraParts.join(', ')}` : basePrompt;
 
-  const hasReferences = referenceImages.length > 0;
+  const hasReferences = referenceImages.length > 0 || referenceImagePreviews.length > 0;
   // reference-to-video when any references exist (supports 0-9 images + 0-3 videos + 0-3 audios)
   // text-to-video when no references
   const genType = hasReferences ? 'r2v' : 't2v';
