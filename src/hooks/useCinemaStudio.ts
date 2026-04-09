@@ -703,7 +703,7 @@ export function useCinemaStudio() {
         setProgress(100);
       }
       setSettings(scene.settings);
-      setMode(scene.type);
+      // Don't call setMode here — it clears references. Mode is set by the storyboard strip context.
     } else {
       // Empty slot — show idle UI but don't kill active job
       setOutputUrl(null);
