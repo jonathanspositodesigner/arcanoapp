@@ -648,8 +648,8 @@ async function handleRun(req: Request) {
       generationType = imageUrls.length <= 2 ? 'FIRST&LAST' : 'REFERENCE';
     }
 
-    // Determine audio: trial users get no audio
-    const generateAudio = forceNoAudio ? false : true;
+    // Determine audio: trial users get no audio, otherwise respect user choice
+    const generateAudio = forceNoAudio ? false : wantsAudio;
 
     await logStep(jobId, 'calling_evolink', { model: selectedModel, generationType, generateAudio });
 
