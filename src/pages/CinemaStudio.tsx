@@ -75,27 +75,21 @@ const CinemaStudio: React.FC = () => {
     const project = await projectManager.loadProject(projectId);
     if (!project) return;
 
-    // Restore storyboard directly into hook state (not via localStorage)
-    if (project.scenes && project.scenes.length > 0) {
-      studio.restoreStoryboard(project.scenes);
-    }
+    // Restore storyboard directly into hook state
+    studio.restoreStoryboard(project.scenes);
+
+    // Restore mode
+    studio.setMode(project.activeMode || 'photo');
 
     setView('studio');
 
-    // If project has scenes, load the active scene after a tick
-    if (project.scenes && project.scenes.length > 0) {
-      const idx = project.activeSceneIndex || 0;
-      const sceneId = project.scenes[idx]?.id;
-      if (sceneId) {
-        // Small delay to let the studio process the restored storyboard
-        setTimeout(() => {
-          // Find the matching slot ID (restoreStoryboard maps scenes to slot IDs)
-          const type = project.scenes[idx]?.type || 'photo';
-          const slotId = `${type}-slot-${idx}`;
-          studio.loadScene(slotId);
-        }, 150);
-      }
-    }
+    // Restore the active scene for the restored mode
+    setTimeout(() => {
+      const targetSceneId = project.activeMode === 'video'
+        ? (project.activeVideoSceneId || 'video-slot-0')
+        : (project.activePhotoSceneId || 'photo-slot-0');
+      studio.loadScene(targetSceneId);
+    }, 150);
   }, [projectManager, studio]);
 
   // Handle creating a project
