@@ -905,41 +905,83 @@ export function useCinemaStudio() {
   }, [hydrateSceneEditor, mode, setActiveSceneId, storyboard, syncCurrentSceneToStoryboard]);
 
   // ━━━ Restore storyboard from saved project ━━━
-  const restoreStoryboard = useCallback((scenes: StoryboardScene[]) => {
+  const normalizeRestoredStoryboards = useCallback((scenes: StoryboardScene[]) => {
+    const photoScenes = scenes.filter(scene => scene.type === 'photo');
+    const videoScenes = scenes.filter(scene => scene.type === 'video');
+    const hasTypedScenes = photoScenes.length > 0 || videoScenes.length > 0;
+
+    const padScenes = (items: StoryboardScene[], type: StudioMode): StoryboardScene[] => {
+      const emptyScenes = createEmptyScenes(type);
+      return emptyScenes.map((slot, index) => items[index] ? { ...items[index], id: slot.id } : slot);
+    };
+
+    return hasTypedScenes
+      ? {
+          photoScenes: padScenes(photoScenes, 'photo'),
+          videoScenes: padScenes(videoScenes, 'video'),
+        }
+      : {
+          photoScenes: padScenes(scenes, 'photo'),
+          videoScenes: createEmptyScenes('video'),
+        };
+  }, []);
+
+  const restoreProjectState = useCallback((projectState: {
+    scenes: StoryboardScene[];
+    activeMode?: StudioMode;
+    activePhotoSceneId?: string | null;
+    activeVideoSceneId?: string | null;
+  }) => {
     revokeObjectUrls(Object.values(localReferencePreviewUrlsRef.current).flat());
     localReferenceFilesRef.current = {};
     localReferencePreviewUrlsRef.current = {};
 
-    // Separate scenes by type and pad to MAX_SCENES
-    const photoScenes = scenes.filter(s => s.type === 'photo');
-    const videoScenes = scenes.filter(s => s.type === 'video');
-    // If no type distinction, treat all as photo
-    const hasTyped = photoScenes.length > 0 || videoScenes.length > 0;
-
-    const padScenes = (items: StoryboardScene[], type: StudioMode): StoryboardScene[] => {
-      const empty = createEmptyScenes(type);
-      return empty.map((slot, i) => items[i] ? { ...items[i], id: slot.id } : slot);
-    };
-
-    if (hasTyped) {
-      setPhotoStoryboard(padScenes(photoScenes, 'photo'));
-      setVideoStoryboard(padScenes(videoScenes, 'video'));
-    } else {
-      // Legacy: all scenes go to photo
-      setPhotoStoryboard(padScenes(scenes, 'photo'));
-      setVideoStoryboard(createEmptyScenes('video'));
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+    if (elapsedIntervalRef.current) {
+      clearInterval(elapsedIntervalRef.current);
+      elapsedIntervalRef.current = null;
     }
 
-    // Reset UI state
+    const { photoScenes, videoScenes } = normalizeRestoredStoryboards(projectState.scenes);
+    const requestedPhotoSceneId = projectState.activePhotoSceneId ?? 'photo-slot-0';
+    const requestedVideoSceneId = projectState.activeVideoSceneId ?? 'video-slot-0';
+    const nextPhotoSceneId = photoScenes.some(scene => scene.id === requestedPhotoSceneId)
+      ? requestedPhotoSceneId
+      : 'photo-slot-0';
+    const nextVideoSceneId = videoScenes.some(scene => scene.id === requestedVideoSceneId)
+      ? requestedVideoSceneId
+      : 'video-slot-0';
+    const nextMode = projectState.activeMode === 'video' ? 'video' : 'photo';
+    const targetSceneId = nextMode === 'video' ? nextVideoSceneId : nextPhotoSceneId;
+    const targetStoryboard = nextMode === 'video' ? videoScenes : photoScenes;
+
+    generatingSceneIdRef.current = null;
+    generatingSceneStateRef.current = null;
+    generatingRefUrlsRef.current = [];
+    setGeneratingMode(null);
+    setPhotoStoryboard(photoScenes);
+    setVideoStoryboard(videoScenes);
+    setActivePhotoSceneId(nextPhotoSceneId);
+    setActiveVideoSceneId(nextVideoSceneId);
+    setModeRaw(nextMode);
+    setJobId(null);
+    setTaskId(null);
+    setQueuePosition(0);
+    setElapsedTime(0);
+    setErrorMessage(null);
     setOutputUrl(null);
     setStatus('idle');
     setPhotoJobStatus('idle');
     setProgress(0);
-    setReferenceImages([]);
-    setReferenceImagePreviews([]);
-    setSelectedCharacters([]);
-    setSelectedScenario(null);
-  }, []);
+    hydrateSceneEditor(targetSceneId, nextMode, targetStoryboard);
+  }, [hydrateSceneEditor, normalizeRestoredStoryboards]);
+
+  const restoreStoryboard = useCallback((scenes: StoryboardScene[]) => {
+    restoreProjectState({ scenes });
+  }, [restoreProjectState]);
 
   const addNewScene = useCallback(() => {
     // Find first empty slot
@@ -1085,7 +1127,7 @@ export function useCinemaStudio() {
     // Storyboard
     storyboard, activeSceneId,
     photoStoryboard, videoStoryboard, activePhotoSceneId, activeVideoSceneId,
-    addToStoryboard, removeFromStoryboard, loadScene, addNewScene, animateAllScenes, restoreStoryboard,
+    addToStoryboard, removeFromStoryboard, loadScene, addNewScene, animateAllScenes, restoreStoryboard, restoreProjectState,
     buildPersistedProjectState,
 
     // Modals
