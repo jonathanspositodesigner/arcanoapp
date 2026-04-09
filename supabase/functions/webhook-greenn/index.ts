@@ -481,10 +481,6 @@ async function processPlanos2Webhook(
       updated_at: new Date().toISOString(),
     }
 
-    // For new unlimited subscriptions, set Veo 3.1 trial start
-    if (planConfig.slug === 'unlimited') {
-      subData.veo3_trial_started_at = new Date().toISOString()
-    }
 
     const { error: subError } = await supabase
       .from('planos2_subscriptions')

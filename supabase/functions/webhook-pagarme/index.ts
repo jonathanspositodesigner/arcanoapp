@@ -1052,10 +1052,6 @@ serve(async (req) => {
             updated_at: new Date().toISOString(),
           }
 
-          // For new unlimited subscriptions, set Veo 3.1 trial start
-          if (product.plan_slug === 'unlimited') {
-            upsertData.veo3_trial_started_at = new Date().toISOString()
-          }
 
           await supabase.from('planos2_subscriptions').upsert(upsertData, { onConflict: 'user_id' })
 
