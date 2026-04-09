@@ -132,6 +132,22 @@ serve(async (req) => {
       }
     }
 
+    // ========== CHECK NANO BANANA LIMIT FOR UNLIMITED USERS ==========
+    let useFlux2KleinRedirect = false;
+    if (isNano2Model) {
+      try {
+        const { data: limitData } = await serviceClient.rpc('check_nano_banana_limit', { _user_id: userId });
+        if (limitData && typeof limitData === 'object' && (limitData as any).exceeded) {
+          console.log(`[generate-image PROXY] Nano Banana limit exceeded for ${userId}, redirecting to Flux2 Klein`);
+          useFlux2KleinRedirect = true;
+        }
+        // Increment usage counter
+        await serviceClient.rpc('increment_nano_banana_usage', { _user_id: userId });
+      } catch (err) {
+        console.warn('[generate-image PROXY] Failed to check nano banana limit:', err);
+      }
+    }
+
     // ========== CREATE JOB IN image_generator_jobs ==========
     const finalAspectRatio = aspect_ratio || "1:1";
     const sessionId = `legacy-${Date.now()}`;
@@ -141,12 +157,13 @@ serve(async (req) => {
       .insert({
         user_id: userId,
         prompt: prompt.trim(),
-        model: isNano2Model ? "nano2" : isProModel ? "pro" : "normal",
+        model: useFlux2KleinRedirect ? "flux2_klein" : (isNano2Model ? "nano2" : isProModel ? "pro" : "normal"),
         aspect_ratio: finalAspectRatio,
         reference_images: reference_images || [],
         status: "pending",
         user_credit_cost: creditCost,
         session_id: sessionId,
+        engine: useFlux2KleinRedirect ? "flux2_klein" : (isNano2Model ? "nano_banana" : "nano_banana"),
       })
       .select("id")
       .single();
@@ -159,10 +176,11 @@ serve(async (req) => {
     }
 
     const jobId = jobData.id;
-    console.log(`[generate-image PROXY] Job created: ${jobId}`);
+    console.log(`[generate-image PROXY] Job created: ${jobId}, redirect: ${useFlux2KleinRedirect}`);
 
-    // ========== CALL runninghub-image-generator/run ==========
-    const rhUrl = `${supabaseUrl}/functions/v1/runninghub-image-generator/run`;
+    // ========== CALL APPROPRIATE EDGE FUNCTION ==========
+    const edgeFunctionPath = useFlux2KleinRedirect ? 'runninghub-flux2-klein/run' : 'runninghub-image-generator/run';
+    const rhUrl = `${supabaseUrl}/functions/v1/${edgeFunctionPath}`;
     const rhResponse = await fetch(rhUrl, {
       method: "POST",
       headers: {
