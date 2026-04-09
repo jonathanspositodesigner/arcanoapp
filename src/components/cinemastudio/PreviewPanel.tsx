@@ -89,7 +89,7 @@ const PreviewPanel: React.FC<Props> = ({
           ) : status === 'error' && errorMessage ? (
             <div className="flex min-h-full flex-col items-center justify-center gap-2 max-w-xs text-center mx-auto">
               <AlertCircle className="w-5 h-5 text-red-500/60" />
-              <p className="text-[11px] text-red-400/80">{errorMessage}</p>
+              <p className="text-[11px] text-red-400/80">{typeof errorMessage === 'object' && errorMessage !== null ? (errorMessage as any).message || JSON.stringify(errorMessage) : errorMessage}</p>
               <button
                 onClick={resetTool}
                 className="text-[10px] text-gray-500 hover:text-gray-300 flex items-center gap-1 transition-colors"
