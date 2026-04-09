@@ -11,22 +11,32 @@ const socialProofImages = [
 
 export const StatsCards = () => {
   const [totalImages, setTotalImages] = useState(0);
+  const [totalVideos, setTotalVideos] = useState(0);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
+      // Fetch image stats
       const { data } = await supabase.rpc('get_ai_tools_cost_averages');
       if (data) {
         const total = data.reduce((acc: number, tool: any) => acc + (tool.total_completed || 0), 0);
         setTotalImages(total);
       }
+
+      // Fetch real video count from both video tables
+      const [videoGen, movieled] = await Promise.all([
+        supabase.from('video_generator_jobs').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
+        supabase.from('movieled_maker_jobs').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
+      ]);
+      setTotalVideos((videoGen.count || 0) + (movieled.count || 0));
+
       setLoaded(true);
     };
     fetchStats();
   }, []);
 
   const animatedImages = useAnimatedNumber(totalImages, 1500);
-  const animatedVideos = useAnimatedNumber(loaded ? 247 : 0, 1500);
+  const animatedVideos = useAnimatedNumber(totalVideos, 1500);
   const animatedSatisfaction = useAnimatedNumber(loaded ? 100 : 0, 1500);
 
   return (
