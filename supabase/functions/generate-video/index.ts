@@ -499,7 +499,11 @@ async function handleRun(req: Request) {
     console.error('[VideoGenerator] Check user active error:', e);
   }
 
-  let creditCost = MODEL_COSTS[selectedModel];
+  // Determine if user wants audio (only for Evolink models)
+  const wantsAudio = isEvolinkModel(selectedModel) && requestAudio === true;
+  let creditCost = wantsAudio && MODEL_COSTS_WITH_AUDIO[selectedModel]
+    ? MODEL_COSTS_WITH_AUDIO[selectedModel]
+    : MODEL_COSTS[selectedModel];
 
   // Check if user is IA Unlimited (Planos2)
   const { data: isUnlimitedResult } = await supabase.rpc('is_unlimited_subscriber', { _user_id: verifiedUserId });
