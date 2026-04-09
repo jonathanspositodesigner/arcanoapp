@@ -26,99 +26,132 @@ const CinemaStudio: React.FC = () => {
   const projectManager = useCinemaProjects();
   const [view, setView] = React.useState<'picker' | 'studio'>('picker');
   const autoSaveTimeoutRef = useRef<number | null>(null);
+  const hasInitializedAutoSaveRef = useRef(false);
+  const activeProjectId = projectManager.activeProject?.id ?? null;
 
   // Fetch projects on mount
   useEffect(() => {
     projectManager.fetchProjects();
+  }, [projectManager.fetchProjects]);
+
+  const clearAutoSaveTimeout = useCallback(() => {
+    if (!autoSaveTimeoutRef.current) return;
+    window.clearTimeout(autoSaveTimeoutRef.current);
+    autoSaveTimeoutRef.current = null;
   }, []);
 
-  // Auto-save helper
-  const buildProjectState = useCallback(() => ({
-    scenes: [...studio.photoStoryboard, ...studio.videoStoryboard],
-    activeMode: studio.mode,
-    activePhotoSceneId: studio.activePhotoSceneId,
-    activeVideoSceneId: studio.activeVideoSceneId,
-  }), [studio.photoStoryboard, studio.videoStoryboard, studio.mode, studio.activePhotoSceneId, studio.activeVideoSceneId]);
+  useEffect(() => {
+    return () => {
+      clearAutoSaveTimeout();
+    };
+  }, [clearAutoSaveTimeout]);
+
+  useEffect(() => {
+    hasInitializedAutoSaveRef.current = false;
+    clearAutoSaveTimeout();
+  }, [activeProjectId, clearAutoSaveTimeout, view]);
+
+  const persistActiveProject = useCallback(async (showSuccessToast = false) => {
+    if (!activeProjectId) return false;
+
+    clearAutoSaveTimeout();
+
+    try {
+      const projectState = await studio.buildPersistedProjectState();
+      const saved = await projectManager.saveProject(activeProjectId, projectState);
+
+      if (saved && showSuccessToast) {
+        toast.success('Projeto salvo ✓');
+      }
+
+      return saved;
+    } catch (error) {
+      console.error('persistActiveProject error', error);
+      toast.error(error instanceof Error ? error.message : 'Erro ao salvar projeto');
+      return false;
+    }
+  }, [activeProjectId, clearAutoSaveTimeout, projectManager.saveProject, studio.buildPersistedProjectState]);
 
   const triggerAutoSave = useCallback(() => {
-    if (!projectManager.activeProject) return;
-    if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
+    if (!activeProjectId || studio.isProcessing) return;
+
+    clearAutoSaveTimeout();
     autoSaveTimeoutRef.current = window.setTimeout(() => {
-      if (projectManager.activeProject) {
-        projectManager.saveProject(projectManager.activeProject.id, buildProjectState());
-      }
+      void persistActiveProject();
     }, 1500);
-  }, [projectManager.activeProject, buildProjectState]);
+  }, [activeProjectId, clearAutoSaveTimeout, persistActiveProject, studio.isProcessing]);
 
-  // Auto-save on storyboard changes
-  const prevStoryboardRef = useRef(studio.storyboard);
   useEffect(() => {
-    if (view !== 'studio' || !projectManager.activeProject) return;
-    if (prevStoryboardRef.current !== studio.storyboard) {
-      prevStoryboardRef.current = studio.storyboard;
+    if (view !== 'studio' || !activeProjectId) return;
+    if (!hasInitializedAutoSaveRef.current) {
+      hasInitializedAutoSaveRef.current = true;
+      return;
+    }
+
+    if (!studio.isProcessing) {
       triggerAutoSave();
     }
-  }, [studio.storyboard, view, projectManager.activeProject, triggerAutoSave]);
-
-  // Auto-save on mode change
-  const prevModeRef = useRef(studio.mode);
-  useEffect(() => {
-    if (view !== 'studio' || !projectManager.activeProject) return;
-    if (prevModeRef.current !== studio.mode) {
-      prevModeRef.current = studio.mode;
-      triggerAutoSave();
-    }
-  }, [studio.mode, view, projectManager.activeProject, triggerAutoSave]);
+  }, [
+    activeProjectId,
+    studio.activePhotoSceneId,
+    studio.activeSceneId,
+    studio.activeVideoSceneId,
+    studio.isProcessing,
+    studio.mode,
+    studio.outputUrl,
+    studio.photoStoryboard,
+    studio.referenceImagePreviews,
+    studio.selectedCharacters,
+    studio.selectedScenario,
+    studio.settings,
+    studio.videoStoryboard,
+    triggerAutoSave,
+    view,
+  ]);
 
   // Handle selecting a project from picker
   const handleSelectProject = useCallback(async (projectId: string) => {
+    clearAutoSaveTimeout();
     const project = await projectManager.loadProject(projectId);
     if (!project) return;
 
-    // Restore storyboard directly into hook state
-    studio.restoreStoryboard(project.scenes);
-
-    // Restore mode
-    studio.setMode(project.activeMode || 'photo');
+    studio.restoreProjectState(project);
+    setMobileTab('preview');
 
     setView('studio');
-
-    // Restore the active scene for the restored mode
-    setTimeout(() => {
-      const targetSceneId = project.activeMode === 'video'
-        ? (project.activeVideoSceneId || 'video-slot-0')
-        : (project.activePhotoSceneId || 'photo-slot-0');
-      studio.loadScene(targetSceneId);
-    }, 150);
-  }, [projectManager, studio]);
+  }, [clearAutoSaveTimeout, projectManager, studio]);
 
   // Handle creating a project
   const handleCreateProject = useCallback(async (name: string) => {
+    clearAutoSaveTimeout();
     const project = await projectManager.createProject(name);
     if (!project) return null;
-    // Reset storyboard to empty state
-    studio.restoreStoryboard([]);
+
+    studio.restoreProjectState(project);
+    setMobileTab('preview');
     setView('studio');
     return project;
-  }, [projectManager, studio]);
+  }, [clearAutoSaveTimeout, projectManager, studio]);
 
   // Handle back to picker
   const handleBackToPicker = useCallback(async () => {
-    if (projectManager.activeProject) {
-      await projectManager.saveProject(projectManager.activeProject.id, buildProjectState());
-      toast.success('Projeto salvo ✓');
+    clearAutoSaveTimeout();
+
+    if (activeProjectId) {
+      const saved = await persistActiveProject(true);
+      if (!saved) return;
     }
+
     projectManager.setActiveProject(null);
     setView('picker');
     projectManager.fetchProjects();
-  }, [projectManager, buildProjectState]);
+  }, [activeProjectId, clearAutoSaveTimeout, persistActiveProject, projectManager]);
 
   // Handle manual save
   const handleManualSave = useCallback(async () => {
-    if (!projectManager.activeProject) return;
-    await projectManager.saveProject(projectManager.activeProject.id, buildProjectState());
-    toast.success('Projeto salvo ✓');
-  }, [projectManager, buildProjectState]);
+    if (!activeProjectId) return;
+    await persistActiveProject(true);
+  }, [activeProjectId, persistActiveProject]);
 
   // Format last saved
   const lastSavedText = projectManager.lastSavedAt

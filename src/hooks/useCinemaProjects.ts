@@ -24,6 +24,12 @@ interface PersistedProjectState {
   activeVideoSceneId: string | null;
 }
 
+interface SaveRequest {
+  projectId: string;
+  projectState: PersistedProjectState;
+  resolvers: Array<(success: boolean) => void>;
+}
+
 const MAX_PROJECTS = 20;
 const DEFAULT_PHOTO_SCENE_ID = 'photo-slot-0';
 const DEFAULT_VIDEO_SCENE_ID = 'video-slot-0';
@@ -89,6 +95,7 @@ export function useCinemaProjects() {
   const [isLoading, setIsLoading] = useState(true);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const savingRef = useRef(false);
+  const saveQueueRef = useRef<SaveRequest[]>([]);
 
   const fetchProjects = useCallback(async () => {
     setIsLoading(true);
@@ -160,13 +167,10 @@ export function useCinemaProjects() {
     }
   }, []);
 
-  const saveProject = useCallback(async (
+  const performSave = useCallback(async (
     projectId: string,
     projectState: PersistedProjectState,
-  ) => {
-    if (savingRef.current) return;
-
-    savingRef.current = true;
+  ): Promise<boolean> => {
     try {
       const { scenes, activeMode, activePhotoSceneId, activeVideoSceneId } = projectState;
       const firstOutput = scenes.find(scene => scene.outputUrl);
@@ -213,13 +217,54 @@ export function useCinemaProjects() {
           ? { ...prev, ...updatedProject }
           : prev,
       );
+      return true;
     } catch (e: any) {
       console.error('saveProject error', e);
       toast.error('Erro ao salvar projeto');
+      return false;
+    }
+  }, []);
+
+  const flushSaveQueue = useCallback(async () => {
+    if (savingRef.current) return;
+
+    savingRef.current = true;
+    try {
+      while (saveQueueRef.current.length > 0) {
+        const nextRequest = saveQueueRef.current.shift();
+        if (!nextRequest) continue;
+
+        const success = await performSave(nextRequest.projectId, nextRequest.projectState);
+        nextRequest.resolvers.forEach(resolve => resolve(success));
+      }
     } finally {
       savingRef.current = false;
     }
-  }, []);
+  }, [performSave]);
+
+  const saveProject = useCallback((
+    projectId: string,
+    projectState: PersistedProjectState,
+  ): Promise<boolean> => {
+    return new Promise(resolve => {
+      const lastQueuedRequest = saveQueueRef.current[saveQueueRef.current.length - 1];
+
+      if (lastQueuedRequest && lastQueuedRequest.projectId === projectId) {
+        lastQueuedRequest.projectState = projectState;
+        lastQueuedRequest.resolvers.push(resolve);
+      } else {
+        saveQueueRef.current.push({
+          projectId,
+          projectState,
+          resolvers: [resolve],
+        });
+      }
+
+      if (!savingRef.current) {
+        void flushSaveQueue();
+      }
+    });
+  }, [flushSaveQueue]);
 
   const loadProject = useCallback(async (projectId: string): Promise<CinemaProject | null> => {
     try {
