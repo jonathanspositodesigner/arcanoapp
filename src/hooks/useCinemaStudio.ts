@@ -842,6 +842,7 @@ export function useCinemaStudio() {
 
     // Storyboard
     storyboard, activeSceneId,
+    photoStoryboard, videoStoryboard, activePhotoSceneId, activeVideoSceneId,
     addToStoryboard, removeFromStoryboard, loadScene, addNewScene, animateAllScenes, restoreStoryboard,
 
     // Modals

@@ -33,20 +33,22 @@ const CinemaStudio: React.FC = () => {
   }, []);
 
   // Auto-save helper
+  const buildProjectState = useCallback(() => ({
+    scenes: [...studio.photoStoryboard, ...studio.videoStoryboard],
+    activeMode: studio.mode,
+    activePhotoSceneId: studio.activePhotoSceneId,
+    activeVideoSceneId: studio.activeVideoSceneId,
+  }), [studio.photoStoryboard, studio.videoStoryboard, studio.mode, studio.activePhotoSceneId, studio.activeVideoSceneId]);
+
   const triggerAutoSave = useCallback(() => {
     if (!projectManager.activeProject) return;
     if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current);
     autoSaveTimeoutRef.current = window.setTimeout(() => {
       if (projectManager.activeProject) {
-        const sceneIndex = studio.storyboard.findIndex(s => s.id === studio.activeSceneId);
-        projectManager.saveProject(
-          projectManager.activeProject.id,
-          studio.storyboard,
-          sceneIndex >= 0 ? sceneIndex : 0,
-        );
+        projectManager.saveProject(projectManager.activeProject.id, buildProjectState());
       }
     }, 1500);
-  }, [projectManager.activeProject, studio.storyboard, studio.activeSceneId]);
+  }, [projectManager.activeProject, buildProjectState]);
 
   // Auto-save on storyboard changes
   const prevStoryboardRef = useRef(studio.storyboard);
