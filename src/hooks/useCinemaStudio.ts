@@ -715,6 +715,38 @@ export function useCinemaStudio() {
     }
   }, [storyboard, referenceImagePreviews]);
 
+  // ━━━ Restore storyboard from saved project ━━━
+  const restoreStoryboard = useCallback((scenes: StoryboardScene[]) => {
+    // Separate scenes by type and pad to MAX_SCENES
+    const photoScenes = scenes.filter(s => s.type === 'photo');
+    const videoScenes = scenes.filter(s => s.type === 'video');
+    // If no type distinction, treat all as photo
+    const hasTyped = photoScenes.length > 0 || videoScenes.length > 0;
+
+    const padScenes = (items: StoryboardScene[], type: StudioMode): StoryboardScene[] => {
+      const empty = createEmptyScenes(type);
+      return empty.map((slot, i) => items[i] ? { ...items[i], id: slot.id } : slot);
+    };
+
+    if (hasTyped) {
+      setPhotoStoryboard(padScenes(photoScenes, 'photo'));
+      setVideoStoryboard(padScenes(videoScenes, 'video'));
+    } else {
+      // Legacy: all scenes go to photo
+      setPhotoStoryboard(padScenes(scenes, 'photo'));
+      setVideoStoryboard(createEmptyScenes('video'));
+    }
+
+    // Reset UI state
+    setOutputUrl(null);
+    setStatus('idle');
+    setPhotoJobStatus('idle');
+    setProgress(0);
+    referenceImagePreviews.forEach(url => URL.revokeObjectURL(url));
+    setReferenceImages([]);
+    setReferenceImagePreviews([]);
+  }, [referenceImagePreviews]);
+
   const addNewScene = useCallback(() => {
     // Find first empty slot
     const emptySlot = storyboard.find(s => !s.outputUrl);
