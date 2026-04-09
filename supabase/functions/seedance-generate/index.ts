@@ -71,12 +71,12 @@ serve(async (req) => {
       generate_audio: generateAudio !== false,
     };
 
-    // Add media URLs based on model type
+    // Add media URLs based on model type (Seedance supports max 2 images: first + last frame)
     if (model.includes("image-to-video") && imageUrls?.length > 0) {
-      apiPayload.image_urls = imageUrls;
+      apiPayload.image_urls = imageUrls.slice(0, 2);
     }
     if (model.includes("reference-to-video")) {
-      if (imageUrls?.length > 0) apiPayload.image_urls = imageUrls;
+      if (imageUrls?.length > 0) apiPayload.image_urls = imageUrls.slice(0, 2);
       if (videoUrls?.length > 0) apiPayload.video_urls = videoUrls;
       if (audioUrls?.length > 0) apiPayload.audio_urls = audioUrls;
     }
