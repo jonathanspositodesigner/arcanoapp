@@ -266,21 +266,38 @@ async function handleRun(req: Request) {
 
   let creditCost = MODEL_COSTS[selectedModel];
 
-  // Check if user is IA Unlimited
-  const { data: premiumData } = await supabase
-    .from('premium_users')
-    .select('plan_type, expires_at')
-    .eq('user_id', verifiedUserId)
-    .eq('is_active', true)
-    .maybeSingle();
+  // Check if user is IA Unlimited (Planos2)
+  const { data: isUnlimitedResult } = await supabase.rpc('is_unlimited_subscriber', { _user_id: verifiedUserId });
+  const isPlanos2Unlimited = !!isUnlimitedResult;
 
-  const isUnlimited = premiumData?.plan_type === 'arcano_unlimited'
-    && (!premiumData?.expires_at || new Date(premiumData.expires_at) > new Date());
-
-  if (isUnlimited && settingsData?.credit_cost) {
-    creditCost = selectedModel === 'wan2.2' 
-      ? Math.round((settingsData.credit_cost / 750) * 400) 
-      : settingsData.credit_cost;
+  // For unlimited users: Wan 2.2 is FREE, Veo 3.1 charges from 14k credits (after 7-day trial)
+  let skipCredits = false;
+  if (isPlanos2Unlimited) {
+    if (selectedModel === 'wan2.2') {
+      // Wan 2.2 is unlimited — no credit charge
+      skipCredits = true;
+      creditCost = 0;
+      console.log(`[VideoGenerator] Unlimited user ${verifiedUserId}: Wan 2.2 is FREE`);
+    } else if (selectedModel === 'veo3.1') {
+      // Check Veo 3.1 trial period (7 days from subscription)
+      const { data: trialData } = await supabase.rpc('check_veo3_unlimited_trial', { _user_id: verifiedUserId });
+      if (trialData?.in_trial) {
+        skipCredits = true;
+        creditCost = 0;
+        console.log(`[VideoGenerator] Unlimited user ${verifiedUserId}: Veo 3.1 FREE (trial, ${trialData.days_remaining} days left)`);
+      } else {
+        // After trial: charge from 14k credits
+        creditCost = settingsData?.credit_cost || MODEL_COSTS['veo3.1'];
+        console.log(`[VideoGenerator] Unlimited user ${verifiedUserId}: Veo 3.1 charges ${creditCost} credits (trial expired)`);
+      }
+    }
+  } else {
+    // Non-unlimited: use settings cost if available
+    if (settingsData?.credit_cost) {
+      creditCost = selectedModel === 'wan2.2' 
+        ? Math.round((settingsData.credit_cost / 750) * 400) 
+        : settingsData.credit_cost;
+    }
   }
 
   // Create job in pending state
@@ -309,44 +326,51 @@ async function handleRun(req: Request) {
   }
 
   const jobId = jobData.id;
-  await logStep(jobId, 'created', { model: selectedModel, creditCost });
+  await logStep(jobId, 'created', { model: selectedModel, creditCost, skipCredits });
 
-  // Consume credits
-  await logStep(jobId, 'consuming_credits', { amount: creditCost });
+  if (skipCredits) {
+    // Unlimited tool — no credit charge
+    console.log(`[VideoGenerator] Job ${jobId}: credits SKIPPED (unlimited tool)`);
+    await supabase.from(TABLE_NAME).update({
+      credits_charged: false,
+      user_credit_cost: 0,
+    }).eq('id', jobId);
+  } else {
+    // Consume credits
+    await logStep(jobId, 'consuming_credits', { amount: creditCost });
 
-  const { data: creditResult, error: creditError } = await supabase.rpc(
-    'consume_upscaler_credits',
-    { _user_id: verifiedUserId, _amount: creditCost, _description: `Gerar Vídeo (${selectedModel === 'veo3.1' ? 'Veo 3.1' : 'Wan 2.2'})` }
-  );
+    const { data: creditResult, error: creditError } = await supabase.rpc(
+      'consume_upscaler_credits',
+      { _user_id: verifiedUserId, _amount: creditCost, _description: `Gerar Vídeo (${selectedModel === 'veo3.1' ? 'Veo 3.1' : 'Wan 2.2'})` }
+    );
 
-  if (creditError) {
-    console.error('[VideoGenerator] Credit consumption error:', creditError);
-    await logStepFailure(jobId, 'consume_credits', creditError.message);
-    await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: 'Erro ao processar créditos' }).eq('id', jobId);
-    return new Response(JSON.stringify({ error: 'Erro ao processar créditos', code: 'CREDIT_ERROR' }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    if (creditError) {
+      console.error('[VideoGenerator] Credit consumption error:', creditError);
+      await logStepFailure(jobId, 'consume_credits', creditError.message);
+      await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: 'Erro ao processar créditos' }).eq('id', jobId);
+      return new Response(JSON.stringify({ error: 'Erro ao processar créditos', code: 'CREDIT_ERROR' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
+      const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
+      await logStepFailure(jobId, 'consume_credits', errorMsg);
+      await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: errorMsg }).eq('id', jobId);
+      return new Response(JSON.stringify({ error: errorMsg, code: 'INSUFFICIENT_CREDITS' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log(`[VideoGenerator] Credits consumed. New balance: ${creditResult[0].new_balance}`);
+
+    // CRITICAL: Mark credits_charged=true IMMEDIATELY after consuming
+    await supabase.from(TABLE_NAME).update({
+      credits_charged: true,
+      user_credit_cost: creditCost,
+    }).eq('id', jobId);
+    console.log(`[VideoGenerator] Job ${jobId} marked as credits_charged=true (cost=${creditCost})`);
   }
-
-  if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
-    const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
-    await logStepFailure(jobId, 'consume_credits', errorMsg);
-    await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: errorMsg }).eq('id', jobId);
-    return new Response(JSON.stringify({ error: errorMsg, code: 'INSUFFICIENT_CREDITS' }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
-  console.log(`[VideoGenerator] Credits consumed. New balance: ${creditResult[0].new_balance}`);
-
-  // CRITICAL: Mark credits_charged=true IMMEDIATELY after consuming
-  // This ensures cleanup/watchdog can refund if the job gets stuck later
-  await supabase.from(TABLE_NAME).update({
-    credits_charged: true,
-    user_credit_cost: creditCost,
-  }).eq('id', jobId);
-  console.log(`[VideoGenerator] Job ${jobId} marked as credits_charged=true (cost=${creditCost})`);
-
   // Upload frames to RunningHub if provided
   const jobPayload: any = {
     prompt: prompt.trim(),
