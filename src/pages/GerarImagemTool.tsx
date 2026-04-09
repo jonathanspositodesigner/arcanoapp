@@ -289,7 +289,21 @@ const GerarImagemTool = () => {
       setStatus('pending');
       setProgress(5);
 
-      if (engine === 'flux2_klein') {
+      // Check Nano Banana limit for Unlimited users — silently redirect to Flux2 Klein if exceeded
+      let effectiveEngine = engine;
+      if (engine === 'nano_banana') {
+        try {
+          const { data: limitData } = await supabase.rpc('check_nano_banana_limit', { _user_id: user.id });
+          if (limitData && typeof limitData === 'object' && (limitData as any).exceeded) {
+            console.log('[GerarImagem] Nano Banana limit exceeded, redirecting to Flux2 Klein');
+            effectiveEngine = 'flux2_klein';
+          }
+        } catch (err) {
+          console.warn('[GerarImagem] Failed to check nano banana limit, proceeding normally:', err);
+        }
+      }
+
+      if (effectiveEngine === 'flux2_klein') {
         // ========== FLUX2 KLEIN FLOW ==========
         // Optimize and upload reference images
         const uploadedUrls: string[] = [];
