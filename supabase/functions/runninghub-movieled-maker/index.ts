@@ -2,19 +2,17 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 /**
- * MOVIELED MAKER - EDGE FUNCTION v2
+ * MOVIELED MAKER - EDGE FUNCTION v3
  * 
- * Gera movies para telão de LED via RunningHub workflow
- * 
- * FIXES v2:
- * 1. Auth via getClaims (local JWT validation, no session roundtrip)
- * 2. Fallback image URL support (tries primary, then fallback, then image_url from prompt)
- * 3. Better error messages for image download failures
+ * Gera movies para telão de LED:
+ * - Wan 2.2: via RunningHub workflow (500 créditos, 15s, 720p)
+ * - Veo 3.1: via Evolink API (1500 créditos, 6s, 1080p, sem áudio)
  */
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const RUNNINGHUB_API_KEY = (Deno.env.get('RUNNINGHUB_API_KEY') || Deno.env.get('RUNNINGHUB_APIKEY') || '').trim();
+const EVOLINK_API_KEY = Deno.env.get('EVOLINK_API_KEY') || '';
 
 const TABLE_NAME = 'movieled_maker_jobs';
 
@@ -26,7 +24,7 @@ const corsHeaders = {
 };
 
 const ENGINE_COSTS: Record<string, number> = {
-  'veo3.1': 850,
+  'veo3.1': 1500,
   'wan2.2': 500,
 };
 
@@ -203,37 +201,9 @@ async function logStepFailure(
   }
 }
 
-// ========== MAIN HANDLER ==========
+// ========== AUTH HELPER ==========
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
-    const url = new URL(req.url);
-    const path = url.pathname.split('/').pop();
-    
-    console.log(`[MovieLedMaker] Endpoint called: ${path}`);
-
-    if (path === 'run') {
-      return await handleRun(req);
-    } else {
-      return await handleRun(req);
-    }
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('[MovieLedMaker] Unhandled error:', error);
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-});
-
-// ========== /run ==========
-
-async function handleRun(req: Request) {
-  // Auth validation via getClaims (local JWT validation - no session roundtrip)
+async function authenticateRequest(req: Request): Promise<{ userId: string } | Response> {
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) {
     return new Response(JSON.stringify({ error: 'Missing Authorization header', code: 'UNAUTHORIZED' }), {
@@ -262,6 +232,209 @@ async function handleRun(req: Request) {
     });
   }
 
+  return { userId: verifiedUserId };
+}
+
+// ========== EVOLINK: CALL API ==========
+
+async function callEvolinkGenerate(
+  prompt: string,
+  imageUrl: string
+): Promise<{ taskId: string } | { error: string }> {
+  if (!EVOLINK_API_KEY) {
+    return { error: 'EVOLINK_API_KEY not configured' };
+  }
+
+  const payload: Record<string, unknown> = {
+    model: 'veo-3.1-fast-generate-preview',
+    prompt,
+    duration: 6,
+    quality: '1080p',
+    aspect_ratio: '16:9',
+    generate_audio: false,
+    generation_type: 'FIRST&LAST',
+    image_urls: [imageUrl],
+  };
+
+  console.log(`[MovieLedMaker] Calling Evolink:`, JSON.stringify({ model: payload.model, duration: 6, quality: '1080p', generateAudio: false }));
+
+  try {
+    const response = await fetchWithRetry(
+      'https://api.evolink.ai/v1/videos/generations',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${EVOLINK_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      },
+      'Evolink Generate'
+    );
+
+    const data = await response.json();
+    console.log(`[MovieLedMaker] Evolink response:`, JSON.stringify(data));
+
+    if (!response.ok || !data.id) {
+      const errMsg = data.error?.message || data.error?.code || `Evolink API error: ${response.status}`;
+      return { error: errMsg };
+    }
+
+    return { taskId: data.id };
+  } catch (error: any) {
+    return { error: error.message || 'Evolink API call failed' };
+  }
+}
+
+// ========== POLL EVOLINK ==========
+
+async function handlePollEvolink(req: Request) {
+  const authResult = await authenticateRequest(req);
+  if (authResult instanceof Response) return authResult;
+
+  const { job_id } = await req.json();
+  if (!job_id) {
+    return new Response(JSON.stringify({ error: 'job_id is required' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Get the job (verify ownership)
+  const { data: job, error: jobError } = await supabase
+    .from(TABLE_NAME)
+    .select('id, status, task_id, user_id, engine, credits_charged, user_credit_cost')
+    .eq('id', job_id)
+    .eq('user_id', authResult.userId)
+    .maybeSingle();
+
+  if (jobError || !job) {
+    return new Response(JSON.stringify({ error: 'Job not found' }), {
+      status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (job.status === 'completed' || job.status === 'failed') {
+    return new Response(JSON.stringify({ status: job.status }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!job.task_id) {
+    return new Response(JSON.stringify({ status: 'pending', progress: 0 }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Poll Evolink
+  try {
+    const pollResponse = await fetch(`https://api.evolink.ai/v1/tasks/${job.task_id}`, {
+      headers: { 'Authorization': `Bearer ${EVOLINK_API_KEY}` },
+    });
+
+    const pollData = await pollResponse.json();
+    console.log(`[MovieLedMaker] Evolink poll ${job.task_id}: status=${pollData.status}, progress=${pollData.progress}`);
+
+    if (pollData.status === 'completed') {
+      const outputUrl = pollData.results?.[0] || null;
+
+      await supabase.from(TABLE_NAME).update({
+        status: 'completed',
+        output_url: outputUrl,
+        completed_at: new Date().toISOString(),
+        current_step: 'completed',
+      }).eq('id', job_id);
+
+      return new Response(JSON.stringify({
+        status: 'completed',
+        output_url: outputUrl,
+        progress: 100,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (pollData.status === 'failed') {
+      const errMsg = pollData.error?.message || 'Generation failed';
+
+      // Refund credits
+      if (job.credits_charged && job.user_credit_cost && job.user_credit_cost > 0) {
+        try {
+          await supabase.rpc('refund_upscaler_credits', {
+            _user_id: job.user_id,
+            _amount: job.user_credit_cost,
+            _description: `MOVIELED_EVOLINK_FAILED_REFUND: ${errMsg.slice(0, 100)}`,
+          });
+          await supabase.from(TABLE_NAME).update({ credits_refunded: true }).eq('id', job_id);
+        } catch (e) {
+          console.error('[MovieLedMaker] Refund error:', e);
+        }
+      }
+
+      await supabase.from(TABLE_NAME).update({
+        status: 'failed',
+        error_message: errMsg,
+        current_step: 'failed',
+        failed_at_step: 'evolink_generation',
+        completed_at: new Date().toISOString(),
+      }).eq('id', job_id);
+
+      return new Response(JSON.stringify({
+        status: 'failed',
+        error: errMsg,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Still processing
+    return new Response(JSON.stringify({
+      status: pollData.status || 'processing',
+      progress: pollData.progress || 0,
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (error: any) {
+    console.error('[MovieLedMaker] Evolink poll error:', error);
+    return new Response(JSON.stringify({ status: 'processing', progress: 0 }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+// ========== MAIN HANDLER ==========
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const url = new URL(req.url);
+    const path = url.pathname.split('/').pop();
+    
+    console.log(`[MovieLedMaker] Endpoint called: ${path}`);
+
+    if (path === 'poll-evolink') {
+      return await handlePollEvolink(req);
+    } else {
+      return await handleRun(req);
+    }
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[MovieLedMaker] Unhandled error:', error);
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
+
+// ========== /run ==========
+
+async function handleRun(req: Request) {
+  const authResult = await authenticateRequest(req);
+  if (authResult instanceof Response) return authResult;
+  const verifiedUserId = authResult.userId;
+
   const body = await req.json();
   const { imageUrl, fallbackImageUrl, inputText, engine, referencePromptId } = body;
 
@@ -279,6 +452,7 @@ async function handleRun(req: Request) {
 
   const selectedEngine = engine && ENGINE_COSTS[engine] ? engine : 'veo3.1';
   const creditCost = ENGINE_COSTS[selectedEngine];
+  const isEvolink = selectedEngine === 'veo3.1';
 
   // Check user active job
   try {
@@ -331,7 +505,7 @@ async function handleRun(req: Request) {
       input_text: inputText.trim(),
       reference_prompt_id: referencePromptId || null,
       current_step: 'pending',
-      api_account: 'primary',
+      api_account: isEvolink ? 'evolink' : 'primary',
     })
     .select('id')
     .single();
@@ -344,7 +518,7 @@ async function handleRun(req: Request) {
   }
 
   const jobId = jobData.id;
-  await logStep(jobId, 'created', { engine: selectedEngine, creditCost });
+  await logStep(jobId, 'created', { engine: selectedEngine, creditCost, provider: isEvolink ? 'evolink' : 'runninghub' });
 
   // Consume credits
   await logStep(jobId, 'consuming_credits', { amount: creditCost });
@@ -378,6 +552,73 @@ async function handleRun(req: Request) {
     user_credit_cost: creditCost,
   }).eq('id', jobId);
   console.log(`[MovieLedMaker] Job ${jobId} marked as credits_charged=true (cost=${creditCost})`);
+
+  // ========== EVOLINK PATH (Veo 3.1) ==========
+  if (isEvolink) {
+    await logStep(jobId, 'calling_evolink', { model: 'veo-3.1-fast-generate-preview' });
+
+    // Build prompt: use inputText as the prompt context with the reference image
+    const evolinkPrompt = `Generate a vibrant LED screen video loop for "${inputText.trim()}". High energy, colorful, dynamic motion graphics suitable for large LED displays.`;
+
+    const result = await callEvolinkGenerate(evolinkPrompt, imageUrl);
+
+    if ('error' in result) {
+      console.error('[MovieLedMaker] Evolink error:', result.error);
+      
+      // Refund
+      try {
+        await supabase.rpc('refund_upscaler_credits', {
+          _user_id: verifiedUserId, _amount: creditCost,
+          _description: `MOVIELED_EVOLINK_REFUNDED: ${result.error.slice(0, 100)}`
+        });
+        await supabase.from(TABLE_NAME).update({
+          status: 'failed',
+          error_message: result.error,
+          credits_refunded: true,
+          completed_at: new Date().toISOString(),
+          failed_at_step: 'evolink_call',
+        }).eq('id', jobId);
+      } catch {
+        await supabase.from(TABLE_NAME).update({
+          status: 'failed',
+          error_message: result.error,
+          completed_at: new Date().toISOString(),
+        }).eq('id', jobId);
+      }
+
+      return new Response(JSON.stringify({ error: result.error, code: 'EVOLINK_ERROR', refunded: true }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Save task_id and mark as running
+    await supabase.from(TABLE_NAME).update({
+      status: 'running',
+      task_id: result.taskId,
+      started_at: new Date().toISOString(),
+      current_step: 'evolink_generating',
+      job_payload: {
+        engine: selectedEngine,
+        provider: 'evolink',
+        inputText: inputText.trim(),
+        imageUrl,
+        evolinkTaskId: result.taskId,
+      },
+    }).eq('id', jobId);
+
+    await logStep(jobId, 'evolink_started', { taskId: result.taskId });
+
+    return new Response(JSON.stringify({
+      success: true,
+      job_id: jobId,
+      provider: 'evolink',
+      taskId: result.taskId,
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // ========== RUNNINGHUB PATH (Wan 2.2) ==========
 
   // Upload reference image to RunningHub (with fallback URL support)
   let rhFileName: string;

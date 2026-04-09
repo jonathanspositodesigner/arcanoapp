@@ -37,7 +37,7 @@ interface LibraryItem {
 
 const ENGINES = [
   { id: 'wan2.2', name: 'Wan 2.2', cost: 500, duration: '15s', resolution: '720p', time: '4 a 5 min' },
-  { id: 'veo3.1', name: 'Veo 3.1', cost: 850, duration: '8s', resolution: '1080p', time: '3 a 4 min' },
+  { id: 'veo3.1', name: 'Veo 3.1', cost: 1500, duration: '6s', resolution: '1080p', time: '2 a 4 min' },
 ] as const;
 
 const MovieLedMakerTool = () => {
@@ -82,6 +82,7 @@ const MovieLedMakerTool = () => {
   const [tutorialInProgress, setTutorialInProgress] = useState(false);
   
   const sessionIdRef = useRef(crypto.randomUUID());
+  const evolinkPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (isTutorialTestUser) {
@@ -161,8 +162,65 @@ const MovieLedMakerTool = () => {
     }
   }, [jobId, registerJob]);
 
+  // Cleanup evolink polling on unmount
+  useEffect(() => {
+    return () => {
+      if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+    };
+  }, []);
 
-  // Get effective image URL for processing
+  // Evolink polling logic for Veo 3.1
+  const startEvolinkPolling = useCallback((jId: string) => {
+    if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+
+    const poll = async () => {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData?.session?.access_token;
+        if (!token) return;
+
+        const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-movieled-maker/poll-evolink`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ job_id: jId }),
+        });
+
+        const data = await res.json();
+        console.log(`[MovieLed] Evolink poll result:`, data.status, data.progress);
+
+        if (data.status === 'completed') {
+          if (data.output_url) setResultUrl(data.output_url);
+          setStatus('completed');
+          setIsQueued(false);
+          refetchCredits();
+          toast.success('Movie para telão gerado com sucesso!');
+          if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+          endSubmit();
+        } else if (data.status === 'failed') {
+          const errInfo = getAIErrorMessage(data.error || 'Erro na geração');
+          setErrorMessage(errInfo.message);
+          setStatus('error');
+          setIsQueued(false);
+          refetchCredits();
+          toast.error(`${errInfo.message}. ${errInfo.solution}`);
+          if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+          endSubmit();
+        }
+      } catch (e) {
+        console.error('[MovieLed] Evolink poll error:', e);
+      }
+    };
+
+    // Poll every 10 seconds, first poll after 5s
+    evolinkPollRef.current = setInterval(poll, 10000);
+    setTimeout(poll, 5000);
+  }, [refetchCredits, endSubmit]);
+
+
   const getEffectiveImageUrl = (): string | null => {
     if (selectedLibraryItem) {
       return selectedLibraryItem.reference_images?.[0] || null;
@@ -292,7 +350,11 @@ const MovieLedMakerTool = () => {
 
       setJobId(data.job_id);
 
-      if (data.queued) {
+      // If Evolink (Veo 3.1), start client-side polling instead of relying on Realtime/QueueManager
+      if (data.provider === 'evolink') {
+        toast.success('Geração Veo 3.1 iniciada! Aguarde...');
+        startEvolinkPolling(data.job_id);
+      } else if (data.queued) {
         setIsQueued(true);
         setQueuePosition(data.position || 1);
         toast.info(`Você está na fila (posição ${data.position || 1}). Aguarde...`);
