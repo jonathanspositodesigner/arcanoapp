@@ -1,0 +1,486 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
+
+/**
+ * RUNNINGHUB FLUX2 KLEIN - EDGE FUNCTION
+ * 
+ * Gera imagens via RunningHub Flux2 Klein engine
+ * Usa polling interno (não depende do queue manager)
+ * 
+ * Nodes do Workflow:
+ * - Node 129: Prompt (text)
+ * - Node 177: Width (width) / Height (height)
+ */
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const TABLE_NAME = 'image_generator_jobs';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+};
+
+// Aspect ratio to dimensions mapping
+const ASPECT_DIMENSIONS: Record<string, { width: number; height: number }> = {
+  '1:1':  { width: 1024, height: 1024 },
+  '2:3':  { width: 832, height: 1216 },
+  '3:2':  { width: 1216, height: 832 },
+  '3:4':  { width: 896, height: 1152 },
+  '4:3':  { width: 1152, height: 896 },
+  '4:5':  { width: 896, height: 1088 },
+  '5:4':  { width: 1088, height: 896 },
+  '9:16': { width: 768, height: 1344 },
+  '16:9': { width: 1344, height: 768 },
+  '21:9': { width: 1536, height: 640 },
+};
+
+// ========== OBSERVABILITY ==========
+
+async function logStep(jobId: string, step: string, details?: Record<string, any>): Promise<void> {
+  try {
+    const timestamp = new Date().toISOString();
+    const entry = { step, timestamp, ...details };
+    const { data: job } = await supabase.from(TABLE_NAME).select('step_history').eq('id', jobId).maybeSingle();
+    const currentHistory = (job?.step_history as any[]) || [];
+    await supabase.from(TABLE_NAME).update({
+      current_step: step,
+      step_history: [...currentHistory, entry],
+    }).eq('id', jobId);
+    console.log(`[Flux2Klein] Job ${jobId}: ${step}`, details || '');
+  } catch (e) {
+    console.error(`[Flux2Klein] logStep error:`, e);
+  }
+}
+
+// ========== FETCH WITH RETRY ==========
+
+async function fetchWithRetry(url: string, options: RequestInit, context: string, maxRetries = 4): Promise<Response> {
+  const retryableStatuses = [429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525];
+  const delays = [2000, 5000, 10000, 15000];
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      if (!retryableStatuses.includes(response.status)) return response;
+      await response.text();
+      if (attempt < maxRetries - 1) {
+        const delay = delays[attempt] || 2000;
+        console.warn(`[Flux2Klein] ${context} got ${response.status}, retrying in ${delay}ms (${attempt + 1}/${maxRetries})`);
+        await new Promise(r => setTimeout(r, delay));
+      } else {
+        throw new Error(`${context} failed after ${maxRetries} retries (${response.status})`);
+      }
+    } catch (err) {
+      if (attempt < maxRetries - 1) {
+        const delay = delays[attempt] || 2000;
+        console.warn(`[Flux2Klein] ${context} exception, retrying in ${delay}ms: ${err}`);
+        await new Promise(r => setTimeout(r, delay));
+      } else {
+        throw err;
+      }
+    }
+  }
+  throw new Error(`${context} failed - unexpected retry loop exit`);
+}
+
+// ========== MAIN ==========
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const url = new URL(req.url);
+    const path = url.pathname.split('/').pop();
+
+    if (path === 'run') {
+      return await handleRun(req);
+    } else if (path === 'reconcile') {
+      return await handleReconcile(req);
+    } else {
+      return new Response(JSON.stringify({ error: 'Invalid endpoint' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[Flux2Klein] Unhandled error:', error);
+    return new Response(JSON.stringify({ error: msg }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
+
+// ========== /run ==========
+
+async function handleRun(req: Request) {
+  // Auth
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) {
+    return new Response(JSON.stringify({ error: 'Missing Authorization', code: 'UNAUTHORIZED' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+  if (authError || !user) {
+    return new Response(JSON.stringify({ error: 'Invalid token', code: 'UNAUTHORIZED' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  const verifiedUserId = user.id;
+
+  const { jobId, prompt, aspectRatio, creditCost } = await req.json();
+
+  // Validate
+  if (!jobId || typeof jobId !== 'string') {
+    return new Response(JSON.stringify({ error: 'jobId required', code: 'INVALID_INPUT' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+    return new Response(JSON.stringify({ error: 'Prompt required', code: 'MISSING_PROMPT' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) {
+    return new Response(JSON.stringify({ error: 'Invalid credit cost', code: 'INVALID_CREDIT_COST' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Resolve dimensions from aspect ratio
+  const dims = ASPECT_DIMENSIONS[aspectRatio] || ASPECT_DIMENSIONS['4:3'];
+
+  await logStep(jobId, 'validating', { aspectRatio, width: dims.width, height: dims.height });
+
+  // Load API credentials
+  const RUNNINGHUB_API_KEY = (Deno.env.get('RUNNINGHUB_API_KEY') || '').trim();
+  const FLUX2_KLEIN_APP_ID = (Deno.env.get('RUNNINGHUB_FLUX2_KLEIN_APP_ID') || '').trim();
+
+  if (!RUNNINGHUB_API_KEY) {
+    return new Response(JSON.stringify({ error: 'API key not configured', code: 'MISSING_API_KEY' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  if (!FLUX2_KLEIN_APP_ID) {
+    return new Response(JSON.stringify({ error: 'Flux2 Klein App ID not configured', code: 'MISSING_APP_ID' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // ========== CONSUME CREDITS ==========
+  await logStep(jobId, 'consuming_credits', { amount: creditCost });
+
+  const { data: creditResult, error: creditError } = await supabase.rpc(
+    'consume_upscaler_credits',
+    { _user_id: verifiedUserId, _amount: creditCost, _description: 'Gerar Imagem - Flux2 Klein' }
+  );
+
+  if (creditError) {
+    console.error('[Flux2Klein] Credit error:', creditError);
+    await logStep(jobId, 'credit_error', { error: creditError.message });
+    return new Response(JSON.stringify({ error: 'Erro ao processar créditos', code: 'CREDIT_ERROR' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
+    const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
+    await logStep(jobId, 'insufficient_credits', { balance: creditResult?.[0]?.new_balance });
+    return new Response(JSON.stringify({ error: errorMsg, code: 'INSUFFICIENT_CREDITS', currentBalance: creditResult?.[0]?.new_balance }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  console.log(`[Flux2Klein] Credits consumed. New balance: ${creditResult[0].new_balance}`);
+
+  // Mark credits charged
+  await supabase.from(TABLE_NAME).update({
+    credits_charged: true,
+    user_credit_cost: creditCost,
+    job_payload: {
+      prompt: prompt.trim(),
+      aspectRatio,
+      width: dims.width,
+      height: dims.height,
+      engine: 'flux2_klein',
+    },
+  }).eq('id', jobId);
+
+  // ========== SUBMIT TO RUNNINGHUB ==========
+  await logStep(jobId, 'submitting_to_runninghub');
+
+  const submitBody = {
+    nodeInfoList: [
+      { nodeId: "129", fieldName: "text", fieldValue: prompt.trim(), description: "PROMPT" },
+      { nodeId: "177", fieldName: "width", fieldValue: String(dims.width), description: "LARGURA" },
+      { nodeId: "177", fieldName: "height", fieldValue: String(dims.height), description: "ALTURA" },
+    ],
+    instanceType: "default",
+    usePersonalQueue: "false",
+  };
+
+  let taskId: string;
+  try {
+    const submitResponse = await fetchWithRetry(
+      `https://www.runninghub.ai/openapi/v2/run/ai-app/${FLUX2_KLEIN_APP_ID}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${RUNNINGHUB_API_KEY}`,
+        },
+        body: JSON.stringify(submitBody),
+      },
+      'RunningHub submit'
+    );
+
+    const submitData = await submitResponse.json();
+    console.log('[Flux2Klein] Submit response:', JSON.stringify(submitData));
+
+    if (!submitResponse.ok || !submitData.taskId) {
+      const errMsg = submitData.errorMessage || submitData.msg || `Submit failed (${submitResponse.status})`;
+      // Refund credits since generation didn't start
+      await supabase.rpc('refund_upscaler_credits', {
+        _user_id: verifiedUserId,
+        _amount: creditCost,
+        _description: `FLUX2_SUBMIT_REFUND: ${errMsg.slice(0, 100)}`,
+      });
+      await supabase.from(TABLE_NAME).update({
+        status: 'failed',
+        error_message: errMsg,
+        credits_refunded: true,
+        completed_at: new Date().toISOString(),
+      }).eq('id', jobId);
+      await logStep(jobId, 'submit_failed', { error: errMsg });
+      return new Response(JSON.stringify({ error: errMsg, code: 'RUNNINGHUB_SUBMIT_FAILED', refunded: true }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    taskId = submitData.taskId;
+    await supabase.from(TABLE_NAME).update({
+      task_id: taskId,
+      runninghub_task_id: taskId,
+      status: 'running',
+      started_at: new Date().toISOString(),
+      api_account: 'primary',
+    }).eq('id', jobId);
+    await logStep(jobId, 'task_submitted', { taskId });
+
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : 'Submit exception';
+    // Refund on submit failure
+    await supabase.rpc('refund_upscaler_credits', {
+      _user_id: verifiedUserId,
+      _amount: creditCost,
+      _description: `FLUX2_SUBMIT_EXCEPTION_REFUND: ${errMsg.slice(0, 100)}`,
+    });
+    await supabase.from(TABLE_NAME).update({
+      status: 'failed',
+      error_message: errMsg,
+      credits_refunded: true,
+      completed_at: new Date().toISOString(),
+    }).eq('id', jobId);
+    await logStep(jobId, 'submit_exception', { error: errMsg });
+    return new Response(JSON.stringify({ error: errMsg, code: 'RUNNINGHUB_SUBMIT_FAILED', refunded: true }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // ========== POLL FOR RESULT ==========
+  await logStep(jobId, 'polling_started');
+
+  const MAX_POLLS = 30;
+  const BASE_DELAY = 4000;
+  let outputUrl: string | null = null;
+
+  for (let i = 0; i < MAX_POLLS; i++) {
+    await new Promise(r => setTimeout(r, i < 5 ? BASE_DELAY : BASE_DELAY + (i - 5) * 1000));
+
+    try {
+      const queryResponse = await fetchWithRetry(
+        'https://www.runninghub.ai/openapi/v2/query',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${RUNNINGHUB_API_KEY}`,
+          },
+          body: JSON.stringify({ taskId }),
+        },
+        `Poll ${i + 1}`
+      );
+
+      const queryData = await queryResponse.json();
+      const rhStatus = queryData.status;
+      console.log(`[Flux2Klein] Poll ${i + 1}/${MAX_POLLS}: status=${rhStatus}`);
+
+      if (rhStatus === 'SUCCESS' && queryData.results?.length > 0) {
+        const imageResult = queryData.results.find((r: any) => ['png', 'jpg', 'jpeg', 'webp'].includes(r.outputType));
+        outputUrl = imageResult?.url || queryData.results[0]?.url;
+
+        // Extract RH cost
+        const rhCost = queryData.usage?.consumeCoins ? parseFloat(queryData.usage.consumeCoins) : null;
+
+        await supabase.from(TABLE_NAME).update({
+          status: 'completed',
+          output_url: outputUrl,
+          completed_at: new Date().toISOString(),
+          raw_api_response: queryData,
+          rh_cost: rhCost,
+        }).eq('id', jobId);
+        await logStep(jobId, 'completed', { outputUrl, rhCost, polls: i + 1 });
+
+        return new Response(JSON.stringify({ success: true, outputUrl, jobId }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      if (rhStatus === 'FAILED') {
+        const failReason = queryData.errorMessage || queryData.failedReason?.exception_message || 'Generation failed on RunningHub';
+        // Refund on generation failure
+        await supabase.rpc('refund_upscaler_credits', {
+          _user_id: verifiedUserId,
+          _amount: creditCost,
+          _description: `FLUX2_GENERATION_REFUND: ${failReason.slice(0, 100)}`,
+        });
+        await supabase.from(TABLE_NAME).update({
+          status: 'failed',
+          error_message: failReason,
+          credits_refunded: true,
+          completed_at: new Date().toISOString(),
+          raw_api_response: queryData,
+        }).eq('id', jobId);
+        await logStep(jobId, 'generation_failed', { error: failReason });
+
+        return new Response(JSON.stringify({ error: failReason, code: 'RUNNINGHUB_GENERATION_FAILED', refunded: true }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // QUEUED or RUNNING — continue polling
+    } catch (pollError) {
+      console.warn(`[Flux2Klein] Poll ${i + 1} error:`, pollError);
+      // Continue polling on transient errors
+    }
+  }
+
+  // Timeout — refund
+  const timeoutMsg = 'Tempo limite excedido (120s). Tente novamente.';
+  await supabase.rpc('refund_upscaler_credits', {
+    _user_id: verifiedUserId,
+    _amount: creditCost,
+    _description: 'FLUX2_TIMEOUT_REFUND',
+  });
+  await supabase.from(TABLE_NAME).update({
+    status: 'failed',
+    error_message: timeoutMsg,
+    credits_refunded: true,
+    completed_at: new Date().toISOString(),
+  }).eq('id', jobId);
+  await logStep(jobId, 'timeout', { polls: MAX_POLLS });
+
+  return new Response(JSON.stringify({ error: timeoutMsg, code: 'RUNNINGHUB_TIMEOUT', refunded: true }), {
+    status: 408, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+// ========== /reconcile ==========
+
+async function handleReconcile(req: Request) {
+  const { jobId } = await req.json();
+  if (!jobId) {
+    return new Response(JSON.stringify({ error: 'jobId required' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  try {
+    const { data: job, error } = await supabase
+      .from(TABLE_NAME)
+      .select('id, task_id, runninghub_task_id, status, output_url, user_id, user_credit_cost')
+      .eq('id', jobId)
+      .maybeSingle();
+
+    if (error || !job) {
+      return new Response(JSON.stringify({ error: 'Job not found' }), {
+        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (['completed', 'failed', 'cancelled'].includes(job.status)) {
+      return new Response(JSON.stringify({ success: true, alreadyFinalized: true, status: job.status, outputUrl: job.output_url }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const rhTaskId = job.runninghub_task_id || job.task_id;
+    if (!rhTaskId) {
+      return new Response(JSON.stringify({ error: 'No task_id yet' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const RUNNINGHUB_API_KEY = (Deno.env.get('RUNNINGHUB_API_KEY') || '').trim();
+
+    const queryResponse = await fetch('https://www.runninghub.ai/openapi/v2/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RUNNINGHUB_API_KEY}` },
+      body: JSON.stringify({ taskId: rhTaskId }),
+    });
+
+    const queryData = await queryResponse.json();
+
+    if (queryData.status === 'SUCCESS' && queryData.results?.length > 0) {
+      const imageResult = queryData.results.find((r: any) => ['png', 'jpg', 'jpeg', 'webp'].includes(r.outputType));
+      const outputUrl = imageResult?.url || queryData.results[0]?.url;
+      const rhCost = queryData.usage?.consumeCoins ? parseFloat(queryData.usage.consumeCoins) : null;
+
+      await supabase.from(TABLE_NAME).update({
+        status: 'completed',
+        output_url: outputUrl,
+        completed_at: new Date().toISOString(),
+        rh_cost: rhCost,
+      }).eq('id', jobId);
+
+      return new Response(JSON.stringify({ success: true, reconciled: true, status: 'completed', outputUrl }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (queryData.status === 'FAILED') {
+      const errMsg = queryData.errorMessage || 'Failed on RunningHub';
+      await supabase.rpc('refund_upscaler_credits', {
+        _user_id: job.user_id,
+        _amount: job.user_credit_cost || 0,
+        _description: `FLUX2_RECONCILE_REFUND: ${errMsg.slice(0, 100)}`,
+      });
+      await supabase.from(TABLE_NAME).update({
+        status: 'failed',
+        error_message: errMsg,
+        credits_refunded: true,
+        completed_at: new Date().toISOString(),
+      }).eq('id', jobId);
+
+      return new Response(JSON.stringify({ success: true, reconciled: true, status: 'failed' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify({ success: true, reconciled: false, currentStatus: queryData.status, message: 'Still processing' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    return new Response(JSON.stringify({ error: msg }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}

@@ -85,6 +85,11 @@ const EDGE_FUNCTION_MAP: Record<ToolType, string> = {
   movieled_maker: 'runninghub-movieled-maker/run',
 };
 
+// Separate map for alternative engines that share a table but use different edge functions
+export const ALT_EDGE_FUNCTION_MAP: Record<string, string> = {
+  flux2_klein: 'runninghub-flux2-klein/run',
+};
+
 // Tool names for display
 const TOOL_NAMES: Record<string, ToolType> = {
   'Upscaler Arcano': 'upscaler',

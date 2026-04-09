@@ -51,6 +51,7 @@ const GerarImagemTool = () => {
   const [prompt, setPrompt] = useState('');
   const [isDragOver, setIsDragOver] = useState(false);
   const [aspectRatio, setAspectRatio] = useState<string>('4:3');
+  const [engine, setEngine] = useState<'flux2_klein' | 'nano_banana'>('flux2_klein');
   const [referenceImages, setReferenceImages] = useState<{ file: File; preview: string }[]>([]);
 
   // Job state
@@ -261,62 +262,131 @@ const GerarImagemTool = () => {
       setStatus('pending');
       setProgress(5);
 
-      // Optimize and upload reference images
-      const uploadedUrls: string[] = [];
-      for (let i = 0; i < referenceImages.length; i++) {
-        toast.info(`Otimizando imagem ${i + 1}/${referenceImages.length}...`);
-        const optimized = await optimizeForAI(referenceImages[i].file);
-        const uploadResult = await uploadToStorage(optimized.file, 'image-generator', user.id);
-        if (!uploadResult.url) throw new Error(`Falha ao enviar imagem ${i + 1}`);
-        uploadedUrls.push(uploadResult.url);
-        setProgress(5 + Math.round((i + 1) / referenceImages.length * 15));
-      }
+      if (engine === 'flux2_klein') {
+        // ========== FLUX2 KLEIN FLOW ==========
+        // Create job in DB with engine field
+        const { jobId: newJobId, error: createError } = await createJob('image_generator', user.id, sessionIdRef.current, {
+          prompt: prompt.trim(),
+          aspect_ratio: aspectRatio,
+          model: 'flux2_klein',
+          engine: 'flux2_klein',
+        });
 
-      // Create job in DB
-      const { jobId: newJobId, error: createError } = await createJob('image_generator', user.id, sessionIdRef.current, {
-        prompt: prompt.trim(),
-        aspect_ratio: aspectRatio,
-        model: 'runninghub',
-        input_urls: uploadedUrls,
-      });
+        if (createError || !newJobId) throw new Error(createError || 'Falha ao criar job');
 
-      if (createError || !newJobId) {
-        throw new Error(createError || 'Falha ao criar job');
-      }
+        setJobId(newJobId);
+        registerJob(newJobId, 'image_generator', 'pending');
+        setStatus('running');
+        setProgress(20);
 
-      setJobId(newJobId);
-      registerJob(newJobId, 'image_generator', 'pending');
+        // Call Flux2 Klein edge function directly
+        const { data, error } = await supabase.functions.invoke('runninghub-flux2-klein/run', {
+          body: {
+            jobId: newJobId,
+            prompt: prompt.trim(),
+            aspectRatio,
+            creditCost,
+          },
+        });
 
-      // Start job via edge function
-      const result = await startJob('image_generator', newJobId, {
-        referenceImageUrls: uploadedUrls,
-        aspectRatio,
-        creditCost,
-        prompt: prompt.trim(),
-      });
+        if (error) {
+          const errMsg = error.message || 'Erro desconhecido';
+          setStatus('failed');
+          setErrorMessage(errMsg);
+          const errInfo = getAIErrorMessage(errMsg);
+          toast.error(errInfo.message);
+          refetchCredits();
+          endSubmit();
+          return;
+        }
 
-      if (!result.success) {
-        if (result.code === 'INSUFFICIENT_CREDITS') {
+        if (data?.code === 'INSUFFICIENT_CREDITS') {
           setNoCreditsReason('insufficient');
           setShowNoCreditsModal(true);
           resetJobState();
-        } else {
-          setStatus('failed');
-          setErrorMessage(result.error || 'Erro desconhecido');
-          const errInfo = getAIErrorMessage(result.error || 'Erro desconhecido');
-          toast.error(errInfo.message);
+          refetchCredits();
+          endSubmit();
+          return;
         }
-        endSubmit();
-        return;
+
+        if (data?.error && !data?.success) {
+          setStatus('failed');
+          setErrorMessage(data.error);
+          const errInfo = getAIErrorMessage(data.error);
+          toast.error(errInfo.message);
+          refetchCredits();
+          endSubmit();
+          return;
+        }
+
+        if (data?.success && data?.outputUrl) {
+          setResultUrl(data.outputUrl);
+          setStatus('completed');
+          setProgress(100);
+          toast.success('Imagem gerada com sucesso!');
+          refetchCredits();
+        }
+
+      } else {
+        // ========== NANO BANANA FLOW (unchanged) ==========
+        // Optimize and upload reference images
+        const uploadedUrls: string[] = [];
+        for (let i = 0; i < referenceImages.length; i++) {
+          toast.info(`Otimizando imagem ${i + 1}/${referenceImages.length}...`);
+          const optimized = await optimizeForAI(referenceImages[i].file);
+          const uploadResult = await uploadToStorage(optimized.file, 'image-generator', user.id);
+          if (!uploadResult.url) throw new Error(`Falha ao enviar imagem ${i + 1}`);
+          uploadedUrls.push(uploadResult.url);
+          setProgress(5 + Math.round((i + 1) / referenceImages.length * 15));
+        }
+
+        // Create job in DB
+        const { jobId: newJobId, error: createError } = await createJob('image_generator', user.id, sessionIdRef.current, {
+          prompt: prompt.trim(),
+          aspect_ratio: aspectRatio,
+          model: 'runninghub',
+          engine: 'nano_banana',
+          input_urls: uploadedUrls,
+        });
+
+        if (createError || !newJobId) {
+          throw new Error(createError || 'Falha ao criar job');
+        }
+
+        setJobId(newJobId);
+        registerJob(newJobId, 'image_generator', 'pending');
+
+        // Start job via edge function
+        const result = await startJob('image_generator', newJobId, {
+          referenceImageUrls: uploadedUrls,
+          aspectRatio,
+          creditCost,
+          prompt: prompt.trim(),
+        });
+
+        if (!result.success) {
+          if (result.code === 'INSUFFICIENT_CREDITS') {
+            setNoCreditsReason('insufficient');
+            setShowNoCreditsModal(true);
+            resetJobState();
+          } else {
+            setStatus('failed');
+            setErrorMessage(result.error || 'Erro desconhecido');
+            const errInfo = getAIErrorMessage(result.error || 'Erro desconhecido');
+            toast.error(errInfo.message);
+          }
+          endSubmit();
+          return;
+        }
+
+        if (result.queued) {
+          setStatus('queued');
+          setQueuePosition(result.position || 0);
+          toast.info(`Na fila — posição ${result.position}`);
+        }
       }
 
-      if (result.queued) {
-        setStatus('queued');
-        setQueuePosition(result.position || 0);
-        toast.info(`Na fila — posição ${result.position}`);
-      }
-
-      // useJobStatusSync handles the rest
+      // useJobStatusSync handles the rest for Nano Banana
 
     } catch (error: any) {
       console.error('[GerarImagem] Error:', error);
@@ -340,7 +410,8 @@ const GerarImagemTool = () => {
     if (!jobId) return;
     toast.info('Verificando status...');
     try {
-      const { data } = await supabase.functions.invoke('runninghub-image-generator/reconcile', {
+      const reconcileEndpoint = engine === 'flux2_klein' ? 'runninghub-flux2-klein/reconcile' : 'runninghub-image-generator/reconcile';
+      const { data } = await supabase.functions.invoke(reconcileEndpoint, {
         body: { jobId },
       });
       if (data?.reconciled && data?.status === 'completed' && data?.outputUrl) {
@@ -470,7 +541,7 @@ const GerarImagemTool = () => {
                   <p className="text-xs text-purple-400">Aguardando vaga...</p>
                 </div>
               ) : (
-                <p className="text-sm">Gerando sua imagem...</p>
+                <p className="text-sm">Gerando com {engine === 'flux2_klein' ? 'Flux2 Klein' : 'Nano Banana'}...</p>
               )}
               {/* Progress bar */}
               <div className="w-48 h-1.5 rounded-full bg-purple-900/50 overflow-hidden">
@@ -526,20 +597,50 @@ const GerarImagemTool = () => {
           )}
 
           <div className="max-w-3xl mx-auto px-3 py-3 space-y-2">
+            {/* Engine selector */}
+            <div className="flex items-center gap-1 bg-purple-900/30 rounded-lg p-0.5 border border-purple-500/20 w-fit">
+              <button
+                type="button"
+                disabled={isProcessing}
+                onClick={() => setEngine('flux2_klein')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all disabled:opacity-50 ${
+                  engine === 'flux2_klein'
+                    ? 'bg-fuchsia-600/80 text-white shadow-sm'
+                    : 'text-purple-400 hover:text-purple-200'
+                }`}
+              >
+                ⚡ Flux2 Klein
+              </button>
+              <button
+                type="button"
+                disabled={isProcessing}
+                onClick={() => setEngine('nano_banana')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all disabled:opacity-50 ${
+                  engine === 'nano_banana'
+                    ? 'bg-fuchsia-600/80 text-white shadow-sm'
+                    : 'text-purple-400 hover:text-purple-200'
+                }`}
+              >
+                🍌 Nano Banana
+              </button>
+            </div>
+
             {/* Prompt input row */}
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isProcessing || referenceImages.length >= 5}
-                className="relative flex-shrink-0 w-9 h-9 rounded-full border border-purple-500/30 bg-purple-900/30 flex items-center justify-center text-purple-300 hover:text-white hover:border-purple-400/60 transition-colors disabled:opacity-40 self-end mb-0.5"
-              >
-                <Paperclip className="h-4 w-4" />
-                {referenceImages.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                    {referenceImages.length}
-                  </span>
-                )}
-              </button>
+              {engine === 'nano_banana' && (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isProcessing || referenceImages.length >= 5}
+                  className="relative flex-shrink-0 w-9 h-9 rounded-full border border-purple-500/30 bg-purple-900/30 flex items-center justify-center text-purple-300 hover:text-white hover:border-purple-400/60 transition-colors disabled:opacity-40 self-end mb-0.5"
+                >
+                  <Paperclip className="h-4 w-4" />
+                  {referenceImages.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                      {referenceImages.length}
+                    </span>
+                  )}
+                </button>
+              )}
               <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" />
 
               <textarea
@@ -617,7 +718,7 @@ const GerarImagemTool = () => {
                 ) : (
                   <>
                     <Sparkles className="w-3.5 h-3.5 mr-1" />
-                    Gerar
+                    {engine === 'flux2_klein' ? 'Gerar com Flux2 Klein' : 'Gerar com Nano Banana'}
                     <span className="ml-1.5 flex items-center gap-0.5 text-xs opacity-90">
                       <Coins className="w-3 h-3" />
                       {creditCost}
