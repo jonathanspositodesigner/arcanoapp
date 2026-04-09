@@ -5250,6 +5250,7 @@ export type Database = {
           is_landing_trial: boolean
         }[]
       }
+      check_nano_banana_limit: { Args: { _user_id: string }; Returns: Json }
       check_profile_exists: {
         Args: { check_email: string }
         Returns: {
@@ -5554,6 +5555,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_nano_banana_usage: {
+        Args: { _user_id: string }
+        Returns: undefined
       }
       is_premium: { Args: never; Returns: boolean }
       is_premium_artes: { Args: never; Returns: boolean }
