@@ -1,0 +1,1 @@
+UPDATE ai_tool_settings SET has_api_cost = true, api_cost = 0.18, updated_at = now() WHERE tool_name IN ('gerar_imagem', 'gerar_imagem_nano2', 'gerar_imagem_pro');
