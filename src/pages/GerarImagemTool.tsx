@@ -93,6 +93,17 @@ const GerarImagemTool = () => {
     } catch {}
   }, [engine]);
 
+  // Close aspect dropdown on click outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (aspectDropdownRef.current && !aspectDropdownRef.current.contains(e.target as Node)) {
+        setAspectDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
   // Triple sync
   useJobStatusSync({
     jobId,
