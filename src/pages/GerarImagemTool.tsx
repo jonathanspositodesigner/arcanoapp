@@ -558,11 +558,11 @@ const GerarImagemTool = () => {
           {isDownloading && <DownloadProgressOverlay isVisible={isDownloading} progress={downloadProgress} />}
 
           {resultUrl ? (
-            <div className="w-full max-w-2xl space-y-3">
-              <div className="rounded-2xl overflow-hidden border border-purple-500/20 bg-black/30 shadow-2xl">
+            <div className="w-full h-full flex flex-col items-center justify-center space-y-3 overflow-hidden">
+              <div className="rounded-2xl overflow-hidden border border-purple-500/20 bg-black/30 shadow-2xl max-w-2xl max-h-full flex items-center justify-center">
                 <TransformWrapper>
-                  <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
-                    <img src={resultUrl} alt="Imagem gerada" className="w-full h-auto" />
+                  <TransformComponent wrapperClass="!w-full !h-full !flex !items-center !justify-center" contentClass="!w-full !h-full !flex !items-center !justify-center">
+                    <img src={resultUrl} alt="Imagem gerada" className="max-w-full max-h-[calc(100vh-180px)] object-contain" />
                   </TransformComponent>
                 </TransformWrapper>
               </div>
