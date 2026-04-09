@@ -3424,6 +3424,8 @@ export type Database = {
           id: string
           is_active: boolean
           last_credit_reset_at: string | null
+          nano_banana_reset_at: string
+          nano_banana_usage_count: number
           pagarme_subscription_id: string | null
           plan_slug: string
           updated_at: string
@@ -3442,6 +3444,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_credit_reset_at?: string | null
+          nano_banana_reset_at?: string
+          nano_banana_usage_count?: number
           pagarme_subscription_id?: string | null
           plan_slug?: string
           updated_at?: string
@@ -3460,6 +3464,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_credit_reset_at?: string | null
+          nano_banana_reset_at?: string
+          nano_banana_usage_count?: number
           pagarme_subscription_id?: string | null
           plan_slug?: string
           updated_at?: string
@@ -5247,6 +5253,7 @@ export type Database = {
           is_landing_trial: boolean
         }[]
       }
+      check_nano_banana_limit: { Args: { _user_id: string }; Returns: Json }
       check_profile_exists: {
         Args: { check_email: string }
         Returns: {
@@ -5551,6 +5558,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_nano_banana_usage: {
+        Args: { _user_id: string }
+        Returns: undefined
       }
       is_premium: { Args: never; Returns: boolean }
       is_premium_artes: { Args: never; Returns: boolean }

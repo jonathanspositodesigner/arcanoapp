@@ -81,6 +81,7 @@ const GerarImagemTool = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const sessionIdRef = useRef(crypto.randomUUID());
   const reconcileTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const effectiveEngineRef = useRef<'flux2_klein' | 'nano_banana'>('flux2_klein');
 
   const creditCost = getCreditCost('gerar_imagem', 100);
 
@@ -289,7 +290,27 @@ const GerarImagemTool = () => {
       setStatus('pending');
       setProgress(5);
 
-      if (engine === 'flux2_klein') {
+      // Check Nano Banana limit for Unlimited users — silently redirect to Flux2 Klein if exceeded
+      let effectiveEngine = engine;
+      if (engine === 'nano_banana') {
+        try {
+          const { data: limitData } = await supabase.rpc('check_nano_banana_limit', { _user_id: user.id });
+          if (limitData && typeof limitData === 'object' && (limitData as any).exceeded) {
+            console.log('[GerarImagem] Nano Banana limit exceeded, redirecting to Flux2 Klein');
+            effectiveEngine = 'flux2_klein';
+          }
+          // Increment counter for all nano_banana generations (even redirected ones)
+          void supabase.rpc('increment_nano_banana_usage', { _user_id: user.id }).then(() => {
+            console.log('[GerarImagem] Nano Banana usage incremented');
+          });
+        } catch (err) {
+          console.warn('[GerarImagem] Failed to check nano banana limit, proceeding normally:', err);
+        }
+      }
+
+      effectiveEngineRef.current = effectiveEngine;
+
+      if (effectiveEngine === 'flux2_klein') {
         // ========== FLUX2 KLEIN FLOW ==========
         // Optimize and upload reference images
         const uploadedUrls: string[] = [];
@@ -449,7 +470,7 @@ const GerarImagemTool = () => {
     if (!jobId) return;
     toast.info('Verificando status...');
     try {
-      const reconcileEndpoint = engine === 'flux2_klein' ? 'runninghub-flux2-klein/reconcile' : 'runninghub-image-generator/reconcile';
+      const reconcileEndpoint = effectiveEngineRef.current === 'flux2_klein' ? 'runninghub-flux2-klein/reconcile' : 'runninghub-image-generator/reconcile';
       const { data } = await supabase.functions.invoke(reconcileEndpoint, {
         body: { jobId },
       });
