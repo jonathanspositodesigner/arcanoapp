@@ -510,7 +510,6 @@ async function handleRun(req: Request) {
   const isPlanos2Unlimited = !!isUnlimitedResult;
 
   let skipCredits = false;
-  let forceNoAudio = false;
 
   if (isPlanos2Unlimited) {
     if (selectedModel === 'wan2.2') {
@@ -519,18 +518,8 @@ async function handleRun(req: Request) {
       creditCost = 0;
       console.log(`[VideoGenerator] Unlimited user ${verifiedUserId}: Wan 2.2 is FREE`);
     } else if (isEvolinkModel(selectedModel)) {
-      // Check Veo 3.1 trial period (7 days from subscription)
-      const { data: trialData } = await supabase.rpc('check_veo3_unlimited_trial', { _user_id: verifiedUserId });
-      if (trialData?.in_trial) {
-        // Trial: only veo3.1-fast, no audio, 0 credits
-        skipCredits = true;
-        creditCost = 0;
-        forceNoAudio = true;
-        console.log(`[VideoGenerator] Unlimited user ${verifiedUserId}: Veo 3.1 Fast FREE (trial, ${trialData.days_remaining} days left)`);
-      } else {
-        // After trial: charge credits normally
-        console.log(`[VideoGenerator] Unlimited user ${verifiedUserId}: Veo 3.1 charges ${creditCost} credits (trial expired)`);
-      }
+      // Veo 3.1: charge credits normally for unlimited users
+      console.log(`[VideoGenerator] Unlimited user ${verifiedUserId}: Veo 3.1 charges ${creditCost} credits`);
     }
   }
 
@@ -648,8 +637,8 @@ async function handleRun(req: Request) {
       generationType = imageUrls.length <= 2 ? 'FIRST&LAST' : 'REFERENCE';
     }
 
-    // Determine audio: trial users get no audio, otherwise respect user choice
-    const generateAudio = forceNoAudio ? false : wantsAudio;
+    // Audio: respect user choice
+    const generateAudio = wantsAudio;
 
     await logStep(jobId, 'calling_evolink', { model: selectedModel, generationType, generateAudio });
 

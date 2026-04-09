@@ -65,9 +65,8 @@ const GerarVideoTool = () => {
   const { isPlanos2User, hasVideoGeneration } = useAuth();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
 
-  // Check if user is unlimited with trial
+  // Check if user is unlimited
   const [isUnlimited, setIsUnlimited] = useState(false);
-  const [isVeo3Trial, setIsVeo3Trial] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -75,11 +74,6 @@ const GerarVideoTool = () => {
       try {
         const { data: unlimitedData } = await supabase.rpc('is_unlimited_subscriber', { _user_id: user.id });
         setIsUnlimited(!!unlimitedData);
-        if (unlimitedData) {
-        const { data: trialData } = await supabase.rpc('check_veo3_unlimited_trial', { _user_id: user.id });
-          const trialResult = trialData as any;
-          setIsVeo3Trial(!!trialResult?.in_trial);
-        }
       } catch (e) {
         console.error('[GerarVideo] Error checking unlimited status:', e);
       }
@@ -87,10 +81,7 @@ const GerarVideoTool = () => {
     checkUnlimited();
   }, [user?.id]);
 
-  // Filter models based on trial status
-  const availableModels: ModelOption[] = isUnlimited && isVeo3Trial
-    ? ALL_MODELS.filter(m => m.id === 'wan2.2' || m.id === 'veo3.1-fast')
-    : ALL_MODELS;
+  const availableModels: ModelOption[] = ALL_MODELS;
 
   // Watchdog: detect stuck pending jobs (5 min timeout)
   const handleWatchdogFailed = useCallback((msg: string) => {
@@ -129,13 +120,10 @@ const GerarVideoTool = () => {
   const currentModel = availableModels.find(m => m.id === selectedModel) || availableModels[0];
   const isVeoModel = selectedModel === 'veo3.1-fast' || selectedModel === 'veo3.1-pro';
   
-  // For trial users on veo3.1-fast, cost is 0
   const effectiveCost = (isVeoModel && generateAudio) ? currentModel.costWithAudio : currentModel.cost;
-  const creditCost = (isUnlimited && isVeo3Trial && selectedModel === 'veo3.1-fast') 
+  const creditCost = (isUnlimited && selectedModel === 'wan2.2') 
     ? 0 
-    : (isUnlimited && selectedModel === 'wan2.2') 
-      ? 0 
-      : effectiveCost;
+    : effectiveCost;
 
   // Reset audio when switching away from Veo models
   useEffect(() => {
@@ -527,16 +515,6 @@ const GerarVideoTool = () => {
           </div>
         </div>
 
-        {/* Trial badge */}
-        {isUnlimited && isVeo3Trial && (
-          <div className="mx-4 mt-2 mb-0 max-w-4xl self-center w-full">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/30 text-green-300 text-xs">
-              <span className="text-green-400 text-sm">🎁</span>
-              <span>Período de teste ativo — Veo 3.1 Fast <strong>grátis e sem áudio</strong> por 7 dias!</span>
-            </div>
-          </div>
-        )}
-
         {/* Main content area */}
         <div className="flex-1 flex items-center justify-center p-4">
           {resultUrl ? (
@@ -773,7 +751,7 @@ const GerarVideoTool = () => {
                             <span className="font-medium">{model.name}</span>
                             <span className="text-[10px] text-purple-400">
                               {model.description} • {
-                                (isUnlimited && (model.id === 'wan2.2' || (isVeo3Trial && model.id === 'veo3.1-fast')))
+                                (isUnlimited && model.id === 'wan2.2')
                                   ? '∞ Grátis'
                                   : model.id === 'wan2.2' 
                                     ? `${model.cost} créditos`
@@ -811,13 +789,13 @@ const GerarVideoTool = () => {
                   {isVeoModel && (
                     <button
                       onClick={() => setGenerateAudio(!generateAudio)}
-                      disabled={isGenerating || (isUnlimited && isVeo3Trial)}
+                      disabled={isGenerating}
                       className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[10px] font-medium transition-colors ${
                         generateAudio
                           ? 'bg-fuchsia-600/30 border-fuchsia-500/50 text-fuchsia-200'
                           : 'bg-purple-900/40 border-purple-500/25 text-purple-400 hover:text-purple-200 hover:bg-purple-800/50'
                       } disabled:opacity-40 disabled:cursor-not-allowed`}
-                      title={isUnlimited && isVeo3Trial ? 'Áudio indisponível no período de teste' : generateAudio ? 'Desativar áudio' : 'Ativar áudio (custo extra)'}
+                      title={generateAudio ? 'Desativar áudio' : 'Ativar áudio (custo extra)'}
                     >
                       {generateAudio ? <Volume2 className="h-3 w-3" /> : <VolumeX className="h-3 w-3" />}
                       <span>{generateAudio ? 'Com Áudio' : 'Sem Áudio'}</span>

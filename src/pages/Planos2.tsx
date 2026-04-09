@@ -235,7 +235,7 @@ const Planos2 = () => {
         { text: 'Wan 2.2', iconType: 'video', included: true, badge: 'Ilimitado' },
         { text: 'Flux 2 Klein', iconType: 'image', included: true, badge: 'Ilimitado' },
         { text: 'Nano Banana Pro', iconType: 'image', included: true, badge: 'Ilimitado' },
-        { text: 'Veo 3.1', iconType: 'video', included: true, badge: '7 dias ilimitado' },
+        { text: 'Veo 3.1', iconType: 'video', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: true }
       ],
       popular: false,
@@ -362,7 +362,7 @@ const Planos2 = () => {
         { text: 'Wan 2.2', iconType: 'video', included: true, badge: 'Ilimitado' },
         { text: 'Flux 2 Klein', iconType: 'image', included: true, badge: 'Ilimitado' },
         { text: 'Nano Banana Pro', iconType: 'image', included: true, badge: 'Ilimitado' },
-        { text: 'Veo 3.1', iconType: 'video', included: true, badge: '7 dias ilimitado' },
+        { text: 'Veo 3.1', iconType: 'video', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: true }
       ],
       popular: false,
