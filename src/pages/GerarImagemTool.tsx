@@ -410,7 +410,8 @@ const GerarImagemTool = () => {
     if (!jobId) return;
     toast.info('Verificando status...');
     try {
-      const { data } = await supabase.functions.invoke('runninghub-image-generator/reconcile', {
+      const reconcileEndpoint = engine === 'flux2_klein' ? 'runninghub-flux2-klein/reconcile' : 'runninghub-image-generator/reconcile';
+      const { data } = await supabase.functions.invoke(reconcileEndpoint, {
         body: { jobId },
       });
       if (data?.reconciled && data?.status === 'completed' && data?.outputUrl) {
