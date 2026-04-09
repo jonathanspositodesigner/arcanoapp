@@ -806,6 +806,22 @@ const GerarVideoTool = () => {
                     </DropdownMenu>
                   )}
 
+                  {isVeoModel && (
+                    <button
+                      onClick={() => setGenerateAudio(!generateAudio)}
+                      disabled={isGenerating || (isUnlimited && isVeo3Trial)}
+                      className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[10px] font-medium transition-colors ${
+                        generateAudio
+                          ? 'bg-fuchsia-600/30 border-fuchsia-500/50 text-fuchsia-200'
+                          : 'bg-purple-900/40 border-purple-500/25 text-purple-400 hover:text-purple-200 hover:bg-purple-800/50'
+                      } disabled:opacity-40 disabled:cursor-not-allowed`}
+                      title={isUnlimited && isVeo3Trial ? 'Áudio indisponível no período de teste' : generateAudio ? 'Desativar áudio' : 'Ativar áudio (custo extra)'}
+                    >
+                      {generateAudio ? <Volume2 className="h-3 w-3" /> : <VolumeX className="h-3 w-3" />}
+                      <span>{generateAudio ? 'Com Áudio' : 'Sem Áudio'}</span>
+                    </button>
+                  )}
+
                   <span className="text-[10px] text-purple-400 ml-auto flex items-center gap-1.5">
                     <span>⏱ {MODEL_DURATIONS[selectedModel] || 8}s</span>
                     <span>•</span>
