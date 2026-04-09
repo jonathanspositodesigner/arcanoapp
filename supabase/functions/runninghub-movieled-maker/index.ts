@@ -1,12 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { evolinkGenerate, evolinkPoll } from "../_shared/evolink-client.ts";
 
 /**
- * MOVIELED MAKER - EDGE FUNCTION v3
+ * MOVIELED MAKER - EDGE FUNCTION v4
  * 
  * Gera movies para telão de LED:
  * - Wan 2.2: via RunningHub workflow (500 créditos, 15s, 720p)
- * - Veo 3.1: via Evolink API (1500 créditos, 6s, 1080p, sem áudio)
+ * - Veo 3.1: via Evolink API centralizada (1500 créditos, 6s, 1080p, sem áudio)
  */
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -28,7 +29,7 @@ const ENGINE_COSTS: Record<string, number> = {
   'wan2.2': 500,
 };
 
-// ========== RESILIENT FETCH ==========
+// ========== RESILIENT FETCH (for RunningHub only) ==========
 
 async function fetchWithRetry(
   url: string,
@@ -235,58 +236,7 @@ async function authenticateRequest(req: Request): Promise<{ userId: string } | R
   return { userId: verifiedUserId };
 }
 
-// ========== EVOLINK: CALL API ==========
-
-async function callEvolinkGenerate(
-  prompt: string,
-  imageUrl: string
-): Promise<{ taskId: string } | { error: string }> {
-  if (!EVOLINK_API_KEY) {
-    return { error: 'EVOLINK_API_KEY not configured' };
-  }
-
-  const payload: Record<string, unknown> = {
-    model: 'veo-3.1-fast-generate-preview',
-    prompt,
-    duration: 6,
-    quality: '1080p',
-    aspect_ratio: '16:9',
-    generate_audio: false,
-    generation_type: 'FIRST&LAST',
-    image_urls: [imageUrl],
-  };
-
-  console.log(`[MovieLedMaker] Calling Evolink:`, JSON.stringify({ model: payload.model, duration: 6, quality: '1080p', generateAudio: false }));
-
-  try {
-    const response = await fetchWithRetry(
-      'https://api.evolink.ai/v1/videos/generations',
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${EVOLINK_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      },
-      'Evolink Generate'
-    );
-
-    const data = await response.json();
-    console.log(`[MovieLedMaker] Evolink response:`, JSON.stringify(data));
-
-    if (!response.ok || !data.id) {
-      const errMsg = data.error?.message || data.error?.code || `Evolink API error: ${response.status}`;
-      return { error: errMsg };
-    }
-
-    return { taskId: data.id };
-  } catch (error: any) {
-    return { error: error.message || 'Evolink API call failed' };
-  }
-}
-
-// ========== POLL EVOLINK ==========
+// ========== POLL EVOLINK (uses shared client) ==========
 
 async function handlePollEvolink(req: Request) {
   const authResult = await authenticateRequest(req);
@@ -325,80 +275,63 @@ async function handlePollEvolink(req: Request) {
     });
   }
 
-  // Poll Evolink
-  try {
-    const pollResponse = await fetch(`https://api.evolink.ai/v1/tasks/${job.task_id}`, {
-      headers: { 'Authorization': `Bearer ${EVOLINK_API_KEY}` },
-    });
+  // Poll using shared Evolink client
+  const pollResult = await evolinkPoll(EVOLINK_API_KEY, job.task_id);
 
-    const pollData = await pollResponse.json();
-    console.log(`[MovieLedMaker] Evolink poll ${job.task_id}: status=${pollData.status}, progress=${pollData.progress}`);
+  if (pollResult.status === 'completed') {
+    await supabase.from(TABLE_NAME).update({
+      status: 'completed',
+      output_url: pollResult.outputUrl,
+      completed_at: new Date().toISOString(),
+      current_step: 'completed',
+    }).eq('id', job_id);
 
-    if (pollData.status === 'completed') {
-      const outputUrl = pollData.results?.[0] || null;
-
-      await supabase.from(TABLE_NAME).update({
-        status: 'completed',
-        output_url: outputUrl,
-        completed_at: new Date().toISOString(),
-        current_step: 'completed',
-      }).eq('id', job_id);
-
-      return new Response(JSON.stringify({
-        status: 'completed',
-        output_url: outputUrl,
-        progress: 100,
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    if (pollData.status === 'failed') {
-      const errMsg = pollData.error?.message || 'Generation failed';
-
-      // Refund credits
-      if (job.credits_charged && job.user_credit_cost && job.user_credit_cost > 0) {
-        try {
-          await supabase.rpc('refund_upscaler_credits', {
-            _user_id: job.user_id,
-            _amount: job.user_credit_cost,
-            _description: `MOVIELED_EVOLINK_FAILED_REFUND: ${errMsg.slice(0, 100)}`,
-          });
-          await supabase.from(TABLE_NAME).update({ credits_refunded: true }).eq('id', job_id);
-        } catch (e) {
-          console.error('[MovieLedMaker] Refund error:', e);
-        }
-      }
-
-      await supabase.from(TABLE_NAME).update({
-        status: 'failed',
-        error_message: errMsg,
-        current_step: 'failed',
-        failed_at_step: 'evolink_generation',
-        completed_at: new Date().toISOString(),
-      }).eq('id', job_id);
-
-      return new Response(JSON.stringify({
-        status: 'failed',
-        error: errMsg,
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Still processing
     return new Response(JSON.stringify({
-      status: pollData.status || 'processing',
-      progress: pollData.progress || 0,
+      status: 'completed',
+      output_url: pollResult.outputUrl,
+      progress: 100,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-  } catch (error: any) {
-    console.error('[MovieLedMaker] Evolink poll error:', error);
-    return new Response(JSON.stringify({ status: 'processing', progress: 0 }), {
+  }
+
+  if (pollResult.status === 'failed') {
+    const errMsg = pollResult.error || 'Generation failed';
+
+    // Refund credits
+    if (job.credits_charged && job.user_credit_cost && job.user_credit_cost > 0) {
+      try {
+        await supabase.rpc('refund_upscaler_credits', {
+          _user_id: job.user_id,
+          _amount: job.user_credit_cost,
+          _description: `MOVIELED_EVOLINK_FAILED_REFUND: ${errMsg.slice(0, 100)}`,
+        });
+        await supabase.from(TABLE_NAME).update({ credits_refunded: true }).eq('id', job_id);
+      } catch (e) {
+        console.error('[MovieLedMaker] Refund error:', e);
+      }
+    }
+
+    await supabase.from(TABLE_NAME).update({
+      status: 'failed',
+      error_message: errMsg,
+      current_step: 'failed',
+      failed_at_step: 'evolink_generation',
+      completed_at: new Date().toISOString(),
+    }).eq('id', job_id);
+
+    return new Response(JSON.stringify({ status: 'failed', error: errMsg }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
+
+  // Still processing
+  return new Response(JSON.stringify({
+    status: pollResult.status,
+    progress: pollResult.progress,
+  }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
 }
 
 // ========== MAIN HANDLER ==========
@@ -557,12 +490,21 @@ async function handleRun(req: Request) {
   if (isEvolink) {
     await logStep(jobId, 'calling_evolink', { model: 'veo-3.1-fast-generate-preview' });
 
-    // Build prompt: use inputText as the prompt context with the reference image
     const evolinkPrompt = `Generate a vibrant LED screen video loop for "${inputText.trim()}". High energy, colorful, dynamic motion graphics suitable for large LED displays.`;
 
-    const result = await callEvolinkGenerate(evolinkPrompt, imageUrl);
+    // Use shared Evolink client
+    const result = await evolinkGenerate(EVOLINK_API_KEY, {
+      model: 'veo-3.1-fast-generate-preview',
+      prompt: evolinkPrompt,
+      duration: 6,
+      quality: '1080p',
+      aspectRatio: '16:9',
+      generateAudio: false,
+      generationType: 'FIRST&LAST',
+      imageUrls: [imageUrl],
+    });
 
-    if ('error' in result) {
+    if (!result.success) {
       console.error('[MovieLedMaker] Evolink error:', result.error);
       
       // Refund
