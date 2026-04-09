@@ -675,17 +675,35 @@ const GerarImagemTool = () => {
             {/* Controls row */}
             <div className="flex items-center gap-1.5 flex-wrap">
               {/* Engine dropdown */}
-              <div className="relative">
-                <select
-                  value={engine}
-                  onChange={(e) => setEngine(e.target.value as 'flux2_klein' | 'nano_banana')}
+              <div className="relative" ref={engineDropdownRef}>
+                <button
+                  type="button"
                   disabled={isProcessing}
-                  className="appearance-none bg-purple-900/40 border border-purple-500/25 rounded-lg pl-2 pr-6 py-1.5 text-[11px] text-purple-300 font-medium cursor-pointer hover:border-purple-400/50 focus:outline-none focus:border-purple-400/50 disabled:opacity-40 transition-colors"
+                  onClick={() => setEngineDropdownOpen(!engineDropdownOpen)}
+                  className="flex items-center gap-1.5 bg-purple-900/40 border border-purple-500/25 rounded-lg pl-2 pr-5 py-1.5 text-[11px] text-purple-300 font-medium cursor-pointer hover:border-purple-400/50 disabled:opacity-40 transition-colors relative"
                 >
-                  <option value="flux2_klein">⚡ Flux2 Klein</option>
-                  <option value="nano_banana">🍌 Nano Banana</option>
-                </select>
-                <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-purple-500 pointer-events-none" />
+                  <span>{engine === 'flux2_klein' ? '⚡ Flux2 Klein' : '🍌 Nano Banana'}</span>
+                  <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-purple-500" />
+                </button>
+                {engineDropdownOpen && (
+                  <div className="absolute bottom-full mb-1 left-0 z-50 bg-[#1a0a2e] border border-purple-500/30 rounded-lg shadow-xl py-1 min-w-[130px]">
+                    {([
+                      { value: 'flux2_klein' as const, label: '⚡ Flux2 Klein' },
+                      { value: 'nano_banana' as const, label: '🍌 Nano Banana' },
+                    ]).map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => { setEngine(opt.value); setEngineDropdownOpen(false); }}
+                        className={`flex items-center gap-2 w-full px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
+                          engine === opt.value ? 'text-fuchsia-300 bg-fuchsia-500/15' : 'text-purple-300 hover:bg-purple-500/15 hover:text-white'
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Aspect ratio dropdown */}
