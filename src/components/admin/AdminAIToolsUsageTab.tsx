@@ -665,8 +665,8 @@ const AdminAIToolsUsageTab = () => {
             <CardContent className="p-4 flex items-center gap-3">
               <Coins className="h-8 w-8 text-yellow-500" />
               <div>
-                <p className="text-xs text-muted-foreground">Custo RH</p>
-                <p className="text-xl font-bold">{summary.total_rh_cost}</p>
+                <p className="text-xs text-muted-foreground">Custo Total (R$)</p>
+                <p className="text-xl font-bold">{formatBRL(summary.total_rh_cost * CUSTO_POR_RH_COIN)}</p>
               </div>
             </CardContent>
           </Card>
@@ -675,8 +675,8 @@ const AdminAIToolsUsageTab = () => {
             <CardContent className="p-4 flex items-center gap-3">
               <Users className="h-8 w-8 text-blue-500" />
               <div>
-                <p className="text-xs text-muted-foreground">Créditos Usuários</p>
-                <p className="text-xl font-bold">{summary.total_user_credits}</p>
+                <p className="text-xs text-muted-foreground">Receita Usuários (R$)</p>
+                <p className="text-xl font-bold">{formatBRL(summary.total_user_credits * RECEITA_POR_CREDITO)}</p>
               </div>
             </CardContent>
           </Card>
@@ -685,8 +685,8 @@ const AdminAIToolsUsageTab = () => {
             <CardContent className="p-4 flex items-center gap-3">
               <TrendingUp className="h-8 w-8 text-green-500" />
               <div>
-                <p className="text-xs text-green-400">Lucro Total</p>
-                <p className="text-xl font-bold text-green-400">{summary.total_profit}</p>
+                <p className="text-xs text-green-400">Lucro Total (R$)</p>
+                <p className="text-xl font-bold text-green-400">{formatBRL(summary.total_user_credits * RECEITA_POR_CREDITO - summary.total_rh_cost * CUSTO_POR_RH_COIN)}</p>
               </div>
             </CardContent>
           </Card>
