@@ -16,6 +16,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const TABLE_NAME = 'image_generator_jobs';
+const WEBAPP_ID_FLUX2_KLEIN = '2042246288288260097';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -161,15 +162,9 @@ async function handleRun(req: Request) {
 
   // Load API credentials
   const RUNNINGHUB_API_KEY = (Deno.env.get('RUNNINGHUB_API_KEY') || '').trim();
-  const FLUX2_KLEIN_APP_ID = (Deno.env.get('RUNNINGHUB_FLUX2_KLEIN_APP_ID') || '').trim();
 
   if (!RUNNINGHUB_API_KEY) {
     return new Response(JSON.stringify({ error: 'API key not configured', code: 'MISSING_API_KEY' }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-  if (!FLUX2_KLEIN_APP_ID) {
-    return new Response(JSON.stringify({ error: 'Flux2 Klein App ID not configured', code: 'MISSING_APP_ID' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
@@ -229,7 +224,7 @@ async function handleRun(req: Request) {
   let taskId: string;
   try {
     const submitResponse = await fetchWithRetry(
-      `https://www.runninghub.ai/openapi/v2/run/ai-app/${FLUX2_KLEIN_APP_ID}`,
+      `https://www.runninghub.ai/openapi/v2/run/ai-app/${WEBAPP_ID_FLUX2_KLEIN}`,
       {
         method: 'POST',
         headers: {
