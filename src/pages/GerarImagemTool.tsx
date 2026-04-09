@@ -684,18 +684,52 @@ const GerarImagemTool = () => {
               </div>
 
               {/* Aspect ratio dropdown */}
-              <div className="relative">
-                <select
-                  value={aspectRatio}
-                  onChange={(e) => setAspectRatio(e.target.value)}
+              <div className="relative" ref={aspectDropdownRef}>
+                <button
+                  type="button"
                   disabled={isProcessing}
-                  className="appearance-none bg-purple-900/40 border border-purple-500/25 rounded-lg pl-2 pr-6 py-1.5 text-[11px] text-purple-300 font-medium cursor-pointer hover:border-purple-400/50 focus:outline-none focus:border-purple-400/50 disabled:opacity-40 transition-colors"
+                  onClick={() => setAspectDropdownOpen(!aspectDropdownOpen)}
+                  className="flex items-center gap-1.5 bg-purple-900/40 border border-purple-500/25 rounded-lg pl-2 pr-5 py-1.5 text-[11px] text-purple-300 font-medium cursor-pointer hover:border-purple-400/50 disabled:opacity-40 transition-colors relative"
                 >
-                  {ASPECT_RATIOS.map(({ ratio, label }) => (
-                    <option key={ratio} value={ratio}>{label} ({ratio})</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-purple-500 pointer-events-none" />
+                  {(() => {
+                    const current = ASPECT_RATIOS.find(a => a.ratio === aspectRatio) || ASPECT_RATIOS[0];
+                    return (
+                      <>
+                        <svg width={current.w} height={current.h} viewBox={`0 0 ${current.w} ${current.h}`} className="flex-shrink-0">
+                          <rect x="0.5" y="0.5" width={current.w - 1} height={current.h - 1} rx="1" stroke="currentColor" strokeWidth="1" fill="rgba(217,70,239,0.15)" />
+                        </svg>
+                        <span>{current.label}</span>
+                      </>
+                    );
+                  })()}
+                  <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-purple-500" />
+                </button>
+                {aspectDropdownOpen && (
+                  <div className="absolute bottom-full mb-1 left-0 z-50 bg-[#1a0a2e] border border-purple-500/30 rounded-lg shadow-xl py-1 min-w-[140px]">
+                    {ASPECT_RATIOS.map(({ ratio, label, w, h }) => {
+                      const isSelected = aspectRatio === ratio;
+                      return (
+                        <button
+                          key={ratio}
+                          type="button"
+                          onClick={() => { setAspectRatio(ratio); setAspectDropdownOpen(false); }}
+                          className={`flex items-center gap-2 w-full px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
+                            isSelected ? 'text-fuchsia-300 bg-fuchsia-500/15' : 'text-purple-300 hover:bg-purple-500/15 hover:text-white'
+                          }`}
+                        >
+                          <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="flex-shrink-0">
+                            <rect x="0.5" y="0.5" width={w - 1} height={h - 1} rx="1"
+                              stroke="currentColor" strokeWidth="1"
+                              fill={isSelected ? 'rgba(217,70,239,0.2)' : 'rgba(147,51,234,0.1)'}
+                            />
+                          </svg>
+                          <span>{label}</span>
+                          <span className="ml-auto opacity-60">{ratio}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {resultUrl && (
