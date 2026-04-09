@@ -383,6 +383,7 @@ const GerarVideoTool = () => {
         prompt: prompt.trim(),
         aspect_ratio: isVeoModel ? aspectRatio : undefined,
         model: selectedModel,
+        generate_audio: isVeoModel ? generateAudio : undefined,
       };
 
       if (generationMode === 'with_frames' && startFrame) {
