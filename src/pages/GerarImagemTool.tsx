@@ -201,9 +201,8 @@ const GerarImagemTool = () => {
   // Drag & drop
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation();
-    if (engine !== 'nano_banana') return;
     if (referenceImages.length < 5) setIsDragOver(true);
-  }, [engine, referenceImages.length]);
+  }, [referenceImages.length]);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation();
@@ -213,14 +212,12 @@ const GerarImagemTool = () => {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation();
     setIsDragOver(false);
-    if (engine !== 'nano_banana') return;
     processFiles(Array.from(e.dataTransfer.files));
-  }, [engine, processFiles]);
+  }, [processFiles]);
 
   // Ctrl+V paste
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
-      if (engine !== 'nano_banana') return;
       if (referenceImages.length >= 5) return;
       const items = e.clipboardData?.items;
       if (!items) return;
@@ -235,7 +232,7 @@ const GerarImagemTool = () => {
     };
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
-  }, [engine, processFiles, referenceImages.length]);
+  }, [processFiles, referenceImages.length]);
 
   // Reset state for new generation
   const resetJobState = () => {
@@ -527,7 +524,7 @@ const GerarImagemTool = () => {
         >
           {/* Drag overlay */}
           {engine === 'nano_banana' && isDragOver && (
-            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-fuchsia-900/60 backdrop-blur-sm border-2 border-dashed border-fuchsia-400 pointer-events-none">
+          {/* Drag overlay */}
               <ImagePlus className="h-12 w-12 text-fuchsia-300 mb-2" />
               <p className="text-fuchsia-200 font-semibold text-sm">Solte para adicionar referência</p>
             </div>
