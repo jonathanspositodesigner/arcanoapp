@@ -262,62 +262,131 @@ const GerarImagemTool = () => {
       setStatus('pending');
       setProgress(5);
 
-      // Optimize and upload reference images
-      const uploadedUrls: string[] = [];
-      for (let i = 0; i < referenceImages.length; i++) {
-        toast.info(`Otimizando imagem ${i + 1}/${referenceImages.length}...`);
-        const optimized = await optimizeForAI(referenceImages[i].file);
-        const uploadResult = await uploadToStorage(optimized.file, 'image-generator', user.id);
-        if (!uploadResult.url) throw new Error(`Falha ao enviar imagem ${i + 1}`);
-        uploadedUrls.push(uploadResult.url);
-        setProgress(5 + Math.round((i + 1) / referenceImages.length * 15));
-      }
+      if (engine === 'flux2_klein') {
+        // ========== FLUX2 KLEIN FLOW ==========
+        // Create job in DB with engine field
+        const { jobId: newJobId, error: createError } = await createJob('image_generator', user.id, sessionIdRef.current, {
+          prompt: prompt.trim(),
+          aspect_ratio: aspectRatio,
+          model: 'flux2_klein',
+          engine: 'flux2_klein',
+        });
 
-      // Create job in DB
-      const { jobId: newJobId, error: createError } = await createJob('image_generator', user.id, sessionIdRef.current, {
-        prompt: prompt.trim(),
-        aspect_ratio: aspectRatio,
-        model: 'runninghub',
-        input_urls: uploadedUrls,
-      });
+        if (createError || !newJobId) throw new Error(createError || 'Falha ao criar job');
 
-      if (createError || !newJobId) {
-        throw new Error(createError || 'Falha ao criar job');
-      }
+        setJobId(newJobId);
+        registerJob(newJobId, 'image_generator', 'pending');
+        setStatus('running');
+        setProgress(20);
 
-      setJobId(newJobId);
-      registerJob(newJobId, 'image_generator', 'pending');
+        // Call Flux2 Klein edge function directly
+        const { data, error } = await supabase.functions.invoke('runninghub-flux2-klein/run', {
+          body: {
+            jobId: newJobId,
+            prompt: prompt.trim(),
+            aspectRatio,
+            creditCost,
+          },
+        });
 
-      // Start job via edge function
-      const result = await startJob('image_generator', newJobId, {
-        referenceImageUrls: uploadedUrls,
-        aspectRatio,
-        creditCost,
-        prompt: prompt.trim(),
-      });
+        if (error) {
+          const errMsg = error.message || 'Erro desconhecido';
+          setStatus('failed');
+          setErrorMessage(errMsg);
+          const errInfo = getAIErrorMessage(errMsg);
+          toast.error(errInfo.message);
+          refetchCredits();
+          endSubmit();
+          return;
+        }
 
-      if (!result.success) {
-        if (result.code === 'INSUFFICIENT_CREDITS') {
+        if (data?.code === 'INSUFFICIENT_CREDITS') {
           setNoCreditsReason('insufficient');
           setShowNoCreditsModal(true);
           resetJobState();
-        } else {
-          setStatus('failed');
-          setErrorMessage(result.error || 'Erro desconhecido');
-          const errInfo = getAIErrorMessage(result.error || 'Erro desconhecido');
-          toast.error(errInfo.message);
+          refetchCredits();
+          endSubmit();
+          return;
         }
-        endSubmit();
-        return;
+
+        if (data?.error && !data?.success) {
+          setStatus('failed');
+          setErrorMessage(data.error);
+          const errInfo = getAIErrorMessage(data.error);
+          toast.error(errInfo.message);
+          refetchCredits();
+          endSubmit();
+          return;
+        }
+
+        if (data?.success && data?.outputUrl) {
+          setResultUrl(data.outputUrl);
+          setStatus('completed');
+          setProgress(100);
+          toast.success('Imagem gerada com sucesso!');
+          refetchCredits();
+        }
+
+      } else {
+        // ========== NANO BANANA FLOW (unchanged) ==========
+        // Optimize and upload reference images
+        const uploadedUrls: string[] = [];
+        for (let i = 0; i < referenceImages.length; i++) {
+          toast.info(`Otimizando imagem ${i + 1}/${referenceImages.length}...`);
+          const optimized = await optimizeForAI(referenceImages[i].file);
+          const uploadResult = await uploadToStorage(optimized.file, 'image-generator', user.id);
+          if (!uploadResult.url) throw new Error(`Falha ao enviar imagem ${i + 1}`);
+          uploadedUrls.push(uploadResult.url);
+          setProgress(5 + Math.round((i + 1) / referenceImages.length * 15));
+        }
+
+        // Create job in DB
+        const { jobId: newJobId, error: createError } = await createJob('image_generator', user.id, sessionIdRef.current, {
+          prompt: prompt.trim(),
+          aspect_ratio: aspectRatio,
+          model: 'runninghub',
+          engine: 'nano_banana',
+          input_urls: uploadedUrls,
+        });
+
+        if (createError || !newJobId) {
+          throw new Error(createError || 'Falha ao criar job');
+        }
+
+        setJobId(newJobId);
+        registerJob(newJobId, 'image_generator', 'pending');
+
+        // Start job via edge function
+        const result = await startJob('image_generator', newJobId, {
+          referenceImageUrls: uploadedUrls,
+          aspectRatio,
+          creditCost,
+          prompt: prompt.trim(),
+        });
+
+        if (!result.success) {
+          if (result.code === 'INSUFFICIENT_CREDITS') {
+            setNoCreditsReason('insufficient');
+            setShowNoCreditsModal(true);
+            resetJobState();
+          } else {
+            setStatus('failed');
+            setErrorMessage(result.error || 'Erro desconhecido');
+            const errInfo = getAIErrorMessage(result.error || 'Erro desconhecido');
+            toast.error(errInfo.message);
+          }
+          endSubmit();
+          return;
+        }
+
+        if (result.queued) {
+          setStatus('queued');
+          setQueuePosition(result.position || 0);
+          toast.info(`Na fila — posição ${result.position}`);
+        }
       }
 
-      if (result.queued) {
-        setStatus('queued');
-        setQueuePosition(result.position || 0);
-        toast.info(`Na fila — posição ${result.position}`);
-      }
-
-      // useJobStatusSync handles the rest
+      // useJobStatusSync handles the rest for Nano Banana
 
     } catch (error: any) {
       console.error('[GerarImagem] Error:', error);
