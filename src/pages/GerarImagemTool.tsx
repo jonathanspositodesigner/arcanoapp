@@ -308,6 +308,8 @@ const GerarImagemTool = () => {
         }
       }
 
+      effectiveEngineRef.current = effectiveEngine;
+
       if (effectiveEngine === 'flux2_klein') {
         // ========== FLUX2 KLEIN FLOW ==========
         // Optimize and upload reference images
