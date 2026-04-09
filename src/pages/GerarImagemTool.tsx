@@ -81,6 +81,7 @@ const GerarImagemTool = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const sessionIdRef = useRef(crypto.randomUUID());
   const reconcileTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const effectiveEngineRef = useRef<'flux2_klein' | 'nano_banana'>('flux2_klein');
 
   const creditCost = getCreditCost('gerar_imagem', 100);
 
