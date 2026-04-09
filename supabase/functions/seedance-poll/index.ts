@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { evolinkPoll } from "../_shared/evolink-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -31,7 +32,6 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Verify JWT
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) {
@@ -48,26 +48,18 @@ serve(async (req) => {
       });
     }
 
-    // Poll Evolink API
-    const pollResponse = await fetch(`https://api.evolink.ai/v1/tasks/${taskId}`, {
-      headers: { "Authorization": `Bearer ${evolinkKey}` },
-    });
+    // Poll using shared Evolink client
+    const pollResult = await evolinkPoll(evolinkKey, taskId);
+    console.log("[seedance-poll] Status:", pollResult.status, "Progress:", pollResult.progress);
 
-    const pollData = await pollResponse.json();
-    console.log("[seedance-poll] Status:", pollData.status, "Progress:", pollData.progress);
-
-    if (pollData.status === "completed") {
-      const outputUrl = pollData.results?.[0] || null;
-
-      // Update job
+    if (pollResult.status === "completed") {
       await supabase.from("seedance_jobs").update({
         status: "completed",
-        output_url: outputUrl,
+        output_url: pollResult.outputUrl,
         completed_at: new Date().toISOString(),
         credits_charged: creditsToCharge || 0,
       }).eq("id", jobId);
 
-      // Charge credits
       if (creditsToCharge && creditsToCharge > 0) {
         await supabase.rpc("consume_upscaler_credits", {
           _user_id: user.id,
@@ -78,22 +70,22 @@ serve(async (req) => {
 
       return new Response(JSON.stringify({
         status: "completed",
-        outputUrl,
+        outputUrl: pollResult.outputUrl,
         progress: 100,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    if (pollData.status === "failed") {
+    if (pollResult.status === "failed") {
       await supabase.from("seedance_jobs").update({
         status: "failed",
-        error_message: pollData.error || "Generation failed",
+        error_message: pollResult.error || "Generation failed",
       }).eq("id", jobId);
 
       return new Response(JSON.stringify({
         status: "failed",
-        error: pollData.error || "Generation failed",
+        error: pollResult.error || "Generation failed",
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -101,8 +93,8 @@ serve(async (req) => {
 
     // Still processing
     return new Response(JSON.stringify({
-      status: pollData.status || "running",
-      progress: pollData.progress || 0,
+      status: pollResult.status,
+      progress: pollResult.progress,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
