@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star, ShieldCheck, Headset, Loader2, CreditCard, QrCode } from "lucide-react";
+import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star, ShieldCheck, Headset, Loader2, CreditCard, QrCode, Video, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -135,10 +135,10 @@ const Planos2 = () => {
         { text: 'Suporte exclusivo via WhatsApp', included: false },
         { text: 'Sem acesso a prompts premium', included: false },
         { text: 'Sem acesso ao conteúdo premium', included: false },
-        { text: 'Vídeo Wan 2.2', included: false },
-        { text: 'Imagem Flux 2 Klein', included: false },
-        { text: 'Nano Banana Pro', included: false },
-        { text: 'Veo 3.1', included: false },
+        { text: 'Wan 2.2', iconType: 'video', included: false },
+        { text: 'Flux 2 Klein', iconType: 'image', included: false },
+        { text: 'Nano Banana Pro', iconType: 'image', included: false },
+        { text: 'Veo 3.1', iconType: 'video', included: false },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -158,10 +158,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Vídeo Wan 2.2', included: true },
-        { text: 'Imagem Flux 2 Klein', included: true },
-        { text: 'Nano Banana Pro', included: false },
-        { text: 'Veo 3.1', included: false },
+        { text: 'Wan 2.2', iconType: 'video', included: true },
+        { text: 'Flux 2 Klein', iconType: 'image', included: true },
+        { text: 'Nano Banana Pro', iconType: 'image', included: false },
+        { text: 'Veo 3.1', iconType: 'video', included: false },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -181,10 +181,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Vídeo Wan 2.2', included: true },
-        { text: 'Imagem Flux 2 Klein', included: true },
-        { text: 'Nano Banana Pro', included: true },
-        { text: 'Veo 3.1', included: true },
+        { text: 'Wan 2.2', iconType: 'video', included: true },
+        { text: 'Flux 2 Klein', iconType: 'image', included: true },
+        { text: 'Nano Banana Pro', iconType: 'image', included: true },
+        { text: 'Veo 3.1', iconType: 'video', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -206,10 +206,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Vídeo Wan 2.2', included: true },
-        { text: 'Imagem Flux 2 Klein', included: true },
-        { text: 'Nano Banana Pro', included: true },
-        { text: 'Veo 3.1', included: true },
+        { text: 'Wan 2.2', iconType: 'video', included: true },
+        { text: 'Flux 2 Klein', iconType: 'image', included: true },
+        { text: 'Nano Banana Pro', iconType: 'image', included: true },
+        { text: 'Veo 3.1', iconType: 'video', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -231,10 +231,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Vídeo Wan 2.2', included: true },
-        { text: 'Imagem Flux 2 Klein', included: true },
-        { text: 'Nano Banana Pro', included: true, badge: 'Ilimitado' },
-        { text: 'Veo 3.1', included: true, badge: '7 dias ilimitado' },
+        { text: 'Wan 2.2', iconType: 'video', included: true, badge: 'Ilimitado' },
+        { text: 'Flux 2 Klein', iconType: 'image', included: true, badge: 'Ilimitado' },
+        { text: 'Nano Banana Pro', iconType: 'image', included: true, badge: 'Ilimitado' },
+        { text: 'Veo 3.1', iconType: 'video', included: true, badge: '7 dias ilimitado' },
         { text: 'Fila prioritária nas gerações de IA', included: true }
       ],
       popular: false,
@@ -255,10 +255,10 @@ const Planos2 = () => {
         { text: 'Suporte exclusivo via WhatsApp', included: false },
         { text: 'Sem acesso a prompts premium', included: false },
         { text: 'Sem acesso ao conteúdo premium', included: false },
-        { text: 'Vídeo Wan 2.2', included: false },
-        { text: 'Imagem Flux 2 Klein', included: false },
-        { text: 'Nano Banana Pro', included: false },
-        { text: 'Veo 3.1', included: false },
+        { text: 'Wan 2.2', iconType: 'video', included: false },
+        { text: 'Flux 2 Klein', iconType: 'image', included: false },
+        { text: 'Nano Banana Pro', iconType: 'image', included: false },
+        { text: 'Veo 3.1', iconType: 'video', included: false },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -279,10 +279,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Vídeo Wan 2.2', included: true },
-        { text: 'Imagem Flux 2 Klein', included: true },
-        { text: 'Nano Banana Pro', included: false },
-        { text: 'Veo 3.1', included: false },
+        { text: 'Wan 2.2', iconType: 'video', included: true },
+        { text: 'Flux 2 Klein', iconType: 'image', included: true },
+        { text: 'Nano Banana Pro', iconType: 'image', included: false },
+        { text: 'Veo 3.1', iconType: 'video', included: false },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -304,10 +304,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Vídeo Wan 2.2', included: true },
-        { text: 'Imagem Flux 2 Klein', included: true },
-        { text: 'Nano Banana Pro', included: true },
-        { text: 'Veo 3.1', included: true },
+        { text: 'Wan 2.2', iconType: 'video', included: true },
+        { text: 'Flux 2 Klein', iconType: 'image', included: true },
+        { text: 'Nano Banana Pro', iconType: 'image', included: true },
+        { text: 'Veo 3.1', iconType: 'video', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -331,10 +331,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Vídeo Wan 2.2', included: true },
-        { text: 'Imagem Flux 2 Klein', included: true },
-        { text: 'Nano Banana Pro', included: true },
-        { text: 'Veo 3.1', included: true },
+        { text: 'Wan 2.2', iconType: 'video', included: true },
+        { text: 'Flux 2 Klein', iconType: 'image', included: true },
+        { text: 'Nano Banana Pro', iconType: 'image', included: true },
+        { text: 'Veo 3.1', iconType: 'video', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -358,10 +358,10 @@ const Planos2 = () => {
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
-        { text: 'Vídeo Wan 2.2', included: true },
-        { text: 'Imagem Flux 2 Klein', included: true },
-        { text: 'Nano Banana Pro', included: true, badge: 'Ilimitado' },
-        { text: 'Veo 3.1', included: true, badge: '7 dias ilimitado' },
+        { text: 'Wan 2.2', iconType: 'video', included: true, badge: 'Ilimitado' },
+        { text: 'Flux 2 Klein', iconType: 'image', included: true, badge: 'Ilimitado' },
+        { text: 'Nano Banana Pro', iconType: 'image', included: true, badge: 'Ilimitado' },
+        { text: 'Veo 3.1', iconType: 'video', included: true, badge: '7 dias ilimitado' },
         { text: 'Fila prioritária nas gerações de IA', included: true }
       ],
       popular: false,
@@ -615,6 +615,8 @@ const Planos2 = () => {
                         <X className="w-3 h-3 text-orange-500 shrink-0 mt-0.5" />
                       )}
                       <span className={`${feature.included ? "text-purple-200" : "text-orange-500"} flex items-center gap-1.5`}>
+                        {(feature as any).iconType === 'video' && <Video className="w-3 h-3 shrink-0" />}
+                        {(feature as any).iconType === 'image' && <ImageIcon className="w-3 h-3 shrink-0" />}
                         {feature.text}
                         {(feature as any).badge && (
                           <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-gradient-to-r from-yellow-400 to-amber-500 text-black leading-none">
