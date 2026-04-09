@@ -465,23 +465,30 @@ async function processPlanos2Webhook(
     await supabase.from('profiles').upsert(profileData, { onConflict: 'id' })
 
     // Upsert planos2 subscription
+    const subData: Record<string, any> = {
+      user_id: userId,
+      plan_slug: planConfig.slug,
+      is_active: true,
+      credits_per_month: planConfig.credits_per_month,
+      daily_prompt_limit: planConfig.daily_prompt_limit,
+      has_image_generation: planConfig.has_image_generation,
+      has_video_generation: planConfig.has_video_generation,
+      cost_multiplier: planConfig.cost_multiplier,
+      greenn_product_id: productId,
+      greenn_contract_id: contractId ? String(contractId) : null,
+      expires_at: expiresAt,
+      last_credit_reset_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    // For new unlimited subscriptions, set Veo 3.1 trial start
+    if (planConfig.slug === 'unlimited') {
+      subData.veo3_trial_started_at = new Date().toISOString()
+    }
+
     const { error: subError } = await supabase
       .from('planos2_subscriptions')
-      .upsert({
-        user_id: userId,
-        plan_slug: planConfig.slug,
-        is_active: true,
-        credits_per_month: planConfig.credits_per_month,
-        daily_prompt_limit: planConfig.daily_prompt_limit,
-        has_image_generation: planConfig.has_image_generation,
-        has_video_generation: planConfig.has_video_generation,
-        cost_multiplier: planConfig.cost_multiplier,
-        greenn_product_id: productId,
-        greenn_contract_id: contractId ? String(contractId) : null,
-        expires_at: expiresAt,
-        last_credit_reset_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' })
+      .upsert(subData, { onConflict: 'user_id' })
 
     if (subError) {
       console.error(`   ├─ [${requestId}] ❌ Erro subscription:`, subError)
