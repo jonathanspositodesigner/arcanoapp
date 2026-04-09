@@ -76,6 +76,21 @@ type UserClientType = 'free' | 'bought_credits' | 'redeemed_credits' | 'free_tri
 
 const ITEMS_PER_PAGE = 20;
 
+// Conversion constants
+const CUSTO_POR_RH_COIN = 0.002; // R$ per RH coin
+const RECEITA_POR_CREDITO = 0.0093; // R$ per credit
+
+// API cost map: display tool name → fixed API cost in BRL (from ai_tool_settings)
+const API_COST_MAP: Record<string, number> = {
+  "Arcano Cloner": 0.18,
+  "Gerador Avatar": 0.18,
+  "Gerar Imagem - Flux 2": 0.18,
+  "Gerar Imagem - Nano Banana": 0.18,
+};
+
+const formatBRL = (value: number) =>
+  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
 const DATE_FILTERS = [
   { value: "today", label: "Hoje" },
   { value: "yesterday", label: "Ontem" },
@@ -93,7 +108,8 @@ const TOOL_FILTERS = [
   { value: "Video Upscaler", label: "Video Upscaler" },
   { value: "Arcano Cloner", label: "Arcano Cloner" },
   { value: "Gerador Avatar", label: "Gerador Avatar" },
-  { value: "Gerar Imagem", label: "Gerar Imagem" },
+  { value: "Gerar Imagem - Flux 2", label: "Gerar Imagem - Flux 2" },
+  { value: "Gerar Imagem - Nano Banana", label: "Gerar Imagem - Nano Banana" },
   { value: "Gerar Vídeo", label: "Gerar Vídeo" },
   { value: "Flyer Maker", label: "Flyer Maker" },
   { value: "Remover Fundo", label: "Remover Fundo" },
