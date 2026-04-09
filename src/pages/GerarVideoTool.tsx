@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { getAIErrorMessage } from '@/utils/errorMessages';
-import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock, Image, Type } from 'lucide-react';
+import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock, Image, Type, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,13 +46,14 @@ interface ModelOption {
   id: string;
   name: string;
   cost: number;
+  costWithAudio: number;
   description: string;
 }
 
 const ALL_MODELS: ModelOption[] = [
-  { id: 'wan2.2', name: 'Wan 2.2', cost: 400, description: 'RunningHub • 5s' },
-  { id: 'veo3.1-fast', name: 'Veo 3.1 Fast', cost: 2500, description: 'Evolink • 8s • 1080p' },
-  { id: 'veo3.1-pro', name: 'Veo 3.1 Pro', cost: 5000, description: 'Evolink • 8s • 1080p' },
+  { id: 'wan2.2', name: 'Wan 2.2', cost: 400, costWithAudio: 400, description: 'RunningHub • 5s' },
+  { id: 'veo3.1-fast', name: 'Veo 3.1 Fast', cost: 1500, costWithAudio: 2500, description: 'Evolink • 8s • 1080p' },
+  { id: 'veo3.1-pro', name: 'Veo 3.1 Pro', cost: 2800, costWithAudio: 5000, description: 'Evolink • 8s • 1080p' },
 ];
 
 type GenerationMode = 'prompt_only' | 'with_frames';
@@ -104,6 +105,7 @@ const GerarVideoTool = () => {
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState<string>('16:9');
   const [selectedModel, setSelectedModel] = useState<string>('wan2.2');
+  const [generateAudio, setGenerateAudio] = useState(false);
   const [generationMode, setGenerationMode] = useState<GenerationMode>('prompt_only');
   const [startFrame, setStartFrame] = useState<FrameImage | null>(null);
   const [endFrame, setEndFrame] = useState<FrameImage | null>(null);
@@ -127,11 +129,17 @@ const GerarVideoTool = () => {
   const currentModel = availableModels.find(m => m.id === selectedModel) || availableModels[0];
   
   // For trial users on veo3.1-fast, cost is 0
+  const effectiveCost = (isVeoModel && generateAudio) ? currentModel.costWithAudio : currentModel.cost;
   const creditCost = (isUnlimited && isVeo3Trial && selectedModel === 'veo3.1-fast') 
     ? 0 
     : (isUnlimited && selectedModel === 'wan2.2') 
       ? 0 
-      : currentModel.cost;
+      : effectiveCost;
+
+  // Reset audio when switching away from Veo models
+  useEffect(() => {
+    if (!isVeoModel) setGenerateAudio(false);
+  }, [selectedModel]);
 
   const isVeoModel = selectedModel === 'veo3.1-fast' || selectedModel === 'veo3.1-pro';
 
