@@ -597,20 +597,50 @@ const GerarImagemTool = () => {
           )}
 
           <div className="max-w-3xl mx-auto px-3 py-3 space-y-2">
+            {/* Engine selector */}
+            <div className="flex items-center gap-1 bg-purple-900/30 rounded-lg p-0.5 border border-purple-500/20 w-fit">
+              <button
+                type="button"
+                disabled={isProcessing}
+                onClick={() => setEngine('flux2_klein')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all disabled:opacity-50 ${
+                  engine === 'flux2_klein'
+                    ? 'bg-fuchsia-600/80 text-white shadow-sm'
+                    : 'text-purple-400 hover:text-purple-200'
+                }`}
+              >
+                ⚡ Flux2 Klein
+              </button>
+              <button
+                type="button"
+                disabled={isProcessing}
+                onClick={() => setEngine('nano_banana')}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all disabled:opacity-50 ${
+                  engine === 'nano_banana'
+                    ? 'bg-fuchsia-600/80 text-white shadow-sm'
+                    : 'text-purple-400 hover:text-purple-200'
+                }`}
+              >
+                🍌 Nano Banana
+              </button>
+            </div>
+
             {/* Prompt input row */}
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isProcessing || referenceImages.length >= 5}
-                className="relative flex-shrink-0 w-9 h-9 rounded-full border border-purple-500/30 bg-purple-900/30 flex items-center justify-center text-purple-300 hover:text-white hover:border-purple-400/60 transition-colors disabled:opacity-40 self-end mb-0.5"
-              >
-                <Paperclip className="h-4 w-4" />
-                {referenceImages.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                    {referenceImages.length}
-                  </span>
-                )}
-              </button>
+              {engine === 'nano_banana' && (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isProcessing || referenceImages.length >= 5}
+                  className="relative flex-shrink-0 w-9 h-9 rounded-full border border-purple-500/30 bg-purple-900/30 flex items-center justify-center text-purple-300 hover:text-white hover:border-purple-400/60 transition-colors disabled:opacity-40 self-end mb-0.5"
+                >
+                  <Paperclip className="h-4 w-4" />
+                  {referenceImages.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                      {referenceImages.length}
+                    </span>
+                  )}
+                </button>
+              )}
               <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" />
 
               <textarea
@@ -688,7 +718,7 @@ const GerarImagemTool = () => {
                 ) : (
                   <>
                     <Sparkles className="w-3.5 h-3.5 mr-1" />
-                    Gerar
+                    {engine === 'flux2_klein' ? 'Gerar com Flux2 Klein' : 'Gerar com Nano Banana'}
                     <span className="ml-1.5 flex items-center gap-0.5 text-xs opacity-90">
                       <Coins className="w-3 h-3" />
                       {creditCost}
