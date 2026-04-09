@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { ArrowLeft, Download, ImagePlus, Sparkles, X, Loader2, Paperclip, Coins, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Download, ImagePlus, Sparkles, X, Loader2, Paperclip, Coins, RefreshCw, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -626,33 +626,6 @@ const GerarImagemTool = () => {
           )}
 
           <div className="max-w-3xl mx-auto px-3 py-3 space-y-2">
-            {/* Engine selector */}
-            <div className="flex items-center gap-1 bg-purple-900/30 rounded-lg p-0.5 border border-purple-500/20 w-fit">
-              <button
-                type="button"
-                disabled={isProcessing}
-                onClick={() => setEngine('flux2_klein')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all disabled:opacity-50 ${
-                  engine === 'flux2_klein'
-                    ? 'bg-fuchsia-600/80 text-white shadow-sm'
-                    : 'text-purple-400 hover:text-purple-200'
-                }`}
-              >
-                ⚡ Flux2 Klein
-              </button>
-              <button
-                type="button"
-                disabled={isProcessing}
-                onClick={() => setEngine('nano_banana')}
-                className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all disabled:opacity-50 ${
-                  engine === 'nano_banana'
-                    ? 'bg-fuchsia-600/80 text-white shadow-sm'
-                    : 'text-purple-400 hover:text-purple-200'
-                }`}
-              >
-                🍌 Nano Banana
-              </button>
-            </div>
 
             {/* Prompt input row */}
             <div className="flex items-center gap-2">
@@ -689,31 +662,34 @@ const GerarImagemTool = () => {
 
             {/* Controls row */}
             <div className="flex items-center gap-1.5 flex-wrap">
-              {/* Aspect ratio buttons */}
-              {ASPECT_RATIOS.slice(0, 5).map(({ ratio, label, w, h }) => {
-                const isSelected = aspectRatio === ratio;
-                return (
-                  <button
-                    key={ratio}
-                    type="button"
-                    disabled={isProcessing}
-                    onClick={() => setAspectRatio(ratio)}
-                    className={`flex flex-col items-center justify-center gap-0.5 px-1.5 py-1 rounded-lg border transition-all disabled:opacity-40 ${
-                      isSelected
-                        ? 'border-fuchsia-500 bg-fuchsia-500/20 text-fuchsia-300'
-                        : 'border-purple-500/25 bg-purple-900/40 text-purple-400 hover:border-purple-400/50 hover:text-purple-200'
-                    }`}
-                  >
-                    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none">
-                      <rect x="1" y="1" width={w - 2} height={h - 2} rx="1.5"
-                        stroke="currentColor" strokeWidth="1.5"
-                        fill={isSelected ? 'rgba(217,70,239,0.15)' : 'rgba(147,51,234,0.1)'}
-                      />
-                    </svg>
-                    <span className="text-[8px] font-medium leading-none">{label}</span>
-                  </button>
-                );
-              })}
+              {/* Engine dropdown */}
+              <div className="relative">
+                <select
+                  value={engine}
+                  onChange={(e) => setEngine(e.target.value as 'flux2_klein' | 'nano_banana')}
+                  disabled={isProcessing}
+                  className="appearance-none bg-purple-900/40 border border-purple-500/25 rounded-lg pl-2 pr-6 py-1.5 text-[11px] text-purple-300 font-medium cursor-pointer hover:border-purple-400/50 focus:outline-none focus:border-purple-400/50 disabled:opacity-40 transition-colors"
+                >
+                  <option value="flux2_klein">⚡ Flux2 Klein</option>
+                  <option value="nano_banana">🍌 Nano Banana</option>
+                </select>
+                <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-purple-500 pointer-events-none" />
+              </div>
+
+              {/* Aspect ratio dropdown */}
+              <div className="relative">
+                <select
+                  value={aspectRatio}
+                  onChange={(e) => setAspectRatio(e.target.value)}
+                  disabled={isProcessing}
+                  className="appearance-none bg-purple-900/40 border border-purple-500/25 rounded-lg pl-2 pr-6 py-1.5 text-[11px] text-purple-300 font-medium cursor-pointer hover:border-purple-400/50 focus:outline-none focus:border-purple-400/50 disabled:opacity-40 transition-colors"
+                >
+                  {ASPECT_RATIOS.map(({ ratio, label }) => (
+                    <option key={ratio} value={ratio}>{label} ({ratio})</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-purple-500 pointer-events-none" />
+              </div>
 
               {resultUrl && (
                 <>
