@@ -775,7 +775,9 @@ const GerarVideoTool = () => {
                               {model.description} • {
                                 (isUnlimited && (model.id === 'wan2.2' || (isVeo3Trial && model.id === 'veo3.1-fast')))
                                   ? '∞ Grátis'
-                                  : `${model.cost} créditos`
+                                  : model.id === 'wan2.2' 
+                                    ? `${model.cost} créditos`
+                                    : `${model.cost}~${model.costWithAudio} créditos`
                               }
                             </span>
                           </div>

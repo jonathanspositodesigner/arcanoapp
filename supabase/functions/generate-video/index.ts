@@ -30,9 +30,14 @@ const corsHeaders = {
 };
 
 const MODEL_COSTS: Record<string, number> = {
+  'veo3.1-fast': 1500,
+  'veo3.1-pro': 2800,
+  'wan2.2': 400,
+};
+
+const MODEL_COSTS_WITH_AUDIO: Record<string, number> = {
   'veo3.1-fast': 2500,
   'veo3.1-pro': 5000,
-  'wan2.2': 400,
 };
 
 const EVOLINK_MODEL_MAP: Record<string, string> = {
