@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star, ShieldCheck, Headset, Loader2, CreditCard, QrCode, Video, ImageIcon } from "lucide-react";
+import { ArrowLeft, Check, X, Sparkles, Clock, LogIn, Tag, ChevronDown, Coins, Zap, Star, ShieldCheck, Headset, Loader2, CreditCard, QrCode, Video, ImageIcon, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -227,7 +228,7 @@ const Planos2 = () => {
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
-        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true, badge: 'Ilimitado' },
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -354,7 +355,7 @@ const Planos2 = () => {
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
         { text: t('planos.features.immediateRelease'), included: true },
-        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true },
+        { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true, badge: 'Ilimitado' },
         { text: t('planos.features.whatsappSupport'), included: true },
         { text: t('planos.features.unlimitedPrompts'), included: true },
         { text: t('planos.features.allPremiumContent'), included: true },
@@ -592,6 +593,18 @@ const Planos2 = () => {
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white bg-gradient-to-r from-purple-600 to-blue-500">
                   <Sparkles className="w-2.5 h-2.5" />
                   {(plan as any).credits}/mês
+                  {String((plan as any).credits).toLowerCase().includes('ilimitado') && (
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="w-3 h-3 text-blue-200 cursor-pointer ml-0.5" />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="bg-[#1A0A2E] border-purple-500/30 text-purple-200 text-xs max-w-[200px]">
+                          14.000 créditos para usar em ferramentas não ilimitadas por mês
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </span>
                 {(plan as any).images && (
                   <span className="text-[9px] text-purple-400 mt-0.5">≈ {typeof (plan as any).images === 'string' ? (plan as any).images : `${(plan as any).images} imagens/mês`}</span>
