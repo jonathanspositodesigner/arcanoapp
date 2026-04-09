@@ -846,15 +846,26 @@ const AdminAIToolsUsageTab = () => {
                       <TableCell className="text-right text-sm">
                         {record.processing_seconds > 0 ? formatDuration(record.processing_seconds) : "-"}
                       </TableCell>
-                      <TableCell className="text-right font-mono text-sm">
-                        {record.rh_cost > 0 ? record.rh_cost : "-"}
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-sm">
-                        {record.user_credit_cost > 0 ? record.user_credit_cost : "-"}
-                      </TableCell>
-                      <TableCell className={`text-right font-mono text-sm font-bold ${record.profit > 0 ? 'text-green-400' : record.profit < 0 ? 'text-red-400' : ''}`}>
-                        {record.profit !== 0 ? (record.profit > 0 ? '+' : '') + record.profit : "-"}
-                      </TableCell>
+                      {(() => {
+                        const rhCostBRL = record.rh_cost * CUSTO_POR_RH_COIN;
+                        const apiCost = API_COST_MAP[record.tool_name] || 0;
+                        const totalCost = rhCostBRL + (record.status === 'completed' ? apiCost : 0);
+                        const receita = record.user_credit_cost * RECEITA_POR_CREDITO;
+                        const lucro = receita - totalCost;
+                        return (
+                          <>
+                            <TableCell className="text-right font-mono text-sm">
+                              {totalCost > 0 ? formatBRL(totalCost) : "-"}
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-sm">
+                              {receita > 0 ? formatBRL(receita) : "-"}
+                            </TableCell>
+                            <TableCell className={`text-right font-mono text-sm font-bold ${lucro > 0 ? 'text-green-400' : lucro < 0 ? 'text-red-400' : ''}`}>
+                              {record.user_credit_cost > 0 || totalCost > 0 ? formatBRL(lucro) : "-"}
+                            </TableCell>
+                          </>
+                        );
+                      })()}
                       <TableCell className="text-center">
                         {(record.status === 'running' || record.status === 'queued') ? (
                           <Button
