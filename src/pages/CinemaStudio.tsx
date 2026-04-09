@@ -15,7 +15,7 @@ import { useCinemaStudio } from '@/hooks/useCinemaStudio';
 import { useCinemaProjects } from '@/hooks/useCinemaProjects';
 import { toast } from 'sonner';
 
-const STORYBOARD_KEY = 'cinemastudio_storyboard';
+
 
 const CinemaStudio: React.FC = () => {
   const isMobile = useIsMobile();
