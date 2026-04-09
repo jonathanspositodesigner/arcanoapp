@@ -59,11 +59,11 @@ const PLANOS2_PRODUCTS: Record<number, {
   },
   160742: {
     slug: 'unlimited',
-    credits_per_month: 99999,
+    credits_per_month: 14000,
     daily_prompt_limit: null,
     has_image_generation: true,
     has_video_generation: true,
-    cost_multiplier: 0.5,
+    cost_multiplier: 1.0,
   },
 }
 
