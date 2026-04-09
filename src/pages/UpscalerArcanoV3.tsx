@@ -141,6 +141,8 @@ const depoImages = [
 ];
 
 const UpscalerArcanoV3 = () => {
+  // Auto-redirect non-Brazilian visitors to ES version
+  useGeoRedirect("/upscalerarcanov3-es");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
