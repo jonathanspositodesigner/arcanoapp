@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { getAIErrorMessage } from '@/utils/errorMessages';
-import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock, Image, Type } from 'lucide-react';
+import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock, Image, Type, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,13 +46,14 @@ interface ModelOption {
   id: string;
   name: string;
   cost: number;
+  costWithAudio: number;
   description: string;
 }
 
 const ALL_MODELS: ModelOption[] = [
-  { id: 'wan2.2', name: 'Wan 2.2', cost: 400, description: 'RunningHub • 5s' },
-  { id: 'veo3.1-fast', name: 'Veo 3.1 Fast', cost: 2500, description: 'Evolink • 8s • 1080p' },
-  { id: 'veo3.1-pro', name: 'Veo 3.1 Pro', cost: 5000, description: 'Evolink • 8s • 1080p' },
+  { id: 'wan2.2', name: 'Wan 2.2', cost: 400, costWithAudio: 400, description: 'RunningHub • 5s' },
+  { id: 'veo3.1-fast', name: 'Veo 3.1 Fast', cost: 1500, costWithAudio: 2500, description: 'Evolink • 8s • 1080p' },
+  { id: 'veo3.1-pro', name: 'Veo 3.1 Pro', cost: 2800, costWithAudio: 5000, description: 'Evolink • 8s • 1080p' },
 ];
 
 type GenerationMode = 'prompt_only' | 'with_frames';
@@ -104,6 +105,7 @@ const GerarVideoTool = () => {
   const [prompt, setPrompt] = useState('');
   const [aspectRatio, setAspectRatio] = useState<string>('16:9');
   const [selectedModel, setSelectedModel] = useState<string>('wan2.2');
+  const [generateAudio, setGenerateAudio] = useState(false);
   const [generationMode, setGenerationMode] = useState<GenerationMode>('prompt_only');
   const [startFrame, setStartFrame] = useState<FrameImage | null>(null);
   const [endFrame, setEndFrame] = useState<FrameImage | null>(null);
@@ -125,15 +127,20 @@ const GerarVideoTool = () => {
   const evolinkPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const currentModel = availableModels.find(m => m.id === selectedModel) || availableModels[0];
+  const isVeoModel = selectedModel === 'veo3.1-fast' || selectedModel === 'veo3.1-pro';
   
   // For trial users on veo3.1-fast, cost is 0
+  const effectiveCost = (isVeoModel && generateAudio) ? currentModel.costWithAudio : currentModel.cost;
   const creditCost = (isUnlimited && isVeo3Trial && selectedModel === 'veo3.1-fast') 
     ? 0 
     : (isUnlimited && selectedModel === 'wan2.2') 
       ? 0 
-      : currentModel.cost;
+      : effectiveCost;
 
-  const isVeoModel = selectedModel === 'veo3.1-fast' || selectedModel === 'veo3.1-pro';
+  // Reset audio when switching away from Veo models
+  useEffect(() => {
+    if (!isVeoModel) setGenerateAudio(false);
+  }, [selectedModel, isVeoModel]);
 
   // 5 min watchdog for stuck pending jobs
   useJobPendingWatchdog({
@@ -376,6 +383,7 @@ const GerarVideoTool = () => {
         prompt: prompt.trim(),
         aspect_ratio: isVeoModel ? aspectRatio : undefined,
         model: selectedModel,
+        generate_audio: isVeoModel ? generateAudio : undefined,
       };
 
       if (generationMode === 'with_frames' && startFrame) {
@@ -767,7 +775,9 @@ const GerarVideoTool = () => {
                               {model.description} • {
                                 (isUnlimited && (model.id === 'wan2.2' || (isVeo3Trial && model.id === 'veo3.1-fast')))
                                   ? '∞ Grátis'
-                                  : `${model.cost} créditos`
+                                  : model.id === 'wan2.2' 
+                                    ? `${model.cost} créditos`
+                                    : `${model.cost}~${model.costWithAudio} créditos`
                               }
                             </span>
                           </div>
@@ -796,6 +806,22 @@ const GerarVideoTool = () => {
                         ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
+                  )}
+
+                  {isVeoModel && (
+                    <button
+                      onClick={() => setGenerateAudio(!generateAudio)}
+                      disabled={isGenerating || (isUnlimited && isVeo3Trial)}
+                      className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[10px] font-medium transition-colors ${
+                        generateAudio
+                          ? 'bg-fuchsia-600/30 border-fuchsia-500/50 text-fuchsia-200'
+                          : 'bg-purple-900/40 border-purple-500/25 text-purple-400 hover:text-purple-200 hover:bg-purple-800/50'
+                      } disabled:opacity-40 disabled:cursor-not-allowed`}
+                      title={isUnlimited && isVeo3Trial ? 'Áudio indisponível no período de teste' : generateAudio ? 'Desativar áudio' : 'Ativar áudio (custo extra)'}
+                    >
+                      {generateAudio ? <Volume2 className="h-3 w-3" /> : <VolumeX className="h-3 w-3" />}
+                      <span>{generateAudio ? 'Com Áudio' : 'Sem Áudio'}</span>
+                    </button>
                   )}
 
                   <span className="text-[10px] text-purple-400 ml-auto flex items-center gap-1.5">

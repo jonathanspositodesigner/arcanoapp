@@ -5,8 +5,8 @@ import { createClient } from "npm:@supabase/supabase-js@2";
  * GENERATE VIDEO - EDGE FUNCTION
  * 
  * Models:
- * - veo3.1-fast: Veo 3.1 Fast via Evolink API (2500 credits)
- * - veo3.1-pro: Veo 3.1 Pro via Evolink API (5000 credits)
+ * - veo3.1-fast: Veo 3.1 Fast via Evolink API (1500 without audio, 2500 with audio)
+ * - veo3.1-pro: Veo 3.1 Pro via Evolink API (2800 without audio, 5000 with audio)
  * - wan2.2: Wan 2.2 via RunningHub (400 credits)
  * 
  * Endpoints:
@@ -30,9 +30,14 @@ const corsHeaders = {
 };
 
 const MODEL_COSTS: Record<string, number> = {
+  'veo3.1-fast': 1500,
+  'veo3.1-pro': 2800,
+  'wan2.2': 400,
+};
+
+const MODEL_COSTS_WITH_AUDIO: Record<string, number> = {
   'veo3.1-fast': 2500,
   'veo3.1-pro': 5000,
-  'wan2.2': 400,
 };
 
 const EVOLINK_MODEL_MAP: Record<string, string> = {
@@ -460,7 +465,7 @@ async function handleRun(req: Request) {
   const verifiedUserId = user.id;
 
   const body = await req.json();
-  const { prompt, aspect_ratio, model, start_frame, end_frame } = body;
+  const { prompt, aspect_ratio, model, start_frame, end_frame, generate_audio: requestAudio } = body;
 
   if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
     return new Response(JSON.stringify({ error: 'Prompt é obrigatório' }), {
@@ -494,7 +499,11 @@ async function handleRun(req: Request) {
     console.error('[VideoGenerator] Check user active error:', e);
   }
 
-  let creditCost = MODEL_COSTS[selectedModel];
+  // Determine if user wants audio (only for Evolink models)
+  const wantsAudio = isEvolinkModel(selectedModel) && requestAudio === true;
+  let creditCost = wantsAudio && MODEL_COSTS_WITH_AUDIO[selectedModel]
+    ? MODEL_COSTS_WITH_AUDIO[selectedModel]
+    : MODEL_COSTS[selectedModel];
 
   // Check if user is IA Unlimited (Planos2)
   const { data: isUnlimitedResult } = await supabase.rpc('is_unlimited_subscriber', { _user_id: verifiedUserId });
@@ -639,8 +648,8 @@ async function handleRun(req: Request) {
       generationType = imageUrls.length <= 2 ? 'FIRST&LAST' : 'REFERENCE';
     }
 
-    // Determine audio: trial users get no audio
-    const generateAudio = forceNoAudio ? false : true;
+    // Determine audio: trial users get no audio, otherwise respect user choice
+    const generateAudio = forceNoAudio ? false : wantsAudio;
 
     await logStep(jobId, 'calling_evolink', { model: selectedModel, generationType, generateAudio });
 
