@@ -294,7 +294,7 @@ export function getDefaultSettings(): CinemaSettings {
     quality: '720p',
     aspectRatio: '16:9',
     generateAudio: true,
-    modelSpeed: 'standard',
+    modelSpeed: 'fast',
   };
 }
 

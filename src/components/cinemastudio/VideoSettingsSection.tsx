@@ -78,7 +78,18 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings, mode 
             <span className="text-[10px] text-gray-600 uppercase tracking-wider w-16 flex-shrink-0">Motor</span>
             <div className="flex-1 flex bg-white/[0.02] rounded-md p-0.5 gap-0.5">
               <button
-                className="flex-1 py-1 text-[10px] rounded transition-all bg-white/[0.08] text-gray-200 font-medium"
+                onClick={() => updateSettings({ modelSpeed: 'fast' })}
+                className={`flex-1 py-1 text-[10px] rounded transition-all flex items-center justify-center gap-0.5 ${
+                  settings.modelSpeed === 'fast' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-gray-600 hover:text-gray-400'
+                }`}
+              >
+                Fast <Zap className="w-2.5 h-2.5" />
+              </button>
+              <button
+                onClick={() => updateSettings({ modelSpeed: 'standard' })}
+                className={`flex-1 py-1 text-[10px] rounded transition-all ${
+                  settings.modelSpeed === 'standard' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-gray-600 hover:text-gray-400'
+                }`}
               >
                 Standard
               </button>
