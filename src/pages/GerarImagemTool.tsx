@@ -57,6 +57,8 @@ const GerarImagemTool = () => {
       return 'flux2_klein';
     }
   });
+  const [engineDropdownOpen, setEngineDropdownOpen] = useState(false);
+  const engineDropdownRef = useRef<HTMLDivElement>(null);
   const [referenceImages, setReferenceImages] = useState<{ file: File; preview: string }[]>([]);
 
   // Job state
