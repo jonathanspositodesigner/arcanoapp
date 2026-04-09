@@ -17,6 +17,7 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const TABLE_NAME = 'image_generator_jobs';
 const WEBAPP_ID_FLUX2_KLEIN = '2042246288288260097';
+const DEFAULT_REF_IMAGE_URL = 'https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/artes-cloudinary/defaults/default-reference.png';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -253,9 +254,40 @@ async function handleRun(req: Request) {
 
   // Build nodeInfoList — image reference nodes: 186, 187, 122, 123, 129
   const IMAGE_NODE_IDS = ["186", "187", "122", "123", "129"];
+
+  // Upload default image to RunningHub for empty slots
+  let defaultFileName: string | null = null;
+  const emptySlotCount = IMAGE_NODE_IDS.length - uploadedFileNames.length;
+  if (emptySlotCount > 0) {
+    try {
+      await logStep(jobId, 'uploading_default_ref_image');
+      const defaultImgRes = await fetch(DEFAULT_REF_IMAGE_URL);
+      if (!defaultImgRes.ok) throw new Error(`Failed to download default ref image (${defaultImgRes.status})`);
+      const defaultBlob = await defaultImgRes.blob();
+      const formData = new FormData();
+      formData.append('apiKey', RUNNINGHUB_API_KEY);
+      formData.append('fileType', 'image');
+      formData.append('file', defaultBlob, 'default-reference.png');
+      const uploadRes = await fetchWithRetry(
+        'https://www.runninghub.ai/task/openapi/upload',
+        { method: 'POST', body: formData },
+        'Default ref image upload'
+      );
+      const uploadText = await uploadRes.text();
+      let uploadData: any;
+      try { uploadData = JSON.parse(uploadText); } catch { throw new Error('Default ref upload invalid response'); }
+      if (uploadData.code !== 0) throw new Error(`Default ref upload failed: ${uploadData.msg || 'Unknown'}`);
+      defaultFileName = uploadData.data.fileName;
+      console.log(`[Flux2Klein] Default ref image uploaded: ${defaultFileName}`);
+    } catch (err) {
+      console.warn('[Flux2Klein] Default ref upload failed, falling back to example.png:', err);
+      defaultFileName = 'example.png';
+    }
+  }
+
   const paddedFileNames = [...uploadedFileNames];
   while (paddedFileNames.length < IMAGE_NODE_IDS.length) {
-    paddedFileNames.push('example.png');
+    paddedFileNames.push(defaultFileName || 'example.png');
   }
   const nodeInfoList: any[] = [];
   for (let i = 0; i < IMAGE_NODE_IDS.length; i++) {
