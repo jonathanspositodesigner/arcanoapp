@@ -4,20 +4,21 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 /**
  * GENERATE VIDEO - EDGE FUNCTION
  * 
- * Gera vídeos via RunningHub workflow
- * 
  * Models:
- * - veo3.1: Veo 3.1 Fast (image-to-video + text-only)
- * - wan2.2: Wan 2.2 (image-to-video + text-only)
+ * - veo3.1-fast: Veo 3.1 Fast via Evolink API (2500 credits)
+ * - veo3.1-pro: Veo 3.1 Pro via Evolink API (5000 credits)
+ * - wan2.2: Wan 2.2 via RunningHub (400 credits)
  * 
  * Endpoints:
  * - /run - Inicia processamento
  * - /queue-status - Consulta status do job
+ * - /poll-evolink - Polling para jobs Evolink
  */
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const RUNNINGHUB_API_KEY = (Deno.env.get('RUNNINGHUB_API_KEY') || Deno.env.get('RUNNINGHUB_APIKEY') || '').trim();
+const EVOLINK_API_KEY = Deno.env.get('EVOLINK_API_KEY') || '';
 
 const TABLE_NAME = 'video_generator_jobs';
 
@@ -29,9 +30,19 @@ const corsHeaders = {
 };
 
 const MODEL_COSTS: Record<string, number> = {
-  'veo3.1': 750,
+  'veo3.1-fast': 2500,
+  'veo3.1-pro': 5000,
   'wan2.2': 400,
 };
+
+const EVOLINK_MODEL_MAP: Record<string, string> = {
+  'veo3.1-fast': 'veo-3.1-fast-generate-preview',
+  'veo3.1-pro': 'veo-3.1-generate-preview',
+};
+
+function isEvolinkModel(model: string): boolean {
+  return model === 'veo3.1-fast' || model === 'veo3.1-pro';
+}
 
 // ========== RESILIENT FETCH ==========
 
@@ -105,6 +116,37 @@ async function uploadFrameToRunningHub(
   return data.data.fileName;
 }
 
+// ========== UPLOAD FRAME TO SUPABASE STORAGE (for Evolink) ==========
+
+async function uploadFrameToStorage(
+  base64Data: string,
+  mimeType: string,
+  userId: string,
+  label: string
+): Promise<string> {
+  const bytes = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+  const ext = mimeType.includes('jpeg') || mimeType.includes('jpg') ? 'jpg' 
+    : mimeType.includes('webp') ? 'webp' : 'png';
+  const fileName = `${userId}/video_frame_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+  const { data, error } = await supabase.storage
+    .from('artes-cloudinary')
+    .upload(fileName, bytes, {
+      contentType: mimeType,
+      upsert: false,
+    });
+
+  if (error) {
+    throw new Error(`${label} storage upload failed: ${error.message}`);
+  }
+
+  const { data: urlData } = supabase.storage
+    .from('artes-cloudinary')
+    .getPublicUrl(fileName);
+
+  return urlData.publicUrl;
+}
+
 // ========== OBSERVABILITY HELPER ==========
 
 async function logStep(
@@ -169,6 +211,200 @@ async function logStepFailure(
   }
 }
 
+// ========== EVOLINK VIDEO GENERATION ==========
+
+async function callEvolinkGenerate(
+  jobId: string,
+  model: string,
+  prompt: string,
+  aspectRatio: string,
+  generateAudio: boolean,
+  imageUrls: string[],
+  generationType: string
+): Promise<{ taskId: string } | { error: string }> {
+  if (!EVOLINK_API_KEY) {
+    return { error: 'EVOLINK_API_KEY not configured' };
+  }
+
+  const evolinkModel = EVOLINK_MODEL_MAP[model];
+  if (!evolinkModel) {
+    return { error: `Unknown Evolink model: ${model}` };
+  }
+
+  const payload: Record<string, unknown> = {
+    model: evolinkModel,
+    prompt,
+    duration: 8,
+    quality: '1080p',
+    aspect_ratio: aspectRatio || '16:9',
+    generate_audio: generateAudio,
+    generation_type: generationType,
+  };
+
+  if (imageUrls.length > 0) {
+    payload.image_urls = imageUrls;
+  }
+
+  console.log(`[VideoGenerator] Calling Evolink:`, JSON.stringify({ model: evolinkModel, generationType, duration: 8, quality: '1080p', aspectRatio, generateAudio, imageCount: imageUrls.length }));
+
+  try {
+    const response = await fetchWithRetry(
+      'https://api.evolink.ai/v1/videos/generations',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${EVOLINK_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      },
+      'Evolink Generate'
+    );
+
+    const data = await response.json();
+    console.log(`[VideoGenerator] Evolink response:`, JSON.stringify(data));
+
+    if (!response.ok || !data.id) {
+      const errMsg = data.error?.message || data.error?.code || `Evolink API error: ${response.status}`;
+      return { error: errMsg };
+    }
+
+    return { taskId: data.id };
+  } catch (error: any) {
+    return { error: error.message || 'Evolink API call failed' };
+  }
+}
+
+// ========== EVOLINK POLL ==========
+
+async function handlePollEvolink(req: Request) {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+  const userClient = createClient(SUPABASE_URL, anonKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const { data: { user }, error: userError } = await userClient.auth.getUser();
+  if (userError || !user) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const { job_id } = await req.json();
+  if (!job_id) {
+    return new Response(JSON.stringify({ error: 'job_id is required' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Get the job
+  const { data: job, error: jobError } = await supabase
+    .from(TABLE_NAME)
+    .select('id, status, task_id, user_id, model, credits_charged, user_credit_cost')
+    .eq('id', job_id)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (jobError || !job) {
+    return new Response(JSON.stringify({ error: 'Job not found' }), {
+      status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (job.status === 'completed' || job.status === 'failed') {
+    return new Response(JSON.stringify({ status: job.status }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!job.task_id) {
+    return new Response(JSON.stringify({ status: 'pending', progress: 0 }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Poll Evolink
+  try {
+    const pollResponse = await fetch(`https://api.evolink.ai/v1/tasks/${job.task_id}`, {
+      headers: { 'Authorization': `Bearer ${EVOLINK_API_KEY}` },
+    });
+
+    const pollData = await pollResponse.json();
+    console.log(`[VideoGenerator] Evolink poll ${job.task_id}: status=${pollData.status}, progress=${pollData.progress}`);
+
+    if (pollData.status === 'completed') {
+      const outputUrl = pollData.results?.[0] || null;
+
+      await supabase.from(TABLE_NAME).update({
+        status: 'completed',
+        output_url: outputUrl,
+        completed_at: new Date().toISOString(),
+        current_step: 'completed',
+      }).eq('id', job_id);
+
+      return new Response(JSON.stringify({
+        status: 'completed',
+        output_url: outputUrl,
+        progress: 100,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (pollData.status === 'failed') {
+      const errMsg = pollData.error?.message || 'Generation failed';
+
+      // Refund credits if charged
+      if (job.credits_charged && job.user_credit_cost && job.user_credit_cost > 0) {
+        try {
+          await supabase.rpc('refund_upscaler_credits', {
+            _user_id: job.user_id,
+            _amount: job.user_credit_cost,
+            _description: `EVOLINK_FAILED_REFUND: ${errMsg.slice(0, 100)}`,
+          });
+          await supabase.from(TABLE_NAME).update({ credits_refunded: true }).eq('id', job_id);
+        } catch (e) {
+          console.error('[VideoGenerator] Refund error:', e);
+        }
+      }
+
+      await supabase.from(TABLE_NAME).update({
+        status: 'failed',
+        error_message: errMsg,
+        current_step: 'failed',
+        failed_at_step: 'evolink_generation',
+        completed_at: new Date().toISOString(),
+      }).eq('id', job_id);
+
+      return new Response(JSON.stringify({
+        status: 'failed',
+        error: errMsg,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Still processing
+    return new Response(JSON.stringify({
+      status: pollData.status || 'processing',
+      progress: pollData.progress || 0,
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (error: any) {
+    console.error('[VideoGenerator] Evolink poll error:', error);
+    return new Response(JSON.stringify({ status: 'processing', progress: 0 }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
 // ========== MAIN HANDLER ==========
 
 serve(async (req) => {
@@ -186,6 +422,8 @@ serve(async (req) => {
       return await handleRun(req);
     } else if (path === 'queue-status') {
       return await handleQueueStatus(req);
+    } else if (path === 'poll-evolink') {
+      return await handlePollEvolink(req);
     } else {
       return await handleRun(req);
     }
@@ -222,7 +460,7 @@ async function handleRun(req: Request) {
   const verifiedUserId = user.id;
 
   const body = await req.json();
-  const { prompt, aspect_ratio, duration_seconds, model, start_frame, end_frame } = body;
+  const { prompt, aspect_ratio, model, start_frame, end_frame } = body;
 
   if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
     return new Response(JSON.stringify({ error: 'Prompt é obrigatório' }), {
@@ -230,11 +468,10 @@ async function handleRun(req: Request) {
     });
   }
 
-  const selectedModel = model && MODEL_COSTS[model] ? model : 'veo3.1';
-  const validDurations = [4, 6, 8];
-  const duration = validDurations.includes(duration_seconds) ? duration_seconds : 8;
-  const validRatios = ['16:9', '9:16', 'auto'];
+  const selectedModel = model && MODEL_COSTS[model] ? model : 'veo3.1-fast';
+  const validRatios = ['16:9', '9:16'];
   const ratio = validRatios.includes(aspect_ratio) ? aspect_ratio : '16:9';
+  const duration = selectedModel === 'wan2.2' ? 5 : 8;
 
   // Check user active job (prevent duplicates)
   try {
@@ -257,46 +494,34 @@ async function handleRun(req: Request) {
     console.error('[VideoGenerator] Check user active error:', e);
   }
 
-  // Get credit cost from settings or use model default
-  const { data: settingsData } = await supabase
-    .from('ai_tool_settings')
-    .select('credit_cost')
-    .eq('tool_name', 'gerar_video')
-    .single();
-
   let creditCost = MODEL_COSTS[selectedModel];
 
   // Check if user is IA Unlimited (Planos2)
   const { data: isUnlimitedResult } = await supabase.rpc('is_unlimited_subscriber', { _user_id: verifiedUserId });
   const isPlanos2Unlimited = !!isUnlimitedResult;
 
-  // For unlimited users: Wan 2.2 is FREE, Veo 3.1 charges from 14k credits (after 7-day trial)
   let skipCredits = false;
+  let forceNoAudio = false;
+
   if (isPlanos2Unlimited) {
     if (selectedModel === 'wan2.2') {
       // Wan 2.2 is unlimited — no credit charge
       skipCredits = true;
       creditCost = 0;
       console.log(`[VideoGenerator] Unlimited user ${verifiedUserId}: Wan 2.2 is FREE`);
-    } else if (selectedModel === 'veo3.1') {
+    } else if (isEvolinkModel(selectedModel)) {
       // Check Veo 3.1 trial period (7 days from subscription)
       const { data: trialData } = await supabase.rpc('check_veo3_unlimited_trial', { _user_id: verifiedUserId });
       if (trialData?.in_trial) {
+        // Trial: only veo3.1-fast, no audio, 0 credits
         skipCredits = true;
         creditCost = 0;
-        console.log(`[VideoGenerator] Unlimited user ${verifiedUserId}: Veo 3.1 FREE (trial, ${trialData.days_remaining} days left)`);
+        forceNoAudio = true;
+        console.log(`[VideoGenerator] Unlimited user ${verifiedUserId}: Veo 3.1 Fast FREE (trial, ${trialData.days_remaining} days left)`);
       } else {
-        // After trial: charge from 14k credits
-        creditCost = settingsData?.credit_cost || MODEL_COSTS['veo3.1'];
+        // After trial: charge credits normally
         console.log(`[VideoGenerator] Unlimited user ${verifiedUserId}: Veo 3.1 charges ${creditCost} credits (trial expired)`);
       }
-    }
-  } else {
-    // Non-unlimited: use settings cost if available
-    if (settingsData?.credit_cost) {
-      creditCost = selectedModel === 'wan2.2' 
-        ? Math.round((settingsData.credit_cost / 750) * 400) 
-        : settingsData.credit_cost;
     }
   }
 
@@ -313,7 +538,7 @@ async function handleRun(req: Request) {
       session_id: sessionId,
       status: 'pending',
       current_step: 'pending',
-      api_account: 'primary',
+      api_account: isEvolinkModel(selectedModel) ? 'evolink' : 'primary',
     })
     .select('id')
     .single();
@@ -326,10 +551,9 @@ async function handleRun(req: Request) {
   }
 
   const jobId = jobData.id;
-  await logStep(jobId, 'created', { model: selectedModel, creditCost, skipCredits });
+  await logStep(jobId, 'created', { model: selectedModel, creditCost, skipCredits, isEvolink: isEvolinkModel(selectedModel) });
 
   if (skipCredits) {
-    // Unlimited tool — no credit charge
     console.log(`[VideoGenerator] Job ${jobId}: credits SKIPPED (unlimited tool)`);
     await supabase.from(TABLE_NAME).update({
       credits_charged: false,
@@ -339,9 +563,10 @@ async function handleRun(req: Request) {
     // Consume credits
     await logStep(jobId, 'consuming_credits', { amount: creditCost });
 
+    const modelLabel = selectedModel === 'veo3.1-fast' ? 'Veo 3.1 Fast' : selectedModel === 'veo3.1-pro' ? 'Veo 3.1 Pro' : 'Wan 2.2';
     const { data: creditResult, error: creditError } = await supabase.rpc(
       'consume_upscaler_credits',
-      { _user_id: verifiedUserId, _amount: creditCost, _description: `Gerar Vídeo (${selectedModel === 'veo3.1' ? 'Veo 3.1' : 'Wan 2.2'})` }
+      { _user_id: verifiedUserId, _amount: creditCost, _description: `Gerar Vídeo (${modelLabel})` }
     );
 
     if (creditError) {
@@ -363,15 +588,112 @@ async function handleRun(req: Request) {
     }
 
     console.log(`[VideoGenerator] Credits consumed. New balance: ${creditResult[0].new_balance}`);
-
-    // CRITICAL: Mark credits_charged=true IMMEDIATELY after consuming
     await supabase.from(TABLE_NAME).update({
       credits_charged: true,
       user_credit_cost: creditCost,
     }).eq('id', jobId);
     console.log(`[VideoGenerator] Job ${jobId} marked as credits_charged=true (cost=${creditCost})`);
   }
-  // Upload frames to RunningHub if provided
+
+  // ========== EVOLINK PATH (Veo 3.1) ==========
+  if (isEvolinkModel(selectedModel)) {
+    const hasStartFrame = start_frame?.base64 && start_frame?.mimeType;
+    const hasEndFrame = end_frame?.base64 && end_frame?.mimeType;
+    const imageUrls: string[] = [];
+
+    // Upload frames to storage to get public URLs for Evolink
+    if (hasStartFrame || hasEndFrame) {
+      await logStep(jobId, 'uploading_frames');
+      try {
+        if (hasStartFrame) {
+          const url = await uploadFrameToStorage(start_frame.base64, start_frame.mimeType, verifiedUserId, 'start_frame');
+          imageUrls.push(url);
+          console.log(`[VideoGenerator] Start frame uploaded to storage`);
+        }
+        if (hasEndFrame) {
+          const url = await uploadFrameToStorage(end_frame.base64, end_frame.mimeType, verifiedUserId, 'end_frame');
+          imageUrls.push(url);
+          console.log(`[VideoGenerator] End frame uploaded to storage`);
+        }
+        await logStep(jobId, 'frames_uploaded', { count: imageUrls.length });
+      } catch (error: any) {
+        const errorMsg = error.message || 'Frame upload failed';
+        console.error('[VideoGenerator] Frame upload error:', errorMsg);
+        if (!skipCredits && creditCost > 0) {
+          try {
+            await supabase.rpc('refund_upscaler_credits', { _user_id: verifiedUserId, _amount: creditCost, _description: `FRAME_UPLOAD_REFUNDED: ${errorMsg.slice(0, 100)}` });
+            await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
+          } catch { /* ignore */ }
+        } else {
+          await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
+        }
+        return new Response(JSON.stringify({ error: errorMsg, code: 'IMAGE_TRANSFER_ERROR', refunded: !skipCredits }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // Determine generation_type
+    let generationType = 'TEXT';
+    if (imageUrls.length > 0) {
+      generationType = imageUrls.length <= 2 ? 'FIRST&LAST' : 'REFERENCE';
+    }
+
+    // Determine audio: trial users get no audio
+    const generateAudio = forceNoAudio ? false : true;
+
+    await logStep(jobId, 'calling_evolink', { model: selectedModel, generationType, generateAudio });
+
+    const result = await callEvolinkGenerate(
+      jobId,
+      selectedModel,
+      prompt.trim(),
+      ratio,
+      generateAudio,
+      imageUrls,
+      generationType,
+    );
+
+    if ('error' in result) {
+      if (!skipCredits && creditCost > 0) {
+        try {
+          await supabase.rpc('refund_upscaler_credits', { _user_id: verifiedUserId, _amount: creditCost, _description: `EVOLINK_ERROR_REFUND: ${result.error.slice(0, 100)}` });
+          await supabase.from(TABLE_NAME).update({ credits_refunded: true }).eq('id', jobId);
+        } catch { /* ignore */ }
+      }
+      await logStepFailure(jobId, 'evolink_generate', result.error);
+      await supabase.from(TABLE_NAME).update({
+        status: 'failed',
+        error_message: result.error,
+        completed_at: new Date().toISOString(),
+      }).eq('id', jobId);
+      return new Response(JSON.stringify({ error: result.error, code: 'EVOLINK_ERROR', refunded: !skipCredits }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Success - save task_id and mark as running
+    await supabase.from(TABLE_NAME).update({
+      task_id: result.taskId,
+      status: 'running',
+      current_step: 'evolink_processing',
+      started_at: new Date().toISOString(),
+      job_payload: { prompt: prompt.trim(), aspectRatio: ratio, duration, model: selectedModel, generationType, generateAudio, imageUrls },
+    }).eq('id', jobId);
+
+    await logStep(jobId, 'evolink_submitted', { taskId: result.taskId });
+
+    return new Response(JSON.stringify({
+      success: true,
+      job_id: jobId,
+      taskId: result.taskId,
+      engine: 'evolink',
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // ========== RUNNINGHUB PATH (Wan 2.2) ==========
   const jobPayload: any = {
     prompt: prompt.trim(),
     aspectRatio: ratio,
@@ -387,60 +709,42 @@ async function handleRun(req: Request) {
     
     try {
       if (hasStartFrame) {
-        const startFileName = await uploadFrameToRunningHub(
-          start_frame.base64, start_frame.mimeType, 'start_frame'
-        );
+        const startFileName = await uploadFrameToRunningHub(start_frame.base64, start_frame.mimeType, 'start_frame');
         jobPayload.startFrameFileName = startFileName;
         console.log(`[VideoGenerator] Start frame uploaded: ${startFileName}`);
       }
 
       if (hasEndFrame) {
-        const endFileName = await uploadFrameToRunningHub(
-          end_frame.base64, end_frame.mimeType, 'end_frame'
-        );
+        const endFileName = await uploadFrameToRunningHub(end_frame.base64, end_frame.mimeType, 'end_frame');
         jobPayload.endFrameFileName = endFileName;
         console.log(`[VideoGenerator] End frame uploaded: ${endFileName}`);
       }
 
-      await logStep(jobId, 'frames_uploaded', { 
-        startFrame: !!jobPayload.startFrameFileName, 
-        endFrame: !!jobPayload.endFrameFileName 
-      });
+      await logStep(jobId, 'frames_uploaded', { startFrame: !!jobPayload.startFrameFileName, endFrame: !!jobPayload.endFrameFileName });
     } catch (error: any) {
       const errorMsg = error.message || 'Frame upload failed';
       console.error('[VideoGenerator] Frame upload error:', errorMsg);
       
-      // Refund credits and fail
-      try {
-        await supabase.rpc('refund_upscaler_credits', { 
-          _user_id: verifiedUserId, _amount: creditCost, 
-          _description: `FRAME_UPLOAD_REFUNDED: ${errorMsg.slice(0, 100)}` 
-        });
-        await logStepFailure(jobId, 'upload_frames', errorMsg);
-        await supabase.from(TABLE_NAME).update({ 
-          status: 'failed', 
-          error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`, 
-          credits_refunded: true, 
-          completed_at: new Date().toISOString() 
-        }).eq('id', jobId);
-      } catch {
-        await supabase.from(TABLE_NAME).update({ 
-          status: 'failed', 
-          error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`, 
-          completed_at: new Date().toISOString() 
-        }).eq('id', jobId);
+      if (!skipCredits && creditCost > 0) {
+        try {
+          await supabase.rpc('refund_upscaler_credits', { _user_id: verifiedUserId, _amount: creditCost, _description: `FRAME_UPLOAD_REFUNDED: ${errorMsg.slice(0, 100)}` });
+          await logStepFailure(jobId, 'upload_frames', errorMsg);
+          await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
+        } catch {
+          await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
+        }
+      } else {
+        await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
       }
       
-      return new Response(JSON.stringify({ error: errorMsg, code: 'IMAGE_TRANSFER_ERROR', refunded: true }), {
+      return new Response(JSON.stringify({ error: errorMsg, code: 'IMAGE_TRANSFER_ERROR', refunded: !skipCredits }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
   }
 
-  // Save job_payload (credits_charged already set above)
-  await supabase.from(TABLE_NAME).update({
-    job_payload: jobPayload,
-  }).eq('id', jobId);
+  // Save job_payload
+  await supabase.from(TABLE_NAME).update({ job_payload: jobPayload }).eq('id', jobId);
 
   // Delegate to queue manager
   try {
@@ -474,13 +778,17 @@ async function handleRun(req: Request) {
     console.error('[VideoGenerator] Queue Manager call failed:', errorMessage);
     
     try {
-      await supabase.rpc('refund_upscaler_credits', { _user_id: verifiedUserId, _amount: creditCost, _description: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
-      await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
+      if (!skipCredits && creditCost > 0) {
+        await supabase.rpc('refund_upscaler_credits', { _user_id: verifiedUserId, _amount: creditCost, _description: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
+        await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
+      } else {
+        await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `QM_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
+      }
     } catch {
       await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `QM_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId);
     }
     
-    return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: true }), {
+    return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: !skipCredits }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
