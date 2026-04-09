@@ -24,9 +24,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const ASPECT_RATIOS = ['16:9', '9:16'] as const;
+const ASPECT_RATIO_LABELS: Record<string, string> = {
+  '16:9': 'Landscape',
+  '9:16': 'Portrait',
+};
 
 const MODEL_DURATIONS: Record<string, number> = {
-  'veo3.1': 8,
+  'veo3.1-fast': 8,
+  'veo3.1-pro': 8,
   'wan2.2': 5,
 };
 
@@ -37,10 +42,18 @@ interface FrameImage {
   mimeType: string;
 }
 
-const MODELS = [
-  { id: 'veo3.1', name: 'Veo 3.1', cost: 750, description: 'Google • Alta qualidade' },
-  { id: 'wan2.2', name: 'Wan 2.2', cost: 400, description: 'Mais acessível' },
-] as const;
+interface ModelOption {
+  id: string;
+  name: string;
+  cost: number;
+  description: string;
+}
+
+const ALL_MODELS: ModelOption[] = [
+  { id: 'wan2.2', name: 'Wan 2.2', cost: 400, description: 'RunningHub • 5s' },
+  { id: 'veo3.1-fast', name: 'Veo 3.1 Fast', cost: 2500, description: 'Evolink • 8s • 1080p' },
+  { id: 'veo3.1-pro', name: 'Veo 3.1 Pro', cost: 5000, description: 'Evolink • 8s • 1080p' },
+];
 
 type GenerationMode = 'prompt_only' | 'with_frames';
 
@@ -50,6 +63,33 @@ const GerarVideoTool = () => {
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
   const { isPlanos2User, hasVideoGeneration } = useAuth();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
+
+  // Check if user is unlimited with trial
+  const [isUnlimited, setIsUnlimited] = useState(false);
+  const [isVeo3Trial, setIsVeo3Trial] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const checkUnlimited = async () => {
+      try {
+        const { data: unlimitedData } = await supabase.rpc('is_unlimited_subscriber', { _user_id: user.id });
+        setIsUnlimited(!!unlimitedData);
+        if (unlimitedData) {
+        const { data: trialData } = await supabase.rpc('check_veo3_unlimited_trial', { _user_id: user.id });
+          const trialResult = trialData as any;
+          setIsVeo3Trial(!!trialResult?.in_trial);
+        }
+      } catch (e) {
+        console.error('[GerarVideo] Error checking unlimited status:', e);
+      }
+    };
+    checkUnlimited();
+  }, [user?.id]);
+
+  // Filter models based on trial status
+  const availableModels: ModelOption[] = isUnlimited && isVeo3Trial
+    ? ALL_MODELS.filter(m => m.id === 'wan2.2' || m.id === 'veo3.1-fast')
+    : ALL_MODELS;
 
   // Watchdog: detect stuck pending jobs (5 min timeout)
   const handleWatchdogFailed = useCallback((msg: string) => {
@@ -81,8 +121,19 @@ const GerarVideoTool = () => {
   const endFrameRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const currentModel = MODELS.find(m => m.id === selectedModel) || MODELS[0];
-  const creditCost = currentModel.cost;
+  // Evolink polling ref
+  const evolinkPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const currentModel = availableModels.find(m => m.id === selectedModel) || availableModels[0];
+  
+  // For trial users on veo3.1-fast, cost is 0
+  const creditCost = (isUnlimited && isVeo3Trial && selectedModel === 'veo3.1-fast') 
+    ? 0 
+    : (isUnlimited && selectedModel === 'wan2.2') 
+      ? 0 
+      : currentModel.cost;
+
+  const isVeoModel = selectedModel === 'veo3.1-fast' || selectedModel === 'veo3.1-pro';
 
   // 5 min watchdog for stuck pending jobs
   useJobPendingWatchdog({
@@ -128,9 +179,7 @@ const GerarVideoTool = () => {
     e.target.value = '';
 
     try {
-      // Compress to ≤1536px JPEG before converting to base64
       const { file: optimizedFile } = await optimizeForAI(file);
-
       const reader = new FileReader();
       reader.onload = () => {
         const dataUrl = reader.result as string;
@@ -162,6 +211,63 @@ const GerarVideoTool = () => {
     }
   }, [generationMode]);
 
+  // Cleanup evolink polling on unmount
+  useEffect(() => {
+    return () => {
+      if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+    };
+  }, []);
+
+  // Evolink polling logic
+  const startEvolinkPolling = useCallback((jId: string) => {
+    if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+
+    const poll = async () => {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData?.session?.access_token;
+        if (!token) return;
+
+        const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video/poll-evolink`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ job_id: jId }),
+        });
+
+        const data = await res.json();
+        console.log(`[GerarVideo] Evolink poll result:`, data.status, data.progress);
+
+        if (data.status === 'completed') {
+          if (data.output_url) setResultUrl(data.output_url);
+          setIsGenerating(false);
+          setIsQueued(false);
+          refetchCredits();
+          toast.success('Vídeo gerado com sucesso!');
+          if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+        } else if (data.status === 'failed') {
+          const errInfo = getAIErrorMessage(data.error || 'Erro na geração');
+          setErrorMessage(errInfo.message);
+          setIsGenerating(false);
+          setIsQueued(false);
+          refetchCredits();
+          toast.error(`${errInfo.message}. ${errInfo.solution}`);
+          if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+        }
+      } catch (e) {
+        console.error('[GerarVideo] Evolink poll error:', e);
+      }
+    };
+
+    // Poll every 10 seconds
+    evolinkPollRef.current = setInterval(poll, 10000);
+    // First poll after 5s
+    setTimeout(poll, 5000);
+  }, [refetchCredits]);
+
   // Realtime subscription for job status
   useEffect(() => {
     if (!jobId) return;
@@ -192,6 +298,7 @@ const GerarVideoTool = () => {
             setIsQueued(false);
             refetchCredits();
             toast.success('Vídeo gerado com sucesso!');
+            if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
           } else if (job.status === 'failed' || job.status === 'cancelled') {
             const errInfo = getAIErrorMessage(job.error_message || 'Erro na geração');
             setErrorMessage(errInfo.message);
@@ -199,6 +306,7 @@ const GerarVideoTool = () => {
             setIsQueued(false);
             refetchCredits();
             if (job.error_message) toast.error(`${errInfo.message}. ${errInfo.solution}`);
+            if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
           }
         }
       )
@@ -253,26 +361,30 @@ const GerarVideoTool = () => {
         return;
       }
 
-      const freshCredits = await checkBalance();
-      if (freshCredits < creditCost) {
-        setNoCreditsReason('insufficient');
-        setShowNoCreditsModal(true);
-        setIsGenerating(false);
-        endSubmit();
-        return;
+      if (creditCost > 0) {
+        const freshCredits = await checkBalance();
+        if (freshCredits < creditCost) {
+          setNoCreditsReason('insufficient');
+          setShowNoCreditsModal(true);
+          setIsGenerating(false);
+          endSubmit();
+          return;
+        }
       }
 
       const bodyData: any = {
         prompt: prompt.trim(),
-        aspect_ratio: selectedModel === 'veo3.1' ? aspectRatio : undefined,
-        duration_seconds: MODEL_DURATIONS[selectedModel] || 8,
+        aspect_ratio: isVeoModel ? aspectRatio : undefined,
         model: selectedModel,
       };
 
       if (generationMode === 'with_frames' && startFrame) {
         bodyData.start_frame = { base64: startFrame.base64, mimeType: startFrame.mimeType };
-        // Wan 2.2 requires both frames; Veo 3.1 uses only start_frame
         if (selectedModel === 'wan2.2' && endFrame) {
+          bodyData.end_frame = { base64: endFrame.base64, mimeType: endFrame.mimeType };
+        }
+        // For Veo models with 2 frames (start+end)
+        if (isVeoModel && endFrame) {
           bodyData.end_frame = { base64: endFrame.base64, mimeType: endFrame.mimeType };
         }
       }
@@ -306,7 +418,11 @@ const GerarVideoTool = () => {
 
       setJobId(data.job_id);
 
-      if (data.queued) {
+      if (data.engine === 'evolink') {
+        // Start Evolink polling
+        startEvolinkPolling(data.job_id);
+        toast.success('Geração de vídeo iniciada via Evolink! Aguarde...');
+      } else if (data.queued) {
         setIsQueued(true);
         setQueuePosition(data.position || 1);
         toast.info(`Você está na fila (posição ${data.position || 1}). Aguarde...`);
@@ -318,7 +434,6 @@ const GerarVideoTool = () => {
       const errMsg = err?.message || 'Erro ao gerar vídeo';
       toast.error(errMsg);
       setIsGenerating(false);
-      // Fire-and-forget: mark job as failed in DB if we have a jobId
       if (jobId) {
         markJobAsFailedInDb(jobId, 'video_generator', errMsg);
       }
@@ -343,11 +458,11 @@ const GerarVideoTool = () => {
     setErrorMessage(null);
     setIsQueued(false);
     setQueuePosition(0);
+    if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
   };
 
   const hasFrames = !!startFrame || !!endFrame;
-  const isVeo = selectedModel === 'veo3.1';
-  const framesReady = isVeo ? !!startFrame : (!!startFrame && !!endFrame);
+  const framesReady = selectedModel === 'wan2.2' ? (!!startFrame && !!endFrame) : !!startFrame;
 
   // Block access for planos2 users without video generation permission
   if (isPlanos2User && !hasVideoGeneration) {
@@ -403,6 +518,16 @@ const GerarVideoTool = () => {
             <span>Ferramenta em fase de teste — podem ocorrer erros ou resultados inesperados.</span>
           </div>
         </div>
+
+        {/* Trial badge */}
+        {isUnlimited && isVeo3Trial && (
+          <div className="mx-4 mt-2 mb-0 max-w-4xl self-center w-full">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/30 text-green-300 text-xs">
+              <span className="text-green-400 text-sm">🎁</span>
+              <span>Período de teste ativo — Veo 3.1 Fast <strong>grátis e sem áudio</strong> por 7 dias!</span>
+            </div>
+          </div>
+        )}
 
         {/* Main content area */}
         <div className="flex-1 flex items-center justify-center p-4">
@@ -491,11 +616,11 @@ const GerarVideoTool = () => {
                     {/* Start Frame / Reference Image Upload */}
                     <div className="flex-1">
                       <p className="text-[10px] text-purple-400 mb-1 font-medium">
-                        {isVeo ? 'Imagem de Referência' : '1º Frame (início)'}
+                        {isVeoModel ? 'Imagem de Referência' : '1º Frame (início)'}
                       </p>
                       {startFrame ? (
                         <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
-                          <img src={startFrame.preview} alt={isVeo ? 'Imagem de referência' : 'Primeiro frame'} className="w-full h-full object-cover" />
+                          <img src={startFrame.preview} alt={isVeoModel ? 'Imagem de referência' : 'Primeiro frame'} className="w-full h-full object-cover" />
                           <button 
                             onClick={() => setStartFrame(null)} 
                             className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
@@ -515,8 +640,8 @@ const GerarVideoTool = () => {
                       )}
                     </div>
 
-                    {/* Arrow indicator + End Frame - only for Wan 2.2 */}
-                    {!isVeo && (
+                    {/* Arrow indicator + End Frame - for Wan 2.2 and Veo FIRST&LAST */}
+                    {(selectedModel === 'wan2.2' || isVeoModel) && (
                       <>
                         <div className="flex flex-col items-center gap-0.5 pt-4 flex-shrink-0">
                           <span className="text-purple-400 text-lg">→</span>
@@ -524,7 +649,9 @@ const GerarVideoTool = () => {
                         </div>
 
                         <div className="flex-1">
-                          <p className="text-[10px] text-purple-400 mb-1 font-medium">Último Frame (fim)</p>
+                          <p className="text-[10px] text-purple-400 mb-1 font-medium">
+                            {isVeoModel ? 'Último Frame (opcional)' : 'Último Frame (fim)'}
+                          </p>
                           {endFrame ? (
                             <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
                               <img src={endFrame.preview} alt="Último frame" className="w-full h-full object-cover" />
@@ -628,7 +755,7 @@ const GerarVideoTool = () => {
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="bg-[#1a1525] border-purple-500/30">
-                      {MODELS.map(model => (
+                      {availableModels.map(model => (
                         <DropdownMenuItem
                           key={model.id}
                           onClick={() => setSelectedModel(model.id)}
@@ -636,18 +763,24 @@ const GerarVideoTool = () => {
                         >
                           <div className="flex flex-col">
                             <span className="font-medium">{model.name}</span>
-                            <span className="text-[10px] text-purple-400">{model.description} • {model.cost} créditos</span>
+                            <span className="text-[10px] text-purple-400">
+                              {model.description} • {
+                                (isUnlimited && (model.id === 'wan2.2' || (isVeo3Trial && model.id === 'veo3.1-fast')))
+                                  ? '∞ Grátis'
+                                  : `${model.cost} créditos`
+                              }
+                            </span>
                           </div>
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  {selectedModel === 'veo3.1' && (
+                  {isVeoModel && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-900/40 border border-purple-500/25 text-[10px] text-purple-200 hover:bg-purple-800/50 transition-colors">
-                          <span className="font-medium">{aspectRatio}</span>
+                          <span className="font-medium">{ASPECT_RATIO_LABELS[aspectRatio] || aspectRatio}</span>
                           <ChevronDown className="h-3 w-3 text-purple-400" />
                         </button>
                       </DropdownMenuTrigger>
@@ -658,7 +791,7 @@ const GerarVideoTool = () => {
                             onClick={() => setAspectRatio(ratio)}
                             className={`text-xs ${aspectRatio === ratio ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-purple-200'}`}
                           >
-                            {ratio}
+                            {ASPECT_RATIO_LABELS[ratio]} ({ratio})
                           </DropdownMenuItem>
                         ))}
                       </DropdownMenuContent>
@@ -668,7 +801,10 @@ const GerarVideoTool = () => {
                   <span className="text-[10px] text-purple-400 ml-auto flex items-center gap-1.5">
                     <span>⏱ {MODEL_DURATIONS[selectedModel] || 8}s</span>
                     <span>•</span>
-                    <span className="flex items-center gap-0.5"><Coins className="h-3 w-3" />{creditCost}</span>
+                    <span className="flex items-center gap-0.5">
+                      <Coins className="h-3 w-3" />
+                      {creditCost === 0 ? '∞ Grátis' : creditCost}
+                    </span>
                   </span>
                 </div>
               </>
