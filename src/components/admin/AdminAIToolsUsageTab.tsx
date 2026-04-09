@@ -84,7 +84,6 @@ const RECEITA_POR_CREDITO = 0.0093; // R$ per credit
 const API_COST_MAP: Record<string, number> = {
   "Arcano Cloner": 0.18,
   "Gerador Avatar": 0.18,
-  "Gerar Imagem - Flux 2": 0.18,
   "Gerar Imagem - Nano Banana": 0.18,
 };
 
