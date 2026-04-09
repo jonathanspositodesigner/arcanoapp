@@ -163,7 +163,8 @@ const AdminAIToolsUsageTab = () => {
       case "Gerador Avatar": return "front_image_url";
       case "Flyer Maker": return "reference_image_url";
       case "Remover Fundo": return "input_url";
-      case "Gerar Imagem": return null;
+      case "Gerar Imagem - Flux 2": return null;
+      case "Gerar Imagem - Nano Banana": return null;
       case "Gerar Vídeo": return null;
       default: return null;
     }
@@ -177,7 +178,8 @@ const AdminAIToolsUsageTab = () => {
       case "Video Upscaler": return "video_upscaler_jobs";
       case "Arcano Cloner": return "arcano_cloner_jobs";
       case "Gerador Avatar": return "character_generator_jobs";
-      case "Gerar Imagem": return "image_generator_jobs";
+      case "Gerar Imagem - Flux 2": return "image_generator_jobs";
+      case "Gerar Imagem - Nano Banana": return "image_generator_jobs";
       case "Gerar Vídeo": return "video_generator_jobs";
       case "Flyer Maker": return "flyer_maker_jobs";
       case "Remover Fundo": return "bg_remover_jobs";
