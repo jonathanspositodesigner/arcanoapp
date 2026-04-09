@@ -162,8 +162,65 @@ const MovieLedMakerTool = () => {
     }
   }, [jobId, registerJob]);
 
+  // Cleanup evolink polling on unmount
+  useEffect(() => {
+    return () => {
+      if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+    };
+  }, []);
 
-  // Get effective image URL for processing
+  // Evolink polling logic for Veo 3.1
+  const startEvolinkPolling = useCallback((jId: string) => {
+    if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+
+    const poll = async () => {
+      try {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData?.session?.access_token;
+        if (!token) return;
+
+        const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-movieled-maker/poll-evolink`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ job_id: jId }),
+        });
+
+        const data = await res.json();
+        console.log(`[MovieLed] Evolink poll result:`, data.status, data.progress);
+
+        if (data.status === 'completed') {
+          if (data.output_url) setResultUrl(data.output_url);
+          setStatus('completed');
+          setIsQueued(false);
+          refetchCredits();
+          toast.success('Movie para telão gerado com sucesso!');
+          if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+          endSubmit();
+        } else if (data.status === 'failed') {
+          const errInfo = getAIErrorMessage(data.error || 'Erro na geração');
+          setErrorMessage(errInfo.message);
+          setStatus('error');
+          setIsQueued(false);
+          refetchCredits();
+          toast.error(`${errInfo.message}. ${errInfo.solution}`);
+          if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+          endSubmit();
+        }
+      } catch (e) {
+        console.error('[MovieLed] Evolink poll error:', e);
+      }
+    };
+
+    // Poll every 10 seconds, first poll after 5s
+    evolinkPollRef.current = setInterval(poll, 10000);
+    setTimeout(poll, 5000);
+  }, [refetchCredits, endSubmit]);
+
+
   const getEffectiveImageUrl = (): string | null => {
     if (selectedLibraryItem) {
       return selectedLibraryItem.reference_images?.[0] || null;
