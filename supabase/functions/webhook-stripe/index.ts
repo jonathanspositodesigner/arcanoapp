@@ -516,7 +516,76 @@ serve(async (req) => {
               console.log(`   ├─ ✅ Permanent premium activated: ${product.plan_slug}`)
             } else {
               console.log(`   ├─ ℹ️ Higher plan already active (${existingSub?.plan_slug}), keeping`)
+        }
+
+        // === SUBSCRIPTION PLAN ACTIVATION ===
+        if (product.type === 'subscription' && product.plan_slug) {
+          const billingPeriod = product.billing_period || (productSlug.includes('anual') ? 'anual' : 'mensal')
+          console.log(`   ├─ 📋 Activating subscription: ${product.plan_slug} (${billingPeriod})`)
+
+          const PLAN_CONFIG: Record<string, {
+            credits_per_month: number;
+            daily_prompt_limit: number | null;
+            has_image_generation: boolean;
+            has_video_generation: boolean;
+            cost_multiplier: number;
+          }> = {
+            'starter': { credits_per_month: 1500, daily_prompt_limit: null, has_image_generation: false, has_video_generation: false, cost_multiplier: 1.0 },
+            'pro': { credits_per_month: 5000, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
+            'ultimate': { credits_per_month: 14000, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
+            'unlimited': { credits_per_month: 14000, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
+          }
+
+          const config = PLAN_CONFIG[product.plan_slug]
+          if (config) {
+            const periodDays = billingPeriod === 'anual' ? 365 : 30
+            const expiresAt = new Date(Date.now() + periodDays * 24 * 60 * 60 * 1000).toISOString()
+
+            // Get Stripe subscription ID from session
+            const stripeSubscriptionId = session.subscription as string || null
+
+            // Check existing subscription to preserve landing_bundle benefits
+            const { data: existingSubForPlan } = await supabase
+              .from('planos2_subscriptions')
+              .select('has_image_generation, has_video_generation')
+              .eq('user_id', userId)
+              .maybeSingle()
+
+            const preserveImageGen = config.has_image_generation || (existingSubForPlan?.has_image_generation === true)
+            const preserveVideoGen = config.has_video_generation || (existingSubForPlan?.has_video_generation === true)
+
+            const upsertData: Record<string, any> = {
+              user_id: userId,
+              plan_slug: product.plan_slug,
+              is_active: true,
+              credits_per_month: config.credits_per_month,
+              daily_prompt_limit: config.daily_prompt_limit,
+              has_image_generation: preserveImageGen,
+              has_video_generation: preserveVideoGen,
+              cost_multiplier: config.cost_multiplier,
+              expires_at: expiresAt,
+              stripe_subscription_id: stripeSubscriptionId,
+              last_credit_reset_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
             }
+
+            await supabase.from('planos2_subscriptions').upsert(upsertData, { onConflict: 'user_id' })
+
+            // Reset monthly credits to the plan amount
+            const { error: resetError } = await supabase.rpc('reset_upscaler_credits', {
+              _user_id: userId,
+              _amount: config.credits_per_month,
+              _description: `Ativação plano ${product.plan_slug} (${billingPeriod}) via Stripe`
+            })
+            if (resetError) {
+              console.error(`   ├─ ❌ Credits reset error:`, resetError)
+            }
+
+            console.log(`   ├─ ✅ Plan ${product.plan_slug} activated (${config.credits_per_month} credits, expires: ${expiresAt}, stripe_sub: ${stripeSubscriptionId})`)
+          } else {
+            console.error(`   ├─ ❌ Config not found for plan_slug: ${product.plan_slug}`)
+          }
+        }
           }
         }
 
