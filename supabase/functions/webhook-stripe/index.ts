@@ -1108,26 +1108,46 @@ serve(async (req) => {
 
       console.log(`   ├─ 🔄 Subscription updated: ${stripeSubId}, status: ${status}`)
 
-      // If subscription becomes active again (e.g. after payment retry success)
+      // If subscription becomes active again (e.g. after payment retry success or renewal)
       if (status === 'active') {
         const { data: subData } = await supabase
           .from('planos2_subscriptions')
-          .select('user_id, plan_slug')
+          .select('user_id, plan_slug, credits_per_month, last_credit_reset_at')
           .eq('stripe_subscription_id', stripeSubId)
           .maybeSingle()
 
         if (subData?.user_id) {
-          // Extend expiration
           const currentPeriodEnd = subscription.current_period_end
           const newExpiresAt = new Date(currentPeriodEnd * 1000).toISOString()
           
+          // Check if this is a renewal (period changed) by comparing with last reset
+          const lastReset = subData.last_credit_reset_at ? new Date(subData.last_credit_reset_at).getTime() : 0
+          const currentPeriodStart = subscription.current_period_start
+          const periodStartMs = currentPeriodStart * 1000
+          const isRenewal = periodStartMs > lastReset + 86400000 // >1 day after last reset
+
           await supabase.from('planos2_subscriptions').update({
             expires_at: newExpiresAt,
             is_active: true,
+            last_credit_reset_at: isRenewal ? new Date().toISOString() : subData.last_credit_reset_at,
             updated_at: new Date().toISOString(),
           }).eq('user_id', subData.user_id)
 
-          console.log(`   ├─ ✅ Subscription renewed, new expiry: ${newExpiresAt}`)
+          // Reset monthly credits on renewal
+          if (isRenewal && subData.credits_per_month > 0) {
+            const { error: resetError } = await supabase.rpc('reset_upscaler_credits', {
+              _user_id: subData.user_id,
+              _amount: subData.credits_per_month,
+              _description: `Renovação mensal Stripe: plano ${subData.plan_slug}`
+            })
+            if (resetError) {
+              console.error(`   ├─ ❌ Credits renewal reset error:`, resetError)
+            } else {
+              console.log(`   ├─ ✅ Monthly credits renewed: +${subData.credits_per_month}`)
+            }
+          }
+
+          console.log(`   ├─ ✅ Subscription renewed, new expiry: ${newExpiresAt}, isRenewal: ${isRenewal}`)
         }
       }
 
@@ -1148,6 +1168,93 @@ serve(async (req) => {
       })
 
       console.log(`\n✅ [${requestId}] Stripe subscription.updated processed`)
+      return new Response('OK', { status: 200, headers: corsHeaders })
+    }
+
+    // =============================================
+    // CHARGE DISPUTE (chargeback)
+    // =============================================
+    if (event.type === 'charge.dispute.created') {
+      const dispute = event.data.object as Stripe.Dispute
+      const paymentIntentId = dispute.payment_intent as string
+      console.log(`   ├─ ⚠️ Dispute created for pi: ${paymentIntentId}, reason: ${dispute.reason}`)
+
+      const { data: stripeOrders } = await supabase
+        .from('stripe_orders')
+        .select('*, mp_products(*)')
+        .eq('stripe_payment_intent_id', paymentIntentId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      const stripeOrder = stripeOrders?.[0]
+
+      if (stripeOrder?.user_id) {
+        const product = stripeOrder.mp_products
+
+        // Revoke pack access
+        if (product?.type === 'pack' && product?.pack_slug) {
+          await supabase.from('user_pack_purchases')
+            .update({ is_active: false })
+            .eq('user_id', stripeOrder.user_id)
+            .eq('pack_slug', product.pack_slug)
+            .eq('platform', 'stripe')
+          console.log(`   ├─ ✅ Pack revoked (dispute): ${product.pack_slug}`)
+        }
+
+        // Revoke credits
+        if ((product?.type === 'credits' || product?.type === 'landing_bundle') && product?.credits_amount > 0) {
+          await supabase.rpc('revoke_lifetime_credits_on_refund', {
+            _user_id: stripeOrder.user_id,
+            _amount: product.credits_amount,
+            _description: `Dispute Stripe: ${product.title}`
+          })
+          console.log(`   ├─ ✅ Credits revoked (dispute): ${product.credits_amount}`)
+        }
+
+        // Revoke subscription/landing_bundle plan
+        if (product?.type === 'subscription' || product?.type === 'landing_bundle') {
+          await supabase.from('planos2_subscriptions').upsert({
+            user_id: stripeOrder.user_id,
+            plan_slug: 'free',
+            is_active: true,
+            credits_per_month: 100,
+            daily_prompt_limit: 5,
+            has_image_generation: false,
+            has_video_generation: false,
+            cost_multiplier: 1.0,
+            expires_at: null,
+            stripe_subscription_id: null,
+            pagarme_subscription_id: null,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' })
+
+          await supabase.rpc('reset_upscaler_credits', {
+            _user_id: stripeOrder.user_id,
+            _amount: 0,
+            _description: `Dispute Stripe: plan revoked → free`
+          })
+          console.log(`   ├─ ✅ Plan revoked (dispute) → free`)
+        }
+
+        // Update order status
+        await supabase.from('stripe_orders').update({
+          status: 'disputed',
+          updated_at: new Date().toISOString()
+        }).eq('id', stripeOrder.id)
+      }
+
+      await supabase.from('webhook_logs').insert({
+        platform: 'stripe',
+        event_type: event.type,
+        transaction_id: dispute.id,
+        status: 'disputed',
+        email: stripeOrder?.user_email || null,
+        product_name: stripeOrder?.product_slug || null,
+        amount: (dispute.amount || 0) / 100,
+        payload: JSON.parse(rawBody),
+      })
+
+      console.log(`\n✅ [${requestId}] Stripe dispute processed`)
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
 
