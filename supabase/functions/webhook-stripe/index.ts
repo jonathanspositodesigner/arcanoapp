@@ -1,8 +1,13 @@
 /**
  * Edge Function: webhook-stripe
- * Receives Stripe webhook events (checkout.session.completed, charge.refunded).
+ * Receives Stripe webhook events:
+ *   - checkout.session.completed (purchase provisioning)
+ *   - charge.refunded (refund revocation)
+ *   - customer.subscription.deleted (cancellation)
+ *   - customer.subscription.updated (upgrade/downgrade)
+ *   - invoice.payment_failed (renewal failure)
  * Validates signature via STRIPE_WEBHOOK_SECRET.
- * Provisions access (credits/packs) and records in stripe_orders.
+ * Provisions access (credits/packs/subscriptions) and records in stripe_orders.
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import Stripe from "https://esm.sh/stripe@18.5.0"
@@ -515,6 +520,75 @@ serve(async (req) => {
           }
         }
 
+        // === SUBSCRIPTION PLAN ACTIVATION ===
+        if (product.type === 'subscription' && product.plan_slug) {
+          const billingPeriod = product.billing_period || (productSlug.includes('anual') ? 'anual' : 'mensal')
+          console.log(`   ├─ 📋 Activating subscription: ${product.plan_slug} (${billingPeriod})`)
+
+          const PLAN_CONFIG: Record<string, {
+            credits_per_month: number;
+            daily_prompt_limit: number | null;
+            has_image_generation: boolean;
+            has_video_generation: boolean;
+            cost_multiplier: number;
+          }> = {
+            'starter': { credits_per_month: 1500, daily_prompt_limit: null, has_image_generation: false, has_video_generation: false, cost_multiplier: 1.0 },
+            'pro': { credits_per_month: 5000, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
+            'ultimate': { credits_per_month: 14000, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
+            'unlimited': { credits_per_month: 14000, daily_prompt_limit: null, has_image_generation: true, has_video_generation: true, cost_multiplier: 1.0 },
+          }
+
+          const config = PLAN_CONFIG[product.plan_slug]
+          if (config) {
+            const periodDays = billingPeriod === 'anual' ? 365 : 30
+            const expiresAt = new Date(Date.now() + periodDays * 24 * 60 * 60 * 1000).toISOString()
+
+            // Get Stripe subscription ID from session
+            const stripeSubscriptionId = session.subscription as string || null
+
+            // Check existing subscription to preserve landing_bundle benefits
+            const { data: existingSubForPlan } = await supabase
+              .from('planos2_subscriptions')
+              .select('has_image_generation, has_video_generation')
+              .eq('user_id', userId)
+              .maybeSingle()
+
+            const preserveImageGen = config.has_image_generation || (existingSubForPlan?.has_image_generation === true)
+            const preserveVideoGen = config.has_video_generation || (existingSubForPlan?.has_video_generation === true)
+
+            const upsertData: Record<string, any> = {
+              user_id: userId,
+              plan_slug: product.plan_slug,
+              is_active: true,
+              credits_per_month: config.credits_per_month,
+              daily_prompt_limit: config.daily_prompt_limit,
+              has_image_generation: preserveImageGen,
+              has_video_generation: preserveVideoGen,
+              cost_multiplier: config.cost_multiplier,
+              expires_at: expiresAt,
+              stripe_subscription_id: stripeSubscriptionId,
+              last_credit_reset_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }
+
+            await supabase.from('planos2_subscriptions').upsert(upsertData, { onConflict: 'user_id' })
+
+            // Reset monthly credits to the plan amount
+            const { error: resetError } = await supabase.rpc('reset_upscaler_credits', {
+              _user_id: userId,
+              _amount: config.credits_per_month,
+              _description: `Ativação plano ${product.plan_slug} (${billingPeriod}) via Stripe`
+            })
+            if (resetError) {
+              console.error(`   ├─ ❌ Credits reset error:`, resetError)
+            }
+
+            console.log(`   ├─ ✅ Plan ${product.plan_slug} activated (${config.credits_per_month} credits, expires: ${expiresAt}, stripe_sub: ${stripeSubscriptionId})`)
+          } else {
+            console.error(`   ├─ ❌ Config not found for plan_slug: ${product.plan_slug}`)
+          }
+        }
+
         // Send purchase email (ES locale)
         try {
           const ctaLink = 'https://arcanoapp.voxvisual.com.br/ferramentas-ia-es'
@@ -695,8 +769,65 @@ serve(async (req) => {
           }
         }
 
-        // Revoke credits/plan for landing_bundle
-        if (product?.type === 'landing_bundle' && product?.plan_slug) {
+        // Revoke credits on refund
+        if (product?.type === 'credits' && product?.credits_amount > 0) {
+          const { data: revokeData, error: revokeError } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
+            _user_id: stripeOrder.user_id,
+            _amount: product.credits_amount,
+            _description: `Refund Stripe: ${product.title}`
+          })
+          if (revokeError) {
+            console.error(`   ├─ ❌ Credits revoke transport error:`, revokeError)
+          } else {
+            const revokeResult = revokeData?.[0] || revokeData
+            if (!revokeResult?.success) {
+              console.error(`   ├─ ❌ Credits revoke FAILED:`, JSON.stringify(revokeResult))
+            } else {
+              console.log(`   ├─ ✅ Credits revoked: ${revokeResult.amount_revoked} (new balance: ${revokeResult.new_balance})`)
+            }
+          }
+        }
+
+        // Revoke landing_bundle
+        if (product?.type === 'landing_bundle') {
+          console.log(`   ├─ 📋 Revoking landing_bundle...`)
+
+          if (product.credits_amount > 0) {
+            const { data: revokeData, error: revokeError } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
+              _user_id: stripeOrder.user_id,
+              _amount: product.credits_amount,
+              _description: `Refund Stripe landing_bundle: ${product.title}`
+            })
+            if (revokeError) {
+              console.error(`   ├─ ❌ Landing bundle credits revoke error:`, revokeError)
+            } else {
+              const revokeResult = revokeData?.[0] || revokeData
+              if (revokeResult?.success) {
+                console.log(`   ├─ ✅ Credits revoked: ${revokeResult.amount_revoked}`)
+              }
+            }
+          }
+
+          await supabase.from('planos2_subscriptions').upsert({
+            user_id: stripeOrder.user_id,
+            plan_slug: 'free',
+            is_active: true,
+            credits_per_month: 100,
+            daily_prompt_limit: 5,
+            has_image_generation: false,
+            has_video_generation: false,
+            cost_multiplier: 1.0,
+            expires_at: null,
+            pagarme_subscription_id: null,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' })
+          console.log(`   ├─ ✅ Landing bundle revoked → free`)
+        }
+
+        // Revoke subscription plan
+        if (product?.type === 'subscription') {
+          console.log(`   ├─ 📋 Revoking subscription plan...`)
+
           await supabase.from('planos2_subscriptions').upsert({
             user_id: stripeOrder.user_id,
             plan_slug: 'free',
@@ -711,14 +842,15 @@ serve(async (req) => {
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' })
 
-          if (product.credits_amount > 0) {
-            await supabase.rpc('reset_upscaler_credits', {
-              _user_id: stripeOrder.user_id,
-              _amount: 0,
-              _description: `Refund Stripe: ${product.title}`
-            })
+          const { error: zeroError } = await supabase.rpc('reset_upscaler_credits', {
+            _user_id: stripeOrder.user_id,
+            _amount: 0,
+            _description: `Refund Stripe: subscription revoked → free`
+          })
+          if (zeroError) {
+            console.error(`   ├─ ❌ Credits zero error:`, zeroError)
           }
-          console.log(`   ├─ ✅ Plan revoked to free + credits reset`)
+          console.log(`   ├─ ✅ Subscription revoked → free + credits zeroed`)
         }
       }
 
@@ -735,6 +867,144 @@ serve(async (req) => {
       })
 
       console.log(`\n✅ [${requestId}] Stripe refund processed`)
+      return new Response('OK', { status: 200, headers: corsHeaders })
+    }
+
+    // =============================================
+    // SUBSCRIPTION CANCELED
+    // =============================================
+    if (event.type === 'customer.subscription.deleted') {
+      const subscription = event.data.object as Stripe.Subscription
+      const stripeSubId = subscription.id
+      console.log(`   ├─ 🔄 Subscription canceled: ${stripeSubId}`)
+
+      // Find user by stripe_subscription_id in planos2_subscriptions
+      const { data: subData } = await supabase
+        .from('planos2_subscriptions')
+        .select('user_id, plan_slug')
+        .eq('stripe_subscription_id', stripeSubId)
+        .maybeSingle()
+
+      if (subData?.user_id) {
+        console.log(`   ├─ 🔄 Revoking plan for user ${subData.user_id} (was: ${subData.plan_slug})`)
+        await supabase.from('planos2_subscriptions').upsert({
+          user_id: subData.user_id,
+          plan_slug: 'free',
+          is_active: true,
+          credits_per_month: 100,
+          daily_prompt_limit: 5,
+          has_image_generation: false,
+          has_video_generation: false,
+          cost_multiplier: 1.0,
+          expires_at: null,
+          stripe_subscription_id: null,
+          pagarme_subscription_id: null,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' })
+
+        await supabase.rpc('reset_upscaler_credits', {
+          _user_id: subData.user_id,
+          _amount: 0,
+          _description: `Stripe subscription canceled → free`
+        })
+
+        console.log(`   ├─ ✅ Plan revoked → free`)
+      } else {
+        console.log(`   ├─ ⚠️ No matching subscription found for stripe_sub: ${stripeSubId}`)
+      }
+
+      await supabase.from('webhook_logs').insert({
+        platform: 'stripe',
+        event_type: event.type,
+        transaction_id: stripeSubId,
+        status: 'canceled',
+        email: null,
+        product_name: null,
+        amount: 0,
+        payload: JSON.parse(rawBody),
+      })
+
+      console.log(`\n✅ [${requestId}] Stripe subscription.deleted processed`)
+      return new Response('OK', { status: 200, headers: corsHeaders })
+    }
+
+    // =============================================
+    // INVOICE PAYMENT FAILED (renewal failure)
+    // =============================================
+    if (event.type === 'invoice.payment_failed') {
+      const invoice = event.data.object as Stripe.Invoice
+      const stripeSubId = invoice.subscription as string || null
+      const customerEmail = invoice.customer_email || ''
+      const attemptCount = invoice.attempt_count || 0
+
+      console.log(`   ├─ ⚠️ Invoice payment failed for sub: ${stripeSubId}, attempt: ${attemptCount}, email: ${customerEmail}`)
+
+      // Log the failure
+      await supabase.from('webhook_logs').insert({
+        platform: 'stripe',
+        event_type: event.type,
+        transaction_id: invoice.id,
+        status: 'payment_failed',
+        email: customerEmail,
+        product_name: null,
+        amount: (invoice.amount_due || 0) / 100,
+        payload: JSON.parse(rawBody),
+      })
+
+      console.log(`\n✅ [${requestId}] Stripe invoice.payment_failed logged`)
+      return new Response('OK', { status: 200, headers: corsHeaders })
+    }
+
+    // =============================================
+    // SUBSCRIPTION UPDATED (upgrade/downgrade/renewal)
+    // =============================================
+    if (event.type === 'customer.subscription.updated') {
+      const subscription = event.data.object as Stripe.Subscription
+      const stripeSubId = subscription.id
+      const status = subscription.status
+
+      console.log(`   ├─ 🔄 Subscription updated: ${stripeSubId}, status: ${status}`)
+
+      // If subscription becomes active again (e.g. after payment retry success)
+      if (status === 'active') {
+        const { data: subData } = await supabase
+          .from('planos2_subscriptions')
+          .select('user_id, plan_slug')
+          .eq('stripe_subscription_id', stripeSubId)
+          .maybeSingle()
+
+        if (subData?.user_id) {
+          // Extend expiration
+          const currentPeriodEnd = subscription.current_period_end
+          const newExpiresAt = new Date(currentPeriodEnd * 1000).toISOString()
+          
+          await supabase.from('planos2_subscriptions').update({
+            expires_at: newExpiresAt,
+            is_active: true,
+            updated_at: new Date().toISOString(),
+          }).eq('user_id', subData.user_id)
+
+          console.log(`   ├─ ✅ Subscription renewed, new expiry: ${newExpiresAt}`)
+        }
+      }
+
+      // If subscription goes past_due or unpaid, log but don't revoke yet
+      if (status === 'past_due' || status === 'unpaid') {
+        console.log(`   ├─ ⚠️ Subscription ${status} — will wait for deletion or recovery`)
+      }
+
+      await supabase.from('webhook_logs').insert({
+        platform: 'stripe',
+        event_type: event.type,
+        transaction_id: stripeSubId,
+        status: status,
+        email: null,
+        product_name: null,
+        amount: 0,
+        payload: JSON.parse(rawBody),
+      })
+
+      console.log(`\n✅ [${requestId}] Stripe subscription.updated processed`)
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
 

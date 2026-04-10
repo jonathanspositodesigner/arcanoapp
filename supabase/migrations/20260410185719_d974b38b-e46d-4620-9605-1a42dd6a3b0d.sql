@@ -1,0 +1,1 @@
+ALTER TABLE public.planos2_subscriptions ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT DEFAULT NULL;

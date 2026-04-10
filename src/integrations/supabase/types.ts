@@ -3428,6 +3428,7 @@ export type Database = {
           nano_banana_usage_count: number
           pagarme_subscription_id: string | null
           plan_slug: string
+          stripe_subscription_id: string | null
           updated_at: string
           user_id: string
           veo3_trial_started_at: string | null
@@ -3449,6 +3450,7 @@ export type Database = {
           nano_banana_usage_count?: number
           pagarme_subscription_id?: string | null
           plan_slug?: string
+          stripe_subscription_id?: string | null
           updated_at?: string
           user_id: string
           veo3_trial_started_at?: string | null
@@ -3470,6 +3472,7 @@ export type Database = {
           nano_banana_usage_count?: number
           pagarme_subscription_id?: string | null
           plan_slug?: string
+          stripe_subscription_id?: string | null
           updated_at?: string
           user_id?: string
           veo3_trial_started_at?: string | null
