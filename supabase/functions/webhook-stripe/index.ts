@@ -769,8 +769,65 @@ serve(async (req) => {
           }
         }
 
-        // Revoke credits/plan for landing_bundle
-        if (product?.type === 'landing_bundle' && product?.plan_slug) {
+        // Revoke credits on refund
+        if (product?.type === 'credits' && product?.credits_amount > 0) {
+          const { data: revokeData, error: revokeError } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
+            _user_id: stripeOrder.user_id,
+            _amount: product.credits_amount,
+            _description: `Refund Stripe: ${product.title}`
+          })
+          if (revokeError) {
+            console.error(`   ├─ ❌ Credits revoke transport error:`, revokeError)
+          } else {
+            const revokeResult = revokeData?.[0] || revokeData
+            if (!revokeResult?.success) {
+              console.error(`   ├─ ❌ Credits revoke FAILED:`, JSON.stringify(revokeResult))
+            } else {
+              console.log(`   ├─ ✅ Credits revoked: ${revokeResult.amount_revoked} (new balance: ${revokeResult.new_balance})`)
+            }
+          }
+        }
+
+        // Revoke landing_bundle
+        if (product?.type === 'landing_bundle') {
+          console.log(`   ├─ 📋 Revoking landing_bundle...`)
+
+          if (product.credits_amount > 0) {
+            const { data: revokeData, error: revokeError } = await supabase.rpc('revoke_lifetime_credits_on_refund', {
+              _user_id: stripeOrder.user_id,
+              _amount: product.credits_amount,
+              _description: `Refund Stripe landing_bundle: ${product.title}`
+            })
+            if (revokeError) {
+              console.error(`   ├─ ❌ Landing bundle credits revoke error:`, revokeError)
+            } else {
+              const revokeResult = revokeData?.[0] || revokeData
+              if (revokeResult?.success) {
+                console.log(`   ├─ ✅ Credits revoked: ${revokeResult.amount_revoked}`)
+              }
+            }
+          }
+
+          await supabase.from('planos2_subscriptions').upsert({
+            user_id: stripeOrder.user_id,
+            plan_slug: 'free',
+            is_active: true,
+            credits_per_month: 100,
+            daily_prompt_limit: 5,
+            has_image_generation: false,
+            has_video_generation: false,
+            cost_multiplier: 1.0,
+            expires_at: null,
+            pagarme_subscription_id: null,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' })
+          console.log(`   ├─ ✅ Landing bundle revoked → free`)
+        }
+
+        // Revoke subscription plan
+        if (product?.type === 'subscription') {
+          console.log(`   ├─ 📋 Revoking subscription plan...`)
+
           await supabase.from('planos2_subscriptions').upsert({
             user_id: stripeOrder.user_id,
             plan_slug: 'free',
@@ -785,14 +842,15 @@ serve(async (req) => {
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' })
 
-          if (product.credits_amount > 0) {
-            await supabase.rpc('reset_upscaler_credits', {
-              _user_id: stripeOrder.user_id,
-              _amount: 0,
-              _description: `Refund Stripe: ${product.title}`
-            })
+          const { error: zeroError } = await supabase.rpc('reset_upscaler_credits', {
+            _user_id: stripeOrder.user_id,
+            _amount: 0,
+            _description: `Refund Stripe: subscription revoked → free`
+          })
+          if (zeroError) {
+            console.error(`   ├─ ❌ Credits zero error:`, zeroError)
           }
-          console.log(`   ├─ ✅ Plan revoked to free + credits reset`)
+          console.log(`   ├─ ✅ Subscription revoked → free + credits zeroed`)
         }
       }
 
