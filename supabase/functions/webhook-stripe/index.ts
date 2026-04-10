@@ -516,6 +516,8 @@ serve(async (req) => {
               console.log(`   ├─ ✅ Permanent premium activated: ${product.plan_slug}`)
             } else {
               console.log(`   ├─ ℹ️ Higher plan already active (${existingSub?.plan_slug}), keeping`)
+            }
+          }
         }
 
         // === SUBSCRIPTION PLAN ACTIVATION ===
