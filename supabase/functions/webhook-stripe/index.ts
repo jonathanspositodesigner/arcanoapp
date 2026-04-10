@@ -1,8 +1,13 @@
 /**
  * Edge Function: webhook-stripe
- * Receives Stripe webhook events (checkout.session.completed, charge.refunded).
+ * Receives Stripe webhook events:
+ *   - checkout.session.completed (purchase provisioning)
+ *   - charge.refunded (refund revocation)
+ *   - customer.subscription.deleted (cancellation)
+ *   - customer.subscription.updated (upgrade/downgrade)
+ *   - invoice.payment_failed (renewal failure)
  * Validates signature via STRIPE_WEBHOOK_SECRET.
- * Provisions access (credits/packs) and records in stripe_orders.
+ * Provisions access (credits/packs/subscriptions) and records in stripe_orders.
  */
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import Stripe from "https://esm.sh/stripe@18.5.0"
