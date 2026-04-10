@@ -589,41 +589,24 @@ serve(async (req) => {
           }
         }
 
-        // Send purchase email (ES locale)
+        // Send purchase email (ES locale) with dedup + retry + blacklist
         try {
           const ctaLink = 'https://arcanoapp.voxvisual.com.br/ferramentas-ia-es'
-          const isUpscalerOrCredits = product.pack_slug === 'upscaller-arcano' || product.type === 'credits'
-          const isLandingBundle = product.type === 'landing_bundle'
-
-          const html = buildPurchaseEmailHtml(email, product.title, ctaLink, isUpscalerOrCredits, isLandingBundle)
-          const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
-          const token = await getSendPulseToken()
-
-          const emailRes = await fetch("https://api.sendpulse.com/smtp/emails", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-            body: JSON.stringify({
-              email: {
-                html: htmlBase64,
-                text: "",
-                subject: `✅ ¡Compra confirmada! - ${product.title}`,
-                from: { name: "Vox Visual", email: "contato@voxvisual.com.br" },
-                to: [{ name: email, email }]
-              }
-            })
-          })
-          console.log(`   ├─ 📧 Purchase email: ${emailRes.ok ? 'sent' : 'failed'}`)
-
-          await supabase.from('welcome_email_logs').insert({
+          const billingPeriod = product.billing_period || (productSlug.includes('anual') ? 'anual' : 'mensal')
+          const emailResult = await sendStripePurchaseEmail(supabase, {
+            sessionId: session.id,
             email,
-            template_used: `stripe_purchase_${product.title}`,
-            dedup_key: `stripe_session_${session.id}`,
-            tracking_id: crypto.randomUUID(),
-            status: emailRes.ok ? 'sent' : 'failed',
-            sent_at: new Date().toISOString(),
-            product_info: product.title,
-            platform: 'stripe',
+            productName: product.title,
+            ctaLink,
+            requestId,
+            options: {
+              packSlug: product.pack_slug,
+              productType: product.type,
+              accessType: product.access_type,
+              billingPeriod,
+            }
           })
+          console.log(`   ├─ 📧 Purchase email: ${emailResult.status} (attempts: ${emailResult.attempts})`)
         } catch (emailErr: any) {
           console.error(`   ├─ ⚠️ Email error (non-critical): ${emailErr.message}`)
         }
