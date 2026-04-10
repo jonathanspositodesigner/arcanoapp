@@ -296,8 +296,14 @@ const GerarImagemTool = () => {
         try {
           const { data: limitData } = await supabase.rpc('check_nano_banana_limit', { _user_id: user.id });
           if (limitData && typeof limitData === 'object' && (limitData as any).exceeded) {
-            console.log('[GerarImagem] Nano Banana limit exceeded, redirecting to Flux2 Klein');
-            effectiveEngine = 'flux2_klein';
+            // 80% chance redirect to Flux2 Klein, 20% chance stay on Nano Banana
+            const roll = Math.random();
+            if (roll < 0.8) {
+              console.log(`[GerarImagem] Nano Banana limit exceeded, random roll ${roll.toFixed(3)} < 0.8 → redirecting to Flux2 Klein`);
+              effectiveEngine = 'flux2_klein';
+            } else {
+              console.log(`[GerarImagem] Nano Banana limit exceeded, random roll ${roll.toFixed(3)} >= 0.8 → keeping Nano Banana`);
+            }
           }
           // Increment counter for all nano_banana generations (even redirected ones)
           void supabase.rpc('increment_nano_banana_usage', { _user_id: user.id }).then(() => {

@@ -136,8 +136,14 @@ serve(async (req) => {
       try {
         const { data: limitData } = await serviceClient.rpc('check_nano_banana_limit', { _user_id: userId });
         if (limitData && typeof limitData === 'object' && (limitData as any).exceeded) {
-          console.log(`[generate-image PROXY] Nano Banana limit exceeded for ${userId}, redirecting to Flux2 Klein`);
-          useFlux2KleinRedirect = true;
+          // 80% chance redirect to Flux2 Klein, 20% chance stay on Nano Banana
+          const roll = Math.random();
+          if (roll < 0.8) {
+            console.log(`[generate-image PROXY] Nano Banana limit exceeded for ${userId}, roll ${roll.toFixed(3)} < 0.8 → Flux2 Klein`);
+            useFlux2KleinRedirect = true;
+          } else {
+            console.log(`[generate-image PROXY] Nano Banana limit exceeded for ${userId}, roll ${roll.toFixed(3)} >= 0.8 → keeping Nano Banana`);
+          }
         }
         // Increment usage counter
         await serviceClient.rpc('increment_nano_banana_usage', { _user_id: userId });
