@@ -870,6 +870,144 @@ serve(async (req) => {
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
 
+    // =============================================
+    // SUBSCRIPTION CANCELED
+    // =============================================
+    if (event.type === 'customer.subscription.deleted') {
+      const subscription = event.data.object as Stripe.Subscription
+      const stripeSubId = subscription.id
+      console.log(`   ├─ 🔄 Subscription canceled: ${stripeSubId}`)
+
+      // Find user by stripe_subscription_id in planos2_subscriptions
+      const { data: subData } = await supabase
+        .from('planos2_subscriptions')
+        .select('user_id, plan_slug')
+        .eq('stripe_subscription_id', stripeSubId)
+        .maybeSingle()
+
+      if (subData?.user_id) {
+        console.log(`   ├─ 🔄 Revoking plan for user ${subData.user_id} (was: ${subData.plan_slug})`)
+        await supabase.from('planos2_subscriptions').upsert({
+          user_id: subData.user_id,
+          plan_slug: 'free',
+          is_active: true,
+          credits_per_month: 100,
+          daily_prompt_limit: 5,
+          has_image_generation: false,
+          has_video_generation: false,
+          cost_multiplier: 1.0,
+          expires_at: null,
+          stripe_subscription_id: null,
+          pagarme_subscription_id: null,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' })
+
+        await supabase.rpc('reset_upscaler_credits', {
+          _user_id: subData.user_id,
+          _amount: 0,
+          _description: `Stripe subscription canceled → free`
+        })
+
+        console.log(`   ├─ ✅ Plan revoked → free`)
+      } else {
+        console.log(`   ├─ ⚠️ No matching subscription found for stripe_sub: ${stripeSubId}`)
+      }
+
+      await supabase.from('webhook_logs').insert({
+        platform: 'stripe',
+        event_type: event.type,
+        transaction_id: stripeSubId,
+        status: 'canceled',
+        email: null,
+        product_name: null,
+        amount: 0,
+        payload: JSON.parse(rawBody),
+      })
+
+      console.log(`\n✅ [${requestId}] Stripe subscription.deleted processed`)
+      return new Response('OK', { status: 200, headers: corsHeaders })
+    }
+
+    // =============================================
+    // INVOICE PAYMENT FAILED (renewal failure)
+    // =============================================
+    if (event.type === 'invoice.payment_failed') {
+      const invoice = event.data.object as Stripe.Invoice
+      const stripeSubId = invoice.subscription as string || null
+      const customerEmail = invoice.customer_email || ''
+      const attemptCount = invoice.attempt_count || 0
+
+      console.log(`   ├─ ⚠️ Invoice payment failed for sub: ${stripeSubId}, attempt: ${attemptCount}, email: ${customerEmail}`)
+
+      // Log the failure
+      await supabase.from('webhook_logs').insert({
+        platform: 'stripe',
+        event_type: event.type,
+        transaction_id: invoice.id,
+        status: 'payment_failed',
+        email: customerEmail,
+        product_name: null,
+        amount: (invoice.amount_due || 0) / 100,
+        payload: JSON.parse(rawBody),
+      })
+
+      console.log(`\n✅ [${requestId}] Stripe invoice.payment_failed logged`)
+      return new Response('OK', { status: 200, headers: corsHeaders })
+    }
+
+    // =============================================
+    // SUBSCRIPTION UPDATED (upgrade/downgrade/renewal)
+    // =============================================
+    if (event.type === 'customer.subscription.updated') {
+      const subscription = event.data.object as Stripe.Subscription
+      const stripeSubId = subscription.id
+      const status = subscription.status
+
+      console.log(`   ├─ 🔄 Subscription updated: ${stripeSubId}, status: ${status}`)
+
+      // If subscription becomes active again (e.g. after payment retry success)
+      if (status === 'active') {
+        const { data: subData } = await supabase
+          .from('planos2_subscriptions')
+          .select('user_id, plan_slug')
+          .eq('stripe_subscription_id', stripeSubId)
+          .maybeSingle()
+
+        if (subData?.user_id) {
+          // Extend expiration
+          const currentPeriodEnd = subscription.current_period_end
+          const newExpiresAt = new Date(currentPeriodEnd * 1000).toISOString()
+          
+          await supabase.from('planos2_subscriptions').update({
+            expires_at: newExpiresAt,
+            is_active: true,
+            updated_at: new Date().toISOString(),
+          }).eq('user_id', subData.user_id)
+
+          console.log(`   ├─ ✅ Subscription renewed, new expiry: ${newExpiresAt}`)
+        }
+      }
+
+      // If subscription goes past_due or unpaid, log but don't revoke yet
+      if (status === 'past_due' || status === 'unpaid') {
+        console.log(`   ├─ ⚠️ Subscription ${status} — will wait for deletion or recovery`)
+      }
+
+      await supabase.from('webhook_logs').insert({
+        platform: 'stripe',
+        event_type: event.type,
+        transaction_id: stripeSubId,
+        status: status,
+        email: null,
+        product_name: null,
+        amount: 0,
+        payload: JSON.parse(rawBody),
+      })
+
+      console.log(`\n✅ [${requestId}] Stripe subscription.updated processed`)
+      return new Response('OK', { status: 200, headers: corsHeaders })
+    }
+
     // Unhandled event type
     console.log(`   ├─ ℹ️ Unhandled event type: ${event.type}`)
     return new Response('OK', { status: 200, headers: corsHeaders })
