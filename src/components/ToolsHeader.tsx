@@ -151,15 +151,10 @@ const ToolsHeader = ({
                   >
                     <InfinityIcon className="w-4 h-4 text-emerald-400" />
                     <span className="text-emerald-300/60 text-xs">|</span>
-                    <AnimatedCreditsDisplay 
-                      credits={credits} 
-                      isLoading={creditsLoading}
-                      size="sm"
-                      showCoin={true}
-                      variant="text"
-                      className="text-purple-200"
-                      isUnlimited={false}
-                    />
+                    <Coins className="w-3.5 h-3.5 text-yellow-400" />
+                    <span className="text-sm font-medium text-white">
+                      {creditsLoading ? '...' : credits.toLocaleString('pt-BR')}
+                    </span>
                   </div>
                 ) : (
                   <div
