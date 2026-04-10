@@ -107,8 +107,11 @@ function getUnsubscribeLink(email: string): string {
   return `${baseUrl}/functions/v1/email-unsubscribe?email=${encodeURIComponent(email)}`
 }
 
-function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: string, isUpscalerOrCredits: boolean, isLandingBundle: boolean): string {
+function buildStripePurchaseEmailHtml(email: string, productName: string, ctaLink: string, options?: { packSlug?: string; productType?: string; accessType?: string; billingPeriod?: string }): string {
   const unsubscribeLink = getUnsubscribeLink(email)
+  const isUpscalerOrCredits = options?.packSlug === 'upscaller-arcano' || options?.productType === 'credits'
+  const isLandingBundle = options?.productType === 'landing_bundle'
+  const isSubscription = options?.productType === 'subscription'
 
   let benefitBlock = ''
   if (isLandingBundle) {
@@ -120,6 +123,14 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
     benefitBlock = `<div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">
         <p style="color:#4ade80;font-size:15px;font-weight:700;margin:0 0 8px;">🎉 ¡Acceso Vitalicio Activado!</p>
         <p style="color:#bbf7d0;font-size:13px;margin:0;line-height:1.6;"><strong>NO necesitás comprar créditos</strong> para usar el Upscaler Arcano. Tu acceso vitalicio ya incluye uso ilimitado.</p>
+      </div>`
+  } else if (isSubscription) {
+    const renewalText = options?.billingPeriod === 'anual'
+      ? 'Tu suscripción se renovará automáticamente cada 12 meses.'
+      : 'Tu suscripción se renovará automáticamente cada mes.'
+    benefitBlock = `<div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">
+        <p style="color:#4ade80;font-size:15px;font-weight:700;margin:0 0 8px;">🎉 ¡${productName} Activado!</p>
+        <p style="color:#bbf7d0;font-size:13px;margin:0;line-height:1.6;">Tus créditos y herramientas de IA ya están disponibles. ${renewalText}</p>
       </div>`
   } else {
     benefitBlock = `<div style="background:linear-gradient(135deg,rgba(74,222,128,0.12) 0%,rgba(34,197,94,0.08) 100%);border-radius:12px;padding:20px 24px;margin-bottom:32px;border:1px solid rgba(74,222,128,0.3);text-align:center;">
@@ -172,6 +183,155 @@ function buildPurchaseEmailHtml(email: string, productName: string, ctaLink: str
   </div>
 </div>
 </body></html>`
+}
+
+// ===== Email Dedup + Retry + Blacklist (mirrors Pagar.me logic) =====
+type EmailDispatchResult = {
+  status: 'sent' | 'already_sent' | 'blacklisted' | 'failed'
+  attempts: number
+  error?: string
+}
+
+async function sendStripePurchaseEmailAttempt(
+  supabase: any,
+  params: {
+    sessionId: string
+    email: string
+    productName: string
+    ctaLink: string
+    requestId: string
+    options?: { packSlug?: string; productType?: string; accessType?: string; billingPeriod?: string }
+  }
+): Promise<EmailDispatchResult> {
+  const normalizedEmail = params.email.toLowerCase().trim()
+  const dedupKey = `stripe_session_${params.sessionId}`
+  const templateUsed = `stripe_purchase_${params.productName}`
+
+  // Dedup check 1: same session
+  const { data: existingBySession } = await supabase
+    .from('welcome_email_logs')
+    .select('id')
+    .eq('dedup_key', dedupKey)
+    .eq('status', 'sent')
+    .maybeSingle()
+
+  if (existingBySession) {
+    console.log(`   ├─ ℹ️ Email já enviado (dedup session): ${normalizedEmail}`)
+    return { status: 'already_sent', attempts: 0 }
+  }
+
+  // Blacklist check
+  const { data: blacklisted } = await supabase
+    .from('blacklisted_emails')
+    .select('id')
+    .eq('email', normalizedEmail)
+    .maybeSingle()
+
+  if (blacklisted) {
+    console.log(`   ├─ ⛔ Email blacklisted: ${normalizedEmail}`)
+    const trackingId = crypto.randomUUID()
+    await supabase.from('welcome_email_logs').insert({
+      email: normalizedEmail,
+      template_used: templateUsed,
+      dedup_key: dedupKey,
+      tracking_id: trackingId,
+      status: 'failed',
+      sent_at: new Date().toISOString(),
+      error_message: 'email_blacklisted',
+      product_info: params.productName,
+      platform: 'stripe',
+    })
+    return { status: 'blacklisted', attempts: 1, error: 'email_blacklisted' }
+  }
+
+  const trackingId = crypto.randomUUID()
+  const html = buildStripePurchaseEmailHtml(normalizedEmail, params.productName, params.ctaLink, params.options)
+  const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
+  const token = await getSendPulseToken()
+
+  const response = await fetch("https://api.sendpulse.com/smtp/emails", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+    body: JSON.stringify({
+      email: {
+        html: htmlBase64,
+        text: "",
+        subject: `✅ ¡Compra confirmada! - ${params.productName}`,
+        from: { name: "Vox Visual", email: "contato@voxvisual.com.br" },
+        to: [{ name: normalizedEmail, email: normalizedEmail }]
+      }
+    })
+  })
+
+  const responseText = await response.text()
+  console.log(`   ├─ 📧 SendPulse response: ${response.status}`)
+
+  await supabase.from('welcome_email_logs').insert({
+    email: normalizedEmail,
+    template_used: templateUsed,
+    dedup_key: dedupKey,
+    tracking_id: trackingId,
+    status: response.ok ? 'sent' : 'failed',
+    sent_at: new Date().toISOString(),
+    error_message: response.ok ? null : responseText,
+    product_info: params.productName,
+    platform: 'stripe',
+  })
+
+  if (response.ok) return { status: 'sent', attempts: 1 }
+  return { status: 'failed', attempts: 1, error: responseText || `http_${response.status}` }
+}
+
+async function sendStripePurchaseEmail(
+  supabase: any,
+  params: {
+    sessionId: string
+    email: string
+    productName: string
+    ctaLink: string
+    requestId: string
+    options?: { packSlug?: string; productType?: string; accessType?: string; billingPeriod?: string }
+  }
+): Promise<EmailDispatchResult> {
+  const maxAttempts = 3
+  const retryDelaysMs = [2000, 5000]
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const result = await sendStripePurchaseEmailAttempt(supabase, params)
+      if (result.status === 'sent' || result.status === 'already_sent' || result.status === 'blacklisted') {
+        return { ...result, attempts: attempt }
+      }
+      if (attempt < maxAttempts) {
+        const delayMs = retryDelaysMs[attempt - 1] ?? 8000
+        console.log(`   ├─ ⏳ Email attempt ${attempt}/${maxAttempts} failed. Retry in ${Math.round(delayMs / 1000)}s...`)
+        await new Promise(resolve => setTimeout(resolve, delayMs))
+      } else {
+        return { ...result, attempts: attempt }
+      }
+    } catch (err: any) {
+      console.error(`   ├─ ❌ Email attempt ${attempt}/${maxAttempts} error: ${err?.message || 'unknown'}`)
+      if (attempt >= maxAttempts) {
+        try {
+          await supabase.from('welcome_email_logs').insert({
+            email: params.email.toLowerCase().trim(),
+            template_used: `stripe_purchase_${params.productName}`,
+            dedup_key: `stripe_session_${params.sessionId}`,
+            tracking_id: crypto.randomUUID(),
+            status: 'failed',
+            sent_at: new Date().toISOString(),
+            error_message: err?.message || 'unknown_error',
+            product_info: params.productName,
+            platform: 'stripe',
+          })
+        } catch (_) {}
+        return { status: 'failed', attempts: attempt, error: err?.message }
+      }
+      const delayMs = retryDelaysMs[attempt - 1] ?? 8000
+      await new Promise(resolve => setTimeout(resolve, delayMs))
+    }
+  }
+  return { status: 'failed', attempts: maxAttempts, error: 'exhausted_retries' }
 }
 
 serve(async (req) => {
@@ -589,41 +749,24 @@ serve(async (req) => {
           }
         }
 
-        // Send purchase email (ES locale)
+        // Send purchase email (ES locale) with dedup + retry + blacklist
         try {
           const ctaLink = 'https://arcanoapp.voxvisual.com.br/ferramentas-ia-es'
-          const isUpscalerOrCredits = product.pack_slug === 'upscaller-arcano' || product.type === 'credits'
-          const isLandingBundle = product.type === 'landing_bundle'
-
-          const html = buildPurchaseEmailHtml(email, product.title, ctaLink, isUpscalerOrCredits, isLandingBundle)
-          const htmlBase64 = btoa(unescape(encodeURIComponent(html)))
-          const token = await getSendPulseToken()
-
-          const emailRes = await fetch("https://api.sendpulse.com/smtp/emails", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-            body: JSON.stringify({
-              email: {
-                html: htmlBase64,
-                text: "",
-                subject: `✅ ¡Compra confirmada! - ${product.title}`,
-                from: { name: "Vox Visual", email: "contato@voxvisual.com.br" },
-                to: [{ name: email, email }]
-              }
-            })
-          })
-          console.log(`   ├─ 📧 Purchase email: ${emailRes.ok ? 'sent' : 'failed'}`)
-
-          await supabase.from('welcome_email_logs').insert({
+          const billingPeriod = product.billing_period || (productSlug.includes('anual') ? 'anual' : 'mensal')
+          const emailResult = await sendStripePurchaseEmail(supabase, {
+            sessionId: session.id,
             email,
-            template_used: `stripe_purchase_${product.title}`,
-            dedup_key: `stripe_session_${session.id}`,
-            tracking_id: crypto.randomUUID(),
-            status: emailRes.ok ? 'sent' : 'failed',
-            sent_at: new Date().toISOString(),
-            product_info: product.title,
-            platform: 'stripe',
+            productName: product.title,
+            ctaLink,
+            requestId,
+            options: {
+              packSlug: product.pack_slug,
+              productType: product.type,
+              accessType: product.access_type,
+              billingPeriod,
+            }
           })
+          console.log(`   ├─ 📧 Purchase email: ${emailResult.status} (attempts: ${emailResult.attempts})`)
         } catch (emailErr: any) {
           console.error(`   ├─ ⚠️ Email error (non-critical): ${emailErr.message}`)
         }
@@ -965,26 +1108,46 @@ serve(async (req) => {
 
       console.log(`   ├─ 🔄 Subscription updated: ${stripeSubId}, status: ${status}`)
 
-      // If subscription becomes active again (e.g. after payment retry success)
+      // If subscription becomes active again (e.g. after payment retry success or renewal)
       if (status === 'active') {
         const { data: subData } = await supabase
           .from('planos2_subscriptions')
-          .select('user_id, plan_slug')
+          .select('user_id, plan_slug, credits_per_month, last_credit_reset_at')
           .eq('stripe_subscription_id', stripeSubId)
           .maybeSingle()
 
         if (subData?.user_id) {
-          // Extend expiration
           const currentPeriodEnd = subscription.current_period_end
           const newExpiresAt = new Date(currentPeriodEnd * 1000).toISOString()
           
+          // Check if this is a renewal (period changed) by comparing with last reset
+          const lastReset = subData.last_credit_reset_at ? new Date(subData.last_credit_reset_at).getTime() : 0
+          const currentPeriodStart = subscription.current_period_start
+          const periodStartMs = currentPeriodStart * 1000
+          const isRenewal = periodStartMs > lastReset + 86400000 // >1 day after last reset
+
           await supabase.from('planos2_subscriptions').update({
             expires_at: newExpiresAt,
             is_active: true,
+            last_credit_reset_at: isRenewal ? new Date().toISOString() : subData.last_credit_reset_at,
             updated_at: new Date().toISOString(),
           }).eq('user_id', subData.user_id)
 
-          console.log(`   ├─ ✅ Subscription renewed, new expiry: ${newExpiresAt}`)
+          // Reset monthly credits on renewal
+          if (isRenewal && subData.credits_per_month > 0) {
+            const { error: resetError } = await supabase.rpc('reset_upscaler_credits', {
+              _user_id: subData.user_id,
+              _amount: subData.credits_per_month,
+              _description: `Renovação mensal Stripe: plano ${subData.plan_slug}`
+            })
+            if (resetError) {
+              console.error(`   ├─ ❌ Credits renewal reset error:`, resetError)
+            } else {
+              console.log(`   ├─ ✅ Monthly credits renewed: +${subData.credits_per_month}`)
+            }
+          }
+
+          console.log(`   ├─ ✅ Subscription renewed, new expiry: ${newExpiresAt}, isRenewal: ${isRenewal}`)
         }
       }
 
@@ -1005,6 +1168,93 @@ serve(async (req) => {
       })
 
       console.log(`\n✅ [${requestId}] Stripe subscription.updated processed`)
+      return new Response('OK', { status: 200, headers: corsHeaders })
+    }
+
+    // =============================================
+    // CHARGE DISPUTE (chargeback)
+    // =============================================
+    if (event.type === 'charge.dispute.created') {
+      const dispute = event.data.object as Stripe.Dispute
+      const paymentIntentId = dispute.payment_intent as string
+      console.log(`   ├─ ⚠️ Dispute created for pi: ${paymentIntentId}, reason: ${dispute.reason}`)
+
+      const { data: stripeOrders } = await supabase
+        .from('stripe_orders')
+        .select('*, mp_products(*)')
+        .eq('stripe_payment_intent_id', paymentIntentId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      const stripeOrder = stripeOrders?.[0]
+
+      if (stripeOrder?.user_id) {
+        const product = stripeOrder.mp_products
+
+        // Revoke pack access
+        if (product?.type === 'pack' && product?.pack_slug) {
+          await supabase.from('user_pack_purchases')
+            .update({ is_active: false })
+            .eq('user_id', stripeOrder.user_id)
+            .eq('pack_slug', product.pack_slug)
+            .eq('platform', 'stripe')
+          console.log(`   ├─ ✅ Pack revoked (dispute): ${product.pack_slug}`)
+        }
+
+        // Revoke credits
+        if ((product?.type === 'credits' || product?.type === 'landing_bundle') && product?.credits_amount > 0) {
+          await supabase.rpc('revoke_lifetime_credits_on_refund', {
+            _user_id: stripeOrder.user_id,
+            _amount: product.credits_amount,
+            _description: `Dispute Stripe: ${product.title}`
+          })
+          console.log(`   ├─ ✅ Credits revoked (dispute): ${product.credits_amount}`)
+        }
+
+        // Revoke subscription/landing_bundle plan
+        if (product?.type === 'subscription' || product?.type === 'landing_bundle') {
+          await supabase.from('planos2_subscriptions').upsert({
+            user_id: stripeOrder.user_id,
+            plan_slug: 'free',
+            is_active: true,
+            credits_per_month: 100,
+            daily_prompt_limit: 5,
+            has_image_generation: false,
+            has_video_generation: false,
+            cost_multiplier: 1.0,
+            expires_at: null,
+            stripe_subscription_id: null,
+            pagarme_subscription_id: null,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'user_id' })
+
+          await supabase.rpc('reset_upscaler_credits', {
+            _user_id: stripeOrder.user_id,
+            _amount: 0,
+            _description: `Dispute Stripe: plan revoked → free`
+          })
+          console.log(`   ├─ ✅ Plan revoked (dispute) → free`)
+        }
+
+        // Update order status
+        await supabase.from('stripe_orders').update({
+          status: 'disputed',
+          updated_at: new Date().toISOString()
+        }).eq('id', stripeOrder.id)
+      }
+
+      await supabase.from('webhook_logs').insert({
+        platform: 'stripe',
+        event_type: event.type,
+        transaction_id: dispute.id,
+        status: 'disputed',
+        email: stripeOrder?.user_email || null,
+        product_name: stripeOrder?.product_slug || null,
+        amount: (dispute.amount || 0) / 100,
+        payload: JSON.parse(rawBody),
+      })
+
+      console.log(`\n✅ [${requestId}] Stripe dispute processed`)
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
 
