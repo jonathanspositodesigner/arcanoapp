@@ -588,7 +588,6 @@ serve(async (req) => {
             console.error(`   ├─ ❌ Config not found for plan_slug: ${product.plan_slug}`)
           }
         }
-      }
 
         // Send purchase email (ES locale)
         try {
