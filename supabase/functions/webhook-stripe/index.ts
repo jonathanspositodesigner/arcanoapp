@@ -847,6 +847,57 @@ serve(async (req) => {
         if (logErr) console.warn(`   ├─ ⚠️ webhook_logs insert error: ${logErr.message}`)
       })
 
+      // 6d. UTMify attribution
+      try {
+        const utmData = session.metadata || {}
+        const saleMetas: { meta_key: string; meta_value: string }[] = []
+        const utmKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid']
+        for (const key of utmKeys) {
+          if (utmData[key]) saleMetas.push({ meta_key: key, meta_value: String(utmData[key]) })
+        }
+
+        const hashCode = (s: string) => {
+          let h = 0
+          for (let i = 0; i < s.length; i++) {
+            h = ((h << 5) - h + s.charCodeAt(i)) | 0
+          }
+          return Math.abs(h)
+        }
+        const numericOrderId = hashCode(session.id)
+        const numericProductId = hashCode(product.id) + 900000
+
+        const utmifyPayload = {
+          event: 'sale_status_updated',
+          currentStatus: 'paid',
+          contract: { id: numericOrderId },
+          client: { name: customerName || '', email },
+          product: { name: product.title, id: numericProductId },
+          offer: { name: product.title, id: numericProductId },
+          sale: {
+            id: numericOrderId,
+            amount: Math.round(amountBrl * 100),
+            currency: 'BRL',
+            created_at: new Date().toISOString()
+          },
+          saleMetas
+        }
+
+        console.log(`   ├─ 📊 UTMify payload: sale.id=${numericOrderId}, product.id=${numericProductId}`)
+
+        const utmifyResponse = await fetch(
+          'https://api.utmify.com.br/webhooks/greenn?id=677eeb043df9ee8a68e6995b',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(utmifyPayload)
+          }
+        )
+        const utmifyBody = await utmifyResponse.text()
+        console.log(`   ├─ 📊 UTMify response: ${utmifyResponse.status} - ${utmifyBody}`)
+      } catch (utmErr: any) {
+        console.error(`   ├─ ⚠️ UTMify webhook falhou: ${utmErr.message}`)
+      }
+
       // 7. Admin notification
       await sendAdminNotification(product.title, amountUsd, currency, email, customerName)
 
