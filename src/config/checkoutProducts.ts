@@ -93,9 +93,9 @@ export const checkoutProducts: CheckoutProductConfig[] = [
   { slug: 'combo-vol1-1ano', title: 'Combo Pack Arcano Vol.1 - 1 Ano', priceInCents: 2790, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'combo-vol1-1ano', stripePriceId: '', stripeMode: 'payment', isActive: true, type: 'pack' },
 
   // ─── CRÉDITOS AVULSOS ───
-  { slug: 'creditos-14000', title: '14.000 Créditos Avulsos', priceInCents: 7990, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'creditos-14000', stripePriceId: '', stripeMode: 'payment', isActive: true, type: 'credits' },
-  { slug: 'creditos-1500', title: '1.500 Créditos Avulsos', priceInCents: 1990, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'creditos-1500', stripePriceId: '', stripeMode: 'payment', isActive: true, type: 'credits' },
-  { slug: 'creditos-4200', title: '4.200 Créditos Avulsos', priceInCents: 2990, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'creditos-4200', stripePriceId: '', stripeMode: 'payment', isActive: true, type: 'credits' },
+  { slug: 'creditos-14000', title: '14.000 Créditos Avulsos', priceInCents: 7990, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'creditos-14000', stripePriceId: 'price_1TKk6EL0tOYcQz0tVIk2Jllr', stripeMode: 'payment', isActive: true, type: 'credits' },
+  { slug: 'creditos-1500', title: '1.500 Créditos Avulsos', priceInCents: 1990, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'creditos-1500', stripePriceId: 'price_1TKk6BL0tOYcQz0tDdOGRrBo', stripeMode: 'payment', isActive: true, type: 'credits' },
+  { slug: 'creditos-4200', title: '4.200 Créditos Avulsos', priceInCents: 2990, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'creditos-4200', stripePriceId: 'price_1TKk6CL0tOYcQz0tqrfDh1kU', stripeMode: 'payment', isActive: true, type: 'credits' },
 
   // ─── PACK FIM DE ANO ───
   { slug: 'fimdeano-1ano', title: 'Pack Fim de Ano - 1 Ano', priceInCents: 3700, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'fimdeano-1ano', stripePriceId: '', stripeMode: 'payment', isActive: true, type: 'pack' },
@@ -137,14 +137,14 @@ export const checkoutProducts: CheckoutProductConfig[] = [
   { slug: 'pack4lancamento', title: 'Pack Arcano 4 - Acesso Vitalício', priceInCents: 3700, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'pack4lancamento', stripePriceId: '', stripeMode: 'payment', isActive: true, type: 'pack' },
 
   // ─── PLANOS (ASSINATURAS) ───
-  { slug: 'plano-pro-anual', title: 'Plano Pro Anual', priceInCents: 40680, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-pro-anual', stripePriceId: '', stripeMode: 'subscription', isActive: true, type: 'subscription' },
-  { slug: 'plano-pro-mensal', title: 'Plano Pro Mensal', priceInCents: 3990, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-pro-mensal', stripePriceId: '', stripeMode: 'subscription', isActive: true, type: 'subscription' },
-  { slug: 'plano-starter-anual', title: 'Plano Starter Anual', priceInCents: 29880, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-starter-anual', stripePriceId: '', stripeMode: 'subscription', isActive: true, type: 'subscription' },
-  { slug: 'plano-starter-mensal', title: 'Plano Starter Mensal', priceInCents: 2490, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-starter-mensal', stripePriceId: '', stripeMode: 'subscription', isActive: true, type: 'subscription' },
-  { slug: 'plano-ultimate-anual', title: 'Plano Ultimate Anual', priceInCents: 59880, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-ultimate-anual', stripePriceId: '', stripeMode: 'subscription', isActive: true, type: 'subscription' },
-  { slug: 'plano-ultimate-mensal', title: 'Plano Ultimate Mensal', priceInCents: 5990, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-ultimate-mensal', stripePriceId: '', stripeMode: 'subscription', isActive: true, type: 'subscription' },
-  { slug: 'plano-unlimited-anual', title: 'Plano IA Unlimited Anual', priceInCents: 143880, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-unlimited-anual', stripePriceId: '', stripeMode: 'subscription', isActive: true, type: 'subscription' },
-  { slug: 'plano-unlimited-mensal', title: 'Plano IA Unlimited Mensal', priceInCents: 14990, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-unlimited-mensal', stripePriceId: '', stripeMode: 'subscription', isActive: true, type: 'subscription' },
+  { slug: 'plano-pro-anual', title: 'Plano Pro Anual', priceInCents: 40680, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-pro-anual', stripePriceId: 'price_1TKk65L0tOYcQz0tVRX4nk6L', stripeMode: 'subscription', isActive: true, type: 'subscription' },
+  { slug: 'plano-pro-mensal', title: 'Plano Pro Mensal', priceInCents: 3990, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-pro-mensal', stripePriceId: 'price_1TKk63L0tOYcQz0tSaGRUDub', stripeMode: 'subscription', isActive: true, type: 'subscription' },
+  { slug: 'plano-starter-anual', title: 'Plano Starter Anual', priceInCents: 29880, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-starter-anual', stripePriceId: 'price_1TKk62L0tOYcQz0tIbcnWSV6', stripeMode: 'subscription', isActive: true, type: 'subscription' },
+  { slug: 'plano-starter-mensal', title: 'Plano Starter Mensal', priceInCents: 2490, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-starter-mensal', stripePriceId: 'price_1TKk61L0tOYcQz0tfRYxcET8', stripeMode: 'subscription', isActive: true, type: 'subscription' },
+  { slug: 'plano-ultimate-anual', title: 'Plano Ultimate Anual', priceInCents: 59880, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-ultimate-anual', stripePriceId: 'price_1TKk67L0tOYcQz0tHZ8EDJCx', stripeMode: 'subscription', isActive: true, type: 'subscription' },
+  { slug: 'plano-ultimate-mensal', title: 'Plano Ultimate Mensal', priceInCents: 5990, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-ultimate-mensal', stripePriceId: 'price_1TKk66L0tOYcQz0t51KKbFjk', stripeMode: 'subscription', isActive: true, type: 'subscription' },
+  { slug: 'plano-unlimited-anual', title: 'Plano IA Unlimited Anual', priceInCents: 143880, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-unlimited-anual', stripePriceId: 'price_1TKk69L0tOYcQz0tXYFj8h6F', stripeMode: 'subscription', isActive: true, type: 'subscription' },
+  { slug: 'plano-unlimited-mensal', title: 'Plano IA Unlimited Mensal', priceInCents: 14990, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'plano-unlimited-mensal', stripePriceId: 'price_1TKk69L0tOYcQz0tAppQ270x', stripeMode: 'subscription', isActive: true, type: 'subscription' },
 
   // ─── PACK SÃO JOÃO ───
   { slug: 'saojoao-1ano', title: 'Pack São João - 1 Ano', priceInCents: 3700, currency: 'brl', provider: 'pagarme', currentCheckoutSlug: 'saojoao-1ano', stripePriceId: '', stripeMode: 'payment', isActive: true, type: 'pack' },
