@@ -72,8 +72,29 @@ Deno.serve(async (req) => {
 
     let order = orders && orders.length > 0 ? orders[0] : null;
     let isMpOrder = false;
+    let isStripeOrder = false;
 
-    // === STEP 2: Fallback to mp_orders if not found in asaas_orders ===
+    // === STEP 2a: Fallback to stripe_orders ===
+    if (!order) {
+      const { data: stripeOrders, error: stripeError } = await supabaseAdmin
+        .from("stripe_orders")
+        .select("id, user_email, user_id, status")
+        .eq("user_email", trimmedEmail)
+        .eq("status", "paid")
+        .limit(1);
+
+      if (stripeError) {
+        console.error("Stripe order lookup error:", stripeError);
+      }
+
+      if (stripeOrders && stripeOrders.length > 0) {
+        order = stripeOrders[0];
+        isStripeOrder = true;
+        console.log("Order found in stripe_orders:", order.id);
+      }
+    }
+
+    // === STEP 2b: Fallback to mp_orders if not found in asaas_orders or stripe_orders ===
     if (!order) {
       const { data: mpOrders, error: mpError } = await supabaseAdmin
         .from("mp_orders")
