@@ -232,7 +232,7 @@ Deno.serve(async (req) => {
 
     // === STEP 4: Link order to user if not linked ===
     if (!order.user_id) {
-      const orderTable = isMpOrder ? "mp_orders" : "asaas_orders";
+      const orderTable = isStripeOrder ? "stripe_orders" : isMpOrder ? "mp_orders" : "asaas_orders";
       await supabaseAdmin
         .from(orderTable)
         .update({ user_id: userId })
