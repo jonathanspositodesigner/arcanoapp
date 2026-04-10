@@ -554,7 +554,7 @@ const GerarImagemTool = () => {
                   <Sparkles className="h-5 w-5 text-fuchsia-400" />
                   Gerar Imagem
                 </h1>
-                <p className="text-[10px] text-purple-400">RunningHub AI</p>
+                <p className="text-[10px] text-purple-400">IA Generativa</p>
               </div>
             </div>
           </div>
