@@ -51,9 +51,9 @@ interface ModelOption {
 }
 
 const ALL_MODELS: ModelOption[] = [
-  { id: 'wan2.2', name: 'Wan 2.2', cost: 400, costWithAudio: 400, description: 'RunningHub • 5s' },
-  { id: 'veo3.1-fast', name: 'Veo 3.1 Fast', cost: 1500, costWithAudio: 2500, description: 'Evolink • 8s • 1080p' },
-  { id: 'veo3.1-pro', name: 'Veo 3.1 Pro', cost: 2800, costWithAudio: 5000, description: 'Evolink • 8s • 1080p' },
+  { id: 'wan2.2', name: 'Wan 2.2', cost: 400, costWithAudio: 400, description: '5 segundos' },
+  { id: 'veo3.1-fast', name: 'Veo 3.1 Fast', cost: 1500, costWithAudio: 2500, description: '8s • 1080p' },
+  { id: 'veo3.1-pro', name: 'Veo 3.1 Pro', cost: 2800, costWithAudio: 5000, description: '8s • 1080p' },
 ];
 
 type GenerationMode = 'prompt_only' | 'with_frames';
@@ -417,7 +417,7 @@ const GerarVideoTool = () => {
       if (data.engine === 'evolink') {
         // Start Evolink polling
         startEvolinkPolling(data.job_id);
-        toast.success('Geração de vídeo iniciada via Evolink! Aguarde...');
+        toast.success('Geração de vídeo iniciada! Aguarde...');
       } else if (data.queued) {
         setIsQueued(true);
         setQueuePosition(data.position || 1);
