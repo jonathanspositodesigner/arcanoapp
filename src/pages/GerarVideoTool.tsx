@@ -387,6 +387,7 @@ const GerarVideoTool = () => {
             duration: 8,
             quality: '720p',
             context: 'video-generator',
+            referenceImageUrl: (generationMode === 'with_frames' && startFrame) ? undefined : undefined,
           });
 
           setJobId(job.id);

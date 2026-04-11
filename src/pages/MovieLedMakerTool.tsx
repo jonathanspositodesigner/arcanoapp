@@ -353,6 +353,7 @@ const MovieLedMakerTool = () => {
             duration: 8,
             quality: '720p',
             context: 'movie-led-maker',
+            referenceImageUrl: imageUrlForBackend || undefined,
           });
 
           setJobId(job.id);
