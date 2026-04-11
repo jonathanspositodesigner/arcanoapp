@@ -492,6 +492,7 @@ const AdminAIToolsUsageTab = () => {
     }, 0);
   }, [usageRecords, userTypeMap]);
 
+  const getUserTypeBadge = (userId: string) => {
     const type = userTypeMap[userId] || 'free';
     switch (type) {
       case 'free':
