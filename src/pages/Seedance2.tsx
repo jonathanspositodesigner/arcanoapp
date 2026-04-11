@@ -327,6 +327,14 @@ export default function Seedance2() {
                 >
                   <X className="h-5 w-5" />
                 </button>
+                <a
+                  href={previewGen.videoUrl}
+                  download
+                  className="absolute -top-10 right-10 rounded-full bg-white/10 p-1.5 text-white hover:bg-white/20 transition-colors"
+                  title="Baixar vídeo"
+                >
+                  <Download className="h-5 w-5" />
+                </a>
                 <video
                   src={previewGen.videoUrl}
                   controls
