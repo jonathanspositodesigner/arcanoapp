@@ -287,7 +287,9 @@ async function processQueue(): Promise<Response> {
       await new Promise(r => setTimeout(r, 10000));
 
       const pollRes = await fetch(
-        `${BASE_URL}/operations/${operationName}?key=${GEMINI_API_KEY}`
+        `${BASE_URL}/${operationName}`,
+        { headers: { 'x-goog-api-key': GEMINI_API_KEY } }
+      );
       );
 
       if (!pollRes.ok) {
@@ -298,7 +300,7 @@ async function processQueue(): Promise<Response> {
       const pollData = await pollRes.json();
 
       if (pollData.done) {
-        videoUrl = pollData.response?.generatedVideos?.[0]?.video?.uri ?? null;
+        videoUrl = pollData.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri ?? null;
         console.log(`[GeminiQueue] Job ${job.id} completed, videoUrl: ${videoUrl ? 'yes' : 'no'}`);
         break;
       }
