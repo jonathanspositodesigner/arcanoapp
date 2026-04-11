@@ -653,7 +653,7 @@ const BibliotecaPrompts = () => {
                       <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
                       <span className="truncate">Gerar sua versão</span>
                     </Button>
-                  )
+                  )}
                 </div>
               </div>
             );
