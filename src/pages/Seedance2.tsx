@@ -6,6 +6,8 @@ import AppLayout from "@/components/layout/AppLayout";
 import { Coins, X, Download, Clock, ChevronDown } from "lucide-react";
 import CharacterPicker, { type CharacterItem } from "@/components/shared/CharacterPicker";
 import { getSeedanceTotalCost, modeToGenType } from "@/config/seedance-pricing";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useResilientDownload } from "@/hooks/useResilientDownload";
 
 type Mode = "text" | "startend" | "multiref";
 type Speed = "standard" | "fast";
