@@ -536,17 +536,15 @@ export default function Seedance2() {
 
               <div className="h-4 w-px bg-white/[0.06]" />
 
-              <button
-                onClick={() => setGenerateAudio(!generateAudio)}
-                className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] transition-all duration-200 hover:scale-[1.04] ${
-                  generateAudio
-                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400 shadow-sm shadow-emerald-500/10"
-                    : "border-white/[0.06] bg-white/[0.03] text-gray-500 hover:border-white/[0.12] hover:text-gray-300"
-                }`}
-              >
-                <div className={`h-1.5 w-1.5 rounded-full transition-colors ${generateAudio ? "bg-emerald-400" : "bg-gray-600"}`} />
-                Áudio
-              </button>
+              <div className="flex items-center gap-1.5 group/ctrl">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Áudio</span>
+                <button
+                  onClick={() => setGenerateAudio(!generateAudio)}
+                  className={`relative w-8 h-[18px] rounded-full transition-colors duration-200 ${generateAudio ? "bg-emerald-500" : "bg-white/10"}`}
+                >
+                  <div className={`absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow-sm transition-all duration-200 ${generateAudio ? "left-[16px]" : "left-[2px]"}`} />
+                </button>
+              </div>
             </div>
           </div>
         </div>
