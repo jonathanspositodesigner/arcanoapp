@@ -344,8 +344,14 @@ export default function Seedance2() {
                     <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-white/40" />
                   </div>
                 ) : generations.length === 0 ? (
-                  <div className="flex h-full min-h-[320px] items-center justify-center px-6 text-center lg:min-h-[420px]">
-                    <p className="text-sm text-gray-500">Nenhuma geração ainda. Comece descrevendo um vídeo abaixo.</p>
+                  <div className="flex h-full min-h-[320px] flex-col items-center justify-center px-6 text-center lg:min-h-[420px] gap-3">
+                    <p className="text-sm text-gray-500">Você ainda não tem criações. Veja os modelos ou digite um prompt para começar.</p>
+                    <button
+                      onClick={() => setGalleryTab("library")}
+                      className="rounded-lg border border-purple-500/30 bg-purple-500/10 px-4 py-1.5 text-xs font-medium text-purple-300 transition-all hover:bg-purple-500/20"
+                    >
+                      Explorar modelos
+                    </button>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-3 p-3">
