@@ -64,15 +64,14 @@ function getEffectiveGeminiConfig(job: { duration: unknown; quality: unknown; re
   const requestedDuration = normalizeRequestedDuration(job.duration) ?? 8;
   const requestedQuality = normalizeRequestedQuality(job.quality);
   const hasReferenceImage = Boolean(job.reference_image_url);
-  const forceEightSeconds = hasReferenceImage || requestedQuality === '1080p';
-  const durationSeconds = forceEightSeconds ? 8 : requestedDuration;
-  const resolution = durationSeconds === 8 ? requestedQuality : '720p';
+  const durationSeconds = requestedDuration;
+  const resolution = requestedDuration === 8 ? requestedQuality : '720p';
 
   return {
     durationSeconds,
     resolution,
-    attachReferenceImage: hasReferenceImage,
-    forcedToEightSeconds: durationSeconds !== requestedDuration,
+    attachReferenceImage: hasReferenceImage && requestedDuration === 8,
+    forcedToEightSeconds: false,
     downgradedResolution: requestedQuality !== resolution,
   };
 }
