@@ -41,7 +41,7 @@ const ENGINES = [
   { id: 'wan2.2', name: 'Wan 2.2', cost: 500, duration: '15s', resolution: '720p', time: '4 a 5 min' },
   // EVOLINK_BACKUP — descomente para reverter para EvoLink
   // { id: 'veo3.1', name: 'Veo 3.1', cost: 1500, duration: '6s', resolution: '1080p', time: '2 a 4 min' },
-  { id: 'gemini-lite', name: 'Veo 3.1 Lite', cost: 800, duration: '8s', resolution: '720p', time: '2 a 5 min' },
+  { id: 'gemini-lite', name: 'Veo 3.1 Lite', cost: 800, duration: '6s', resolution: '720p', time: '2 a 5 min' },
 ] as const;
 
 const MovieLedMakerTool = () => {
@@ -358,7 +358,7 @@ const MovieLedMakerTool = () => {
           const job = await enqueueGemini({
             prompt: geminiPrompt,
             aspectRatio: '16:9',
-            duration: 8,
+            duration: 6,
             quality: '720p',
             context: 'movie-led-maker',
             referenceImageUrl: imageUrlForBackend || undefined,

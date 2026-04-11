@@ -160,7 +160,7 @@ async function handleEnqueue(req: Request): Promise<Response> {
       status: 'queued',
       prompt: prompt.trim(),
       aspect_ratio: aspect_ratio || '16:9',
-      duration: duration || 8,
+      duration: duration || 6,
       quality: quality || '720p',
       context: context || 'video-generator',
       reference_image_url: reference_image_url || null,
