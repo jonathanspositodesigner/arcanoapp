@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Library, Image as ImageIcon, Video, LayoutGrid, AlertTriangle } from 'lucide-react';
 import {
   Dialog,
@@ -34,6 +34,13 @@ const MyCreationsModal: React.FC<MyCreationsModalProps> = ({ open, onClose }) =>
     refresh,
     deleteCreation
   } = useMyCreations({ mediaType });
+
+  // Always refresh when modal opens
+  useEffect(() => {
+    if (open) {
+      refresh();
+    }
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
