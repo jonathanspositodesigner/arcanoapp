@@ -84,6 +84,7 @@ export default function Seedance2() {
   const [refVideos, setRefVideos] = useState<string[]>([]);
   const [refAudios, setRefAudios] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [previewGen, setPreviewGen] = useState<Generation | null>(null);
 
   const pollTimers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
   const creditCost = CREDIT_COSTS[`${mode}-${speed}`] || 500;
