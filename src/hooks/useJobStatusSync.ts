@@ -296,53 +296,120 @@ export function useJobStatusSync({
         console.error('[JobSync] Final check error:', error);
       }
       
-      // 4b. Try server-side reconciliation before killing
-      // This queries the provider (RunningHub) to check if the task actually finished
+      // 4b. Try provider-specific reconciliation before killing
       try {
-        console.log('[JobSync] Attempting server-side reconciliation before timeout...');
-        const reconcileResponse = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-queue-manager/reconcile`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-            },
-            body: JSON.stringify({ table: tableName, jobId }),
-          }
-        );
-        const reconcileResult = await reconcileResponse.json();
-        console.log('[JobSync] Reconciliation result:', reconcileResult);
+        // Check if this is an Evolink job based on tool type
+        const isEvolinkCandidate = ['video_generator', 'movieled_maker'].includes(toolType);
+        let isEvolinkJob = false;
         
-        if (reconcileResult.resolved) {
-          // Provider confirmed a status - check DB again
-          await new Promise(resolve => setTimeout(resolve, 1500));
-          const finalUpdate = await queryJobStatus(toolType, jobId);
-          if (finalUpdate && ['completed', 'failed', 'cancelled'].includes(finalUpdate.status)) {
-            processUpdate({
-              status: finalUpdate.status,
-              output_url: finalUpdate.outputUrl,
-              error_message: finalUpdate.errorMessage,
-              position: finalUpdate.position,
-            }, 'polling');
+        if (isEvolinkCandidate) {
+          try {
+            // Use specific table query to avoid TS union type issues
+            const targetTable = toolType === 'video_generator' ? 'video_generator_jobs' : 'movieled_maker_jobs';
+            const { data: jobData } = await supabase
+              .from(targetTable as 'video_generator_jobs')
+              .select('api_account, task_id')
+              .eq('id', jobId)
+              .maybeSingle();
+            isEvolinkJob = jobData?.api_account === 'evolink' && !!jobData?.task_id;
+          } catch { /* ignore */ }
+        }
+
+        if (isEvolinkJob) {
+          // EVOLINK RECONCILIATION: Call poll-evolink directly
+          console.log('[JobSync] Attempting Evolink reconciliation before timeout...');
+          const { data: sessionData } = await supabase.auth.getSession();
+          const token = sessionData?.session?.access_token;
+          if (token) {
+            const functionName = toolType === 'movieled_maker' ? 'runninghub-movieled-maker' : 'generate-video';
+            const pollResponse = await fetch(
+              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${functionName}/poll-evolink`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+                  'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+                },
+                body: JSON.stringify({ job_id: jobId }),
+              }
+            );
+            const pollResult = await pollResponse.json();
+            console.log('[JobSync] Evolink reconciliation result:', pollResult);
+
+            if (pollResult.status === 'completed' || pollResult.status === 'failed') {
+              await new Promise(resolve => setTimeout(resolve, 1500));
+              const finalUpdate = await queryJobStatus(toolType, jobId);
+              if (finalUpdate && ['completed', 'failed', 'cancelled'].includes(finalUpdate.status)) {
+                processUpdate({
+                  status: finalUpdate.status,
+                  output_url: finalUpdate.outputUrl,
+                  error_message: finalUpdate.errorMessage,
+                  position: finalUpdate.position,
+                }, 'polling');
+                return;
+              }
+            } else if (pollResult.status === 'processing' || pollResult.progress > 0) {
+              // Evolink still processing - extend timeout
+              console.log('[JobSync] Evolink confirms still processing, extending wait...');
+              const extendMs = 300000;
+              absoluteTimeoutRef.current = setTimeout(() => {
+                console.log('[JobSync] Extended timeout expired, forcing failure');
+                isCompletedRef.current = true;
+                onGlobalStatusChangeRef.current?.('failed');
+                onStatusChangeRef.current({
+                  status: 'failed',
+                  errorMessage: `Tempo limite estendido excedido. Seus créditos serão estornados automaticamente.`,
+                });
+                doCleanup();
+              }, extendMs);
+              return;
+            }
+          }
+        } else {
+          // RUNNINGHUB RECONCILIATION (original logic)
+          console.log('[JobSync] Attempting RunningHub reconciliation before timeout...');
+          const reconcileResponse = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-queue-manager/reconcile`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+              },
+              body: JSON.stringify({ table: tableName, jobId }),
+            }
+          );
+          const reconcileResult = await reconcileResponse.json();
+          console.log('[JobSync] Reconciliation result:', reconcileResult);
+          
+          if (reconcileResult.resolved) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            const finalUpdate = await queryJobStatus(toolType, jobId);
+            if (finalUpdate && ['completed', 'failed', 'cancelled'].includes(finalUpdate.status)) {
+              processUpdate({
+                status: finalUpdate.status,
+                output_url: finalUpdate.outputUrl,
+                error_message: finalUpdate.errorMessage,
+                position: finalUpdate.position,
+              }, 'polling');
+              return;
+            }
+          } else if (reconcileResult.reason === 'still_running') {
+            console.log('[JobSync] Provider confirms task still running, extending wait...');
+            const extendMs = 300000;
+            absoluteTimeoutRef.current = setTimeout(() => {
+              console.log('[JobSync] Extended timeout expired, forcing failure');
+              isCompletedRef.current = true;
+              onGlobalStatusChangeRef.current?.('failed');
+              onStatusChangeRef.current({
+                status: 'failed',
+                errorMessage: `Tempo limite estendido excedido. Seus créditos serão estornados automaticamente.`,
+              });
+              doCleanup();
+            }, extendMs);
             return;
           }
-        } else if (reconcileResult.reason === 'still_running') {
-          // Provider says task is still processing - DON'T kill it
-          console.log('[JobSync] Provider confirms task still running, extending wait...');
-          // Continue polling for another 5 minutes instead of killing
-          const extendMs = 300000; // 5 min extension
-          absoluteTimeoutRef.current = setTimeout(() => {
-            console.log('[JobSync] Extended timeout expired, forcing failure');
-            isCompletedRef.current = true;
-            onGlobalStatusChangeRef.current?.('failed');
-            onStatusChangeRef.current({
-              status: 'failed',
-              errorMessage: `Tempo limite estendido excedido. Seus créditos serão estornados automaticamente.`,
-            });
-            doCleanup();
-          }, extendMs);
-          return; // Don't kill the job now
         }
       } catch (reconcileError) {
         console.error('[JobSync] Reconciliation failed:', reconcileError);
