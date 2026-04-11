@@ -527,7 +527,7 @@ const AdminAIToolsUsageTab = () => {
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
   const custoTotalResumo = summary ? summary.total_rh_cost * CUSTO_POR_RH_COIN : 0;
-  const receitaUsuariosTotal = summary ? summary.total_user_credits * receitaPorCreditoAtual : 0;
+  const receitaUsuariosTotal = summary ? summary.total_credits * receitaPorCreditoAtual : 0;
   const lucroTotalResumo = receitaUsuariosTotal - custoTotalResumo;
 
   const formatDuration = (seconds: number) => {
@@ -898,7 +898,7 @@ const AdminAIToolsUsageTab = () => {
               <Timer className="h-6 w-6 text-orange-500" />
               <div>
                 <p className="text-xs text-muted-foreground">Jobs que entraram na fila</p>
-                <p className="text-lg font-bold">{summary.jobs_with_queue} ({totalCount > 0 ? Math.round((summary.jobs_with_queue / summary.total_jobs) * 100) : 0}%)</p>
+                <p className="text-lg font-bold">{summary.queued_jobs} ({totalCount > 0 ? Math.round((summary.queued_jobs / summary.total_jobs) * 100) : 0}%)</p>
               </div>
             </CardContent>
           </Card>
@@ -908,7 +908,7 @@ const AdminAIToolsUsageTab = () => {
               <Clock className="h-6 w-6 text-blue-500" />
               <div>
                 <p className="text-xs text-muted-foreground">Tempo médio na fila</p>
-                <p className="text-lg font-bold">{formatDuration(Math.round(summary.avg_queue_wait_seconds))}</p>
+                <p className="text-lg font-bold">{formatDuration(Math.round(summary.avg_queue_wait))}</p>
               </div>
             </CardContent>
           </Card>
