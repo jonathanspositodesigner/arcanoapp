@@ -57,7 +57,7 @@ const MODE_OPTIONS: { value: Mode; label: string; desc: string }[] = [
 export default function Seedance2() {
   const { user } = useAuth();
   const [prompt, setPrompt] = useState("");
-  const [mode, setMode] = useState<Mode>("text");
+  const [mode, setMode] = useState<Mode>("multiref");
   const [ratio, setRatio] = useState<Ratio>("9:16");
   const [quality, setQuality] = useState<Quality>("480p");
   const [duration, setDuration] = useState<Duration>("15");
@@ -449,7 +449,7 @@ export default function Seedance2() {
                       {refImages.map((url, index) => (
                         <UploadSlot key={index} url={url} onRemove={() => setRefImages((prev) => prev.filter((_, i) => i !== index))} size={40} />
                       ))}
-                      {refImages.length < 9 && (
+                      {refImages.length < 8 && (
                         <UploadSlot
                           url={null}
                           onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", (url) => setRefImages((prev) => [...prev, url]))}
@@ -544,6 +544,18 @@ export default function Seedance2() {
                 Configurações
                 <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${showSettings ? "rotate-180" : ""}`} />
               </button>
+
+              {mode === "multiref" && (
+                <>
+                  <div className="h-4 w-px bg-white/[0.06]" />
+                  <CharacterPicker
+                    selectedCharacters={selectedCharacters}
+                    onCharactersChange={setSelectedCharacters}
+                    maxCharacters={3}
+                    compact
+                  />
+                </>
+              )}
             </div>
 
             {showSettings && (
@@ -608,15 +620,6 @@ export default function Seedance2() {
                   />
                   <span className="min-w-[24px] text-center text-[11px] font-medium text-purple-300">{duration}s</span>
                 </div>
-
-                <div className="h-4 w-px bg-white/[0.06]" />
-
-                <CharacterPicker
-                  selectedCharacters={selectedCharacters}
-                  onCharactersChange={setSelectedCharacters}
-                  maxCharacters={3}
-                  compact
-                />
 
                 <div className="h-4 w-px bg-white/[0.06]" />
 
