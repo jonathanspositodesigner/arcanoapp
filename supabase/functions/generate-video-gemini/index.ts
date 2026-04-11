@@ -133,7 +133,7 @@ async function handleEnqueue(req: Request): Promise<Response> {
   }
 
   // Deduct credits
-  const charged = await chargeCredits(supabase, userId, creditCost);
+  const charged = await chargeCredits(supabase, userId, creditCost, context || 'video-generator');
   if (!charged) {
     return jsonResponse({ error: 'Falha ao debitar créditos', code: 'INSUFFICIENT_CREDITS' }, 402);
   }
@@ -156,7 +156,7 @@ async function handleEnqueue(req: Request): Promise<Response> {
 
   if (error) {
     // Refund on insert failure
-    await refundCredits(supabase, userId, creditCost);
+    await refundCredits(supabase, userId, creditCost, context || 'video-generator');
     console.error('[GeminiQueue] Insert error:', error);
     return jsonResponse({ error: 'Erro ao enfileirar job' }, 500);
   }
@@ -334,7 +334,7 @@ async function processQueue(): Promise<Response> {
     // Refund credits on permanent failure
     if (shouldFail && job.user_id) {
       const creditCost = CREDIT_COSTS[job.context || 'video-generator'] || 800;
-      await refundCredits(supabase, job.user_id, creditCost);
+      await refundCredits(supabase, job.user_id, creditCost, job.context || 'video-generator');
     }
   }
 
