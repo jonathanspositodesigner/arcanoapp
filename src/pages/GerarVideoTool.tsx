@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
+import { useGeminiVideoQueue, type GeminiQueueJob } from '@/hooks/useGeminiVideoQueue';
 import { getAIErrorMessage } from '@/utils/errorMessages';
 import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock, Image, Type, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ const MODEL_DURATIONS: Record<string, number> = {
   'veo3.1-fast': 8,
   'veo3.1-pro': 8,
   'wan2.2': 5,
+  'gemini-lite': 8,
 };
 
 interface FrameImage {
@@ -48,12 +50,14 @@ interface ModelOption {
   cost: number;
   costWithAudio: number;
   description: string;
+  isGeminiQueue?: boolean;
 }
 
 const ALL_MODELS: ModelOption[] = [
   { id: 'wan2.2', name: 'Wan 2.2', cost: 400, costWithAudio: 400, description: '5 segundos' },
   { id: 'veo3.1-fast', name: 'Veo 3.1 Fast', cost: 1500, costWithAudio: 2500, description: '8s • 1080p' },
   { id: 'veo3.1-pro', name: 'Veo 3.1 Pro', cost: 2800, costWithAudio: 5000, description: '8s • 1080p' },
+  { id: 'gemini-lite', name: 'Veo 3.1 Lite', cost: 800, costWithAudio: 800, description: 'Google • Sem áudio • Via fila', isGeminiQueue: true },
 ];
 
 type GenerationMode = 'prompt_only' | 'with_frames';
