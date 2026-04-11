@@ -4200,6 +4200,7 @@ export type Database = {
           quality: string | null
           status: string | null
           task_id: string | null
+          thumbnail_url: string | null
           user_id: string
         }
         Insert: {
@@ -4221,6 +4222,7 @@ export type Database = {
           quality?: string | null
           status?: string | null
           task_id?: string | null
+          thumbnail_url?: string | null
           user_id: string
         }
         Update: {
@@ -4242,6 +4244,7 @@ export type Database = {
           quality?: string | null
           status?: string | null
           task_id?: string | null
+          thumbnail_url?: string | null
           user_id?: string
         }
         Relationships: []
