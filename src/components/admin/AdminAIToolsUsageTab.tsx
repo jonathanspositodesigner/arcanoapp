@@ -483,7 +483,15 @@ const AdminAIToolsUsageTab = () => {
     return <Badge className={colors[toolName] || ""}>{toolName}</Badge>;
   };
 
-  const getUserTypeBadge = (userId: string) => {
+  // Calculate paid-only credits (exclude free/trial users)
+  const paidUserCredits = useMemo(() => {
+    return usageRecords.reduce((sum, r) => {
+      const type = userTypeMap[r.user_id] || 'free';
+      if (type === 'free' || type === 'free_trial') return sum;
+      return sum + r.user_credit_cost;
+    }, 0);
+  }, [usageRecords, userTypeMap]);
+
     const type = userTypeMap[userId] || 'free';
     switch (type) {
       case 'free':
