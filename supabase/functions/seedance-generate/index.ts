@@ -52,9 +52,10 @@ serve(async (req) => {
       });
     }
 
+    // Credit check: seedance always charges credits (not unlimited-free)
     const { data: creditBalance } = await supabase.rpc("get_upscaler_credits", { _user_id: user.id });
     if (!creditBalance || creditBalance < 1) {
-      return new Response(JSON.stringify({ success: false, error: "Insufficient credits" }), {
+      return new Response(JSON.stringify({ success: false, error: "Créditos insuficientes" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
