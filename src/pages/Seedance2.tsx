@@ -300,7 +300,7 @@ export default function Seedance2() {
       }
 
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, taskId: data.taskId } : g));
-      startPolling(genId, data.taskId, jobData.id);
+      startPolling(genId, data.taskId, jobData.id, creditCost);
     } catch (err: any) {
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: err.message } : g));
     }
