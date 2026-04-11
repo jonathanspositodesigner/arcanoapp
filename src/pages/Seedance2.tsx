@@ -58,10 +58,10 @@ export default function Seedance2() {
   const { user } = useAuth();
   const [prompt, setPrompt] = useState("");
   const [mode, setMode] = useState<Mode>("text");
-  const [ratio, setRatio] = useState<Ratio>("16:9");
-  const [quality, setQuality] = useState<Quality>("720p");
-  const [duration, setDuration] = useState<Duration>("5");
-  const [speed, setSpeed] = useState<Speed>("standard");
+  const [ratio, setRatio] = useState<Ratio>("9:16");
+  const [quality, setQuality] = useState<Quality>("480p");
+  const [duration, setDuration] = useState<Duration>("15");
+  const [speed, setSpeed] = useState<Speed>("fast");
   const [generateAudio, setGenerateAudio] = useState(true);
   const [generations, setGenerations] = useState<Generation[]>([
     { id: "demo-1", status: "completed", prompt: "Cinematic ocean waves at sunset", ratio: "16:9", duration: "8", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
@@ -487,7 +487,7 @@ export default function Seedance2() {
                 <select
                   value={ratio}
                   onChange={(e) => setRatio(e.target.value as Ratio)}
-                  className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] text-gray-300 outline-none transition-all duration-200 hover:border-purple-500/30 hover:bg-white/[0.06] cursor-pointer"
+                  className="rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white outline-none transition-all duration-200 hover:border-purple-500/30 cursor-pointer [&>option]:bg-black [&>option]:text-white"
                 >
                   {RATIOS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                 </select>
@@ -495,14 +495,19 @@ export default function Seedance2() {
 
               <div className="flex items-center gap-1.5 group/ctrl">
                 <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Qualidade</span>
-                <select
-                  value={quality}
-                  onChange={(e) => setQuality(e.target.value as Quality)}
-                  className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] text-gray-300 outline-none transition-all duration-200 hover:border-purple-500/30 hover:bg-white/[0.06] cursor-pointer"
-                >
-                  <option value="720p">720p</option>
-                  <option value="480p">480p</option>
-                </select>
+                <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px] transition-all duration-200 group-hover/ctrl:border-white/[0.1] group-hover/ctrl:bg-white/[0.05]">
+                  {(["480p", "720p"] as Quality[]).map((value) => (
+                    <button
+                      key={value}
+                      onClick={() => setQuality(value)}
+                      className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
+                        quality === value ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      {value}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="flex items-center gap-2 group/ctrl min-w-[160px]">
