@@ -561,3 +561,39 @@ function UploadSlot({
     </div>
   );
 }
+
+function HoverVideo({ src, prompt, ratio, duration }: { src: string; prompt: string; ratio: string; duration: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleMouseEnter = () => {
+    const el = videoRef.current;
+    if (!el) return;
+    el.muted = true;
+    el.play().catch(() => {});
+  };
+
+  const handleMouseLeave = () => {
+    const el = videoRef.current;
+    if (!el) return;
+    el.pause();
+  };
+
+  return (
+    <>
+      <video
+        ref={videoRef}
+        src={src}
+        muted
+        playsInline
+        preload="metadata"
+        className="h-full w-full object-cover"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      <span className="absolute bottom-1.5 left-2 text-[9px] text-white/70 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        {prompt.length > 40 ? prompt.slice(0, 40) + "…" : prompt} · {ratio} · {duration}s
+      </span>
+    </>
+  );
+}
