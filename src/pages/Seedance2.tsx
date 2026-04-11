@@ -310,54 +310,71 @@ export default function Seedance2() {
         <div className="mx-auto flex w-full max-w-[1400px] flex-1 min-h-0 flex-col px-4 pt-4 pb-4">
           <div className="mb-3 flex shrink-0 items-center justify-between">
             <h1 className="text-xl font-bold text-white">Seedance 2.0</h1>
-            <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-gray-400">
-              {generations.length} gerações
-            </span>
+            <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
+              <button
+                onClick={() => setGalleryTab("creations")}
+                className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
+                  galleryTab === "creations" ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                }`}
+              >
+                Minhas Criações
+              </button>
+              <button
+                onClick={() => setGalleryTab("library")}
+                className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
+                  galleryTab === "library" ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                }`}
+              >
+                Biblioteca
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl border border-white/5 bg-black/10 lg:min-h-[420px]">
-            {generations.length === 0 ? (
-              <div className="flex h-full min-h-[320px] items-center justify-center px-6 text-center lg:min-h-[420px]">
-                <p className="text-sm text-gray-500">Nenhuma geração ainda. Comece descrevendo um vídeo abaixo.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3 p-3">
-                {generations.map((gen) => (
-                  <div
-                    key={gen.id}
-                    className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-xl cursor-pointer group ${
-                      gen.status === "queued" ? "border border-dashed border-white/10" : "border border-white/10 bg-[#1a1a2e]"
-                    }`}
-                    onClick={() => gen.status === "completed" && gen.videoUrl && setPreviewGen(gen)}
-                  >
-                    {gen.status === "completed" && gen.videoUrl && (
-                      <>
-                        <HoverVideo src={gen.videoUrl} prompt={gen.prompt} ratio={gen.ratio} duration={gen.duration} />
-                        <a
-                          href={gen.videoUrl}
-                          download
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute top-2 right-2 z-10 rounded-full bg-black/60 p-1.5 text-white/70 opacity-0 group-hover:opacity-100 transition-all hover:bg-black/80 hover:text-white hover:scale-110"
-                          title="Baixar vídeo"
-                        >
-                          <Download className="h-4 w-4" />
-                        </a>
-                      </>
-                    )}
-
-                    {gen.status === "processing" && (
-                      <div className="text-center">
-                        <div className="mx-auto mb-1.5 h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-white/40" />
-                        <span className="text-[10px] text-gray-500">gerando...</span>
-                      </div>
-                    )}
-
-                    {gen.status === "failed" && (
-                      <span className="px-3 text-center text-[10px] text-red-400/60">{gen.error || "Falhou"}</span>
-                    )}
+            {galleryTab === "creations" && (
+              <>
+                {galleryTab === "creations" && (
+                  <div className="flex items-center gap-1.5 px-3 pt-2">
+                    <Clock className="h-3 w-3 text-gray-600" />
+                    <span className="text-[10px] text-gray-600">Vídeos armazenados por 24h</span>
                   </div>
-                ))}
-              </div>
+                )}
+                {loadingCreations ? (
+                  <div className="flex h-full min-h-[320px] items-center justify-center">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-white/40" />
+                  </div>
+                ) : generations.length === 0 ? (
+                  <div className="flex h-full min-h-[320px] items-center justify-center px-6 text-center lg:min-h-[420px]">
+                    <p className="text-sm text-gray-500">Nenhuma geração ainda. Comece descrevendo um vídeo abaixo.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 p-3">
+                    {generations.map((gen) => (
+                      <VideoCard key={gen.id} gen={gen} onPreview={setPreviewGen} />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {galleryTab === "library" && (
+              <>
+                {loadingLibrary ? (
+                  <div className="flex h-full min-h-[320px] items-center justify-center">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-white/40" />
+                  </div>
+                ) : libraryItems.length === 0 ? (
+                  <div className="flex h-full min-h-[320px] items-center justify-center px-6 text-center lg:min-h-[420px]">
+                    <p className="text-sm text-gray-500">Nenhum vídeo na biblioteca ainda.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 p-3">
+                    {libraryItems.map((gen) => (
+                      <VideoCard key={gen.id} gen={gen} onPreview={setPreviewGen} />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
 
