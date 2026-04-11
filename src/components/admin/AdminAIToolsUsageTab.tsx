@@ -90,6 +90,41 @@ const API_COST_MAP: Record<string, number> = {
   "Gerar Imagem - Nano Banana": 0.18,
 };
 
+const VIDEO_TOOLS = new Set(["Gerar Vídeo", "MovieLed Maker", "Seedance 2.0"]);
+
+const VIDEO_COST_PER_SECOND: Record<string, number> = {
+  "vgj:wan2.2": 0,
+  "vgj:veo3.1:no_audio": 0.294,
+  "vgj:veo3.1:audio": 0.294,
+  "vgj:veo3.1-fast:no_audio": 0.504,
+  "vgj:veo3.1-fast:audio": 0.758,
+  "vgj:veo3.1-pro:no_audio": 0.984,
+  "vgj:veo3.1-pro:audio": 1.924,
+  "mlj:wan2.2": 0,
+  "mlj:gemini-lite": 0.294,
+  "mlj:veo3.1": 0.504,
+  "sdj:fast:480p:i2v": 0.344,
+  "sdj:fast:480p:t2v": 0.374,
+  "sdj:fast:720p:i2v": 0.724,
+  "sdj:fast:720p:t2v": 0.794,
+  "sdj:standard:480p:i2v": 0.424,
+  "sdj:standard:480p:t2v": 0.467,
+  "sdj:standard:720p:i2v": 0.884,
+  "sdj:standard:720p:t2v": 0.974,
+};
+
+const MOVIELED_DURATION: Record<string, number> = { "wan2.2": 15, "gemini-lite": 8, "veo3.1": 8 };
+
+interface VideoJobDetail {
+  id: string;
+  model?: string;
+  engine?: string;
+  duration?: number;
+  quality?: string;
+  hasAudio?: boolean;
+  hasImage?: boolean;
+}
+
 const formatBRL = (value: number) =>
   value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -136,6 +171,7 @@ const TOOL_FILTERS = [
   { value: "Flyer Maker", label: "Flyer Maker" },
   { value: "Remover Fundo", label: "Remover Fundo" },
   { value: "MovieLed Maker", label: "MovieLed Maker" },
+  { value: "Seedance 2.0", label: "Seedance 2.0" },
 ];
 
 const STATUS_FILTERS = [
@@ -161,6 +197,7 @@ const AdminAIToolsUsageTab = () => {
   const [cancellingJobId, setCancellingJobId] = useState<string | null>(null);
   const [userTypeMap, setUserTypeMap] = useState<Record<string, UserClientType>>({});
   const [receitaPorCreditoAtual, setReceitaPorCreditoAtual] = useState(RECEITA_POR_CREDITO_PADRAO);
+  const [videoJobDetailsMap, setVideoJobDetailsMap] = useState<Record<string, VideoJobDetail>>({});
   
   // Job output modal state
   const [selectedJob, setSelectedJob] = useState<UsageRecord | null>(null);
@@ -349,6 +386,28 @@ const AdminAIToolsUsageTab = () => {
       if (recordsError) throw recordsError;
       setUsageRecords(records || []);
 
+      // Fetch video job details for per-second cost
+      const videoRecords = (records || []).filter((r: UsageRecord) => VIDEO_TOOLS.has(r.tool_name));
+      if (videoRecords.length > 0) {
+        const vgjIds = videoRecords.filter((r: UsageRecord) => r.tool_name === 'Gerar Vídeo').map((r: UsageRecord) => r.id);
+        const mljIds = videoRecords.filter((r: UsageRecord) => r.tool_name === 'MovieLed Maker').map((r: UsageRecord) => r.id);
+        const sdjIds = videoRecords.filter((r: UsageRecord) => r.tool_name === 'Seedance 2.0').map((r: UsageRecord) => r.id);
+        const detailMap: Record<string, VideoJobDetail> = {};
+        if (vgjIds.length > 0) {
+          const { data } = await supabase.from('video_generator_jobs' as any).select('id, model, duration_seconds, job_payload').in('id', vgjIds);
+          for (const row of (data || []) as any[]) { const p = row.job_payload as any; detailMap[row.id] = { id: row.id, model: row.model, duration: row.duration_seconds, hasAudio: p?.generateAudio === true }; }
+        }
+        if (mljIds.length > 0) {
+          const { data } = await supabase.from('movieled_maker_jobs' as any).select('id, engine').in('id', mljIds);
+          for (const row of (data || []) as any[]) { detailMap[row.id] = { id: row.id, engine: row.engine, duration: MOVIELED_DURATION[row.engine] || 8 }; }
+        }
+        if (sdjIds.length > 0) {
+          const { data } = await supabase.from('seedance_jobs' as any).select('id, model, duration, quality, input_image_urls').in('id', sdjIds);
+          for (const row of (data || []) as any[]) { const m = (row.model || '') as string; detailMap[row.id] = { id: row.id, model: m.includes('fast') ? 'fast' : 'standard', duration: row.duration || 8, quality: row.quality || '480p', hasImage: !m.includes('text-to-video') }; }
+        }
+        setVideoJobDetailsMap(detailMap);
+      } else { setVideoJobDetailsMap({}); }
+
       // Fetch user types
       const userIds = [...new Set((records || []).map((r: UsageRecord) => r.user_id).filter(Boolean))];
       if (userIds.length > 0) {
@@ -519,6 +578,7 @@ const AdminAIToolsUsageTab = () => {
       "Flyer Maker": "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
       "Remover Fundo": "bg-teal-500/20 text-teal-400 border-teal-500/30",
       "MovieLed Maker": "bg-violet-500/20 text-violet-400 border-violet-500/30",
+      "Seedance 2.0": "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30",
     };
     return <Badge className={colors[toolName] || ""}>{toolName}</Badge>;
   };
@@ -540,6 +600,26 @@ const AdminAIToolsUsageTab = () => {
         return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Premium + Créditos</Badge>;
     }
   };
+
+  const getVideoCostBRL = useCallback((record: UsageRecord): number => {
+    if (!VIDEO_TOOLS.has(record.tool_name) || record.status !== 'completed') return 0;
+    const d = videoJobDetailsMap[record.id];
+    if (!d) return 0;
+    let cps = 0;
+    const dur = d.duration || 8;
+    if (record.tool_name === 'Gerar Vídeo') {
+      const m = d.model || 'wan2.2';
+      if (m === 'wan2.2') return 0;
+      cps = VIDEO_COST_PER_SECOND[`vgj:${m}:${d.hasAudio ? 'audio' : 'no_audio'}`] || 0;
+    } else if (record.tool_name === 'MovieLed Maker') {
+      const e = d.engine || 'wan2.2';
+      if (e === 'wan2.2') return 0;
+      cps = VIDEO_COST_PER_SECOND[`mlj:${e}`] || 0;
+    } else if (record.tool_name === 'Seedance 2.0') {
+      cps = VIDEO_COST_PER_SECOND[`sdj:${d.model || 'fast'}:${d.quality || '480p'}:${d.hasImage ? 'i2v' : 't2v'}`] || 0;
+    }
+    return cps * dur;
+  }, [videoJobDetailsMap]);
 
   const getRecordRevenue = useCallback((record: UsageRecord) => {
     const userType = userTypeMap[record.user_id] || 'free';
@@ -923,7 +1003,8 @@ const AdminAIToolsUsageTab = () => {
                       {(() => {
                         const rhCostBRL = record.rh_cost * CUSTO_POR_RH_COIN;
                         const apiCost = API_COST_MAP[record.tool_name] || 0;
-                        const totalCost = rhCostBRL + (record.status === 'completed' ? apiCost : 0);
+                        const videoCost = getVideoCostBRL(record);
+                        const totalCost = rhCostBRL + (record.status === 'completed' ? apiCost : 0) + videoCost;
                         const receita = getRecordRevenue(record);
                         const lucro = receita - totalCost;
                         return (
