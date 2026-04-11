@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import AppLayout from "@/components/layout/AppLayout";
-import { Coins, X, Download } from "lucide-react";
+import { Coins, X, Download, Clock } from "lucide-react";
 import CharacterPicker, { type CharacterItem } from "@/components/shared/CharacterPicker";
 import { getSeedanceTotalCost, modeToGenType } from "@/config/seedance-pricing";
 
@@ -63,16 +63,11 @@ export default function Seedance2() {
   const [duration, setDuration] = useState<Duration>("15");
   const [speed, setSpeed] = useState<Speed>("fast");
   const [generateAudio, setGenerateAudio] = useState(true);
-  const [generations, setGenerations] = useState<Generation[]>([
-    { id: "demo-1", status: "completed", prompt: "Cinematic ocean waves at sunset", ratio: "16:9", duration: "8", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-    { id: "demo-2", status: "completed", prompt: "Drone shot of mountains", ratio: "16:9", duration: "5", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
-    { id: "demo-3", status: "completed", prompt: "Abstract neon particles", ratio: "16:9", duration: "10", videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" },
-    { id: "demo-4", status: "completed", prompt: "City timelapse at night", ratio: "16:9", duration: "6", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-    { id: "demo-5", status: "completed", prompt: "Forest path with fog", ratio: "16:9", duration: "8", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
-    { id: "demo-6", status: "completed", prompt: "Underwater coral reef", ratio: "16:9", duration: "5", videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" },
-    { id: "demo-7", status: "completed", prompt: "Space nebula animation", ratio: "16:9", duration: "12", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-    { id: "demo-8", status: "completed", prompt: "Rainy window close-up", ratio: "16:9", duration: "4", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
-  ]);
+  const [generations, setGenerations] = useState<Generation[]>([]);
+  const [galleryTab, setGalleryTab] = useState<"creations" | "library">("creations");
+  const [libraryItems, setLibraryItems] = useState<Generation[]>([]);
+  const [loadingCreations, setLoadingCreations] = useState(false);
+  const [loadingLibrary, setLoadingLibrary] = useState(false);
   const [startImage, setStartImage] = useState<string | null>(null);
   const [endImage, setEndImage] = useState<string | null>(null);
   const [refImages, setRefImages] = useState<string[]>([]);
@@ -84,6 +79,59 @@ export default function Seedance2() {
 
   const pollTimers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
   const creditCost = getSeedanceTotalCost(speed, quality, modeToGenType(mode), parseInt(duration) || 5);
+
+  // Fetch user creations from seedance_jobs
+  useEffect(() => {
+    if (!user) return;
+    const fetchCreations = async () => {
+      setLoadingCreations(true);
+      const { data, error } = await supabase
+        .from("seedance_jobs")
+        .select("id, prompt, output_url, aspect_ratio, duration, status, error_message, task_id, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (!error && data) {
+        setGenerations(data.map((j: any) => ({
+          id: j.id,
+          status: j.status === "completed" ? "completed" : j.status === "failed" ? "failed" : j.status === "running" ? "processing" : "queued",
+          prompt: j.prompt || "",
+          ratio: j.aspect_ratio || "16:9",
+          duration: String(j.duration || 5),
+          videoUrl: j.output_url || undefined,
+          error: j.error_message || undefined,
+          taskId: j.task_id || undefined,
+        })));
+      }
+      setLoadingCreations(false);
+    };
+    fetchCreations();
+  }, [user]);
+
+  // Fetch library items from admin_prompts with category "Seedance 2"
+  useEffect(() => {
+    const fetchLibrary = async () => {
+      setLoadingLibrary(true);
+      const { data, error } = await supabase
+        .from("admin_prompts")
+        .select("id, title, prompt, image_url, thumbnail_url")
+        .eq("category", "Seedance 2")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (!error && data) {
+        setLibraryItems(data.map((p: any) => ({
+          id: p.id,
+          status: "completed" as const,
+          prompt: p.prompt || p.title || "",
+          ratio: "16:9",
+          duration: "",
+          videoUrl: p.image_url || undefined,
+        })));
+      }
+      setLoadingLibrary(false);
+    };
+    fetchLibrary();
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -262,54 +310,71 @@ export default function Seedance2() {
         <div className="mx-auto flex w-full max-w-[1400px] flex-1 min-h-0 flex-col px-4 pt-4 pb-4">
           <div className="mb-3 flex shrink-0 items-center justify-between">
             <h1 className="text-xl font-bold text-white">Seedance 2.0</h1>
-            <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-gray-400">
-              {generations.length} gerações
-            </span>
+            <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
+              <button
+                onClick={() => setGalleryTab("creations")}
+                className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
+                  galleryTab === "creations" ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                }`}
+              >
+                Minhas Criações
+              </button>
+              <button
+                onClick={() => setGalleryTab("library")}
+                className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
+                  galleryTab === "library" ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                }`}
+              >
+                Biblioteca
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl border border-white/5 bg-black/10 lg:min-h-[420px]">
-            {generations.length === 0 ? (
-              <div className="flex h-full min-h-[320px] items-center justify-center px-6 text-center lg:min-h-[420px]">
-                <p className="text-sm text-gray-500">Nenhuma geração ainda. Comece descrevendo um vídeo abaixo.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3 p-3">
-                {generations.map((gen) => (
-                  <div
-                    key={gen.id}
-                    className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-xl cursor-pointer group ${
-                      gen.status === "queued" ? "border border-dashed border-white/10" : "border border-white/10 bg-[#1a1a2e]"
-                    }`}
-                    onClick={() => gen.status === "completed" && gen.videoUrl && setPreviewGen(gen)}
-                  >
-                    {gen.status === "completed" && gen.videoUrl && (
-                      <>
-                        <HoverVideo src={gen.videoUrl} prompt={gen.prompt} ratio={gen.ratio} duration={gen.duration} />
-                        <a
-                          href={gen.videoUrl}
-                          download
-                          onClick={(e) => e.stopPropagation()}
-                          className="absolute top-2 right-2 z-10 rounded-full bg-black/60 p-1.5 text-white/70 opacity-0 group-hover:opacity-100 transition-all hover:bg-black/80 hover:text-white hover:scale-110"
-                          title="Baixar vídeo"
-                        >
-                          <Download className="h-4 w-4" />
-                        </a>
-                      </>
-                    )}
-
-                    {gen.status === "processing" && (
-                      <div className="text-center">
-                        <div className="mx-auto mb-1.5 h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-white/40" />
-                        <span className="text-[10px] text-gray-500">gerando...</span>
-                      </div>
-                    )}
-
-                    {gen.status === "failed" && (
-                      <span className="px-3 text-center text-[10px] text-red-400/60">{gen.error || "Falhou"}</span>
-                    )}
+            {galleryTab === "creations" && (
+              <>
+                {galleryTab === "creations" && (
+                  <div className="flex items-center gap-1.5 px-3 pt-2">
+                    <Clock className="h-3 w-3 text-gray-600" />
+                    <span className="text-[10px] text-gray-600">Vídeos armazenados por 24h</span>
                   </div>
-                ))}
-              </div>
+                )}
+                {loadingCreations ? (
+                  <div className="flex h-full min-h-[320px] items-center justify-center">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-white/40" />
+                  </div>
+                ) : generations.length === 0 ? (
+                  <div className="flex h-full min-h-[320px] items-center justify-center px-6 text-center lg:min-h-[420px]">
+                    <p className="text-sm text-gray-500">Nenhuma geração ainda. Comece descrevendo um vídeo abaixo.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 p-3">
+                    {generations.map((gen) => (
+                      <VideoCard key={gen.id} gen={gen} onPreview={setPreviewGen} />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {galleryTab === "library" && (
+              <>
+                {loadingLibrary ? (
+                  <div className="flex h-full min-h-[320px] items-center justify-center">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-white/40" />
+                  </div>
+                ) : libraryItems.length === 0 ? (
+                  <div className="flex h-full min-h-[320px] items-center justify-center px-6 text-center lg:min-h-[420px]">
+                    <p className="text-sm text-gray-500">Nenhum vídeo na biblioteca ainda.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 p-3">
+                    {libraryItems.map((gen) => (
+                      <VideoCard key={gen.id} gen={gen} onPreview={setPreviewGen} />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -587,6 +652,41 @@ function UploadSlot({
       style={{ width: dimension, height: dimension }}
     >
       +
+    </div>
+  );
+}
+
+function VideoCard({ gen, onPreview }: { gen: Generation; onPreview: (g: Generation) => void }) {
+  return (
+    <div
+      className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-xl cursor-pointer group ${
+        gen.status === "queued" ? "border border-dashed border-white/10" : "border border-white/10 bg-[#1a1a2e]"
+      }`}
+      onClick={() => gen.status === "completed" && gen.videoUrl && onPreview(gen)}
+    >
+      {gen.status === "completed" && gen.videoUrl && (
+        <>
+          <HoverVideo src={gen.videoUrl} prompt={gen.prompt} ratio={gen.ratio} duration={gen.duration} />
+          <a
+            href={gen.videoUrl}
+            download
+            onClick={(e) => e.stopPropagation()}
+            className="absolute top-2 right-2 z-10 rounded-full bg-black/60 p-1.5 text-white/70 opacity-0 group-hover:opacity-100 transition-all hover:bg-black/80 hover:text-white hover:scale-110"
+            title="Baixar vídeo"
+          >
+            <Download className="h-4 w-4" />
+          </a>
+        </>
+      )}
+      {gen.status === "processing" && (
+        <div className="text-center">
+          <div className="mx-auto mb-1.5 h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-white/40" />
+          <span className="text-[10px] text-gray-500">gerando...</span>
+        </div>
+      )}
+      {gen.status === "failed" && (
+        <span className="px-3 text-center text-[10px] text-red-400/60">{gen.error || "Falhou"}</span>
+      )}
     </div>
   );
 }
