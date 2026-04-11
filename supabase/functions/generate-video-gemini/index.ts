@@ -115,7 +115,7 @@ async function handleEnqueue(req: Request): Promise<Response> {
   const creditCost = CREDIT_COSTS[context || 'video-generator'] || 800;
   
   // Check user balance
-  const { data: balance } = await supabase.rpc('get_credit_balance', { _user_id: userId });
+  const { data: balance } = await supabase.rpc('get_upscaler_credits', { _user_id: userId });
   if ((balance ?? 0) < creditCost) {
     return jsonResponse({ error: 'Créditos insuficientes', code: 'INSUFFICIENT_CREDITS' }, 402);
   }
