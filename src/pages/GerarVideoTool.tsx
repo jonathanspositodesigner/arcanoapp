@@ -215,10 +215,11 @@ const GerarVideoTool = () => {
     }
   }, [generationMode]);
 
-  // Cleanup evolink polling on unmount
+  // Cleanup evolink polling and gemini channel on unmount
   useEffect(() => {
     return () => {
       if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+      if (geminiChannelRef.current) geminiChannelRef.current.unsubscribe();
     };
   }, []);
 
