@@ -50,6 +50,7 @@ const RATIOS: { value: Ratio; label: string }[] = [
   { value: "21:9", label: "21:9 Ultra-wide" },
   { value: "auto", label: "Auto" },
 ];
+
 const DURATIONS: Duration[] = ["4", "5", "6", "8", "10", "12", "15"];
 
 const MODE_OPTIONS: { value: Mode; label: string; desc: string }[] = [
@@ -68,7 +69,6 @@ export default function Seedance2() {
   const [speed, setSpeed] = useState<Speed>("standard");
   const [generateAudio, setGenerateAudio] = useState(true);
   const [generations, setGenerations] = useState<Generation[]>([]);
-
   const [startImage, setStartImage] = useState<string | null>(null);
   const [endImage, setEndImage] = useState<string | null>(null);
   const [refImages, setRefImages] = useState<string[]>([]);
@@ -88,7 +88,7 @@ export default function Seedance2() {
   const handleFileUpload = useCallback(async (
     file: File,
     onSuccess: (url: string) => void,
-    folder: string
+    folder: string,
   ) => {
     setUploading(true);
     const result = await uploadToStorage(file, folder);
@@ -108,7 +108,7 @@ export default function Seedance2() {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (file && /\.(mp4|mov)$/i.test(file.name) && refVideos.length < 3) {
-      handleFileUpload(file, (url) => setRefVideos(prev => [...prev, url]), "seedance-refs");
+      handleFileUpload(file, (url) => setRefVideos((prev) => [...prev, url]), "seedance-refs");
     }
   }, [handleFileUpload, refVideos.length]);
 
@@ -116,7 +116,7 @@ export default function Seedance2() {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (file && /\.(mp3|wav)$/i.test(file.name) && refAudios.length < 3) {
-      handleFileUpload(file, (url) => setRefAudios(prev => [...prev, url]), "seedance-refs");
+      handleFileUpload(file, (url) => setRefAudios((prev) => [...prev, url]), "seedance-refs");
     }
   }, [handleFileUpload, refAudios.length]);
 
@@ -134,34 +134,41 @@ export default function Seedance2() {
   const startPolling = useCallback((genId: string, taskId: string, jobId: string) => {
     let count = 0;
     const timer = setInterval(async () => {
-      count++;
+      count += 1;
+
       if (count > 60) {
         clearInterval(timer);
         delete pollTimers.current[genId];
-        setGenerations(prev => prev.map(g => g.id === genId ? { ...g, status: "failed", error: "Timeout" } : g));
+        setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: "Timeout" } : g));
         return;
       }
+
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
+
         const { data, error } = await supabase.functions.invoke("seedance-poll", {
           body: { taskId, jobId },
           headers: { Authorization: `Bearer ${session.access_token}` },
         });
+
         if (error) return;
+
         if (data?.status === "completed") {
           clearInterval(timer);
           delete pollTimers.current[genId];
-          setGenerations(prev => prev.map(g => g.id === genId ? { ...g, status: "completed", videoUrl: data.outputUrl } : g));
+          setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "completed", videoUrl: data.outputUrl } : g));
         } else if (data?.status === "failed") {
           clearInterval(timer);
           delete pollTimers.current[genId];
-          setGenerations(prev => prev.map(g => g.id === genId ? { ...g, status: "failed", error: data.error } : g));
+          setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: data.error } : g));
         } else {
-          setGenerations(prev => prev.map(g => g.id === genId ? { ...g, pollCount: count } : g));
+          setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, pollCount: count } : g));
         }
-      } catch {}
+      } catch {
+      }
     }, 5000);
+
     pollTimers.current[genId] = timer;
   }, []);
 
@@ -174,38 +181,53 @@ export default function Seedance2() {
 
   const handleGenerate = useCallback(async () => {
     if (!canGenerate() || !user) return;
+
     const model = MODEL_MAP[`${mode}-${speed}`];
     const genId = crypto.randomUUID();
-    setGenerations(prev => [{ id: genId, status: "queued", prompt: prompt.trim(), ratio, duration }, ...prev]);
+
+    setGenerations((prev) => [{ id: genId, status: "queued", prompt: prompt.trim(), ratio, duration }, ...prev]);
 
     try {
       const { data: jobData, error: insertError } = await supabase
         .from("seedance_jobs")
         .insert({
-          user_id: user.id, model, prompt: prompt.trim(),
-          duration: parseInt(duration), quality,
+          user_id: user.id,
+          model,
+          prompt: prompt.trim(),
+          duration: parseInt(duration),
+          quality,
           aspect_ratio: ratio === "auto" ? undefined : ratio,
           generate_audio: generateAudio,
-          input_image_urls: mode === "startend" ? [startImage, endImage].filter(Boolean) as string[] : mode === "multiref" ? refImages : undefined,
+          input_image_urls: mode === "startend"
+            ? ([startImage, endImage].filter(Boolean) as string[])
+            : mode === "multiref"
+              ? refImages
+              : undefined,
           input_video_urls: mode === "multiref" && refVideos.length > 0 ? refVideos : undefined,
           input_audio_urls: mode === "multiref" && refAudios.length > 0 ? refAudios : undefined,
           status: "queued",
         })
-        .select("id").single();
+        .select("id")
+        .single();
 
       if (insertError || !jobData) {
-        setGenerations(prev => prev.map(g => g.id === genId ? { ...g, status: "failed", error: "Failed to create job" } : g));
+        setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: "Failed to create job" } : g));
         return;
       }
-      setGenerations(prev => prev.map(g => g.id === genId ? { ...g, status: "processing" } : g));
+
+      setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "processing" } : g));
 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
       const { data, error } = await supabase.functions.invoke("seedance-generate", {
         body: {
-          model, prompt: prompt.trim(), duration: parseInt(duration), quality,
-          aspectRatio: ratio === "auto" ? undefined : ratio, generateAudio,
+          model,
+          prompt: prompt.trim(),
+          duration: parseInt(duration),
+          quality,
+          aspectRatio: ratio === "auto" ? undefined : ratio,
+          generateAudio,
           imageUrls: mode === "startend" ? [startImage, endImage].filter(Boolean) : mode === "multiref" ? refImages : undefined,
           videoUrls: mode === "multiref" && refVideos.length > 0 ? refVideos : undefined,
           audioUrls: mode === "multiref" && refAudios.length > 0 ? refAudios : undefined,
@@ -215,220 +237,249 @@ export default function Seedance2() {
       });
 
       if (error || !data?.success) {
-        setGenerations(prev => prev.map(g => g.id === genId ? { ...g, status: "failed", error: data?.error || "API error" } : g));
+        setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: data?.error || "API error" } : g));
         return;
       }
-      setGenerations(prev => prev.map(g => g.id === genId ? { ...g, taskId: data.taskId } : g));
+
+      setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, taskId: data.taskId } : g));
       startPolling(genId, data.taskId, jobData.id);
     } catch (err: any) {
-      setGenerations(prev => prev.map(g => g.id === genId ? { ...g, status: "failed", error: err.message } : g));
+      setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: err.message } : g));
     }
   }, [prompt, mode, speed, ratio, quality, duration, generateAudio, startImage, endImage, refImages, refVideos, refAudios, user, canGenerate, startPolling]);
 
-  const truncate = (s: string, n: number) => s.length > n ? s.slice(0, n) + "…" : s;
+  const truncate = (value: string, length: number) => value.length > length ? `${value.slice(0, length)}…` : value;
 
   return (
     <AppLayout fullScreen>
-      <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 65px)' }}>
-        <div className="flex-1 min-h-0 flex flex-col overflow-hidden px-4 pt-4">
-          <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-1 min-h-0 overflow-y-auto">
+        <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-4 px-4 py-4">
+          <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold text-white">Seedance 2.0</h1>
-            <span className="text-[11px] text-gray-400 border border-white/10 bg-white/5 rounded-md px-2 py-0.5">
+            <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-gray-400">
               {generations.length} gerações
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto min-h-0" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}>
+          <div className="min-h-[280px] overflow-y-auto rounded-2xl border border-white/5 bg-black/10 lg:min-h-[360px]">
             {generations.length === 0 ? (
-              <div className="flex items-center justify-center h-full">
+              <div className="flex min-h-[280px] items-center justify-center px-6 text-center lg:min-h-[360px]">
                 <p className="text-sm text-gray-500">Nenhuma geração ainda. Comece descrevendo um vídeo abaixo.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                {generations.map(gen => (
-                  <div key={gen.id} className={`aspect-video rounded-xl overflow-hidden relative flex items-center justify-center ${
-                    gen.status === "queued" ? "border border-dashed border-white/10" : "bg-[#1a1a2e] border border-white/10"
-                  }`}>
+              <div className="grid grid-cols-2 gap-2 p-2 lg:grid-cols-4">
+                {generations.map((gen) => (
+                  <div
+                    key={gen.id}
+                    className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-xl ${
+                      gen.status === "queued" ? "border border-dashed border-white/10" : "border border-white/10 bg-[#1a1a2e]"
+                    }`}
+                  >
                     {gen.status === "completed" && gen.videoUrl && (
                       <>
-                        <video src={gen.videoUrl} controls className="w-full h-full object-cover rounded-xl" />
+                        <video src={gen.videoUrl} controls className="h-full w-full rounded-xl object-cover" />
                         <span className="absolute bottom-1.5 left-2 text-[9px] text-gray-500">
                           {truncate(gen.prompt, 30)} · {gen.ratio} · {gen.duration}s
                         </span>
                       </>
                     )}
+
                     {gen.status === "processing" && (
                       <div className="text-center">
-                        <div className="w-5 h-5 rounded-full border-2 border-white/10 border-t-white/40 animate-spin mx-auto mb-1.5" />
+                        <div className="mx-auto mb-1.5 h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-white/40" />
                         <span className="text-[10px] text-gray-500">gerando...</span>
                       </div>
                     )}
+
                     {gen.status === "failed" && (
-                      <span className="text-[10px] text-red-400/60 px-3 text-center">{gen.error || "Falhou"}</span>
+                      <span className="px-3 text-center text-[10px] text-red-400/60">{gen.error || "Falhou"}</span>
                     )}
                   </div>
                 ))}
               </div>
             )}
           </div>
-        </div>
 
-        {/* Bottom Controls */}
-        <div className="shrink-0 border-t border-white/5 bg-[#0a0a18]/95 backdrop-blur-sm">
-          {/* Upload area - only when mode requires it */}
-          {mode !== "text" && (
-            <div className="px-4 pt-3 pb-0">
-              {mode === "startend" && (
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[10px] uppercase tracking-wider text-gray-500">Imagens</span>
-                  <div className="flex gap-1.5">
-                    <UploadSlot url={startImage} onRemove={() => setStartImage(null)} onDrop={e => handleImageDrop(e, url => setStartImage(url))} onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", url => setStartImage(url))} size={48} />
-                    <UploadSlot url={endImage} onRemove={() => setEndImage(null)} onDrop={e => handleImageDrop(e, url => setEndImage(url))} onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", url => setEndImage(url))} size={48} />
-                  </div>
-                </div>
-              )}
-              {mode === "multiref" && (
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <span className="text-[10px] uppercase tracking-wider text-gray-500">Refs</span>
-                  <div className="flex gap-1 flex-wrap">
-                    {refImages.map((url, i) => (
-                      <UploadSlot key={i} url={url} onRemove={() => setRefImages(prev => prev.filter((_, j) => j !== i))} size={40} />
-                    ))}
-                    {refImages.length < 9 && (
-                      <UploadSlot url={null} onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", url => setRefImages(prev => [...prev, url]))} onDrop={e => handleImageDrop(e, url => setRefImages(prev => [...prev, url]))} size={40} />
-                    )}
-                  </div>
-                  <div onDragOver={e => e.preventDefault()} onDrop={handleVideoDrop} onClick={() => refVideos.length < 3 && openFilePicker("video/mp4,video/quicktime", url => setRefVideos(prev => [...prev, url]))}
-                    className="h-[28px] px-3 border border-dashed border-white/10 rounded-lg bg-black/30 flex items-center justify-center cursor-pointer text-[10px] text-gray-500 gap-1 hover:border-white/20 transition-colors">
-                    {refVideos.length > 0 ? `${refVideos.length} vídeo(s)` : "+ vídeo"}
-                    {refVideos.length > 0 && <button onClick={e => { e.stopPropagation(); setRefVideos([]); }} className="text-gray-400 ml-1 hover:text-white">×</button>}
-                  </div>
-                  <div onDragOver={e => e.preventDefault()} onDrop={handleAudioDrop} onClick={() => refAudios.length < 3 && openFilePicker("audio/mpeg,audio/wav", url => setRefAudios(prev => [...prev, url]))}
-                    className="h-[28px] px-3 border border-dashed border-white/10 rounded-lg bg-black/30 flex items-center justify-center cursor-pointer text-[10px] text-gray-500 gap-1 hover:border-white/20 transition-colors">
-                    {refAudios.length > 0 ? `${refAudios.length} áudio(s)` : "+ áudio"}
-                    {refAudios.length > 0 && <button onClick={e => { e.stopPropagation(); setRefAudios([]); }} className="text-gray-400 ml-1 hover:text-white">×</button>}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+          <div className="rounded-2xl border border-white/5 bg-[#0a0a18]/95 p-3 backdrop-blur-sm">
+            {mode !== "text" && (
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                {mode === "startend" && (
+                  <>
+                    <span className="text-[10px] uppercase tracking-wider text-gray-500">Imagens</span>
+                    <div className="flex gap-1.5">
+                      <UploadSlot
+                        url={startImage}
+                        onRemove={() => setStartImage(null)}
+                        onDrop={(e) => handleImageDrop(e, (url) => setStartImage(url))}
+                        onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", (url) => setStartImage(url))}
+                        size={48}
+                      />
+                      <UploadSlot
+                        url={endImage}
+                        onRemove={() => setEndImage(null)}
+                        onDrop={(e) => handleImageDrop(e, (url) => setEndImage(url))}
+                        onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", (url) => setEndImage(url))}
+                        size={48}
+                      />
+                    </div>
+                  </>
+                )}
 
-          {/* Prompt row */}
-          <div className="px-4 pt-3 pb-2 flex items-start gap-3">
-            <textarea
-              value={prompt}
-              onChange={e => setPrompt(e.target.value)}
-              placeholder="Descreva o vídeo que deseja gerar..."
-              className="flex-1 min-w-0 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-gray-600 resize-none outline-none focus:border-purple-500/40 transition-colors h-[44px]"
-              rows={1}
-            />
-            <button
-              onClick={handleGenerate}
-              disabled={!canGenerate() || uploading}
-              className={`shrink-0 h-[44px] px-5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2.5 ${
-                canGenerate() && !uploading
-                  ? "bg-white text-[#0D0221] hover:bg-gray-100 shadow-lg shadow-white/10"
-                  : "bg-white/5 text-gray-600 cursor-not-allowed"
-              }`}
-            >
-              {uploading ? "Enviando..." : (
-                <>
-                  Gerar vídeo
-                  <span className="flex items-center gap-1 text-xs opacity-60">
-                    <Coins className="w-3.5 h-3.5" />
-                    {creditCost}
-                  </span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Settings row */}
-          <div className="px-4 pb-3 flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] uppercase tracking-wider text-gray-600 font-medium">Motor</span>
-              <div className="flex bg-white/[0.03] border border-white/[0.06] rounded-lg p-[2px]">
-                {(["standard", "fast"] as Speed[]).map(s => (
-                  <button
-                    key={s}
-                    onClick={() => setSpeed(s)}
-                    className={`px-3 py-1 text-[11px] rounded-md font-medium transition-all ${
-                      speed === s ? "bg-purple-500/20 text-purple-300 border border-purple-500/30" : "text-gray-500 hover:text-gray-300 border border-transparent"
-                    }`}
-                  >
-                    {s === "standard" ? "Standard" : "Fast"}
-                  </button>
-                ))}
+                {mode === "multiref" && (
+                  <>
+                    <span className="text-[10px] uppercase tracking-wider text-gray-500">Refs</span>
+                    <div className="flex flex-wrap gap-1">
+                      {refImages.map((url, index) => (
+                        <UploadSlot key={index} url={url} onRemove={() => setRefImages((prev) => prev.filter((_, i) => i !== index))} size={40} />
+                      ))}
+                      {refImages.length < 9 && (
+                        <UploadSlot
+                          url={null}
+                          onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", (url) => setRefImages((prev) => [...prev, url]))}
+                          onDrop={(e) => handleImageDrop(e, (url) => setRefImages((prev) => [...prev, url]))}
+                          size={40}
+                        />
+                      )}
+                    </div>
+                    <div
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={handleVideoDrop}
+                      onClick={() => refVideos.length < 3 && openFilePicker("video/mp4,video/quicktime", (url) => setRefVideos((prev) => [...prev, url]))}
+                      className="flex h-[28px] cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-white/10 bg-black/30 px-3 text-[10px] text-gray-500 transition-colors hover:border-white/20"
+                    >
+                      {refVideos.length > 0 ? `${refVideos.length} vídeo(s)` : "+ vídeo"}
+                      {refVideos.length > 0 && <button onClick={(e) => { e.stopPropagation(); setRefVideos([]); }} className="ml-1 text-gray-400 hover:text-white">×</button>}
+                    </div>
+                    <div
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={handleAudioDrop}
+                      onClick={() => refAudios.length < 3 && openFilePicker("audio/mpeg,audio/wav", (url) => setRefAudios((prev) => [...prev, url]))}
+                      className="flex h-[28px] cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-white/10 bg-black/30 px-3 text-[10px] text-gray-500 transition-colors hover:border-white/20"
+                    >
+                      {refAudios.length > 0 ? `${refAudios.length} áudio(s)` : "+ áudio"}
+                      {refAudios.length > 0 && <button onClick={(e) => { e.stopPropagation(); setRefAudios([]); }} className="ml-1 text-gray-400 hover:text-white">×</button>}
+                    </div>
+                  </>
+                )}
               </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_200px]">
+              <textarea
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="Descreva o vídeo que deseja gerar..."
+                className="h-[44px] min-w-0 resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-gray-600 focus:border-purple-500/40"
+                rows={1}
+              />
+
+              <button
+                onClick={handleGenerate}
+                disabled={!canGenerate() || uploading}
+                className={`flex h-[44px] items-center justify-center gap-2.5 rounded-xl px-5 text-sm font-semibold transition-all xl:min-w-[200px] ${
+                  canGenerate() && !uploading
+                    ? "bg-white text-[#0D0221] shadow-lg shadow-white/10 hover:bg-gray-100"
+                    : "cursor-not-allowed bg-white/5 text-gray-600"
+                }`}
+              >
+                {uploading ? "Enviando..." : (
+                  <>
+                    Gerar vídeo
+                    <span className="flex items-center gap-1 text-xs opacity-60">
+                      <Coins className="h-3.5 w-3.5" />
+                      {creditCost}
+                    </span>
+                  </>
+                )}
+              </button>
             </div>
 
-            <div className="w-px h-4 bg-white/[0.06]" />
-
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] uppercase tracking-wider text-gray-600 font-medium">Modo</span>
-              <div className="flex bg-white/[0.03] border border-white/[0.06] rounded-lg p-[2px]">
-                {MODE_OPTIONS.map(m => (
-                  <button
-                    key={m.value}
-                    onClick={() => setMode(m.value)}
-                    className={`px-3 py-1 text-[11px] rounded-md font-medium transition-all ${
-                      mode === m.value ? "bg-purple-500/20 text-purple-300 border border-purple-500/30" : "text-gray-500 hover:text-gray-300 border border-transparent"
-                    }`}
-                    title={m.desc}
-                  >
-                    {m.label}
-                  </button>
-                ))}
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 overflow-x-auto pb-1">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Motor</span>
+                <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
+                  {(["standard", "fast"] as Speed[]).map((value) => (
+                    <button
+                      key={value}
+                      onClick={() => setSpeed(value)}
+                      className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
+                        speed === value ? "border-purple-500/30 bg-purple-500/20 text-purple-300" : "border-transparent text-gray-500 hover:text-gray-300"
+                      }`}
+                    >
+                      {value === "standard" ? "Standard" : "Fast"}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div className="w-px h-4 bg-white/[0.06]" />
+              <div className="h-4 w-px bg-white/[0.06]" />
 
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] uppercase tracking-wider text-gray-600 font-medium">Tamanho</span>
-              <select
-                value={ratio}
-                onChange={e => setRatio(e.target.value as Ratio)}
-                className="bg-white/[0.04] border border-white/[0.08] rounded-lg text-gray-300 text-[11px] px-2 py-1 outline-none cursor-pointer hover:border-white/[0.12] transition-colors"
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Modo</span>
+                <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
+                  {MODE_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => setMode(option.value)}
+                      className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
+                        mode === option.value ? "border-purple-500/30 bg-purple-500/20 text-purple-300" : "border-transparent text-gray-500 hover:text-gray-300"
+                      }`}
+                      title={option.desc}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="h-4 w-px bg-white/[0.06]" />
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Tamanho</span>
+                <select
+                  value={ratio}
+                  onChange={(e) => setRatio(e.target.value as Ratio)}
+                  className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] text-gray-300 outline-none transition-colors hover:border-white/[0.12]"
+                >
+                  {RATIOS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Qualidade</span>
+                <select
+                  value={quality}
+                  onChange={(e) => setQuality(e.target.value as Quality)}
+                  className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] text-gray-300 outline-none transition-colors hover:border-white/[0.12]"
+                >
+                  <option value="720p">720p</option>
+                  <option value="480p">480p</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Duração</span>
+                <select
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value as Duration)}
+                  className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] text-gray-300 outline-none transition-colors hover:border-white/[0.12]"
+                >
+                  {DURATIONS.map((item) => <option key={item} value={item}>{item}s</option>)}
+                </select>
+              </div>
+
+              <button
+                onClick={() => setGenerateAudio(!generateAudio)}
+                className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] transition-colors ${
+                  generateAudio
+                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
+                    : "border-white/[0.06] bg-white/[0.03] text-gray-500"
+                }`}
               >
-                {RATIOS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-              </select>
+                <div className={`h-1.5 w-1.5 rounded-full ${generateAudio ? "bg-emerald-400" : "bg-gray-600"}`} />
+                Áudio
+              </button>
             </div>
-
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] uppercase tracking-wider text-gray-600 font-medium">Qualidade</span>
-              <select
-                value={quality}
-                onChange={e => setQuality(e.target.value as Quality)}
-                className="bg-white/[0.04] border border-white/[0.08] rounded-lg text-gray-300 text-[11px] px-2 py-1 outline-none cursor-pointer hover:border-white/[0.12] transition-colors"
-              >
-                <option value="720p">720p</option>
-                <option value="480p">480p</option>
-              </select>
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] uppercase tracking-wider text-gray-600 font-medium">Duração</span>
-              <select
-                value={duration}
-                onChange={e => setDuration(e.target.value as Duration)}
-                className="bg-white/[0.04] border border-white/[0.08] rounded-lg text-gray-300 text-[11px] px-2 py-1 outline-none cursor-pointer hover:border-white/[0.12] transition-colors"
-              >
-                {DURATIONS.map(d => <option key={d} value={d}>{d}s</option>)}
-              </select>
-            </div>
-
-            <button
-              onClick={() => setGenerateAudio(!generateAudio)}
-              className={`flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-lg border transition-colors ${
-                generateAudio
-                  ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                  : "border-white/[0.06] bg-white/[0.03] text-gray-500"
-              }`}
-            >
-              <div className={`w-1.5 h-1.5 rounded-full ${generateAudio ? "bg-emerald-400" : "bg-gray-600"}`} />
-              Áudio
-            </button>
           </div>
         </div>
       </div>
@@ -436,28 +487,40 @@ export default function Seedance2() {
   );
 }
 
-function UploadSlot({ url, onRemove, onDrop, onClickUpload, size }: {
+function UploadSlot({
+  url,
+  onRemove,
+  onDrop,
+  onClickUpload,
+  size,
+}: {
   url?: string | null;
   onRemove?: () => void;
   onDrop?: (e: React.DragEvent) => void;
   onClickUpload?: () => void;
   size?: number;
 }) {
-  const s = size || 68;
+  const dimension = size || 68;
+
   if (url) {
     return (
-      <div className="relative rounded-lg overflow-hidden border border-white/10" style={{ width: s, height: s }}>
-        <img src={url} className="w-full h-full object-cover" />
+      <div className="relative overflow-hidden rounded-lg border border-white/10" style={{ width: dimension, height: dimension }}>
+        <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
         {onRemove && (
-          <button onClick={onRemove} className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/70 text-gray-300 text-[10px] flex items-center justify-center hover:text-white">×</button>
+          <button onClick={onRemove} className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/70 text-[10px] text-gray-300 hover:text-white">×</button>
         )}
       </div>
     );
   }
+
   return (
-    <div onDragOver={e => e.preventDefault()} onDrop={onDrop} onClick={onClickUpload}
-      className="rounded-lg border border-dashed border-white/10 bg-black/30 flex items-center justify-center cursor-pointer text-gray-500 text-base hover:border-white/20 transition-colors"
-      style={{ width: s, height: s }}>
+    <div
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={onDrop}
+      onClick={onClickUpload}
+      className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-white/10 bg-black/30 text-base text-gray-500 transition-colors hover:border-white/20"
+      style={{ width: dimension, height: dimension }}
+    >
       +
     </div>
   );
