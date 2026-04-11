@@ -273,163 +273,162 @@ export default function Seedance2() {
           </div>
         </div>
 
-        {/* Bottom - Controls */}
-        <div className="shrink-0 border-t border-white/10 bg-[#0D0221]">
-          <div className="px-4 py-3 flex gap-3">
-            {/* Left - Prompt & Settings */}
-            <div className="flex-1 flex flex-col gap-2.5 min-w-0">
-              <textarea
-                value={prompt}
-                onChange={e => setPrompt(e.target.value)}
-                placeholder="Descreva o vídeo que deseja gerar..."
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-gray-600 resize-none outline-none focus:border-white/20 transition-colors"
-                rows={2}
-              />
-
-              {/* Row 1: Motor + Modo */}
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] uppercase text-gray-500 font-medium">Motor</span>
-                  <div className="flex bg-black/40 border border-white/10 rounded-lg p-0.5">
-                    {(["standard", "fast"] as Speed[]).map(s => (
-                      <button
-                        key={s}
-                        onClick={() => setSpeed(s)}
-                        className={`px-3 py-1.5 text-[11px] rounded-md font-medium transition-all ${
-                          speed === s ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"
-                        }`}
-                      >
-                        {s === "standard" ? "Standard" : "Fast"}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] uppercase text-gray-500 font-medium">Modo</span>
-                  <div className="flex bg-black/40 border border-white/10 rounded-lg p-0.5">
-                    {MODE_OPTIONS.map(m => (
-                      <button
-                        key={m.value}
-                        onClick={() => setMode(m.value)}
-                        className={`px-3 py-1.5 text-[11px] rounded-md font-medium transition-all ${
-                          mode === m.value ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"
-                        }`}
-                        title={m.desc}
-                      >
-                        {m.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Row 2: Tamanho + Qualidade + Duração + Áudio */}
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex items-center gap-1">
-                  <span className="text-[10px] uppercase text-gray-500 font-medium">Tamanho</span>
-                  <select
-                    value={ratio}
-                    onChange={e => setRatio(e.target.value as Ratio)}
-                    className="bg-black/40 border border-white/10 rounded-md text-gray-200 text-[11px] px-1.5 py-1 outline-none"
-                  >
-                    {RATIOS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  <span className="text-[10px] uppercase text-gray-500 font-medium">Qualidade</span>
-                  <select
-                    value={quality}
-                    onChange={e => setQuality(e.target.value as Quality)}
-                    className="bg-black/40 border border-white/10 rounded-md text-gray-200 text-[11px] px-1.5 py-1 outline-none"
-                  >
-                    <option value="720p">720p</option>
-                    <option value="480p">480p</option>
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  <span className="text-[10px] uppercase text-gray-500 font-medium">Duração</span>
-                  <select
-                    value={duration}
-                    onChange={e => setDuration(e.target.value as Duration)}
-                    className="bg-black/40 border border-white/10 rounded-md text-gray-200 text-[11px] px-1.5 py-1 outline-none"
-                  >
-                    {DURATIONS.map(d => <option key={d} value={d}>{d}s</option>)}
-                  </select>
-                </div>
-
-                <button
-                  onClick={() => setGenerateAudio(!generateAudio)}
-                  className={`flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-md border transition-colors ${
-                    generateAudio
-                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-                      : "border-white/10 bg-black/40 text-gray-500"
-                  }`}
-                >
-                  <div className={`w-2 h-2 rounded-full ${generateAudio ? "bg-emerald-400" : "bg-gray-600"}`} />
-                  Áudio
-                </button>
-              </div>
-            </div>
-
-            {/* Right - Uploads + Generate */}
-            <div className="w-[164px] shrink-0 flex flex-col gap-2 justify-end">
+        {/* Bottom Controls */}
+        <div className="shrink-0 border-t border-white/5 bg-[#0a0a18]/95 backdrop-blur-sm">
+          {/* Upload area - only when mode requires it */}
+          {mode !== "text" && (
+            <div className="px-4 pt-3 pb-0">
               {mode === "startend" && (
-                <>
-                  <span className="text-[10px] uppercase text-gray-500 font-medium">Imagens</span>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-[10px] uppercase tracking-wider text-gray-500">Imagens</span>
                   <div className="flex gap-1.5">
-                    <UploadSlot url={startImage} onRemove={() => setStartImage(null)} onDrop={e => handleImageDrop(e, url => setStartImage(url))} onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", url => setStartImage(url))} />
-                    <UploadSlot url={endImage} onRemove={() => setEndImage(null)} onDrop={e => handleImageDrop(e, url => setEndImage(url))} onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", url => setEndImage(url))} />
+                    <UploadSlot url={startImage} onRemove={() => setStartImage(null)} onDrop={e => handleImageDrop(e, url => setStartImage(url))} onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", url => setStartImage(url))} size={48} />
+                    <UploadSlot url={endImage} onRemove={() => setEndImage(null)} onDrop={e => handleImageDrop(e, url => setEndImage(url))} onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", url => setEndImage(url))} size={48} />
                   </div>
-                </>
+                </div>
               )}
-
               {mode === "multiref" && (
-                <>
-                  <span className="text-[10px] uppercase text-gray-500 font-medium">Referências</span>
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span className="text-[10px] uppercase tracking-wider text-gray-500">Refs</span>
                   <div className="flex gap-1 flex-wrap">
                     {refImages.map((url, i) => (
-                      <UploadSlot key={i} url={url} onRemove={() => setRefImages(prev => prev.filter((_, j) => j !== i))} size={44} />
+                      <UploadSlot key={i} url={url} onRemove={() => setRefImages(prev => prev.filter((_, j) => j !== i))} size={40} />
                     ))}
                     {refImages.length < 9 && (
-                      <UploadSlot url={null} onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", url => setRefImages(prev => [...prev, url]))} onDrop={e => handleImageDrop(e, url => setRefImages(prev => [...prev, url]))} size={44} />
+                      <UploadSlot url={null} onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", url => setRefImages(prev => [...prev, url]))} onDrop={e => handleImageDrop(e, url => setRefImages(prev => [...prev, url]))} size={40} />
                     )}
                   </div>
                   <div onDragOver={e => e.preventDefault()} onDrop={handleVideoDrop} onClick={() => refVideos.length < 3 && openFilePicker("video/mp4,video/quicktime", url => setRefVideos(prev => [...prev, url]))}
-                    className="h-[30px] w-full border border-dashed border-white/10 rounded-lg bg-black/30 flex items-center justify-center cursor-pointer text-[10px] text-gray-500 gap-1 hover:border-white/20 transition-colors">
+                    className="h-[28px] px-3 border border-dashed border-white/10 rounded-lg bg-black/30 flex items-center justify-center cursor-pointer text-[10px] text-gray-500 gap-1 hover:border-white/20 transition-colors">
                     {refVideos.length > 0 ? `${refVideos.length} vídeo(s)` : "+ vídeo"}
                     {refVideos.length > 0 && <button onClick={e => { e.stopPropagation(); setRefVideos([]); }} className="text-gray-400 ml-1 hover:text-white">×</button>}
                   </div>
                   <div onDragOver={e => e.preventDefault()} onDrop={handleAudioDrop} onClick={() => refAudios.length < 3 && openFilePicker("audio/mpeg,audio/wav", url => setRefAudios(prev => [...prev, url]))}
-                    className="h-[30px] w-full border border-dashed border-white/10 rounded-lg bg-black/30 flex items-center justify-center cursor-pointer text-[10px] text-gray-500 gap-1 hover:border-white/20 transition-colors">
+                    className="h-[28px] px-3 border border-dashed border-white/10 rounded-lg bg-black/30 flex items-center justify-center cursor-pointer text-[10px] text-gray-500 gap-1 hover:border-white/20 transition-colors">
                     {refAudios.length > 0 ? `${refAudios.length} áudio(s)` : "+ áudio"}
                     {refAudios.length > 0 && <button onClick={e => { e.stopPropagation(); setRefAudios([]); }} className="text-gray-400 ml-1 hover:text-white">×</button>}
                   </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Prompt row */}
+          <div className="px-4 pt-3 pb-2 flex items-start gap-3">
+            <textarea
+              value={prompt}
+              onChange={e => setPrompt(e.target.value)}
+              placeholder="Descreva o vídeo que deseja gerar..."
+              className="flex-1 min-w-0 bg-white/[0.04] border border-white/[0.08] rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-gray-600 resize-none outline-none focus:border-purple-500/40 transition-colors h-[44px]"
+              rows={1}
+            />
+            <button
+              onClick={handleGenerate}
+              disabled={!canGenerate() || uploading}
+              className={`shrink-0 h-[44px] px-5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2.5 ${
+                canGenerate() && !uploading
+                  ? "bg-white text-[#0D0221] hover:bg-gray-100 shadow-lg shadow-white/10"
+                  : "bg-white/5 text-gray-600 cursor-not-allowed"
+              }`}
+            >
+              {uploading ? "Enviando..." : (
+                <>
+                  Gerar vídeo
+                  <span className="flex items-center gap-1 text-xs opacity-60">
+                    <Coins className="w-3.5 h-3.5" />
+                    {creditCost}
+                  </span>
                 </>
               )}
+            </button>
+          </div>
 
-              <button
-                onClick={handleGenerate}
-                disabled={!canGenerate() || uploading}
-                className={`w-full py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${
-                  canGenerate() && !uploading
-                    ? "bg-gradient-to-r from-purple-500 to-fuchsia-500 text-white hover:from-purple-400 hover:to-fuchsia-400 shadow-lg shadow-purple-500/20"
-                    : "bg-white/5 text-gray-500 cursor-not-allowed"
-                }`}
-              >
-                {uploading ? "Enviando..." : (
-                  <>
-                    Gerar vídeo
-                    <span className="flex items-center gap-0.5 text-[11px] opacity-80">
-                      <Coins className="w-3 h-3" />
-                      {creditCost}
-                    </span>
-                  </>
-                )}
-              </button>
+          {/* Settings row */}
+          <div className="px-4 pb-3 flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] uppercase tracking-wider text-gray-600 font-medium">Motor</span>
+              <div className="flex bg-white/[0.03] border border-white/[0.06] rounded-lg p-[2px]">
+                {(["standard", "fast"] as Speed[]).map(s => (
+                  <button
+                    key={s}
+                    onClick={() => setSpeed(s)}
+                    className={`px-3 py-1 text-[11px] rounded-md font-medium transition-all ${
+                      speed === s ? "bg-purple-500/20 text-purple-300 border border-purple-500/30" : "text-gray-500 hover:text-gray-300 border border-transparent"
+                    }`}
+                  >
+                    {s === "standard" ? "Standard" : "Fast"}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            <div className="w-px h-4 bg-white/[0.06]" />
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] uppercase tracking-wider text-gray-600 font-medium">Modo</span>
+              <div className="flex bg-white/[0.03] border border-white/[0.06] rounded-lg p-[2px]">
+                {MODE_OPTIONS.map(m => (
+                  <button
+                    key={m.value}
+                    onClick={() => setMode(m.value)}
+                    className={`px-3 py-1 text-[11px] rounded-md font-medium transition-all ${
+                      mode === m.value ? "bg-purple-500/20 text-purple-300 border border-purple-500/30" : "text-gray-500 hover:text-gray-300 border border-transparent"
+                    }`}
+                    title={m.desc}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="w-px h-4 bg-white/[0.06]" />
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] uppercase tracking-wider text-gray-600 font-medium">Tamanho</span>
+              <select
+                value={ratio}
+                onChange={e => setRatio(e.target.value as Ratio)}
+                className="bg-white/[0.04] border border-white/[0.08] rounded-lg text-gray-300 text-[11px] px-2 py-1 outline-none cursor-pointer hover:border-white/[0.12] transition-colors"
+              >
+                {RATIOS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] uppercase tracking-wider text-gray-600 font-medium">Qualidade</span>
+              <select
+                value={quality}
+                onChange={e => setQuality(e.target.value as Quality)}
+                className="bg-white/[0.04] border border-white/[0.08] rounded-lg text-gray-300 text-[11px] px-2 py-1 outline-none cursor-pointer hover:border-white/[0.12] transition-colors"
+              >
+                <option value="720p">720p</option>
+                <option value="480p">480p</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] uppercase tracking-wider text-gray-600 font-medium">Duração</span>
+              <select
+                value={duration}
+                onChange={e => setDuration(e.target.value as Duration)}
+                className="bg-white/[0.04] border border-white/[0.08] rounded-lg text-gray-300 text-[11px] px-2 py-1 outline-none cursor-pointer hover:border-white/[0.12] transition-colors"
+              >
+                {DURATIONS.map(d => <option key={d} value={d}>{d}s</option>)}
+              </select>
+            </div>
+
+            <button
+              onClick={() => setGenerateAudio(!generateAudio)}
+              className={`flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-lg border transition-colors ${
+                generateAudio
+                  ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
+                  : "border-white/[0.06] bg-white/[0.03] text-gray-500"
+              }`}
+            >
+              <div className={`w-1.5 h-1.5 rounded-full ${generateAudio ? "bg-emerald-400" : "bg-gray-600"}`} />
+              Áudio
+            </button>
           </div>
         </div>
       </div>
