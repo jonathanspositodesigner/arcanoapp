@@ -378,6 +378,63 @@ const GerarVideoTool = () => {
     setQueuePosition(0);
 
     try {
+      // ===== GEMINI LITE PATH =====
+      if (isGeminiLite) {
+        try {
+          const job = await enqueueGemini({
+            prompt: prompt.trim(),
+            aspectRatio: aspectRatio as '16:9' | '9:16',
+            duration: 8,
+            quality: '720p',
+            context: 'video-generator',
+          });
+
+          setJobId(job.id);
+          setIsQueued(true);
+          toast.success('Vídeo adicionado à fila! Pronto em 2-5 minutos.');
+
+          // Subscribe to realtime updates
+          const channel = subscribeGemini(job.id, (updatedJob: GeminiQueueJob) => {
+            if (updatedJob.status === 'completed' && updatedJob.video_url) {
+              setResultUrl(updatedJob.video_url);
+              setIsGenerating(false);
+              setIsQueued(false);
+              refetchCredits();
+              toast.success('Vídeo gerado com sucesso!');
+              channel.unsubscribe();
+            } else if (updatedJob.status === 'failed') {
+              const errInfo = getAIErrorMessage(updatedJob.error_message || 'Erro na geração');
+              setErrorMessage(errInfo.message);
+              setIsGenerating(false);
+              setIsQueued(false);
+              refetchCredits();
+              toast.error(`${errInfo.message}. ${errInfo.solution}`);
+              channel.unsubscribe();
+            } else if (updatedJob.status === 'processing') {
+              setIsQueued(false);
+            }
+          });
+          geminiChannelRef.current = channel;
+
+          // Trigger processing immediately (cron will also pick it up)
+          triggerProcessing();
+        } catch (err: any) {
+          if (err.message?.includes('INSUFFICIENT_CREDITS') || err.message?.includes('Créditos insuficientes')) {
+            setNoCreditsReason('insufficient');
+            setShowNoCreditsModal(true);
+          } else if (err.message?.includes('USER_HAS_ACTIVE_JOB')) {
+            toast.error('Você já tem uma geração na fila. Aguarde finalizar.');
+          } else {
+            toast.error(err.message || 'Erro ao enfileirar vídeo');
+            setErrorMessage(err.message || 'Erro ao enfileirar vídeo');
+          }
+          setIsGenerating(false);
+        }
+        endSubmit();
+        return;
+      }
+
+      // ===== EXISTING MODELS PATH (unchanged) =====
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
 
