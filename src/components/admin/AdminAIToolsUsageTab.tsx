@@ -376,11 +376,14 @@ const AdminAIToolsUsageTab = () => {
     try {
       const { start, end } = getDateRange();
       
+      const toolFilterParam = toolFilter === 'all' ? null : toolFilter;
+      
       const { data: records, error: recordsError } = await supabase.rpc('get_ai_tools_usage', {
         p_start_date: start?.toISOString() || null,
         p_end_date: end?.toISOString() || null,
         p_page: currentPage,
-        p_page_size: ITEMS_PER_PAGE
+        p_page_size: ITEMS_PER_PAGE,
+        p_tool_filter: toolFilterParam
       });
 
       if (recordsError) throw recordsError;
@@ -442,7 +445,8 @@ const AdminAIToolsUsageTab = () => {
       // Fetch total count
       const { data: countData, error: countError } = await supabase.rpc('get_ai_tools_usage_count', {
         p_start_date: start?.toISOString() || null,
-        p_end_date: end?.toISOString() || null
+        p_end_date: end?.toISOString() || null,
+        p_tool_filter: toolFilterParam
       });
 
       if (countError) throw countError;
@@ -451,7 +455,8 @@ const AdminAIToolsUsageTab = () => {
       // Fetch summary
       const { data: summaryData, error: summaryError } = await supabase.rpc('get_ai_tools_usage_summary', {
         p_start_date: start?.toISOString() || null,
-        p_end_date: end?.toISOString() || null
+        p_end_date: end?.toISOString() || null,
+        p_tool_filter: toolFilterParam
       });
 
       if (summaryError) throw summaryError;
