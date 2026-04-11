@@ -196,7 +196,7 @@ async function runRunningHubPreprocessing(imageUrl: string, rawText: string, job
           {
             nodeId: RH_IMAGE_NODE,
             fieldName: 'image',
-            fieldValue: imageUrl,
+            fieldValue: rhFileName,
             description: 'image',
           },
           {
