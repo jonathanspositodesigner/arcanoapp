@@ -232,15 +232,17 @@ async function processQueue(): Promise<Response> {
   try {
     // Start generation
     const startRes = await fetch(
-      `${BASE_URL}/models/${MODEL}:generateVideos?key=${GEMINI_API_KEY}`,
+      `${BASE_URL}/models/${MODEL}:predictLongRunning`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': GEMINI_API_KEY,
+        },
         body: JSON.stringify({
-          prompt: job.prompt,
-          generationConfig: {
+          instances: [{ prompt: job.prompt }],
+          parameters: {
             aspectRatio: job.aspect_ratio,
-            durationSeconds: job.duration,
           },
         }),
       }
