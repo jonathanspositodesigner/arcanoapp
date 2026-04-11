@@ -375,7 +375,7 @@ export default function Seedance2() {
                 ) : (
                   <div className="grid grid-cols-2 gap-3 p-3">
                     {generations.map((gen) => (
-                      <VideoCard key={gen.id} gen={gen} onPreview={setPreviewGen} />
+                      <VideoCard key={gen.id} gen={gen} onPreview={setPreviewGen} onDownload={handleDownloadVideo} />
                     ))}
                   </div>
                 )}
@@ -395,7 +395,7 @@ export default function Seedance2() {
                 ) : (
                   <div className="grid grid-cols-2 gap-3 p-3">
                     {libraryItems.map((gen) => (
-                      <VideoCard key={gen.id} gen={gen} onPreview={setPreviewGen} />
+                      <VideoCard key={gen.id} gen={gen} onPreview={setPreviewGen} onDownload={handleDownloadVideo} />
                     ))}
                   </div>
                 )}
