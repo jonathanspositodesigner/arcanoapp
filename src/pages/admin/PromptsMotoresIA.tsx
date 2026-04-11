@@ -114,16 +114,7 @@ const PromptsMotoresIA = () => {
     },
   });
 
-  // Recalculate all rows with dynamic receita
-  const dadosRecalculados = useMemo(() => {
-    return dados.map((d: any) => {
-      const total = d.custo_total;
-      const creditos = Math.ceil(total / receitaCredito);
-      const cobrar3x = total * MULT;
-      const creditos3x = Math.ceil(cobrar3x / receitaCredito);
-      return { ...d, creditos_cobrir: creditos, cobrar_3x: cobrar3x, creditos_3x: creditos3x };
-    });
-  }, [dados, receitaCredito]);
+  // Each row uses its own stored receita_por_credito - no recalculation needed
 
   const preview = useMemo(() => {
     const a = parseFloat(apiCost);
@@ -152,6 +143,7 @@ const PromptsMotoresIA = () => {
       creditos_cobrir: c.creditos,
       cobrar_3x: c.cobrar3x,
       creditos_3x: c.creditos3x,
+      receita_por_credito: receitaCredito,
     } as any);
     setSaving(false);
     if (error) {
