@@ -243,6 +243,7 @@ const PromptsMotoresIA = () => {
                   <TableHead className="text-primary font-semibold text-[0.7rem] uppercase">Custo RH (R$)</TableHead>
                   <TableHead className="text-primary font-semibold text-[0.7rem] uppercase">Custo Total (R$)</TableHead>
                   <TableHead className="text-primary font-semibold text-[0.7rem] uppercase">Créditos p/ cobrir</TableHead>
+                  <TableHead className="text-emerald-400 font-semibold text-[0.7rem] uppercase">R$/Créd (época)</TableHead>
                   <TableHead className="text-amber-400 font-bold text-[0.7rem] uppercase border-l-2 border-amber-500/20">💰 Cobrar 3× (R$)</TableHead>
                   <TableHead className="text-amber-400 font-bold text-[0.7rem] uppercase">🎯 Créditos 3×</TableHead>
                   <TableHead className="w-10"></TableHead>
@@ -276,6 +277,7 @@ const PromptsMotoresIA = () => {
                       <TableCell className="text-muted-foreground">R$ {fmt(d.custo_rh)}</TableCell>
                       <TableCell className="text-red-400 font-bold">R$ {fmt(d.custo_total)}</TableCell>
                       <TableCell className="text-emerald-400 font-bold">{d.creditos_cobrir} créditos</TableCell>
+                      <TableCell className="text-emerald-400/70 text-xs">R$ {(d.receita_por_credito ?? 0.007).toFixed(4)}</TableCell>
                       <TableCell className="text-amber-400 font-extrabold text-[0.95rem] border-l-2 border-amber-500/20">R$ {fmt(d.cobrar_3x)}</TableCell>
                       <TableCell className="text-amber-300 font-extrabold text-[0.95rem]">{d.creditos_3x} créditos</TableCell>
                       <TableCell>
