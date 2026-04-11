@@ -52,23 +52,34 @@ const CREDIT_COSTS: Record<string, number> = {
   'movie-led-maker': 800,
 };
 
-async function chargeCredits(supabase: ReturnType<typeof createClient>, userId: string, amount: number): Promise<boolean> {
+async function chargeCredits(supabase: ReturnType<typeof createClient>, userId: string, amount: number, context: string): Promise<boolean> {
   try {
-    const { data, error } = await supabase.rpc('deduct_credits', { _user_id: userId, _amount: amount });
+    const description = context === 'movie-led-maker' ? 'Movie LED Maker - Veo 3.1 Lite' : 'Gerar Vídeo - Veo 3.1 Lite';
+    const { data, error } = await supabase.rpc('consume_upscaler_credits', {
+      _user_id: userId,
+      _amount: amount,
+      _description: description,
+    });
     if (error) {
       console.error('[GeminiQueue] Credit deduction error:', error.message);
       return false;
     }
-    return data === true;
+    const result = data?.[0];
+    return result?.success === true;
   } catch (e) {
     console.error('[GeminiQueue] Credit charge exception:', e);
     return false;
   }
 }
 
-async function refundCredits(supabase: ReturnType<typeof createClient>, userId: string, amount: number): Promise<void> {
+async function refundCredits(supabase: ReturnType<typeof createClient>, userId: string, amount: number, context: string): Promise<void> {
   try {
-    await supabase.rpc('add_credits', { _user_id: userId, _amount: amount });
+    const description = context === 'movie-led-maker' ? 'Estorno - Movie LED Maker' : 'Estorno - Gerar Vídeo';
+    await supabase.rpc('refund_upscaler_credits', {
+      _user_id: userId,
+      _amount: amount,
+      _description: description,
+    });
     console.log(`[GeminiQueue] Refunded ${amount} credits to ${userId}`);
   } catch (e) {
     console.error('[GeminiQueue] Refund error:', e);
@@ -104,7 +115,7 @@ async function handleEnqueue(req: Request): Promise<Response> {
   const creditCost = CREDIT_COSTS[context || 'video-generator'] || 800;
   
   // Check user balance
-  const { data: balance } = await supabase.rpc('get_credit_balance', { _user_id: userId });
+  const { data: balance } = await supabase.rpc('get_upscaler_credits', { _user_id: userId });
   if ((balance ?? 0) < creditCost) {
     return jsonResponse({ error: 'Créditos insuficientes', code: 'INSUFFICIENT_CREDITS' }, 402);
   }
@@ -122,7 +133,7 @@ async function handleEnqueue(req: Request): Promise<Response> {
   }
 
   // Deduct credits
-  const charged = await chargeCredits(supabase, userId, creditCost);
+  const charged = await chargeCredits(supabase, userId, creditCost, context || 'video-generator');
   if (!charged) {
     return jsonResponse({ error: 'Falha ao debitar créditos', code: 'INSUFFICIENT_CREDITS' }, 402);
   }
@@ -145,7 +156,7 @@ async function handleEnqueue(req: Request): Promise<Response> {
 
   if (error) {
     // Refund on insert failure
-    await refundCredits(supabase, userId, creditCost);
+    await refundCredits(supabase, userId, creditCost, context || 'video-generator');
     console.error('[GeminiQueue] Insert error:', error);
     return jsonResponse({ error: 'Erro ao enfileirar job' }, 500);
   }
@@ -323,7 +334,7 @@ async function processQueue(): Promise<Response> {
     // Refund credits on permanent failure
     if (shouldFail && job.user_id) {
       const creditCost = CREDIT_COSTS[job.context || 'video-generator'] || 800;
-      await refundCredits(supabase, job.user_id, creditCost);
+      await refundCredits(supabase, job.user_id, creditCost, job.context || 'video-generator');
     }
   }
 
