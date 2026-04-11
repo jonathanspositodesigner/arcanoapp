@@ -161,6 +161,7 @@ const UpscalerArcanoV3Es = lazy(() => import("./pages/UpscalerArcanoV3Es"));
 const UpscalerArcanoV3Teste = lazy(() => import("./pages/UpscalerArcanoV3Teste"));
 const SelfieNaLua = lazy(() => import("./pages/SelfieNaLua"));
 const CinemaStudio = lazy(() => import("./pages/CinemaStudio"));
+const Seedance2 = lazy(() => import("./pages/Seedance2"));
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
 
@@ -375,6 +376,7 @@ const AppContent = () => {
            <Route path="/checkout-cancelado" element={<CheckoutCancelado />} />
            <Route path="/selfie-na-lua" element={<SelfieNaLua />} />
            <Route path="/cinemastudio" element={<CinemaStudio />} />
+           <Route path="/seedance2" element={<Seedance2 />} />
            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
            <Route path="*" element={<NotFound />} />
         </Routes>

@@ -50,6 +50,7 @@ const excludedPaths = [
 
 const showOnPaths = [
   "/ferramentas-ia-aplicativo",
+  "/seedance2",
   "/biblioteca-prompts",
   "/promptverso",
   "/planos",
