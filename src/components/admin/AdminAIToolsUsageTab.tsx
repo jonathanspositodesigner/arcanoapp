@@ -93,6 +93,14 @@ const API_COST_MAP: Record<string, number> = {
 const formatBRL = (value: number) =>
   value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+const formatBRLPerCredit = (value: number) =>
+  value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: 4,
+    maximumFractionDigits: 4,
+  });
+
 const getReceitaPorCreditoAplicada = (createdAt: string, receitaAtual: number) => {
   const createdAtDate = new Date(createdAt);
 
@@ -676,7 +684,7 @@ const AdminAIToolsUsageTab = () => {
 
       {/* Summary Cards */}
       {summary && (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
               <Cpu className="h-8 w-8 text-primary" />
@@ -733,6 +741,16 @@ const AdminAIToolsUsageTab = () => {
               <div>
                 <p className="text-xs text-muted-foreground">Receita Usuários (R$)</p>
                 <p className="text-xl font-bold">{formatBRL(receitaUsuariosTotal)}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4 flex items-center gap-3">
+              <TrendingUp className="h-8 w-8 text-emerald-500" />
+              <div>
+                <p className="text-xs text-muted-foreground">Receita por Crédito</p>
+                <p className="text-xl font-bold">{formatBRLPerCredit(receitaPorCreditoAtual)}</p>
               </div>
             </CardContent>
           </Card>
