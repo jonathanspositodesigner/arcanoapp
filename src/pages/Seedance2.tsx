@@ -189,7 +189,7 @@ export default function Seedance2() {
     input.click();
   }, [handleFileUpload]);
 
-  const startPolling = useCallback((genId: string, taskId: string, jobId: string) => {
+  const startPolling = useCallback((genId: string, taskId: string, jobId: string, creditsToCharge: number) => {
     let count = 0;
     const timer = setInterval(async () => {
       count += 1;
@@ -206,7 +206,7 @@ export default function Seedance2() {
         if (!session) return;
 
         const { data, error } = await supabase.functions.invoke("seedance-poll", {
-          body: { taskId, jobId },
+          body: { taskId, jobId, creditsToCharge },
           headers: { Authorization: `Bearer ${session.access_token}` },
         });
 
