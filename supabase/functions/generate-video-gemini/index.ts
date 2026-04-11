@@ -148,6 +148,13 @@ async function handleEnqueue(req: Request): Promise<Response> {
     return jsonResponse({ error: 'Prompt inválido (mínimo 3 caracteres)' }, 400);
   }
 
+  const normalizedDuration = normalizeRequestedDuration(duration);
+  if (normalizedDuration === null) {
+    return jsonResponse({ error: 'Duração inválida. Use 4, 6 ou 8 segundos.' }, 400);
+  }
+
+  const normalizedQuality = normalizeRequestedQuality(quality);
+
   // Validate context
   const validContexts = ['video-generator', 'movie-led-maker'];
   if (context && !validContexts.includes(context)) {
@@ -190,8 +197,8 @@ async function handleEnqueue(req: Request): Promise<Response> {
       status: 'queued',
       prompt: prompt.trim(),
       aspect_ratio: aspect_ratio || '16:9',
-      duration: duration || 6,
-      quality: quality || '720p',
+      duration: normalizedDuration,
+      quality: normalizedQuality,
       context: context || 'video-generator',
       reference_image_url: reference_image_url || null,
     })
@@ -205,7 +212,7 @@ async function handleEnqueue(req: Request): Promise<Response> {
     return jsonResponse({ error: 'Erro ao enfileirar job' }, 500);
   }
 
-  console.log(`[GeminiQueue] Job ${job.id} enqueued for user ${userId}, context: ${context}, referenceImage: ${reference_image_url ? 'yes' : 'no'}`);
+  console.log(`[GeminiQueue] Job ${job.id} enqueued for user ${userId}, context: ${context}, duration: ${normalizedDuration}s, quality: ${normalizedQuality}, referenceImage: ${reference_image_url ? 'yes' : 'no'}`);
   return jsonResponse({ job_id: job.id, status: 'queued', message: 'Adicionado à fila' });
 }
 
