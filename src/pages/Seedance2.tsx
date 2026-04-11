@@ -326,7 +326,7 @@ export default function Seedance2() {
   return (
     <AppLayout fullScreen>
       <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="mx-auto flex w-full max-w-[1400px] flex-1 min-h-0 flex-col px-4 pt-4 pb-4">
+        <div className="mx-auto flex w-full max-w-[1400px] flex-1 min-h-0 flex-col px-2 sm:px-4 pt-3 sm:pt-4 pb-2 sm:pb-4 overflow-y-auto">
           <div className="mb-3 flex shrink-0 items-center justify-between">
             <h1 className="text-xl font-bold text-white">Seedance 2.0</h1>
             <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
