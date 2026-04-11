@@ -195,7 +195,7 @@ const Planos2 = () => {
     }, {
       name: "Ultimate",
       price: "79,90",
-      originalPrice: null,
+      originalPrice: "99,90",
       perMonth: true,
       credits: "14.000 créditos de IA",
       images: 233,
