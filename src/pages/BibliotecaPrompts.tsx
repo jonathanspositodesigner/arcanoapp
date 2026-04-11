@@ -483,6 +483,21 @@ const BibliotecaPrompts = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Seedance 2 Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleCategorySelect("Seedance 2")}
+            className={`text-xs font-bold border-0 text-white ${
+              selectedCategory === "Seedance 2"
+                ? "bg-gradient-to-r from-green-600 to-green-500 shadow-lg shadow-green-500/30"
+                : "bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400"
+            }`}
+          >
+            <Video className="h-3.5 w-3.5 mr-1.5" />
+            Seedance 2
+          </Button>
+
           {/* Search Input */}
           <div className="relative mt-3">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400/60" />
