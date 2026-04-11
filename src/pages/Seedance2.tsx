@@ -5,6 +5,7 @@ import { uploadToStorage } from "@/hooks/useStorageUpload";
 import AppLayout from "@/components/layout/AppLayout";
 import { Coins, X, Download } from "lucide-react";
 import CharacterPicker, { type CharacterItem } from "@/components/shared/CharacterPicker";
+import { getSeedanceTotalCost, modeToGenType } from "@/config/seedance-pricing";
 
 type Mode = "text" | "startend" | "multiref";
 type Speed = "standard" | "fast";
@@ -33,14 +34,7 @@ const MODEL_MAP: Record<string, string> = {
   "multiref-fast": "seedance-2.0-fast-reference-to-video",
 };
 
-const CREDIT_COSTS: Record<string, number> = {
-  "text-standard": 800,
-  "text-fast": 500,
-  "startend-standard": 1000,
-  "startend-fast": 700,
-  "multiref-standard": 1200,
-  "multiref-fast": 900,
-};
+// Pricing is now in src/config/seedance-pricing.ts
 
 const RATIOS: { value: Ratio; label: string }[] = [
   { value: "16:9", label: "16:9 Paisagem" },
@@ -89,7 +83,7 @@ export default function Seedance2() {
   const [selectedCharacters, setSelectedCharacters] = useState<CharacterItem[]>([]);
 
   const pollTimers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
-  const creditCost = CREDIT_COSTS[`${mode}-${speed}`] || 500;
+  const creditCost = getSeedanceTotalCost(speed, quality, modeToGenType(mode), parseInt(duration) || 5);
 
   useEffect(() => {
     return () => {
