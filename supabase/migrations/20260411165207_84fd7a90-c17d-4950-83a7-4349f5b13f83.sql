@@ -1,0 +1,1 @@
+ALTER TABLE public.video_generation_queue ADD COLUMN IF NOT EXISTS raw_input_text TEXT;
