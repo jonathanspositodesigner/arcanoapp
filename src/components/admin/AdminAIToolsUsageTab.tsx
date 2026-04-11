@@ -472,7 +472,7 @@ const AdminAIToolsUsageTab = () => {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage, dateFilter]);
+  }, [currentPage, dateFilter, toolFilter]);
 
   useEffect(() => {
     fetchReceitaPorCreditoAtual();
@@ -491,10 +491,6 @@ const AdminAIToolsUsageTab = () => {
   const filteredRecords = useMemo(() => {
     let filtered = [...usageRecords];
 
-    if (toolFilter !== "all") {
-      filtered = filtered.filter(r => r.tool_name === toolFilter);
-    }
-
     if (statusFilter !== "all") {
       filtered = filtered.filter(r => r.status === statusFilter);
     }
@@ -508,7 +504,7 @@ const AdminAIToolsUsageTab = () => {
     }
 
     return filtered;
-  }, [usageRecords, toolFilter, statusFilter, searchTerm]);
+  }, [usageRecords, statusFilter, searchTerm]);
 
   // Error analytics from current page data
   const errorAnalytics = useMemo(() => {
