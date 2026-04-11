@@ -55,7 +55,7 @@ interface ModelOption {
 
 const ALL_MODELS: ModelOption[] = [
   { id: 'wan2.2', name: 'Wan 2.2', cost: 400, costWithAudio: 400, description: '5 segundos' },
-  { id: 'gemini-lite', name: 'Veo 3.1 Lite', cost: 800, costWithAudio: 800, description: '8s • Sem áudio', isGeminiQueue: true },
+  { id: 'gemini-lite', name: 'Veo 3.1 Lite', cost: 900, costWithAudio: 900, description: '8s • Sem áudio', isGeminiQueue: true },
   { id: 'veo3.1-fast', name: 'Veo 3.1 Fast', cost: 1500, costWithAudio: 2500, description: '8s • 1080p' },
   { id: 'veo3.1-pro', name: 'Veo 3.1 Pro', cost: 2800, costWithAudio: 5000, description: '8s • 1080p' },
 ];
