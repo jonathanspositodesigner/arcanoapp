@@ -5563,6 +5563,7 @@ export type Database = {
           prompt_id: string
         }[]
       }
+      get_receita_por_credito: { Args: never; Returns: Json }
       get_unified_dashboard_orders: {
         Args: { _end: string; _start: string }
         Returns: {
