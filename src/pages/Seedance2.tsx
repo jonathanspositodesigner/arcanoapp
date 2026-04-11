@@ -77,6 +77,7 @@ export default function Seedance2() {
   const [previewGen, setPreviewGen] = useState<Generation | null>(null);
   const [selectedCharacters, setSelectedCharacters] = useState<CharacterItem[]>([]);
   const [showSettings, setShowSettings] = useState(false);
+  const [showRatioModal, setShowRatioModal] = useState(false);
 
   const pollTimers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
   const creditCost = getSeedanceTotalCost(speed, quality, modeToGenType(mode), parseInt(duration) || 5);
@@ -581,13 +582,21 @@ export default function Seedance2() {
 
                 <div className="flex items-center gap-1.5 group/ctrl">
                   <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Tamanho</span>
+                  {/* Desktop: native select */}
                   <select
                     value={ratio}
                     onChange={(e) => setRatio(e.target.value as Ratio)}
-                    className="rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white outline-none transition-all duration-200 hover:border-purple-500/30 cursor-pointer [&>option]:bg-black [&>option]:text-white"
+                    className="hidden sm:block rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white outline-none transition-all duration-200 hover:border-purple-500/30 cursor-pointer [&>option]:bg-black [&>option]:text-white"
                   >
                     {RATIOS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                   </select>
+                  {/* Mobile: button that opens modal */}
+                  <button
+                    onClick={() => setShowRatioModal(true)}
+                    className="sm:hidden rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white"
+                  >
+                    {RATIOS.find((r) => r.value === ratio)?.label || ratio}
+                  </button>
                 </div>
 
                 <div className="flex items-center gap-1.5 group/ctrl">
