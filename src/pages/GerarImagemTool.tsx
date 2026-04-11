@@ -37,7 +37,7 @@ const ENGINE_STORAGE_KEY = 'gerar-imagem:selected-engine';
 const GerarImagemTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, planType } = usePremiumStatus();
-  const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
+  const { balance: credits, refetch: refetchCredits, checkBalance, isUnlimited } = useCredits();
   const { isPlanos2User, hasImageGeneration } = useAuth();
   const { getCreditCost } = useAIToolSettings();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
@@ -83,7 +83,7 @@ const GerarImagemTool = () => {
   const reconcileTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const effectiveEngineRef = useRef<'flux2_klein' | 'nano_banana'>('flux2_klein');
 
-  const creditCost = engine === 'flux2_klein' ? 50 : getCreditCost('gerar_imagem', 100);
+  const creditCost = isUnlimited ? 0 : (engine === 'flux2_klein' ? 50 : getCreditCost('gerar_imagem', 100));
 
   const isProcessing = ['pending', 'starting', 'running', 'queued'].includes(status);
 
@@ -815,7 +815,7 @@ const GerarImagemTool = () => {
                     Gerar Imagem
                     <span className="ml-1.5 flex items-center gap-0.5 text-xs opacity-90">
                       <Coins className="w-3 h-3" />
-                      {creditCost}
+                      {isUnlimited ? '∞' : creditCost}
                     </span>
                   </>
                 )}
