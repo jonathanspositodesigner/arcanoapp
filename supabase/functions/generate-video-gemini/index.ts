@@ -231,6 +231,27 @@ async function processQueue(): Promise<Response> {
     .eq('id', job.id);
 
   try {
+    // Build instances payload - include reference image if available
+    const instance: Record<string, unknown> = { prompt: job.prompt };
+    
+    if (job.reference_image_url) {
+      try {
+        console.log(`[GeminiQueue] Downloading reference image for job ${job.id}...`);
+        const imgRes = await fetch(job.reference_image_url);
+        if (imgRes.ok) {
+          const imgBuffer = await imgRes.arrayBuffer();
+          const base64 = btoa(String.fromCharCode(...new Uint8Array(imgBuffer)));
+          const mimeType = imgRes.headers.get('content-type') || 'image/jpeg';
+          instance.image = { bytesBase64Encoded: base64, mimeType };
+          console.log(`[GeminiQueue] Reference image attached (${(imgBuffer.byteLength / 1024).toFixed(0)}KB)`);
+        } else {
+          console.warn(`[GeminiQueue] Failed to download reference image: HTTP ${imgRes.status}, proceeding without it`);
+        }
+      } catch (imgErr: any) {
+        console.warn(`[GeminiQueue] Reference image download error: ${imgErr.message}, proceeding without it`);
+      }
+    }
+
     // Start generation
     const startRes = await fetch(
       `${BASE_URL}/models/${MODEL}:predictLongRunning`,
@@ -241,7 +262,7 @@ async function processQueue(): Promise<Response> {
           'x-goog-api-key': GEMINI_API_KEY,
         },
         body: JSON.stringify({
-          instances: [{ prompt: job.prompt }],
+          instances: [instance],
           parameters: {
             aspectRatio: job.aspect_ratio,
           },
