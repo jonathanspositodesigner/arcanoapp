@@ -252,18 +252,18 @@ export default function Seedance2() {
 
   return (
     <AppLayout fullScreen>
-      <div className="flex flex-1 min-h-0 overflow-y-auto">
-        <div className="mx-auto flex w-full max-w-[1400px] flex-col gap-4 px-4 py-4">
-          <div className="flex items-center justify-between">
+      <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="mx-auto flex w-full max-w-[1400px] flex-1 min-h-0 flex-col px-4 pt-4 pb-4">
+          <div className="mb-3 flex shrink-0 items-center justify-between">
             <h1 className="text-xl font-bold text-white">Seedance 2.0</h1>
             <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-gray-400">
               {generations.length} gerações
             </span>
           </div>
 
-          <div className="min-h-[280px] overflow-y-auto rounded-2xl border border-white/5 bg-black/10 lg:min-h-[360px]">
+          <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl border border-white/5 bg-black/10 lg:min-h-[420px]">
             {generations.length === 0 ? (
-              <div className="flex min-h-[280px] items-center justify-center px-6 text-center lg:min-h-[360px]">
+              <div className="flex h-full min-h-[320px] items-center justify-center px-6 text-center lg:min-h-[420px]">
                 <p className="text-sm text-gray-500">Nenhuma geração ainda. Comece descrevendo um vídeo abaixo.</p>
               </div>
             ) : (
@@ -300,7 +300,7 @@ export default function Seedance2() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-white/5 bg-[#0a0a18]/95 p-3 backdrop-blur-sm">
+          <div className="mt-4 shrink-0 rounded-2xl border border-white/5 bg-[#0a0a18]/95 p-3 backdrop-blur-sm">
             {mode !== "text" && (
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 {mode === "startend" && (
