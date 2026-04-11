@@ -408,15 +408,14 @@ export default function Seedance2() {
              <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setPreviewGen(null)}>
               <div className="relative flex w-full max-w-4xl flex-col px-4 max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
                 {/* Controls bar - always visible */}
-                <div className="flex items-center justify-end gap-2 pb-2 shrink-0">
-                  <a
-                    href={previewGen.videoUrl}
-                    download
+               <div className="flex items-center justify-end gap-2 pb-2 shrink-0">
+                  <button
+                    onClick={() => previewGen.videoUrl && handleDownloadVideo(previewGen.videoUrl, previewGen.prompt)}
                     className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
                     title="Baixar vídeo"
                   >
                     <Download className="h-5 w-5" />
-                  </a>
+                  </button>
                   <button
                     onClick={() => setPreviewGen(null)}
                     className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
