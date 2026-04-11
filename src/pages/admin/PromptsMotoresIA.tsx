@@ -255,14 +255,14 @@ const PromptsMotoresIA = () => {
                       <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
-                ) : dadosRecalculados.length === 0 ? (
+                ) : dados.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
                       Nenhum modelo cadastrado. Adicione abaixo ⬇️
                     </TableCell>
                   </TableRow>
                 ) : (
-                  dadosRecalculados.map((d: any) => (
+                  dados.map((d: any) => (
                     <TableRow key={d.id} className="hover:bg-muted/20">
                       <TableCell className="font-bold text-foreground">{d.nome}</TableCell>
                       <TableCell>
