@@ -279,7 +279,6 @@ async function processQueue(): Promise<Response> {
           parameters: {
             aspectRatio: job.aspect_ratio,
             sampleCount: 1,
-            personGeneration: 'allow_all',
           },
         }),
       }
@@ -301,7 +300,25 @@ async function processQueue(): Promise<Response> {
 
     if (!startRes.ok) {
       const errorText = await startRes.text();
-      throw new Error(`Gemini API error ${startRes.status}: ${errorText}`);
+      // Parse friendly error message
+      let friendlyError = `Erro na API de geração (código ${startRes.status})`;
+      try {
+        const parsed = JSON.parse(errorText);
+        const msg = parsed?.error?.message || '';
+        if (msg.includes('personGeneration')) {
+          friendlyError = 'Parâmetro de geração de pessoas não suportado pelo modelo';
+        } else if (msg.includes('INVALID_ARGUMENT')) {
+          friendlyError = `Parâmetro inválido: ${msg}`;
+        } else if (msg.includes('RESOURCE_EXHAUSTED') || msg.includes('quota')) {
+          friendlyError = 'Limite de uso da API atingido. Tente novamente em alguns minutos.';
+        } else if (msg.includes('PERMISSION_DENIED')) {
+          friendlyError = 'Erro de permissão na API de geração';
+        } else if (msg) {
+          friendlyError = msg;
+        }
+      } catch {}
+      console.error(`[GeminiQueue] API error for job ${job.id}: ${errorText}`);
+      throw new Error(friendlyError);
     }
 
     const operation = await startRes.json();
