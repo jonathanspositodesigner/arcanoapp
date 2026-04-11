@@ -78,7 +78,7 @@ const ITEMS_PER_PAGE = 20;
 
 // Conversion constants
 const CUSTO_POR_RH_COIN = 0.002; // R$ per RH coin
-const RECEITA_POR_CREDITO = 0.0043; // R$ per credit
+const FALLBACK_RECEITA_POR_CREDITO = 0.007; // R$ per credit (fallback)
 
 // API cost map: display tool name → fixed API cost in BRL (from ai_tool_settings)
 const API_COST_MAP: Record<string, number> = {
@@ -137,6 +137,20 @@ const AdminAIToolsUsageTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [cancellingJobId, setCancellingJobId] = useState<string | null>(null);
   const [userTypeMap, setUserTypeMap] = useState<Record<string, UserClientType>>({});
+  const [receitaPorCredito, setReceitaPorCredito] = useState(FALLBACK_RECEITA_POR_CREDITO);
+
+  // Fetch dynamic receita por credito
+  useEffect(() => {
+    const fetchReceita = async () => {
+      const { data } = await supabase.rpc("get_receita_por_credito" as any);
+      if (data && (data as any).receita_por_credito) {
+        setReceitaPorCredito(Number((data as any).receita_por_credito));
+      }
+    };
+    fetchReceita();
+    const interval = setInterval(fetchReceita, 60000);
+    return () => clearInterval(interval);
+  }, []);
   
   // Job output modal state
   const [selectedJob, setSelectedJob] = useState<UsageRecord | null>(null);
@@ -469,6 +483,15 @@ const AdminAIToolsUsageTab = () => {
     return <Badge className={colors[toolName] || ""}>{toolName}</Badge>;
   };
 
+  // Calculate paid-only credits (exclude free/trial users)
+  const paidUserCredits = useMemo(() => {
+    return usageRecords.reduce((sum, r) => {
+      const type = userTypeMap[r.user_id] || 'free';
+      if (type === 'free' || type === 'free_trial') return sum;
+      return sum + r.user_credit_cost;
+    }, 0);
+  }, [usageRecords, userTypeMap]);
+
   const getUserTypeBadge = (userId: string) => {
     const type = userTypeMap[userId] || 'free';
     switch (type) {
@@ -675,7 +698,7 @@ const AdminAIToolsUsageTab = () => {
               <Users className="h-8 w-8 text-blue-500" />
               <div>
                 <p className="text-xs text-muted-foreground">Receita Usuários (R$)</p>
-                <p className="text-xl font-bold">{formatBRL(summary.total_user_credits * RECEITA_POR_CREDITO)}</p>
+                <p className="text-xl font-bold">{formatBRL(paidUserCredits * receitaPorCredito)}</p>
               </div>
             </CardContent>
           </Card>
@@ -685,7 +708,7 @@ const AdminAIToolsUsageTab = () => {
               <TrendingUp className="h-8 w-8 text-green-500" />
               <div>
                 <p className="text-xs text-green-400">Lucro Total (R$)</p>
-                <p className="text-xl font-bold text-green-400">{formatBRL(summary.total_user_credits * RECEITA_POR_CREDITO - summary.total_rh_cost * CUSTO_POR_RH_COIN)}</p>
+                <p className="text-xl font-bold text-green-400">{formatBRL(paidUserCredits * receitaPorCredito - summary.total_rh_cost * CUSTO_POR_RH_COIN)}</p>
               </div>
             </CardContent>
           </Card>
@@ -849,7 +872,9 @@ const AdminAIToolsUsageTab = () => {
                         const rhCostBRL = record.rh_cost * CUSTO_POR_RH_COIN;
                         const apiCost = API_COST_MAP[record.tool_name] || 0;
                         const totalCost = rhCostBRL + (record.status === 'completed' ? apiCost : 0);
-                        const receita = record.user_credit_cost * RECEITA_POR_CREDITO;
+                        const userType = userTypeMap[record.user_id] || 'free';
+                        const isFreeUser = userType === 'free' || userType === 'free_trial';
+                        const receita = isFreeUser ? 0 : record.user_credit_cost * receitaPorCredito;
                         const lucro = receita - totalCost;
                         return (
                           <>
