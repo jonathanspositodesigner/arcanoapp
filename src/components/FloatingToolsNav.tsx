@@ -27,6 +27,7 @@ const excludedPaths = [
   "/ferramenta-ia-artes",
   "/gerar-imagem",
   "/gerar-video",
+  "/seedance2",
   // Landing pages
   "/planos-upscaler-arcano",
   "/planos-forja-selos-3d",
@@ -50,7 +51,6 @@ const excludedPaths = [
 
 const showOnPaths = [
   "/ferramentas-ia-aplicativo",
-  "/seedance2",
   "/biblioteca-prompts",
   "/promptverso",
   "/planos",
