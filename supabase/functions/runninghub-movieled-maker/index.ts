@@ -490,7 +490,7 @@ async function handleRun(req: Request) {
   if (isEvolink) {
     await logStep(jobId, 'calling_evolink', { model: 'veo-3.1-fast-generate-preview' });
 
-    const evolinkPrompt = `Generate a vibrant LED screen video loop for "${inputText.trim()}". High energy, colorful, dynamic motion graphics suitable for large LED displays.`;
+    const evolinkPrompt = `Create a cinematic LED screen video loop. The video MUST prominently display the text "${inputText.trim()}" as the main title, rendered in large, bold, glowing letters. The text "${inputText.trim()}" must be clearly legible and centered on screen. High energy, colorful, dynamic motion graphics with light effects surrounding the text, suitable for large LED displays.`;
 
     // Use shared Evolink client
     const result = await evolinkGenerate(EVOLINK_API_KEY, {
