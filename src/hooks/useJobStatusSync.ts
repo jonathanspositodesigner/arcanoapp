@@ -298,17 +298,22 @@ export function useJobStatusSync({
       
       // 4b. Try provider-specific reconciliation before killing
       try {
-        // Check if this is an Evolink job (video_generator or movieled_maker with Evolink)
-        const isEvolinkJob = await (async () => {
+        // Check if this is an Evolink job based on tool type
+        const isEvolinkCandidate = ['video_generator', 'movieled_maker'].includes(toolType);
+        let isEvolinkJob = false;
+        
+        if (isEvolinkCandidate) {
           try {
+            // Use specific table query to avoid TS union type issues
+            const targetTable = toolType === 'video_generator' ? 'video_generator_jobs' : 'movieled_maker_jobs';
             const { data: jobData } = await supabase
-              .from(tableName)
+              .from(targetTable as 'video_generator_jobs')
               .select('api_account, task_id')
               .eq('id', jobId)
               .maybeSingle();
-            return jobData?.api_account === 'evolink' && !!jobData?.task_id;
-          } catch { return false; }
-        })();
+            isEvolinkJob = jobData?.api_account === 'evolink' && !!jobData?.task_id;
+          } catch { /* ignore */ }
+        }
 
         if (isEvolinkJob) {
           // EVOLINK RECONCILIATION: Call poll-evolink directly
