@@ -50,7 +50,7 @@ const RATIOS: { value: Ratio; label: string }[] = [
 
 const MODE_OPTIONS: { value: Mode; label: string; desc: string }[] = [
   { value: "text", label: "Só Prompt", desc: "Texto → vídeo" },
-  { value: "startend", label: "Start + End", desc: "Imagens de início e fim" },
+  { value: "startend", label: "Com Imagem", desc: "Imagens de início e fim" },
   { value: "multiref", label: "Multi-ref", desc: "Múltiplas referências" },
 ];
 
