@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
+import AppLayout from "@/components/layout/AppLayout";
 
 type Mode = "text" | "startend" | "multiref";
 type Speed = "standard" | "fast";
@@ -255,225 +256,195 @@ export default function Seedance2() {
   const truncate = (s: string, n: number) => s.length > n ? s.slice(0, n) + "…" : s;
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "#080808", color: "#f0f0f0", fontFamily: "system-ui, -apple-system, sans-serif" }}>
-      <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", minHeight: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px 4px" }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: "#f0f0f0" }}>Seedance 2.0</span>
-          <span style={{ fontSize: 11, color: "#888", border: "1px solid #2a2a2a", background: "#111", borderRadius: 6, padding: "2px 8px" }}>
-            {generations.length} gerações
-          </span>
-        </div>
+    <AppLayout fullScreen>
+      <div className="flex-1 flex flex-col h-full overflow-hidden">
+        {/* Top - Results Grid */}
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden px-4 pt-4">
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-base font-semibold text-white">Seedance 2.0</h1>
+            <span className="text-[11px] text-gray-400 border border-white/10 bg-white/5 rounded-md px-2 py-0.5">
+              {generations.length} gerações
+            </span>
+          </div>
 
-        <div style={{ flex: 1, overflowY: "auto", padding: "8px 16px 16px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-            {generations.map(gen => (
-              <div key={gen.id} style={{
-                aspectRatio: "16/9",
-                borderRadius: 8,
-                background: gen.status === "queued" ? "transparent" : "#111",
-                border: gen.status === "queued" ? "1px dashed #1e1e1e" : "0.5px solid #1e1e1e",
-                position: "relative",
-                overflow: "hidden",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}>
-                {gen.status === "completed" && gen.videoUrl && (
-                  <>
-                    <video
-                      src={gen.videoUrl}
-                      controls
-                      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}
-                    />
-                    <span style={{
-                      position: "absolute", bottom: 4, left: 6,
-                      fontSize: 9, color: "#3a3a3a",
-                    }}>
-                      {truncate(gen.prompt, 30)} · {gen.ratio} · {gen.duration}s
-                    </span>
-                  </>
-                )}
-                {gen.status === "processing" && (
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{
-                      width: 20, height: 20, borderRadius: "50%",
-                      border: "2px solid #1e1e1e", borderTopColor: "#444",
-                      animation: "spin 1s linear infinite",
-                      margin: "0 auto 6px",
-                    }} />
-                    <span style={{ fontSize: 10, color: "#2a2a2a" }}>gerando...</span>
-                  </div>
-                )}
-                {gen.status === "failed" && (
-                  <span style={{ fontSize: 10, color: "#662222", padding: 8, textAlign: "center" }}>
-                    {gen.error || "Falhou"}
-                  </span>
-                )}
+          <div className="flex-1 overflow-y-auto min-h-0" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}>
+            {generations.length === 0 ? (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-sm text-gray-500">Nenhuma geração ainda. Comece descrevendo um vídeo abaixo.</p>
               </div>
-            ))}
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                {generations.map(gen => (
+                  <div key={gen.id} className={`aspect-video rounded-xl overflow-hidden relative flex items-center justify-center ${
+                    gen.status === "queued"
+                      ? "border border-dashed border-white/10"
+                      : "bg-[#1a1a2e] border border-white/10"
+                  }`}>
+                    {gen.status === "completed" && gen.videoUrl && (
+                      <>
+                        <video
+                          src={gen.videoUrl}
+                          controls
+                          className="w-full h-full object-cover rounded-xl"
+                        />
+                        <span className="absolute bottom-1.5 left-2 text-[9px] text-gray-500">
+                          {truncate(gen.prompt, 30)} · {gen.ratio} · {gen.duration}s
+                        </span>
+                      </>
+                    )}
+                    {gen.status === "processing" && (
+                      <div className="text-center">
+                        <div className="w-5 h-5 rounded-full border-2 border-white/10 border-t-white/40 animate-spin mx-auto mb-1.5" />
+                        <span className="text-[10px] text-gray-500">gerando...</span>
+                      </div>
+                    )}
+                    {gen.status === "failed" && (
+                      <span className="text-[10px] text-red-400/60 px-3 text-center">
+                        {gen.error || "Falhou"}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      </div>
 
-      <div style={{
-        padding: "14px 16px",
-        borderTop: "0.5px solid #1e1e1e",
-        display: "flex",
-        gap: 12,
-      }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
-          <textarea
-            value={prompt}
-            onChange={e => setPrompt(e.target.value)}
-            placeholder="Descreva o vídeo que deseja gerar..."
-            style={{
-              background: "#0f0f0f", border: "1px solid #222", borderRadius: 8,
-              padding: "10px 12px", minHeight: 72, resize: "vertical",
-              color: "#e8e8e8", fontSize: 13, outline: "none",
-              fontFamily: "inherit", width: "100%",
-            }}
-          />
+        {/* Bottom - Controls Panel */}
+        <div className="border-t border-white/10 px-4 py-3 flex gap-3">
+          {/* Left - Prompt & Controls */}
+          <div className="flex-1 flex flex-col gap-2.5 min-w-0">
+            <textarea
+              value={prompt}
+              onChange={e => setPrompt(e.target.value)}
+              placeholder="Descreva o vídeo que deseja gerar..."
+              className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-gray-600 resize-vertical outline-none focus:border-white/20 transition-colors"
+              style={{ minHeight: 68 }}
+            />
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-            <LabelSelect label="modo" value={mode} onChange={v => setMode(v as Mode)} options={[
-              { value: "text", label: "só prompt" },
-              { value: "startend", label: "start + end frame" },
-              { value: "multiref", label: "multi-referência" },
-            ]} />
-            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ fontSize: 10, color: "#3a3a3a", textTransform: "uppercase", marginRight: 4 }}>ratio</span>
-              {RATIOS.map(r => (
-                <button
-                  key={r}
-                  onClick={() => setRatio(r)}
-                  style={{
-                    fontSize: 11, padding: "3px 8px", borderRadius: 6, cursor: "pointer",
-                    background: ratio === r ? "#161616" : "transparent",
-                    border: `1px solid ${ratio === r ? "#3a3a3a" : "#1e1e1e"}`,
-                    color: ratio === r ? "#e0e0e0" : "#3a3a3a",
-                  }}
-                >
-                  {r}
-                </button>
-              ))}
+            <div className="flex items-center gap-3 flex-wrap">
+              <LabelSelect label="modo" value={mode} onChange={v => setMode(v as Mode)} options={[
+                { value: "text", label: "só prompt" },
+                { value: "startend", label: "start + end frame" },
+                { value: "multiref", label: "multi-referência" },
+              ]} />
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] uppercase text-gray-500 mr-1">ratio</span>
+                {RATIOS.map(r => (
+                  <button
+                    key={r}
+                    onClick={() => setRatio(r)}
+                    className={`text-[11px] px-2 py-0.5 rounded-md border transition-colors ${
+                      ratio === r
+                        ? "border-white/20 bg-white/10 text-gray-200"
+                        : "border-white/5 text-gray-500 hover:text-gray-300 hover:border-white/10"
+                    }`}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 flex-wrap">
+              <LabelSelect label="qualidade" value={quality} onChange={v => setQuality(v as Quality)} options={[
+                { value: "720p", label: "720p" },
+                { value: "480p", label: "480p" },
+              ]} />
+              <LabelSelect label="duração" value={duration} onChange={v => setDuration(v as Duration)} options={
+                DURATIONS.map(d => ({ value: d, label: `${d}s` }))
+              } />
+              <LabelSelect label="velocidade" value={speed} onChange={v => setSpeed(v as Speed)} options={[
+                { value: "standard", label: "standard" },
+                { value: "fast", label: "fast" },
+              ]} />
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-            <LabelSelect label="qualidade" value={quality} onChange={v => setQuality(v as Quality)} options={[
-              { value: "720p", label: "720p" },
-              { value: "480p", label: "480p" },
-            ]} />
-            <LabelSelect label="duração" value={duration} onChange={v => setDuration(v as Duration)} options={
-              DURATIONS.map(d => ({ value: d, label: `${d}s` }))
-            } />
-            <LabelSelect label="velocidade" value={speed} onChange={v => setSpeed(v as Speed)} options={[
-              { value: "standard", label: "standard" },
-              { value: "fast", label: "fast" },
-            ]} />
-          </div>
-        </div>
+          {/* Right - Media uploads + Audio + Generate */}
+          <div className="w-[164px] flex-shrink-0 flex flex-col gap-2">
+            {mode === "startend" && (
+              <>
+                <span className="text-[10px] uppercase text-gray-500">imagens</span>
+                <div className="flex gap-1.5">
+                  <UploadSlot url={startImage} onRemove={() => setStartImage(null)} onDrop={e => handleImageDrop(e, url => setStartImage(url))} onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", url => setStartImage(url))} />
+                  <UploadSlot url={endImage} onRemove={() => setEndImage(null)} onDrop={e => handleImageDrop(e, url => setEndImage(url))} onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", url => setEndImage(url))} />
+                </div>
+              </>
+            )}
 
-        <div style={{ width: 164, flexShrink: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-          {mode === "startend" && (
-            <>
-              <span style={{ fontSize: 10, textTransform: "uppercase", color: "#3a3a3a" }}>imagens</span>
-              <div style={{ display: "flex", gap: 6 }}>
-                <UploadSlot url={startImage} onUpload={url => setStartImage(url)} onRemove={() => setStartImage(null)} onDrop={e => handleImageDrop(e, url => setStartImage(url))} onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", url => setStartImage(url))} />
-                <UploadSlot url={endImage} onUpload={url => setEndImage(url)} onRemove={() => setEndImage(null)} onDrop={e => handleImageDrop(e, url => setEndImage(url))} onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", url => setEndImage(url))} />
-              </div>
-            </>
-          )}
+            {mode === "multiref" && (
+              <>
+                <span className="text-[10px] uppercase text-gray-500">referências</span>
+                <div className="flex gap-1 flex-wrap">
+                  {refImages.map((url, i) => (
+                    <UploadSlot key={i} url={url} onRemove={() => setRefImages(prev => prev.filter((_, j) => j !== i))} size={44} />
+                  ))}
+                  {refImages.length < 9 && (
+                    <UploadSlot
+                      url={null}
+                      onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", url => setRefImages(prev => [...prev, url]))}
+                      onDrop={e => handleImageDrop(e, url => setRefImages(prev => [...prev, url]))}
+                      size={44}
+                    />
+                  )}
+                </div>
+                <div
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={handleVideoDrop}
+                  onClick={() => refVideos.length < 3 && openFilePicker("video/mp4,video/quicktime", url => setRefVideos(prev => [...prev, url]))}
+                  className="h-[34px] w-full border border-dashed border-white/10 rounded-lg bg-black/30 flex items-center justify-center cursor-pointer text-[10px] text-gray-500 gap-1 hover:border-white/20 transition-colors"
+                >
+                  {refVideos.length > 0 ? `${refVideos.length} vídeo(s)` : "+ vídeo"}
+                  {refVideos.length > 0 && (
+                    <button onClick={e => { e.stopPropagation(); setRefVideos([]); }} className="text-gray-400 ml-1 hover:text-white">×</button>
+                  )}
+                </div>
+                <div
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={handleAudioDrop}
+                  onClick={() => refAudios.length < 3 && openFilePicker("audio/mpeg,audio/wav", url => setRefAudios(prev => [...prev, url]))}
+                  className="h-[34px] w-full border border-dashed border-white/10 rounded-lg bg-black/30 flex items-center justify-center cursor-pointer text-[10px] text-gray-500 gap-1 hover:border-white/20 transition-colors"
+                >
+                  {refAudios.length > 0 ? `${refAudios.length} áudio(s)` : "+ áudio"}
+                  {refAudios.length > 0 && (
+                    <button onClick={e => { e.stopPropagation(); setRefAudios([]); }} className="text-gray-400 ml-1 hover:text-white">×</button>
+                  )}
+                </div>
+              </>
+            )}
 
-          {mode === "multiref" && (
-            <>
-              <span style={{ fontSize: 10, textTransform: "uppercase", color: "#3a3a3a" }}>referências</span>
-              <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                {refImages.map((url, i) => (
-                  <UploadSlot key={i} url={url} onRemove={() => setRefImages(prev => prev.filter((_, j) => j !== i))} size={48} />
-                ))}
-                {refImages.length < 9 && (
-                  <UploadSlot
-                    url={null}
-                    onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", url => setRefImages(prev => [...prev, url]))}
-                    onDrop={e => handleImageDrop(e, url => setRefImages(prev => [...prev, url]))}
-                    size={48}
-                  />
-                )}
-              </div>
-              <div
-                onDragOver={e => e.preventDefault()}
-                onDrop={handleVideoDrop}
-                onClick={() => refVideos.length < 3 && openFilePicker("video/mp4,video/quicktime", url => setRefVideos(prev => [...prev, url]))}
-                style={{
-                  height: 34, width: "100%", border: "1px dashed #1e1e1e", borderRadius: 6,
-                  background: "#0c0c0c", display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer", fontSize: 10, color: "#2a2a2a", gap: 4,
-                }}
+            {/* Audio Toggle */}
+            <div className="flex items-center justify-between bg-black/40 border border-white/10 rounded-lg px-2.5 py-2">
+              <span className="text-[11px] text-gray-400">áudio</span>
+              <button
+                onClick={() => setGenerateAudio(!generateAudio)}
+                className="w-9 h-5 rounded-full relative transition-colors"
+                style={{ background: generateAudio ? "#1d9e75" : "rgba(255,255,255,0.08)" }}
               >
-                {refVideos.length > 0 ? `${refVideos.length} vídeo(s)` : "+ vídeo"}
-                {refVideos.length > 0 && (
-                  <button onClick={e => { e.stopPropagation(); setRefVideos([]); }} style={{ color: "#444", marginLeft: 4, cursor: "pointer", background: "none", border: "none", fontSize: 12 }}>×</button>
-                )}
-              </div>
-              <div
-                onDragOver={e => e.preventDefault()}
-                onDrop={handleAudioDrop}
-                onClick={() => refAudios.length < 3 && openFilePicker("audio/mpeg,audio/wav", url => setRefAudios(prev => [...prev, url]))}
-                style={{
-                  height: 34, width: "100%", border: "1px dashed #1e1e1e", borderRadius: 6,
-                  background: "#0c0c0c", display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer", fontSize: 10, color: "#2a2a2a", gap: 4,
-                }}
-              >
-                {refAudios.length > 0 ? `${refAudios.length} áudio(s)` : "+ áudio"}
-                {refAudios.length > 0 && (
-                  <button onClick={e => { e.stopPropagation(); setRefAudios([]); }} style={{ color: "#444", marginLeft: 4, cursor: "pointer", background: "none", border: "none", fontSize: 12 }}>×</button>
-                )}
-              </div>
-            </>
-          )}
+                <div
+                  className="w-3.5 h-3.5 rounded-full bg-white absolute top-[3px] transition-all"
+                  style={{ left: generateAudio ? 19 : 3 }}
+                />
+              </button>
+            </div>
 
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            background: "#0f0f0f", border: "0.5px solid #1e1e1e", borderRadius: 8,
-            padding: "8px 10px",
-          }}>
-            <span style={{ fontSize: 11, color: "#888" }}>áudio</span>
+            {/* Generate Button */}
             <button
-              onClick={() => setGenerateAudio(!generateAudio)}
-              style={{
-                width: 36, height: 20, borderRadius: 10, border: "none", cursor: "pointer",
-                background: generateAudio ? "#1d9e75" : "#1a1a1a",
-                position: "relative", transition: "background 0.2s",
-              }}
+              onClick={handleGenerate}
+              disabled={!canGenerate() || uploading}
+              className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                canGenerate() && !uploading
+                  ? "bg-white text-[#0D0221] hover:bg-gray-200"
+                  : "bg-white/10 text-gray-500 cursor-not-allowed"
+              }`}
             >
-              <div style={{
-                width: 14, height: 14, borderRadius: "50%", background: "#fff",
-                position: "absolute", top: 3,
-                left: generateAudio ? 19 : 3,
-                transition: "left 0.2s",
-              }} />
+              {uploading ? "Enviando..." : "Gerar vídeo"}
             </button>
           </div>
-
-          <button
-            onClick={handleGenerate}
-            disabled={!canGenerate() || uploading}
-            style={{
-              width: "100%", padding: 11, borderRadius: 8, border: "none",
-              background: canGenerate() && !uploading ? "#f0f0f0" : "#2a2a2a",
-              color: canGenerate() && !uploading ? "#080808" : "#555",
-              fontSize: 13, fontWeight: 500, cursor: canGenerate() && !uploading ? "pointer" : "not-allowed",
-            }}
-          >
-            {uploading ? "Enviando..." : "Gerar vídeo"}
-          </button>
         </div>
       </div>
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
+    </AppLayout>
   );
 }
 
@@ -484,15 +455,12 @@ function LabelSelect({ label, value, onChange, options }: {
   options: { value: string; label: string }[];
 }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-      <span style={{ fontSize: 10, color: "#3a3a3a", textTransform: "uppercase" }}>{label}</span>
+    <div className="flex items-center gap-1">
+      <span className="text-[10px] uppercase text-gray-500">{label}</span>
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
-        style={{
-          background: "#0f0f0f", border: "1px solid #222", borderRadius: 6,
-          color: "#e0e0e0", fontSize: 11, padding: "3px 6px", outline: "none",
-        }}
+        className="bg-black/40 border border-white/10 rounded-md text-gray-200 text-[11px] px-1.5 py-0.5 outline-none"
       >
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
@@ -500,29 +468,22 @@ function LabelSelect({ label, value, onChange, options }: {
   );
 }
 
-function UploadSlot({ url, onUpload, onRemove, onDrop, onClickUpload, size }: {
+function UploadSlot({ url, onRemove, onDrop, onClickUpload, size }: {
   url?: string | null;
-  onUpload?: (url: string) => void;
   onRemove?: () => void;
   onDrop?: (e: React.DragEvent) => void;
   onClickUpload?: () => void;
   size?: number;
 }) {
-  const s = size || 72;
+  const s = size || 68;
   if (url) {
     return (
-      <div style={{ width: s, height: s, borderRadius: 6, overflow: "hidden", position: "relative", border: "0.5px solid #1e1e1e" }}>
-        <img src={url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      <div className="relative rounded-lg overflow-hidden border border-white/10" style={{ width: s, height: s }}>
+        <img src={url} className="w-full h-full object-cover" />
         {onRemove && (
           <button
             onClick={onRemove}
-            style={{
-              position: "absolute", top: 2, right: 2,
-              width: 16, height: 16, borderRadius: "50%",
-              background: "#000", color: "#888", border: "none",
-              fontSize: 10, cursor: "pointer", display: "flex",
-              alignItems: "center", justifyContent: "center",
-            }}
+            className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/70 text-gray-300 text-[10px] flex items-center justify-center hover:text-white"
           >
             ×
           </button>
@@ -536,12 +497,8 @@ function UploadSlot({ url, onUpload, onRemove, onDrop, onClickUpload, size }: {
       onDragOver={e => e.preventDefault()}
       onDrop={onDrop}
       onClick={onClickUpload}
-      style={{
-        width: s, height: s, borderRadius: 6,
-        border: "1px dashed #1e1e1e", background: "#0c0c0c",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        cursor: "pointer", color: "#2a2a2a", fontSize: 16,
-      }}
+      className="rounded-lg border border-dashed border-white/10 bg-black/30 flex items-center justify-center cursor-pointer text-gray-500 text-base hover:border-white/20 transition-colors"
+      style={{ width: s, height: s }}
     >
       +
     </div>
