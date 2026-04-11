@@ -488,7 +488,7 @@ const BibliotecaPrompts = () => {
               variant="outline"
               size="sm"
               onClick={() => handleCategorySelect("Seedance 2")}
-              className={`relative text-xs font-bold border-0 text-white ${
+              className={`text-xs font-bold border-0 text-white ${
                 selectedCategory === "Seedance 2"
                   ? "bg-gradient-to-r from-green-600 to-green-500 shadow-lg shadow-green-500/30"
                   : "bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400"
@@ -496,7 +496,7 @@ const BibliotecaPrompts = () => {
             >
               <Video className="h-3.5 w-3.5 mr-1.5" />
               Seedance 2
-              <span className="absolute -top-2 -right-2 px-1.5 py-0.5 text-[9px] font-bold bg-yellow-400 text-black rounded-full animate-pulse leading-none">
+              <span className="ml-1.5 px-1.5 py-0.5 text-[9px] font-bold bg-yellow-400 text-black rounded-full animate-pulse leading-none">
                 NOVO
               </span>
             </Button>
