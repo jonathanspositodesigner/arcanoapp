@@ -37,7 +37,7 @@ const ENGINE_STORAGE_KEY = 'gerar-imagem:selected-engine';
 const GerarImagemTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, planType } = usePremiumStatus();
-  const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
+  const { balance: credits, refetch: refetchCredits, checkBalance, isUnlimited } = useCredits();
   const { isPlanos2User, hasImageGeneration } = useAuth();
   const { getCreditCost } = useAIToolSettings();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
