@@ -623,6 +623,9 @@ const AdminAIToolsUsageTab = () => {
   }, [videoJobDetailsMap]);
 
   const getRecordRevenue = useCallback((record: UsageRecord) => {
+    // Jobs falhados não geram receita (créditos são estornados)
+    if (record.status === 'failed') return 0;
+
     const userType = userTypeMap[record.user_id] || 'free';
 
     if (USER_TYPES_SEM_RECEITA.has(userType)) {
@@ -1002,10 +1005,11 @@ const AdminAIToolsUsageTab = () => {
                         {record.processing_seconds > 0 ? formatDuration(record.processing_seconds) : "-"}
                       </TableCell>
                       {(() => {
-                        const rhCostBRL = record.rh_cost * CUSTO_POR_RH_COIN;
+                        const isFailed = record.status === 'failed';
+                        const rhCostBRL = isFailed ? 0 : record.rh_cost * CUSTO_POR_RH_COIN;
                         const apiCost = API_COST_MAP[record.tool_name] || 0;
-                        const videoCost = getVideoCostBRL(record);
-                        const totalCost = rhCostBRL + (record.status === 'completed' ? apiCost : 0) + videoCost;
+                        const videoCost = isFailed ? 0 : getVideoCostBRL(record);
+                        const totalCost = isFailed ? 0 : rhCostBRL + (record.status === 'completed' ? apiCost : 0) + videoCost;
                         const receita = getRecordRevenue(record);
                         const lucro = receita - totalCost;
                         return (
