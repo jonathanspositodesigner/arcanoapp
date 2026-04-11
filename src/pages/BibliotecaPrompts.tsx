@@ -18,7 +18,7 @@ import LazyVideo from "@/components/LazyVideo";
 import { useTranslation } from "react-i18next";
 import ExpiredSubscriptionModal from "@/components/ExpiredSubscriptionModal";
 import ExpiringSubscriptionModal from "@/components/ExpiringSubscriptionModal";
-import MovieLedAnnouncementModal from "@/components/MovieLedAnnouncementModal";
+
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 import AppLayout from "@/components/layout/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -787,7 +787,7 @@ const BibliotecaPrompts = () => {
 
       <ExpiredSubscriptionModal isOpen={showExpiredModal} onClose={() => setShowExpiredModal(false)} planType={expiredPlanType} />
       <ExpiringSubscriptionModal isOpen={showExpiringModal} onClose={() => setShowExpiringModal(false)} expiringStatus={expiringStatus} planType={planType} />
-      <MovieLedAnnouncementModal />
+      
       
     </AppLayout>
   );
