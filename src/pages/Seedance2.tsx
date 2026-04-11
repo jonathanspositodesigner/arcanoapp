@@ -9,7 +9,7 @@ type Mode = "text" | "startend" | "multiref";
 type Speed = "standard" | "fast";
 type Ratio = "16:9" | "9:16" | "1:1" | "4:3" | "3:4" | "21:9" | "auto";
 type Quality = "720p" | "480p";
-type Duration = "4" | "5" | "6" | "8" | "10" | "12" | "15";
+type Duration = string;
 
 interface Generation {
   id: string;
