@@ -52,10 +52,10 @@ interface UsageSummary {
   completed_jobs: number;
   failed_jobs: number;
   total_rh_cost: number;
-  total_user_credits: number;
+  total_credits: number;
   total_profit: number;
-  jobs_with_queue: number;
-  avg_queue_wait_seconds: number;
+  queued_jobs: number;
+  avg_queue_wait: number;
   avg_processing_seconds: number;
 }
 
