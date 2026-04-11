@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import AppLayout from "@/components/layout/AppLayout";
 import { Coins, X, Download } from "lucide-react";
+import CharacterPicker, { type CharacterItem } from "@/components/shared/CharacterPicker";
 
 type Mode = "text" | "startend" | "multiref";
 type Speed = "standard" | "fast";
