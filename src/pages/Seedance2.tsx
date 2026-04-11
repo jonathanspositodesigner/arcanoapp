@@ -9,7 +9,7 @@ type Mode = "text" | "startend" | "multiref";
 type Speed = "standard" | "fast";
 type Ratio = "16:9" | "9:16" | "1:1" | "4:3" | "3:4" | "21:9" | "auto";
 type Quality = "720p" | "480p";
-type Duration = "4" | "5" | "6" | "8" | "10" | "12" | "15";
+type Duration = string;
 
 interface Generation {
   id: string;
@@ -51,7 +51,7 @@ const RATIOS: { value: Ratio; label: string }[] = [
   { value: "auto", label: "Auto" },
 ];
 
-const DURATIONS: Duration[] = ["4", "5", "6", "8", "10", "12", "15"];
+// Duration is now a slider value
 
 const MODE_OPTIONS: { value: Mode; label: string; desc: string }[] = [
   { value: "text", label: "Só Prompt", desc: "Texto → vídeo" },
@@ -364,46 +364,51 @@ export default function Seedance2() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_200px]">
+            <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_220px]">
               <textarea
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
                 placeholder="Descreva o vídeo que deseja gerar..."
-                className="h-[44px] min-w-0 resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-gray-600 focus:border-purple-500/40"
-                rows={1}
+                className="min-h-[80px] max-h-[160px] min-w-0 resize-y rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none transition-all placeholder:text-gray-600 focus:border-purple-500/40 focus:min-h-[100px]"
+                rows={3}
               />
 
-              <button
-                onClick={handleGenerate}
-                disabled={!canGenerate() || uploading}
-                className={`flex h-[44px] items-center justify-center gap-2.5 rounded-xl px-5 text-sm font-semibold transition-all xl:min-w-[200px] ${
-                  canGenerate() && !uploading
-                    ? "bg-white text-[#0D0221] shadow-lg shadow-white/10 hover:bg-gray-100"
-                    : "cursor-not-allowed bg-white/5 text-gray-600"
-                }`}
-              >
-                {uploading ? "Enviando..." : (
-                  <>
-                    Gerar vídeo
-                    <span className="flex items-center gap-1 text-xs opacity-60">
-                      <Coins className="h-3.5 w-3.5" />
-                      {creditCost}
-                    </span>
-                  </>
-                )}
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleGenerate}
+                  disabled={!canGenerate() || uploading}
+                  className={`group relative flex h-[48px] items-center justify-center gap-2.5 overflow-hidden rounded-xl px-5 text-sm font-semibold transition-all duration-300 ${
+                    canGenerate() && !uploading
+                      ? "bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                      : "cursor-not-allowed bg-white/5 text-gray-600"
+                  }`}
+                >
+                  <span className="absolute inset-0 bg-gradient-to-r from-purple-400/0 via-white/10 to-purple-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                  {uploading ? "Enviando..." : (
+                    <>
+                      <span className="text-base">✦</span>
+                      Gerar vídeo
+                      <span className="flex items-center gap-1 rounded-md bg-white/10 px-1.5 py-0.5 text-[11px]">
+                        <Coins className="h-3 w-3" />
+                        {creditCost}
+                      </span>
+                    </>
+                  )}
+                </button>
+                <span className="text-right text-[10px] text-gray-600">{prompt.length}/2000</span>
+              </div>
             </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 overflow-x-auto pb-1">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Motor</span>
-                <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
+              <div className="flex items-center gap-1.5 group/ctrl">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Motor</span>
+                <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px] transition-all duration-200 group-hover/ctrl:border-white/[0.1] group-hover/ctrl:bg-white/[0.05]">
                   {(["standard", "fast"] as Speed[]).map((value) => (
                     <button
                       key={value}
                       onClick={() => setSpeed(value)}
-                      className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
-                        speed === value ? "border-purple-500/30 bg-purple-500/20 text-purple-300" : "border-transparent text-gray-500 hover:text-gray-300"
+                      className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
+                        speed === value ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                       }`}
                     >
                       {value === "standard" ? "Standard" : "Fast"}
@@ -414,15 +419,15 @@ export default function Seedance2() {
 
               <div className="h-4 w-px bg-white/[0.06]" />
 
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Modo</span>
-                <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
+              <div className="flex items-center gap-1.5 group/ctrl">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Modo</span>
+                <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px] transition-all duration-200 group-hover/ctrl:border-white/[0.1] group-hover/ctrl:bg-white/[0.05]">
                   {MODE_OPTIONS.map((option) => (
                     <button
                       key={option.value}
                       onClick={() => setMode(option.value)}
-                      className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
-                        mode === option.value ? "border-purple-500/30 bg-purple-500/20 text-purple-300" : "border-transparent text-gray-500 hover:text-gray-300"
+                      className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
+                        mode === option.value ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                       }`}
                       title={option.desc}
                     >
@@ -434,49 +439,52 @@ export default function Seedance2() {
 
               <div className="h-4 w-px bg-white/[0.06]" />
 
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Tamanho</span>
+              <div className="flex items-center gap-1.5 group/ctrl">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Tamanho</span>
                 <select
                   value={ratio}
                   onChange={(e) => setRatio(e.target.value as Ratio)}
-                  className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] text-gray-300 outline-none transition-colors hover:border-white/[0.12]"
+                  className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] text-gray-300 outline-none transition-all duration-200 hover:border-purple-500/30 hover:bg-white/[0.06] cursor-pointer"
                 >
                   {RATIOS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                 </select>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Qualidade</span>
+              <div className="flex items-center gap-1.5 group/ctrl">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Qualidade</span>
                 <select
                   value={quality}
                   onChange={(e) => setQuality(e.target.value as Quality)}
-                  className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] text-gray-300 outline-none transition-colors hover:border-white/[0.12]"
+                  className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] text-gray-300 outline-none transition-all duration-200 hover:border-purple-500/30 hover:bg-white/[0.06] cursor-pointer"
                 >
                   <option value="720p">720p</option>
                   <option value="480p">480p</option>
                 </select>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Duração</span>
-                <select
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value as Duration)}
-                  className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] text-gray-300 outline-none transition-colors hover:border-white/[0.12]"
-                >
-                  {DURATIONS.map((item) => <option key={item} value={item}>{item}s</option>)}
-                </select>
+              <div className="flex items-center gap-2 group/ctrl min-w-[160px]">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Duração</span>
+                <input
+                  type="range"
+                  min={1}
+                  max={15}
+                  step={1}
+                  value={parseInt(duration)}
+                  onChange={(e) => setDuration(e.target.value)}
+                  className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/10 accent-purple-500 transition-all duration-200 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-400 [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:shadow-purple-500/30 [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-125"
+                />
+                <span className="min-w-[24px] text-center text-[11px] font-medium text-purple-300">{duration}s</span>
               </div>
 
               <button
                 onClick={() => setGenerateAudio(!generateAudio)}
-                className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] transition-colors ${
+                className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] transition-all duration-200 hover:scale-[1.04] ${
                   generateAudio
-                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                    : "border-white/[0.06] bg-white/[0.03] text-gray-500"
+                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400 shadow-sm shadow-emerald-500/10"
+                    : "border-white/[0.06] bg-white/[0.03] text-gray-500 hover:border-white/[0.12] hover:text-gray-300"
                 }`}
               >
-                <div className={`h-1.5 w-1.5 rounded-full ${generateAudio ? "bg-emerald-400" : "bg-gray-600"}`} />
+                <div className={`h-1.5 w-1.5 rounded-full transition-colors ${generateAudio ? "bg-emerald-400" : "bg-gray-600"}`} />
                 Áudio
               </button>
             </div>
@@ -518,7 +526,7 @@ function UploadSlot({
       onDragOver={(e) => e.preventDefault()}
       onDrop={onDrop}
       onClick={onClickUpload}
-      className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-white/10 bg-black/30 text-base text-gray-500 transition-colors hover:border-white/20"
+      className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-white/10 bg-black/30 text-base text-gray-500 transition-all duration-200 hover:border-purple-500/30 hover:bg-purple-500/5 hover:text-purple-400 hover:scale-105"
       style={{ width: dimension, height: dimension }}
     >
       +
