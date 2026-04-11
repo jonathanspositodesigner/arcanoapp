@@ -518,25 +518,6 @@ export default function Seedance2() {
 
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 overflow-x-auto pb-1">
               <div className="flex items-center gap-1.5 group/ctrl">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Motor</span>
-                <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px] transition-all duration-200 group-hover/ctrl:border-white/[0.1] group-hover/ctrl:bg-white/[0.05]">
-                  {(["standard", "fast"] as Speed[]).map((value) => (
-                    <button
-                      key={value}
-                      onClick={() => setSpeed(value)}
-                      className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
-                        speed === value ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
-                      }`}
-                    >
-                      {value === "standard" ? "Standard" : "Fast"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="h-4 w-px bg-white/[0.06]" />
-
-              <div className="flex items-center gap-1.5 group/ctrl">
                 <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Modo</span>
                 <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px] transition-all duration-200 group-hover/ctrl:border-white/[0.1] group-hover/ctrl:bg-white/[0.05]">
                   {MODE_OPTIONS.map((option) => (
@@ -556,69 +537,100 @@ export default function Seedance2() {
 
               <div className="h-4 w-px bg-white/[0.06]" />
 
-              <div className="flex items-center gap-1.5 group/ctrl">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Tamanho</span>
-                <select
-                  value={ratio}
-                  onChange={(e) => setRatio(e.target.value as Ratio)}
-                  className="rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white outline-none transition-all duration-200 hover:border-purple-500/30 cursor-pointer [&>option]:bg-black [&>option]:text-white"
-                >
-                  {RATIOS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-                </select>
-              </div>
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                className="flex items-center gap-1 rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-1 text-[11px] font-medium text-gray-500 transition-all duration-200 hover:border-white/[0.1] hover:text-gray-300"
+              >
+                Configurações
+                <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${showSettings ? "rotate-180" : ""}`} />
+              </button>
+            </div>
 
-              <div className="flex items-center gap-1.5 group/ctrl">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Qualidade</span>
-                <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px] transition-all duration-200 group-hover/ctrl:border-white/[0.1] group-hover/ctrl:bg-white/[0.05]">
-                  {(["480p", "720p"] as Quality[]).map((value) => (
-                    <button
-                      key={value}
-                      onClick={() => setQuality(value)}
-                      className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
-                        quality === value ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
-                      }`}
-                    >
-                      {value}
-                    </button>
-                  ))}
+            {showSettings && (
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 overflow-x-auto rounded-xl border border-white/[0.04] bg-white/[0.02] px-3 py-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                <div className="flex items-center gap-1.5 group/ctrl">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Motor</span>
+                  <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px] transition-all duration-200 group-hover/ctrl:border-white/[0.1] group-hover/ctrl:bg-white/[0.05]">
+                    {(["standard", "fast"] as Speed[]).map((value) => (
+                      <button
+                        key={value}
+                        onClick={() => setSpeed(value)}
+                        className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
+                          speed === value ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                        }`}
+                      >
+                        {value === "standard" ? "Standard" : "Fast"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="h-4 w-px bg-white/[0.06]" />
+
+                <div className="flex items-center gap-1.5 group/ctrl">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Tamanho</span>
+                  <select
+                    value={ratio}
+                    onChange={(e) => setRatio(e.target.value as Ratio)}
+                    className="rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white outline-none transition-all duration-200 hover:border-purple-500/30 cursor-pointer [&>option]:bg-black [&>option]:text-white"
+                  >
+                    {RATIOS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-1.5 group/ctrl">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Qualidade</span>
+                  <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px] transition-all duration-200 group-hover/ctrl:border-white/[0.1] group-hover/ctrl:bg-white/[0.05]">
+                    {(["480p", "720p"] as Quality[]).map((value) => (
+                      <button
+                        key={value}
+                        onClick={() => setQuality(value)}
+                        className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
+                          quality === value ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                        }`}
+                      >
+                        {value}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 group/ctrl min-w-[160px]">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Duração</span>
+                  <input
+                    type="range"
+                    min={4}
+                    max={15}
+                    step={1}
+                    value={parseInt(duration)}
+                    onChange={(e) => setDuration(e.target.value)}
+                    className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/10 accent-purple-500 transition-all duration-200 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-400 [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:shadow-purple-500/30 [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-125"
+                  />
+                  <span className="min-w-[24px] text-center text-[11px] font-medium text-purple-300">{duration}s</span>
+                </div>
+
+                <div className="h-4 w-px bg-white/[0.06]" />
+
+                <CharacterPicker
+                  selectedCharacters={selectedCharacters}
+                  onCharactersChange={setSelectedCharacters}
+                  maxCharacters={3}
+                  compact
+                />
+
+                <div className="h-4 w-px bg-white/[0.06]" />
+
+                <div className="flex items-center gap-1.5 group/ctrl">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Áudio</span>
+                  <button
+                    onClick={() => setGenerateAudio(!generateAudio)}
+                    className={`relative w-8 h-[18px] rounded-full transition-colors duration-200 ${generateAudio ? "bg-emerald-500" : "bg-white/10"}`}
+                  >
+                    <div className={`absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow-sm transition-all duration-200 ${generateAudio ? "left-[16px]" : "left-[2px]"}`} />
+                  </button>
                 </div>
               </div>
-
-              <div className="flex items-center gap-2 group/ctrl min-w-[160px]">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Duração</span>
-                <input
-                  type="range"
-                  min={4}
-                  max={15}
-                  step={1}
-                  value={parseInt(duration)}
-                  onChange={(e) => setDuration(e.target.value)}
-                  className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/10 accent-purple-500 transition-all duration-200 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-400 [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:shadow-purple-500/30 [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-125"
-                />
-                <span className="min-w-[24px] text-center text-[11px] font-medium text-purple-300">{duration}s</span>
-              </div>
-
-              <div className="h-4 w-px bg-white/[0.06]" />
-
-              <CharacterPicker
-                selectedCharacters={selectedCharacters}
-                onCharactersChange={setSelectedCharacters}
-                maxCharacters={3}
-                compact
-              />
-
-              <div className="h-4 w-px bg-white/[0.06]" />
-
-              <div className="flex items-center gap-1.5 group/ctrl">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Áudio</span>
-                <button
-                  onClick={() => setGenerateAudio(!generateAudio)}
-                  className={`relative w-8 h-[18px] rounded-full transition-colors duration-200 ${generateAudio ? "bg-emerald-500" : "bg-white/10"}`}
-                >
-                  <div className={`absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow-sm transition-all duration-200 ${generateAudio ? "left-[16px]" : "left-[2px]"}`} />
-                </button>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
