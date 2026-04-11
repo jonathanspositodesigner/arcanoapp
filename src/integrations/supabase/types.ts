@@ -4843,6 +4843,7 @@ export type Database = {
           prompt: string
           provider: string
           quality: string
+          raw_input_text: string | null
           reference_image_url: string | null
           retry_count: number | null
           status: string
@@ -4861,6 +4862,7 @@ export type Database = {
           prompt: string
           provider?: string
           quality?: string
+          raw_input_text?: string | null
           reference_image_url?: string | null
           retry_count?: number | null
           status?: string
@@ -4879,6 +4881,7 @@ export type Database = {
           prompt?: string
           provider?: string
           quality?: string
+          raw_input_text?: string | null
           reference_image_url?: string | null
           retry_count?: number | null
           status?: string

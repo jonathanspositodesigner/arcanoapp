@@ -348,11 +348,13 @@ const MovieLedMakerTool = () => {
       // ===== GEMINI LITE PATH =====
       if (selectedEngine === 'gemini-lite') {
         try {
-          const geminiPrompt = `Create a cinematic LED screen video loop. The video MUST prominently display the text "${inputText.trim()}" as the main title, rendered in large, bold, glowing letters. The text "${inputText.trim()}" must be clearly legible and centered on screen. High energy, colorful, dynamic motion graphics with light effects surrounding the text, suitable for large LED displays at live events and concerts.`;
+          // Placeholder prompt — will be replaced by RunningHub preprocessing output
+          const geminiPrompt = `Create a cinematic LED screen video loop for "${inputText.trim()}"`;
 
-          console.log('[MovieLed] Enviando para Gemini Lite com imagem de referência:', {
+          console.log('[MovieLed] Enviando para Gemini Lite com pré-processamento RunningHub:', {
             source: selectedLibraryItem ? 'library' : 'upload',
             referenceImageUrl: imageUrlForBackend,
+            rawInputText: inputText.trim(),
           });
 
           const job = await enqueueGemini({
@@ -362,6 +364,7 @@ const MovieLedMakerTool = () => {
             quality: '720p',
             context: 'movie-led-maker',
             referenceImageUrl: imageUrlForBackend || undefined,
+            rawInputText: inputText.trim(),
           });
 
           setJobId(job.id);

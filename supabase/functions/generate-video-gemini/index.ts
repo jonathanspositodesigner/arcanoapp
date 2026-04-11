@@ -4,21 +4,23 @@ import { createClient } from "npm:@supabase/supabase-js@2";
  * GENERATE VIDEO GEMINI - Queue Processor
  * 
  * Processes jobs from video_generation_queue using Google Gemini API (Veo 3.1 Lite).
+ * For movie-led-maker context: RunningHub preprocessing → Gemini video generation.
  * Called via pg_cron every 2 minutes or manually via HTTP.
- * 
- * Endpoints:
- * - POST / (no body) — Process next queued job (FIFO)
- * - POST /enqueue — Enqueue a new job (authenticated)
- * - POST /status — Check job status (authenticated)
  */
 
 const GEMINI_API_KEY = Deno.env.get('GOOGLE_GEMINI_API_KEY') || '';
+const RUNNINGHUB_API_KEY = Deno.env.get('RUNNINGHUB_API_KEY') || '';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 const MODEL = 'veo-3.1-lite-generate-preview';
 const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
 const TABLE = 'video_generation_queue';
+
+const RH_BASE_URL = 'https://www.runninghub.ai/openapi/v2';
+const RH_MOVIELED_APP_ID = '2021398746331881473';
+const RH_IMAGE_NODE = '68';
+const RH_TEXT_NODE = '72';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,12 +38,10 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   const chunkSize = 0x8000;
   let binary = '';
-
   for (let i = 0; i < bytes.length; i += chunkSize) {
     const chunk = bytes.subarray(i, i + chunkSize);
     binary += String.fromCharCode(...chunk);
   }
-
   return btoa(binary);
 }
 
@@ -99,6 +99,166 @@ async function refundCredits(supabase: ReturnType<typeof createClient>, userId: 
   }
 }
 
+// ========== RUNNINGHUB HELPERS ==========
+async function rhFetchWithRetry(url: string, options: RequestInit, maxRetries = 3): Promise<Response> {
+  const retryableStatuses = [429, 500, 502, 503, 504, 520, 521, 522, 523, 524, 525];
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      if (retryableStatuses.includes(res.status) && attempt < maxRetries) {
+        const delay = Math.min(5000 * (attempt + 1), 30000) + Math.random() * 2000;
+        console.warn(`[GeminiQueue/RH] HTTP ${res.status}, retry ${attempt + 1}/${maxRetries} in ${(delay / 1000).toFixed(1)}s`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      return res;
+    } catch (e: any) {
+      if (attempt < maxRetries) {
+        const delay = Math.min(5000 * (attempt + 1), 30000) + Math.random() * 2000;
+        console.warn(`[GeminiQueue/RH] Network error: ${e.message}, retry ${attempt + 1}/${maxRetries}`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw new Error('RunningHub: max retries exceeded');
+}
+
+interface RHResult {
+  generatedImageUrl: string;
+  generatedPrompt: string;
+}
+
+async function runRunningHubPreprocessing(imageUrl: string, rawText: string, jobId: string): Promise<RHResult> {
+  console.log(`[GeminiQueue/RH] Starting preprocessing for job ${jobId}, text: "${rawText}"`);
+
+  // Submit to RunningHub
+  const submitRes = await rhFetchWithRetry(
+    `${RH_BASE_URL}/run/ai-app/${RH_MOVIELED_APP_ID}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${RUNNINGHUB_API_KEY}`,
+      },
+      body: JSON.stringify({
+        nodeInfoList: [
+          {
+            nodeId: RH_IMAGE_NODE,
+            fieldName: 'image',
+            fieldValue: imageUrl,
+            description: 'image',
+          },
+          {
+            nodeId: RH_TEXT_NODE,
+            fieldName: 'text',
+            fieldValue: ` "${rawText}" `,
+            description: 'text',
+          },
+        ],
+        instanceType: 'default',
+        usePersonalQueue: 'false',
+      }),
+    }
+  );
+
+  if (!submitRes.ok) {
+    const errText = await submitRes.text();
+    console.error(`[GeminiQueue/RH] Submit error for job ${jobId}: HTTP ${submitRes.status} - ${errText}`);
+    throw new Error(`RunningHub: erro ao iniciar pré-processamento (HTTP ${submitRes.status})`);
+  }
+
+  const submitData = await submitRes.json();
+  const taskId = submitData.taskId;
+
+  if (!taskId) {
+    console.error(`[GeminiQueue/RH] No taskId returned for job ${jobId}:`, submitData);
+    throw new Error('RunningHub: nenhum taskId retornado');
+  }
+
+  console.log(`[GeminiQueue/RH] Job ${jobId} → RH taskId: ${taskId}, status: ${submitData.status}`);
+
+  // Poll until SUCCESS (max 5 minutes, every 10s)
+  let results: any[] | null = null;
+  for (let i = 0; i < 30; i++) {
+    await new Promise(r => setTimeout(r, 10000));
+
+    const pollRes = await rhFetchWithRetry(
+      `${RH_BASE_URL}/query`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${RUNNINGHUB_API_KEY}`,
+        },
+        body: JSON.stringify({ taskId }),
+      }
+    );
+
+    if (!pollRes.ok) {
+      console.warn(`[GeminiQueue/RH] Poll error for job ${jobId}: HTTP ${pollRes.status}`);
+      continue;
+    }
+
+    const pollData = await pollRes.json();
+    console.log(`[GeminiQueue/RH] Job ${jobId} poll: status=${pollData.status}`);
+
+    if (pollData.status === 'SUCCESS') {
+      results = pollData.results;
+      break;
+    }
+
+    if (pollData.status === 'FAILED') {
+      const reason = pollData.failedReason?.exception_message || pollData.errorMessage || 'Erro desconhecido';
+      console.error(`[GeminiQueue/RH] Job ${jobId} FAILED:`, reason);
+      throw new Error(`RunningHub: falha no pré-processamento - ${reason}`);
+    }
+  }
+
+  if (!results || results.length === 0) {
+    throw new Error('RunningHub: timeout no pré-processamento (5 minutos)');
+  }
+
+  // Extract image and txt from results
+  let generatedImageUrl: string | null = null;
+  let generatedPrompt: string | null = null;
+
+  for (const result of results) {
+    const outputType = (result.outputType || '').toLowerCase();
+    if (['png', 'jpg', 'jpeg', 'webp'].includes(outputType) && result.url) {
+      generatedImageUrl = result.url;
+    } else if (outputType === 'txt') {
+      // txt content can come in result.text directly or need to be downloaded from result.url
+      if (result.text) {
+        generatedPrompt = result.text.trim();
+      } else if (result.url) {
+        try {
+          const txtRes = await fetch(result.url);
+          if (txtRes.ok) {
+            generatedPrompt = (await txtRes.text()).trim();
+          }
+        } catch (e: any) {
+          console.warn(`[GeminiQueue/RH] Failed to download txt from ${result.url}: ${e.message}`);
+        }
+      }
+    }
+  }
+
+  if (!generatedImageUrl) {
+    console.error(`[GeminiQueue/RH] No image output found for job ${jobId}. Results:`, JSON.stringify(results));
+    throw new Error('RunningHub: nenhuma imagem gerada no pré-processamento');
+  }
+
+  if (!generatedPrompt) {
+    console.error(`[GeminiQueue/RH] No txt/prompt output found for job ${jobId}. Results:`, JSON.stringify(results));
+    throw new Error('RunningHub: nenhum prompt gerado no pré-processamento');
+  }
+
+  console.log(`[GeminiQueue/RH] Job ${jobId} preprocessing complete. Image: ${generatedImageUrl.substring(0, 80)}..., Prompt length: ${generatedPrompt.length}`);
+  return { generatedImageUrl, generatedPrompt };
+}
+
 // ========== ENQUEUE ENDPOINT ==========
 async function handleEnqueue(req: Request): Promise<Response> {
   const userId = await getAuthUserId(req);
@@ -113,27 +273,23 @@ async function handleEnqueue(req: Request): Promise<Response> {
     return jsonResponse({ error: 'Body inválido' }, 400);
   }
 
-  const { prompt, aspect_ratio, duration, quality, context, reference_image_url } = body;
+  const { prompt, aspect_ratio, duration, quality, context, reference_image_url, raw_input_text } = body;
   if (!prompt || typeof prompt !== 'string' || prompt.trim().length < 3) {
     return jsonResponse({ error: 'Prompt inválido (mínimo 3 caracteres)' }, 400);
   }
 
-  // Validate context
   const validContexts = ['video-generator', 'movie-led-maker'];
   if (context && !validContexts.includes(context)) {
     return jsonResponse({ error: 'Contexto inválido' }, 400);
   }
 
-  // Check credits
   const creditCost = CREDIT_COSTS[context || 'video-generator'] || 800;
-  
-  // Check user balance
+
   const { data: balance } = await supabase.rpc('get_upscaler_credits', { _user_id: userId });
   if ((balance ?? 0) < creditCost) {
     return jsonResponse({ error: 'Créditos insuficientes', code: 'INSUFFICIENT_CREDITS' }, 402);
   }
 
-  // Check for existing active job
   const { data: activeJobs } = await supabase
     .from(TABLE)
     .select('id')
@@ -145,13 +301,11 @@ async function handleEnqueue(req: Request): Promise<Response> {
     return jsonResponse({ error: 'Você já tem uma geração na fila. Aguarde finalizar.', code: 'USER_HAS_ACTIVE_JOB' }, 409);
   }
 
-  // Deduct credits
   const charged = await chargeCredits(supabase, userId, creditCost, context || 'video-generator');
   if (!charged) {
     return jsonResponse({ error: 'Falha ao debitar créditos', code: 'INSUFFICIENT_CREDITS' }, 402);
   }
 
-  // Insert into queue
   const { data: job, error } = await supabase
     .from(TABLE)
     .insert({
@@ -164,18 +318,18 @@ async function handleEnqueue(req: Request): Promise<Response> {
       quality: quality || '720p',
       context: context || 'video-generator',
       reference_image_url: reference_image_url || null,
+      raw_input_text: raw_input_text || null,
     })
     .select()
     .single();
 
   if (error) {
-    // Refund on insert failure
     await refundCredits(supabase, userId, creditCost, context || 'video-generator');
     console.error('[GeminiQueue] Insert error:', error);
     return jsonResponse({ error: 'Erro ao enfileirar job' }, 500);
   }
 
-  console.log(`[GeminiQueue] Job ${job.id} enqueued for user ${userId}, context: ${context}, referenceImage: ${reference_image_url ? 'yes' : 'no'}`);
+  console.log(`[GeminiQueue] Job ${job.id} enqueued for user ${userId}, context: ${context}, rawText: ${raw_input_text ? 'yes' : 'no'}, referenceImage: ${reference_image_url ? 'yes' : 'no'}`);
   return jsonResponse({ job_id: job.id, status: 'queued', message: 'Adicionado à fila' });
 }
 
@@ -185,7 +339,7 @@ async function handleStatus(req: Request): Promise<Response> {
   if (!userId) return jsonResponse({ error: 'Não autorizado' }, 401);
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-  
+
   let body: any;
   try {
     body = await req.json();
@@ -194,9 +348,7 @@ async function handleStatus(req: Request): Promise<Response> {
   }
 
   const { job_id } = body;
-  if (!job_id) {
-    return jsonResponse({ error: 'job_id obrigatório' }, 400);
-  }
+  if (!job_id) return jsonResponse({ error: 'job_id obrigatório' }, 400);
 
   const { data: job, error } = await supabase
     .from(TABLE)
@@ -205,10 +357,7 @@ async function handleStatus(req: Request): Promise<Response> {
     .eq('user_id', userId)
     .single();
 
-  if (error || !job) {
-    return jsonResponse({ error: 'Job não encontrado' }, 404);
-  }
-
+  if (error || !job) return jsonResponse({ error: 'Job não encontrado' }, 404);
   return jsonResponse(job);
 }
 
@@ -221,7 +370,6 @@ async function processQueue(): Promise<Response> {
     return jsonResponse({ message: 'API key not configured' }, 500);
   }
 
-  // Get next FIFO job
   const { data: job, error } = await supabase
     .from(TABLE)
     .select('*')
@@ -237,35 +385,66 @@ async function processQueue(): Promise<Response> {
 
   console.log(`[GeminiQueue] Processing job ${job.id} for user ${job.user_id}`);
 
-  // Mark as processing
   await supabase
     .from(TABLE)
     .update({ status: 'processing', updated_at: new Date().toISOString() })
     .eq('id', job.id);
 
   try {
-    // Build instances payload - include reference image if available
+    // Build instances payload
     const instance: Record<string, unknown> = { prompt: job.prompt };
-    
-    if (job.reference_image_url) {
-      try {
-        console.log(`[GeminiQueue] Downloading reference image for job ${job.id}...`);
-        const imgRes = await fetch(job.reference_image_url);
-        if (imgRes.ok) {
-          const imgBuffer = await imgRes.arrayBuffer();
-          const base64 = arrayBufferToBase64(imgBuffer);
-          const mimeType = imgRes.headers.get('content-type') || 'image/jpeg';
-          instance.image = { bytesBase64Encoded: base64, mimeType };
-          console.log(`[GeminiQueue] Reference image attached (${(imgBuffer.byteLength / 1024).toFixed(0)}KB)`);
-        } else {
-          console.warn(`[GeminiQueue] Failed to download reference image: HTTP ${imgRes.status}, proceeding without it`);
+
+    // ===== MOVIE-LED-MAKER: RunningHub preprocessing =====
+    if (job.context === 'movie-led-maker' && job.raw_input_text && job.reference_image_url) {
+      console.log(`[GeminiQueue] Movie LED Maker flow — starting RunningHub preprocessing for job ${job.id}`);
+
+      if (!RUNNINGHUB_API_KEY) {
+        throw new Error('RUNNINGHUB_API_KEY não configurada');
+      }
+
+      const rhResult = await runRunningHubPreprocessing(
+        job.reference_image_url,
+        job.raw_input_text,
+        job.id
+      );
+
+      // Use RunningHub outputs for Gemini
+      instance.prompt = rhResult.generatedPrompt;
+
+      // Download the RunningHub-generated image and convert to base64
+      console.log(`[GeminiQueue] Downloading RunningHub-generated image for job ${job.id}...`);
+      const rhImgRes = await fetch(rhResult.generatedImageUrl);
+      if (!rhImgRes.ok) {
+        throw new Error(`Falha ao baixar imagem do pré-processamento: HTTP ${rhImgRes.status}`);
+      }
+      const rhImgBuffer = await rhImgRes.arrayBuffer();
+      const rhBase64 = arrayBufferToBase64(rhImgBuffer);
+      const rhMimeType = rhImgRes.headers.get('content-type') || 'image/png';
+      instance.image = { bytesBase64Encoded: rhBase64, mimeType: rhMimeType };
+      console.log(`[GeminiQueue] RunningHub image attached (${(rhImgBuffer.byteLength / 1024).toFixed(0)}KB), prompt: "${rhResult.generatedPrompt.substring(0, 100)}..."`);
+
+    } else {
+      // ===== Standard flow: use original reference image if available =====
+      if (job.reference_image_url) {
+        try {
+          console.log(`[GeminiQueue] Downloading reference image for job ${job.id}...`);
+          const imgRes = await fetch(job.reference_image_url);
+          if (imgRes.ok) {
+            const imgBuffer = await imgRes.arrayBuffer();
+            const base64 = arrayBufferToBase64(imgBuffer);
+            const mimeType = imgRes.headers.get('content-type') || 'image/jpeg';
+            instance.image = { bytesBase64Encoded: base64, mimeType };
+            console.log(`[GeminiQueue] Reference image attached (${(imgBuffer.byteLength / 1024).toFixed(0)}KB)`);
+          } else {
+            console.warn(`[GeminiQueue] Failed to download reference image: HTTP ${imgRes.status}, proceeding without it`);
+          }
+        } catch (imgErr: any) {
+          console.warn(`[GeminiQueue] Reference image download error: ${imgErr.message}, proceeding without it`);
         }
-      } catch (imgErr: any) {
-        console.warn(`[GeminiQueue] Reference image download error: ${imgErr.message}, proceeding without it`);
       }
     }
 
-    // Start generation
+    // Start Gemini generation
     const startRes = await fetch(
       `${BASE_URL}/models/${MODEL}:predictLongRunning`,
       {
@@ -300,7 +479,6 @@ async function processQueue(): Promise<Response> {
 
     if (!startRes.ok) {
       const errorText = await startRes.text();
-      // Parse friendly error message
       let friendlyError = `Erro na API de geração (código ${startRes.status})`;
       try {
         const parsed = JSON.parse(errorText);
@@ -335,7 +513,7 @@ async function processQueue(): Promise<Response> {
       .update({ operation_name: operationName, updated_at: new Date().toISOString() })
       .eq('id', job.id);
 
-    // Poll until complete (max 10 minutes, every 30s to respect 2 RPM)
+    // Poll until complete (max 10 minutes, every 30s)
     let googleVideoUrl: string | null = null;
     for (let i = 0; i < 20; i++) {
       await new Promise(r => setTimeout(r, 30000));
