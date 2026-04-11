@@ -378,6 +378,28 @@ const GerarVideoTool = () => {
     setQueuePosition(0);
 
     try {
+      // Upload reference image to storage if needed (for Gemini Lite with_frames)
+      let referenceImageUrl: string | undefined;
+      if (generationMode === 'with_frames' && startFrame) {
+        const base64Data = startFrame.base64;
+        const binaryStr = atob(base64Data);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) {
+          bytes[i] = binaryStr.charCodeAt(i);
+        }
+        const tempId = crypto.randomUUID();
+        const storagePath = `video-refs/${user.id}/${tempId}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from('artes-cloudinary')
+          .upload(storagePath, bytes.buffer, { contentType: 'image/jpeg', upsert: true });
+        if (!uploadError) {
+          const { data: publicUrlData } = supabase.storage
+            .from('artes-cloudinary')
+            .getPublicUrl(storagePath);
+          referenceImageUrl = publicUrlData.publicUrl;
+        }
+      }
+
       // ===== GEMINI LITE PATH =====
       if (isGeminiLite) {
         try {
@@ -387,7 +409,7 @@ const GerarVideoTool = () => {
             duration: 8,
             quality: '720p',
             context: 'video-generator',
-            referenceImageUrl: (generationMode === 'with_frames' && startFrame) ? undefined : undefined,
+            referenceImageUrl,
           });
 
           setJobId(job.id);
