@@ -387,6 +387,27 @@ async function processQueue(): Promise<Response> {
       })
       .eq('id', job.id);
     console.log(`[GeminiQueue] Job ${job.id} marked as completed`);
+
+    // Sync to movieled_maker_jobs for "Minhas Criações" feed
+    if (job.context === 'movie-led-maker' && job.user_id) {
+      try {
+        await supabase.from('movieled_maker_jobs').insert({
+          user_id: job.user_id,
+          session_id: job.id,
+          status: 'completed',
+          output_url: publicVideoUrl,
+          completed_at: new Date().toISOString(),
+          current_step: 'completed',
+          engine: 'gemini-lite',
+          api_account: 'gemini',
+          credits_charged: true,
+          user_credit_cost: CREDIT_COSTS['movie-led-maker'] || 800,
+        });
+        console.log(`[GeminiQueue] Synced movieled_maker_jobs entry for job ${job.id}`);
+      } catch (syncErr: any) {
+        console.error(`[GeminiQueue] Failed to sync movieled_maker_jobs:`, syncErr.message);
+      }
+    }
   } catch (e: any) {
     const retryCount = (job.retry_count || 0) + 1;
     const shouldFail = retryCount >= 3;

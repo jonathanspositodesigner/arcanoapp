@@ -279,16 +279,41 @@ async function handlePollEvolink(req: Request) {
   const pollResult = await evolinkPoll(EVOLINK_API_KEY, job.task_id);
 
   if (pollResult.status === 'completed') {
+    // Re-upload external Evolink URL to Supabase storage for persistence
+    let finalUrl = pollResult.outputUrl;
+    try {
+      if (finalUrl && !finalUrl.includes('supabase.co/storage')) {
+        console.log(`[MovieLedMaker] Re-uploading Evolink output to storage for job ${job_id}`);
+        const videoRes = await fetch(finalUrl);
+        if (videoRes.ok) {
+          const videoBlob = await videoRes.blob();
+          const storagePath = `movieled/${authResult.userId}/${job_id}.mp4`;
+          const { error: uploadErr } = await supabase.storage
+            .from('artes-cloudinary')
+            .upload(storagePath, videoBlob, { contentType: 'video/mp4', upsert: true });
+          if (!uploadErr) {
+            const { data: publicData } = supabase.storage
+              .from('artes-cloudinary')
+              .getPublicUrl(storagePath);
+            finalUrl = publicData.publicUrl;
+            console.log(`[MovieLedMaker] Re-uploaded to: ${storagePath}`);
+          }
+        }
+      }
+    } catch (e) {
+      console.error(`[MovieLedMaker] Re-upload failed (keeping original):`, e);
+    }
+
     await supabase.from(TABLE_NAME).update({
       status: 'completed',
-      output_url: pollResult.outputUrl,
+      output_url: finalUrl,
       completed_at: new Date().toISOString(),
       current_step: 'completed',
     }).eq('id', job_id);
 
     return new Response(JSON.stringify({
       status: 'completed',
-      output_url: pollResult.outputUrl,
+      output_url: finalUrl,
       progress: 100,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
