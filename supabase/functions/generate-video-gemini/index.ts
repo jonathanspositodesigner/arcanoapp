@@ -290,7 +290,6 @@ async function processQueue(): Promise<Response> {
         `${BASE_URL}/${operationName}`,
         { headers: { 'x-goog-api-key': GEMINI_API_KEY } }
       );
-      );
 
       if (!pollRes.ok) {
         console.warn(`[GeminiQueue] Poll error for job ${job.id}: HTTP ${pollRes.status}`);
