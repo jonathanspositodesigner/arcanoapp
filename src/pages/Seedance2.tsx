@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import AppLayout from "@/components/layout/AppLayout";
-import { Coins, X, Download, Clock } from "lucide-react";
+import { Coins, X, Download, Clock, ChevronDown } from "lucide-react";
 import CharacterPicker, { type CharacterItem } from "@/components/shared/CharacterPicker";
 import { getSeedanceTotalCost, modeToGenType } from "@/config/seedance-pricing";
 
