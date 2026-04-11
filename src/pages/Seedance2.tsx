@@ -77,6 +77,7 @@ export default function Seedance2() {
   const [previewGen, setPreviewGen] = useState<Generation | null>(null);
   const [selectedCharacters, setSelectedCharacters] = useState<CharacterItem[]>([]);
   const [showSettings, setShowSettings] = useState(false);
+  const [showRatioModal, setShowRatioModal] = useState(false);
 
   const pollTimers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
   const creditCost = getSeedanceTotalCost(speed, quality, modeToGenType(mode), parseInt(duration) || 5);
@@ -581,13 +582,21 @@ export default function Seedance2() {
 
                 <div className="flex items-center gap-1.5 group/ctrl">
                   <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Tamanho</span>
+                  {/* Desktop: native select */}
                   <select
                     value={ratio}
                     onChange={(e) => setRatio(e.target.value as Ratio)}
-                    className="rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white outline-none transition-all duration-200 hover:border-purple-500/30 cursor-pointer [&>option]:bg-black [&>option]:text-white"
+                    className="hidden sm:block rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white outline-none transition-all duration-200 hover:border-purple-500/30 cursor-pointer [&>option]:bg-black [&>option]:text-white"
                   >
                     {RATIOS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                   </select>
+                  {/* Mobile: button that opens modal */}
+                  <button
+                    onClick={() => setShowRatioModal(true)}
+                    className="sm:hidden rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white"
+                  >
+                    {RATIOS.find((r) => r.value === ratio)?.label || ratio}
+                  </button>
                 </div>
 
                 <div className="flex items-center gap-1.5 group/ctrl">
@@ -637,6 +646,30 @@ export default function Seedance2() {
           </div>
         </div>
       </div>
+      {/* Ratio picker modal - mobile */}
+      {showRatioModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:hidden" onClick={() => setShowRatioModal(false)}>
+          <div className="w-full max-w-sm rounded-t-2xl border-t border-white/10 bg-[#111] p-4 animate-in slide-in-from-bottom duration-200" onClick={(e) => e.stopPropagation()}>
+            <p className="mb-3 text-center text-xs font-medium text-gray-400">Escolha o tamanho</p>
+            <div className="grid grid-cols-2 gap-2">
+              {RATIOS.map((item) => (
+                <button
+                  key={item.value}
+                  onClick={() => { setRatio(item.value); setShowRatioModal(false); }}
+                  className={`rounded-xl border px-3 py-2.5 text-xs font-medium transition-all ${
+                    ratio === item.value
+                      ? "border-purple-500/40 bg-purple-500/20 text-purple-300"
+                      : "border-white/[0.08] bg-white/[0.04] text-gray-400 hover:bg-white/[0.08]"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setShowRatioModal(false)} className="mt-3 w-full rounded-xl bg-white/[0.06] py-2 text-xs text-gray-400">Fechar</button>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }
