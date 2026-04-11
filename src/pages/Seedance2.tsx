@@ -326,7 +326,6 @@ export default function Seedance2() {
               </div>
             </div>
           )}
-            )}
           </div>
 
           <div className="mt-4 shrink-0 rounded-2xl border border-white/5 bg-[#0a0a18]/95 p-3 backdrop-blur-sm">
