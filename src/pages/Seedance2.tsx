@@ -58,6 +58,8 @@ const MODE_OPTIONS: { value: Mode; label: string; desc: string }[] = [
 
 export default function Seedance2() {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
+  const { download: resilientDownload, isDownloading: isResilientDownloading } = useResilientDownload();
   const [prompt, setPrompt] = useState("");
   const [mode, setMode] = useState<Mode>("multiref");
   const [ratio, setRatio] = useState<Ratio>("9:16");
