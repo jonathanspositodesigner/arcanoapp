@@ -1,9 +1,9 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, Fragment } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import AppLayout from "@/components/layout/AppLayout";
-import { Coins } from "lucide-react";
+import { Coins, X } from "lucide-react";
 
 type Mode = "text" | "startend" | "multiref";
 type Speed = "standard" | "fast";
@@ -84,6 +84,7 @@ export default function Seedance2() {
   const [refVideos, setRefVideos] = useState<string[]>([]);
   const [refAudios, setRefAudios] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [previewGen, setPreviewGen] = useState<Generation | null>(null);
 
   const pollTimers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
   const creditCost = CREDIT_COSTS[`${mode}-${speed}`] || 500;
@@ -276,21 +277,17 @@ export default function Seedance2() {
                 <p className="text-sm text-gray-500">Nenhuma geração ainda. Comece descrevendo um vídeo abaixo.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-2 p-2 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 p-3">
                 {generations.map((gen) => (
                   <div
                     key={gen.id}
-                    className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-xl ${
+                    className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-xl cursor-pointer group ${
                       gen.status === "queued" ? "border border-dashed border-white/10" : "border border-white/10 bg-[#1a1a2e]"
                     }`}
+                    onClick={() => gen.status === "completed" && gen.videoUrl && setPreviewGen(gen)}
                   >
                     {gen.status === "completed" && gen.videoUrl && (
-                      <>
-                        <video src={gen.videoUrl} controls className="h-full w-full rounded-xl object-cover" />
-                        <span className="absolute bottom-1.5 left-2 text-[9px] text-gray-500">
-                          {truncate(gen.prompt, 30)} · {gen.ratio} · {gen.duration}s
-                        </span>
-                      </>
+                      <HoverVideo src={gen.videoUrl} prompt={gen.prompt} ratio={gen.ratio} duration={gen.duration} />
                     )}
 
                     {gen.status === "processing" && (
@@ -308,6 +305,28 @@ export default function Seedance2() {
               </div>
             )}
           </div>
+
+          {/* Preview Modal */}
+          {previewGen && previewGen.videoUrl && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setPreviewGen(null)}>
+              <div className="relative w-full max-w-4xl mx-4" onClick={(e) => e.stopPropagation()}>
+                <button
+                  onClick={() => setPreviewGen(null)}
+                  className="absolute -top-10 right-0 rounded-full bg-white/10 p-1.5 text-white hover:bg-white/20 transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+                <video
+                  src={previewGen.videoUrl}
+                  controls
+                  autoPlay
+                  className="w-full rounded-xl"
+                />
+                <p className="mt-2 text-xs text-gray-400 truncate">{previewGen.prompt} · {previewGen.ratio} · {previewGen.duration}s</p>
+              </div>
+            </div>
+          )}
+
 
           <div className="mt-4 shrink-0 rounded-2xl border border-white/5 bg-[#0a0a18]/95 p-3 backdrop-blur-sm">
             {mode !== "text" && (
@@ -540,5 +559,41 @@ function UploadSlot({
     >
       +
     </div>
+  );
+}
+
+function HoverVideo({ src, prompt, ratio, duration }: { src: string; prompt: string; ratio: string; duration: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleMouseEnter = () => {
+    const el = videoRef.current;
+    if (!el) return;
+    el.muted = true;
+    el.play().catch(() => {});
+  };
+
+  const handleMouseLeave = () => {
+    const el = videoRef.current;
+    if (!el) return;
+    el.pause();
+  };
+
+  return (
+    <>
+      <video
+        ref={videoRef}
+        src={src}
+        muted
+        playsInline
+        preload="metadata"
+        className="h-full w-full object-cover"
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      <span className="absolute bottom-1.5 left-2 text-[9px] text-white/70 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        {prompt.length > 40 ? prompt.slice(0, 40) + "…" : prompt} · {ratio} · {duration}s
+      </span>
+    </>
   );
 }
