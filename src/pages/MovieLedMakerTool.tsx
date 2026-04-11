@@ -359,7 +359,7 @@ const MovieLedMakerTool = () => {
             prompt: geminiPrompt,
             aspectRatio: '16:9',
             duration: 8,
-            quality: '720p',
+            quality: '1080p',
             context: 'movie-led-maker',
             referenceImageUrl: imageUrlForBackend || undefined,
           });
