@@ -646,6 +646,30 @@ export default function Seedance2() {
           </div>
         </div>
       </div>
+      {/* Ratio picker modal - mobile */}
+      {showRatioModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:hidden" onClick={() => setShowRatioModal(false)}>
+          <div className="w-full max-w-sm rounded-t-2xl border-t border-white/10 bg-[#111] p-4 animate-in slide-in-from-bottom duration-200" onClick={(e) => e.stopPropagation()}>
+            <p className="mb-3 text-center text-xs font-medium text-gray-400">Escolha o tamanho</p>
+            <div className="grid grid-cols-2 gap-2">
+              {RATIOS.map((item) => (
+                <button
+                  key={item.value}
+                  onClick={() => { setRatio(item.value); setShowRatioModal(false); }}
+                  className={`rounded-xl border px-3 py-2.5 text-xs font-medium transition-all ${
+                    ratio === item.value
+                      ? "border-purple-500/40 bg-purple-500/20 text-purple-300"
+                      : "border-white/[0.08] bg-white/[0.04] text-gray-400 hover:bg-white/[0.08]"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setShowRatioModal(false)} className="mt-3 w-full rounded-xl bg-white/[0.06] py-2 text-xs text-gray-400">Fechar</button>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }
