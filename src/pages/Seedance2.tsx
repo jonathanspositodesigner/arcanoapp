@@ -229,16 +229,16 @@ export default function Seedance2() {
 
   return (
     <AppLayout fullScreen>
-      <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 65px)' }}>
-        <div className="flex-1 min-h-0 flex flex-col overflow-hidden px-4 pt-4">
-          <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-1 min-h-0 flex-col overflow-hidden [@media(max-height:720px)]:overflow-y-auto">
+        <div className="flex flex-1 min-h-0 flex-col overflow-hidden px-4 pt-4 [@media(max-height:720px)]:min-h-[320px] [@media(max-height:720px)]:overflow-visible">
+          <div className="mb-3 flex shrink-0 items-center justify-between">
             <h1 className="text-xl font-bold text-white">Seedance 2.0</h1>
             <span className="text-[11px] text-gray-400 border border-white/10 bg-white/5 rounded-md px-2 py-0.5">
               {generations.length} gerações
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto min-h-0" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}>
+          <div className="flex-1 min-h-0 overflow-y-auto [@media(max-height:720px)]:overflow-visible" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}>
             {generations.length === 0 ? (
               <div className="flex items-center justify-center h-full">
                 <p className="text-sm text-gray-500">Nenhuma geração ainda. Comece descrevendo um vídeo abaixo.</p>
