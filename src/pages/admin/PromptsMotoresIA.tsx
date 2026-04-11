@@ -8,23 +8,23 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Cpu, Loader2 } from "lucide-react";
+import { Plus, Trash2, Cpu, Loader2, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 const CUSTO_RH = 0.002;
-const RECEITA_CREDITO = 0.0057;
 const TAXA_RH = 0.2;
 const MULT = 3;
+const FALLBACK_RECEITA_CREDITO = 0.0057;
 
-function calcular(apiR: number, tempoMin: number) {
+function calcular(apiR: number, tempoMin: number, receitaCredito: number) {
   const seg = tempoMin * 60;
   const rhCoins = seg * TAXA_RH;
   const custoRH = rhCoins * CUSTO_RH;
   const total = apiR + custoRH;
-  const creditos = Math.ceil(total / RECEITA_CREDITO);
+  const creditos = Math.ceil(total / receitaCredito);
   const cobrar3x = total * MULT;
-  const creditos3x = Math.ceil(cobrar3x / RECEITA_CREDITO);
+  const creditos3x = Math.ceil(cobrar3x / receitaCredito);
   return { seg, rhCoins, custoRH, total, creditos, cobrar3x, creditos3x };
 }
 
@@ -40,6 +40,68 @@ const PromptsMotoresIA = () => {
   const [tempo, setTempo] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Dynamic revenue per credit from real sales
+  const { data: receitaData, isLoading: loadingReceita } = useQuery({
+    queryKey: ["receita-por-credito-real"],
+    queryFn: async () => {
+      // Fetch from Pagar.me/Asaas
+      const { data: pagarme } = await supabase
+        .from("asaas_orders")
+        .select("product_id, net_amount, amount")
+        .eq("status", "paid")
+        .not("product_id", "is", null);
+
+      // Fetch from Stripe
+      const { data: stripeOrders } = await supabase
+        .from("stripe_orders" as any)
+        .select("product_id, net_amount, amount")
+        .eq("status", "paid")
+        .not("product_id", "is", null);
+
+      // Fetch products with credits
+      const { data: products } = await supabase
+        .from("mp_products" as any)
+        .select("id, credits_amount")
+        .gt("credits_amount", 0);
+
+      if (!products || products.length === 0) return null;
+
+      const productMap = new Map<string, number>();
+      (products as any[]).forEach((p: any) => productMap.set(p.id, p.credits_amount));
+
+      let totalReceita = 0;
+      let totalCreditos = 0;
+      let totalVendas = 0;
+
+      const processOrders = (orders: any[] | null) => {
+        if (!orders) return;
+        orders.forEach((o: any) => {
+          const creds = productMap.get(o.product_id);
+          if (creds && creds > 0) {
+            totalReceita += o.net_amount ?? o.amount ?? 0;
+            totalCreditos += creds;
+            totalVendas++;
+          }
+        });
+      };
+
+      processOrders(pagarme);
+      processOrders(stripeOrders as any);
+
+      if (totalCreditos === 0) return null;
+
+      return {
+        receitaPorCredito: totalReceita / totalCreditos,
+        totalReceita,
+        totalCreditos,
+        totalVendas,
+      };
+    },
+    refetchInterval: 60000, // refresh every minute
+  });
+
+  const receitaCredito = receitaData?.receitaPorCredito ?? FALLBACK_RECEITA_CREDITO;
+
   const { data: dados = [], isLoading } = useQuery({
     queryKey: ["ai-engine-costs"],
     queryFn: async () => {
@@ -52,12 +114,23 @@ const PromptsMotoresIA = () => {
     },
   });
 
+  // Recalculate all rows with dynamic receita
+  const dadosRecalculados = useMemo(() => {
+    return dados.map((d: any) => {
+      const total = d.custo_total;
+      const creditos = Math.ceil(total / receitaCredito);
+      const cobrar3x = total * MULT;
+      const creditos3x = Math.ceil(cobrar3x / receitaCredito);
+      return { ...d, creditos_cobrir: creditos, cobrar_3x: cobrar3x, creditos_3x: creditos3x };
+    });
+  }, [dados, receitaCredito]);
+
   const preview = useMemo(() => {
     const a = parseFloat(apiCost);
     const t = parseFloat(tempo);
     if (isNaN(a) || isNaN(t) || t <= 0) return null;
-    return calcular(a, t);
-  }, [apiCost, tempo]);
+    return calcular(a, t, receitaCredito);
+  }, [apiCost, tempo, receitaCredito]);
 
   const adicionar = async () => {
     const a = parseFloat(apiCost);
@@ -67,7 +140,7 @@ const PromptsMotoresIA = () => {
       return;
     }
     setSaving(true);
-    const c = calcular(a, t);
+    const c = calcular(a, t, receitaCredito);
     const { error } = await supabase.from("ai_engine_costs" as any).insert({
       nome: nome.trim(),
       modo,
@@ -114,14 +187,30 @@ const PromptsMotoresIA = () => {
         </div>
 
         {/* Reference Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <Card className="p-4 text-center border-border">
             <p className="text-[0.7rem] text-muted-foreground uppercase tracking-wider">Custo / RH Coin</p>
             <p className="text-lg font-bold text-primary mt-1">R$ 0,0020</p>
           </Card>
-          <Card className="p-4 text-center border-border">
-            <p className="text-[0.7rem] text-muted-foreground uppercase tracking-wider">Receita / Crédito</p>
-            <p className="text-lg font-bold text-primary mt-1">R$ 0,0057</p>
+          <Card className="p-4 text-center border-emerald-500/30 bg-emerald-500/5">
+            <p className="text-[0.7rem] text-emerald-400 uppercase tracking-wider font-semibold flex items-center justify-center gap-1">
+              <TrendingUp className="h-3 w-3" />
+              Receita / Crédito
+            </p>
+            {loadingReceita ? (
+              <Loader2 className="h-4 w-4 animate-spin mx-auto mt-2 text-emerald-400" />
+            ) : (
+              <>
+                <p className="text-lg font-bold text-emerald-400 mt-1">
+                  R$ {receitaCredito.toFixed(4)}
+                </p>
+                {receitaData && (
+                  <p className="text-[0.6rem] text-emerald-400/60 mt-0.5">
+                    {receitaData.totalVendas} vendas · {receitaData.totalCreditos.toLocaleString("pt-BR")} créd
+                  </p>
+                )}
+              </>
+            )}
           </Card>
           <Card className="p-4 text-center border-border">
             <p className="text-[0.7rem] text-muted-foreground uppercase tracking-wider">Taxa RH (Standard)</p>
@@ -131,10 +220,21 @@ const PromptsMotoresIA = () => {
             <p className="text-[0.7rem] text-amber-400 uppercase tracking-wider font-semibold">Meta de Lucro</p>
             <p className="text-lg font-bold text-amber-400 mt-1">3× por geração</p>
           </Card>
+          <Card className="p-4 text-center border-blue-500/30 bg-blue-500/5">
+            <p className="text-[0.7rem] text-blue-400 uppercase tracking-wider font-semibold">Receita Total Créd.</p>
+            {loadingReceita ? (
+              <Loader2 className="h-4 w-4 animate-spin mx-auto mt-2 text-blue-400" />
+            ) : (
+              <p className="text-lg font-bold text-blue-400 mt-1">
+                R$ {(receitaData?.totalReceita ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+            )}
+          </Card>
         </div>
 
         <p className="text-center text-xs text-muted-foreground">
-          Colunas em <span className="text-amber-400 font-bold">dourado</span> = o que cobrar para lucrar 3× em cada geração
+          Colunas em <span className="text-amber-400 font-bold">dourado</span> = o que cobrar para lucrar 3× em cada geração · 
+          <span className="text-emerald-400 font-bold"> Receita/Crédito</span> = média real das vendas (atualiza em tempo real)
         </p>
 
         {/* Table */}
@@ -163,14 +263,14 @@ const PromptsMotoresIA = () => {
                       <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
-                ) : dados.length === 0 ? (
+                ) : dadosRecalculados.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
                       Nenhum modelo cadastrado. Adicione abaixo ⬇️
                     </TableCell>
                   </TableRow>
                 ) : (
-                  dados.map((d: any) => (
+                  dadosRecalculados.map((d: any) => (
                     <TableRow key={d.id} className="hover:bg-muted/20">
                       <TableCell className="font-bold text-foreground">{d.nome}</TableCell>
                       <TableCell>
@@ -239,6 +339,7 @@ const PromptsMotoresIA = () => {
               <div className="flex justify-between text-sm"><span className="text-muted-foreground">Custo RH (R$)</span><span className="text-primary font-semibold">R$ {fmt(preview.custoRH)}</span></div>
               <div className="flex justify-between text-sm"><span className="text-muted-foreground">Custo Total (R$)</span><span className="text-primary font-semibold">R$ {fmt(preview.total)}</span></div>
               <div className="flex justify-between text-sm"><span className="text-muted-foreground">Créditos p/ cobrir custo</span><span className="text-primary font-semibold">{preview.creditos} créditos</span></div>
+              <div className="flex justify-between text-sm"><span className="text-emerald-400">Receita/crédito usado</span><span className="text-emerald-400 font-semibold">R$ {receitaCredito.toFixed(4)}</span></div>
               <div className="border-t border-amber-500/20 mt-2 pt-2">
                 <div className="flex justify-between text-sm"><span className="text-amber-400 font-bold">💰 Cobrar para 3× (R$)</span><span className="text-amber-400 font-extrabold text-base">R$ {fmt(preview.cobrar3x)}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-amber-400 font-bold">🎯 Créditos cobrar 3×</span><span className="text-amber-400 font-extrabold text-base">{preview.creditos3x} créditos</span></div>
