@@ -175,7 +175,7 @@ async function handleEnqueue(req: Request): Promise<Response> {
     return jsonResponse({ error: 'Erro ao enfileirar job' }, 500);
   }
 
-  console.log(`[GeminiQueue] Job ${job.id} enqueued for user ${userId}, context: ${context}`);
+  console.log(`[GeminiQueue] Job ${job.id} enqueued for user ${userId}, context: ${context}, referenceImage: ${reference_image_url ? 'yes' : 'no'}`);
   return jsonResponse({ job_id: job.id, status: 'queued', message: 'Adicionado à fila' });
 }
 
