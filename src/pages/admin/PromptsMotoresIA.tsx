@@ -114,16 +114,7 @@ const PromptsMotoresIA = () => {
     },
   });
 
-  // Recalculate all rows with dynamic receita
-  const dadosRecalculados = useMemo(() => {
-    return dados.map((d: any) => {
-      const total = d.custo_total;
-      const creditos = Math.ceil(total / receitaCredito);
-      const cobrar3x = total * MULT;
-      const creditos3x = Math.ceil(cobrar3x / receitaCredito);
-      return { ...d, creditos_cobrir: creditos, cobrar_3x: cobrar3x, creditos_3x: creditos3x };
-    });
-  }, [dados, receitaCredito]);
+  // Each row uses its own stored receita_por_credito - no recalculation needed
 
   const preview = useMemo(() => {
     const a = parseFloat(apiCost);
@@ -152,6 +143,7 @@ const PromptsMotoresIA = () => {
       creditos_cobrir: c.creditos,
       cobrar_3x: c.cobrar3x,
       creditos_3x: c.creditos3x,
+      receita_por_credito: receitaCredito,
     } as any);
     setSaving(false);
     if (error) {
@@ -251,6 +243,7 @@ const PromptsMotoresIA = () => {
                   <TableHead className="text-primary font-semibold text-[0.7rem] uppercase">Custo RH (R$)</TableHead>
                   <TableHead className="text-primary font-semibold text-[0.7rem] uppercase">Custo Total (R$)</TableHead>
                   <TableHead className="text-primary font-semibold text-[0.7rem] uppercase">Créditos p/ cobrir</TableHead>
+                  <TableHead className="text-emerald-400 font-semibold text-[0.7rem] uppercase">R$/Créd (época)</TableHead>
                   <TableHead className="text-amber-400 font-bold text-[0.7rem] uppercase border-l-2 border-amber-500/20">💰 Cobrar 3× (R$)</TableHead>
                   <TableHead className="text-amber-400 font-bold text-[0.7rem] uppercase">🎯 Créditos 3×</TableHead>
                   <TableHead className="w-10"></TableHead>
@@ -259,18 +252,18 @@ const PromptsMotoresIA = () => {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={11} className="text-center py-8">
+                    <TableCell colSpan={12} className="text-center py-8">
                       <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
                     </TableCell>
                   </TableRow>
-                ) : dadosRecalculados.length === 0 ? (
+                ) : dados.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={11} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
                       Nenhum modelo cadastrado. Adicione abaixo ⬇️
                     </TableCell>
                   </TableRow>
                 ) : (
-                  dadosRecalculados.map((d: any) => (
+                  dados.map((d: any) => (
                     <TableRow key={d.id} className="hover:bg-muted/20">
                       <TableCell className="font-bold text-foreground">{d.nome}</TableCell>
                       <TableCell>
@@ -284,6 +277,7 @@ const PromptsMotoresIA = () => {
                       <TableCell className="text-muted-foreground">R$ {fmt(d.custo_rh)}</TableCell>
                       <TableCell className="text-red-400 font-bold">R$ {fmt(d.custo_total)}</TableCell>
                       <TableCell className="text-emerald-400 font-bold">{d.creditos_cobrir} créditos</TableCell>
+                      <TableCell className="text-emerald-400/70 text-xs">R$ {(d.receita_por_credito ?? 0.007).toFixed(4)}</TableCell>
                       <TableCell className="text-amber-400 font-extrabold text-[0.95rem] border-l-2 border-amber-500/20">R$ {fmt(d.cobrar_3x)}</TableCell>
                       <TableCell className="text-amber-300 font-extrabold text-[0.95rem]">{d.creditos_3x} créditos</TableCell>
                       <TableCell>

@@ -426,6 +426,7 @@ export type Database = {
           id: string
           modo: string
           nome: string
+          receita_por_credito: number
           rh_coins: number
           tempo_segundos: number
           updated_at: string
@@ -441,6 +442,7 @@ export type Database = {
           id?: string
           modo?: string
           nome: string
+          receita_por_credito?: number
           rh_coins?: number
           tempo_segundos?: number
           updated_at?: string
@@ -456,6 +458,7 @@ export type Database = {
           id?: string
           modo?: string
           nome?: string
+          receita_por_credito?: number
           rh_coins?: number
           tempo_segundos?: number
           updated_at?: string
