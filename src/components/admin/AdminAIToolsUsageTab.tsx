@@ -698,7 +698,7 @@ const AdminAIToolsUsageTab = () => {
               <Users className="h-8 w-8 text-blue-500" />
               <div>
                 <p className="text-xs text-muted-foreground">Receita Usuários (R$)</p>
-                <p className="text-xl font-bold">{formatBRL(summary.total_user_credits * receitaPorCredito)}</p>
+                <p className="text-xl font-bold">{formatBRL(paidUserCredits * receitaPorCredito)}</p>
               </div>
             </CardContent>
           </Card>
@@ -708,7 +708,7 @@ const AdminAIToolsUsageTab = () => {
               <TrendingUp className="h-8 w-8 text-green-500" />
               <div>
                 <p className="text-xs text-green-400">Lucro Total (R$)</p>
-                <p className="text-xl font-bold text-green-400">{formatBRL(summary.total_user_credits * receitaPorCredito - summary.total_rh_cost * CUSTO_POR_RH_COIN)}</p>
+                <p className="text-xl font-bold text-green-400">{formatBRL(paidUserCredits * receitaPorCredito - summary.total_rh_cost * CUSTO_POR_RH_COIN)}</p>
               </div>
             </CardContent>
           </Card>
