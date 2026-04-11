@@ -8,6 +8,7 @@ export interface GeminiVideoRequest {
   quality: '720p' | '1080p';
   context: 'video-generator' | 'movie-led-maker';
   referenceImageUrl?: string;
+  rawInputText?: string;
 }
 
 export interface GeminiQueueJob {
@@ -54,6 +55,7 @@ export function useGeminiVideoQueue() {
             quality: request.quality,
             context: request.context,
             reference_image_url: request.referenceImageUrl || null,
+            raw_input_text: request.rawInputText || null,
           }),
         }
       );
