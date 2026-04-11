@@ -137,6 +137,20 @@ const AdminAIToolsUsageTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [cancellingJobId, setCancellingJobId] = useState<string | null>(null);
   const [userTypeMap, setUserTypeMap] = useState<Record<string, UserClientType>>({});
+  const [receitaPorCredito, setReceitaPorCredito] = useState(FALLBACK_RECEITA_POR_CREDITO);
+
+  // Fetch dynamic receita por credito
+  useEffect(() => {
+    const fetchReceita = async () => {
+      const { data } = await supabase.rpc("get_receita_por_credito" as any);
+      if (data && (data as any).receita_por_credito) {
+        setReceitaPorCredito(Number((data as any).receita_por_credito));
+      }
+    };
+    fetchReceita();
+    const interval = setInterval(fetchReceita, 60000);
+    return () => clearInterval(interval);
+  }, []);
   
   // Job output modal state
   const [selectedJob, setSelectedJob] = useState<UsageRecord | null>(null);
