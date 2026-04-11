@@ -15,6 +15,8 @@ const TRUSTED_DOMAINS = [
   'cos.ap-beijing.myqcloud.com',
   'cos.ap-shanghai.myqcloud.com',
   'cos.ap-guangzhou.myqcloud.com',
+  'files.evolink.ai',
+  'evolink.ai',
 ];
 
 serve(async (req) => {
