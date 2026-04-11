@@ -100,7 +100,7 @@ async function handleEnqueue(req: Request): Promise<Response> {
     return jsonResponse({ error: 'Body inválido' }, 400);
   }
 
-  const { prompt, aspect_ratio, duration, quality, context } = body;
+  const { prompt, aspect_ratio, duration, quality, context, reference_image_url } = body;
   if (!prompt || typeof prompt !== 'string' || prompt.trim().length < 3) {
     return jsonResponse({ error: 'Prompt inválido (mínimo 3 caracteres)' }, 400);
   }
@@ -150,6 +150,7 @@ async function handleEnqueue(req: Request): Promise<Response> {
       duration: duration || 8,
       quality: quality || '720p',
       context: context || 'video-generator',
+      reference_image_url: reference_image_url || null,
     })
     .select()
     .single();
