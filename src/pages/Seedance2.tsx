@@ -349,7 +349,7 @@ export default function Seedance2() {
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl border border-white/5 bg-black/10 lg:min-h-[420px]">
+          <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl border border-white/5 bg-black/10 sm:min-h-[300px] lg:min-h-[420px]">
             {galleryTab === "creations" && (
               <>
                 {galleryTab === "creations" && (
