@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import AppLayout from "@/components/layout/AppLayout";
 import { Coins, X, Download } from "lucide-react";
+import CharacterPicker, { type CharacterItem } from "@/components/shared/CharacterPicker";
 
 type Mode = "text" | "startend" | "multiref";
 type Speed = "standard" | "fast";
@@ -85,6 +86,7 @@ export default function Seedance2() {
   const [refAudios, setRefAudios] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [previewGen, setPreviewGen] = useState<Generation | null>(null);
+  const [selectedCharacters, setSelectedCharacters] = useState<CharacterItem[]>([]);
 
   const pollTimers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
   const creditCost = CREDIT_COSTS[`${mode}-${speed}`] || 500;
@@ -522,6 +524,17 @@ export default function Seedance2() {
                 />
                 <span className="min-w-[24px] text-center text-[11px] font-medium text-purple-300">{duration}s</span>
               </div>
+
+              <div className="h-4 w-px bg-white/[0.06]" />
+
+              <CharacterPicker
+                selectedCharacters={selectedCharacters}
+                onCharactersChange={setSelectedCharacters}
+                maxCharacters={3}
+                compact
+              />
+
+              <div className="h-4 w-px bg-white/[0.06]" />
 
               <button
                 onClick={() => setGenerateAudio(!generateAudio)}
