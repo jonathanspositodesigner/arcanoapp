@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect, Fragment } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
@@ -58,9 +59,13 @@ const MODE_OPTIONS: { value: Mode; label: string; desc: string }[] = [
 
 export default function Seedance2() {
   const { user } = useAuth();
+  const location = useLocation();
   const isMobile = useIsMobile();
   const { download: resilientDownload, isDownloading: isResilientDownloading } = useResilientDownload();
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPrompt] = useState(() => {
+    const state = location.state as { prefillPrompt?: string } | null;
+    return state?.prefillPrompt || "";
+  });
   const [mode, setMode] = useState<Mode>("multiref");
   const [ratio, setRatio] = useState<Ratio>("9:16");
   const [quality, setQuality] = useState<Quality>("480p");
