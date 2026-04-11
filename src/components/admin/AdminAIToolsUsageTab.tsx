@@ -52,10 +52,10 @@ interface UsageSummary {
   completed_jobs: number;
   failed_jobs: number;
   total_rh_cost: number;
-  total_user_credits: number;
+  total_credits: number;
   total_profit: number;
-  jobs_with_queue: number;
-  avg_queue_wait_seconds: number;
+  queued_jobs: number;
+  avg_queue_wait: number;
   avg_processing_seconds: number;
 }
 
@@ -376,11 +376,14 @@ const AdminAIToolsUsageTab = () => {
     try {
       const { start, end } = getDateRange();
       
+      const toolFilterParam = toolFilter === 'all' ? null : toolFilter;
+      
       const { data: records, error: recordsError } = await supabase.rpc('get_ai_tools_usage', {
         p_start_date: start?.toISOString() || null,
         p_end_date: end?.toISOString() || null,
         p_page: currentPage,
-        p_page_size: ITEMS_PER_PAGE
+        p_page_size: ITEMS_PER_PAGE,
+        p_tool_filter: toolFilterParam
       });
 
       if (recordsError) throw recordsError;
@@ -442,7 +445,8 @@ const AdminAIToolsUsageTab = () => {
       // Fetch total count
       const { data: countData, error: countError } = await supabase.rpc('get_ai_tools_usage_count', {
         p_start_date: start?.toISOString() || null,
-        p_end_date: end?.toISOString() || null
+        p_end_date: end?.toISOString() || null,
+        p_tool_filter: toolFilterParam
       });
 
       if (countError) throw countError;
@@ -451,7 +455,8 @@ const AdminAIToolsUsageTab = () => {
       // Fetch summary
       const { data: summaryData, error: summaryError } = await supabase.rpc('get_ai_tools_usage_summary', {
         p_start_date: start?.toISOString() || null,
-        p_end_date: end?.toISOString() || null
+        p_end_date: end?.toISOString() || null,
+        p_tool_filter: toolFilterParam
       });
 
       if (summaryError) throw summaryError;
@@ -467,7 +472,7 @@ const AdminAIToolsUsageTab = () => {
 
   useEffect(() => {
     fetchData();
-  }, [currentPage, dateFilter]);
+  }, [currentPage, dateFilter, toolFilter]);
 
   useEffect(() => {
     fetchReceitaPorCreditoAtual();
@@ -486,10 +491,6 @@ const AdminAIToolsUsageTab = () => {
   const filteredRecords = useMemo(() => {
     let filtered = [...usageRecords];
 
-    if (toolFilter !== "all") {
-      filtered = filtered.filter(r => r.tool_name === toolFilter);
-    }
-
     if (statusFilter !== "all") {
       filtered = filtered.filter(r => r.status === statusFilter);
     }
@@ -503,7 +504,7 @@ const AdminAIToolsUsageTab = () => {
     }
 
     return filtered;
-  }, [usageRecords, toolFilter, statusFilter, searchTerm]);
+  }, [usageRecords, statusFilter, searchTerm]);
 
   // Error analytics from current page data
   const errorAnalytics = useMemo(() => {
@@ -527,7 +528,7 @@ const AdminAIToolsUsageTab = () => {
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
   const custoTotalResumo = summary ? summary.total_rh_cost * CUSTO_POR_RH_COIN : 0;
-  const receitaUsuariosTotal = summary ? summary.total_user_credits * receitaPorCreditoAtual : 0;
+  const receitaUsuariosTotal = summary ? summary.total_credits * receitaPorCreditoAtual : 0;
   const lucroTotalResumo = receitaUsuariosTotal - custoTotalResumo;
 
   const formatDuration = (seconds: number) => {
@@ -898,7 +899,7 @@ const AdminAIToolsUsageTab = () => {
               <Timer className="h-6 w-6 text-orange-500" />
               <div>
                 <p className="text-xs text-muted-foreground">Jobs que entraram na fila</p>
-                <p className="text-lg font-bold">{summary.jobs_with_queue} ({totalCount > 0 ? Math.round((summary.jobs_with_queue / summary.total_jobs) * 100) : 0}%)</p>
+                <p className="text-lg font-bold">{summary.queued_jobs} ({totalCount > 0 ? Math.round((summary.queued_jobs / summary.total_jobs) * 100) : 0}%)</p>
               </div>
             </CardContent>
           </Card>
@@ -908,7 +909,7 @@ const AdminAIToolsUsageTab = () => {
               <Clock className="h-6 w-6 text-blue-500" />
               <div>
                 <p className="text-xs text-muted-foreground">Tempo médio na fila</p>
-                <p className="text-lg font-bold">{formatDuration(Math.round(summary.avg_queue_wait_seconds))}</p>
+                <p className="text-lg font-bold">{formatDuration(Math.round(summary.avg_queue_wait))}</p>
               </div>
             </CardContent>
           </Card>

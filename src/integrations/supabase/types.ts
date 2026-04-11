@@ -5445,6 +5445,7 @@ export type Database = {
               p_page?: number
               p_page_size?: number
               p_start_date?: string
+              p_tool_filter?: string
             }
             Returns: {
               completed_at: string
@@ -5494,21 +5495,29 @@ export type Database = {
             }[]
           }
       get_ai_tools_usage_count: {
-        Args: { p_end_date?: string; p_start_date?: string }
+        Args: {
+          p_end_date?: string
+          p_start_date?: string
+          p_tool_filter?: string
+        }
         Returns: number
       }
       get_ai_tools_usage_summary: {
-        Args: { p_end_date?: string; p_start_date?: string }
+        Args: {
+          p_end_date?: string
+          p_start_date?: string
+          p_tool_filter?: string
+        }
         Returns: {
           avg_processing_seconds: number
-          avg_queue_wait_seconds: number
+          avg_queue_wait: number
           completed_jobs: number
           failed_jobs: number
-          jobs_with_queue: number
+          queued_jobs: number
+          total_credits: number
           total_jobs: number
           total_profit: number
           total_rh_cost: number
-          total_user_credits: number
         }[]
       }
       get_all_credit_users: {
