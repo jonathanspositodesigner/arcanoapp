@@ -18,6 +18,7 @@ const BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
 const TABLE = 'video_generation_queue';
 
 const RH_BASE_URL = 'https://www.runninghub.ai/openapi/v2';
+const RH_UPLOAD_URL = 'https://www.runninghub.ai/task/openapi/upload';
 const RH_MOVIELED_APP_ID = '2021398746331881473';
 const RH_IMAGE_NODE = '68';
 const RH_TEXT_NODE = '72';
