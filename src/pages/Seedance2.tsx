@@ -282,8 +282,8 @@ export default function Seedance2() {
                 value={prompt}
                 onChange={e => setPrompt(e.target.value)}
                 placeholder="Descreva o vídeo que deseja gerar..."
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-gray-600 resize-vertical outline-none focus:border-white/20 transition-colors"
-                style={{ minHeight: 64 }}
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-gray-600 resize-none outline-none focus:border-white/20 transition-colors"
+                rows={2}
               />
 
               {/* Row 1: Motor + Modo */}
