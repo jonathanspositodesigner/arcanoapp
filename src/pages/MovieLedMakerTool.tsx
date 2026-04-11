@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ArrowLeft, Download, Sparkles, Loader2, Video, Coins, Clock, Type, RotateCcw, AlertCircle, ImageIcon, X, Plus, Check } from 'lucide-react';
+import { useGeminiVideoQueue, type GeminiQueueJob } from '@/hooks/useGeminiVideoQueue';
 
 import MovieLedLibraryModal, { type MovieLedItem } from '@/components/movieled-maker/MovieLedLibraryModal';
 import { Button } from '@/components/ui/button';
@@ -37,7 +38,9 @@ interface LibraryItem {
 
 const ENGINES = [
   { id: 'wan2.2', name: 'Wan 2.2', cost: 500, duration: '15s', resolution: '720p', time: '4 a 5 min' },
-  { id: 'veo3.1', name: 'Veo 3.1', cost: 1500, duration: '6s', resolution: '1080p', time: '2 a 4 min' },
+  // EVOLINK_BACKUP — descomente para reverter para EvoLink
+  // { id: 'veo3.1', name: 'Veo 3.1', cost: 1500, duration: '6s', resolution: '1080p', time: '2 a 4 min' },
+  { id: 'gemini-lite', name: 'Veo 3.1 Lite', cost: 800, duration: '8s', resolution: '720p', time: '2 a 5 min' },
 ] as const;
 
 const MovieLedMakerTool = () => {
