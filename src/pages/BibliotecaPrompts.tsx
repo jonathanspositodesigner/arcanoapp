@@ -637,18 +637,9 @@ const BibliotecaPrompts = () => {
                   )}
                   {item.category === 'Seedance 2' && (
                     <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (item.isPremium && !isPremium) {
-                          setPremiumModalItem(item);
-                          setShowPremiumModal(true);
-                        } else {
-                          trackPromptClick(String(item.id), item.title, !!item.isExclusive);
-                          navigate('/seedance2', { state: { prefillPrompt: item.prompt } });
-                        }
-                      }}
+                      disabled
                       size="sm"
-                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white min-w-0"
+                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gray-500/50 text-gray-300 cursor-not-allowed min-w-0"
                     >
                       <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
                       <span className="truncate">Gerar sua versão</span>
