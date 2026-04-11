@@ -830,7 +830,41 @@ async function handleFinish(req: Request): Promise<Response> {
       current_step: status,
     };
     
-    if (outputUrl) updateData.output_url = outputUrl;
+    // Re-upload external output to Supabase storage for video tools (movieled, video_generator)
+    // so URLs persist for 24h instead of expiring from external CDNs
+    let finalOutputUrl = outputUrl;
+    if (status === 'completed' && outputUrl && (table === 'movieled_maker_jobs' || table === 'video_generator_jobs')) {
+      try {
+        const isExternalUrl = !outputUrl.includes('supabase.co/storage');
+        if (isExternalUrl) {
+          console.log(`[QueueManager] Re-uploading external output for ${table}/${jobId}`);
+          const videoRes = await fetch(outputUrl);
+          if (videoRes.ok) {
+            const videoBlob = await videoRes.blob();
+            const folder = table === 'movieled_maker_jobs' ? 'movieled' : 'video-generator';
+            const storagePath = `${folder}/${job.user_id}/${jobId}.mp4`;
+            const { error: uploadErr } = await supabase.storage
+              .from('artes-cloudinary')
+              .upload(storagePath, videoBlob, { contentType: 'video/mp4', upsert: true });
+            if (!uploadErr) {
+              const { data: publicData } = supabase.storage
+                .from('artes-cloudinary')
+                .getPublicUrl(storagePath);
+              finalOutputUrl = publicData.publicUrl;
+              console.log(`[QueueManager] Re-uploaded to storage: ${storagePath}`);
+            } else {
+              console.error(`[QueueManager] Storage upload error:`, uploadErr.message);
+            }
+          } else {
+            console.error(`[QueueManager] Failed to download external output: HTTP ${videoRes.status}`);
+          }
+        }
+      } catch (reuploadErr) {
+        console.error(`[QueueManager] Re-upload failed (keeping original URL):`, reuploadErr);
+      }
+    }
+    
+    if (finalOutputUrl) updateData.output_url = finalOutputUrl;
     if (errorMessage) {
       updateData.error_message = errorMessage;
       updateData.failed_at_step = 'webhook_received';
