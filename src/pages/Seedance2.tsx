@@ -656,6 +656,41 @@ function UploadSlot({
   );
 }
 
+function VideoCard({ gen, onPreview }: { gen: Generation; onPreview: (g: Generation) => void }) {
+  return (
+    <div
+      className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-xl cursor-pointer group ${
+        gen.status === "queued" ? "border border-dashed border-white/10" : "border border-white/10 bg-[#1a1a2e]"
+      }`}
+      onClick={() => gen.status === "completed" && gen.videoUrl && onPreview(gen)}
+    >
+      {gen.status === "completed" && gen.videoUrl && (
+        <>
+          <HoverVideo src={gen.videoUrl} prompt={gen.prompt} ratio={gen.ratio} duration={gen.duration} />
+          <a
+            href={gen.videoUrl}
+            download
+            onClick={(e) => e.stopPropagation()}
+            className="absolute top-2 right-2 z-10 rounded-full bg-black/60 p-1.5 text-white/70 opacity-0 group-hover:opacity-100 transition-all hover:bg-black/80 hover:text-white hover:scale-110"
+            title="Baixar vídeo"
+          >
+            <Download className="h-4 w-4" />
+          </a>
+        </>
+      )}
+      {gen.status === "processing" && (
+        <div className="text-center">
+          <div className="mx-auto mb-1.5 h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-white/40" />
+          <span className="text-[10px] text-gray-500">gerando...</span>
+        </div>
+      )}
+      {gen.status === "failed" && (
+        <span className="px-3 text-center text-[10px] text-red-400/60">{gen.error || "Falhou"}</span>
+      )}
+    </div>
+  );
+}
+
 function HoverVideo({ src, prompt, ratio, duration }: { src: string; prompt: string; ratio: string; duration: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
