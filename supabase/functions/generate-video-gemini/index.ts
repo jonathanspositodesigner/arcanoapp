@@ -45,6 +45,36 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
+const ALLOWED_DURATIONS = new Set([4, 6, 8]);
+const ALLOWED_QUALITIES = new Set(['720p', '1080p']);
+
+function normalizeRequestedDuration(value: unknown): number | null {
+  if (value === undefined || value === null || value === '') return 6;
+  const parsed = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(parsed)) return null;
+  return ALLOWED_DURATIONS.has(parsed) ? parsed : null;
+}
+
+function normalizeRequestedQuality(value: unknown): '720p' | '1080p' {
+  const parsed = typeof value === 'string' ? value.trim() : '';
+  return ALLOWED_QUALITIES.has(parsed) ? (parsed as '720p' | '1080p') : '720p';
+}
+
+function getEffectiveGeminiConfig(job: { duration: unknown; quality: unknown; reference_image_url?: string | null }) {
+  const requestedDuration = normalizeRequestedDuration(job.duration) ?? 8;
+  const requestedQuality = normalizeRequestedQuality(job.quality);
+  const attachReferenceImage = Boolean(job.reference_image_url) && requestedDuration === 8;
+  const resolution = requestedDuration === 8 ? requestedQuality : '720p';
+
+  return {
+    durationSeconds: requestedDuration,
+    resolution,
+    attachReferenceImage,
+    skippedReferenceImage: Boolean(job.reference_image_url) && !attachReferenceImage,
+    downgradedResolution: requestedQuality !== resolution,
+  };
+}
+
 // ========== AUTH HELPER ==========
 async function getAuthUserId(req: Request): Promise<string | null> {
   const authHeader = req.headers.get('Authorization');
