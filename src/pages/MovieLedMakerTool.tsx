@@ -342,6 +342,69 @@ const MovieLedMakerTool = () => {
 
       setStatus('processing');
 
+      // ===== GEMINI LITE PATH =====
+      if (selectedEngine === 'gemini-lite') {
+        try {
+          const geminiPrompt = `Create a cinematic LED screen video loop. The video MUST prominently display the text "${inputText.trim()}" as the main title, rendered in large, bold, glowing letters. The text "${inputText.trim()}" must be clearly legible and centered on screen. High energy, colorful, dynamic motion graphics with light effects surrounding the text, suitable for large LED displays at live events and concerts.`;
+
+          const job = await enqueueGemini({
+            prompt: geminiPrompt,
+            aspectRatio: '16:9',
+            duration: 8,
+            quality: '720p',
+            context: 'movie-led-maker',
+          });
+
+          setJobId(job.id);
+          setIsQueued(true);
+          toast.success('Movie adicionado à fila! Pronto em 2-5 minutos.');
+
+          const channel = subscribeGemini(job.id, (updatedJob: GeminiQueueJob) => {
+            if (updatedJob.status === 'completed' && updatedJob.video_url) {
+              setResultUrl(updatedJob.video_url);
+              setStatus('completed');
+              setIsQueued(false);
+              refetchCredits();
+              toast.success('Movie para telão gerado com sucesso!');
+              channel.unsubscribe();
+              endSubmit();
+            } else if (updatedJob.status === 'failed') {
+              const errInfo = getAIErrorMessage(updatedJob.error_message || 'Erro na geração');
+              setErrorMessage(errInfo.message);
+              setStatus('error');
+              setIsQueued(false);
+              refetchCredits();
+              toast.error(`${errInfo.message}. ${errInfo.solution}`);
+              channel.unsubscribe();
+              endSubmit();
+            } else if (updatedJob.status === 'processing') {
+              setIsQueued(false);
+              setStatus('processing');
+            }
+          });
+          geminiChannelRef.current = channel;
+
+          // Trigger processing immediately
+          triggerProcessing();
+          refetchCredits();
+        } catch (err: any) {
+          if (err.message?.includes('INSUFFICIENT_CREDITS') || err.message?.includes('Créditos insuficientes')) {
+            setNoCreditsReason('insufficient');
+            setShowNoCreditsModal(true);
+          } else if (err.message?.includes('USER_HAS_ACTIVE_JOB')) {
+            toast.error('Você já tem uma geração na fila. Aguarde finalizar.');
+          } else {
+            toast.error(err.message || 'Erro ao enfileirar movie');
+            setErrorMessage(err.message || 'Erro ao enfileirar movie');
+            setStatus('error');
+          }
+          setStatus('idle');
+          endSubmit();
+        }
+        return;
+      }
+
+      // ===== EXISTING ENGINES PATH (Wan 2.2 + Evolink) =====
       // Send fallback URLs for library items (reference_images[0] + image_url)
       const fallbackImageUrl = selectedLibraryItem?.image_url || null;
 
@@ -378,11 +441,12 @@ const MovieLedMakerTool = () => {
 
       setJobId(data.job_id);
 
-      // If Evolink (Veo 3.1), start client-side polling instead of relying on Realtime/QueueManager
-      if (data.provider === 'evolink') {
-        toast.success('Geração Veo 3.1 iniciada! Aguarde...');
-        startEvolinkPolling(data.job_id);
-      } else if (data.queued) {
+      // EVOLINK_BACKUP — descomente para reverter para EvoLink
+      // if (data.provider === 'evolink') {
+      //   toast.success('Geração Veo 3.1 iniciada! Aguarde...');
+      //   startEvolinkPolling(data.job_id);
+      // } else
+      if (data.queued) {
         setIsQueued(true);
         setQueuePosition(data.position || 1);
         toast.info(`Você está na fila (posição ${data.position || 1}). Aguarde...`);
