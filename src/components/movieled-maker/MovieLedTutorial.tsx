@@ -18,7 +18,7 @@ const STEPS: TutorialStep[] = [
   {
     step: 1,
     title: 'Escolha o Motor',
-    description: 'Selecione entre Wan 2.2 (15s, 720p) ou Veo 3.1 (6s, 1080p). Cada motor tem qualidade e duração diferentes!',
+    description: 'Selecione entre Wan 2.2 (15s, 720p) ou Veo 3.1 (8s, 1080p). Cada motor tem qualidade e duração diferentes!',
     targetSelector: '[data-tutorial-movieled="engine"]',
     emoji: '⚡',
     action: 'Clique em um dos motores para continuar',
