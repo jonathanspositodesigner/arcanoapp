@@ -69,14 +69,14 @@ export default function Seedance2() {
   const [speed, setSpeed] = useState<Speed>("standard");
   const [generateAudio, setGenerateAudio] = useState(true);
   const [generations, setGenerations] = useState<Generation[]>([
-    { id: "demo-1", status: "completed", prompt: "Cinematic ocean waves at sunset", ratio: "16:9", duration: "8", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" },
-    { id: "demo-2", status: "completed", prompt: "Drone shot of mountains", ratio: "16:9", duration: "5", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" },
-    { id: "demo-3", status: "completed", prompt: "Abstract neon particles", ratio: "16:9", duration: "10", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4" },
-    { id: "demo-4", status: "completed", prompt: "City timelapse at night", ratio: "16:9", duration: "6", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4" },
-    { id: "demo-5", status: "completed", prompt: "Forest path with fog", ratio: "16:9", duration: "8", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4" },
-    { id: "demo-6", status: "completed", prompt: "Underwater coral reef", ratio: "16:9", duration: "5", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4" },
-    { id: "demo-7", status: "completed", prompt: "Space nebula animation", ratio: "16:9", duration: "12", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4" },
-    { id: "demo-8", status: "completed", prompt: "Rainy window close-up", ratio: "16:9", duration: "4", videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4" },
+    { id: "demo-1", status: "completed", prompt: "Cinematic ocean waves at sunset", ratio: "16:9", duration: "8", videoUrl: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4" },
+    { id: "demo-2", status: "completed", prompt: "Drone shot of mountains", ratio: "16:9", duration: "5", videoUrl: "https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_1MB.mp4" },
+    { id: "demo-3", status: "completed", prompt: "Abstract neon particles", ratio: "16:9", duration: "10", videoUrl: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_2MB.mp4" },
+    { id: "demo-4", status: "completed", prompt: "City timelapse at night", ratio: "16:9", duration: "6", videoUrl: "https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_2MB.mp4" },
+    { id: "demo-5", status: "completed", prompt: "Forest path with fog", ratio: "16:9", duration: "8", videoUrl: "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_5MB.mp4" },
+    { id: "demo-6", status: "completed", prompt: "Underwater coral reef", ratio: "16:9", duration: "5", videoUrl: "https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_5MB.mp4" },
+    { id: "demo-7", status: "completed", prompt: "Space nebula animation", ratio: "16:9", duration: "12", videoUrl: "https://samplelib.com/lib/preview/mp4/sample-5s.mp4" },
+    { id: "demo-8", status: "completed", prompt: "Rainy window close-up", ratio: "16:9", duration: "4", videoUrl: "https://samplelib.com/lib/preview/mp4/sample-10s.mp4" },
   ]);
   const [startImage, setStartImage] = useState<string | null>(null);
   const [endImage, setEndImage] = useState<string | null>(null);
