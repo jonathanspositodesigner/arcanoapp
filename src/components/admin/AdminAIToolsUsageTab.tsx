@@ -394,11 +394,11 @@ const AdminAIToolsUsageTab = () => {
         const sdjIds = videoRecords.filter((r: UsageRecord) => r.tool_name === 'Seedance 2.0').map((r: UsageRecord) => r.id);
         const detailMap: Record<string, VideoJobDetail> = {};
         const promises: Promise<any>[] = [];
-        if (vgjIds.length > 0) promises.push(supabase.from('video_generator_jobs' as any).select('id, model, duration_seconds, job_payload').in('id', vgjIds));
+        if (vgjIds.length > 0) promises.push(supabase.from('video_generator_jobs' as any).select('id, model, duration_seconds, job_payload').in('id', vgjIds).then(r => r));
         else promises.push(Promise.resolve({ data: [] }));
-        if (mljIds.length > 0) promises.push(supabase.from('movieled_maker_jobs' as any).select('id, engine').in('id', mljIds));
+        if (mljIds.length > 0) promises.push(supabase.from('movieled_maker_jobs' as any).select('id, engine').in('id', mljIds).then(r => r));
         else promises.push(Promise.resolve({ data: [] }));
-        if (sdjIds.length > 0) promises.push(supabase.from('seedance_jobs' as any).select('id, model, duration, quality, input_image_urls').in('id', sdjIds));
+        if (sdjIds.length > 0) promises.push(supabase.from('seedance_jobs' as any).select('id, model, duration, quality, input_image_urls').in('id', sdjIds).then(r => r));
         else promises.push(Promise.resolve({ data: [] }));
         const [vgjRes, mljRes, sdjRes] = await Promise.all(promises);
         for (const row of ((vgjRes as any)?.data || []) as any[]) { const p = row.job_payload as any; detailMap[row.id] = { id: row.id, model: row.model, duration: row.duration_seconds, hasAudio: p?.generateAudio === true }; }
