@@ -123,11 +123,16 @@ const GerarVideoTool = () => {
 
   const currentModel = availableModels.find(m => m.id === selectedModel) || availableModels[0];
   const isVeoModel = selectedModel === 'veo3.1-fast' || selectedModel === 'veo3.1-pro';
+  const isGeminiLite = selectedModel === 'gemini-lite';
   
   const effectiveCost = (isVeoModel && generateAudio) ? currentModel.costWithAudio : currentModel.cost;
   const creditCost = (isUnlimited && selectedModel === 'wan2.2') 
     ? 0 
     : effectiveCost;
+
+  // Gemini queue hook
+  const { enqueueVideo: enqueueGemini, subscribeToJob: subscribeGemini, triggerProcessing, isSubmitting: isGeminiSubmitting } = useGeminiVideoQueue();
+  const geminiChannelRef = useRef<ReturnType<typeof subscribeGemini> | null>(null);
 
   // Reset audio when switching away from Veo models
   useEffect(() => {
