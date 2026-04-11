@@ -44,60 +44,21 @@ const PromptsMotoresIA = () => {
   const { data: receitaData, isLoading: loadingReceita } = useQuery({
     queryKey: ["receita-por-credito-real"],
     queryFn: async () => {
-      // Fetch from Pagar.me/Asaas
-      const { data: pagarme } = await supabase
-        .from("asaas_orders")
-        .select("product_id, net_amount, amount")
-        .eq("status", "paid")
-        .not("product_id", "is", null);
-
-      // Fetch from Stripe
-      const { data: stripeOrders } = await supabase
-        .from("stripe_orders" as any)
-        .select("product_id, net_amount, amount")
-        .eq("status", "paid")
-        .not("product_id", "is", null);
-
-      // Fetch products with credits
-      const { data: products } = await supabase
-        .from("mp_products" as any)
-        .select("id, credits_amount")
-        .gt("credits_amount", 0);
-
-      if (!products || products.length === 0) return null;
-
-      const productMap = new Map<string, number>();
-      (products as any[]).forEach((p: any) => productMap.set(p.id, p.credits_amount));
-
-      let totalReceita = 0;
-      let totalCreditos = 0;
-      let totalVendas = 0;
-
-      const processOrders = (orders: any[] | null) => {
-        if (!orders) return;
-        orders.forEach((o: any) => {
-          const creds = productMap.get(o.product_id);
-          if (creds && creds > 0) {
-            totalReceita += o.net_amount ?? o.amount ?? 0;
-            totalCreditos += creds;
-            totalVendas++;
-          }
-        });
-      };
-
-      processOrders(pagarme);
-      processOrders(stripeOrders as any);
-
-      if (totalCreditos === 0) return null;
-
+      const { data, error } = await supabase.rpc("get_receita_por_credito" as any);
+      if (error) {
+        console.error("Erro ao buscar receita por crédito:", error);
+        return null;
+      }
+      const result = data as any;
+      if (!result || result.total_creditos === 0) return null;
       return {
-        receitaPorCredito: totalReceita / totalCreditos,
-        totalReceita,
-        totalCreditos,
-        totalVendas,
+        receitaPorCredito: Number(result.receita_por_credito),
+        totalReceita: Number(result.total_receita),
+        totalCreditos: Number(result.total_creditos),
+        totalVendas: Number(result.total_vendas),
       };
     },
-    refetchInterval: 60000, // refresh every minute
+    refetchInterval: 60000,
   });
 
   const receitaCredito = receitaData?.receitaPorCredito ?? FALLBACK_RECEITA_CREDITO;
