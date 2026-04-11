@@ -278,6 +278,9 @@ async function processQueue(): Promise<Response> {
           instances: [instance],
           parameters: {
             aspectRatio: job.aspect_ratio,
+            sampleCount: 1,
+            personGeneration: 'allow_all',
+            generateAudio: false,
           },
         }),
       }
