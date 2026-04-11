@@ -4831,6 +4831,60 @@ export type Database = {
           },
         ]
       }
+      video_generation_queue: {
+        Row: {
+          aspect_ratio: string
+          context: string | null
+          created_at: string
+          duration: number
+          error_message: string | null
+          id: string
+          operation_name: string | null
+          prompt: string
+          provider: string
+          quality: string
+          retry_count: number | null
+          status: string
+          updated_at: string
+          user_id: string
+          video_url: string | null
+        }
+        Insert: {
+          aspect_ratio?: string
+          context?: string | null
+          created_at?: string
+          duration?: number
+          error_message?: string | null
+          id?: string
+          operation_name?: string | null
+          prompt: string
+          provider?: string
+          quality?: string
+          retry_count?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          video_url?: string | null
+        }
+        Update: {
+          aspect_ratio?: string
+          context?: string | null
+          created_at?: string
+          duration?: number
+          error_message?: string | null
+          id?: string
+          operation_name?: string | null
+          prompt?: string
+          provider?: string
+          quality?: string
+          retry_count?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       video_generator_jobs: {
         Row: {
           api_account: string

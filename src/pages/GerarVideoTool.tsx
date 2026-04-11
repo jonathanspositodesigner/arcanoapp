@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
+import { useGeminiVideoQueue, type GeminiQueueJob } from '@/hooks/useGeminiVideoQueue';
 import { getAIErrorMessage } from '@/utils/errorMessages';
 import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock, Image, Type, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ const MODEL_DURATIONS: Record<string, number> = {
   'veo3.1-fast': 8,
   'veo3.1-pro': 8,
   'wan2.2': 5,
+  'gemini-lite': 8,
 };
 
 interface FrameImage {
@@ -48,12 +50,14 @@ interface ModelOption {
   cost: number;
   costWithAudio: number;
   description: string;
+  isGeminiQueue?: boolean;
 }
 
 const ALL_MODELS: ModelOption[] = [
   { id: 'wan2.2', name: 'Wan 2.2', cost: 400, costWithAudio: 400, description: '5 segundos' },
   { id: 'veo3.1-fast', name: 'Veo 3.1 Fast', cost: 1500, costWithAudio: 2500, description: '8s • 1080p' },
   { id: 'veo3.1-pro', name: 'Veo 3.1 Pro', cost: 2800, costWithAudio: 5000, description: '8s • 1080p' },
+  { id: 'gemini-lite', name: 'Veo 3.1 Lite', cost: 800, costWithAudio: 800, description: 'Google • Sem áudio • Via fila', isGeminiQueue: true },
 ];
 
 type GenerationMode = 'prompt_only' | 'with_frames';
@@ -119,11 +123,16 @@ const GerarVideoTool = () => {
 
   const currentModel = availableModels.find(m => m.id === selectedModel) || availableModels[0];
   const isVeoModel = selectedModel === 'veo3.1-fast' || selectedModel === 'veo3.1-pro';
+  const isGeminiLite = selectedModel === 'gemini-lite';
   
   const effectiveCost = (isVeoModel && generateAudio) ? currentModel.costWithAudio : currentModel.cost;
   const creditCost = (isUnlimited && selectedModel === 'wan2.2') 
     ? 0 
     : effectiveCost;
+
+  // Gemini queue hook
+  const { enqueueVideo: enqueueGemini, subscribeToJob: subscribeGemini, triggerProcessing, isSubmitting: isGeminiSubmitting } = useGeminiVideoQueue();
+  const geminiChannelRef = useRef<ReturnType<typeof subscribeGemini> | null>(null);
 
   // Reset audio when switching away from Veo models
   useEffect(() => {
@@ -206,10 +215,11 @@ const GerarVideoTool = () => {
     }
   }, [generationMode]);
 
-  // Cleanup evolink polling on unmount
+  // Cleanup evolink polling and gemini channel on unmount
   useEffect(() => {
     return () => {
       if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+      if (geminiChannelRef.current) geminiChannelRef.current.unsubscribe();
     };
   }, []);
 
@@ -368,6 +378,63 @@ const GerarVideoTool = () => {
     setQueuePosition(0);
 
     try {
+      // ===== GEMINI LITE PATH =====
+      if (isGeminiLite) {
+        try {
+          const job = await enqueueGemini({
+            prompt: prompt.trim(),
+            aspectRatio: aspectRatio as '16:9' | '9:16',
+            duration: 8,
+            quality: '720p',
+            context: 'video-generator',
+          });
+
+          setJobId(job.id);
+          setIsQueued(true);
+          toast.success('Vídeo adicionado à fila! Pronto em 2-5 minutos.');
+
+          // Subscribe to realtime updates
+          const channel = subscribeGemini(job.id, (updatedJob: GeminiQueueJob) => {
+            if (updatedJob.status === 'completed' && updatedJob.video_url) {
+              setResultUrl(updatedJob.video_url);
+              setIsGenerating(false);
+              setIsQueued(false);
+              refetchCredits();
+              toast.success('Vídeo gerado com sucesso!');
+              channel.unsubscribe();
+            } else if (updatedJob.status === 'failed') {
+              const errInfo = getAIErrorMessage(updatedJob.error_message || 'Erro na geração');
+              setErrorMessage(errInfo.message);
+              setIsGenerating(false);
+              setIsQueued(false);
+              refetchCredits();
+              toast.error(`${errInfo.message}. ${errInfo.solution}`);
+              channel.unsubscribe();
+            } else if (updatedJob.status === 'processing') {
+              setIsQueued(false);
+            }
+          });
+          geminiChannelRef.current = channel;
+
+          // Trigger processing immediately (cron will also pick it up)
+          triggerProcessing();
+        } catch (err: any) {
+          if (err.message?.includes('INSUFFICIENT_CREDITS') || err.message?.includes('Créditos insuficientes')) {
+            setNoCreditsReason('insufficient');
+            setShowNoCreditsModal(true);
+          } else if (err.message?.includes('USER_HAS_ACTIVE_JOB')) {
+            toast.error('Você já tem uma geração na fila. Aguarde finalizar.');
+          } else {
+            toast.error(err.message || 'Erro ao enfileirar vídeo');
+            setErrorMessage(err.message || 'Erro ao enfileirar vídeo');
+          }
+          setIsGenerating(false);
+        }
+        endSubmit();
+        return;
+      }
+
+      // ===== EXISTING MODELS PATH (unchanged) =====
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
 
@@ -786,7 +853,7 @@ const GerarVideoTool = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  {isVeoModel && (
+                  {(isVeoModel || isGeminiLite) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-900/40 border border-purple-500/25 text-[10px] text-purple-200 hover:bg-purple-800/50 transition-colors">
