@@ -126,6 +126,51 @@ async function rhFetchWithRetry(url: string, options: RequestInit, maxRetries = 
   throw new Error('RunningHub: max retries exceeded');
 }
 
+/** Upload image to RunningHub and return the fileName path */
+async function uploadImageToRunningHub(imageUrl: string, jobId: string): Promise<string> {
+  console.log(`[GeminiQueue/RH] Downloading image for upload: ${imageUrl.substring(0, 80)}...`);
+  
+  const imgRes = await fetch(imageUrl);
+  if (!imgRes.ok) {
+    throw new Error(`Falha ao baixar imagem de referência: HTTP ${imgRes.status}`);
+  }
+  
+  const imgBlob = await imgRes.blob();
+  const contentType = imgRes.headers.get('content-type') || 'image/jpeg';
+  const ext = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
+  const fileName = `movieled-${jobId}.${ext}`;
+  
+  const formData = new FormData();
+  formData.append('apiKey', RUNNINGHUB_API_KEY);
+  formData.append('fileType', 'image');
+  formData.append('file', imgBlob, fileName);
+  
+  const uploadRes = await rhFetchWithRetry(RH_UPLOAD_URL, {
+    method: 'POST',
+    body: formData,
+  });
+  
+  const uploadText = await uploadRes.text();
+  let uploadData: any;
+  try {
+    uploadData = JSON.parse(uploadText);
+  } catch {
+    throw new Error(`RunningHub upload: resposta inválida - ${uploadText.substring(0, 200)}`);
+  }
+  
+  if (uploadData.code !== 0) {
+    throw new Error(`RunningHub upload falhou: ${uploadData.msg || 'Erro desconhecido'}`);
+  }
+  
+  const rhFileName = uploadData.data?.fileName;
+  if (!rhFileName) {
+    throw new Error('RunningHub upload: nenhum fileName retornado');
+  }
+  
+  console.log(`[GeminiQueue/RH] Image uploaded to RunningHub: ${rhFileName}`);
+  return rhFileName;
+}
+
 interface RHResult {
   generatedImageUrl: string;
   generatedPrompt: string;
@@ -133,6 +178,9 @@ interface RHResult {
 
 async function runRunningHubPreprocessing(imageUrl: string, rawText: string, jobId: string): Promise<RHResult> {
   console.log(`[GeminiQueue/RH] Starting preprocessing for job ${jobId}, text: "${rawText}"`);
+
+  // Upload image to RunningHub first (required - RH servers can't access external URLs reliably)
+  const rhFileName = await uploadImageToRunningHub(imageUrl, jobId);
 
   // Submit to RunningHub
   const submitRes = await rhFetchWithRetry(
