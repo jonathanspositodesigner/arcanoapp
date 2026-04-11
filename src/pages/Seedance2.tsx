@@ -310,6 +310,17 @@ export default function Seedance2() {
     }
   }, [prompt, mode, speed, ratio, quality, duration, generateAudio, startImage, endImage, refImages, refVideos, refAudios, user, canGenerate, startPolling]);
 
+  const handleDownloadVideo = useCallback((videoUrl: string, videoPrompt: string) => {
+    const filename = `seedance-${videoPrompt.slice(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.mp4`;
+    resilientDownload({
+      url: videoUrl,
+      filename,
+      mediaType: 'video',
+      timeout: 30000,
+      locale: 'pt',
+    });
+  }, [resilientDownload]);
+
   const truncate = (value: string, length: number) => value.length > length ? `${value.slice(0, length)}…` : value;
 
   return (
