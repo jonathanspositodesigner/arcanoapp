@@ -45,6 +45,37 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
+const ALLOWED_DURATIONS = new Set([4, 6, 8]);
+const ALLOWED_QUALITIES = new Set(['720p', '1080p']);
+
+function normalizeRequestedDuration(value: unknown): number | null {
+  if (value === undefined || value === null || value === '') return 6;
+  const parsed = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(parsed)) return null;
+  return ALLOWED_DURATIONS.has(parsed) ? parsed : null;
+}
+
+function normalizeRequestedQuality(value: unknown): '720p' | '1080p' {
+  const parsed = typeof value === 'string' ? value.trim() : '';
+  return ALLOWED_QUALITIES.has(parsed) ? (parsed as '720p' | '1080p') : '720p';
+}
+
+function getEffectiveGeminiConfig(job: { duration: unknown; quality: unknown; reference_image_url?: string | null }) {
+  const requestedDuration = normalizeRequestedDuration(job.duration) ?? 8;
+  const requestedQuality = normalizeRequestedQuality(job.quality);
+  const hasReferenceImage = Boolean(job.reference_image_url);
+  const durationSeconds = requestedDuration;
+  const resolution = requestedDuration === 8 ? requestedQuality : '720p';
+
+  return {
+    durationSeconds,
+    resolution,
+    attachReferenceImage: hasReferenceImage && requestedDuration === 8,
+    forcedToEightSeconds: false,
+    downgradedResolution: requestedQuality !== resolution,
+  };
+}
+
 // ========== AUTH HELPER ==========
 async function getAuthUserId(req: Request): Promise<string | null> {
   const authHeader = req.headers.get('Authorization');
@@ -118,6 +149,13 @@ async function handleEnqueue(req: Request): Promise<Response> {
     return jsonResponse({ error: 'Prompt inválido (mínimo 3 caracteres)' }, 400);
   }
 
+  const normalizedDuration = normalizeRequestedDuration(duration);
+  if (normalizedDuration === null) {
+    return jsonResponse({ error: 'Duração inválida. Use 4, 6 ou 8 segundos.' }, 400);
+  }
+
+  const normalizedQuality = normalizeRequestedQuality(quality);
+
   // Validate context
   const validContexts = ['video-generator', 'movie-led-maker'];
   if (context && !validContexts.includes(context)) {
@@ -160,8 +198,8 @@ async function handleEnqueue(req: Request): Promise<Response> {
       status: 'queued',
       prompt: prompt.trim(),
       aspect_ratio: aspect_ratio || '16:9',
-      duration: duration || 6,
-      quality: quality || '720p',
+      duration: normalizedDuration,
+      quality: normalizedQuality,
       context: context || 'video-generator',
       reference_image_url: reference_image_url || null,
     })
@@ -175,7 +213,7 @@ async function handleEnqueue(req: Request): Promise<Response> {
     return jsonResponse({ error: 'Erro ao enfileirar job' }, 500);
   }
 
-  console.log(`[GeminiQueue] Job ${job.id} enqueued for user ${userId}, context: ${context}, referenceImage: ${reference_image_url ? 'yes' : 'no'}`);
+  console.log(`[GeminiQueue] Job ${job.id} enqueued for user ${userId}, context: ${context}, duration: ${normalizedDuration}s, quality: ${normalizedQuality}, referenceImage: ${reference_image_url ? 'yes' : 'no'}`);
   return jsonResponse({ job_id: job.id, status: 'queued', message: 'Adicionado à fila' });
 }
 
@@ -244,10 +282,21 @@ async function processQueue(): Promise<Response> {
     .eq('id', job.id);
 
   try {
+    const effectiveConfig = getEffectiveGeminiConfig(job);
+    console.log(`[GeminiQueue] Effective config for job ${job.id}: duration=${effectiveConfig.durationSeconds}s, resolution=${effectiveConfig.resolution}, referenceImage=${effectiveConfig.attachReferenceImage ? 'yes' : 'no'}`);
+
+    if (effectiveConfig.forcedToEightSeconds) {
+      console.warn(`[GeminiQueue] Duration adjusted to 8s for job ${job.id} because Gemini Lite requires 8s when using reference images or 1080p.`);
+    }
+
+    if (effectiveConfig.downgradedResolution) {
+      console.warn(`[GeminiQueue] Resolution adjusted to 720p for job ${job.id} because Gemini Lite only supports 6s/4s at 720p.`);
+    }
+
     // Build instances payload - include reference image if available
     const instance: Record<string, unknown> = { prompt: job.prompt };
     
-    if (job.reference_image_url) {
+    if (effectiveConfig.attachReferenceImage && job.reference_image_url) {
       try {
         console.log(`[GeminiQueue] Downloading reference image for job ${job.id}...`);
         const imgRes = await fetch(job.reference_image_url);
@@ -278,6 +327,8 @@ async function processQueue(): Promise<Response> {
           instances: [instance],
           parameters: {
             aspectRatio: job.aspect_ratio,
+            durationSeconds: effectiveConfig.durationSeconds,
+            resolution: effectiveConfig.resolution,
             sampleCount: 1,
           },
         }),
