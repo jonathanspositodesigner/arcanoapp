@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import AppLayout from "@/components/layout/AppLayout";
-import { Coins } from "lucide-react";
+import { Coins, X } from "lucide-react";
 
 type Mode = "text" | "startend" | "multiref";
 type Speed = "standard" | "fast";
