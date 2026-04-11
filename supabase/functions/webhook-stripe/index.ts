@@ -805,6 +805,9 @@ serve(async (req) => {
       // 6c. Fire Meta CAPI Purchase event (BRL value for consistency with other platforms)
       try {
         const capiEventId = `purchase_stripe_${session.id}`
+        // Determine correct Pixel ID based on product (ES products use separate pixel)
+        const ES_SLUGS = ['upscaler-arcano-starter-es', 'upscaler-arcano-pro-es', 'upscaler-arcano-ultimate-es', 'upscaler-arcano-v3-es']
+        const capiPixelId = ES_SLUGS.includes(productSlug) ? '1383797283173351' : undefined
         const capiPayload = {
           event_name: 'Purchase',
           email,
@@ -818,6 +821,7 @@ serve(async (req) => {
           client_ip_address: metaClientIp || undefined,
           event_time: Math.floor(Date.now() / 1000),
           utm_data: session.metadata || null,
+          pixel_id: capiPixelId,
         }
 
         const capiRes = await fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {

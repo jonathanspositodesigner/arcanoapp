@@ -86,6 +86,7 @@ serve(async (req) => {
             fbc: finalFbc || undefined,
             client_user_agent: userAgent || undefined,
             client_ip_address: clientIp || undefined,
+            pixel_id: '1383797283173351',
           }),
         }).catch((err) => console.warn('[Stripe Checkout] CAPI fire-and-forget error:', err.message));
       }
