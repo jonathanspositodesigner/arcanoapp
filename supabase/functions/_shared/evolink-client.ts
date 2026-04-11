@@ -202,9 +202,35 @@ export async function evolinkPoll(
   }
 
   try {
-    const response = await fetch(`${EVOLINK_BASE_URL}/tasks/${taskId}`, {
-      headers: { 'Authorization': `Bearer ${apiKey}` },
-    });
+    const response = await fetchWithRetry(
+      `${EVOLINK_BASE_URL}/tasks/${taskId}`,
+      {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${apiKey}` },
+      },
+      `Evolink Poll ${taskId}`,
+      3
+    );
+
+    // CRITICAL FIX: Check response.ok before parsing
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[EvolinkClient] Poll ${taskId}: HTTP ${response.status} - ${errorText.slice(0, 200)}`);
+      // Return 'failed' for auth/client errors, 'processing' only for retryable server errors
+      if (response.status >= 400 && response.status < 500) {
+        return {
+          status: 'failed',
+          progress: 0,
+          error: `Evolink API error: HTTP ${response.status}`,
+        };
+      }
+      // Server errors after retries exhausted - still report as error, not processing
+      return {
+        status: 'failed',
+        progress: 0,
+        error: `Evolink API server error: HTTP ${response.status}`,
+      };
+    }
 
     const data = await response.json();
     console.log(`[EvolinkClient] Poll ${taskId}: status=${data.status}, progress=${data.progress}`);
@@ -237,10 +263,11 @@ export async function evolinkPoll(
     };
   } catch (error: any) {
     console.error(`[EvolinkClient] Poll error for ${taskId}:`, error);
+    // CRITICAL FIX: Don't mask errors as 'processing' - report them properly
     return {
-      status: 'processing',
+      status: 'failed',
       progress: 0,
-      error: error.message,
+      error: `Evolink poll failed: ${error.message}`,
     };
   }
 }

@@ -214,14 +214,20 @@ const GerarVideoTool = () => {
   }, []);
 
   // Evolink polling logic
+  const evolinkErrorCountRef = useRef(0);
+
   const startEvolinkPolling = useCallback((jId: string) => {
     if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+    evolinkErrorCountRef.current = 0;
 
     const poll = async () => {
       try {
         const { data: sessionData } = await supabase.auth.getSession();
         const token = sessionData?.session?.access_token;
-        if (!token) return;
+        if (!token) {
+          console.warn('[GerarVideo] Evolink poll: no auth token, skipping');
+          return;
+        }
 
         const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-video/poll-evolink`, {
           method: 'POST',
@@ -233,8 +239,19 @@ const GerarVideoTool = () => {
           body: JSON.stringify({ job_id: jId }),
         });
 
+        if (!res.ok) {
+          evolinkErrorCountRef.current++;
+          console.error(`[GerarVideo] Evolink poll HTTP error: ${res.status} (attempt ${evolinkErrorCountRef.current})`);
+          if (evolinkErrorCountRef.current >= 10) {
+            console.error('[GerarVideo] Too many poll errors, stopping polling');
+            if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+          }
+          return;
+        }
+
         const data = await res.json();
         console.log(`[GerarVideo] Evolink poll result:`, data.status, data.progress);
+        evolinkErrorCountRef.current = 0; // Reset on success
 
         if (data.status === 'completed') {
           if (data.output_url) setResultUrl(data.output_url);
@@ -253,7 +270,12 @@ const GerarVideoTool = () => {
           if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
         }
       } catch (e) {
-        console.error('[GerarVideo] Evolink poll error:', e);
+        evolinkErrorCountRef.current++;
+        console.error(`[GerarVideo] Evolink poll error (attempt ${evolinkErrorCountRef.current}):`, e);
+        if (evolinkErrorCountRef.current >= 10) {
+          console.error('[GerarVideo] Too many consecutive poll errors, stopping');
+          if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+        }
       }
     };
 

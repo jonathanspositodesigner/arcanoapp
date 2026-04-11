@@ -170,14 +170,20 @@ const MovieLedMakerTool = () => {
   }, []);
 
   // Evolink polling logic for Veo 3.1
+  const evolinkErrorCountRef = useRef(0);
+
   const startEvolinkPolling = useCallback((jId: string) => {
     if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+    evolinkErrorCountRef.current = 0;
 
     const poll = async () => {
       try {
         const { data: sessionData } = await supabase.auth.getSession();
         const token = sessionData?.session?.access_token;
-        if (!token) return;
+        if (!token) {
+          console.warn('[MovieLed] Evolink poll: no auth token, skipping');
+          return;
+        }
 
         const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/runninghub-movieled-maker/poll-evolink`, {
           method: 'POST',
@@ -189,8 +195,19 @@ const MovieLedMakerTool = () => {
           body: JSON.stringify({ job_id: jId }),
         });
 
+        if (!res.ok) {
+          evolinkErrorCountRef.current++;
+          console.error(`[MovieLed] Evolink poll HTTP error: ${res.status} (attempt ${evolinkErrorCountRef.current})`);
+          if (evolinkErrorCountRef.current >= 10) {
+            console.error('[MovieLed] Too many poll errors, stopping polling');
+            if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+          }
+          return;
+        }
+
         const data = await res.json();
         console.log(`[MovieLed] Evolink poll result:`, data.status, data.progress);
+        evolinkErrorCountRef.current = 0;
 
         if (data.status === 'completed') {
           if (data.output_url) setResultUrl(data.output_url);
@@ -211,7 +228,12 @@ const MovieLedMakerTool = () => {
           endSubmit();
         }
       } catch (e) {
-        console.error('[MovieLed] Evolink poll error:', e);
+        evolinkErrorCountRef.current++;
+        console.error(`[MovieLed] Evolink poll error (attempt ${evolinkErrorCountRef.current}):`, e);
+        if (evolinkErrorCountRef.current >= 10) {
+          console.error('[MovieLed] Too many consecutive poll errors, stopping');
+          if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
+        }
       }
     };
 
