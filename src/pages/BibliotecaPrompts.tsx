@@ -458,45 +458,49 @@ const BibliotecaPrompts = () => {
             </Button>
           </div>
 
-          {/* Category Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="text-xs bg-purple-900/40 hover:bg-purple-500/20 border-purple-400/50 text-purple-200">
-                {getCategoryDisplayName(selectedCategory)}
-                <ChevronDown className="h-3.5 w-3.5 ml-1.5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="bg-[hsl(263,30%,15%)] border-purple-500/30 min-w-[160px]">
-              {categories.map(cat => (
-                <DropdownMenuItem
-                  key={cat}
-                  onClick={() => handleCategorySelect(cat)}
-                  className={`text-xs cursor-pointer ${
-                    selectedCategory === cat
-                      ? "bg-purple-600 text-white"
-                      : "text-purple-200 hover:bg-purple-500/20"
-                  }`}
-                >
-                  {getCategoryDisplayName(cat)}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Category Dropdown + Seedance 2 Button */}
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="text-xs bg-purple-900/40 hover:bg-purple-500/20 border-purple-400/50 text-purple-200">
+                  {getCategoryDisplayName(selectedCategory)}
+                  <ChevronDown className="h-3.5 w-3.5 ml-1.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="bg-[hsl(263,30%,15%)] border-purple-500/30 min-w-[160px]">
+                {categories.map(cat => (
+                  <DropdownMenuItem
+                    key={cat}
+                    onClick={() => handleCategorySelect(cat)}
+                    className={`text-xs cursor-pointer ${
+                      selectedCategory === cat
+                        ? "bg-purple-600 text-white"
+                        : "text-purple-200 hover:bg-purple-500/20"
+                    }`}
+                  >
+                    {getCategoryDisplayName(cat)}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          {/* Seedance 2 Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleCategorySelect("Seedance 2")}
-            className={`text-xs font-bold border-0 text-white ${
-              selectedCategory === "Seedance 2"
-                ? "bg-gradient-to-r from-green-600 to-green-500 shadow-lg shadow-green-500/30"
-                : "bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400"
-            }`}
-          >
-            <Video className="h-3.5 w-3.5 mr-1.5" />
-            Seedance 2
-          </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleCategorySelect("Seedance 2")}
+              className={`relative text-xs font-bold border-0 text-white ${
+                selectedCategory === "Seedance 2"
+                  ? "bg-gradient-to-r from-green-600 to-green-500 shadow-lg shadow-green-500/30"
+                  : "bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400"
+              }`}
+            >
+              <Video className="h-3.5 w-3.5 mr-1.5" />
+              Seedance 2
+              <span className="absolute -top-2 -right-2 px-1.5 py-0.5 text-[9px] font-bold bg-yellow-400 text-black rounded-full animate-pulse leading-none">
+                NOVO
+              </span>
+            </Button>
+          </div>
 
           {/* Search Input */}
           <div className="relative mt-3">
