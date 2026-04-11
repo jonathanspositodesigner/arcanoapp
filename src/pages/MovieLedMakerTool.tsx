@@ -32,6 +32,7 @@ interface LibraryItem {
   id: string;
   title: string;
   image_url: string;
+  thumbnail_url?: string | null;
   reference_images: string[] | null;
   prompt: string;
 }
@@ -251,7 +252,9 @@ const MovieLedMakerTool = () => {
 
   const getEffectiveImageUrl = (): string | null => {
     if (selectedLibraryItem) {
-      return selectedLibraryItem.reference_images?.[0] || null;
+      return selectedLibraryItem.reference_images?.[0]
+        || selectedLibraryItem.thumbnail_url
+        || (/\.(png|jpe?g|webp|gif|bmp|svg)(\?|$)/i.test(selectedLibraryItem.image_url) ? selectedLibraryItem.image_url : null);
     }
     return uploadedImage;
   };
@@ -346,6 +349,11 @@ const MovieLedMakerTool = () => {
       if (selectedEngine === 'gemini-lite') {
         try {
           const geminiPrompt = `Create a cinematic LED screen video loop. The video MUST prominently display the text "${inputText.trim()}" as the main title, rendered in large, bold, glowing letters. The text "${inputText.trim()}" must be clearly legible and centered on screen. High energy, colorful, dynamic motion graphics with light effects surrounding the text, suitable for large LED displays at live events and concerts.`;
+
+          console.log('[MovieLed] Enviando para Gemini Lite com imagem de referência:', {
+            source: selectedLibraryItem ? 'library' : 'upload',
+            referenceImageUrl: imageUrlForBackend,
+          });
 
           const job = await enqueueGemini({
             prompt: geminiPrompt,
@@ -585,9 +593,9 @@ const MovieLedMakerTool = () => {
                 </span>
                 {(selectedLibraryItem || uploadedImage) ? (
                   <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black/30" data-tutorial-movieled="reference">
-                    <img
-                      src={selectedLibraryItem?.reference_images?.[0] || selectedLibraryItem?.image_url || uploadedImage || ''}
-                      alt="Telão de referência"
+                      <img
+                        src={getEffectiveImageUrl() || ''}
+                        alt="Telão de referência"
                       className="w-full h-[120px] lg:h-[140px] object-contain"
                     />
                     <div className="absolute bottom-0 inset-x-0 flex gap-1.5 p-1.5 bg-gradient-to-t from-black/70 to-transparent">

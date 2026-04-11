@@ -32,6 +32,19 @@ function jsonResponse(data: unknown, status = 200) {
   });
 }
 
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 0x8000;
+  let binary = '';
+
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(i, i + chunkSize);
+    binary += String.fromCharCode(...chunk);
+  }
+
+  return btoa(binary);
+}
+
 // ========== AUTH HELPER ==========
 async function getAuthUserId(req: Request): Promise<string | null> {
   const authHeader = req.headers.get('Authorization');
@@ -162,7 +175,7 @@ async function handleEnqueue(req: Request): Promise<Response> {
     return jsonResponse({ error: 'Erro ao enfileirar job' }, 500);
   }
 
-  console.log(`[GeminiQueue] Job ${job.id} enqueued for user ${userId}, context: ${context}`);
+  console.log(`[GeminiQueue] Job ${job.id} enqueued for user ${userId}, context: ${context}, referenceImage: ${reference_image_url ? 'yes' : 'no'}`);
   return jsonResponse({ job_id: job.id, status: 'queued', message: 'Adicionado à fila' });
 }
 
@@ -240,7 +253,7 @@ async function processQueue(): Promise<Response> {
         const imgRes = await fetch(job.reference_image_url);
         if (imgRes.ok) {
           const imgBuffer = await imgRes.arrayBuffer();
-          const base64 = btoa(String.fromCharCode(...new Uint8Array(imgBuffer)));
+          const base64 = arrayBufferToBase64(imgBuffer);
           const mimeType = imgRes.headers.get('content-type') || 'image/jpeg';
           instance.image = { bytesBase64Encoded: base64, mimeType };
           console.log(`[GeminiQueue] Reference image attached (${(imgBuffer.byteLength / 1024).toFixed(0)}KB)`);
