@@ -393,17 +393,18 @@ const AdminAIToolsUsageTab = () => {
         const mljIds = videoRecords.filter((r: UsageRecord) => r.tool_name === 'MovieLed Maker').map((r: UsageRecord) => r.id);
         const sdjIds = videoRecords.filter((r: UsageRecord) => r.tool_name === 'Seedance 2.0').map((r: UsageRecord) => r.id);
         const detailMap: Record<string, VideoJobDetail> = {};
-        const promises: Promise<any>[] = [];
-        if (vgjIds.length > 0) promises.push(supabase.from('video_generator_jobs' as any).select('id, model, duration_seconds, job_payload').in('id', vgjIds).then(r => r));
-        else promises.push(Promise.resolve({ data: [] }));
-        if (mljIds.length > 0) promises.push(supabase.from('movieled_maker_jobs' as any).select('id, engine').in('id', mljIds).then(r => r));
-        else promises.push(Promise.resolve({ data: [] }));
-        if (sdjIds.length > 0) promises.push(supabase.from('seedance_jobs' as any).select('id, model, duration, quality, input_image_urls').in('id', sdjIds).then(r => r));
-        else promises.push(Promise.resolve({ data: [] }));
-        const [vgjRes, mljRes, sdjRes] = await Promise.all(promises);
-        for (const row of ((vgjRes as any)?.data || []) as any[]) { const p = row.job_payload as any; detailMap[row.id] = { id: row.id, model: row.model, duration: row.duration_seconds, hasAudio: p?.generateAudio === true }; }
-        for (const row of ((mljRes as any)?.data || []) as any[]) { detailMap[row.id] = { id: row.id, engine: row.engine, duration: MOVIELED_DURATION[row.engine] || 8 }; }
-        for (const row of ((sdjRes as any)?.data || []) as any[]) { const m = (row.model || '') as string; detailMap[row.id] = { id: row.id, model: m.includes('fast') ? 'fast' : 'standard', duration: row.duration || 8, quality: row.quality || '480p', hasImage: !m.includes('text-to-video') }; }
+        if (vgjIds.length > 0) {
+          const { data } = await supabase.from('video_generator_jobs' as any).select('id, model, duration_seconds, job_payload').in('id', vgjIds);
+          for (const row of (data || []) as any[]) { const p = row.job_payload as any; detailMap[row.id] = { id: row.id, model: row.model, duration: row.duration_seconds, hasAudio: p?.generateAudio === true }; }
+        }
+        if (mljIds.length > 0) {
+          const { data } = await supabase.from('movieled_maker_jobs' as any).select('id, engine').in('id', mljIds);
+          for (const row of (data || []) as any[]) { detailMap[row.id] = { id: row.id, engine: row.engine, duration: MOVIELED_DURATION[row.engine] || 8 }; }
+        }
+        if (sdjIds.length > 0) {
+          const { data } = await supabase.from('seedance_jobs' as any).select('id, model, duration, quality, input_image_urls').in('id', sdjIds);
+          for (const row of (data || []) as any[]) { const m = (row.model || '') as string; detailMap[row.id] = { id: row.id, model: m.includes('fast') ? 'fast' : 'standard', duration: row.duration || 8, quality: row.quality || '480p', hasImage: !m.includes('text-to-video') }; }
+        }
         setVideoJobDetailsMap(detailMap);
       } else { setVideoJobDetailsMap({}); }
 
