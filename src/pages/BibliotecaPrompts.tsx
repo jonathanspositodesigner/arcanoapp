@@ -601,6 +601,7 @@ const BibliotecaPrompts = () => {
                                 id: String(item.id),
                                 title: item.title,
                                 image_url: item.imageUrl,
+                                thumbnail_url: item.thumbnailUrl || null,
                                 reference_images: item.referenceImages || null,
                                 prompt: item.prompt,
                               }
