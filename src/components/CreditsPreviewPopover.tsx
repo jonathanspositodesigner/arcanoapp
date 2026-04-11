@@ -7,8 +7,6 @@ import { Coins, ArrowRight, TrendingUp, Zap, Infinity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { useCredits } from "@/contexts/CreditsContext";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 
 interface Transaction {
   id: string;
@@ -54,6 +52,11 @@ const CreditsPreviewPopover = ({
   };
 
   const isDesktop = variant === "desktop";
+  const animatedBalanceClass = direction === 'up'
+    ? 'text-green-400 font-bold'
+    : direction === 'down'
+      ? 'text-red-400 font-bold'
+      : 'text-white';
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -67,22 +70,30 @@ const CreditsPreviewPopover = ({
                 : "bg-purple-900/50 border-purple-500/30 text-purple-200 text-xs px-2 py-0.5 flex items-center gap-1"
             } ${
               isUnlimited ? 'border-emerald-400/40 bg-emerald-900/30' :
-              direction === 'up' ? 'border-green-400/60 bg-green-900/30 scale-110' : 
-              direction === 'down' ? 'border-red-400/60 bg-red-900/30 scale-110' : ''
+              direction === 'up' ? 'border-green-400/60 bg-green-900/30' : 
+              direction === 'down' ? 'border-red-400/60 bg-red-900/30' : ''
+            } ${
+              direction ? 'scale-105' : ''
             }`}
           >
-            <Coins className={`${isDesktop ? "w-3.5 h-3.5" : "w-3 h-3"} transition-colors duration-300 ${
-              isUnlimited ? 'text-emerald-300' :
-              direction === 'up' ? 'text-green-400' : direction === 'down' ? 'text-red-400' : 'text-yellow-400'
-            }`} />
             {isUnlimited ? (
-              <Infinity className={`${isDesktop ? "w-4 h-4" : "w-3.5 h-3.5"} text-emerald-400`} />
+              <>
+                <Infinity className={`${isDesktop ? "w-4 h-4" : "w-3.5 h-3.5"} text-emerald-400`} />
+                <span className="text-white/60 font-semibold">+</span>
+                <Coins className={`${isDesktop ? "w-3.5 h-3.5" : "w-3 h-3"} text-yellow-400`} />
+                <span className={`${isDesktop ? "font-medium" : ""} transition-colors duration-300 ${animatedBalanceClass}`}>
+                  {creditsLoading ? '...' : displayValue.toLocaleString('pt-BR')}
+                </span>
+              </>
             ) : (
-              <span className={`${isDesktop ? "font-medium" : ""} transition-colors duration-300 ${
-                direction === 'up' ? 'text-green-400 font-bold' : direction === 'down' ? 'text-red-400 font-bold' : ''
-              }`}>
-                {creditsLoading ? '...' : displayValue.toLocaleString('pt-BR')}
-              </span>
+              <>
+                <Coins className={`${isDesktop ? "w-3.5 h-3.5" : "w-3 h-3"} transition-colors duration-300 ${
+                  direction === 'up' ? 'text-green-400' : direction === 'down' ? 'text-red-400' : 'text-yellow-400'
+                }`} />
+                <span className={`${isDesktop ? "font-medium" : ""} transition-colors duration-300 ${animatedBalanceClass}`}>
+                  {creditsLoading ? '...' : displayValue.toLocaleString('pt-BR')}
+                </span>
+              </>
             )}
           </Badge>
         </button>

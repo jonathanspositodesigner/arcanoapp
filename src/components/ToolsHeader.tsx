@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, User, Coins, Lock, Settings, LogOut, Phone, LogIn, Sparkles, PlusCircle, Home, Library, Infinity as InfinityIcon } from "lucide-react";
+import { ArrowLeft, User, Coins, Lock, Settings, LogOut, Phone, LogIn, Sparkles, PlusCircle, Home, Library } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -143,35 +143,24 @@ const ToolsHeader = ({
             <>
               {/* Credits Badge + Add Button */}
               <div className="flex items-center gap-1">
-                {isUnlimited ? (
-                  /* Unlimited: show ∞ + credit balance for non-unlimited tools */
-                  <div
-                    className="bg-emerald-900/40 border border-emerald-500/30 rounded-full flex items-center gap-1.5 px-2.5 py-1 cursor-pointer hover:bg-emerald-800/40"
-                    onClick={() => navigate('/credit-history')}
-                  >
-                    <InfinityIcon className="w-4 h-4 text-emerald-400" />
-                    <span className="text-emerald-300/60 text-xs">|</span>
-                    <Coins className="w-3.5 h-3.5 text-yellow-400" />
-                    <span className="text-sm font-medium text-white">
-                      {creditsLoading ? '...' : credits.toLocaleString('pt-BR')}
-                    </span>
-                  </div>
-                ) : (
-                  <div
-                    className="bg-purple-900/50 border border-purple-500/30 rounded-full flex items-center gap-1.5 px-2.5 py-1 cursor-pointer hover:bg-purple-800/50"
-                    onClick={() => navigate('/credit-history')}
-                  >
-                    <AnimatedCreditsDisplay 
-                      credits={credits} 
-                      isLoading={creditsLoading}
-                      size="sm"
-                      showCoin={true}
-                      variant="text"
-                      className="text-purple-200"
-                      isUnlimited={false}
-                    />
-                  </div>
-                )}
+                <div
+                  className={`rounded-full flex items-center gap-1.5 px-2.5 py-1 cursor-pointer ${
+                    isUnlimited
+                      ? 'bg-emerald-900/40 border border-emerald-500/30 hover:bg-emerald-800/40'
+                      : 'bg-purple-900/50 border border-purple-500/30 hover:bg-purple-800/50'
+                  }`}
+                  onClick={() => navigate('/credit-history')}
+                >
+                  <AnimatedCreditsDisplay 
+                    credits={credits} 
+                    isLoading={creditsLoading}
+                    size="sm"
+                    showCoin={true}
+                    variant="text"
+                    className={isUnlimited ? 'text-white' : 'text-purple-200'}
+                    isUnlimited={isUnlimited}
+                  />
+                </div>
                 <button
                   onClick={() => navigate('/planos-creditos')}
                   className="h-7 w-7 flex items-center justify-center rounded hover:bg-purple-500/10"

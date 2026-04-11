@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { MyCreationsModal } from "@/components/ai-tools/creations";
 import CreditsPreviewPopover from "@/components/CreditsPreviewPopover";
 import { useCredits } from "@/contexts/CreditsContext";
+import { AnimatedCreditsDisplay } from "@/components/upscaler/AnimatedCreditsDisplay";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +30,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
   const navigate = useNavigate();
   const { t } = useTranslation('prompts');
   const [showCreationsModal, setShowCreationsModal] = useState(false);
-  const { balance: credits, isLoading: creditsLoading } = useCredits();
+  const { balance: credits, isLoading: creditsLoading, isUnlimited } = useCredits();
 
   const ProfileDropdown = ({ isMobile = false }: { isMobile?: boolean }) => (
     <DropdownMenu>
@@ -72,9 +73,14 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
             Créditos
           </span>
           <div className="flex items-center gap-1">
-            <Badge className="bg-purple-600 text-white">
-              {creditsLoading ? '...' : credits.toLocaleString('pt-BR')}
-            </Badge>
+            <AnimatedCreditsDisplay 
+              credits={credits}
+              isLoading={creditsLoading}
+              size="sm"
+              showCoin={false}
+              variant="badge"
+              isUnlimited={isUnlimited}
+            />
             <button
               onClick={() => navigate('/planos-creditos')}
               className="p-1 rounded hover:bg-purple-500/10"
