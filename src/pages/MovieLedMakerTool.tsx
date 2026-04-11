@@ -50,6 +50,8 @@ const MovieLedMakerTool = () => {
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
+  const { enqueueVideo: enqueueGemini, subscribeToJob: subscribeGemini, triggerProcessing } = useGeminiVideoQueue();
+  const geminiChannelRef = useRef<ReturnType<typeof subscribeGemini> | null>(null);
 
   const isTutorialTestUser = false; // Tutorial test mode disabled
 
