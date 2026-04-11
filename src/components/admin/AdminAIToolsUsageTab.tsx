@@ -78,7 +78,7 @@ const ITEMS_PER_PAGE = 20;
 
 // Conversion constants
 const CUSTO_POR_RH_COIN = 0.002; // R$ per RH coin
-const RECEITA_POR_CREDITO = 0.0043; // R$ per credit
+const FALLBACK_RECEITA_POR_CREDITO = 0.007; // R$ per credit (fallback)
 
 // API cost map: display tool name → fixed API cost in BRL (from ai_tool_settings)
 const API_COST_MAP: Record<string, number> = {
