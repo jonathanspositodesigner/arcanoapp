@@ -1,0 +1,1 @@
+ALTER TABLE public.ai_engine_costs ADD COLUMN IF NOT EXISTS receita_por_credito numeric NOT NULL DEFAULT 0.007;
