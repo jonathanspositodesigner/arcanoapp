@@ -565,6 +565,14 @@ function UploadSlot({
 function HoverVideo({ src, prompt, ratio, duration }: { src: string; prompt: string; ratio: string; duration: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  // Show the first frame on mount
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    el.muted = true;
+    el.currentTime = 0.1; // seek to show first frame
+  }, [src]);
+
   const handleMouseEnter = () => {
     const el = videoRef.current;
     if (!el) return;
@@ -582,10 +590,10 @@ function HoverVideo({ src, prompt, ratio, duration }: { src: string; prompt: str
     <>
       <video
         ref={videoRef}
-        src={src}
+        src={src + "#t=0.1"}
         muted
         playsInline
-        preload="metadata"
+        preload="auto"
         className="h-full w-full object-cover"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
