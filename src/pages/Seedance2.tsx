@@ -514,7 +514,7 @@ export default function Seedance2() {
                 <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Duração</span>
                 <input
                   type="range"
-                  min={1}
+                  min={4}
                   max={15}
                   step={1}
                   value={parseInt(duration)}
