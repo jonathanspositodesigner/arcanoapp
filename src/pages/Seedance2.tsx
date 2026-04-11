@@ -6,6 +6,8 @@ import AppLayout from "@/components/layout/AppLayout";
 import { Coins, X, Download, Clock, ChevronDown } from "lucide-react";
 import CharacterPicker, { type CharacterItem } from "@/components/shared/CharacterPicker";
 import { getSeedanceTotalCost, modeToGenType } from "@/config/seedance-pricing";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useResilientDownload } from "@/hooks/useResilientDownload";
 
 type Mode = "text" | "startend" | "multiref";
 type Speed = "standard" | "fast";
@@ -56,6 +58,8 @@ const MODE_OPTIONS: { value: Mode; label: string; desc: string }[] = [
 
 export default function Seedance2() {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
+  const { download: resilientDownload, isDownloading: isResilientDownloading } = useResilientDownload();
   const [prompt, setPrompt] = useState("");
   const [mode, setMode] = useState<Mode>("multiref");
   const [ratio, setRatio] = useState<Ratio>("9:16");
@@ -306,14 +310,25 @@ export default function Seedance2() {
     }
   }, [prompt, mode, speed, ratio, quality, duration, generateAudio, startImage, endImage, refImages, refVideos, refAudios, user, canGenerate, startPolling]);
 
+  const handleDownloadVideo = useCallback((videoUrl: string, videoPrompt: string) => {
+    const filename = `seedance-${videoPrompt.slice(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.mp4`;
+    resilientDownload({
+      url: videoUrl,
+      filename,
+      mediaType: 'video',
+      timeout: 30000,
+      locale: 'pt',
+    });
+  }, [resilientDownload]);
+
   const truncate = (value: string, length: number) => value.length > length ? `${value.slice(0, length)}…` : value;
 
   return (
     <AppLayout fullScreen>
       <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="mx-auto flex w-full max-w-[1400px] flex-1 min-h-0 flex-col px-4 pt-4 pb-4">
-          <div className="mb-3 flex shrink-0 items-center justify-between">
-            <h1 className="text-xl font-bold text-white">Seedance 2.0</h1>
+        <div className="mx-auto flex w-full max-w-[1400px] flex-1 min-h-0 flex-col px-2 sm:px-4 pt-3 sm:pt-4 pb-2 sm:pb-4 overflow-y-auto">
+          <div className="mb-2 sm:mb-3 flex shrink-0 flex-wrap items-center justify-between gap-2">
+            <h1 className="text-lg sm:text-xl font-bold text-white">Seedance 2.0</h1>
             <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
               <button
                 onClick={() => setGalleryTab("creations")}
@@ -334,7 +349,7 @@ export default function Seedance2() {
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl border border-white/5 bg-black/10 lg:min-h-[420px]">
+          <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl border border-white/5 bg-black/10 sm:min-h-[300px] lg:min-h-[420px]">
             {galleryTab === "creations" && (
               <>
                 {galleryTab === "creations" && (
@@ -360,7 +375,7 @@ export default function Seedance2() {
                 ) : (
                   <div className="grid grid-cols-2 gap-3 p-3">
                     {generations.map((gen) => (
-                      <VideoCard key={gen.id} gen={gen} onPreview={setPreviewGen} />
+                      <VideoCard key={gen.id} gen={gen} onPreview={setPreviewGen} onDownload={handleDownloadVideo} />
                     ))}
                   </div>
                 )}
@@ -380,7 +395,7 @@ export default function Seedance2() {
                 ) : (
                   <div className="grid grid-cols-2 gap-3 p-3">
                     {libraryItems.map((gen) => (
-                      <VideoCard key={gen.id} gen={gen} onPreview={setPreviewGen} />
+                      <VideoCard key={gen.id} gen={gen} onPreview={setPreviewGen} onDownload={handleDownloadVideo} />
                     ))}
                   </div>
                 )}
@@ -393,15 +408,14 @@ export default function Seedance2() {
              <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setPreviewGen(null)}>
               <div className="relative flex w-full max-w-4xl flex-col px-4 max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
                 {/* Controls bar - always visible */}
-                <div className="flex items-center justify-end gap-2 pb-2 shrink-0">
-                  <a
-                    href={previewGen.videoUrl}
-                    download
+               <div className="flex items-center justify-end gap-2 pb-2 shrink-0">
+                  <button
+                    onClick={() => previewGen.videoUrl && handleDownloadVideo(previewGen.videoUrl, previewGen.prompt)}
                     className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
                     title="Baixar vídeo"
                   >
                     <Download className="h-5 w-5" />
-                  </a>
+                  </button>
                   <button
                     onClick={() => setPreviewGen(null)}
                     className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
@@ -485,26 +499,18 @@ export default function Seedance2() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_220px]">
-              <textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
-                placeholder="Descreva o vídeo que deseja gerar..."
-                className="min-h-[80px] max-h-[160px] min-w-0 resize-y rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none transition-all placeholder:text-gray-600 focus:border-purple-500/40 focus:min-h-[100px]"
-                rows={3}
-              />
-
+            {/* MOBILE: Generate button FIRST, then prompt, then controls */}
+            {isMobile ? (
               <div className="flex flex-col gap-2">
                 <button
                   onClick={handleGenerate}
                   disabled={!canGenerate() || uploading}
-                  className={`group relative flex h-[48px] items-center justify-center gap-2.5 overflow-hidden rounded-xl px-5 text-sm font-semibold transition-all duration-300 ${
+                  className={`group relative flex h-[44px] items-center justify-center gap-2 overflow-hidden rounded-xl px-4 text-sm font-semibold transition-all duration-300 ${
                     canGenerate() && !uploading
-                      ? "bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                      ? "bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 active:scale-[0.98]"
                       : "cursor-not-allowed bg-white/5 text-gray-600"
                   }`}
                 >
-                  <span className="absolute inset-0 bg-gradient-to-r from-purple-400/0 via-white/10 to-purple-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                   {uploading ? "Enviando..." : (
                     <>
                       <span className="text-base">✦</span>
@@ -516,63 +522,143 @@ export default function Seedance2() {
                     </>
                   )}
                 </button>
-                <span className="text-right text-[10px] text-gray-600">{prompt.length}/2000</span>
-              </div>
-            </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 overflow-x-auto pb-1">
-              <div className="flex items-center gap-1.5 group/ctrl">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Modo</span>
-                <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px] transition-all duration-200 group-hover/ctrl:border-white/[0.1] group-hover/ctrl:bg-white/[0.05]">
-                  {MODE_OPTIONS.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => setMode(option.value)}
-                      className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
-                        mode === option.value ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
-                      }`}
-                      title={option.desc}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
+                  placeholder="Descreva o vídeo que deseja gerar..."
+                  className="min-h-[60px] max-h-[100px] resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white outline-none placeholder:text-gray-600 focus:border-purple-500/40"
+                  rows={2}
+                />
+                <span className="text-right text-[10px] text-gray-600 -mt-1">{prompt.length}/2000</span>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Modo</span>
+                    <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
+                      {MODE_OPTIONS.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => setMode(option.value)}
+                          className={`rounded-md border px-2 py-1 text-[10px] font-medium transition-all ${
+                            mode === option.value ? "border-purple-500/30 bg-purple-500/20 text-purple-300" : "border-transparent text-gray-500"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setShowSettings(!showSettings)}
+                    className="flex items-center gap-1 rounded-lg border border-white/[0.06] bg-white/[0.03] px-2 py-1 text-[10px] font-medium text-gray-500"
+                  >
+                    Config
+                    <ChevronDown className={`h-3 w-3 transition-transform ${showSettings ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {mode === "multiref" && (
+                    <CharacterPicker
+                      selectedCharacters={selectedCharacters}
+                      onCharactersChange={setSelectedCharacters}
+                      maxCharacters={3}
+                      compact
+                    />
+                  )}
                 </div>
               </div>
-
-              <div className="h-4 w-px bg-white/[0.06]" />
-
-              <button
-                onClick={() => setShowSettings(!showSettings)}
-                className="flex items-center gap-1 rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-1 text-[11px] font-medium text-gray-500 transition-all duration-200 hover:border-white/[0.1] hover:text-gray-300"
-              >
-                Configurações
-                <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${showSettings ? "rotate-180" : ""}`} />
-              </button>
-
-              {mode === "multiref" && (
-                <>
-                  <div className="h-4 w-px bg-white/[0.06]" />
-                  <CharacterPicker
-                    selectedCharacters={selectedCharacters}
-                    onCharactersChange={setSelectedCharacters}
-                    maxCharacters={3}
-                    compact
+            ) : (
+              <>
+                <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_220px]">
+                  <textarea
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
+                    placeholder="Descreva o vídeo que deseja gerar..."
+                    className="min-h-[80px] max-h-[160px] min-w-0 resize-y rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none transition-all placeholder:text-gray-600 focus:border-purple-500/40 focus:min-h-[100px]"
+                    rows={3}
                   />
-                </>
-              )}
-            </div>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={handleGenerate}
+                      disabled={!canGenerate() || uploading}
+                      className={`group relative flex h-[48px] items-center justify-center gap-2.5 overflow-hidden rounded-xl px-5 text-sm font-semibold transition-all duration-300 ${
+                        canGenerate() && !uploading
+                          ? "bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                          : "cursor-not-allowed bg-white/5 text-gray-600"
+                      }`}
+                    >
+                      <span className="absolute inset-0 bg-gradient-to-r from-purple-400/0 via-white/10 to-purple-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                      {uploading ? "Enviando..." : (
+                        <>
+                          <span className="text-base">✦</span>
+                          Gerar vídeo
+                          <span className="flex items-center gap-1 rounded-md bg-white/10 px-1.5 py-0.5 text-[11px]">
+                            <Coins className="h-3 w-3" />
+                            {creditCost}
+                          </span>
+                        </>
+                      )}
+                    </button>
+                    <span className="text-right text-[10px] text-gray-600">{prompt.length}/2000</span>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 pb-1">
+                  <div className="flex items-center gap-1.5 group/ctrl">
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Modo</span>
+                    <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
+                      {MODE_OPTIONS.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => setMode(option.value)}
+                          className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
+                            mode === option.value ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                          }`}
+                          title={option.desc}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="h-4 w-px bg-white/[0.06]" />
+
+                  <button
+                    onClick={() => setShowSettings(!showSettings)}
+                    className="flex items-center gap-1 rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-1 text-[11px] font-medium text-gray-500 transition-all duration-200 hover:border-white/[0.1] hover:text-gray-300"
+                  >
+                    Configurações
+                    <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${showSettings ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {mode === "multiref" && (
+                    <>
+                      <div className="h-4 w-px bg-white/[0.06]" />
+                      <CharacterPicker
+                        selectedCharacters={selectedCharacters}
+                        onCharactersChange={setSelectedCharacters}
+                        maxCharacters={3}
+                        compact
+                      />
+                    </>
+                  )}
+                </div>
+              </>
+            )}
 
             {showSettings && (
-              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 overflow-x-auto rounded-xl border border-white/[0.04] bg-white/[0.02] px-3 py-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                <div className="flex items-center gap-1.5 group/ctrl">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Motor</span>
-                  <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px] transition-all duration-200 group-hover/ctrl:border-white/[0.1] group-hover/ctrl:bg-white/[0.05]">
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-white/[0.04] bg-white/[0.02] px-3 py-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Motor</span>
+                  <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
                     {(["standard", "fast"] as Speed[]).map((value) => (
                       <button
                         key={value}
                         onClick={() => setSpeed(value)}
-                        className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
-                          speed === value ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                        className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
+                          speed === value ? "border-purple-500/30 bg-purple-500/20 text-purple-300" : "border-transparent text-gray-500 hover:text-gray-300"
                         }`}
                       >
                         {value === "standard" ? "Standard" : "Fast"}
@@ -583,17 +669,15 @@ export default function Seedance2() {
 
                 <div className="h-4 w-px bg-white/[0.06]" />
 
-                <div className="flex items-center gap-1.5 group/ctrl">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Tamanho</span>
-                  {/* Desktop: native select */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Tamanho</span>
                   <select
                     value={ratio}
                     onChange={(e) => setRatio(e.target.value as Ratio)}
-                    className="hidden sm:block rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white outline-none transition-all duration-200 hover:border-purple-500/30 cursor-pointer [&>option]:bg-black [&>option]:text-white"
+                    className="hidden sm:block rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white outline-none hover:border-purple-500/30 cursor-pointer [&>option]:bg-black [&>option]:text-white"
                   >
                     {RATIOS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                   </select>
-                  {/* Mobile: button that opens modal */}
                   <button
                     onClick={() => setShowRatioModal(true)}
                     className="sm:hidden rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white"
@@ -602,15 +686,15 @@ export default function Seedance2() {
                   </button>
                 </div>
 
-                <div className="flex items-center gap-1.5 group/ctrl">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Qualidade</span>
-                  <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px] transition-all duration-200 group-hover/ctrl:border-white/[0.1] group-hover/ctrl:bg-white/[0.05]">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Qualidade</span>
+                  <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
                     {(["480p", "720p"] as Quality[]).map((value) => (
                       <button
                         key={value}
                         onClick={() => setQuality(value)}
-                        className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
-                          quality === value ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                        className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
+                          quality === value ? "border-purple-500/30 bg-purple-500/20 text-purple-300" : "border-transparent text-gray-500 hover:text-gray-300"
                         }`}
                       >
                         {value}
@@ -619,24 +703,21 @@ export default function Seedance2() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 group/ctrl min-w-[160px]">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Duração</span>
+                <div className="flex items-center gap-2 min-w-[140px]">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Duração</span>
                   <input
-                    type="range"
-                    min={4}
-                    max={15}
-                    step={1}
+                    type="range" min={4} max={15} step={1}
                     value={parseInt(duration)}
                     onChange={(e) => setDuration(e.target.value)}
-                    className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/10 accent-purple-500 transition-all duration-200 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-400 [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:shadow-purple-500/30 [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-125"
+                    className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/10 accent-purple-500 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-400"
                   />
                   <span className="min-w-[24px] text-center text-[11px] font-medium text-purple-300">{duration}s</span>
                 </div>
 
                 <div className="h-4 w-px bg-white/[0.06]" />
 
-                <div className="flex items-center gap-1.5 group/ctrl">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">Áudio</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Áudio</span>
                   <button
                     onClick={() => setGenerateAudio(!generateAudio)}
                     className={`relative w-8 h-[18px] rounded-full transition-colors duration-200 ${generateAudio ? "bg-emerald-500" : "bg-white/10"}`}
@@ -716,7 +797,7 @@ function UploadSlot({
   );
 }
 
-function VideoCard({ gen, onPreview }: { gen: Generation; onPreview: (g: Generation) => void }) {
+function VideoCard({ gen, onPreview, onDownload }: { gen: Generation; onPreview: (g: Generation) => void; onDownload?: (url: string, prompt: string) => void }) {
   return (
     <div
       className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-xl cursor-pointer group ${
@@ -727,15 +808,13 @@ function VideoCard({ gen, onPreview }: { gen: Generation; onPreview: (g: Generat
       {gen.status === "completed" && gen.videoUrl && (
         <>
           <HoverVideo src={gen.videoUrl} prompt={gen.prompt} ratio={gen.ratio} duration={gen.duration} />
-          <a
-            href={gen.videoUrl}
-            download
-            onClick={(e) => e.stopPropagation()}
+          <button
+            onClick={(e) => { e.stopPropagation(); onDownload?.(gen.videoUrl!, gen.prompt); }}
             className="absolute top-2 right-2 z-10 rounded-full bg-black/60 p-1.5 text-white/70 opacity-0 group-hover:opacity-100 transition-all hover:bg-black/80 hover:text-white hover:scale-110"
             title="Baixar vídeo"
           >
             <Download className="h-4 w-4" />
-          </a>
+          </button>
         </>
       )}
       {gen.status === "processing" && (
