@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import AppLayout from "@/components/layout/AppLayout";
-import { Coins, X, Download } from "lucide-react";
+import { Coins, X, Download, Clock } from "lucide-react";
 import CharacterPicker, { type CharacterItem } from "@/components/shared/CharacterPicker";
 import { getSeedanceTotalCost, modeToGenType } from "@/config/seedance-pricing";
 
@@ -63,16 +63,11 @@ export default function Seedance2() {
   const [duration, setDuration] = useState<Duration>("15");
   const [speed, setSpeed] = useState<Speed>("fast");
   const [generateAudio, setGenerateAudio] = useState(true);
-  const [generations, setGenerations] = useState<Generation[]>([
-    { id: "demo-1", status: "completed", prompt: "Cinematic ocean waves at sunset", ratio: "16:9", duration: "8", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-    { id: "demo-2", status: "completed", prompt: "Drone shot of mountains", ratio: "16:9", duration: "5", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
-    { id: "demo-3", status: "completed", prompt: "Abstract neon particles", ratio: "16:9", duration: "10", videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" },
-    { id: "demo-4", status: "completed", prompt: "City timelapse at night", ratio: "16:9", duration: "6", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-    { id: "demo-5", status: "completed", prompt: "Forest path with fog", ratio: "16:9", duration: "8", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
-    { id: "demo-6", status: "completed", prompt: "Underwater coral reef", ratio: "16:9", duration: "5", videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" },
-    { id: "demo-7", status: "completed", prompt: "Space nebula animation", ratio: "16:9", duration: "12", videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4" },
-    { id: "demo-8", status: "completed", prompt: "Rainy window close-up", ratio: "16:9", duration: "4", videoUrl: "https://www.w3schools.com/html/movie.mp4" },
-  ]);
+  const [generations, setGenerations] = useState<Generation[]>([]);
+  const [galleryTab, setGalleryTab] = useState<"creations" | "library">("creations");
+  const [libraryItems, setLibraryItems] = useState<Generation[]>([]);
+  const [loadingCreations, setLoadingCreations] = useState(false);
+  const [loadingLibrary, setLoadingLibrary] = useState(false);
   const [startImage, setStartImage] = useState<string | null>(null);
   const [endImage, setEndImage] = useState<string | null>(null);
   const [refImages, setRefImages] = useState<string[]>([]);
@@ -84,6 +79,59 @@ export default function Seedance2() {
 
   const pollTimers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
   const creditCost = getSeedanceTotalCost(speed, quality, modeToGenType(mode), parseInt(duration) || 5);
+
+  // Fetch user creations from seedance_jobs
+  useEffect(() => {
+    if (!user) return;
+    const fetchCreations = async () => {
+      setLoadingCreations(true);
+      const { data, error } = await supabase
+        .from("seedance_jobs")
+        .select("id, prompt, output_url, aspect_ratio, duration, status, error_message, task_id, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (!error && data) {
+        setGenerations(data.map((j: any) => ({
+          id: j.id,
+          status: j.status === "completed" ? "completed" : j.status === "failed" ? "failed" : j.status === "running" ? "processing" : "queued",
+          prompt: j.prompt || "",
+          ratio: j.aspect_ratio || "16:9",
+          duration: String(j.duration || 5),
+          videoUrl: j.output_url || undefined,
+          error: j.error_message || undefined,
+          taskId: j.task_id || undefined,
+        })));
+      }
+      setLoadingCreations(false);
+    };
+    fetchCreations();
+  }, [user]);
+
+  // Fetch library items from admin_prompts with category "Seedance 2"
+  useEffect(() => {
+    const fetchLibrary = async () => {
+      setLoadingLibrary(true);
+      const { data, error } = await supabase
+        .from("admin_prompts")
+        .select("id, title, prompt, image_url, thumbnail_url")
+        .eq("category", "Seedance 2")
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (!error && data) {
+        setLibraryItems(data.map((p: any) => ({
+          id: p.id,
+          status: "completed" as const,
+          prompt: p.prompt || p.title || "",
+          ratio: "16:9",
+          duration: "",
+          videoUrl: p.image_url || undefined,
+        })));
+      }
+      setLoadingLibrary(false);
+    };
+    fetchLibrary();
+  }, []);
 
   useEffect(() => {
     return () => {
