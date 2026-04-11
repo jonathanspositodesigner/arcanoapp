@@ -281,10 +281,10 @@ async function processQueue(): Promise<Response> {
       .update({ operation_name: operationName, updated_at: new Date().toISOString() })
       .eq('id', job.id);
 
-    // Poll until complete (max 10 minutes, every 10s)
-    let videoUrl: string | null = null;
-    for (let i = 0; i < 60; i++) {
-      await new Promise(r => setTimeout(r, 10000));
+    // Poll until complete (max 10 minutes, every 30s to respect 2 RPM)
+    let googleVideoUrl: string | null = null;
+    for (let i = 0; i < 20; i++) {
+      await new Promise(r => setTimeout(r, 30000));
 
       const pollRes = await fetch(
         `${BASE_URL}/${operationName}`,
@@ -299,25 +299,56 @@ async function processQueue(): Promise<Response> {
       const pollData = await pollRes.json();
 
       if (pollData.done) {
-        videoUrl = pollData.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri ?? null;
-        console.log(`[GeminiQueue] Job ${job.id} completed, videoUrl: ${videoUrl ? 'yes' : 'no'}`);
+        googleVideoUrl = pollData.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri ?? null;
+        console.log(`[GeminiQueue] Job ${job.id} completed, googleVideoUrl: ${googleVideoUrl ? 'yes' : 'no'}`);
         break;
       }
     }
 
-    if (videoUrl) {
-      await supabase
-        .from(TABLE)
-        .update({
-          status: 'completed',
-          video_url: videoUrl,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', job.id);
-      console.log(`[GeminiQueue] Job ${job.id} marked as completed`);
-    } else {
+    if (!googleVideoUrl) {
       throw new Error('Timeout: vídeo não ficou pronto em 10 minutos');
     }
+
+    // Download video from Google and upload to Supabase Storage
+    console.log(`[GeminiQueue] Downloading video for job ${job.id}...`);
+    const videoRes = await fetch(googleVideoUrl, {
+      headers: { 'x-goog-api-key': GEMINI_API_KEY },
+    });
+
+    if (!videoRes.ok) {
+      throw new Error(`Failed to download video from Google: HTTP ${videoRes.status}`);
+    }
+
+    const videoBlob = await videoRes.blob();
+    const storagePath = `gemini-videos/${job.user_id}/${job.id}.mp4`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('artes-cloudinary')
+      .upload(storagePath, videoBlob, {
+        contentType: 'video/mp4',
+        upsert: true,
+      });
+
+    if (uploadError) {
+      throw new Error(`Storage upload failed: ${uploadError.message}`);
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from('artes-cloudinary')
+      .getPublicUrl(storagePath);
+
+    const publicVideoUrl = publicUrlData.publicUrl;
+    console.log(`[GeminiQueue] Video uploaded to storage for job ${job.id}`);
+
+    await supabase
+      .from(TABLE)
+      .update({
+        status: 'completed',
+        video_url: publicVideoUrl,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', job.id);
+    console.log(`[GeminiQueue] Job ${job.id} marked as completed`);
   } catch (e: any) {
     const retryCount = (job.retry_count || 0) + 1;
     const shouldFail = retryCount >= 3;
