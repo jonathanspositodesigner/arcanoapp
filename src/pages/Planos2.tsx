@@ -194,8 +194,8 @@ const Planos2 = () => {
       bestSeller: true
     }, {
       name: "Ultimate",
-      price: "59,90",
-      originalPrice: "79,90",
+      price: "79,90",
+      originalPrice: null,
       perMonth: true,
       credits: "14.000 créditos de IA",
       images: 233,
@@ -317,13 +317,13 @@ const Planos2 = () => {
       bestSeller: true
     }, {
       name: "Ultimate",
-      price: "49,90",
-      originalPrice: "59,90",
+      price: "59,90",
+      originalPrice: "79,90",
       perMonth: true,
-      yearlyTotal: "598,80",
+      yearlyTotal: "718,80",
       credits: "14.000 créditos de IA",
       images: 233,
-      savings: "R$120",
+      savings: "R$240",
       tagline: "Ideal para designers e criadores ativos",
       features: [
         { text: t('planos.features.dailyUpdates'), included: true },
