@@ -287,16 +287,19 @@ export default function Seedance2() {
                     onClick={() => gen.status === "completed" && gen.videoUrl && setPreviewGen(gen)}
                   >
                     {gen.status === "completed" && gen.videoUrl && (
-                      <HoverVideo src={gen.videoUrl} prompt={gen.prompt} ratio={gen.ratio} duration={gen.duration} />
-                      <a
-                        href={gen.videoUrl}
-                        download
-                        onClick={(e) => e.stopPropagation()}
-                        className="absolute top-2 right-2 z-10 rounded-full bg-black/60 p-1.5 text-white/70 opacity-0 group-hover:opacity-100 transition-all hover:bg-black/80 hover:text-white hover:scale-110"
-                        title="Baixar vídeo"
-                      >
-                        <Download className="h-4 w-4" />
-                      </a>
+                      <>
+                        <HoverVideo src={gen.videoUrl} prompt={gen.prompt} ratio={gen.ratio} duration={gen.duration} />
+                        <a
+                          href={gen.videoUrl}
+                          download
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute top-2 right-2 z-10 rounded-full bg-black/60 p-1.5 text-white/70 opacity-0 group-hover:opacity-100 transition-all hover:bg-black/80 hover:text-white hover:scale-110"
+                          title="Baixar vídeo"
+                        >
+                          <Download className="h-4 w-4" />
+                        </a>
+                      </>
+                    )}
 
                     {gen.status === "processing" && (
                       <div className="text-center">
