@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import AppLayout from "@/components/layout/AppLayout";
-import { Coins, X } from "lucide-react";
+import { Coins, X, Download } from "lucide-react";
 
 type Mode = "text" | "startend" | "multiref";
 type Speed = "standard" | "fast";
@@ -287,7 +287,18 @@ export default function Seedance2() {
                     onClick={() => gen.status === "completed" && gen.videoUrl && setPreviewGen(gen)}
                   >
                     {gen.status === "completed" && gen.videoUrl && (
-                      <HoverVideo src={gen.videoUrl} prompt={gen.prompt} ratio={gen.ratio} duration={gen.duration} />
+                      <>
+                        <HoverVideo src={gen.videoUrl} prompt={gen.prompt} ratio={gen.ratio} duration={gen.duration} />
+                        <a
+                          href={gen.videoUrl}
+                          download
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute top-2 right-2 z-10 rounded-full bg-black/60 p-1.5 text-white/70 opacity-0 group-hover:opacity-100 transition-all hover:bg-black/80 hover:text-white hover:scale-110"
+                          title="Baixar vídeo"
+                        >
+                          <Download className="h-4 w-4" />
+                        </a>
+                      </>
                     )}
 
                     {gen.status === "processing" && (
@@ -316,6 +327,14 @@ export default function Seedance2() {
                 >
                   <X className="h-5 w-5" />
                 </button>
+                <a
+                  href={previewGen.videoUrl}
+                  download
+                  className="absolute -top-10 right-10 rounded-full bg-white/10 p-1.5 text-white hover:bg-white/20 transition-colors"
+                  title="Baixar vídeo"
+                >
+                  <Download className="h-5 w-5" />
+                </a>
                 <video
                   src={previewGen.videoUrl}
                   controls
