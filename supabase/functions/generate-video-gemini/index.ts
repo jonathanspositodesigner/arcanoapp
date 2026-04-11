@@ -253,7 +253,7 @@ async function processQueue(): Promise<Response> {
         const imgRes = await fetch(job.reference_image_url);
         if (imgRes.ok) {
           const imgBuffer = await imgRes.arrayBuffer();
-          const base64 = btoa(String.fromCharCode(...new Uint8Array(imgBuffer)));
+          const base64 = arrayBufferToBase64(imgBuffer);
           const mimeType = imgRes.headers.get('content-type') || 'image/jpeg';
           instance.image = { bytesBase64Encoded: base64, mimeType };
           console.log(`[GeminiQueue] Reference image attached (${(imgBuffer.byteLength / 1024).toFixed(0)}KB)`);
