@@ -1,0 +1,1 @@
+ALTER TABLE public.video_generation_queue ADD COLUMN reference_image_url text;
