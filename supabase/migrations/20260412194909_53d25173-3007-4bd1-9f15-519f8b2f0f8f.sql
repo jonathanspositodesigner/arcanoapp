@@ -1,0 +1,1 @@
+ALTER TABLE public.saved_characters ADD COLUMN gender text DEFAULT null;
