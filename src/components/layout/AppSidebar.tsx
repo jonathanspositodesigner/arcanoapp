@@ -229,7 +229,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
               className="w-full flex items-center text-left text-[13px] font-bold text-yellow-200 hover:text-yellow-100 py-2.5 px-3 rounded-lg bg-yellow-500/15 border border-yellow-400/25 hover:bg-yellow-500/25 transition-all"
             >
               <Gift className="h-4 w-4 mr-2 text-yellow-300" />
-              Indique e Ganhe Créditos!
+              Ganhe 500 Créditos!
             </button>
           )}
         </div>
