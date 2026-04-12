@@ -85,7 +85,7 @@ export default function Seedance2() {
   const [refImages, setRefImages] = useState<string[]>([]);
   const [refVideos, setRefVideos] = useState<string[]>([]);
   const [refAudios, setRefAudios] = useState<string[]>([]);
-  const [libraryVideoRefs, setLibraryVideoRefs] = useState<string[]>([]); // track library-added videos
+  
   const [uploading, setUploading] = useState(false);
   const [previewGen, setPreviewGen] = useState<Generation | null>(null);
   const [selectedCharacters, setSelectedCharacters] = useState<CharacterItem[]>([]);
