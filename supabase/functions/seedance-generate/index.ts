@@ -43,7 +43,7 @@ serve(async (req) => {
     const body = await req.json();
     const {
       model, prompt, imageUrls, videoUrls, audioUrls,
-      duration, quality, aspectRatio, generateAudio, jobId
+      duration, quality, aspectRatio, generateAudio, jobId, creditCost
     } = body;
 
     if (!model || !prompt || !jobId) {
@@ -52,13 +52,36 @@ serve(async (req) => {
       });
     }
 
-    // Credit check: seedance always charges credits (not unlimited-free)
+    const creditsToCharge = creditCost || 0;
+
+    // Credit check
     const { data: creditBalance } = await supabase.rpc("get_upscaler_credits", { _user_id: user.id });
-    if (!creditBalance || creditBalance < 1) {
+    if (!creditBalance || creditBalance < creditsToCharge) {
       return new Response(JSON.stringify({ success: false, error: "Créditos insuficientes" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Charge credits IMMEDIATELY before calling Evolink
+    if (creditsToCharge > 0) {
+      const { error: consumeError } = await supabase.rpc("consume_upscaler_credits", {
+        _user_id: user.id,
+        _amount: creditsToCharge,
+        _description: `Cinema Studio - Seedance 2 (${model})`,
+      });
+      if (consumeError) {
+        console.error("[seedance-generate] Failed to consume credits:", consumeError);
+        return new Response(JSON.stringify({ success: false, error: "Erro ao cobrar créditos" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      console.log(`[seedance-generate] Charged ${creditsToCharge} credits from user ${user.id}`);
+    }
+
+    // Update job with credits_charged
+    await supabase.from("seedance_jobs").update({
+      credits_charged: creditsToCharge,
+    }).eq("id", jobId);
 
     console.log("[seedance-generate] Calling Evolink API via shared client:", JSON.stringify({ model, duration: duration || 5, quality: quality || "720p" }));
 
@@ -76,9 +99,20 @@ serve(async (req) => {
     });
 
     if (!result.success) {
+      // REFUND credits on API failure
+      if (creditsToCharge > 0) {
+        await supabase.rpc("add_upscaler_credits", {
+          _user_id: user.id,
+          _amount: creditsToCharge,
+          _description: `Estorno - Seedance 2 falhou (${model})`,
+        });
+        console.log(`[seedance-generate] Refunded ${creditsToCharge} credits to user ${user.id}`);
+      }
+
       await supabase.from("seedance_jobs").update({
         status: "failed",
         error_message: result.error,
+        credits_charged: 0,
       }).eq("id", jobId);
 
       return new Response(JSON.stringify({ success: false, error: result.error }), {
