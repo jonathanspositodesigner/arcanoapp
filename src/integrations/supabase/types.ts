@@ -3824,6 +3824,30 @@ export type Database = {
         }
         Relationships: []
       }
+      prompt_likes: {
+        Row: {
+          created_at: string
+          id: string
+          prompt_id: string
+          prompt_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          prompt_id: string
+          prompt_type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          prompt_id?: string
+          prompt_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       prompts_categories: {
         Row: {
           created_at: string
@@ -5584,6 +5608,13 @@ export type Database = {
         Args: never
         Returns: {
           click_count: number
+          prompt_id: string
+        }[]
+      }
+      get_prompt_like_counts: {
+        Args: never
+        Returns: {
+          like_count: number
           prompt_id: string
         }[]
       }

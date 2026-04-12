@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, Search, ChevronDown } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, Search, ChevronDown, Heart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
@@ -87,6 +87,8 @@ const BibliotecaPrompts = () => {
   const [revealedPrompts, setRevealedPrompts] = useState<Set<string>>(new Set());
   const [showExpiredModal, setShowExpiredModal] = useState(false);
   const [showExpiringModal, setShowExpiringModal] = useState(false);
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
 
   const { allPrompts, getFilteredPrompts } = useOptimizedPrompts();
   const { searchTerm, setSearchTerm, expandedTerms, isSearching } = useSmartSearch();
@@ -111,6 +113,46 @@ const BibliotecaPrompts = () => {
 
     fetchPromptCategories();
   }, []);
+
+  // Fetch like counts and user's likes
+  useEffect(() => {
+    const fetchLikes = async () => {
+      const { data: counts } = await supabase.rpc("get_prompt_like_counts");
+      if (counts) {
+        const map: Record<string, number> = {};
+        counts.forEach((r: any) => { map[r.prompt_id] = Number(r.like_count); });
+        setLikeCounts(map);
+      }
+      if (user) {
+        const { data: myLikes } = await supabase
+          .from("prompt_likes")
+          .select("prompt_id")
+          .eq("user_id", user.id);
+        if (myLikes) {
+          setUserLikes(new Set(myLikes.map((l: any) => l.prompt_id)));
+        }
+      }
+    };
+    fetchLikes();
+  }, [user]);
+
+  const toggleLike = useCallback(async (e: React.MouseEvent, promptId: string) => {
+    e.stopPropagation();
+    if (!user) {
+      toast.error("Faça login para curtir");
+      return;
+    }
+    const liked = userLikes.has(promptId);
+    if (liked) {
+      setUserLikes(prev => { const s = new Set(prev); s.delete(promptId); return s; });
+      setLikeCounts(prev => ({ ...prev, [promptId]: Math.max(0, (prev[promptId] || 0) - 1) }));
+      await supabase.from("prompt_likes").delete().eq("user_id", user.id).eq("prompt_id", promptId);
+    } else {
+      setUserLikes(prev => new Set(prev).add(promptId));
+      setLikeCounts(prev => ({ ...prev, [promptId]: (prev[promptId] || 0) + 1 }));
+      await supabase.from("prompt_likes").insert({ user_id: user.id, prompt_id: promptId });
+    }
+  }, [user, userLikes]);
 
   const categories = useMemo(() => {
     const baseCategories = contentType === "exclusive"
@@ -549,6 +591,19 @@ const BibliotecaPrompts = () => {
                     <Lock className="h-3.5 w-3.5 text-white" />
                   </div>
                 )}
+
+                {/* Like button - always visible */}
+                <button
+                  onClick={(e) => toggleLike(e, String(item.id))}
+                  className="absolute top-1.5 left-1.5 flex items-center gap-0.5 rounded-full bg-black/50 backdrop-blur-sm px-1.5 py-0.5 z-10 hover:bg-black/70 transition-colors"
+                >
+                  <Heart
+                    className={`h-3 w-3 sm:h-3.5 sm:w-3.5 transition-colors ${userLikes.has(String(item.id)) ? 'text-red-500 fill-red-500' : 'text-white/80'}`}
+                  />
+                  <span className="text-[9px] sm:text-[10px] font-medium text-white/90">
+                    {likeCounts[String(item.id)] || 0}
+                  </span>
+                </button>
 
                 {/* Hover/Touch overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-1.5 sm:p-3
