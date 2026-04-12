@@ -615,7 +615,7 @@ export default function Seedance2() {
 
             {/* MOBILE: Generate button FIRST, then prompt, then controls */}
             {isMobile ? (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 pb-16">
                 <button
                   onClick={handleGenerate}
                   disabled={!canGenerate() || uploading}
