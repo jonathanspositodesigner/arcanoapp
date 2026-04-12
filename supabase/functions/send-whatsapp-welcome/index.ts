@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { phone, name, email, order_id } = await req.json()
+    const { phone, name, email, order_id, locale } = await req.json()
 
     const zapiInstanceId = Deno.env.get("ZAPI_ID_DA_INSTANCIA")
     const zapiInstanceToken = Deno.env.get("ZAPI_TOKEN_DA_INSTANCIA")
