@@ -569,6 +569,7 @@ export default function Seedance2() {
                       onCharactersChange={setSelectedCharacters}
                       maxCharacters={3}
                       compact
+                      useSavedCharacters
                     />
                   )}
                 </div>
@@ -646,6 +647,7 @@ export default function Seedance2() {
                         onCharactersChange={setSelectedCharacters}
                         maxCharacters={3}
                         compact
+                        useSavedCharacters
                       />
                     </>
                   )}
