@@ -105,12 +105,13 @@ export default function Seedance2() {
   const pollTimers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
   const creditCost = getSeedanceTotalCost(speed, quality, modeToGenType(mode), parseInt(duration) || 5);
 
-  // Fetch user creations from seedance_jobs
+  // Fetch user creations (completed) + active jobs from seedance_jobs
   useEffect(() => {
     if (!user) return;
     const fetchCreations = async () => {
       setLoadingCreations(true);
-      const { data, error } = await supabase
+      // Fetch completed jobs
+      const { data: completedData } = await supabase
         .from("seedance_jobs")
         .select("id, prompt, output_url, aspect_ratio, duration, status, error_message, task_id, created_at")
         .eq("user_id", user.id)
@@ -118,22 +119,44 @@ export default function Seedance2() {
         .not("output_url", "is", null)
         .order("created_at", { ascending: false })
         .limit(50);
-      if (!error && data) {
-        setGenerations(data.map((j: any) => ({
-          id: j.id,
-          status: j.status === "completed" ? "completed" : j.status === "failed" ? "failed" : j.status === "running" ? "processing" : "queued",
-          prompt: j.prompt || "",
-          ratio: j.aspect_ratio || "16:9",
-          duration: String(j.duration || 5),
-          videoUrl: j.output_url || undefined,
-          error: j.error_message || undefined,
-          taskId: j.task_id || undefined,
-        })));
-      }
+
+      // Fetch active jobs (queued, running, timeout_recovery)
+      const { data: activeData } = await supabase
+        .from("seedance_jobs")
+        .select("id, prompt, output_url, aspect_ratio, duration, status, error_message, task_id, created_at")
+        .eq("user_id", user.id)
+        .in("status", ["queued", "running", "timeout_recovery"])
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      const mapJob = (j: any): Generation => ({
+        id: j.id,
+        status: j.status === "completed" ? "completed" : j.status === "failed" ? "failed" : j.status === "running" || j.status === "timeout_recovery" ? "processing" : "queued",
+        prompt: j.prompt || "",
+        ratio: j.aspect_ratio || "16:9",
+        duration: String(j.duration || 5),
+        videoUrl: j.output_url || undefined,
+        error: j.error_message || undefined,
+        taskId: j.task_id || undefined,
+      });
+
+      const completed = (completedData || []).map(mapJob);
+      const active = (activeData || []).map(mapJob);
+
+      // Merge: active jobs first, then completed
+      setGenerations([...active, ...completed]);
+
+      // Resume polling for active jobs that have a taskId
+      active.forEach((job) => {
+        if (job.taskId && !pollTimers.current[job.id]) {
+          startPolling(job.id, job.taskId, job.id);
+        }
+      });
+
       setLoadingCreations(false);
     };
     fetchCreations();
-  }, [user]);
+  }, [user, startPolling]);
 
   // Fetch library items from admin_prompts with category "Seedance 2"
   useEffect(() => {
