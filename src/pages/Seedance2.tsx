@@ -92,14 +92,7 @@ export default function Seedance2() {
   const [showSettings, setShowSettings] = useState(false);
   const [showRatioModal, setShowRatioModal] = useState(false);
 
-  // Load prefill video from navigation state (e.g. from BibliotecaPrompts)
-  useEffect(() => {
-    const state = location.state as { prefillVideo?: string } | null;
-    if (state?.prefillVideo) {
-      setRefVideos([state.prefillVideo]);
-      setLibraryVideoRefs([state.prefillVideo]);
-    }
-  }, []);
+  // Prefill from navigation is handled by useState initializer for prompt
 
   const pollTimers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
   const creditCost = getSeedanceTotalCost(speed, quality, modeToGenType(mode), parseInt(duration) || 5);
@@ -213,19 +206,10 @@ export default function Seedance2() {
 
   // Use a library item: switch to multiref, set prompt, add video as ref
   const handleUseLibraryItem = useCallback((item: Generation) => {
-    setMode("multiref");
     setPrompt(item.prompt);
-    if (item.videoUrl) {
-      // Clear previous library refs, add this one
-      setRefVideos(prev => {
-        const withoutOldLibrary = prev.filter(v => !libraryVideoRefs.includes(v));
-        return [item.videoUrl!, ...withoutOldLibrary];
-      });
-      setLibraryVideoRefs([item.videoUrl]);
-    }
     setPreviewGen(null);
     setGalleryTab("creations");
-  }, [libraryVideoRefs]);
+  }, []);
 
   // Handle mode change: clear library-added inputs
   const handleModeChange = useCallback((newMode: Mode) => {
