@@ -22,17 +22,17 @@ interface PricingEntry {
 
 const PRICING_TABLE: PricingEntry[] = [
   // Fast - 480p
-  { speed: "fast", quality: "480p", genType: "i2v", creditsPerSecond: 130 },
-  { speed: "fast", quality: "480p", genType: "t2v", creditsPerSecond: 130 },
+  { speed: "fast", quality: "480p", genType: "i2v", creditsPerSecond: 100 },
+  { speed: "fast", quality: "480p", genType: "t2v", creditsPerSecond: 100 },
   // Fast - 720p
-  { speed: "fast", quality: "720p", genType: "i2v", creditsPerSecond: 270 },
-  { speed: "fast", quality: "720p", genType: "t2v", creditsPerSecond: 280 },
+  { speed: "fast", quality: "720p", genType: "i2v", creditsPerSecond: 250 },
+  { speed: "fast", quality: "720p", genType: "t2v", creditsPerSecond: 250 },
   // Standard - 480p
-  { speed: "standard", quality: "480p", genType: "i2v", creditsPerSecond: 160 },
-  { speed: "standard", quality: "480p", genType: "t2v", creditsPerSecond: 170 },
+  { speed: "standard", quality: "480p", genType: "i2v", creditsPerSecond: 130 },
+  { speed: "standard", quality: "480p", genType: "t2v", creditsPerSecond: 150 },
   // Standard - 720p
-  { speed: "standard", quality: "720p", genType: "i2v", creditsPerSecond: 300 },
-  { speed: "standard", quality: "720p", genType: "t2v", creditsPerSecond: 350 },
+  { speed: "standard", quality: "720p", genType: "i2v", creditsPerSecond: 270 },
+  { speed: "standard", quality: "720p", genType: "t2v", creditsPerSecond: 300 },
 ];
 
 const priceMap = new Map<string, number>();
