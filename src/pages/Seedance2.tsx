@@ -241,10 +241,11 @@ export default function Seedance2() {
     const timer = setInterval(async () => {
       count += 1;
 
-      if (count > 60) {
+      // 180 polls * 5s = 15 minutes timeout (Seedance can take a while)
+      if (count > 180) {
         clearInterval(timer);
         delete pollTimers.current[genId];
-        setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: "Timeout" } : g));
+        setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: "Timeout - geração demorou demais" } : g));
         return;
       }
 
@@ -277,12 +278,15 @@ export default function Seedance2() {
     pollTimers.current[genId] = timer;
   }, []);
 
+  const hasActiveJob = generations.some((g) => g.status === "queued" || g.status === "processing");
+
   const canGenerate = useCallback(() => {
+    if (hasActiveJob) return false;
     if (!prompt.trim()) return false;
     if (mode === "startend" && !startImage) return false;
     if (mode === "multiref" && refImages.length === 0 && selectedCharacters.length === 0) return false;
     return true;
-  }, [prompt, mode, startImage, refImages, selectedCharacters]);
+  }, [prompt, mode, startImage, refImages, selectedCharacters, hasActiveJob]);
 
   const handleGenerate = useCallback(async () => {
     if (!canGenerate() || !user) return;
