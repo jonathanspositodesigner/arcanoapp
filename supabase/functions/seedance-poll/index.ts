@@ -40,7 +40,7 @@ serve(async (req) => {
       });
     }
 
-    const { taskId, jobId, creditsToCharge } = await req.json();
+    const { taskId, jobId } = await req.json();
 
     if (!taskId || !jobId) {
       return new Response(JSON.stringify({ error: "Missing taskId or jobId" }), {
@@ -57,16 +57,9 @@ serve(async (req) => {
         status: "completed",
         output_url: pollResult.outputUrl,
         completed_at: new Date().toISOString(),
-        credits_charged: creditsToCharge || 0,
       }).eq("id", jobId);
 
-      if (creditsToCharge && creditsToCharge > 0) {
-        await supabase.rpc("consume_upscaler_credits", {
-          _user_id: user.id,
-          _amount: creditsToCharge,
-          _description: "Cinema Studio - Seedance 2",
-        });
-      }
+      // Credits already charged on generate - no action needed on completion
 
       return new Response(JSON.stringify({
         status: "completed",
@@ -78,9 +71,28 @@ serve(async (req) => {
     }
 
     if (pollResult.status === "failed") {
+      // REFUND credits on failure - get charged amount from job
+      const { data: jobData } = await supabase
+        .from("seedance_jobs")
+        .select("credits_charged")
+        .eq("id", jobId)
+        .single();
+
+      const chargedAmount = jobData?.credits_charged || 0;
+
+      if (chargedAmount > 0) {
+        await supabase.rpc("add_upscaler_credits", {
+          _user_id: user.id,
+          _amount: chargedAmount,
+          _description: "Estorno - Seedance 2 falhou",
+        });
+        console.log(`[seedance-poll] Refunded ${chargedAmount} credits to user ${user.id}`);
+      }
+
       await supabase.from("seedance_jobs").update({
         status: "failed",
         error_message: pollResult.error || "Generation failed",
+        credits_charged: 0,
       }).eq("id", jobId);
 
       return new Response(JSON.stringify({
