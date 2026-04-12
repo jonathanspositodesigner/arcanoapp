@@ -929,6 +929,7 @@ serve(async (req) => {
               name: customerName || '',
               email,
               order_id: null,
+              locale: 'es',
             }),
           })
           const whatsappResult = await whatsappResponse.text()
