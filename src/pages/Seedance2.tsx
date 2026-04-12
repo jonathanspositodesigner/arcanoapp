@@ -584,7 +584,7 @@ export default function Seedance2() {
                       {MODE_OPTIONS.map((option) => (
                         <button
                           key={option.value}
-                          onClick={() => setMode(option.value)}
+                          onClick={() => handleModeChange(option.value)}
                           className={`rounded-md border px-2 py-1 text-[10px] font-medium transition-all ${
                             mode === option.value ? "border-purple-500/30 bg-purple-500/20 text-purple-300" : "border-transparent text-gray-500"
                           }`}
@@ -657,7 +657,7 @@ export default function Seedance2() {
                       {MODE_OPTIONS.map((option) => (
                         <button
                           key={option.value}
-                          onClick={() => setMode(option.value)}
+                          onClick={() => handleModeChange(option.value)}
                           className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
                             mode === option.value ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                           }`}
