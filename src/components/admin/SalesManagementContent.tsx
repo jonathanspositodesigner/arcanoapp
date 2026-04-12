@@ -588,6 +588,11 @@ const SalesManagementContent = () => {
                       </span>
                       <div className="flex items-center gap-2">
                         {renderEmailStatus(sale)}
+                        {sale.status === "paid" && (
+                          <span className={sale.whatsapp_welcome_sent ? "text-emerald-500" : "text-muted-foreground/40"}>
+                            📱
+                          </span>
+                        )}
                         <Badge variant={st.variant} className="text-xs">{st.label}</Badge>
                       </div>
                     </div>
