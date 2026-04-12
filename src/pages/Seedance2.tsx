@@ -92,6 +92,7 @@ export default function Seedance2() {
   const [selectedCharacters, setSelectedCharacters] = useState<CharacterItem[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [showRatioModal, setShowRatioModal] = useState(false);
+  const [showFaceWarning, setShowFaceWarning] = useState<{ accept: string; onSuccess: (url: string) => void } | null>(null);
 
   // Load prefill reference image from navigation state (e.g. from BibliotecaPrompts)
   useEffect(() => {
