@@ -77,9 +77,10 @@ Deno.serve(async (req) => {
     const zapiHeaders: Record<string, string> = {
       "Content-Type": "application/json",
     }
-    if (ZAPI_CLIENT_TOKEN) {
-      zapiHeaders["Client-Token"] = ZAPI_CLIENT_TOKEN
-    }
+    // Client-Token is optional - only add if configured
+    // if (ZAPI_CLIENT_TOKEN) {
+    //   zapiHeaders["Client-Token"] = ZAPI_CLIENT_TOKEN
+    // }
 
     console.log(`[WhatsApp] Sending welcome to ${normalizedPhone} (order: ${order_id}), URL: ${zapiUrl}, hasClientToken: ${!!ZAPI_CLIENT_TOKEN}, clientTokenLength: ${ZAPI_CLIENT_TOKEN?.length}`)
 
