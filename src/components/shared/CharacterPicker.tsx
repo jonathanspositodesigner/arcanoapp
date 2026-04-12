@@ -326,7 +326,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
           {useSavedCharacters ? (
             <div className="space-y-3 pt-2">
               <Button
-                onClick={() => { setModalOpen(false); setShowCreateCharacterModal(true); }}
+                onClick={() => { setModalOpen(false); setTimeout(() => setShowCreateCharacterModal(true), 150); }}
                 variant="outline"
                 size="sm"
                 className="w-full border-dashed border-white/[0.1] text-gray-400 text-[11px] hover:bg-white/[0.04]"
