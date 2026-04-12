@@ -879,6 +879,34 @@ export default function Seedance2() {
           </div>
         </div>
       )}
+      {/* Face warning modal */}
+      {showFaceWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowFaceWarning(null)}>
+          <div className="mx-4 w-full max-w-sm rounded-2xl border border-white/10 bg-[#111] p-5" onClick={(e) => e.stopPropagation()}>
+            <p className="mb-2 text-sm font-semibold text-white">⚠️ Atenção</p>
+            <p className="mb-1 text-xs leading-relaxed text-gray-300">
+              O Seedance 2 <span className="font-medium text-white">não aceita imagens com rostos reais</span> de pessoas.
+            </p>
+            <p className="mb-4 text-xs leading-relaxed text-gray-400">
+              Se quiser adicionar um rosto, crie um <span className="font-medium text-purple-400">Personagem</span> usando o botão abaixo do prompt.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowFaceWarning(null)}
+                className="flex-1 rounded-xl bg-white/[0.06] py-2 text-xs font-medium text-gray-400 hover:bg-white/[0.1] transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmFilePicker}
+                className="flex-1 rounded-xl bg-purple-600/80 py-2 text-xs font-medium text-white hover:bg-purple-500 transition-colors"
+              >
+                Entendi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppLayout>
   );
 }
