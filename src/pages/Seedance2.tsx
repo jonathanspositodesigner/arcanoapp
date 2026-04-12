@@ -23,6 +23,7 @@ interface Generation {
   ratio: string;
   duration: string;
   videoUrl?: string;
+  referenceImage?: string;
   error?: string;
   taskId?: string;
   pollCount?: number;
@@ -63,10 +64,13 @@ export default function Seedance2() {
   const isMobile = useIsMobile();
   const { download: resilientDownload, isDownloading: isResilientDownloading } = useResilientDownload();
   const [prompt, setPrompt] = useState(() => {
-    const state = location.state as { prefillPrompt?: string; prefillVideo?: string } | null;
+    const state = location.state as { prefillPrompt?: string } | null;
     return state?.prefillPrompt || "";
   });
-  const [mode, setMode] = useState<Mode>("multiref");
+  const [mode, setMode] = useState<Mode>(() => {
+    const state = location.state as { prefillRefImage?: string } | null;
+    return state?.prefillRefImage ? "multiref" : "multiref";
+  });
   const [ratio, setRatio] = useState<Ratio>("9:16");
   const [quality, setQuality] = useState<Quality>("480p");
   const [duration, setDuration] = useState<Duration>("15");
@@ -82,14 +86,21 @@ export default function Seedance2() {
   const [refImages, setRefImages] = useState<string[]>([]);
   const [refVideos, setRefVideos] = useState<string[]>([]);
   const [refAudios, setRefAudios] = useState<string[]>([]);
-  
+  const [libraryVideoRefs, setLibraryVideoRefs] = useState<string[]>([]); // track library-added videos
   const [uploading, setUploading] = useState(false);
   const [previewGen, setPreviewGen] = useState<Generation | null>(null);
   const [selectedCharacters, setSelectedCharacters] = useState<CharacterItem[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [showRatioModal, setShowRatioModal] = useState(false);
 
-  // Prefill from navigation is handled by useState initializer for prompt
+  // Load prefill reference image from navigation state (e.g. from BibliotecaPrompts)
+  useEffect(() => {
+    const state = location.state as { prefillRefImage?: string } | null;
+    if (state?.prefillRefImage) {
+      setRefImages([state.prefillRefImage]);
+      setLibraryVideoRefs([state.prefillRefImage]);
+    }
+  }, []);
 
   const pollTimers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
   const creditCost = getSeedanceTotalCost(speed, quality, modeToGenType(mode), parseInt(duration) || 5);
@@ -130,7 +141,7 @@ export default function Seedance2() {
       setLoadingLibrary(true);
       const { data, error } = await supabase
         .from("admin_prompts")
-        .select("id, title, prompt, image_url, thumbnail_url")
+        .select("id, title, prompt, image_url, thumbnail_url, reference_images")
         .eq("category", "Seedance 2")
         .order("created_at", { ascending: false })
         .limit(50);
@@ -142,6 +153,7 @@ export default function Seedance2() {
           ratio: "16:9",
           duration: "",
           videoUrl: p.image_url || undefined,
+          referenceImage: p.reference_images?.[0] || undefined,
         })));
       }
       setLoadingLibrary(false);
@@ -201,16 +213,31 @@ export default function Seedance2() {
     input.click();
   }, [handleFileUpload]);
 
-  // Use a library item: switch to multiref, set prompt, add video as ref
+  // Use a library item: set prompt, and if it has a reference image switch to multiref and add it
   const handleUseLibraryItem = useCallback((item: Generation) => {
     setPrompt(item.prompt);
+    if (item.referenceImage) {
+      setMode("multiref");
+      // Clear previous library refs, add reference image
+      setRefImages(prev => {
+        const withoutOldLibrary = prev.filter(v => !libraryVideoRefs.includes(v));
+        return [item.referenceImage!, ...withoutOldLibrary];
+      });
+      setLibraryVideoRefs([item.referenceImage]);
+    }
     setPreviewGen(null);
     setGalleryTab("creations");
-  }, []);
+  }, [libraryVideoRefs]);
 
+  // Handle mode change: clear library-added inputs
   const handleModeChange = useCallback((newMode: Mode) => {
+    if (newMode !== mode && libraryVideoRefs.length > 0) {
+      setRefVideos(prev => prev.filter(v => !libraryVideoRefs.includes(v)));
+      setRefImages(prev => prev.filter(v => !libraryVideoRefs.includes(v)));
+      setLibraryVideoRefs([]);
+    }
     setMode(newMode);
-  }, []);
+  }, [mode, libraryVideoRefs]);
 
   const startPolling = useCallback((genId: string, taskId: string, jobId: string) => {
     let count = 0;
