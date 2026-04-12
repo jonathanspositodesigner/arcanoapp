@@ -327,7 +327,7 @@ export default function Seedance2() {
     if (hasActiveJob) return false;
     if (!prompt.trim()) return false;
     if (mode === "startend" && !startImage) return false;
-    if (mode === "multiref" && refImages.length === 0 && selectedCharacters.length === 0) return false;
+    if (mode === "startend" && !startImage) return false;
     return true;
   }, [prompt, mode, startImage, refImages, selectedCharacters, hasActiveJob]);
 
