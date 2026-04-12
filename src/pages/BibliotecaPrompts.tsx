@@ -114,6 +114,46 @@ const BibliotecaPrompts = () => {
     fetchPromptCategories();
   }, []);
 
+  // Fetch like counts and user's likes
+  useEffect(() => {
+    const fetchLikes = async () => {
+      const { data: counts } = await supabase.rpc("get_prompt_like_counts");
+      if (counts) {
+        const map: Record<string, number> = {};
+        counts.forEach((r: any) => { map[r.prompt_id] = Number(r.like_count); });
+        setLikeCounts(map);
+      }
+      if (user) {
+        const { data: myLikes } = await supabase
+          .from("prompt_likes")
+          .select("prompt_id")
+          .eq("user_id", user.id);
+        if (myLikes) {
+          setUserLikes(new Set(myLikes.map((l: any) => l.prompt_id)));
+        }
+      }
+    };
+    fetchLikes();
+  }, [user]);
+
+  const toggleLike = useCallback(async (e: React.MouseEvent, promptId: string) => {
+    e.stopPropagation();
+    if (!user) {
+      toast.error("Faça login para curtir");
+      return;
+    }
+    const liked = userLikes.has(promptId);
+    if (liked) {
+      setUserLikes(prev => { const s = new Set(prev); s.delete(promptId); return s; });
+      setLikeCounts(prev => ({ ...prev, [promptId]: Math.max(0, (prev[promptId] || 0) - 1) }));
+      await supabase.from("prompt_likes").delete().eq("user_id", user.id).eq("prompt_id", promptId);
+    } else {
+      setUserLikes(prev => new Set(prev).add(promptId));
+      setLikeCounts(prev => ({ ...prev, [promptId]: (prev[promptId] || 0) + 1 }));
+      await supabase.from("prompt_likes").insert({ user_id: user.id, prompt_id: promptId });
+    }
+  }, [user, userLikes]);
+
   const categories = useMemo(() => {
     const baseCategories = contentType === "exclusive"
       ? ["Populares", "Ver Tudo", "Novos", "Grátis"]
