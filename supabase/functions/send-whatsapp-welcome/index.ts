@@ -48,12 +48,9 @@ Deno.serve(async (req) => {
   try {
     const { phone, name, email, order_id } = await req.json()
 
-    const zapiInstanceId =
-      Deno.env.get("ZAPI_ID_DA_INSTANCIA") ?? Deno.env.get("ZAPI_INSTANCE_ID")
-    const zapiInstanceToken =
-      Deno.env.get("ZAPI_TOKEN_DA_INSTANCIA") ?? Deno.env.get("ZAPI_TOKEN")
-    const zapiAccountSecurityToken =
-      Deno.env.get("ZAPI_TOKEN_DE_SEGURANCA_DA_CONTA") ?? Deno.env.get("ZAPI_CLIENT_TOKEN")
+    const zapiInstanceId = Deno.env.get("ZAPI_ID_DA_INSTANCIA")
+    const zapiInstanceToken = Deno.env.get("ZAPI_TOKEN_DA_INSTANCIA")
+    const zapiAccountSecurityToken = Deno.env.get("ZAPI_TOKEN_DE_SEGURANCA_DA_CONTA")
 
     if (!zapiInstanceId || !zapiInstanceToken) {
       console.error("[WhatsApp] Z-API credentials not configured")
