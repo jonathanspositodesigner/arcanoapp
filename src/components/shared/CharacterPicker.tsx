@@ -60,7 +60,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
     if (useSavedCharacters) {
       const { data } = await supabase
         .from('saved_characters' as any)
-        .select('id, name, image_url, thumbnail_url, reference_image_url')
+        .select('id, name, image_url, thumbnail_url, reference_image_url, gender')
         .eq('user_id', userData.user.id)
         .order('created_at', { ascending: false });
       if (data) {
