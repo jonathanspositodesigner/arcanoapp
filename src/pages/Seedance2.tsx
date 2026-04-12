@@ -687,12 +687,12 @@ export default function Seedance2() {
                         useSavedCharacters
                       />
                       {showCharacterTip && selectedCharacters.length === 0 && (
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 animate-fade-in">
-                          <div className="relative bg-purple-600 rounded-lg px-3 py-2 shadow-lg shadow-purple-900/40 whitespace-nowrap">
-                            <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-purple-600 rotate-45 rounded-sm" />
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 animate-bounce">
+                          <div className="relative rounded-xl px-4 py-2.5 shadow-[0_0_20px_rgba(147,51,234,0.5)] whitespace-nowrap bg-gradient-to-r from-purple-600 via-fuchsia-500 to-purple-600 animate-pulse-glow">
+                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-purple-600 rotate-45 rounded-sm" />
                             <div className="flex items-center gap-2 relative">
-                              <span className="text-[10px] sm:text-xs text-white font-medium">👆 Adicione seu rosto aqui!</span>
-                              <button onClick={() => setShowCharacterTip(false)} className="text-white/60 hover:text-white text-xs shrink-0">✕</button>
+                              <span className="text-[11px] sm:text-sm text-white font-bold drop-shadow-sm">👆 Adicione seu rosto aqui!</span>
+                              <button onClick={() => setShowCharacterTip(false)} className="text-white/70 hover:text-white text-sm shrink-0 font-bold">✕</button>
                             </div>
                           </div>
                         </div>
@@ -783,12 +783,12 @@ export default function Seedance2() {
                           useSavedCharacters
                         />
                         {showCharacterTip && selectedCharacters.length === 0 && (
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 animate-fade-in">
-                            <div className="relative bg-purple-600 rounded-lg px-3 py-2 shadow-lg shadow-purple-900/40 whitespace-nowrap">
-                              <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-purple-600 rotate-45 rounded-sm" />
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 animate-bounce">
+                            <div className="relative rounded-xl px-4 py-2.5 shadow-[0_0_20px_rgba(147,51,234,0.5)] whitespace-nowrap bg-gradient-to-r from-purple-600 via-fuchsia-500 to-purple-600 animate-pulse-glow">
+                              <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-purple-600 rotate-45 rounded-sm" />
                               <div className="flex items-center gap-2 relative">
-                                <span className="text-xs text-white font-medium">👆 Adicione seu rosto aqui!</span>
-                                <button onClick={() => setShowCharacterTip(false)} className="text-white/60 hover:text-white text-xs shrink-0">✕</button>
+                                <span className="text-sm text-white font-bold drop-shadow-sm">👆 Adicione seu rosto aqui!</span>
+                                <button onClick={() => setShowCharacterTip(false)} className="text-white/70 hover:text-white text-sm shrink-0 font-bold">✕</button>
                               </div>
                             </div>
                           </div>
