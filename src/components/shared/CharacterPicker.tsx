@@ -68,8 +68,9 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
           id: c.id,
           name: c.name,
           description: null,
-          image_url: c.thumbnail_url || c.image_url, // show thumbnail
+          image_url: c.thumbnail_url || c.image_url,
           reference_image_url: c.reference_image_url,
+          gender: c.gender,
         })));
       }
     } else {
@@ -85,7 +86,16 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
 
   useEffect(() => { fetchCharacters(); }, []);
 
-  const openModal = () => {
+  const openModal = async () => {
+    // Ensure userId is fetched before opening modal
+    if (!userId) {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        toast.error('Faça login para gerenciar personagens');
+        return;
+      }
+      setUserId(userData.user.id);
+    }
     setModalOpen(true);
     setShowCreate(false);
     resetForm();
