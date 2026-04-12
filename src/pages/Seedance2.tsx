@@ -236,15 +236,16 @@ export default function Seedance2() {
     setMode(newMode);
   }, [mode, libraryVideoRefs]);
 
-  const startPolling = useCallback((genId: string, taskId: string, jobId: string, creditsToCharge: number) => {
+  const startPolling = useCallback((genId: string, taskId: string, jobId: string) => {
     let count = 0;
     const timer = setInterval(async () => {
       count += 1;
 
-      if (count > 60) {
+      // 180 polls * 5s = 15 minutes timeout (Seedance can take a while)
+      if (count > 180) {
         clearInterval(timer);
         delete pollTimers.current[genId];
-        setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: "Timeout" } : g));
+        setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: "Timeout - geração demorou demais" } : g));
         return;
       }
 
@@ -253,7 +254,7 @@ export default function Seedance2() {
         if (!session) return;
 
         const { data, error } = await supabase.functions.invoke("seedance-poll", {
-          body: { taskId, jobId, creditsToCharge },
+          body: { taskId, jobId },
           headers: { Authorization: `Bearer ${session.access_token}` },
         });
 
@@ -277,12 +278,15 @@ export default function Seedance2() {
     pollTimers.current[genId] = timer;
   }, []);
 
+  const hasActiveJob = generations.some((g) => g.status === "queued" || g.status === "processing");
+
   const canGenerate = useCallback(() => {
+    if (hasActiveJob) return false;
     if (!prompt.trim()) return false;
     if (mode === "startend" && !startImage) return false;
     if (mode === "multiref" && refImages.length === 0 && selectedCharacters.length === 0) return false;
     return true;
-  }, [prompt, mode, startImage, refImages, selectedCharacters]);
+  }, [prompt, mode, startImage, refImages, selectedCharacters, hasActiveJob]);
 
   const handleGenerate = useCallback(async () => {
     if (!canGenerate() || !user) return;
@@ -351,6 +355,7 @@ export default function Seedance2() {
           videoUrls: mode === "multiref" && refVideos.length > 0 ? refVideos : undefined,
           audioUrls: mode === "multiref" && refAudios.length > 0 ? refAudios : undefined,
           jobId: jobData.id,
+          creditCost,
         },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
@@ -361,7 +366,7 @@ export default function Seedance2() {
       }
 
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, taskId: data.taskId } : g));
-      startPolling(genId, data.taskId, jobData.id, creditCost);
+      startPolling(genId, data.taskId, jobData.id);
     } catch (err: any) {
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: err.message } : g));
     }
@@ -576,7 +581,12 @@ export default function Seedance2() {
                       : "cursor-not-allowed bg-white/5 text-gray-600"
                   }`}
                 >
-                  {uploading ? "Enviando..." : (
+                  {uploading ? "Enviando..." : hasActiveJob ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      Gerando...
+                    </>
+                  ) : (
                     <>
                       <span className="text-base">✦</span>
                       Gerar vídeo
@@ -655,7 +665,12 @@ export default function Seedance2() {
                       }`}
                     >
                       <span className="absolute inset-0 bg-gradient-to-r from-purple-400/0 via-white/10 to-purple-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                      {uploading ? "Enviando..." : (
+                      {uploading ? "Enviando..." : hasActiveJob ? (
+                        <>
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                          Gerando...
+                        </>
+                      ) : (
                         <>
                           <span className="text-base">✦</span>
                           Gerar vídeo
