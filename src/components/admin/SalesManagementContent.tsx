@@ -31,6 +31,7 @@ export interface SaleRecord {
   user_name?: string;
   name?: string;
   whatsapp?: string;
+  whatsapp_welcome_sent?: boolean;
 }
 
 interface EmailLogStatus {
@@ -507,6 +508,7 @@ const SalesManagementContent = () => {
                     <th className="text-right py-2 px-3 font-medium">Valor</th>
                     <th className="text-center py-2 px-3 font-medium">Status</th>
                     <th className="text-center py-2 px-3 font-medium">📧</th>
+                    <th className="text-center py-2 px-3 font-medium">📱</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -547,6 +549,22 @@ const SalesManagementContent = () => {
                         <td className="py-2.5 px-3 text-center">
                           {renderEmailStatus(sale)}
                         </td>
+                        <td className="py-2.5 px-3 text-center">
+                          {sale.status === "paid" ? (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <span className={sale.whatsapp_welcome_sent ? "text-emerald-500" : "text-muted-foreground/40"}>
+                                    📱
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{sale.whatsapp_welcome_sent ? "WhatsApp enviado ✅" : "WhatsApp não enviado"}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : null}
+                        </td>
                       </tr>
                     );
                   })}
@@ -570,6 +588,11 @@ const SalesManagementContent = () => {
                       </span>
                       <div className="flex items-center gap-2">
                         {renderEmailStatus(sale)}
+                        {sale.status === "paid" && (
+                          <span className={sale.whatsapp_welcome_sent ? "text-emerald-500" : "text-muted-foreground/40"}>
+                            📱
+                          </span>
+                        )}
                         <Badge variant={st.variant} className="text-xs">{st.label}</Badge>
                       </div>
                     </div>
