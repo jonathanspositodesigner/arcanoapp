@@ -844,7 +844,7 @@ function UploadSlot({
   );
 }
 
-function VideoCard({ gen, onPreview, onDownload }: { gen: Generation; onPreview: (g: Generation) => void; onDownload?: (url: string, prompt: string) => void }) {
+function VideoCard({ gen, onPreview, onDownload, onUse }: { gen: Generation; onPreview: (g: Generation) => void; onDownload?: (url: string, prompt: string) => void; onUse?: (g: Generation) => void }) {
   return (
     <div
       className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-xl cursor-pointer group ${
@@ -862,6 +862,14 @@ function VideoCard({ gen, onPreview, onDownload }: { gen: Generation; onPreview:
           >
             <Download className="h-4 w-4" />
           </button>
+          {onUse && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onUse(gen); }}
+              className="absolute bottom-2 left-2 right-2 z-10 rounded-lg bg-purple-600/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-purple-500"
+            >
+              Usar modelo
+            </button>
+          )}
         </>
       )}
       {gen.status === "processing" && (
