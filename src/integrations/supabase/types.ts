@@ -1130,6 +1130,8 @@ export type Database = {
           user_name: string | null
           user_phone: string | null
           utm_data: Json | null
+          whatsapp_welcome_sent: boolean
+          whatsapp_welcome_sent_at: string | null
         }
         Insert: {
           amount: number
@@ -1163,6 +1165,8 @@ export type Database = {
           user_name?: string | null
           user_phone?: string | null
           utm_data?: Json | null
+          whatsapp_welcome_sent?: boolean
+          whatsapp_welcome_sent_at?: string | null
         }
         Update: {
           amount?: number
@@ -1196,6 +1200,8 @@ export type Database = {
           user_name?: string | null
           user_phone?: string | null
           utm_data?: Json | null
+          whatsapp_welcome_sent?: boolean
+          whatsapp_welcome_sent_at?: string | null
         }
         Relationships: [
           {
