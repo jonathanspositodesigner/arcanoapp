@@ -92,6 +92,7 @@ export default function Seedance2() {
   const [selectedCharacters, setSelectedCharacters] = useState<CharacterItem[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [showRatioModal, setShowRatioModal] = useState(false);
+  const [showFaceWarning, setShowFaceWarning] = useState<{ accept: string; onSuccess: (url: string) => void } | null>(null);
 
   // Load prefill reference image from navigation state (e.g. from BibliotecaPrompts)
   useEffect(() => {
@@ -221,6 +222,14 @@ export default function Seedance2() {
   }, [handleFileUpload, refAudios.length]);
 
   const openFilePicker = useCallback((accept: string, onSuccess: (url: string) => void) => {
+    // Show face warning modal before opening file picker
+    setShowFaceWarning({ accept, onSuccess });
+  }, []);
+
+  const confirmFilePicker = useCallback(() => {
+    if (!showFaceWarning) return;
+    const { accept, onSuccess } = showFaceWarning;
+    setShowFaceWarning(null);
     const input = document.createElement("input");
     input.type = "file";
     input.accept = accept;
@@ -229,7 +238,7 @@ export default function Seedance2() {
       if (file) handleFileUpload(file, onSuccess, "seedance-refs");
     };
     input.click();
-  }, [handleFileUpload]);
+  }, [showFaceWarning, handleFileUpload]);
 
   // Use a library item: set prompt, and if it has a reference image switch to multiref and add it
   const handleUseLibraryItem = useCallback((item: Generation) => {
@@ -867,6 +876,34 @@ export default function Seedance2() {
               ))}
             </div>
             <button onClick={() => setShowRatioModal(false)} className="mt-3 w-full rounded-xl bg-white/[0.06] py-2 text-xs text-gray-400">Fechar</button>
+          </div>
+        </div>
+      )}
+      {/* Face warning modal */}
+      {showFaceWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowFaceWarning(null)}>
+          <div className="mx-4 w-full max-w-sm rounded-2xl border border-white/10 bg-[#111] p-5" onClick={(e) => e.stopPropagation()}>
+            <p className="mb-2 text-sm font-semibold text-white">⚠️ Atenção</p>
+            <p className="mb-1 text-xs leading-relaxed text-gray-300">
+              O Seedance 2 <span className="font-medium text-white">não aceita imagens com rostos reais</span> de pessoas.
+            </p>
+            <p className="mb-4 text-xs leading-relaxed text-gray-400">
+              Se quiser adicionar um rosto, crie um <span className="font-medium text-purple-400">Personagem</span> usando o botão abaixo do prompt.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowFaceWarning(null)}
+                className="flex-1 rounded-xl bg-white/[0.06] py-2 text-xs font-medium text-gray-400 hover:bg-white/[0.1] transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmFilePicker}
+                className="flex-1 rounded-xl bg-purple-600/80 py-2 text-xs font-medium text-white hover:bg-purple-500 transition-colors"
+              >
+                Entendi
+              </button>
+            </div>
           </div>
         </div>
       )}
