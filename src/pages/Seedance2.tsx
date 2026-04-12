@@ -359,6 +359,8 @@ export default function Seedance2() {
       }
     }
 
+    setSelectedModel(null);
+    setGalleryTab("creations");
     setGenerations((prev) => [{ id: genId, status: "queued", prompt: finalPrompt, ratio, duration }, ...prev]);
 
     try {
