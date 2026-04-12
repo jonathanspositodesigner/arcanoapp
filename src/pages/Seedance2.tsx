@@ -215,6 +215,15 @@ export default function Seedance2() {
     setGalleryTab("creations");
   }, [libraryVideoRefs]);
 
+  // Handle mode change: clear library-added inputs
+  const handleModeChange = useCallback((newMode: Mode) => {
+    if (newMode !== mode && libraryVideoRefs.length > 0) {
+      setRefVideos(prev => prev.filter(v => !libraryVideoRefs.includes(v)));
+      setLibraryVideoRefs([]);
+    }
+    setMode(newMode);
+  }, [mode, libraryVideoRefs]);
+
   const startPolling = useCallback((genId: string, taskId: string, jobId: string, creditsToCharge: number) => {
     let count = 0;
     const timer = setInterval(async () => {
