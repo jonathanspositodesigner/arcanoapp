@@ -63,10 +63,13 @@ export default function Seedance2() {
   const isMobile = useIsMobile();
   const { download: resilientDownload, isDownloading: isResilientDownloading } = useResilientDownload();
   const [prompt, setPrompt] = useState(() => {
-    const state = location.state as { prefillPrompt?: string } | null;
+    const state = location.state as { prefillPrompt?: string; prefillVideo?: string } | null;
     return state?.prefillPrompt || "";
   });
-  const [mode, setMode] = useState<Mode>("multiref");
+  const [mode, setMode] = useState<Mode>(() => {
+    const state = location.state as { prefillVideo?: string } | null;
+    return state?.prefillVideo ? "multiref" : "multiref";
+  });
   const [ratio, setRatio] = useState<Ratio>("9:16");
   const [quality, setQuality] = useState<Quality>("480p");
   const [duration, setDuration] = useState<Duration>("15");
