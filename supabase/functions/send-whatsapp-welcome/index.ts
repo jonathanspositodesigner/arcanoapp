@@ -48,14 +48,18 @@ Deno.serve(async (req) => {
   try {
     const { phone, name, email, order_id } = await req.json()
 
-    const ZAPI_INSTANCE_ID = Deno.env.get("ZAPI_INSTANCE_ID")
-    const ZAPI_TOKEN = Deno.env.get("ZAPI_TOKEN")
-    const ZAPI_CLIENT_TOKEN = Deno.env.get("ZAPI_CLIENT_TOKEN")
+    const zapiInstanceId = Deno.env.get("ZAPI_ID_DA_INSTANCIA")
+    const zapiInstanceToken = Deno.env.get("ZAPI_TOKEN_DA_INSTANCIA")
+    const zapiAccountSecurityToken = Deno.env.get("ZAPI_TOKEN_DE_SEGURANCA_DA_CONTA")
 
-    if (!ZAPI_INSTANCE_ID || !ZAPI_TOKEN) {
+    if (!zapiInstanceId || !zapiInstanceToken) {
       console.error("[WhatsApp] Z-API credentials not configured")
       return new Response(
-        JSON.stringify({ error: "Z-API not configured", sent: false }),
+        JSON.stringify({
+          error: "Z-API not configured",
+          missing: ["ZAPI_ID_DA_INSTANCIA", "ZAPI_TOKEN_DA_INSTANCIA"],
+          sent: false,
+        }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       )
     }
@@ -72,16 +76,18 @@ Deno.serve(async (req) => {
     const message = buildWelcomeMessage()
 
     // Z-API send-text endpoint
-    const zapiUrl = `https://api.z-api.io/instances/${ZAPI_INSTANCE_ID}/token/${ZAPI_TOKEN}/send-text`
+    const zapiUrl = `https://api.z-api.io/instances/${zapiInstanceId}/token/${zapiInstanceToken}/send-text`
 
     const zapiHeaders: Record<string, string> = {
       "Content-Type": "application/json",
     }
-    if (ZAPI_CLIENT_TOKEN) {
-      zapiHeaders["Client-Token"] = ZAPI_CLIENT_TOKEN
+    if (zapiAccountSecurityToken) {
+      zapiHeaders["Client-Token"] = zapiAccountSecurityToken
     }
 
-    console.log(`[WhatsApp] Sending welcome to ${normalizedPhone} (order: ${order_id}), URL: ${zapiUrl}, hasClientToken: ${!!ZAPI_CLIENT_TOKEN}, clientTokenLength: ${ZAPI_CLIENT_TOKEN?.length}`)
+    console.log(
+      `[WhatsApp] Sending welcome to ${normalizedPhone} (order: ${order_id}), URL: ${zapiUrl}, hasAccountSecurityToken: ${!!zapiAccountSecurityToken}, accountSecurityTokenLength: ${zapiAccountSecurityToken?.length}`
+    )
 
     const zapiResponse = await fetch(zapiUrl, {
       method: "POST",
@@ -95,6 +101,26 @@ Deno.serve(async (req) => {
     const zapiData = await zapiResponse.json()
 
     if (!zapiResponse.ok) {
+      const zapiErrorMessage =
+        typeof zapiData?.error === "string" ? zapiData.error.toLowerCase() : ""
+
+      if (zapiErrorMessage.includes("client-token")) {
+        console.error(
+          `[WhatsApp] Z-API account security token required [${zapiResponse.status}]:`,
+          JSON.stringify(zapiData)
+        )
+
+        return new Response(
+          JSON.stringify({
+            error: "Z-API account security token required",
+            credential_name: "ZAPI_TOKEN_DE_SEGURANCA_DA_CONTA",
+            zapi_message: zapiData?.error,
+            sent: false,
+          }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        )
+      }
+
       console.error(`[WhatsApp] Z-API error [${zapiResponse.status}]:`, JSON.stringify(zapiData))
       return new Response(
         JSON.stringify({ error: "Z-API send failed", details: zapiData, sent: false }),
