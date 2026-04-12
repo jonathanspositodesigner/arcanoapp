@@ -1205,7 +1205,32 @@ serve(async (req) => {
         console.error(`   ├─ ⚠️ Erro ao enviar email admin (não-crítico):`, adminErr)
       }
 
-      // 7.2 Enviar Purchase para Meta CAPI (server-side tracking)
+      // 7.2 Enviar WhatsApp de boas-vindas (non-blocking)
+      try {
+        if (profilePhone) {
+          const whatsappResponse = await fetch(`${supabaseUrl}/functions/v1/send-whatsapp-welcome`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseServiceKey}`,
+            },
+            body: JSON.stringify({
+              phone: profilePhone,
+              name: profileName || '',
+              email,
+              order_id: order.id,
+            }),
+          })
+          const whatsappResult = await whatsappResponse.text()
+          console.log(`   ├─ 📱 WhatsApp welcome: ${whatsappResponse.status} | ${whatsappResult}`)
+        } else {
+          console.log(`   ├─ ⚠️ WhatsApp: sem telefone disponível para ${email}`)
+        }
+      } catch (whatsappErr: any) {
+        console.warn(`   ├─ ⚠️ WhatsApp falhou (não-crítico): ${whatsappErr.message}`)
+      }
+
+      // 7.3 Enviar Purchase para Meta CAPI (server-side tracking)
       try {
         const utmData = order.utm_data as Record<string, string> | null
         // Fallback: generate fbc from fbclid in utm_data if not stored
