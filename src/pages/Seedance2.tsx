@@ -454,6 +454,14 @@ export default function Seedance2() {
               <div className="relative flex w-full max-w-4xl flex-col px-4 max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
                 {/* Controls bar - always visible */}
                <div className="flex items-center justify-end gap-2 pb-2 shrink-0">
+                  {libraryItems.some(li => li.id === previewGen.id) && (
+                    <button
+                      onClick={() => handleUseLibraryItem(previewGen)}
+                      className="rounded-full bg-purple-600/80 px-4 py-2 text-sm font-medium text-white hover:bg-purple-500 transition-colors"
+                    >
+                      Usar modelo
+                    </button>
+                  )}
                   <button
                     onClick={() => previewGen.videoUrl && handleDownloadVideo(previewGen.videoUrl, previewGen.prompt)}
                     className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
