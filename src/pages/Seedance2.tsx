@@ -66,10 +66,7 @@ export default function Seedance2() {
     const state = location.state as { prefillPrompt?: string; prefillVideo?: string } | null;
     return state?.prefillPrompt || "";
   });
-  const [mode, setMode] = useState<Mode>(() => {
-    const state = location.state as { prefillVideo?: string } | null;
-    return state?.prefillVideo ? "multiref" : "multiref";
-  });
+  const [mode, setMode] = useState<Mode>("multiref");
   const [ratio, setRatio] = useState<Ratio>("9:16");
   const [quality, setQuality] = useState<Quality>("480p");
   const [duration, setDuration] = useState<Duration>("15");
@@ -85,21 +82,14 @@ export default function Seedance2() {
   const [refImages, setRefImages] = useState<string[]>([]);
   const [refVideos, setRefVideos] = useState<string[]>([]);
   const [refAudios, setRefAudios] = useState<string[]>([]);
-  const [libraryVideoRefs, setLibraryVideoRefs] = useState<string[]>([]); // track library-added videos
+  
   const [uploading, setUploading] = useState(false);
   const [previewGen, setPreviewGen] = useState<Generation | null>(null);
   const [selectedCharacters, setSelectedCharacters] = useState<CharacterItem[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [showRatioModal, setShowRatioModal] = useState(false);
 
-  // Load prefill video from navigation state (e.g. from BibliotecaPrompts)
-  useEffect(() => {
-    const state = location.state as { prefillVideo?: string } | null;
-    if (state?.prefillVideo) {
-      setRefVideos([state.prefillVideo]);
-      setLibraryVideoRefs([state.prefillVideo]);
-    }
-  }, []);
+  // Prefill from navigation is handled by useState initializer for prompt
 
   const pollTimers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
   const creditCost = getSeedanceTotalCost(speed, quality, modeToGenType(mode), parseInt(duration) || 5);
@@ -213,28 +203,14 @@ export default function Seedance2() {
 
   // Use a library item: switch to multiref, set prompt, add video as ref
   const handleUseLibraryItem = useCallback((item: Generation) => {
-    setMode("multiref");
     setPrompt(item.prompt);
-    if (item.videoUrl) {
-      // Clear previous library refs, add this one
-      setRefVideos(prev => {
-        const withoutOldLibrary = prev.filter(v => !libraryVideoRefs.includes(v));
-        return [item.videoUrl!, ...withoutOldLibrary];
-      });
-      setLibraryVideoRefs([item.videoUrl]);
-    }
     setPreviewGen(null);
     setGalleryTab("creations");
-  }, [libraryVideoRefs]);
+  }, []);
 
-  // Handle mode change: clear library-added inputs
   const handleModeChange = useCallback((newMode: Mode) => {
-    if (newMode !== mode && libraryVideoRefs.length > 0) {
-      setRefVideos(prev => prev.filter(v => !libraryVideoRefs.includes(v)));
-      setLibraryVideoRefs([]);
-    }
     setMode(newMode);
-  }, [mode, libraryVideoRefs]);
+  }, []);
 
   const startPolling = useCallback((genId: string, taskId: string, jobId: string) => {
     let count = 0;
