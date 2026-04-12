@@ -15,6 +15,8 @@ export interface CharacterItem {
   image_url: string | null;
   /** The AI-generated reference image (fragments on black bg) */
   reference_image_url?: string | null;
+  /** Gender of the character: 'male' or 'female' */
+  gender?: string | null;
 }
 
 interface CharacterPickerProps {

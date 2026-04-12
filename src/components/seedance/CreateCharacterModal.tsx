@@ -76,6 +76,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
   const [thumbnailStorageUrl, setThumbnailStorageUrl] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const sessionIdRef = useRef(crypto.randomUUID());
   
