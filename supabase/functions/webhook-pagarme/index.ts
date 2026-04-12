@@ -1101,6 +1101,8 @@ serve(async (req) => {
         payment_method: paymentMethod,
         net_amount: netAmount,
         paid_at: paidAtIso,
+        user_phone: profilePhone || null,
+        user_name: profileName || null,
         updated_at: new Date().toISOString()
       }).eq('id', order.id)
 
