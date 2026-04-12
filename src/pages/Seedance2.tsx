@@ -63,10 +63,13 @@ export default function Seedance2() {
   const isMobile = useIsMobile();
   const { download: resilientDownload, isDownloading: isResilientDownloading } = useResilientDownload();
   const [prompt, setPrompt] = useState(() => {
-    const state = location.state as { prefillPrompt?: string } | null;
+    const state = location.state as { prefillPrompt?: string; prefillVideo?: string } | null;
     return state?.prefillPrompt || "";
   });
-  const [mode, setMode] = useState<Mode>("multiref");
+  const [mode, setMode] = useState<Mode>(() => {
+    const state = location.state as { prefillVideo?: string } | null;
+    return state?.prefillVideo ? "multiref" : "multiref";
+  });
   const [ratio, setRatio] = useState<Ratio>("9:16");
   const [quality, setQuality] = useState<Quality>("480p");
   const [duration, setDuration] = useState<Duration>("15");
@@ -82,11 +85,21 @@ export default function Seedance2() {
   const [refImages, setRefImages] = useState<string[]>([]);
   const [refVideos, setRefVideos] = useState<string[]>([]);
   const [refAudios, setRefAudios] = useState<string[]>([]);
+  const [libraryVideoRefs, setLibraryVideoRefs] = useState<string[]>([]); // track library-added videos
   const [uploading, setUploading] = useState(false);
   const [previewGen, setPreviewGen] = useState<Generation | null>(null);
   const [selectedCharacters, setSelectedCharacters] = useState<CharacterItem[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [showRatioModal, setShowRatioModal] = useState(false);
+
+  // Load prefill video from navigation state (e.g. from BibliotecaPrompts)
+  useEffect(() => {
+    const state = location.state as { prefillVideo?: string } | null;
+    if (state?.prefillVideo) {
+      setRefVideos([state.prefillVideo]);
+      setLibraryVideoRefs([state.prefillVideo]);
+    }
+  }, []);
 
   const pollTimers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
   const creditCost = getSeedanceTotalCost(speed, quality, modeToGenType(mode), parseInt(duration) || 5);
@@ -197,6 +210,31 @@ export default function Seedance2() {
     };
     input.click();
   }, [handleFileUpload]);
+
+  // Use a library item: switch to multiref, set prompt, add video as ref
+  const handleUseLibraryItem = useCallback((item: Generation) => {
+    setMode("multiref");
+    setPrompt(item.prompt);
+    if (item.videoUrl) {
+      // Clear previous library refs, add this one
+      setRefVideos(prev => {
+        const withoutOldLibrary = prev.filter(v => !libraryVideoRefs.includes(v));
+        return [item.videoUrl!, ...withoutOldLibrary];
+      });
+      setLibraryVideoRefs([item.videoUrl]);
+    }
+    setPreviewGen(null);
+    setGalleryTab("creations");
+  }, [libraryVideoRefs]);
+
+  // Handle mode change: clear library-added inputs
+  const handleModeChange = useCallback((newMode: Mode) => {
+    if (newMode !== mode && libraryVideoRefs.length > 0) {
+      setRefVideos(prev => prev.filter(v => !libraryVideoRefs.includes(v)));
+      setLibraryVideoRefs([]);
+    }
+    setMode(newMode);
+  }, [mode, libraryVideoRefs]);
 
   const startPolling = useCallback((genId: string, taskId: string, jobId: string, creditsToCharge: number) => {
     let count = 0;
@@ -414,7 +452,7 @@ export default function Seedance2() {
                 ) : (
                   <div className="grid grid-cols-2 gap-3 p-3">
                     {libraryItems.map((gen) => (
-                      <VideoCard key={gen.id} gen={gen} onPreview={setPreviewGen} onDownload={handleDownloadVideo} />
+                      <VideoCard key={gen.id} gen={gen} onPreview={setPreviewGen} onDownload={handleDownloadVideo} onUse={handleUseLibraryItem} />
                     ))}
                   </div>
                 )}
@@ -428,6 +466,14 @@ export default function Seedance2() {
               <div className="relative flex w-full max-w-4xl flex-col px-4 max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
                 {/* Controls bar - always visible */}
                <div className="flex items-center justify-end gap-2 pb-2 shrink-0">
+                  {libraryItems.some(li => li.id === previewGen.id) && (
+                    <button
+                      onClick={() => handleUseLibraryItem(previewGen)}
+                      className="rounded-full bg-purple-600/80 px-4 py-2 text-sm font-medium text-white hover:bg-purple-500 transition-colors"
+                    >
+                      Usar modelo
+                    </button>
+                  )}
                   <button
                     onClick={() => previewGen.videoUrl && handleDownloadVideo(previewGen.videoUrl, previewGen.prompt)}
                     className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
@@ -558,7 +604,7 @@ export default function Seedance2() {
                       {MODE_OPTIONS.map((option) => (
                         <button
                           key={option.value}
-                          onClick={() => setMode(option.value)}
+                          onClick={() => handleModeChange(option.value)}
                           className={`rounded-md border px-2 py-1 text-[10px] font-medium transition-all ${
                             mode === option.value ? "border-purple-500/30 bg-purple-500/20 text-purple-300" : "border-transparent text-gray-500"
                           }`}
@@ -631,7 +677,7 @@ export default function Seedance2() {
                       {MODE_OPTIONS.map((option) => (
                         <button
                           key={option.value}
-                          onClick={() => setMode(option.value)}
+                          onClick={() => handleModeChange(option.value)}
                           className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
                             mode === option.value ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                           }`}
@@ -818,7 +864,7 @@ function UploadSlot({
   );
 }
 
-function VideoCard({ gen, onPreview, onDownload }: { gen: Generation; onPreview: (g: Generation) => void; onDownload?: (url: string, prompt: string) => void }) {
+function VideoCard({ gen, onPreview, onDownload, onUse }: { gen: Generation; onPreview: (g: Generation) => void; onDownload?: (url: string, prompt: string) => void; onUse?: (g: Generation) => void }) {
   return (
     <div
       className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-xl cursor-pointer group ${
@@ -836,6 +882,14 @@ function VideoCard({ gen, onPreview, onDownload }: { gen: Generation; onPreview:
           >
             <Download className="h-4 w-4" />
           </button>
+          {onUse && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onUse(gen); }}
+              className="absolute bottom-2 left-2 right-2 z-10 rounded-lg bg-purple-600/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-purple-500"
+            >
+              Usar modelo
+            </button>
+          )}
         </>
       )}
       {gen.status === "processing" && (
