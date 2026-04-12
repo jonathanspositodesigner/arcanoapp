@@ -592,6 +592,19 @@ const BibliotecaPrompts = () => {
                   </div>
                 )}
 
+                {/* Like button - always visible */}
+                <button
+                  onClick={(e) => toggleLike(e, String(item.id))}
+                  className="absolute top-1.5 left-1.5 flex items-center gap-0.5 rounded-full bg-black/50 backdrop-blur-sm px-1.5 py-0.5 z-10 hover:bg-black/70 transition-colors"
+                >
+                  <Heart
+                    className={`h-3 w-3 sm:h-3.5 sm:w-3.5 transition-colors ${userLikes.has(String(item.id)) ? 'text-red-500 fill-red-500' : 'text-white/80'}`}
+                  />
+                  <span className="text-[9px] sm:text-[10px] font-medium text-white/90">
+                    {likeCounts[String(item.id)] || 0}
+                  </span>
+                </button>
+
                 {/* Hover/Touch overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-1.5 sm:p-3
                   max-sm:active:opacity-100">
