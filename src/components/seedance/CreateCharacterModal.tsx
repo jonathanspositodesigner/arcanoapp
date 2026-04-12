@@ -290,7 +290,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
             <div className="space-y-2">
               <p className="text-[11px] text-gray-300 font-medium">📸 Envie uma foto clara do rosto</p>
               <div className="flex items-start gap-3">
-                <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-green-500/50 flex-shrink-0">
+                <div className="w-28 h-28 rounded-lg overflow-hidden border-2 border-green-500/50 flex-shrink-0">
                   <img src={charGood} alt="Exemplo correto" className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <div className="text-[10px] text-gray-400 space-y-1">
@@ -306,7 +306,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
             {/* Bad examples */}
             <div className="space-y-2">
               <p className="text-[10px] text-red-400 font-medium">❌ NÃO envie fotos assim:</p>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-6 gap-1.5">
                 {BAD_EXAMPLES.map((ex) => (
                   <div key={ex.label} className="text-center">
                     <div className="aspect-square rounded-lg overflow-hidden border border-red-500/30">
