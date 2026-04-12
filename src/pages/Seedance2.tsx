@@ -261,6 +261,9 @@ export default function Seedance2() {
       });
       setLibraryVideoRefs([item.referenceImage]);
     }
+    // Update selected model preview
+    const thumbnail = item.videoUrl || item.referenceImage || "";
+    setSelectedModel({ title: item.prompt?.slice(0, 60) || "Modelo da biblioteca", thumbnail });
     setPreviewGen(null);
     setGalleryTab("creations");
   }, [libraryVideoRefs]);
