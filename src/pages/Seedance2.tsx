@@ -222,6 +222,14 @@ export default function Seedance2() {
   }, [handleFileUpload, refAudios.length]);
 
   const openFilePicker = useCallback((accept: string, onSuccess: (url: string) => void) => {
+    // Show face warning modal before opening file picker
+    setShowFaceWarning({ accept, onSuccess });
+  }, []);
+
+  const confirmFilePicker = useCallback(() => {
+    if (!showFaceWarning) return;
+    const { accept, onSuccess } = showFaceWarning;
+    setShowFaceWarning(null);
     const input = document.createElement("input");
     input.type = "file";
     input.accept = accept;
@@ -230,7 +238,7 @@ export default function Seedance2() {
       if (file) handleFileUpload(file, onSuccess, "seedance-refs");
     };
     input.click();
-  }, [handleFileUpload]);
+  }, [showFaceWarning, handleFileUpload]);
 
   // Use a library item: set prompt, and if it has a reference image switch to multiref and add it
   const handleUseLibraryItem = useCallback((item: Generation) => {
