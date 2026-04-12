@@ -480,7 +480,7 @@ export default function Seedance2() {
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] uppercase tracking-wider text-green-400 font-semibold mb-0.5">Modelo selecionado</p>
                     <p className="text-sm text-white font-medium truncate">{selectedModel.title}</p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">Preencha o prompt e clique em Gerar</p>
+                    <p className="text-[11px] text-gray-400 mt-0.5">Selecione seu personagem e clique em Gerar</p>
                   </div>
                   <button onClick={() => setSelectedModel(null)} className="shrink-0 p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
                     <X className="h-4 w-4" />
