@@ -787,24 +787,6 @@ const BibliotecaPrompts = () => {
                   </div>
                 </div>
               )}
-              <div>
-                <h3 className="font-semibold mb-2 text-purple-200">{t('modal.prompt')}</h3>
-                <div className="bg-[#0D0221] border border-purple-500/30 rounded-lg p-4 relative">
-                  {revealedPrompts.has(String(selectedPrompt.id)) ? (
-                    <p className="text-purple-100 whitespace-pre-wrap text-sm">{selectedPrompt.prompt}</p>
-                  ) : (
-                    <>
-                      <p className="text-purple-100 whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">{selectedPrompt.prompt}</p>
-                      <div className="absolute inset-0 flex items-center justify-center bg-[#0D0221]/60 rounded-lg">
-                        <div className="text-center">
-                          <Lock className="h-6 w-6 text-purple-400 mx-auto mb-2" />
-                          <p className="text-purple-300 text-sm">{t('modal.clickToCopy')}</p>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
               <div className="flex flex-wrap gap-3">
                 <Button onClick={() => copyToClipboard(selectedPrompt)} className="flex-1 bg-purple-600 hover:bg-purple-700 text-white">
                   <Copy className="h-4 w-4 mr-2" />
@@ -856,6 +838,24 @@ const BibliotecaPrompts = () => {
                     Gerar sua versão
                   </Button>
                 )}
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2 text-purple-200">{t('modal.prompt')}</h3>
+                <div className="bg-[#0D0221] border border-purple-500/30 rounded-lg p-4 relative">
+                  {revealedPrompts.has(String(selectedPrompt.id)) ? (
+                    <p className="text-purple-100 whitespace-pre-wrap text-sm">{selectedPrompt.prompt}</p>
+                  ) : (
+                    <>
+                      <p className="text-purple-100 whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">{selectedPrompt.prompt}</p>
+                      <div className="absolute inset-0 flex items-center justify-center bg-[#0D0221]/60 rounded-lg">
+                        <div className="text-center">
+                          <Lock className="h-6 w-6 text-purple-400 mx-auto mb-2" />
+                          <p className="text-purple-300 text-sm">{t('modal.clickToCopy')}</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           )}
