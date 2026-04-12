@@ -435,6 +435,32 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
               />
             </div>
 
+            <div className="space-y-2">
+              <label className="text-[11px] text-gray-400 font-medium">Sexo do personagem</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setGender('male')}
+                  className={`flex-1 py-2 rounded-lg text-[12px] font-medium transition-all border ${
+                    gender === 'male'
+                      ? 'bg-blue-600/20 border-blue-500 text-blue-400'
+                      : 'bg-black/20 border-white/[0.08] text-gray-400 hover:border-white/20'
+                  }`}
+                >
+                  ♂ Masculino
+                </button>
+                <button
+                  onClick={() => setGender('female')}
+                  className={`flex-1 py-2 rounded-lg text-[12px] font-medium transition-all border ${
+                    gender === 'female'
+                      ? 'bg-pink-600/20 border-pink-500 text-pink-400'
+                      : 'bg-black/20 border-white/[0.08] text-gray-400 hover:border-white/20'
+                  }`}
+                >
+                  ♀ Feminino
+                </button>
+              </div>
+            </div>
+
             <div className="flex gap-2">
               <Button
                 variant="ghost"
@@ -447,7 +473,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
               <Button
                 size="sm"
                 onClick={handleSave}
-                disabled={!characterName.trim() || saving}
+                disabled={!characterName.trim() || !gender || saving}
                 className="flex-1 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white text-[11px]"
               >
                 {saving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
