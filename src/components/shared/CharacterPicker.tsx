@@ -6,12 +6,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import CreateCharacterModal from '@/components/seedance/CreateCharacterModal';
 
 export interface CharacterItem {
   id: string;
   name: string;
   description: string | null;
   image_url: string | null;
+  /** The AI-generated reference image (fragments on black bg) */
+  reference_image_url?: string | null;
 }
 
 interface CharacterPickerProps {
@@ -20,6 +23,8 @@ interface CharacterPickerProps {
   maxCharacters?: number;
   /** Compact inline mode (for Seedance-style controls) */
   compact?: boolean;
+  /** Use saved_characters table with Nano Banana generation instead of cinema_characters */
+  useSavedCharacters?: boolean;
 }
 
 const CharacterPicker: React.FC<CharacterPickerProps> = ({
@@ -27,11 +32,16 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
   onCharactersChange,
   maxCharacters = 3,
   compact = false,
+  useSavedCharacters = false,
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [characters, setCharacters] = useState<CharacterItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+  const [showCreateCharacterModal, setShowCreateCharacterModal] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  
+  // Legacy cinema_characters create form state
   const [newName, setNewName] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [newImage, setNewImage] = useState<File | null>(null);
@@ -43,12 +53,31 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
     setLoading(true);
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) { setLoading(false); return; }
-    const { data } = await supabase
-      .from('cinema_characters')
-      .select('*')
-      .eq('user_id', userData.user.id)
-      .order('created_at', { ascending: false });
-    if (data) setCharacters(data);
+    setUserId(userData.user.id);
+
+    if (useSavedCharacters) {
+      const { data } = await supabase
+        .from('saved_characters' as any)
+        .select('id, name, image_url, thumbnail_url, reference_image_url')
+        .eq('user_id', userData.user.id)
+        .order('created_at', { ascending: false });
+      if (data) {
+        setCharacters((data as any[]).map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          description: null,
+          image_url: c.thumbnail_url || c.image_url, // show thumbnail
+          reference_image_url: c.reference_image_url,
+        })));
+      }
+    } else {
+      const { data } = await supabase
+        .from('cinema_characters')
+        .select('*')
+        .eq('user_id', userData.user.id)
+        .order('created_at', { ascending: false });
+      if (data) setCharacters(data);
+    }
     setLoading(false);
   };
 
@@ -134,7 +163,11 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
   };
 
   const handleDelete = async (id: string) => {
-    await supabase.from('cinema_characters').delete().eq('id', id);
+    if (useSavedCharacters) {
+      await supabase.from('saved_characters' as any).delete().eq('id', id);
+    } else {
+      await supabase.from('cinema_characters').delete().eq('id', id);
+    }
     const filtered = selectedCharacters.filter(c => c.id !== id);
     onCharactersChange(filtered);
     await fetchCharacters();
@@ -205,6 +238,15 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
           )}
         </div>
         {renderModal()}
+        {useSavedCharacters && userId && (
+          <CreateCharacterModal
+            open={showCreateCharacterModal}
+            onOpenChange={setShowCreateCharacterModal}
+            userId={userId}
+            onCharacterCreated={() => fetchCharacters()}
+            currentCount={characters.length}
+          />
+        )}
       </>
     );
   }
@@ -250,6 +292,15 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
         </button>
       </div>
       {renderModal()}
+      {useSavedCharacters && userId && (
+        <CreateCharacterModal
+          open={showCreateCharacterModal}
+          onOpenChange={setShowCreateCharacterModal}
+          userId={userId}
+          onCharacterCreated={() => fetchCharacters()}
+          currentCount={characters.length}
+        />
+      )}
     </>
   );
 
@@ -269,36 +320,18 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
             </div>
           )}
 
-          {showCreate ? (
+          {/* For saved_characters mode: show create character modal trigger */}
+          {useSavedCharacters ? (
             <div className="space-y-3 pt-2">
-              <div
-                onClick={() => fileRef.current?.click()}
-                className="w-full aspect-square rounded-lg border border-dashed border-white/[0.1] bg-black/20 flex items-center justify-center cursor-pointer hover:border-white/[0.2] transition-colors overflow-hidden"
+              <Button
+                onClick={() => { setModalOpen(false); setShowCreateCharacterModal(true); }}
+                variant="outline"
+                size="sm"
+                className="w-full border-dashed border-white/[0.1] text-gray-400 text-[11px] hover:bg-white/[0.04]"
+                disabled={characters.length >= 20}
               >
-                {newImagePreview ? (
-                  <img src={newImagePreview} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="text-center">
-                    <Plus className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                    <span className="text-[10px] text-gray-600">Adicionar imagem</span>
-                  </div>
-                )}
-              </div>
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-              <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome" className="bg-black/20 border-white/[0.08] text-gray-300 text-[12px]" />
-              <Textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Descrição..." rows={3} className="bg-black/20 border-white/[0.08] text-gray-300 text-[12px] resize-none" />
-              <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={() => { setShowCreate(false); resetForm(); }} className="flex-1 text-gray-400 text-[11px]">Cancelar</Button>
-                <Button size="sm" onClick={handleSave} disabled={saving || !newName.trim() || !newImage} className="flex-1 bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 text-[11px]">
-                  {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Salvar'}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3 pt-2">
-              <Button onClick={() => setShowCreate(true)} variant="outline" size="sm" className="w-full border-dashed border-white/[0.1] text-gray-400 text-[11px] hover:bg-white/[0.04]">
                 <Plus className="w-3 h-3 mr-1" />
-                Criar novo personagem
+                Criar novo personagem {characters.length >= 20 && '(limite atingido)'}
               </Button>
 
               {selectedCharacters.length > 0 && (
@@ -307,66 +340,119 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
                 </Button>
               )}
 
-              {loading ? (
-                <div className="py-8 flex justify-center">
-                  <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
-                </div>
-              ) : characters.length === 0 ? (
-                <p className="text-[11px] text-gray-600 text-center py-6">Nenhum personagem salvo ainda.</p>
-              ) : (
-                <div className="grid grid-cols-4 gap-2">
-                  {characters.map(item => {
-                    const isSelected = selectedCharacters.some(c => c.id === item.id);
-                    return (
-                      <div
-                        key={item.id}
-                        className={`relative rounded-lg overflow-hidden cursor-pointer transition-all group ${
-                          isSelected ? 'ring-2 ring-purple-500 ring-offset-1 ring-offset-[#141420]' : 'hover:ring-1 hover:ring-white/20'
-                        }`}
-                        onClick={() => selectItem(item)}
-                      >
-                        <div className="aspect-square bg-white/[0.04] relative">
-                          {item.image_url ? (
-                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <User className="w-5 h-5 text-gray-600" />
-                            </div>
-                          )}
-                          {isSelected && (
-                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
-                              <span className="text-[8px] text-white font-bold">✓</span>
-                            </div>
-                          )}
-                          <button
-                            onClick={e => { e.stopPropagation(); handleDelete(item.id); }}
-                            className="absolute top-1 left-1 p-0.5 rounded bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <Trash2 className="w-2.5 h-2.5 text-red-400" />
-                          </button>
-                        </div>
-                        <div className="px-1 py-1 bg-black/40">
-                          <span className="text-[9px] text-gray-300 font-medium block truncate text-center">{item.name}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {Array.from({ length: 20 - characters.length }).map((_, i) => (
-                    <div key={`empty-${i}`} className="rounded-lg overflow-hidden border border-dashed border-white/[0.06]">
-                      <div className="aspect-square bg-white/[0.02] flex items-center justify-center">
-                        <div className="w-3 h-3 rounded-full border border-white/[0.08]" />
-                      </div>
-                      <div className="px-1 py-1 bg-black/20">
-                        <span className="text-[9px] text-gray-700 block text-center">—</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {renderCharacterGrid()}
             </div>
+          ) : (
+            /* Legacy cinema_characters mode */
+            showCreate ? (
+              <div className="space-y-3 pt-2">
+                <div
+                  onClick={() => fileRef.current?.click()}
+                  className="w-full aspect-square rounded-lg border border-dashed border-white/[0.1] bg-black/20 flex items-center justify-center cursor-pointer hover:border-white/[0.2] transition-colors overflow-hidden"
+                >
+                  {newImagePreview ? (
+                    <img src={newImagePreview} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-center">
+                      <Plus className="w-5 h-5 text-gray-600 mx-auto mb-1" />
+                      <span className="text-[10px] text-gray-600">Adicionar imagem</span>
+                    </div>
+                  )}
+                </div>
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome" className="bg-black/20 border-white/[0.08] text-gray-300 text-[12px]" />
+                <Textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Descrição..." rows={3} className="bg-black/20 border-white/[0.08] text-gray-300 text-[12px] resize-none" />
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => { setShowCreate(false); resetForm(); }} className="flex-1 text-gray-400 text-[11px]">Cancelar</Button>
+                  <Button size="sm" onClick={handleSave} disabled={saving || !newName.trim() || !newImage} className="flex-1 bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 text-[11px]">
+                    {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Salvar'}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3 pt-2">
+                <Button onClick={() => setShowCreate(true)} variant="outline" size="sm" className="w-full border-dashed border-white/[0.1] text-gray-400 text-[11px] hover:bg-white/[0.04]">
+                  <Plus className="w-3 h-3 mr-1" />
+                  Criar novo personagem
+                </Button>
+
+                {selectedCharacters.length > 0 && (
+                  <Button onClick={() => setModalOpen(false)} size="sm" className="w-full bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-[11px]">
+                    Confirmar seleção ({selectedCharacters.length})
+                  </Button>
+                )}
+
+                {renderCharacterGrid()}
+              </div>
+            )
           )}
         </DialogContent>
       </Dialog>
+    );
+  }
+
+  function renderCharacterGrid() {
+    if (loading) {
+      return (
+        <div className="py-8 flex justify-center">
+          <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
+        </div>
+      );
+    }
+    
+    if (characters.length === 0) {
+      return <p className="text-[11px] text-gray-600 text-center py-6">Nenhum personagem salvo ainda.</p>;
+    }
+
+    return (
+      <div className="grid grid-cols-4 gap-2">
+        {characters.map(item => {
+          const isSelected = selectedCharacters.some(c => c.id === item.id);
+          return (
+            <div
+              key={item.id}
+              className={`relative rounded-lg overflow-hidden cursor-pointer transition-all group ${
+                isSelected ? 'ring-2 ring-purple-500 ring-offset-1 ring-offset-[#141420]' : 'hover:ring-1 hover:ring-white/20'
+              }`}
+              onClick={() => selectItem(item)}
+            >
+              <div className="aspect-square bg-white/[0.04] relative">
+                {item.image_url ? (
+                  <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <User className="w-5 h-5 text-gray-600" />
+                  </div>
+                )}
+                {isSelected && (
+                  <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
+                    <span className="text-[8px] text-white font-bold">✓</span>
+                  </div>
+                )}
+                <button
+                  onClick={e => { e.stopPropagation(); handleDelete(item.id); }}
+                  className="absolute top-1 left-1 p-0.5 rounded bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 className="w-2.5 h-2.5 text-red-400" />
+                </button>
+              </div>
+              <div className="px-1 py-1 bg-black/40">
+                <span className="text-[9px] text-gray-300 font-medium block truncate text-center">{item.name}</span>
+              </div>
+            </div>
+          );
+        })}
+        {Array.from({ length: Math.max(0, 20 - characters.length) }).map((_, i) => (
+          <div key={`empty-${i}`} className="rounded-lg overflow-hidden border border-dashed border-white/[0.06]">
+            <div className="aspect-square bg-white/[0.02] flex items-center justify-center">
+              <div className="w-3 h-3 rounded-full border border-white/[0.08]" />
+            </div>
+            <div className="px-1 py-1 bg-black/20">
+              <span className="text-[9px] text-gray-700 block text-center">—</span>
+            </div>
+          </div>
+        ))}
+      </div>
     );
   }
 };
