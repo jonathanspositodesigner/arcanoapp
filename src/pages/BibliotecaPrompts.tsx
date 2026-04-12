@@ -693,7 +693,7 @@ const BibliotecaPrompts = () => {
                   {item.category === 'Seedance 2' && (
                     <Button
                       size="sm"
-                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400 text-white min-w-0 shadow-lg shadow-green-500/30 font-bold border-0"
+                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400 text-white min-w-0 shadow-lg shadow-green-500/30 font-bold border-0 py-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate('/seedance2', { state: { 
