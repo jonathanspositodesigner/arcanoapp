@@ -64,12 +64,12 @@ export default function Seedance2() {
   const isMobile = useIsMobile();
   const { download: resilientDownload, isDownloading: isResilientDownloading } = useResilientDownload();
   const [prompt, setPrompt] = useState(() => {
-    const state = location.state as { prefillPrompt?: string; prefillVideo?: string } | null;
+    const state = location.state as { prefillPrompt?: string } | null;
     return state?.prefillPrompt || "";
   });
   const [mode, setMode] = useState<Mode>(() => {
-    const state = location.state as { prefillVideo?: string } | null;
-    return state?.prefillVideo ? "multiref" : "multiref";
+    const state = location.state as { prefillRefImage?: string } | null;
+    return state?.prefillRefImage ? "multiref" : "multiref";
   });
   const [ratio, setRatio] = useState<Ratio>("9:16");
   const [quality, setQuality] = useState<Quality>("480p");
@@ -93,12 +93,12 @@ export default function Seedance2() {
   const [showSettings, setShowSettings] = useState(false);
   const [showRatioModal, setShowRatioModal] = useState(false);
 
-  // Load prefill video from navigation state (e.g. from BibliotecaPrompts)
+  // Load prefill reference image from navigation state (e.g. from BibliotecaPrompts)
   useEffect(() => {
-    const state = location.state as { prefillVideo?: string } | null;
-    if (state?.prefillVideo) {
-      setRefVideos([state.prefillVideo]);
-      setLibraryVideoRefs([state.prefillVideo]);
+    const state = location.state as { prefillRefImage?: string } | null;
+    if (state?.prefillRefImage) {
+      setRefImages([state.prefillRefImage]);
+      setLibraryVideoRefs([state.prefillRefImage]);
     }
   }, []);
 
