@@ -24,7 +24,23 @@ function normalizePhone(phone: string | null | undefined): string | null {
   return `55${digits}`
 }
 
-function buildWelcomeMessage(): string {
+function buildWelcomeMessage(locale?: string): string {
+  if (locale === 'es') {
+    return `🎉 *¡Felicidades por tu compra!*
+
+¡Hola! ¡Bienvenido(a) a *ArcanoApp*! 🚀
+
+¡Tu acceso ya está habilitado! Para comenzar a usar la plataforma, sigue estos pasos:
+
+1️⃣ Accede a: https://arcanoapp-es.voxvisual.com.br/
+2️⃣ Ingresa el *correo electrónico usado en la compra*
+3️⃣ Registra una *nueva contraseña*
+
+¡Listo! Tendrás acceso completo a la plataforma. 💜
+
+Si necesitas ayuda, ¡solo responde este mensaje!`
+  }
+
   return `🎉 *Parabéns pela sua compra!*
 
 Olá! Seja muito bem-vindo(a) ao *ArcanoApp*! 🚀
