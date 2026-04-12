@@ -235,9 +235,10 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
         .insert({
           user_id: userId,
           name: characterName.trim(),
-          image_url: thumbnailStorageUrl, // thumbnail = original photo
+          image_url: thumbnailStorageUrl,
           thumbnail_url: thumbnailStorageUrl,
-          reference_image_url: refUrlData.publicUrl, // nano banana output
+          reference_image_url: refUrlData.publicUrl,
+          gender,
           job_id: jobId,
         });
 
@@ -265,6 +266,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
     setThumbnailStorageUrl(null);
     setJobId(null);
     setErrorMsg(null);
+    setGender(null);
     sessionIdRef.current = crypto.randomUUID();
     onOpenChange(false);
   };
