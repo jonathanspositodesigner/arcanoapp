@@ -102,12 +102,13 @@ export default function Seedance2() {
     return null;
   });
 
-  // Load prefill reference image from navigation state (e.g. from BibliotecaPrompts)
+  // Load prefill reference images from navigation state (e.g. from BibliotecaPrompts)
   useEffect(() => {
-    const state = location.state as { prefillRefImage?: string } | null;
-    if (state?.prefillRefImage) {
-      setRefImages([state.prefillRefImage]);
-      setLibraryVideoRefs([state.prefillRefImage]);
+    const state = location.state as { prefillRefImage?: string; prefillRefImages?: string[] } | null;
+    const images = state?.prefillRefImages?.length ? state.prefillRefImages : state?.prefillRefImage ? [state.prefillRefImage] : [];
+    if (images.length > 0) {
+      setRefImages(images);
+      setLibraryVideoRefs(images);
     }
   }, []);
 

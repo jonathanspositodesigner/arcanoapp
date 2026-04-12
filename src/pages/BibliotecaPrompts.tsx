@@ -698,7 +698,7 @@ const BibliotecaPrompts = () => {
                         e.stopPropagation();
                         navigate('/seedance2', { state: { 
                           prefillPrompt: item.prompt, 
-                          prefillRefImage: item.referenceImages?.[0] || undefined,
+                          prefillRefImages: item.referenceImages || [],
                           prefillTitle: item.title,
                           prefillThumbnail: item.thumbnailUrl || item.imageUrl
                         } });
