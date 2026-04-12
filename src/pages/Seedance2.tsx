@@ -304,7 +304,7 @@ export default function Seedance2() {
       const { data, error } = await supabase.functions.invoke("seedance-generate", {
         body: {
           model,
-          prompt: prompt.trim(),
+          prompt: finalPrompt,
           duration: parseInt(duration),
           quality,
           aspectRatio: ratio === "auto" ? undefined : ratio,
