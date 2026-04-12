@@ -508,7 +508,7 @@ const SalesManagementContent = () => {
                     <th className="text-right py-2 px-3 font-medium">Valor</th>
                     <th className="text-center py-2 px-3 font-medium">Status</th>
                     <th className="text-center py-2 px-3 font-medium">📧</th>
-                  </tr>
+                    <th className="text-center py-2 px-3 font-medium">📱</th>
                 </thead>
                 <tbody>
                   {paginated.map((sale) => {
