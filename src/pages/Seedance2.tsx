@@ -282,7 +282,7 @@ export default function Seedance2() {
           input_image_urls: mode === "startend"
             ? ([startImage, endImage].filter(Boolean) as string[])
             : mode === "multiref"
-              ? [...refImages, ...selectedCharacters.map(c => (c as any).reference_image_url || c.image_url).filter(Boolean)]
+              ? [...selectedCharacters.map(c => (c as any).reference_image_url || c.image_url).filter(Boolean), ...refImages]
               : undefined,
           input_video_urls: mode === "multiref" && refVideos.length > 0 ? refVideos : undefined,
           input_audio_urls: mode === "multiref" && refAudios.length > 0 ? refAudios : undefined,
@@ -309,7 +309,7 @@ export default function Seedance2() {
           quality,
           aspectRatio: ratio === "auto" ? undefined : ratio,
           generateAudio,
-          imageUrls: mode === "startend" ? [startImage, endImage].filter(Boolean) : mode === "multiref" ? [...refImages, ...selectedCharacters.map(c => (c as any).reference_image_url || c.image_url).filter(Boolean)] : undefined,
+          imageUrls: mode === "startend" ? [startImage, endImage].filter(Boolean) : mode === "multiref" ? [...selectedCharacters.map(c => (c as any).reference_image_url || c.image_url).filter(Boolean), ...refImages] : undefined,
           videoUrls: mode === "multiref" && refVideos.length > 0 ? refVideos : undefined,
           audioUrls: mode === "multiref" && refAudios.length > 0 ? refAudios : undefined,
           jobId: jobData.id,
