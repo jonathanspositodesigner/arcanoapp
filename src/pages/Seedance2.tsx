@@ -469,14 +469,6 @@ export default function Seedance2() {
               </div>
             </div>
           )}
-  // Handle mode change: clear library-added inputs
-  const handleModeChange = useCallback((newMode: Mode) => {
-    if (newMode !== mode && libraryVideoRefs.length > 0) {
-      setRefVideos(prev => prev.filter(v => !libraryVideoRefs.includes(v)));
-      setLibraryVideoRefs([]);
-    }
-    setMode(newMode);
-  }, [mode, libraryVideoRefs]);
 
 
           <div className="mt-4 shrink-0 rounded-2xl border border-white/5 bg-[#0a0a18]/95 p-3 backdrop-blur-sm">
