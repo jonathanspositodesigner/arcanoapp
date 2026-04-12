@@ -840,6 +840,22 @@ const BibliotecaPrompts = () => {
                     )}
                   </Button>
                 )}
+                {selectedPrompt.category === 'Seedance 2' && (
+                  <Button
+                    onClick={() => {
+                      navigate('/seedance2', { state: { 
+                        prefillPrompt: selectedPrompt.prompt, 
+                        prefillRefImages: selectedPrompt.referenceImages || [],
+                        prefillTitle: selectedPrompt.title,
+                        prefillThumbnail: selectedPrompt.thumbnailUrl || selectedPrompt.imageUrl
+                      } });
+                    }}
+                    className="w-full bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400 text-white shadow-lg shadow-green-500/30 font-bold border-0"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Gerar sua versão
+                  </Button>
+                )}
               </div>
             </div>
           )}
