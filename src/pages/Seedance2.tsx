@@ -242,9 +242,9 @@ export default function Seedance2() {
   const canGenerate = useCallback(() => {
     if (!prompt.trim()) return false;
     if (mode === "startend" && !startImage) return false;
-    if (mode === "multiref" && refImages.length === 0) return false;
+    if (mode === "multiref" && refImages.length === 0 && selectedCharacters.length === 0) return false;
     return true;
-  }, [prompt, mode, startImage, refImages]);
+  }, [prompt, mode, startImage, refImages, selectedCharacters]);
 
   const handleGenerate = useCallback(async () => {
     if (!canGenerate() || !user) return;
@@ -268,7 +268,7 @@ export default function Seedance2() {
           input_image_urls: mode === "startend"
             ? ([startImage, endImage].filter(Boolean) as string[])
             : mode === "multiref"
-              ? refImages
+              ? [...refImages, ...selectedCharacters.map(c => (c as any).reference_image_url || c.image_url).filter(Boolean)]
               : undefined,
           input_video_urls: mode === "multiref" && refVideos.length > 0 ? refVideos : undefined,
           input_audio_urls: mode === "multiref" && refAudios.length > 0 ? refAudios : undefined,
@@ -295,7 +295,7 @@ export default function Seedance2() {
           quality,
           aspectRatio: ratio === "auto" ? undefined : ratio,
           generateAudio,
-          imageUrls: mode === "startend" ? [startImage, endImage].filter(Boolean) : mode === "multiref" ? refImages : undefined,
+          imageUrls: mode === "startend" ? [startImage, endImage].filter(Boolean) : mode === "multiref" ? [...refImages, ...selectedCharacters.map(c => (c as any).reference_image_url || c.image_url).filter(Boolean)] : undefined,
           videoUrls: mode === "multiref" && refVideos.length > 0 ? refVideos : undefined,
           audioUrls: mode === "multiref" && refAudios.length > 0 ? refAudios : undefined,
           jobId: jobData.id,
@@ -313,7 +313,7 @@ export default function Seedance2() {
     } catch (err: any) {
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: err.message } : g));
     }
-  }, [prompt, mode, speed, ratio, quality, duration, generateAudio, startImage, endImage, refImages, refVideos, refAudios, user, canGenerate, startPolling]);
+  }, [prompt, mode, speed, ratio, quality, duration, generateAudio, startImage, endImage, refImages, refVideos, refAudios, selectedCharacters, user, canGenerate, startPolling]);
 
   const handleDownloadVideo = useCallback((videoUrl: string, videoPrompt: string) => {
     const filename = `seedance-${videoPrompt.slice(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.mp4`;
@@ -569,6 +569,7 @@ export default function Seedance2() {
                       onCharactersChange={setSelectedCharacters}
                       maxCharacters={3}
                       compact
+                      useSavedCharacters
                     />
                   )}
                 </div>
@@ -646,6 +647,7 @@ export default function Seedance2() {
                         onCharactersChange={setSelectedCharacters}
                         maxCharacters={3}
                         compact
+                        useSavedCharacters
                       />
                     </>
                   )}
