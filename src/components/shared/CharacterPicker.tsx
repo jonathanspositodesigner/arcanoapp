@@ -322,13 +322,16 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
         <DialogContent className="bg-[#141420] border-white/[0.08] max-w-[520px] w-[95vw] max-h-[85vh] overflow-y-auto p-4">
           <DialogHeader>
             <DialogTitle className="text-gray-200 text-sm">
-              👤 Personagens ({selectedCharacters.length}/{maxCharacters})
+              {useSavedCharacters 
+                ? `👤 Meus Personagens (${characters.length}/20) — Selecionados: ${selectedCharacters.length}/${maxCharacters}`
+                : `👤 Personagens (${selectedCharacters.length}/${maxCharacters})`
+              }
             </DialogTitle>
           </DialogHeader>
 
           {selectedCharacters.length >= maxCharacters && (
             <div className="text-[11px] text-amber-400/80 bg-amber-500/10 rounded-md px-3 py-2">
-              Limite de {maxCharacters} personagens atingido. Remova um para adicionar outro.
+              Máximo de {maxCharacters} personagens selecionados por geração. Remova um para adicionar outro.
             </div>
           )}
 
