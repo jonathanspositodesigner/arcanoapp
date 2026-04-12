@@ -212,6 +212,10 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
       toast.error('Digite um nome para o personagem');
       return;
     }
+    if (!gender) {
+      toast.error('Selecione o sexo do personagem');
+      return;
+    }
     if (!generatedImageUrl || !thumbnailStorageUrl) return;
 
     setSaving(true);
