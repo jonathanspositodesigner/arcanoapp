@@ -4169,6 +4169,8 @@ export type Database = {
           image_url: string
           job_id: string | null
           name: string
+          reference_image_url: string | null
+          thumbnail_url: string | null
           user_id: string
         }
         Insert: {
@@ -4177,6 +4179,8 @@ export type Database = {
           image_url: string
           job_id?: string | null
           name: string
+          reference_image_url?: string | null
+          thumbnail_url?: string | null
           user_id: string
         }
         Update: {
@@ -4185,6 +4189,8 @@ export type Database = {
           image_url?: string
           job_id?: string | null
           name?: string
+          reference_image_url?: string | null
+          thumbnail_url?: string | null
           user_id?: string
         }
         Relationships: []
