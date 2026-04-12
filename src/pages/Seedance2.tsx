@@ -355,6 +355,7 @@ export default function Seedance2() {
           videoUrls: mode === "multiref" && refVideos.length > 0 ? refVideos : undefined,
           audioUrls: mode === "multiref" && refAudios.length > 0 ? refAudios : undefined,
           jobId: jobData.id,
+          creditCost,
         },
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
@@ -365,7 +366,7 @@ export default function Seedance2() {
       }
 
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, taskId: data.taskId } : g));
-      startPolling(genId, data.taskId, jobData.id, creditCost);
+      startPolling(genId, data.taskId, jobData.id);
     } catch (err: any) {
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: err.message } : g));
     }
