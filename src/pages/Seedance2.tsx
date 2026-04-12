@@ -94,6 +94,13 @@ export default function Seedance2() {
   const [showRatioModal, setShowRatioModal] = useState(false);
   const [showFaceWarning, setShowFaceWarning] = useState<{ accept: string; onSuccess: (url: string) => void } | null>(null);
   const [showCharacterTip, setShowCharacterTip] = useState(true);
+  const [selectedModel, setSelectedModel] = useState<{ title: string; thumbnail: string } | null>(() => {
+    const state = location.state as { prefillTitle?: string; prefillThumbnail?: string } | null;
+    if (state?.prefillTitle && state?.prefillThumbnail) {
+      return { title: state.prefillTitle, thumbnail: state.prefillThumbnail };
+    }
+    return null;
+  });
 
   // Load prefill reference image from navigation state (e.g. from BibliotecaPrompts)
   useEffect(() => {
