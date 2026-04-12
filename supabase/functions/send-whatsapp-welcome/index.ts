@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    const message = buildWelcomeMessage()
+    const message = buildWelcomeMessage(locale)
 
     // Z-API send-text endpoint
     const zapiUrl = `https://api.z-api.io/instances/${zapiInstanceId}/token/${zapiInstanceToken}/send-text`
