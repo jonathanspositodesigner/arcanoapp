@@ -246,6 +246,8 @@ export default function Seedance2() {
         clearInterval(timer);
         delete pollTimers.current[genId];
         setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: "Timeout - geração demorou demais" } : g));
+        // Mark job for background recovery - system will check again in 10 min
+        supabase.from("seedance_jobs").update({ status: "timeout_recovery" }).eq("id", jobId);
         return;
       }
 
