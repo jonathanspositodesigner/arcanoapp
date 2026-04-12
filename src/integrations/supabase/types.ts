@@ -5579,44 +5579,25 @@ export type Database = {
         }[]
       }
       get_receita_por_credito: { Args: never; Returns: Json }
-      get_unified_dashboard_orders:
-        | {
-            Args: { _end: string; _start: string }
-            Returns: {
-              amount: number
-              created_at: string
-              id: string
-              net_amount: number
-              paid_at: string
-              payment_method: string
-              product_id: string
-              product_title: string
-              source_platform: string
-              status: string
-              user_email: string
-              user_name: string
-              utm_data: Json
-              whatsapp_welcome_sent: boolean
-            }[]
-          }
-        | {
-            Args: { _end: string; _start: string }
-            Returns: {
-              amount: number
-              created_at: string
-              id: string
-              net_amount: number
-              paid_at: string
-              payment_method: string
-              product_id: string
-              product_title: string
-              source_platform: string
-              status: string
-              user_email: string
-              user_name: string
-              utm_data: Json
-            }[]
-          }
+      get_unified_dashboard_orders: {
+        Args: { _end: string; _start: string }
+        Returns: {
+          amount: number
+          created_at: string
+          id: string
+          net_amount: number
+          paid_at: string
+          payment_method: string
+          product_id: string
+          product_title: string
+          source_platform: string
+          status: string
+          user_email: string
+          user_name: string
+          utm_data: Json
+          whatsapp_welcome_sent: boolean
+        }[]
+      }
       get_upscaler_credits: { Args: { _user_id: string }; Returns: number }
       get_upscaler_credits_breakdown: {
         Args: { _user_id: string }
