@@ -92,6 +92,15 @@ export default function Seedance2() {
   const [showSettings, setShowSettings] = useState(false);
   const [showRatioModal, setShowRatioModal] = useState(false);
 
+  // Load prefill video from navigation state (e.g. from BibliotecaPrompts)
+  useEffect(() => {
+    const state = location.state as { prefillVideo?: string } | null;
+    if (state?.prefillVideo) {
+      setRefVideos([state.prefillVideo]);
+      setLibraryVideoRefs([state.prefillVideo]);
+    }
+  }, []);
+
   const pollTimers = useRef<Record<string, ReturnType<typeof setInterval>>>({});
   const creditCost = getSeedanceTotalCost(speed, quality, modeToGenType(mode), parseInt(duration) || 5);
 
