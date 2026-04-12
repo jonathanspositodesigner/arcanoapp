@@ -15,6 +15,8 @@ export interface CharacterItem {
   image_url: string | null;
   /** The AI-generated reference image (fragments on black bg) */
   reference_image_url?: string | null;
+  /** Gender of the character: 'male' or 'female' */
+  gender?: string | null;
 }
 
 interface CharacterPickerProps {
@@ -58,7 +60,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
     if (useSavedCharacters) {
       const { data } = await supabase
         .from('saved_characters' as any)
-        .select('id, name, image_url, thumbnail_url, reference_image_url')
+        .select('id, name, image_url, thumbnail_url, reference_image_url, gender')
         .eq('user_id', userData.user.id)
         .order('created_at', { ascending: false });
       if (data) {

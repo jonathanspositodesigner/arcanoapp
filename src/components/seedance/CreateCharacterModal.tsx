@@ -76,6 +76,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
   const [thumbnailStorageUrl, setThumbnailStorageUrl] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [gender, setGender] = useState<'male' | 'female' | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const sessionIdRef = useRef(crypto.randomUUID());
   
@@ -211,6 +212,10 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
       toast.error('Digite um nome para o personagem');
       return;
     }
+    if (!gender) {
+      toast.error('Selecione o sexo do personagem');
+      return;
+    }
     if (!generatedImageUrl || !thumbnailStorageUrl) return;
 
     setSaving(true);
@@ -234,9 +239,10 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
         .insert({
           user_id: userId,
           name: characterName.trim(),
-          image_url: thumbnailStorageUrl, // thumbnail = original photo
+          image_url: thumbnailStorageUrl,
           thumbnail_url: thumbnailStorageUrl,
-          reference_image_url: refUrlData.publicUrl, // nano banana output
+          reference_image_url: refUrlData.publicUrl,
+          gender,
           job_id: jobId,
         });
 
@@ -264,6 +270,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
     setThumbnailStorageUrl(null);
     setJobId(null);
     setErrorMsg(null);
+    setGender(null);
     sessionIdRef.current = crypto.randomUUID();
     onOpenChange(false);
   };
@@ -428,6 +435,32 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
               />
             </div>
 
+            <div className="space-y-2">
+              <label className="text-[11px] text-gray-400 font-medium">Sexo do personagem</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setGender('male')}
+                  className={`flex-1 py-2 rounded-lg text-[12px] font-medium transition-all border ${
+                    gender === 'male'
+                      ? 'bg-blue-600/20 border-blue-500 text-blue-400'
+                      : 'bg-black/20 border-white/[0.08] text-gray-400 hover:border-white/20'
+                  }`}
+                >
+                  ♂ Masculino
+                </button>
+                <button
+                  onClick={() => setGender('female')}
+                  className={`flex-1 py-2 rounded-lg text-[12px] font-medium transition-all border ${
+                    gender === 'female'
+                      ? 'bg-pink-600/20 border-pink-500 text-pink-400'
+                      : 'bg-black/20 border-white/[0.08] text-gray-400 hover:border-white/20'
+                  }`}
+                >
+                  ♀ Feminino
+                </button>
+              </div>
+            </div>
+
             <div className="flex gap-2">
               <Button
                 variant="ghost"
@@ -440,7 +473,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
               <Button
                 size="sm"
                 onClick={handleSave}
-                disabled={!characterName.trim() || saving}
+                disabled={!characterName.trim() || !gender || saving}
                 className="flex-1 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white text-[11px]"
               >
                 {saving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
