@@ -541,7 +541,7 @@ serve(async (req) => {
         // 2. Upsert profile
         const { data: existingProfile } = await supabase
           .from('profiles')
-          .select('name, phone')
+          .select('name')
           .eq('id', userId)
           .maybeSingle()
 
