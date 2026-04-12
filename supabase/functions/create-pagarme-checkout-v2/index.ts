@@ -117,12 +117,17 @@ serve(async (req) => {
       return errorResponse('Produto não encontrado', 404, 'PRODUCT_NOT_FOUND');
     }
 
-    // Criar ordem pendente (sem dados pessoais — serão preenchidos pelo webhook)
+    // Criar ordem pendente — salva dados do cliente quando disponíveis
     const sanitizedUtm = sanitizeUtmData(utm_data)
+    const trimmedEmail = customer_email?.trim()?.toLowerCase() || null
+    const trimmedName = customer_name?.trim() || null
+    const trimmedCpf = customer_document?.replace(/\D/g, '') || null
     const { data: order, error: orderError } = await supabase
       .from('asaas_orders')
       .insert({
-        user_email: null,
+        user_email: trimmedEmail,
+        user_name: trimmedName,
+        user_cpf: trimmedCpf,
         product_id: product.id,
         amount: product.price,
         status: 'pending',
