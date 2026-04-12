@@ -24,7 +24,23 @@ function normalizePhone(phone: string | null | undefined): string | null {
   return `55${digits}`
 }
 
-function buildWelcomeMessage(): string {
+function buildWelcomeMessage(locale?: string): string {
+  if (locale === 'es') {
+    return `🎉 *¡Felicidades por tu compra!*
+
+¡Hola! ¡Bienvenido(a) a *ArcanoApp*! 🚀
+
+¡Tu acceso ya está habilitado! Para comenzar a usar la plataforma, sigue estos pasos:
+
+1️⃣ Accede a: https://arcanoapp-es.voxvisual.com.br/
+2️⃣ Ingresa el *correo electrónico usado en la compra*
+3️⃣ Registra una *nueva contraseña*
+
+¡Listo! Tendrás acceso completo a la plataforma. 💜
+
+Si necesitas ayuda, ¡solo responde este mensaje!`
+  }
+
   return `🎉 *Parabéns pela sua compra!*
 
 Olá! Seja muito bem-vindo(a) ao *ArcanoApp*! 🚀
@@ -46,7 +62,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { phone, name, email, order_id } = await req.json()
+    const { phone, name, email, order_id, locale } = await req.json()
 
     const zapiInstanceId = Deno.env.get("ZAPI_ID_DA_INSTANCIA")
     const zapiInstanceToken = Deno.env.get("ZAPI_TOKEN_DA_INSTANCIA")
@@ -73,7 +89,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    const message = buildWelcomeMessage()
+    const message = buildWelcomeMessage(locale)
 
     // Z-API send-text endpoint
     const zapiUrl = `https://api.z-api.io/instances/${zapiInstanceId}/token/${zapiInstanceToken}/send-text`
