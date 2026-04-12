@@ -301,6 +301,17 @@ export default function Seedance2() {
     pollTimers.current[genId] = timer;
   }, []);
 
+  // Resume polling for active jobs loaded on page init
+  useEffect(() => {
+    if (pendingResume.length === 0) return;
+    pendingResume.forEach(({ id, taskId }) => {
+      if (!pollTimers.current[id]) {
+        startPolling(id, taskId, id);
+      }
+    });
+    setPendingResume([]);
+  }, [pendingResume, startPolling]);
+
   const hasActiveJob = generations.some((g) => g.status === "queued" || g.status === "processing");
 
   const canGenerate = useCallback(() => {
