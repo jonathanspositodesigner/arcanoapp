@@ -87,6 +87,8 @@ const BibliotecaPrompts = () => {
   const [revealedPrompts, setRevealedPrompts] = useState<Set<string>>(new Set());
   const [showExpiredModal, setShowExpiredModal] = useState(false);
   const [showExpiringModal, setShowExpiringModal] = useState(false);
+  const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
 
   const { allPrompts, getFilteredPrompts } = useOptimizedPrompts();
   const { searchTerm, setSearchTerm, expandedTerms, isSearching } = useSmartSearch();
