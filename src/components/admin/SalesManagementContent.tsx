@@ -509,6 +509,7 @@ const SalesManagementContent = () => {
                     <th className="text-center py-2 px-3 font-medium">Status</th>
                     <th className="text-center py-2 px-3 font-medium">📧</th>
                     <th className="text-center py-2 px-3 font-medium">📱</th>
+                  </tr>
                 </thead>
                 <tbody>
                   {paginated.map((sale) => {
