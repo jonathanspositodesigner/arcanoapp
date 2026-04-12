@@ -233,6 +233,7 @@ export default function Seedance2() {
   const handleModeChange = useCallback((newMode: Mode) => {
     if (newMode !== mode && libraryVideoRefs.length > 0) {
       setRefVideos(prev => prev.filter(v => !libraryVideoRefs.includes(v)));
+      setRefImages(prev => prev.filter(v => !libraryVideoRefs.includes(v)));
       setLibraryVideoRefs([]);
     }
     setMode(newMode);
