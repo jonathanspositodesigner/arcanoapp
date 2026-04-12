@@ -93,6 +93,7 @@ export default function Seedance2() {
   const [showSettings, setShowSettings] = useState(false);
   const [showRatioModal, setShowRatioModal] = useState(false);
   const [showFaceWarning, setShowFaceWarning] = useState<{ accept: string; onSuccess: (url: string) => void } | null>(null);
+  const [showCharacterTip, setShowCharacterTip] = useState(true);
 
   // Load prefill reference image from navigation state (e.g. from BibliotecaPrompts)
   useEffect(() => {
@@ -686,6 +687,12 @@ export default function Seedance2() {
                     />
                   )}
                 </div>
+                {mode === "multiref" && showCharacterTip && selectedCharacters.length === 0 && (
+                  <div className="flex items-center gap-2 rounded-lg border border-purple-500/20 bg-purple-500/10 px-3 py-1.5 mt-1">
+                    <span className="text-[10px] sm:text-xs text-purple-300">💡 Quer adicionar seu rosto? Use o botão <strong>Personagem</strong> acima!</span>
+                    <button onClick={() => setShowCharacterTip(false)} className="text-purple-400 hover:text-white text-xs ml-auto shrink-0">✕</button>
+                  </div>
+                )}
               </div>
             ) : (
               <>
@@ -770,6 +777,12 @@ export default function Seedance2() {
                     </>
                   )}
                 </div>
+                {mode === "multiref" && showCharacterTip && selectedCharacters.length === 0 && (
+                  <div className="flex items-center gap-2 rounded-lg border border-purple-500/20 bg-purple-500/10 px-3 py-1.5 mt-2">
+                    <span className="text-xs text-purple-300">💡 Quer adicionar seu rosto? Use o botão <strong>Personagem</strong> acima!</span>
+                    <button onClick={() => setShowCharacterTip(false)} className="text-purple-400 hover:text-white text-xs ml-auto shrink-0">✕</button>
+                  </div>
+                )}
               </>
             )}
 
