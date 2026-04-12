@@ -549,6 +549,22 @@ const SalesManagementContent = () => {
                         <td className="py-2.5 px-3 text-center">
                           {renderEmailStatus(sale)}
                         </td>
+                        <td className="py-2.5 px-3 text-center">
+                          {sale.status === "paid" ? (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <span className={sale.whatsapp_welcome_sent ? "text-emerald-500" : "text-muted-foreground/40"}>
+                                    📱
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{sale.whatsapp_welcome_sent ? "WhatsApp enviado ✅" : "WhatsApp não enviado"}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : null}
+                        </td>
                       </tr>
                     );
                   })}
