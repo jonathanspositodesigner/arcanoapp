@@ -699,6 +699,7 @@ export default function Seedance2() {
                       )}
                     </div>
                   )}
+                </div>
               </div>
             ) : (
               <>
