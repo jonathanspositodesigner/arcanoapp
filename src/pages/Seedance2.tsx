@@ -678,21 +678,28 @@ export default function Seedance2() {
                   </button>
 
                   {mode === "multiref" && (
-                    <CharacterPicker
-                      selectedCharacters={selectedCharacters}
-                      onCharactersChange={setSelectedCharacters}
-                      maxCharacters={3}
-                      compact
-                      useSavedCharacters
-                    />
+                    <div className="relative">
+                      <CharacterPicker
+                        selectedCharacters={selectedCharacters}
+                        onCharactersChange={setSelectedCharacters}
+                        maxCharacters={3}
+                        compact
+                        useSavedCharacters
+                      />
+                      {showCharacterTip && selectedCharacters.length === 0 && (
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 animate-fade-in">
+                          <div className="relative bg-purple-600 rounded-lg px-3 py-2 shadow-lg shadow-purple-900/40 whitespace-nowrap">
+                            <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-purple-600 rotate-45 rounded-sm" />
+                            <div className="flex items-center gap-2 relative">
+                              <span className="text-[10px] sm:text-xs text-white font-medium">👆 Adicione seu rosto aqui!</span>
+                              <button onClick={() => setShowCharacterTip(false)} className="text-white/60 hover:text-white text-xs shrink-0">✕</button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
-                {mode === "multiref" && showCharacterTip && selectedCharacters.length === 0 && (
-                  <div className="flex items-center gap-2 rounded-lg border border-purple-500/20 bg-purple-500/10 px-3 py-1.5 mt-1">
-                    <span className="text-[10px] sm:text-xs text-purple-300">💡 Quer adicionar seu rosto? Use o botão <strong>Personagem</strong> acima!</span>
-                    <button onClick={() => setShowCharacterTip(false)} className="text-purple-400 hover:text-white text-xs ml-auto shrink-0">✕</button>
-                  </div>
-                )}
               </div>
             ) : (
               <>
@@ -767,22 +774,29 @@ export default function Seedance2() {
                   {mode === "multiref" && (
                     <>
                       <div className="h-4 w-px bg-white/[0.06]" />
-                      <CharacterPicker
-                        selectedCharacters={selectedCharacters}
-                        onCharactersChange={setSelectedCharacters}
-                        maxCharacters={3}
-                        compact
-                        useSavedCharacters
-                      />
+                      <div className="relative">
+                        <CharacterPicker
+                          selectedCharacters={selectedCharacters}
+                          onCharactersChange={setSelectedCharacters}
+                          maxCharacters={3}
+                          compact
+                          useSavedCharacters
+                        />
+                        {showCharacterTip && selectedCharacters.length === 0 && (
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 animate-fade-in">
+                            <div className="relative bg-purple-600 rounded-lg px-3 py-2 shadow-lg shadow-purple-900/40 whitespace-nowrap">
+                              <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-purple-600 rotate-45 rounded-sm" />
+                              <div className="flex items-center gap-2 relative">
+                                <span className="text-xs text-white font-medium">👆 Adicione seu rosto aqui!</span>
+                                <button onClick={() => setShowCharacterTip(false)} className="text-white/60 hover:text-white text-xs shrink-0">✕</button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </>
                   )}
                 </div>
-                {mode === "multiref" && showCharacterTip && selectedCharacters.length === 0 && (
-                  <div className="flex items-center gap-2 rounded-lg border border-purple-500/20 bg-purple-500/10 px-3 py-1.5 mt-2">
-                    <span className="text-xs text-purple-300">💡 Quer adicionar seu rosto? Use o botão <strong>Personagem</strong> acima!</span>
-                    <button onClick={() => setShowCharacterTip(false)} className="text-purple-400 hover:text-white text-xs ml-auto shrink-0">✕</button>
-                  </div>
-                )}
               </>
             )}
 
