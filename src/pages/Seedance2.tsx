@@ -465,6 +465,28 @@ export default function Seedance2() {
           </div>
 
           <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl border border-white/5 bg-black/10 sm:min-h-[300px] lg:min-h-[420px]">
+            {/* Selected model preview from library */}
+            {selectedModel && (
+              <div className="p-3 border-b border-white/5">
+                <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-green-900/30 to-green-700/10 border border-green-500/30 p-3">
+                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden shrink-0 border border-green-500/40">
+                    {selectedModel.thumbnail.match(/\.(mp4|webm|mov)/i) ? (
+                      <video src={selectedModel.thumbnail} className="w-full h-full object-cover" muted loop autoPlay playsInline />
+                    ) : (
+                      <img src={selectedModel.thumbnail} alt={selectedModel.title} className="w-full h-full object-cover" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] uppercase tracking-wider text-green-400 font-semibold mb-0.5">Modelo selecionado</p>
+                    <p className="text-sm text-white font-medium truncate">{selectedModel.title}</p>
+                    <p className="text-[11px] text-gray-400 mt-0.5">Preencha o prompt e clique em Gerar</p>
+                  </div>
+                  <button onClick={() => setSelectedModel(null)} className="shrink-0 p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
             {galleryTab === "creations" && (
               <>
                 {galleryTab === "creations" && (
