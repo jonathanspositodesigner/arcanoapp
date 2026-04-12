@@ -31,6 +31,7 @@ export interface SaleRecord {
   user_name?: string;
   name?: string;
   whatsapp?: string;
+  whatsapp_welcome_sent?: boolean;
 }
 
 interface EmailLogStatus {
