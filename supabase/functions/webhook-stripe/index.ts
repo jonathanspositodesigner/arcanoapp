@@ -907,7 +907,16 @@ serve(async (req) => {
 
       // 7.1 Enviar WhatsApp de boas-vindas (non-blocking)
       try {
-        const customerPhone = session.customer_details?.phone || existingProfile?.phone || null
+        // Buscar telefone do profile ou da session do Stripe
+        let customerPhone = session.customer_details?.phone || null
+        if (!customerPhone && userId) {
+          const { data: profileForPhone } = await supabase
+            .from('profiles')
+            .select('phone')
+            .eq('id', userId)
+            .maybeSingle()
+          customerPhone = profileForPhone?.phone || null
+        }
         if (customerPhone) {
           const whatsappResponse = await fetch(`${supabaseUrl}/functions/v1/send-whatsapp-welcome`, {
             method: 'POST',
