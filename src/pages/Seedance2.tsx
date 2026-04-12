@@ -23,6 +23,7 @@ interface Generation {
   ratio: string;
   duration: string;
   videoUrl?: string;
+  referenceImage?: string;
   error?: string;
   taskId?: string;
   pollCount?: number;
@@ -140,7 +141,7 @@ export default function Seedance2() {
       setLoadingLibrary(true);
       const { data, error } = await supabase
         .from("admin_prompts")
-        .select("id, title, prompt, image_url, thumbnail_url")
+        .select("id, title, prompt, image_url, thumbnail_url, reference_images")
         .eq("category", "Seedance 2")
         .order("created_at", { ascending: false })
         .limit(50);
@@ -152,6 +153,7 @@ export default function Seedance2() {
           ratio: "16:9",
           duration: "",
           videoUrl: p.image_url || undefined,
+          referenceImage: p.reference_images?.[0] || undefined,
         })));
       }
       setLoadingLibrary(false);
@@ -211,17 +213,17 @@ export default function Seedance2() {
     input.click();
   }, [handleFileUpload]);
 
-  // Use a library item: switch to multiref, set prompt, add video as ref
+  // Use a library item: set prompt, and if it has a reference image switch to multiref and add it
   const handleUseLibraryItem = useCallback((item: Generation) => {
-    setMode("multiref");
     setPrompt(item.prompt);
-    if (item.videoUrl) {
-      // Clear previous library refs, add this one
-      setRefVideos(prev => {
+    if (item.referenceImage) {
+      setMode("multiref");
+      // Clear previous library refs, add reference image
+      setRefImages(prev => {
         const withoutOldLibrary = prev.filter(v => !libraryVideoRefs.includes(v));
-        return [item.videoUrl!, ...withoutOldLibrary];
+        return [item.referenceImage!, ...withoutOldLibrary];
       });
-      setLibraryVideoRefs([item.videoUrl]);
+      setLibraryVideoRefs([item.referenceImage]);
     }
     setPreviewGen(null);
     setGalleryTab("creations");
