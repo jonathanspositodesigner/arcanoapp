@@ -905,6 +905,32 @@ serve(async (req) => {
       // 7. Admin notification
       await sendAdminNotification(product.title, amountUsd, currency, email, customerName)
 
+      // 7.1 Enviar WhatsApp de boas-vindas (non-blocking)
+      try {
+        const customerPhone = session.customer_details?.phone || existingProfile?.phone || null
+        if (customerPhone) {
+          const whatsappResponse = await fetch(`${supabaseUrl}/functions/v1/send-whatsapp-welcome`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseServiceKey}`,
+            },
+            body: JSON.stringify({
+              phone: customerPhone,
+              name: customerName || '',
+              email,
+              order_id: null,
+            }),
+          })
+          const whatsappResult = await whatsappResponse.text()
+          console.log(`   ├─ 📱 WhatsApp welcome: ${whatsappResponse.status} | ${whatsappResult}`)
+        } else {
+          console.log(`   ├─ ⚠️ WhatsApp: sem telefone disponível para ${email}`)
+        }
+      } catch (whatsappErr: any) {
+        console.warn(`   ├─ ⚠️ WhatsApp falhou (não-crítico): ${whatsappErr.message}`)
+      }
+
       console.log(`\n✅ [${requestId}] Stripe checkout processed successfully`)
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
