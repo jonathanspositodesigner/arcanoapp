@@ -19,26 +19,30 @@ import charBadBlurry from '@/assets/char-bad-blurry.jpg';
 import charBadSunglasses from '@/assets/char-bad-sunglasses.jpg';
 import charBadCropped from '@/assets/char-bad-cropped.jpg';
 
-const CHARACTER_PROMPT = `Take @material[image1] and ONLY cut it into 6 to 8 sharp rectangular fragments of different sizes. DO NOT alter, modify, regenerate, redraw or change ANY physical characteristic of the person in the photo — same skin tone, same face shape, same hair, same lighting, same expression, same exact pixels from the original image. This is a CROP AND REARRANGE operation only. No AI face generation. No enhancement. No style transfer. Preserve original photo exactly.
+const CHARACTER_PROMPT = `Take @material[image1] and ONLY cut it into exactly 4 sharp rectangular fragments of different sizes. DO NOT alter, modify, regenerate, redraw or change ANY physical characteristic of the person in the photo — same skin tone, same face shape, same hair, same lighting, same expression, same exact pixels from the original image. This is a CROP AND REARRANGE operation only. No AI face generation. No enhancement. No style transfer. Preserve original photo exactly.
 
-Place all fragments on pure black #000000 background, deliberately misaligned and out of anatomical order:
-- Left eye fragment placed far from right eye fragment
-- Nose fragment placed below mouth fragment
-- Forehead fragment placed beside chin fragment
-- No fragment near its anatomically correct neighbor
-- Each fragment slightly rotated independently between -8 and +8 degrees
-- Small random gaps between all fragments
+THE 4 FRAGMENTS MUST BE:
+1. Top of head and hair only — no face visible
+2. Eyes zone — both eyes area cropped horizontally
+3. Nose and cheeks zone — mid face horizontal strip
+4. Mouth and chin zone — lower face horizontal strip
+
+Place all 4 fragments on pure black #000000 background, deliberately misaligned and out of anatomical order:
+- Fragment 1 placed at bottom of frame
+- Fragment 2 placed at top right, rotated +6 degrees
+- Fragment 3 placed at left center, rotated -5 degrees
+- Fragment 4 placed at top left, rotated +3 degrees
+- No fragment near its anatomically correct position
 - Sharp clean edges on every fragment, no blending, no feathering
+- Random gaps between all fragments
 
-HAIR FRAGMENT: Include at least 2 dedicated fragments showing ONLY the hair in extreme close-up — original hair texture from the photo, individual strand lines, scalp transition exactly as in original image. Place hair fragments far from forehead fragment.
-
-CENSORSHIP: On every fragment containing an eye, place a solid white horizontal rectangle bar covering ONLY the iris and pupil. Bar is sharp, 100% opaque white. Does NOT cover eyebrows or eyelids.
+CENSORSHIP: On the eyes fragment, place a solid white horizontal rectangle bar covering ONLY the iris and pupil of each eye. Bar is sharp, 100% opaque white. Does NOT cover eyebrows or eyelids.
 
 STRICT RULE: Every fragment must look exactly like a piece cut from the original photo. No repainting. No redrawing. No face swap. No style change. Cut only. Rearrange only.
 
 Pure black background only. Editorial dark portrait collage.
 Negative prompt:
-generated face, new face, different person, altered skin, redrawn features, AI face, smooth skin filter, beauty filter, different lighting, changed hair, modified features, illustrated, painting, drawing, colorful background, blur, soft edges`;
+generated face, new face, different person, altered skin, redrawn features, AI face, smooth skin filter, beauty filter, different lighting, changed hair, modified features, illustrated, painting, drawing, colorful background, blur, soft edges, more than 4 fragments, 5 fragments, 6 fragments`;
 
 const BAD_EXAMPLES = [
   { img: charBadSide, label: 'De lado' },
