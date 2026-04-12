@@ -252,7 +252,21 @@ export default function Seedance2() {
     const model = MODEL_MAP[`${mode}-${speed}`];
     const genId = crypto.randomUUID();
 
-    setGenerations((prev) => [{ id: genId, status: "queued", prompt: prompt.trim(), ratio, duration }, ...prev]);
+    // Build prompt with gender prefix from selected characters
+    let finalPrompt = prompt.trim();
+    if (selectedCharacters.length > 0) {
+      const genderPrefixes = selectedCharacters
+        .filter(c => c.gender)
+        .map(c => c.gender === 'male' 
+          ? 'The main subject is a man, male person.' 
+          : 'The main subject is a woman, female person.'
+        );
+      if (genderPrefixes.length > 0) {
+        finalPrompt = genderPrefixes.join(' ') + ' ' + finalPrompt;
+      }
+    }
+
+    setGenerations((prev) => [{ id: genId, status: "queued", prompt: finalPrompt, ratio, duration }, ...prev]);
 
     try {
       const { data: jobData, error: insertError } = await supabase
@@ -260,7 +274,7 @@ export default function Seedance2() {
         .insert({
           user_id: user.id,
           model,
-          prompt: prompt.trim(),
+          prompt: finalPrompt,
           duration: parseInt(duration),
           quality,
           aspect_ratio: ratio === "auto" ? undefined : ratio,
