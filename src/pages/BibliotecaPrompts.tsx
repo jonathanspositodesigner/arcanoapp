@@ -455,14 +455,11 @@ const BibliotecaPrompts = () => {
           {t('sidebar.installApp')}
         </Button>
 
-        {/* Banner Upscaler Arcano com Vídeo */}
+        {/* Banner Seedance 2 com Vídeo */}
         <div className="mb-6 sm:mb-8 relative w-full rounded-2xl overflow-hidden border border-purple-500/20">
           <div className="relative w-full aspect-[4/3] sm:aspect-[16/5]">
-            <video className="absolute inset-0 w-full h-full object-cover hidden sm:block" autoPlay loop muted playsInline>
-              <source src="/videos/upscaler-promo-desktop.mp4" type="video/mp4" />
-            </video>
-            <video className="absolute inset-0 w-full h-full object-cover block sm:hidden" autoPlay loop muted playsInline>
-              <source src="/videos/upscaler-promo-mobile.mp4" type="video/mp4" />
+            <video className="absolute inset-0 w-full h-full object-cover" autoPlay loop muted playsInline>
+              <source src="/videos/seedance2-promo.mp4" type="video/mp4" />
             </video>
             <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
             <div className="absolute inset-0 flex items-end sm:items-center">
@@ -474,7 +471,7 @@ const BibliotecaPrompts = () => {
                   {t('banner.upscalerDescription')}
                 </p>
                 <div className="flex flex-row items-center gap-3 sm:gap-4">
-                  <Button onClick={() => navigate("/upscaler-arcano-tool")} className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm px-4 py-2 sm:px-8 sm:py-6 text-xs sm:text-base font-semibold rounded-lg transition-all hover:scale-105">
+                  <Button onClick={() => navigate("/seedance2")} className="bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm px-4 py-2 sm:px-8 sm:py-6 text-xs sm:text-base font-semibold rounded-lg transition-all hover:scale-105">
                     {t('banner.buyNow')}
                   </Button>
                 </div>
