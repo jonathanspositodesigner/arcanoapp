@@ -580,7 +580,12 @@ export default function Seedance2() {
                       : "cursor-not-allowed bg-white/5 text-gray-600"
                   }`}
                 >
-                  {uploading ? "Enviando..." : (
+                  {uploading ? "Enviando..." : hasActiveJob ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      Gerando...
+                    </>
+                  ) : (
                     <>
                       <span className="text-base">✦</span>
                       Gerar vídeo
@@ -659,7 +664,12 @@ export default function Seedance2() {
                       }`}
                     >
                       <span className="absolute inset-0 bg-gradient-to-r from-purple-400/0 via-white/10 to-purple-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                      {uploading ? "Enviando..." : (
+                      {uploading ? "Enviando..." : hasActiveJob ? (
+                        <>
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                          Gerando...
+                        </>
+                      ) : (
                         <>
                           <span className="text-base">✦</span>
                           Gerar vídeo
