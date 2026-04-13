@@ -163,6 +163,18 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
             </div>
           )}
 
+          {/* Seedance 2 */}
+          <button
+            onClick={() => handleNavAndClose("/seedance2")}
+            className="w-full flex items-center justify-between text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+          >
+            <span className="flex items-center">
+              <Video className="h-3.5 w-3.5 mr-1.5" />
+              Seedance 2
+            </span>
+            <span className="text-[9px] font-bold bg-gradient-to-r from-red-500 to-orange-500 text-white px-1.5 py-0.5 rounded-full leading-none animate-pulse">HOT</span>
+          </button>
+
           {/* Biblioteca de Prompts */}
           <button
             onClick={() => handleNavAndClose("/biblioteca-prompts")}
