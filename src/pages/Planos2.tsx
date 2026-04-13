@@ -611,6 +611,17 @@ const Planos2 = () => {
                 )}
               </div>
 
+              {/* Seedance 2 Badge for Pro, Ultimate, Unlimited */}
+              {(plan.name === "Pro" || plan.name === "Ultimate" || plan.name === "IA Unlimited") && (
+                <div className="mb-3 mx-auto w-full rounded-lg bg-gradient-to-r from-emerald-600 via-green-500 to-emerald-600 p-[1px]">
+                  <div className="flex items-center justify-center gap-1.5 rounded-[7px] bg-gradient-to-r from-emerald-950/90 via-green-900/90 to-emerald-950/90 px-3 py-1.5">
+                    <Video className="w-3.5 h-3.5 text-green-400" />
+                    <span className="text-[11px] font-bold text-green-300 tracking-wide">Seedance 2</span>
+                    <span className="text-[8px] font-bold bg-green-400 text-black px-1.5 py-0.5 rounded-full leading-none animate-pulse">INCLUSO</span>
+                  </div>
+                </div>
+              )}
+
               <ul className="space-y-2 flex-1">
                 {plan.features.map((feature, fIndex) => (
                   <li key={fIndex}>
