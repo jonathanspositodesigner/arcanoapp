@@ -619,7 +619,7 @@ const AdminCreditsTab = () => {
 
       {/* Transaction History Modal */}
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <History className="h-5 w-5" />
@@ -639,7 +639,7 @@ const AdminCreditsTab = () => {
             )}
           </DialogHeader>
           
-          <ScrollArea className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-y-auto pr-2" style={{ maxHeight: 'calc(85vh - 200px)' }}>
             {loadingHistory && transactions.length === 0 ? (
               <div className="flex items-center justify-center py-12">
                 <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
