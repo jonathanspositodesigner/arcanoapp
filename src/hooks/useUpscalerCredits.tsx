@@ -146,7 +146,7 @@ export const useUpscalerCredits = (userId: string | undefined) => {
         return { 
           success: false, 
           error: result.error_message || 'Saldo insuficiente',
-          currentBalance: result.new_balance
+          currentBalance: result.remaining_balance
         };
       }
 
