@@ -613,10 +613,10 @@ const Planos2 = () => {
 
               {/* Seedance 2 Badge for Pro, Ultimate, Unlimited */}
               {(plan.name === "Pro" || plan.name === "Ultimate" || plan.name === "IA Unlimited") && (
-                <div className="mb-3 mx-auto w-full rounded-lg border border-lime-400/50 bg-gradient-to-r from-lime-950/60 via-green-900/60 to-lime-950/60 px-3 py-2 flex items-center justify-center gap-2 shadow-md shadow-lime-500/20">
-                    <Video className="w-3.5 h-3.5 text-lime-300" />
-                    <span className="text-[12px] font-extrabold italic text-lime-200 tracking-wider">Seedance 2</span>
-                    <span className="text-[8px] font-extrabold bg-gradient-to-r from-lime-400 to-lime-500 text-black px-2 py-0.5 rounded-full leading-none animate-pulse">INCLUSO</span>
+                <div className="mb-3 mx-auto w-full rounded-lg bg-gradient-to-r from-lime-400 via-lime-500 to-lime-400 px-3 py-2 flex items-center justify-center gap-2 shadow-md shadow-lime-500/30">
+                    <Video className="w-3.5 h-3.5 text-black" />
+                    <span className="text-[12px] font-extrabold italic text-black tracking-wider">Seedance 2</span>
+                    <span className="text-[8px] font-extrabold bg-black text-lime-400 px-2 py-0.5 rounded-full leading-none animate-pulse">INCLUSO</span>
                 </div>
               )}
 
