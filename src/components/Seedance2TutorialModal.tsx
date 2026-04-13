@@ -15,7 +15,7 @@ const Seedance2TutorialModal = ({ open, onClose }: Seedance2TutorialModalProps) 
           <p className="text-sm text-white/60 mb-4">Aprenda a usar a ferramenta assistindo o vídeo abaixo:</p>
           <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black">
             <iframe
-              src="https://www.youtube.com/embed/ntiWCgikQo0"
+              src="https://www.youtube.com/embed/ntiWCgikQo0?modestbranding=1&rel=0&showinfo=0&controls=1&iv_load_policy=3"
               title="Tutorial Seedance 2.0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
