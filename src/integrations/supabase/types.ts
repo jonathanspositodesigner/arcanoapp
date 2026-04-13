@@ -467,31 +467,70 @@ export type Database = {
       }
       ai_tool_registry: {
         Row: {
+          badge_color: string | null
+          cost_column: string | null
           created_at: string
+          credit_column: string | null
+          display_name: string | null
+          display_order: number | null
           enabled: boolean
+          engine_filter_column: string | null
+          engine_filter_value: string | null
           expiry_hours: number
+          has_failed_at_step: boolean | null
+          has_queue_tracking: boolean | null
+          has_started_at: boolean | null
           id: string
+          input_image_column: string | null
+          is_video_tool: boolean | null
           media_type: string
+          output_column: string | null
           storage_folder: string | null
           table_name: string
           tool_name: string
         }
         Insert: {
+          badge_color?: string | null
+          cost_column?: string | null
           created_at?: string
+          credit_column?: string | null
+          display_name?: string | null
+          display_order?: number | null
           enabled?: boolean
+          engine_filter_column?: string | null
+          engine_filter_value?: string | null
           expiry_hours?: number
+          has_failed_at_step?: boolean | null
+          has_queue_tracking?: boolean | null
+          has_started_at?: boolean | null
           id?: string
+          input_image_column?: string | null
+          is_video_tool?: boolean | null
           media_type?: string
+          output_column?: string | null
           storage_folder?: string | null
           table_name: string
           tool_name: string
         }
         Update: {
+          badge_color?: string | null
+          cost_column?: string | null
           created_at?: string
+          credit_column?: string | null
+          display_name?: string | null
+          display_order?: number | null
           enabled?: boolean
+          engine_filter_column?: string | null
+          engine_filter_value?: string | null
           expiry_hours?: number
+          has_failed_at_step?: boolean | null
+          has_queue_tracking?: boolean | null
+          has_started_at?: boolean | null
           id?: string
+          input_image_column?: string | null
+          is_video_tool?: boolean | null
           media_type?: string
+          output_column?: string | null
           storage_folder?: string | null
           table_name?: string
           tool_name?: string
@@ -5550,6 +5589,15 @@ export type Database = {
         }
         Returns: number
       }
+      get_ai_tools_usage_count_v2: {
+        Args: {
+          p_end_date?: string
+          p_start_date?: string
+          p_status_filter?: string
+          p_tool_filter?: string
+        }
+        Returns: number
+      }
       get_ai_tools_usage_summary: {
         Args: {
           p_end_date?: string
@@ -5566,6 +5614,54 @@ export type Database = {
           total_jobs: number
           total_profit: number
           total_rh_cost: number
+        }[]
+      }
+      get_ai_tools_usage_summary_v2: {
+        Args: {
+          p_end_date?: string
+          p_start_date?: string
+          p_status_filter?: string
+          p_tool_filter?: string
+        }
+        Returns: {
+          avg_processing_seconds: number
+          avg_queue_wait: number
+          completed_jobs: number
+          failed_jobs: number
+          queued_jobs: number
+          total_credits: number
+          total_jobs: number
+          total_profit: number
+          total_rh_cost: number
+        }[]
+      }
+      get_ai_tools_usage_v2: {
+        Args: {
+          p_end_date?: string
+          p_page?: number
+          p_page_size?: number
+          p_start_date?: string
+          p_status_filter?: string
+          p_tool_filter?: string
+        }
+        Returns: {
+          completed_at: string
+          created_at: string
+          error_message: string
+          failed_at_step: string
+          id: string
+          processing_seconds: number
+          profit: number
+          queue_wait_seconds: number
+          rh_cost: number
+          started_at: string
+          status: string
+          tool_name: string
+          user_credit_cost: number
+          user_email: string
+          user_id: string
+          user_name: string
+          waited_in_queue: boolean
         }[]
       }
       get_all_credit_users: {
