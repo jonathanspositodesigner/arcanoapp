@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Play } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Seedance2TutorialModalProps {
   open: boolean;
@@ -12,11 +13,22 @@ const YOUTUBE_ID = "ntiWCgikQo0";
 
 const Seedance2TutorialModal = ({ open, onClose }: Seedance2TutorialModalProps) => {
   const [playing, setPlaying] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const isMobile = useIsMobile();
 
   const handleClose = () => {
     setPlaying(false);
     onClose();
   };
+
+  const handlePlay = useCallback(() => {
+    if (isMobile) {
+      // On mobile, open YouTube directly — it opens fullscreen natively
+      window.open(`https://www.youtube.com/watch?v=${YOUTUBE_ID}`, "_blank");
+    } else {
+      setPlaying(true);
+    }
+  }, [isMobile]);
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
@@ -25,17 +37,18 @@ const Seedance2TutorialModal = ({ open, onClose }: Seedance2TutorialModalProps) 
           <h2 className="text-lg sm:text-xl font-bold text-white mb-1">Tutorial — Seedance 2.0</h2>
           <p className="text-sm text-white/60 mb-4">Aprenda a usar a ferramenta assistindo o vídeo abaixo:</p>
           <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black">
-            {playing ? (
+            {playing && !isMobile ? (
               <iframe
+                ref={iframeRef}
                 src={`https://www.youtube.com/embed/${YOUTUBE_ID}?autoplay=1&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3`}
                 title="Tutorial Seedance 2.0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                 allowFullScreen
                 className="absolute inset-0 w-full h-full"
               />
             ) : (
               <button
-                onClick={() => setPlaying(true)}
+                onClick={handlePlay}
                 className="absolute inset-0 w-full h-full group cursor-pointer"
               >
                 <img
