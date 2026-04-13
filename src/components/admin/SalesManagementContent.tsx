@@ -350,24 +350,28 @@ const SalesManagementContent = () => {
     if (statusFilter !== "all") {
       result = result.filter((s) => s.status === statusFilter);
     }
+    if (platformFilter !== "all") {
+      result = result.filter((s) => s.source_platform === platformFilter);
+    }
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
         (s) =>
           s.user_email?.toLowerCase().includes(q) ||
           s.name?.toLowerCase().includes(q) ||
-          s.product_title?.toLowerCase().includes(q)
+          s.product_title?.toLowerCase().includes(q) ||
+          s.id?.toLowerCase().includes(q)
       );
     }
     return result;
-  }, [sales, search, statusFilter]);
+  }, [sales, search, statusFilter, platformFilter]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   useEffect(() => {
     setPage(0);
-  }, [search, dateRange, statusFilter]);
+  }, [search, dateRange, statusFilter, platformFilter]);
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
