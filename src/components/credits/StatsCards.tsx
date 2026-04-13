@@ -24,18 +24,13 @@ export const StatsCards = () => {
         setTotalImages(total);
       }
 
-      // Fetch real video count from ALL video tables
-      const [videoGen, movieled, seedance, videoUpscaler] = await Promise.all([
-        supabase.from('video_generator_jobs').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
-        supabase.from('movieled_maker_jobs').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
-        supabase.from('seedance_jobs').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
-        supabase.from('video_upscaler_jobs').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
-      ]);
-      setTotalVideos((videoGen.count || 0) + (movieled.count || 0) + (seedance.count || 0) + (videoUpscaler.count || 0));
-
-      // Fetch real user count
-      const { count: userCount } = await supabase.from('profiles').select('id', { count: 'exact', head: true });
-      setTotalUsers(userCount || 0);
+      // Fetch platform stats (users + videos) via SECURITY DEFINER RPC
+      const { data: stats } = await supabase.rpc('get_platform_stats');
+      if (stats) {
+        const s = stats as any;
+        setTotalUsers(s.total_users || 0);
+        setTotalVideos(s.total_videos || 0);
+      }
 
       setLoaded(true);
     };
