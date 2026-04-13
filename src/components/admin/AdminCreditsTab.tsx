@@ -708,7 +708,7 @@ const AdminCreditsTab = () => {
                 )}
               </div>
             )}
-          </ScrollArea>
+          </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsHistoryOpen(false)}>
