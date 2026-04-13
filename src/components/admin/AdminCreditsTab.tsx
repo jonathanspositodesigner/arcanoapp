@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "sonner";
 import { 
   RefreshCw, Pencil, Coins, ArrowUpDown, ArrowUp, ArrowDown,
-  Plus, Minus, UserPlus, Search, User, AlertCircle
+  Plus, Minus, UserPlus, Search, User, AlertCircle, History,
+  ArrowDownCircle, ArrowUpCircle
 } from "lucide-react";
 import {
   Pagination,
@@ -19,6 +20,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 interface CreditUser {
   user_id: string;
@@ -36,11 +39,22 @@ interface SearchedUser {
   name: string | null;
 }
 
+interface Transaction {
+  id: string;
+  amount: number;
+  balance_after: number;
+  transaction_type: string;
+  description: string;
+  credit_type: string;
+  created_at: string;
+}
+
 type SortColumn = 'name' | 'email' | 'monthly_balance' | 'lifetime_balance' | 'total_balance';
 type SortDirection = 'asc' | 'desc';
 type AddUserModalState = 'idle' | 'searching' | 'found' | 'not_found' | 'submitting';
 
 const ITEMS_PER_PAGE = 20;
+const TX_PER_PAGE = 30;
 
 const AdminCreditsTab = () => {
   const [creditUsers, setCreditUsers] = useState<CreditUser[]>([]);
@@ -56,6 +70,14 @@ const AdminCreditsTab = () => {
   const [creditAmount, setCreditAmount] = useState(0);
   const [creditDescription, setCreditDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Transaction history state
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [historyUser, setHistoryUser] = useState<CreditUser | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [txPage, setTxPage] = useState(1);
+  const [txHasMore, setTxHasMore] = useState(false);
 
   // Add User Modal State
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
@@ -74,9 +96,7 @@ const AdminCreditsTab = () => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.rpc('get_all_credit_users');
-
       if (error) throw error;
-
       setCreditUsers(data || []);
     } catch (error) {
       console.error("Error fetching credit users:", error);
@@ -84,6 +104,43 @@ const AdminCreditsTab = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const fetchTransactions = async (userId: string, page = 1) => {
+    setLoadingHistory(true);
+    try {
+      const from = (page - 1) * TX_PER_PAGE;
+      const to = from + TX_PER_PAGE;
+      const { data, error } = await supabase
+        .from("upscaler_credit_transactions")
+        .select("id, amount, balance_after, transaction_type, description, credit_type, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+
+      if (page === 1) {
+        setTransactions(data || []);
+      } else {
+        setTransactions(prev => [...prev, ...(data || [])]);
+      }
+      setTxHasMore((data || []).length > TX_PER_PAGE);
+      setTxPage(page);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      toast.error("Erro ao carregar histórico");
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  const openHistory = (user: CreditUser) => {
+    setHistoryUser(user);
+    setTransactions([]);
+    setTxPage(1);
+    setIsHistoryOpen(true);
+    fetchTransactions(user.user_id, 1);
   };
 
   const filteredUsers = useMemo(() => {
@@ -228,6 +285,12 @@ const AdminCreditsTab = () => {
     return new Intl.NumberFormat('pt-BR').format(num);
   };
 
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + 
+           d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  };
+
   // Add User Modal Functions
   const openAddUserModal = () => {
     setSearchEmail("");
@@ -308,6 +371,29 @@ const AdminCreditsTab = () => {
       const errorMessage = error instanceof Error ? error.message : "Erro ao adicionar créditos";
       toast.error(errorMessage);
       setAddUserModalState(foundUser ? 'found' : 'not_found');
+    }
+  };
+
+  const getTransactionBadge = (tx: Transaction) => {
+    if (tx.amount > 0) {
+      if (tx.transaction_type === 'refund') {
+        return <Badge variant="outline" className="border-orange-500 text-orange-600 text-[10px]">Estorno</Badge>;
+      }
+      return <Badge variant="outline" className="border-green-500 text-green-600 text-[10px]">Entrada</Badge>;
+    }
+    return <Badge variant="outline" className="border-red-500 text-red-600 text-[10px]">Consumo</Badge>;
+  };
+
+  const getCreditTypeBadge = (creditType: string) => {
+    switch (creditType) {
+      case 'monthly':
+        return <Badge variant="secondary" className="text-[9px] px-1">Mensal</Badge>;
+      case 'lifetime':
+        return <Badge variant="secondary" className="text-[9px] px-1 bg-purple-100 text-purple-700">Vitalício</Badge>;
+      case 'mixed':
+        return <Badge variant="secondary" className="text-[9px] px-1 bg-amber-100 text-amber-700">Misto</Badge>;
+      default:
+        return null;
     }
   };
 
@@ -456,11 +542,20 @@ const AdminCreditsTab = () => {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openHistory(user)}
+                            title="Histórico de transações"
+                          >
+                            <History className="h-4 w-4" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => openEditModal(user)}
+                            title="Editar créditos"
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -521,6 +616,107 @@ const AdminCreditsTab = () => {
       <p className="text-sm text-muted-foreground text-center">
         Mostrando {paginatedUsers.length} de {filteredUsers.length} usuários
       </p>
+
+      {/* Transaction History Modal */}
+      <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <History className="h-5 w-5" />
+              Histórico de Transações
+            </DialogTitle>
+            {historyUser && (
+              <div className="flex items-center gap-3 pt-2">
+                <div className="p-2 bg-muted rounded-lg flex-1">
+                  <p className="font-medium text-sm">{historyUser.name || 'Sem nome'}</p>
+                  <p className="text-xs text-muted-foreground">{historyUser.email}</p>
+                </div>
+                <div className="text-center px-3">
+                  <p className="text-xs text-muted-foreground">Saldo Atual</p>
+                  <p className="text-lg font-bold text-green-600">{formatNumber(historyUser.total_balance)}</p>
+                </div>
+              </div>
+            )}
+          </DialogHeader>
+          
+          <ScrollArea className="flex-1 min-h-0">
+            {loadingHistory && transactions.length === 0 ? (
+              <div className="flex items-center justify-center py-12">
+                <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+              </div>
+            ) : transactions.length === 0 ? (
+              <div className="flex items-center justify-center py-12 text-muted-foreground">
+                Nenhuma transação encontrada
+              </div>
+            ) : (
+              <div className="space-y-1 pr-4">
+                {transactions.map((tx) => (
+                  <div 
+                    key={tx.id} 
+                    className={`flex items-center gap-3 p-3 rounded-lg border ${
+                      tx.amount > 0 
+                        ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200/50 dark:border-green-800/30' 
+                        : 'bg-red-50/50 dark:bg-red-900/10 border-red-200/50 dark:border-red-800/30'
+                    }`}
+                  >
+                    {/* Icon */}
+                    <div className={`shrink-0 p-1.5 rounded-full ${
+                      tx.amount > 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
+                    }`}>
+                      {tx.amount > 0 
+                        ? <ArrowUpCircle className="h-4 w-4 text-green-600" />
+                        : <ArrowDownCircle className="h-4 w-4 text-red-600" />
+                      }
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{tx.description || 'Sem descrição'}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[10px] text-muted-foreground">{formatDate(tx.created_at)}</span>
+                        {getTransactionBadge(tx)}
+                        {getCreditTypeBadge(tx.credit_type)}
+                      </div>
+                    </div>
+
+                    {/* Amount & Balance */}
+                    <div className="text-right shrink-0">
+                      <p className={`text-sm font-bold ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {tx.amount > 0 ? '+' : ''}{formatNumber(tx.amount)}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Saldo: {formatNumber(tx.balance_after)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+
+                {txHasMore && (
+                  <div className="flex justify-center py-3">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => fetchTransactions(historyUser!.user_id, txPage + 1)}
+                      disabled={loadingHistory}
+                    >
+                      {loadingHistory ? (
+                        <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                      ) : null}
+                      Carregar mais
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </ScrollArea>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsHistoryOpen(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Credits Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
