@@ -5604,6 +5604,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: string
       }
+      get_platform_stats: { Args: never; Returns: Json }
       get_prompt_click_counts: {
         Args: never
         Returns: {
