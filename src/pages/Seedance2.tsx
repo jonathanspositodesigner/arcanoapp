@@ -4,11 +4,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import AppLayout from "@/components/layout/AppLayout";
-import { Coins, X, Download, Clock, ChevronDown } from "lucide-react";
+import { Coins, X, Download, Clock, ChevronDown, Play } from "lucide-react";
 import CharacterPicker, { type CharacterItem } from "@/components/shared/CharacterPicker";
 import { getSeedanceTotalCost, modeToGenType } from "@/config/seedance-pricing";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useResilientDownload } from "@/hooks/useResilientDownload";
+import Seedance2TutorialModal from "@/components/Seedance2TutorialModal";
 
 type Mode = "text" | "startend" | "multiref";
 type Speed = "standard" | "fast";
@@ -94,6 +95,9 @@ export default function Seedance2() {
   const [showRatioModal, setShowRatioModal] = useState(false);
   const [showFaceWarning, setShowFaceWarning] = useState<{ accept: string; onSuccess: (url: string) => void } | null>(null);
   const [showCharacterTip, setShowCharacterTip] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(() => {
+    return !localStorage.getItem("seedance2-tutorial-seen");
+  });
   const [selectedModel, setSelectedModel] = useState<{ title: string; thumbnail: string } | null>(() => {
     const state = location.state as { prefillTitle?: string; prefillThumbnail?: string } | null;
     if (state?.prefillTitle && state?.prefillThumbnail) {
@@ -447,7 +451,16 @@ export default function Seedance2() {
       <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
         <div className="mx-auto flex w-full max-w-[1400px] flex-1 min-h-0 flex-col px-2 sm:px-4 pt-3 sm:pt-4 pb-2 sm:pb-4 overflow-y-auto">
           <div className="mb-2 sm:mb-3 flex shrink-0 flex-wrap items-center justify-between gap-2">
-            <h1 className="text-lg sm:text-xl font-bold text-white">Seedance 2.0</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg sm:text-xl font-bold text-white">Seedance 2.0</h1>
+              <button
+                onClick={() => setShowTutorial(true)}
+                className="flex items-center gap-1 rounded-md border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-purple-300 hover:bg-purple-500/20 transition-colors"
+              >
+                <Play className="h-3 w-3" />
+                Ver tutorial
+              </button>
+            </div>
             <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
               <button
                 onClick={() => setGalleryTab("creations")}
@@ -968,6 +981,13 @@ export default function Seedance2() {
           </div>
         </div>
       )}
+      <Seedance2TutorialModal
+        open={showTutorial}
+        onClose={() => {
+          localStorage.setItem("seedance2-tutorial-seen", "true");
+          setShowTutorial(false);
+        }}
+      />
     </AppLayout>
   );
 }
