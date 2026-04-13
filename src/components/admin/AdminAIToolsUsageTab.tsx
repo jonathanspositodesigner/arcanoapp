@@ -212,7 +212,7 @@ const AdminAIToolsUsageTab = () => {
   const [errorDetails, setErrorDetails] = useState<JobErrorDetails | null>(null);
   const [isLoadingErrorDetails, setIsLoadingErrorDetails] = useState(false);
 
-  const isVideoTool = (toolName: string) => toolName === "Video Upscaler" || toolName === "Gerar Vídeo" || toolName === "MovieLed Maker";
+  const isVideoTool = (toolName: string) => toolName === "Video Upscaler" || toolName === "Gerar Vídeo" || toolName === "MovieLed Maker" || toolName === "Seedance 2.0";
 
   const getInputColumn = (toolName: string): string | null => {
     switch (toolName) {
@@ -244,6 +244,7 @@ const AdminAIToolsUsageTab = () => {
       case "Flyer Maker": return "flyer_maker_jobs";
       case "Remover Fundo": return "bg_remover_jobs";
       case "MovieLed Maker": return "movieled_maker_jobs";
+      case "Seedance 2.0": return "seedance_jobs";
       default: return "upscaler_jobs";
     }
   };
