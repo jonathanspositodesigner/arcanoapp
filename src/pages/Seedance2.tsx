@@ -423,12 +423,14 @@ export default function Seedance2() {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
 
+      // Extract real error message - supabase.functions.invoke puts response body in error.context
+      const realError = data?.error || (error?.context ? await error.context.json?.().catch(() => null) : null)?.error || error?.message || "API error";
       if (error || !data?.success) {
-        setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: data?.error || "API error" } : g));
+        setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: realError } : g));
         // CRITICAL: Update DB too so job doesn't stay stuck as "queued"
         await supabase.from("seedance_jobs").update({
           status: "failed",
-          error_message: data?.error || error?.message || "Edge function error",
+          error_message: realError,
         }).eq("id", jobData.id);
         return;
       }
