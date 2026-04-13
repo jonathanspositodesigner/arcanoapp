@@ -357,6 +357,7 @@ const AppContent = () => {
            <Route path="/pack-agendas" element={<PackAgendas />} />
             <Route path="/upscalerarcanov3" element={<UpscalerArcanoV3 />} />
             <Route path="/upscalerarcanov3-es" element={<UpscalerArcanoV3Es />} />
+            <Route path="/upscalerarcanov3-eshot" element={<UpscalerArcanoV3EsHot />} />
             <Route path="/upscalerarcanov3-teste" element={<UpscalerArcanoV3Teste />} />
           <Route path="/planos-creditos" element={<Navigate to="/planos-2" replace />} />
           <Route path="/ferramentas-ia-aplicativo" element={<FerramentasIAAplicativo />} />
