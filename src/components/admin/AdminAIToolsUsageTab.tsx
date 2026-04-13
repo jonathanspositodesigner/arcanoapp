@@ -420,19 +420,19 @@ const AdminAIToolsUsageTab = () => {
       } else { setVideoJobDetailsMap({}); }
 
       // Fetch user types
-      const userIds = [...new Set((records || []).map((r: UsageRecord) => r.user_id).filter(Boolean))];
+      const userIds = [...new Set((records || []).map((r: UsageRecord) => r.user_id).filter(Boolean))] as string[];
       if (userIds.length > 0) {
         const [subsRes, creditsRes, promoRes, trialRes] = await Promise.all([
-          supabase.from('planos2_subscriptions').select('user_id').eq('is_active', true).neq('plan_slug', 'free').in('user_id', userIds),
-          supabase.from('upscaler_credits').select('user_id, lifetime_balance').gt('lifetime_balance', 0).in('user_id', userIds),
-          supabase.from('promo_claims').select('user_id').eq('promo_code', 'UPSCALER_1500').in('user_id', userIds),
-          supabase.from('arcano_cloner_free_trials').select('user_id').in('user_id', userIds),
+          supabase.from('planos2_subscriptions').select('user_id').eq('is_active', true).neq('plan_slug', 'free').in('user_id', userIds as string[]),
+          supabase.from('upscaler_credits').select('user_id, lifetime_balance').gt('lifetime_balance', 0).in('user_id', userIds as string[]),
+          supabase.from('promo_claims').select('user_id').eq('promo_code', 'UPSCALER_1500').in('user_id', userIds as string[]),
+          supabase.from('arcano_cloner_free_trials').select('user_id').in('user_id', userIds as string[]),
         ]);
 
-        const premiumSet = new Set((subsRes.data || []).map(s => s.user_id));
-        const lifetimeSet = new Set((creditsRes.data || []).map(c => c.user_id));
-        const promoSet = new Set((promoRes.data || []).map(p => p.user_id));
-        const trialSet = new Set((trialRes.data || []).map(t => t.user_id));
+        const premiumSet = new Set((subsRes.data || []).map((s: any) => s.user_id as string));
+        const lifetimeSet = new Set((creditsRes.data || []).map((c: any) => c.user_id as string));
+        const promoSet = new Set((promoRes.data || []).map((p: any) => p.user_id as string));
+        const trialSet = new Set((trialRes.data || []).map((t: any) => t.user_id as string));
 
         const typeMap: Record<string, UserClientType> = {};
         for (const uid of userIds) {
