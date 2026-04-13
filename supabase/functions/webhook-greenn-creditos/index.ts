@@ -923,6 +923,21 @@ serve(async (req) => {
   console.log(`${'='.repeat(60)}`)
 
   try {
+    // ===== Greenn Webhook Token Validation =====
+    const greennToken = Deno.env.get('GREENN_WEBHOOK_TOKEN')
+    if (greennToken) {
+      const url = new URL(req.url)
+      const tokenParam = url.searchParams.get('token')
+      if (tokenParam !== greennToken) {
+        console.error(`🚫 [${requestId}] Token inválido ou ausente - rejeitado`)
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
+      }
+      console.log(`✅ [${requestId}] Token Greenn válido`)
+    }
+
     const payload = await req.json()
     
     const supabase = createClient(
