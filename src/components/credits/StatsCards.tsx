@@ -12,6 +12,7 @@ const socialProofImages = [
 export const StatsCards = () => {
   const [totalImages, setTotalImages] = useState(0);
   const [totalVideos, setTotalVideos] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -23,12 +24,18 @@ export const StatsCards = () => {
         setTotalImages(total);
       }
 
-      // Fetch real video count from both video tables
-      const [videoGen, movieled] = await Promise.all([
+      // Fetch real video count from ALL video tables
+      const [videoGen, movieled, seedance, videoUpscaler] = await Promise.all([
         supabase.from('video_generator_jobs').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
         supabase.from('movieled_maker_jobs').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
+        supabase.from('seedance_jobs').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
+        supabase.from('video_upscaler_jobs').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
       ]);
-      setTotalVideos((videoGen.count || 0) + (movieled.count || 0));
+      setTotalVideos((videoGen.count || 0) + (movieled.count || 0) + (seedance.count || 0) + (videoUpscaler.count || 0));
+
+      // Fetch real user count
+      const { count: userCount } = await supabase.from('profiles').select('id', { count: 'exact', head: true });
+      setTotalUsers(userCount || 0);
 
       setLoaded(true);
     };
