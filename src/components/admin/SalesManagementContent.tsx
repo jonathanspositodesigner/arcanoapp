@@ -444,6 +444,20 @@ const SalesManagementContent = () => {
             ))}
           </div>
 
+          <div className="flex flex-wrap gap-2">
+            {platformFilters.map((pf) => (
+              <Button
+                key={pf.id}
+                variant={platformFilter === pf.id ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setPlatformFilter(pf.id)}
+                className="text-xs"
+              >
+                {pf.label}
+              </Button>
+            ))}
+          </div>
+
           {rangePreset === "custom" && (
             <div className="flex flex-wrap items-center gap-2">
               <Popover>
