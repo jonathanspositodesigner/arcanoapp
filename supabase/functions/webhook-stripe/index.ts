@@ -1185,7 +1185,66 @@ serve(async (req) => {
         payload: JSON.parse(rawBody),
       })
 
-      console.log(`\n✅ [${requestId}] Stripe invoice.payment_failed logged`)
+      // VUL-006: After 3+ failed attempts, disable generation flags to prevent free usage
+      if (attemptCount >= 3 && stripeSubId) {
+        console.log(`   ├─ 🚫 Attempt ${attemptCount} >= 3, disabling generation flags for sub: ${stripeSubId}`)
+
+        // Find user by stripe_subscription_id
+        const { data: subData } = await supabase
+          .from('planos2_subscriptions')
+          .select('user_id')
+          .eq('stripe_subscription_id', stripeSubId)
+          .maybeSingle()
+
+        if (subData?.user_id) {
+          // Disable generation flags and deactivate subscription
+          const { error: updateError } = await supabase
+            .from('planos2_subscriptions')
+            .update({
+              has_image_generation: false,
+              has_video_generation: false,
+              is_active: false,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('stripe_subscription_id', stripeSubId)
+
+          if (updateError) {
+            console.error(`   ├─ ❌ Failed to disable flags: ${updateError.message}`)
+          } else {
+            console.log(`   ├─ ✅ Generation flags disabled for user: ${subData.user_id}`)
+          }
+
+          // Zero out monthly credits
+          const { error: creditError } = await supabase
+            .from('upscaler_credits')
+            .update({
+              monthly_balance: 0,
+              balance: 0, // will be recalculated, but safe to zero
+              updated_at: new Date().toISOString(),
+            })
+            .eq('user_id', subData.user_id)
+
+          if (!creditError) {
+            // Recalc balance = lifetime only
+            const { data: creditData } = await supabase
+              .from('upscaler_credits')
+              .select('lifetime_balance')
+              .eq('user_id', subData.user_id)
+              .maybeSingle()
+
+            if (creditData) {
+              await supabase
+                .from('upscaler_credits')
+                .update({ balance: creditData.lifetime_balance || 0 })
+                .eq('user_id', subData.user_id)
+            }
+
+            console.log(`   ├─ ✅ Monthly credits zeroed for user: ${subData.user_id}`)
+          }
+        }
+      }
+
+      console.log(`\n✅ [${requestId}] Stripe invoice.payment_failed processed`)
       return new Response('OK', { status: 200, headers: corsHeaders })
     }
 
