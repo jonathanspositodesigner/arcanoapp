@@ -58,6 +58,15 @@ const statusFilters = [
 
 type RangePreset = "today" | "7d" | "30d" | "90d" | "custom";
 
+const platformFilters = [
+  { id: "all", label: "Todas" },
+  { id: "pagarme", label: "Pagar.me" },
+  { id: "stripe", label: "Stripe" },
+  { id: "mercadopago", label: "Mercado Pago" },
+  { id: "greenn", label: "Greenn" },
+  { id: "hotmart", label: "Hotmart" },
+];
+
 const SalesManagementContent = () => {
   const [sales, setSales] = useState<SaleRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
