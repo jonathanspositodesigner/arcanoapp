@@ -423,6 +423,11 @@ export default function Seedance2() {
 
       if (error || !data?.success) {
         setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: data?.error || "API error" } : g));
+        // CRITICAL: Update DB too so job doesn't stay stuck as "queued"
+        await supabase.from("seedance_jobs").update({
+          status: "failed",
+          error_message: data?.error || error?.message || "Edge function error",
+        }).eq("id", jobData.id);
         return;
       }
 
@@ -430,6 +435,13 @@ export default function Seedance2() {
       startPolling(genId, data.taskId, jobData.id);
     } catch (err: any) {
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: err.message } : g));
+      // CRITICAL: Update DB too so job doesn't stay stuck as "queued"
+      if (jobData?.id) {
+        await supabase.from("seedance_jobs").update({
+          status: "failed",
+          error_message: err.message || "Client-side error",
+        }).eq("id", jobData.id);
+      }
     }
   }, [prompt, mode, speed, ratio, quality, duration, generateAudio, startImage, endImage, refImages, refVideos, refAudios, selectedCharacters, user, canGenerate, startPolling]);
 
