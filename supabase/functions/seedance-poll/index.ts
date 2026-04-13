@@ -71,38 +71,48 @@ serve(async (req) => {
     }
 
     if (pollResult.status === "failed") {
-      // Atomically claim the refund by setting credits_charged=0 FIRST
-      // Only the first poll call wins the race (gt filter ensures no double refund)
-      const { data: updatedJob } = await supabase
+      // Read the charged amount first
+      const { data: jobData } = await supabase
         .from("seedance_jobs")
-        .update({
+        .select("credits_charged")
+        .eq("id", jobId)
+        .single();
+
+      const chargedAmount = jobData?.credits_charged || 0;
+
+      // Atomically claim refund: only update if credits_charged still matches
+      // This prevents double refund from concurrent poll calls
+      if (chargedAmount > 0) {
+        const { data: claimed } = await supabase
+          .from("seedance_jobs")
+          .update({
+            status: "failed",
+            error_message: pollResult.error || "Generation failed",
+            credits_charged: 0,
+          })
+          .eq("id", jobId)
+          .eq("credits_charged", chargedAmount)
+          .select("id")
+          .maybeSingle();
+
+        if (claimed) {
+          // We won the race — do the refund
+          await supabase.rpc("add_upscaler_credits", {
+            _user_id: user.id,
+            _amount: chargedAmount,
+            _description: "Estorno - Seedance 2 falhou",
+          });
+          console.log(`[seedance-poll] Refunded ${chargedAmount} credits to user ${user.id}`);
+        } else {
+          console.log(`[seedance-poll] Refund already claimed for job ${jobId}, skipping`);
+        }
+      } else {
+        // No credits to refund, just mark as failed
+        await supabase.from("seedance_jobs").update({
           status: "failed",
           error_message: pollResult.error || "Generation failed",
-          credits_charged: 0,
-        })
-        .eq("id", jobId)
-        .gt("credits_charged", 0)
-        .select("credits_charged")
-        .maybeSingle();
-
-      // If updatedJob is null, another poll already claimed the refund — skip
-      if (updatedJob !== null) {
-        // We won the race — read the original charged amount from the job
-        const { data: jobData } = await supabase
-          .from("seedance_jobs")
-          .select("credits_charged")
-          .eq("id", jobId)
-          .single();
-
-        // credits_charged is now 0, we need the original value
-        // Since we already set it to 0, get it from the poll body or re-query before update
+        }).eq("id", jobId);
       }
-
-      // Fallback: just mark failed if not already done
-      await supabase.from("seedance_jobs").update({
-        status: "failed",
-        error_message: pollResult.error || "Generation failed",
-      }).eq("id", jobId);
 
       return new Response(JSON.stringify({
         status: "failed",
