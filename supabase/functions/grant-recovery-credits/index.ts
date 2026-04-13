@@ -75,6 +75,36 @@ serve(async (req) => {
   }
 
   try {
+    // ===== Admin Authentication =====
+    const authHeader = req.headers.get('Authorization');
+    const isServiceRole = authHeader?.includes(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '___nope___');
+    if (!isServiceRole) {
+      // Check JWT for admin role
+      if (!authHeader?.startsWith('Bearer ')) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+      const { createClient: cc } = await import("https://esm.sh/@supabase/supabase-js@2.49.1");
+      const sbAuth = cc(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+        global: { headers: { Authorization: authHeader } }
+      });
+      const { data: claimsData, error: claimsError } = await sbAuth.auth.getClaims(authHeader.replace('Bearer ', ''));
+      if (claimsError || !claimsData?.claims?.sub) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+      // Check admin role
+      const adminSb = cc(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+      const { data: roleData } = await adminSb.from('user_roles').select('role').eq('user_id', claimsData.claims.sub).eq('role', 'admin').maybeSingle();
+      if (!roleData) {
+        return new Response(JSON.stringify({ error: 'Forbidden: admin only' }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+    }
+
     const body = await req.json().catch(() => ({}));
     const sendCopyTo = body?.send_copy_to as string | undefined;
 

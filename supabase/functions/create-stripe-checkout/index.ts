@@ -13,6 +13,28 @@ serve(async (req) => {
   }
 
   try {
+    // ===== JWT Authentication =====
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized: missing token' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.49.1");
+    const supabaseAuth = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(authHeader.replace('Bearer ', ''));
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized: invalid token' }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { priceId, mode, productSlug, successUrl, cancelUrl, fbp, fbc, fbclid, userAgent, eventSourceUrl, eventId } = await req.json();
 
     if (!priceId || !successUrl || !cancelUrl) {
