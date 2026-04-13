@@ -95,6 +95,9 @@ export default function Seedance2() {
   const [showRatioModal, setShowRatioModal] = useState(false);
   const [showFaceWarning, setShowFaceWarning] = useState<{ accept: string; onSuccess: (url: string) => void } | null>(null);
   const [showCharacterTip, setShowCharacterTip] = useState(true);
+  const [showTutorial, setShowTutorial] = useState(() => {
+    return !localStorage.getItem("seedance2-tutorial-seen");
+  });
   const [selectedModel, setSelectedModel] = useState<{ title: string; thumbnail: string } | null>(() => {
     const state = location.state as { prefillTitle?: string; prefillThumbnail?: string } | null;
     if (state?.prefillTitle && state?.prefillThumbnail) {
@@ -978,6 +981,13 @@ export default function Seedance2() {
           </div>
         </div>
       )}
+      <Seedance2TutorialModal
+        open={showTutorial}
+        onClose={() => {
+          localStorage.setItem("seedance2-tutorial-seen", "true");
+          setShowTutorial(false);
+        }}
+      />
     </AppLayout>
   );
 }
