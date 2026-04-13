@@ -66,7 +66,7 @@ export const StatsCards = () => {
             ))}
           </div>
           <span className="text-white/80 text-xs sm:text-sm font-medium leading-tight">
-            Junte-se a mais de 5.000 criadores em todo o mundo.
+            Junte-se a mais de {animatedUsers.displayValue.toLocaleString('pt-BR')} criadores em todo o mundo.
           </span>
         </div>
 
