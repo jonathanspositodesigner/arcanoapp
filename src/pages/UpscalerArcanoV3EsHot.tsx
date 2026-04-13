@@ -1,7 +1,34 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
-import { useCheckout } from "@/hooks/useCheckout";
 import { ShieldCheck, Infinity, Rocket, Flame, Crown } from "lucide-react";
 import "@/styles/upscaler-v3.css";
+import { appendUtmToUrl } from "@/lib/utmUtils";
+import { getMetaCookies } from "@/lib/metaCookies";
+
+const HOTMART_LINKS: Record<string, string> = {
+  'starter': 'https://pay.hotmart.com/T105271055V',
+  'pro': 'https://pay.hotmart.com/K105336548M',
+  'ultimate': 'https://pay.hotmart.com/C105336648I',
+  'vitalicio': 'https://pay.hotmart.com/T105269427K',
+};
+
+function redirectToHotmart(plan: string) {
+  const url = HOTMART_LINKS[plan];
+  if (!url) return;
+
+  // Fire Meta Pixel InitiateCheckout with eventID for dedup
+  const eventId = `ic_hot_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+  if (typeof window !== 'undefined' && (window as any).fbq) {
+    (window as any).fbq('track', 'InitiateCheckout', {
+      content_name: `upscaler-arcano-${plan}-eshot`,
+      content_category: 'Hotmart Checkout',
+      currency: 'USD',
+    }, { eventID: eventId });
+  }
+
+  // Append UTMs + fbclid + sck to Hotmart URL
+  const finalUrl = appendUtmToUrl(url);
+  window.location.href = finalUrl;
+}
 import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar, V3PromoCountdown, V3GalleryBeforeAfter, V3RealResultCard, V3LazySection } from "@/components/upscaler-v3/V3IsolatedComponents";
 
 // Image imports for before/after and gallery
@@ -135,7 +162,7 @@ const UpscalerArcanoV3 = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const heroSlides = isMobile ? heroSlidesMobile : heroSlidesDesktop;
-  const { executeCheckout, isLoading, PagarmeCheckoutModal } = useCheckout({ source_page: "upscalerarcanov3-eshot" });
+  // Hotmart checkout — no useCheckout needed
 
   // Hero slider refs for direct DOM manipulation (no state rerenders)
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -591,7 +618,7 @@ const UpscalerArcanoV3 = () => {
                   <span className="cents">,90</span>
                   <span className="period">acceso vitalicio</span>
                 </div>
-                <button className="v3-plan-cta outline" onClick={() => executeCheckout("upscaler-arcano-starter-es")} disabled={isLoading}>Comenzar →</button>
+                <button className="v3-plan-cta outline" onClick={() => redirectToHotmart('starter')}>Comenzar →</button>
                 <div className="v3-plan-divider" />
                 <div className="v3-plan-feature"><span className="check">✓</span> 25 imágenes</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> 1.500 créditos</div>
@@ -613,7 +640,7 @@ const UpscalerArcanoV3 = () => {
                   <span className="cents">,90</span>
                   <span className="period">acceso vitalicio</span>
                 </div>
-                <button className="v3-plan-cta outline" onClick={() => executeCheckout("upscaler-arcano-pro-es")} disabled={isLoading}>Comenzar →</button>
+                <button className="v3-plan-cta outline" onClick={() => redirectToHotmart('pro')}>Comenzar →</button>
                 <div className="v3-plan-divider" />
                 <div className="v3-plan-feature"><span className="check">✓</span> 70 imágenes</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> 4.200 créditos</div>
@@ -635,7 +662,7 @@ const UpscalerArcanoV3 = () => {
                   <span className="cents">,90</span>
                   <span className="period">acceso vitalicio</span>
                 </div>
-                <button className="v3-plan-cta filled" onClick={() => executeCheckout("upscaler-arcano-ultimate-es")} disabled={isLoading}>Obtener Acceso →</button>
+                <button className="v3-plan-cta filled" onClick={() => redirectToHotmart('ultimate')}>Obtener Acceso →</button>
                 <div className="v3-plan-divider" />
                 <div className="v3-plan-feature"><span className="check">✓</span> 233 imágenes</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> 14.000 créditos</div>
@@ -658,7 +685,7 @@ const UpscalerArcanoV3 = () => {
                   <span className="cents">,90</span>
                   <span className="period">pagás una vez · usás para siempre</span>
                 </div>
-                <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => executeCheckout("upscaler-arcano-v3-es")} disabled={isLoading}>{isLoading ? 'Procesando...' : 'Obtener Vitalicio →'}</button>
+                <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => redirectToHotmart('vitalicio')}>Obtener Vitalicio →</button>
                 <div className="v3-plan-divider" />
                 <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Uso ilimitado · sin créditos</strong></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> Todas las herramientas</div>
@@ -746,7 +773,7 @@ const UpscalerArcanoV3 = () => {
           <span>© 2026 Upscaler Arcano · Todos los derechos reservados</span>
         </footer>
       </main>
-      <PagarmeCheckoutModal />
+      
     </>
   );
 };
