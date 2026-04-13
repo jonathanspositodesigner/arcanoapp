@@ -212,7 +212,7 @@ serve(async (req) => {
 
     if (!result.success) {
       // REFUND credits on API failure
-      await supabase.rpc("add_upscaler_credits", {
+      await supabase.rpc("refund_upscaler_credits", {
         _user_id: user.id,
         _amount: creditsToCharge,
         _description: `Estorno - Seedance 2 falhou (${model})`,
