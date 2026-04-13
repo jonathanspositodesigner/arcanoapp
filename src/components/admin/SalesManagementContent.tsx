@@ -79,6 +79,7 @@ const SalesManagementContent = () => {
   const [customEnd, setCustomEnd] = useState<Date | undefined>();
   const [emailStatuses, setEmailStatuses] = useState<Map<string, EmailLogStatus>>(new Map());
   const [resendingEmails, setResendingEmails] = useState<Set<string>>(new Set());
+  const [platformFilter, setPlatformFilter] = useState("all");
 
   const dateRange = useMemo(() => {
     const now = new Date();
