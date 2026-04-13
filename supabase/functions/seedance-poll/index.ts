@@ -71,7 +71,7 @@ serve(async (req) => {
     }
 
     if (pollResult.status === "failed") {
-      // REFUND credits on failure - get charged amount from job
+      // Read the charged amount first
       const { data: jobData } = await supabase
         .from("seedance_jobs")
         .select("credits_charged")
@@ -80,20 +80,39 @@ serve(async (req) => {
 
       const chargedAmount = jobData?.credits_charged || 0;
 
+      // Atomically claim refund: only update if credits_charged still matches
+      // This prevents double refund from concurrent poll calls
       if (chargedAmount > 0) {
-        await supabase.rpc("add_upscaler_credits", {
-          _user_id: user.id,
-          _amount: chargedAmount,
-          _description: "Estorno - Seedance 2 falhou",
-        });
-        console.log(`[seedance-poll] Refunded ${chargedAmount} credits to user ${user.id}`);
-      }
+        const { data: claimed } = await supabase
+          .from("seedance_jobs")
+          .update({
+            status: "failed",
+            error_message: pollResult.error || "Generation failed",
+            credits_charged: 0,
+          })
+          .eq("id", jobId)
+          .eq("credits_charged", chargedAmount)
+          .select("id")
+          .maybeSingle();
 
-      await supabase.from("seedance_jobs").update({
-        status: "failed",
-        error_message: pollResult.error || "Generation failed",
-        credits_charged: 0,
-      }).eq("id", jobId);
+        if (claimed) {
+          // We won the race — do the refund
+          await supabase.rpc("add_upscaler_credits", {
+            _user_id: user.id,
+            _amount: chargedAmount,
+            _description: "Estorno - Seedance 2 falhou",
+          });
+          console.log(`[seedance-poll] Refunded ${chargedAmount} credits to user ${user.id}`);
+        } else {
+          console.log(`[seedance-poll] Refund already claimed for job ${jobId}, skipping`);
+        }
+      } else {
+        // No credits to refund, just mark as failed
+        await supabase.from("seedance_jobs").update({
+          status: "failed",
+          error_message: pollResult.error || "Generation failed",
+        }).eq("id", jobId);
+      }
 
       return new Response(JSON.stringify({
         status: "failed",
