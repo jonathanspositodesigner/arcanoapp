@@ -371,6 +371,7 @@ export default function Seedance2() {
     setGalleryTab("creations");
     setGenerations((prev) => [{ id: genId, status: "queued", prompt: finalPrompt, ratio, duration }, ...prev]);
 
+    let createdJobId: string | null = null;
     try {
       const { data: jobData, error: insertError } = await supabase
         .from("seedance_jobs")
@@ -399,6 +400,7 @@ export default function Seedance2() {
         return;
       }
 
+      createdJobId = jobData.id;
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "processing" } : g));
 
       const { data: { session } } = await supabase.auth.getSession();
@@ -436,11 +438,11 @@ export default function Seedance2() {
     } catch (err: any) {
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: err.message } : g));
       // CRITICAL: Update DB too so job doesn't stay stuck as "queued"
-      if (jobData?.id) {
+      if (createdJobId) {
         await supabase.from("seedance_jobs").update({
           status: "failed",
           error_message: err.message || "Client-side error",
-        }).eq("id", jobData.id);
+        }).eq("id", createdJobId);
       }
     }
   }, [prompt, mode, speed, ratio, quality, duration, generateAudio, startImage, endImage, refImages, refVideos, refAudios, selectedCharacters, user, canGenerate, startPolling]);
