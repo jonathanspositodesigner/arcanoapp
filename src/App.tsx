@@ -158,6 +158,7 @@ const CheckoutSucesso = lazy(() => import("./pages/CheckoutSucesso"));
 const CheckoutCancelado = lazy(() => import("./pages/CheckoutCancelado"));
 const UpscalerArcanoV3 = lazy(() => import("./pages/UpscalerArcanoV3"));
 const UpscalerArcanoV3Es = lazy(() => import("./pages/UpscalerArcanoV3Es"));
+const UpscalerArcanoV3EsHot = lazy(() => import("./pages/UpscalerArcanoV3EsHot"));
 const UpscalerArcanoV3Teste = lazy(() => import("./pages/UpscalerArcanoV3Teste"));
 const SelfieNaLua = lazy(() => import("./pages/SelfieNaLua"));
 const CinemaStudio = lazy(() => import("./pages/CinemaStudio"));
