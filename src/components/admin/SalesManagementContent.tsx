@@ -58,6 +58,15 @@ const statusFilters = [
 
 type RangePreset = "today" | "7d" | "30d" | "90d" | "custom";
 
+const platformFilters = [
+  { id: "all", label: "Todas" },
+  { id: "pagarme", label: "Pagar.me" },
+  { id: "stripe", label: "Stripe" },
+  { id: "mercadopago", label: "Mercado Pago" },
+  { id: "greenn", label: "Greenn" },
+  { id: "hotmart", label: "Hotmart" },
+];
+
 const SalesManagementContent = () => {
   const [sales, setSales] = useState<SaleRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,6 +79,7 @@ const SalesManagementContent = () => {
   const [customEnd, setCustomEnd] = useState<Date | undefined>();
   const [emailStatuses, setEmailStatuses] = useState<Map<string, EmailLogStatus>>(new Map());
   const [resendingEmails, setResendingEmails] = useState<Set<string>>(new Set());
+  const [platformFilter, setPlatformFilter] = useState("all");
 
   const dateRange = useMemo(() => {
     const now = new Date();
@@ -340,24 +350,28 @@ const SalesManagementContent = () => {
     if (statusFilter !== "all") {
       result = result.filter((s) => s.status === statusFilter);
     }
+    if (platformFilter !== "all") {
+      result = result.filter((s) => s.source_platform === platformFilter);
+    }
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
         (s) =>
           s.user_email?.toLowerCase().includes(q) ||
           s.name?.toLowerCase().includes(q) ||
-          s.product_title?.toLowerCase().includes(q)
+          s.product_title?.toLowerCase().includes(q) ||
+          s.id?.toLowerCase().includes(q)
       );
     }
     return result;
-  }, [sales, search, statusFilter]);
+  }, [sales, search, statusFilter, platformFilter]);
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
   useEffect(() => {
     setPage(0);
-  }, [search, dateRange, statusFilter]);
+  }, [search, dateRange, statusFilter, platformFilter]);
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
@@ -426,6 +440,20 @@ const SalesManagementContent = () => {
                 className="text-xs"
               >
                 {sf.label}
+              </Button>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {platformFilters.map((pf) => (
+              <Button
+                key={pf.id}
+                variant={platformFilter === pf.id ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setPlatformFilter(pf.id)}
+                className="text-xs"
+              >
+                {pf.label}
               </Button>
             ))}
           </div>
