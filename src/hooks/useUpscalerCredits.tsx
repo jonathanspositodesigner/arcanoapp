@@ -146,14 +146,14 @@ export const useUpscalerCredits = (userId: string | undefined) => {
         return { 
           success: false, 
           error: result.error_message || 'Saldo insuficiente',
-          currentBalance: result.new_balance
+          currentBalance: result.remaining_balance
         };
       }
 
-      setBalance(result.new_balance);
+      setBalance(result.remaining_balance);
       // Refetch to get updated breakdown
       fetchBalance();
-      return { success: true, newBalance: result.new_balance };
+      return { success: true, newBalance: result.remaining_balance };
     } catch (err) {
       console.error('Error consuming credits:', err);
       return { success: false, error: 'Erro ao consumir créditos' };
