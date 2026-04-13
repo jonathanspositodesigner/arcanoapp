@@ -613,12 +613,10 @@ const Planos2 = () => {
 
               {/* Seedance 2 Badge for Pro, Ultimate, Unlimited */}
               {(plan.name === "Pro" || plan.name === "Ultimate" || plan.name === "IA Unlimited") && (
-                <div className="mb-3 mx-auto w-full rounded-lg bg-gradient-to-r from-green-500 via-emerald-400 to-green-500 p-[1px] shadow-md shadow-green-500/30">
-                  <div className="flex items-center justify-center gap-2 rounded-[7px] bg-gradient-to-r from-green-950/80 via-emerald-900/80 to-green-950/80 px-3 py-2">
-                    <Video className="w-3.5 h-3.5 text-green-300" />
-                    <span className="text-[12px] font-extrabold italic text-green-200 tracking-wider">Seedance 2</span>
-                    <span className="text-[8px] font-extrabold bg-gradient-to-r from-green-400 to-emerald-300 text-black px-2 py-0.5 rounded-full leading-none animate-pulse shadow-sm shadow-green-400/40">INCLUSO</span>
-                  </div>
+                <div className="mb-3 mx-auto w-full rounded-lg border border-lime-400/50 bg-gradient-to-r from-lime-950/60 via-green-900/60 to-lime-950/60 px-3 py-2 flex items-center justify-center gap-2 shadow-md shadow-lime-500/20">
+                    <Video className="w-3.5 h-3.5 text-lime-300" />
+                    <span className="text-[12px] font-extrabold italic text-lime-200 tracking-wider">Seedance 2</span>
+                    <span className="text-[8px] font-extrabold bg-gradient-to-r from-lime-400 to-lime-500 text-black px-2 py-0.5 rounded-full leading-none animate-pulse">INCLUSO</span>
                 </div>
               )}
 
