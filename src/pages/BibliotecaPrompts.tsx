@@ -18,6 +18,7 @@ import LazyVideo from "@/components/LazyVideo";
 import { useTranslation } from "react-i18next";
 import ExpiredSubscriptionModal from "@/components/ExpiredSubscriptionModal";
 import ExpiringSubscriptionModal from "@/components/ExpiringSubscriptionModal";
+import Seedance2PromoBanner from "@/components/Seedance2PromoBanner";
 
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 import AppLayout from "@/components/layout/AppLayout";
