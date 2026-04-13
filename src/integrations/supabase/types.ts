@@ -5443,6 +5443,7 @@ export type Database = {
         Args: { _amount: number; _currency: string }
         Returns: number
       }
+      deactivate_expired_subscriptions: { Args: never; Returns: Json }
       delete_user_ai_creation: {
         Args: { p_creation_id: string }
         Returns: boolean

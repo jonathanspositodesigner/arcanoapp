@@ -17,6 +17,7 @@ interface Planos2Subscription {
   has_image_generation: boolean;
   has_video_generation: boolean;
   cost_multiplier: number;
+  expires_at: string | null;
 }
 
 interface AuthContextType {
@@ -52,6 +53,7 @@ interface AuthContextType {
   isPlanos2User: boolean;
   hasImageGeneration: boolean;
   hasVideoGeneration: boolean;
+  isSubscriptionActive: boolean;
   costMultiplier: number;
   
   // Actions
@@ -151,7 +153,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             .maybeSingle(),
           supabase
             .from('planos2_subscriptions')
-            .select('plan_slug, is_active, credits_per_month, daily_prompt_limit, has_image_generation, has_video_generation, cost_multiplier')
+            .select('plan_slug, is_active, credits_per_month, daily_prompt_limit, has_image_generation, has_video_generation, cost_multiplier, expires_at')
             .eq('user_id', userId)
             .maybeSingle(),
         ])
@@ -393,8 +395,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     musicosExpiresAt,
     planos2Subscription,
     isPlanos2User: !!planos2Subscription,
-    hasImageGeneration: planos2Subscription?.has_image_generation ?? true,
-    hasVideoGeneration: planos2Subscription?.has_video_generation ?? true,
+    isSubscriptionActive: !!planos2Subscription && planos2Subscription.is_active === true && 
+      (!planos2Subscription.expires_at || new Date(planos2Subscription.expires_at) > new Date()),
+    hasImageGeneration: (() => {
+      const active = !!planos2Subscription && planos2Subscription.is_active === true && 
+        (!planos2Subscription.expires_at || new Date(planos2Subscription.expires_at) > new Date());
+      if (!planos2Subscription) return true; // legacy users
+      return active ? planos2Subscription.has_image_generation : false;
+    })(),
+    hasVideoGeneration: (() => {
+      const active = !!planos2Subscription && planos2Subscription.is_active === true && 
+        (!planos2Subscription.expires_at || new Date(planos2Subscription.expires_at) > new Date());
+      if (!planos2Subscription) return true; // legacy users
+      return active ? planos2Subscription.has_video_generation : false;
+    })(),
     costMultiplier: planos2Subscription?.cost_multiplier ?? 1.0,
     logout,
     refetch

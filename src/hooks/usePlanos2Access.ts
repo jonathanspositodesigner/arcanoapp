@@ -9,6 +9,7 @@ interface Planos2Subscription {
   has_image_generation: boolean;
   has_video_generation: boolean;
   cost_multiplier: number;
+  expires_at: string | null;
 }
 
 export const usePlanos2Access = (userId?: string) => {
@@ -25,7 +26,7 @@ export const usePlanos2Access = (userId?: string) => {
       try {
         const { data, error } = await supabase
           .from('planos2_subscriptions')
-          .select('plan_slug, is_active, credits_per_month, daily_prompt_limit, has_image_generation, has_video_generation, cost_multiplier')
+          .select('plan_slug, is_active, credits_per_month, daily_prompt_limit, has_image_generation, has_video_generation, cost_multiplier, expires_at')
           .eq('user_id', userId)
           .maybeSingle();
 
@@ -42,12 +43,17 @@ export const usePlanos2Access = (userId?: string) => {
     fetchSubscription();
   }, [userId]);
 
+  // Check if subscription is truly active (not expired)
+  const isReallyActive = subscription?.is_active === true && 
+    (!subscription?.expires_at || new Date(subscription.expires_at) > new Date());
+
   return {
     subscription,
     isLoading,
-    hasImageGeneration: subscription?.has_image_generation ?? true, // default true for users without planos2 (legacy)
-    hasVideoGeneration: subscription?.has_video_generation ?? true,
+    hasImageGeneration: isReallyActive ? (subscription?.has_image_generation ?? true) : !subscription ? true : false,
+    hasVideoGeneration: isReallyActive ? (subscription?.has_video_generation ?? true) : !subscription ? true : false,
     isPlanos2User: !!subscription,
+    isSubscriptionActive: isReallyActive,
     planSlug: subscription?.plan_slug ?? null,
     costMultiplier: subscription?.cost_multiplier ?? 1.0,
   };
