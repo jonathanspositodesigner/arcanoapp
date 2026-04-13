@@ -72,26 +72,43 @@ interface JobErrorDetails {
   api_account: string | null;
 }
 
+interface ToolRegistryEntry {
+  id: string;
+  tool_name: string;
+  display_name: string;
+  table_name: string;
+  is_video_tool: boolean;
+  input_image_column: string | null;
+  output_column: string;
+  cost_column: string | null;
+  credit_column: string;
+  has_failed_at_step: boolean;
+  has_queue_tracking: boolean;
+  has_started_at: boolean;
+  badge_color: string;
+  display_order: number;
+  engine_filter_column: string | null;
+  engine_filter_value: string | null;
+  enabled: boolean;
+}
+
 type UserClientType = 'free' | 'bought_credits' | 'redeemed_credits' | 'free_trial' | 'premium' | 'premium_credits';
 
 const ITEMS_PER_PAGE = 20;
-const SEARCH_PAGE_SIZE = 1000;
 
 // Conversion constants
 const CUSTO_POR_RH_COIN = 0.002; // R$ per RH coin
-const RECEITA_POR_CREDITO_PADRAO = 0.007; // fallback + baseline histórico
+const RECEITA_POR_CREDITO_PADRAO = 0.007;
 const RECEITA_POR_CREDITO_HISTORICA = 0.007;
-const RECEITA_CORTE_HISTORICO_ISO = "2026-04-11T21:50:00.000Z"; // 11/04/2026 18:50 BRT
+const RECEITA_CORTE_HISTORICO_ISO = "2026-04-11T21:50:00.000Z";
 const USER_TYPES_SEM_RECEITA = new Set<UserClientType>(["free", "free_trial"]);
 
-// API cost map: display tool name → fixed API cost in BRL (from ai_tool_settings)
+// API cost map: display tool name → fixed API cost in BRL
 const API_COST_MAP: Record<string, number> = {
   "Arcano Cloner": 0.18,
   "Gerador Avatar": 0.18,
   "Gerar Imagem - Nano Banana": 0.18,
 };
-
-const VIDEO_TOOLS = new Set(["Gerar Vídeo", "MovieLed Maker", "Seedance 2.0"]);
 
 const VIDEO_COST_PER_SECOND: Record<string, number> = {
   "vgj:wan2.2": 0,
@@ -139,11 +156,7 @@ const formatBRLPerCredit = (value: number) =>
 
 const getReceitaPorCreditoAplicada = (createdAt: string, receitaAtual: number) => {
   const createdAtDate = new Date(createdAt);
-
-  if (Number.isNaN(createdAtDate.getTime())) {
-    return receitaAtual;
-  }
-
+  if (Number.isNaN(createdAtDate.getTime())) return receitaAtual;
   return createdAtDate < new Date(RECEITA_CORTE_HISTORICO_ISO)
     ? RECEITA_POR_CREDITO_HISTORICA
     : receitaAtual;
@@ -158,23 +171,6 @@ const DATE_FILTERS = [
   { value: "all", label: "Todo período" },
 ];
 
-const TOOL_FILTERS = [
-  { value: "all", label: "Todas as ferramentas" },
-  { value: "Upscaler Arcano", label: "Upscaler Arcano" },
-  { value: "Pose Changer", label: "Pose Changer" },
-  { value: "Veste AI", label: "Veste AI" },
-  { value: "Video Upscaler", label: "Video Upscaler" },
-  { value: "Arcano Cloner", label: "Arcano Cloner" },
-  { value: "Gerador Avatar", label: "Gerador Avatar" },
-  { value: "Gerar Imagem - Flux 2", label: "Gerar Imagem - Flux 2" },
-  { value: "Gerar Imagem - Nano Banana", label: "Gerar Imagem - Nano Banana" },
-  { value: "Gerar Vídeo", label: "Gerar Vídeo" },
-  { value: "Flyer Maker", label: "Flyer Maker" },
-  { value: "Remover Fundo", label: "Remover Fundo" },
-  { value: "MovieLed Maker", label: "MovieLed Maker" },
-  { value: "Seedance 2.0", label: "Seedance 2.0" },
-];
-
 const STATUS_FILTERS = [
   { value: "all", label: "Todos os status" },
   { value: "completed", label: "✅ Concluídos" },
@@ -185,7 +181,10 @@ const STATUS_FILTERS = [
   { value: "starting", label: "🚀 Iniciando" },
 ];
 
+const VIDEO_TOOL_NAMES = new Set(["Gerar Vídeo", "MovieLed Maker", "Seedance 2.0", "Video Upscaler"]);
+
 const AdminAIToolsUsageTab = () => {
+  const [toolRegistry, setToolRegistry] = useState<ToolRegistryEntry[]>([]);
   const [usageRecords, setUsageRecords] = useState<UsageRecord[]>([]);
   const [summary, setSummary] = useState<UsageSummary | null>(null);
   const [totalCount, setTotalCount] = useState(0);
@@ -213,42 +212,51 @@ const AdminAIToolsUsageTab = () => {
   const [errorDetails, setErrorDetails] = useState<JobErrorDetails | null>(null);
   const [isLoadingErrorDetails, setIsLoadingErrorDetails] = useState(false);
 
-  const isVideoTool = (toolName: string) => toolName === "Video Upscaler" || toolName === "Gerar Vídeo" || toolName === "MovieLed Maker" || toolName === "Seedance 2.0";
+  // === Registry-driven helpers ===
+  const getToolConfig = useCallback((toolName: string) => {
+    return toolRegistry.find(t => t.display_name === toolName);
+  }, [toolRegistry]);
 
-  const getInputColumn = (toolName: string): string | null => {
-    switch (toolName) {
-      case "Upscaler Arcano": return "input_url";
-      case "Arcano Cloner": return "user_image_url";
-      case "Pose Changer": return "person_image_url";
-      case "Veste AI": return "person_image_url";
-      case "Gerador Avatar": return "front_image_url";
-      case "Flyer Maker": return "reference_image_url";
-      case "Remover Fundo": return "input_url";
-      case "Gerar Imagem - Flux 2": return null;
-      case "Gerar Imagem - Nano Banana": return null;
-      case "Gerar Vídeo": return null;
-      default: return null;
-    }
-  };
+  const isVideoTool = useCallback((toolName: string) => {
+    const config = getToolConfig(toolName);
+    return config?.is_video_tool ?? VIDEO_TOOL_NAMES.has(toolName);
+  }, [getToolConfig]);
 
-  const getTableName = (toolName: string): string => {
-    switch (toolName) {
-      case "Upscaler Arcano": return "upscaler_jobs";
-      case "Pose Changer": return "pose_changer_jobs";
-      case "Veste AI": return "veste_ai_jobs";
-      case "Video Upscaler": return "video_upscaler_jobs";
-      case "Arcano Cloner": return "arcano_cloner_jobs";
-      case "Gerador Avatar": return "character_generator_jobs";
-      case "Gerar Imagem - Flux 2": return "image_generator_jobs";
-      case "Gerar Imagem - Nano Banana": return "image_generator_jobs";
-      case "Gerar Vídeo": return "video_generator_jobs";
-      case "Flyer Maker": return "flyer_maker_jobs";
-      case "Remover Fundo": return "bg_remover_jobs";
-      case "MovieLed Maker": return "movieled_maker_jobs";
-      case "Seedance 2.0": return "seedance_jobs";
-      default: return "upscaler_jobs";
-    }
-  };
+  const getInputColumn = useCallback((toolName: string): string | null => {
+    return getToolConfig(toolName)?.input_image_column || null;
+  }, [getToolConfig]);
+
+  const getTableName = useCallback((toolName: string): string => {
+    return getToolConfig(toolName)?.table_name || 'upscaler_jobs';
+  }, [getToolConfig]);
+
+  const getToolBadge = useCallback((toolName: string) => {
+    const config = getToolConfig(toolName);
+    const color = config?.badge_color || '';
+    return <Badge className={color}>{toolName}</Badge>;
+  }, [getToolConfig]);
+
+  // Dynamic tool filters from registry
+  const toolFilters = useMemo(() => [
+    { value: "all", label: "Todas as ferramentas" },
+    ...toolRegistry.map(t => ({ value: t.display_name, label: t.display_name }))
+  ], [toolRegistry]);
+
+  // Fetch registry on mount
+  useEffect(() => {
+    const fetchRegistry = async () => {
+      const { data, error } = await supabase
+        .from('ai_tool_registry')
+        .select('*')
+        .eq('enabled', true)
+        .order('display_order');
+      
+      if (!error && data) {
+        setToolRegistry(data as unknown as ToolRegistryEntry[]);
+      }
+    };
+    fetchRegistry();
+  }, []);
 
   const fetchErrorDetails = useCallback(async (record: UsageRecord) => {
     setIsLoadingErrorDetails(true);
@@ -270,7 +278,7 @@ const AdminAIToolsUsageTab = () => {
     } finally {
       setIsLoadingErrorDetails(false);
     }
-  }, []);
+  }, [getTableName]);
 
   const handleJobClick = useCallback(async (record: UsageRecord) => {
     setSelectedJob(record);
@@ -281,10 +289,8 @@ const AdminAIToolsUsageTab = () => {
     setShowFullscreen(false);
     setErrorDetails(null);
 
-    // If failed or non-completed, fetch error details AND input image
     if (record.status !== "completed") {
       fetchErrorDetails(record);
-      // Also fetch input image for failed jobs so admin can see what the user sent
       setIsLoadingOutput(true);
       try {
         const tableName = getTableName(record.tool_name);
@@ -335,7 +341,7 @@ const AdminAIToolsUsageTab = () => {
     } finally {
       setIsLoadingOutput(false);
     }
-  }, [fetchErrorDetails]);
+  }, [fetchErrorDetails, getTableName, getInputColumn]);
 
   const getDateRange = () => {
     const now = new Date();
@@ -359,12 +365,9 @@ const AdminAIToolsUsageTab = () => {
   const fetchReceitaPorCreditoAtual = useCallback(async () => {
     try {
       const { data, error } = await supabase.rpc('get_receita_por_credito' as any);
-
       if (error) throw error;
-
       const result = data as { receita_por_credito?: number } | null;
       const receitaAtual = Number(result?.receita_por_credito);
-
       if (Number.isFinite(receitaAtual) && receitaAtual > 0) {
         setReceitaPorCreditoAtual(receitaAtual);
       }
@@ -379,20 +382,23 @@ const AdminAIToolsUsageTab = () => {
       const { start, end } = getDateRange();
       
       const toolFilterParam = toolFilter === 'all' ? null : toolFilter;
+      const statusFilterParam = statusFilter === 'all' ? null : statusFilter;
       
-      const { data: records, error: recordsError } = await supabase.rpc('get_ai_tools_usage', {
+      // Use v2 RPCs with server-side status filter
+      const { data: records, error: recordsError } = await supabase.rpc('get_ai_tools_usage_v2' as any, {
         p_start_date: start?.toISOString() || null,
         p_end_date: end?.toISOString() || null,
         p_page: currentPage,
         p_page_size: ITEMS_PER_PAGE,
-        p_tool_filter: toolFilterParam
+        p_tool_filter: toolFilterParam,
+        p_status_filter: statusFilterParam
       });
 
       if (recordsError) throw recordsError;
       setUsageRecords(records || []);
 
       // Fetch video job details for per-second cost
-      const videoRecords = (records || []).filter((r: UsageRecord) => VIDEO_TOOLS.has(r.tool_name));
+      const videoRecords = (records || []).filter((r: UsageRecord) => isVideoTool(r.tool_name));
       if (videoRecords.length > 0) {
         const vgjIds = videoRecords.filter((r: UsageRecord) => r.tool_name === 'Gerar Vídeo').map((r: UsageRecord) => r.id);
         const mljIds = videoRecords.filter((r: UsageRecord) => r.tool_name === 'MovieLed Maker').map((r: UsageRecord) => r.id);
@@ -414,19 +420,19 @@ const AdminAIToolsUsageTab = () => {
       } else { setVideoJobDetailsMap({}); }
 
       // Fetch user types
-      const userIds = [...new Set((records || []).map((r: UsageRecord) => r.user_id).filter(Boolean))];
+      const userIds = [...new Set((records || []).map((r: UsageRecord) => r.user_id).filter(Boolean))] as string[];
       if (userIds.length > 0) {
         const [subsRes, creditsRes, promoRes, trialRes] = await Promise.all([
-          supabase.from('planos2_subscriptions').select('user_id').eq('is_active', true).neq('plan_slug', 'free').in('user_id', userIds),
-          supabase.from('upscaler_credits').select('user_id, lifetime_balance').gt('lifetime_balance', 0).in('user_id', userIds),
-          supabase.from('promo_claims').select('user_id').eq('promo_code', 'UPSCALER_1500').in('user_id', userIds),
-          supabase.from('arcano_cloner_free_trials').select('user_id').in('user_id', userIds),
+          supabase.from('planos2_subscriptions').select('user_id').eq('is_active', true).neq('plan_slug', 'free').in('user_id', userIds as string[]),
+          supabase.from('upscaler_credits').select('user_id, lifetime_balance').gt('lifetime_balance', 0).in('user_id', userIds as string[]),
+          supabase.from('promo_claims').select('user_id').eq('promo_code', 'UPSCALER_1500').in('user_id', userIds as string[]),
+          supabase.from('arcano_cloner_free_trials').select('user_id').in('user_id', userIds as string[]),
         ]);
 
-        const premiumSet = new Set((subsRes.data || []).map(s => s.user_id));
-        const lifetimeSet = new Set((creditsRes.data || []).map(c => c.user_id));
-        const promoSet = new Set((promoRes.data || []).map(p => p.user_id));
-        const trialSet = new Set((trialRes.data || []).map(t => t.user_id));
+        const premiumSet = new Set((subsRes.data || []).map((s: any) => s.user_id as string));
+        const lifetimeSet = new Set((creditsRes.data || []).map((c: any) => c.user_id as string));
+        const promoSet = new Set((promoRes.data || []).map((p: any) => p.user_id as string));
+        const trialSet = new Set((trialRes.data || []).map((t: any) => t.user_id as string));
 
         const typeMap: Record<string, UserClientType> = {};
         for (const uid of userIds) {
@@ -444,21 +450,23 @@ const AdminAIToolsUsageTab = () => {
         setUserTypeMap(typeMap);
       }
 
-      // Fetch total count
-      const { data: countData, error: countError } = await supabase.rpc('get_ai_tools_usage_count', {
+      // Fetch total count (v2 with status filter)
+      const { data: countData, error: countError } = await supabase.rpc('get_ai_tools_usage_count_v2' as any, {
         p_start_date: start?.toISOString() || null,
         p_end_date: end?.toISOString() || null,
-        p_tool_filter: toolFilterParam
+        p_tool_filter: toolFilterParam,
+        p_status_filter: statusFilterParam
       });
 
       if (countError) throw countError;
       setTotalCount(countData || 0);
 
-      // Fetch summary
-      const { data: summaryData, error: summaryError } = await supabase.rpc('get_ai_tools_usage_summary', {
+      // Fetch summary (v2 with status filter)
+      const { data: summaryData, error: summaryError } = await supabase.rpc('get_ai_tools_usage_summary_v2' as any, {
         p_start_date: start?.toISOString() || null,
         p_end_date: end?.toISOString() || null,
-        p_tool_filter: toolFilterParam
+        p_tool_filter: toolFilterParam,
+        p_status_filter: statusFilterParam
       });
 
       if (summaryError) throw summaryError;
@@ -473,16 +481,14 @@ const AdminAIToolsUsageTab = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, [currentPage, dateFilter, toolFilter]);
+    if (toolRegistry.length > 0) {
+      fetchData();
+    }
+  }, [currentPage, dateFilter, toolFilter, statusFilter, toolRegistry]);
 
   useEffect(() => {
     fetchReceitaPorCreditoAtual();
-
-    const intervalId = window.setInterval(() => {
-      fetchReceitaPorCreditoAtual();
-    }, 60000);
-
+    const intervalId = window.setInterval(() => { fetchReceitaPorCreditoAtual(); }, 60000);
     return () => window.clearInterval(intervalId);
   }, [fetchReceitaPorCreditoAtual]);
 
@@ -490,23 +496,15 @@ const AdminAIToolsUsageTab = () => {
     setCurrentPage(1);
   }, [dateFilter, toolFilter, statusFilter]);
 
+  // No more client-side status filter — it's now server-side
   const filteredRecords = useMemo(() => {
-    let filtered = [...usageRecords];
-
-    if (statusFilter !== "all") {
-      filtered = filtered.filter(r => r.status === statusFilter);
-    }
-
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(r =>
-        r.user_email?.toLowerCase().includes(term) ||
-        r.user_name?.toLowerCase().includes(term)
-      );
-    }
-
-    return filtered;
-  }, [usageRecords, statusFilter, searchTerm]);
+    if (!searchTerm) return usageRecords;
+    const term = searchTerm.toLowerCase();
+    return usageRecords.filter(r =>
+      r.user_email?.toLowerCase().includes(term) ||
+      r.user_name?.toLowerCase().includes(term)
+    );
+  }, [usageRecords, searchTerm]);
 
   // Error analytics from current page data
   const errorAnalytics = useMemo(() => {
@@ -528,10 +526,27 @@ const AdminAIToolsUsageTab = () => {
     };
   }, [usageRecords]);
 
+  // BUG 1 FIX: Calculate revenue from individual records, not from summary total_credits
+  const receitaCalculada = useMemo(() => {
+    let totalReceita = 0;
+    for (const record of usageRecords) {
+      totalReceita += getRecordRevenueInternal(record);
+    }
+    return totalReceita;
+  }, [usageRecords, receitaPorCreditoAtual, userTypeMap]);
+
+  function getRecordRevenueInternal(record: UsageRecord): number {
+    if (record.status === 'failed') return 0;
+    const userType = userTypeMap[record.user_id] || 'free';
+    if (USER_TYPES_SEM_RECEITA.has(userType)) return 0;
+    const receitaPorCreditoAplicada = getReceitaPorCreditoAplicada(record.created_at, receitaPorCreditoAtual);
+    return record.user_credit_cost * receitaPorCreditoAplicada;
+  }
+
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
   const custoTotalResumo = summary ? summary.total_rh_cost * CUSTO_POR_RH_COIN : 0;
-  const receitaUsuariosTotal = summary ? summary.total_credits * receitaPorCreditoAtual : 0;
-  const lucroTotalResumo = receitaUsuariosTotal - custoTotalResumo;
+  // Use per-record revenue calculation instead of inflated summary (BUG 1 FIX)
+  const lucroTotalResumo = receitaCalculada - custoTotalResumo;
 
   const formatDuration = (seconds: number) => {
     if (seconds < 60) return `${seconds}s`;
@@ -567,25 +582,6 @@ const AdminAIToolsUsageTab = () => {
     }
   };
 
-  const getToolBadge = (toolName: string) => {
-    const colors: Record<string, string> = {
-      "Upscaler Arcano": "bg-purple-500/20 text-purple-400 border-purple-500/30",
-      "Pose Changer": "bg-orange-500/20 text-orange-400 border-orange-500/30",
-      "Veste AI": "bg-pink-500/20 text-pink-400 border-pink-500/30",
-      "Video Upscaler": "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
-      "Arcano Cloner": "bg-blue-500/20 text-blue-400 border-blue-500/30",
-      "Gerador Avatar": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-      "Gerar Imagem - Flux 2": "bg-amber-500/20 text-amber-400 border-amber-500/30",
-      "Gerar Imagem - Nano Banana": "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-      "Gerar Vídeo": "bg-rose-500/20 text-rose-400 border-rose-500/30",
-      "Flyer Maker": "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
-      "Remover Fundo": "bg-teal-500/20 text-teal-400 border-teal-500/30",
-      "MovieLed Maker": "bg-violet-500/20 text-violet-400 border-violet-500/30",
-      "Seedance 2.0": "bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/30",
-    };
-    return <Badge className={colors[toolName] || ""}>{toolName}</Badge>;
-  };
-
   const getUserTypeBadge = (userId: string) => {
     const type = userTypeMap[userId] || 'free';
     switch (type) {
@@ -605,7 +601,7 @@ const AdminAIToolsUsageTab = () => {
   };
 
   const getVideoCostBRL = useCallback((record: UsageRecord): number => {
-    if (!VIDEO_TOOLS.has(record.tool_name) || record.status !== 'completed') return 0;
+    if (!isVideoTool(record.tool_name) || record.status !== 'completed') return 0;
     const d = videoJobDetailsMap[record.id];
     if (!d) return 0;
     let cps = 0;
@@ -622,18 +618,12 @@ const AdminAIToolsUsageTab = () => {
       cps = VIDEO_COST_PER_SECOND[`sdj:${d.model || 'fast'}:${d.quality || '480p'}:${d.hasImage ? 'i2v' : 't2v'}`] || 0;
     }
     return cps * dur;
-  }, [videoJobDetailsMap]);
+  }, [videoJobDetailsMap, isVideoTool]);
 
   const getRecordRevenue = useCallback((record: UsageRecord) => {
-    // Jobs falhados não geram receita (créditos são estornados)
     if (record.status === 'failed') return 0;
-
     const userType = userTypeMap[record.user_id] || 'free';
-
-    if (USER_TYPES_SEM_RECEITA.has(userType)) {
-      return 0;
-    }
-
+    if (USER_TYPES_SEM_RECEITA.has(userType)) return 0;
     const receitaPorCreditoAplicada = getReceitaPorCreditoAplicada(record.created_at, receitaPorCreditoAtual);
     return record.user_credit_cost * receitaPorCreditoAplicada;
   }, [receitaPorCreditoAtual, userTypeMap]);
@@ -729,11 +719,11 @@ const AdminAIToolsUsageTab = () => {
         <div className="space-y-2">
           <Label>Ferramenta</Label>
           <Select value={toolFilter} onValueChange={setToolFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[220px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {TOOL_FILTERS.map(f => (
+              {toolFilters.map(f => (
                 <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
               ))}
             </SelectContent>
@@ -816,7 +806,7 @@ const AdminAIToolsUsageTab = () => {
               <Coins className="h-8 w-8 text-yellow-500" />
               <div>
                 <p className="text-xs text-muted-foreground">Custo Total (R$)</p>
-                <p className="text-xl font-bold">{formatBRL(summary.total_rh_cost * CUSTO_POR_RH_COIN)}</p>
+                <p className="text-xl font-bold">{formatBRL(custoTotalResumo)}</p>
               </div>
             </CardContent>
           </Card>
@@ -826,7 +816,7 @@ const AdminAIToolsUsageTab = () => {
               <Users className="h-8 w-8 text-blue-500" />
               <div>
                 <p className="text-xs text-muted-foreground">Receita Usuários (R$)</p>
-                <p className="text-xl font-bold">{formatBRL(receitaUsuariosTotal)}</p>
+                <p className="text-xl font-bold">{formatBRL(receitaCalculada)}</p>
               </div>
             </CardContent>
           </Card>
@@ -937,8 +927,10 @@ const AdminAIToolsUsageTab = () => {
           <CardTitle className="text-lg flex items-center gap-2">
             <ArrowUpDown className="h-5 w-5" />
             Histórico de Uso ({totalCount} registros)
-            {statusFilter === 'failed' && (
-              <Badge className="bg-red-500/20 text-red-400 border-red-500/30 ml-2">Somente Falhas</Badge>
+            {statusFilter !== 'all' && (
+              <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 ml-2">
+                Filtro: {STATUS_FILTERS.find(f => f.value === statusFilter)?.label}
+              </Badge>
             )}
           </CardTitle>
         </CardHeader>
@@ -1108,10 +1100,8 @@ const AdminAIToolsUsageTab = () => {
           </DialogHeader>
 
           <div className="mt-2 space-y-4">
-            {/* FAILED JOB - Show full error details */}
             {selectedJob && selectedJob.status !== "completed" ? (
               <>
-                {/* Error summary from RPC data */}
                 <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-4 space-y-3">
                   <div className="flex items-center gap-2">
                     <AlertTriangle className="h-5 w-5 text-red-400" />
@@ -1133,7 +1123,6 @@ const AdminAIToolsUsageTab = () => {
                   )}
                 </div>
 
-                {/* Detailed error data from direct table query */}
                 {isLoadingErrorDetails ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -1141,7 +1130,6 @@ const AdminAIToolsUsageTab = () => {
                   </div>
                 ) : errorDetails ? (
                   <div className="space-y-3">
-                    {/* Credits status */}
                     <div className="flex gap-4 text-sm">
                       <div className="flex items-center gap-1.5">
                         <span className="text-muted-foreground">Créditos cobrados:</span>
@@ -1161,7 +1149,6 @@ const AdminAIToolsUsageTab = () => {
                       </div>
                     </div>
 
-                    {/* Meta info */}
                     <div className="flex gap-4 text-xs text-muted-foreground">
                       {errorDetails.current_step && (
                         <span>Último step: <code className="text-foreground">{errorDetails.current_step}</code></span>
@@ -1174,7 +1161,6 @@ const AdminAIToolsUsageTab = () => {
                       )}
                     </div>
 
-                    {/* Full error message from DB (may differ from RPC) */}
                     {errorDetails.error_message && errorDetails.error_message !== selectedJob.error_message && (
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Erro Completo (banco)</p>
@@ -1182,18 +1168,12 @@ const AdminAIToolsUsageTab = () => {
                       </div>
                     )}
 
-                    {/* Step History */}
                     {renderJsonBlock("Step History (Timeline)", errorDetails.step_history)}
-
-                    {/* Raw API Response */}
                     {renderJsonBlock("Raw API Response", errorDetails.raw_api_response)}
-
-                    {/* Raw Webhook Payload */}
                     {renderJsonBlock("Raw Webhook Payload", errorDetails.raw_webhook_payload)}
                   </div>
                 ) : null}
 
-                {/* Input image for failed jobs */}
                 {jobInputUrl && (
                   <div className="space-y-2">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Imagem Enviada pelo Usuário</p>
