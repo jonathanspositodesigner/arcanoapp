@@ -5435,7 +5435,7 @@ export type Database = {
         Args: { _amount: number; _description?: string; _user_id: string }
         Returns: {
           error_message: string
-          new_balance: number
+          remaining_balance: number
           success: boolean
         }[]
       }
