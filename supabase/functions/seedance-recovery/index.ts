@@ -67,6 +67,29 @@ serve(async (req) => {
 
     for (const job of eligibleJobs) {
       try {
+        // Handle orphaned "queued" jobs (edge function never ran)
+        if (job.status === "queued" && !job.task_id) {
+          console.log(`[seedance-recovery] 🧹 Cleaning orphaned queued job ${job.id} (stuck since ${job.created_at})`);
+          
+          // Refund credits if they were charged
+          const chargedAmount = job.credits_charged || 0;
+          if (chargedAmount > 0) {
+            await supabase.rpc("add_upscaler_credits", {
+              _user_id: job.user_id,
+              _amount: chargedAmount,
+              _description: "Estorno - Seedance 2 (job travou na fila)",
+            });
+            console.log(`[seedance-recovery] Refunded ${chargedAmount} credits to user ${job.user_id}`);
+          }
+          
+          await supabase.from("seedance_jobs").update({
+            status: "failed",
+            error_message: "Job não foi processado - tente novamente",
+          }).eq("id", job.id);
+          failed++;
+          continue;
+        }
+
         console.log(`[seedance-recovery] Checking job ${job.id} (task: ${job.task_id})`);
         const pollResult = await evolinkPoll(evolinkKey, job.task_id!);
 
