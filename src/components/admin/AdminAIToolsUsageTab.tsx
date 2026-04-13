@@ -75,6 +75,7 @@ interface JobErrorDetails {
 type UserClientType = 'free' | 'bought_credits' | 'redeemed_credits' | 'free_trial' | 'premium' | 'premium_credits';
 
 const ITEMS_PER_PAGE = 20;
+const SEARCH_PAGE_SIZE = 1000;
 
 // Conversion constants
 const CUSTO_POR_RH_COIN = 0.002; // R$ per RH coin

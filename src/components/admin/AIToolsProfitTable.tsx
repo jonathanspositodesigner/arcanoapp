@@ -126,11 +126,11 @@ const AIToolsProfitTable = () => {
       if (error) throw error;
       const mapped = (data || []).map((d: any) => ({
         tool_name: d.tool_name,
-        total_jobs: d.total_completed,
-        avg_rh_cost: d.avg_rh_cost,
-        avg_credit_cost: d.avg_user_credit,
-        total_rh_cost: d.total_rh_cost,
-        total_credit_cost: d.total_user_credits,
+        total_jobs: Number(d.total_completed ?? 0),
+        avg_rh_cost: Number(d.avg_rh_cost ?? 0),
+        avg_credit_cost: Number(d.avg_user_credits ?? d.avg_user_credit ?? 0),
+        total_rh_cost: Number(d.total_rh_cost ?? 0),
+        total_credit_cost: Number(d.total_user_credits ?? 0),
       }));
       setToolsData(mapped);
     } catch (error) {
