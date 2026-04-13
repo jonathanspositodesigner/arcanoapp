@@ -4,7 +4,8 @@ import { evolinkGenerate } from "../_shared/evolink-client.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 // Server-side pricing table (credits per second) - source of truth
@@ -38,6 +39,12 @@ serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Track state for safe refund in catch block
+  let supabase: ReturnType<typeof createClient> | null = null;
+  let userId: string | null = null;
+  let jobId: string | null = null;
+  let creditsCharged = 0;
+
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
@@ -56,21 +63,29 @@ serve(async (req) => {
       });
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Validate JWT via getClaims (avoids session_not_found errors from getUser)
+    const supabaseAuth = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !user) {
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      console.error("[seedance-generate] Auth failed:", claimsError?.message || "no sub claim");
       return new Response(JSON.stringify({ success: false, error: "Invalid token" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    userId = claimsData.claims.sub as string;
+    const userEmail = claimsData.claims.email || "";
 
     const body = await req.json();
     const {
       model, prompt, imageUrls, videoUrls, audioUrls,
-      duration, quality, aspectRatio, generateAudio, jobId
+      duration, quality, aspectRatio, generateAudio,
     } = body;
+    jobId = body.jobId;
 
     if (!model || !prompt || !jobId) {
       return new Response(JSON.stringify({ success: false, error: "Missing required fields" }), {
@@ -89,13 +104,13 @@ serve(async (req) => {
       });
     }
 
-    console.log(`[seedance-generate] Server-calculated cost: ${creditsToCharge} credits (model=${model}, quality=${parsedQuality}, duration=${parsedDuration}s)`);
+    console.log(`[seedance-generate] User: ${userEmail} | Cost: ${creditsToCharge} credits (model=${model}, quality=${parsedQuality}, duration=${parsedDuration}s)`);
 
     // Credit check — use raw balance, NOT the unlimited-aware RPC
     const { data: creditRow } = await supabase
       .from("upscaler_credits")
       .select("monthly_balance, lifetime_balance")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .single();
 
     const totalBalance = (creditRow?.monthly_balance || 0) + (creditRow?.lifetime_balance || 0);
@@ -105,11 +120,9 @@ serve(async (req) => {
       });
     }
 
-    // Charge credits IMMEDIATELY — use force_consume RPC that always charges (even unlimited)
-    // We call consume_upscaler_credits_forced which bypasses unlimited check
-    // Fallback: direct SQL deduction via service role
+    // Charge credits IMMEDIATELY
     const { data: consumeResult, error: consumeError } = await supabase.rpc("consume_upscaler_credits_forced", {
-      _user_id: user.id,
+      _user_id: userId,
       _amount: creditsToCharge,
       _description: `Cinema Studio - Seedance 2 (${model})`,
     });
@@ -151,7 +164,7 @@ serve(async (req) => {
           balance: newBalance,
           updated_at: new Date().toISOString(),
         })
-        .eq("user_id", user.id);
+        .eq("user_id", userId);
 
       if (updateErr) {
         console.error("[seedance-generate] Failed to deduct credits:", updateErr);
@@ -162,7 +175,7 @@ serve(async (req) => {
 
       // Log transaction
       await supabase.from("upscaler_credit_transactions").insert({
-        user_id: user.id,
+        user_id: userId,
         amount: -creditsToCharge,
         balance_after: newBalance,
         transaction_type: "consumption",
@@ -171,7 +184,7 @@ serve(async (req) => {
       });
 
       actuallyCharged = true;
-      console.log(`[seedance-generate] Direct deduction: ${creditsToCharge} credits from user ${user.id}, new balance: ${newBalance}`);
+      console.log(`[seedance-generate] Direct deduction: ${creditsToCharge} credits from user ${userId}, new balance: ${newBalance}`);
     } else {
       // RPC succeeded
       const result = Array.isArray(consumeResult) ? consumeResult[0] : consumeResult;
@@ -181,7 +194,7 @@ serve(async (req) => {
         });
       }
       actuallyCharged = true;
-      console.log(`[seedance-generate] Forced RPC charged ${creditsToCharge} credits from user ${user.id}`);
+      console.log(`[seedance-generate] Forced RPC charged ${creditsToCharge} credits from user ${userId}`);
     }
 
     if (!actuallyCharged) {
@@ -189,6 +202,9 @@ serve(async (req) => {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Track charged amount for safe refund in catch
+    creditsCharged = creditsToCharge;
 
     // Update job with credits_charged
     await supabase.from("seedance_jobs").update({
@@ -213,11 +229,12 @@ serve(async (req) => {
     if (!result.success) {
       // REFUND credits on API failure
       await supabase.rpc("refund_upscaler_credits", {
-        _user_id: user.id,
+        _user_id: userId,
         _amount: creditsToCharge,
         _description: `Estorno - Seedance 2 falhou (${model})`,
       });
-      console.log(`[seedance-generate] Refunded ${creditsToCharge} credits to user ${user.id}`);
+      creditsCharged = 0; // prevent double refund in catch
+      console.log(`[seedance-generate] Refunded ${creditsToCharge} credits to user ${userId}`);
 
       await supabase.from("seedance_jobs").update({
         status: "failed",
@@ -244,8 +261,35 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error("[seedance-generate] Error:", error);
-    return new Response(JSON.stringify({ success: false, error: error.message }), {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error("[seedance-generate] Unhandled error:", errMsg);
+
+    // SAFETY NET: refund credits if they were charged but the function crashed
+    if (supabase && userId && creditsCharged > 0) {
+      try {
+        await supabase.rpc("refund_upscaler_credits", {
+          _user_id: userId,
+          _amount: creditsCharged,
+          _description: `Estorno automático - Seedance 2 crash`,
+        });
+        console.log(`[seedance-generate] SAFETY: Refunded ${creditsCharged} credits to ${userId} after crash`);
+      } catch (refundErr) {
+        console.error("[seedance-generate] CRITICAL: Failed to refund after crash:", refundErr);
+      }
+    }
+
+    // Mark job as failed in DB
+    if (supabase && jobId) {
+      try {
+        await supabase.from("seedance_jobs").update({
+          status: "failed",
+          error_message: `Server error: ${errMsg}`,
+          credits_charged: 0,
+        }).eq("id", jobId);
+      } catch (_) { /* best effort */ }
+    }
+
+    return new Response(JSON.stringify({ success: false, error: errMsg }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
