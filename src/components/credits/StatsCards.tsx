@@ -44,6 +44,7 @@ export const StatsCards = () => {
 
   const animatedImages = useAnimatedNumber(totalImages, 1500);
   const animatedVideos = useAnimatedNumber(totalVideos, 1500);
+  const animatedUsers = useAnimatedNumber(totalUsers, 1500);
   const animatedSatisfaction = useAnimatedNumber(loaded ? 100 : 0, 1500);
 
   return (
