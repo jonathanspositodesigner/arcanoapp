@@ -7,6 +7,32 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Server-side pricing table (credits per second) - source of truth
+const PRICING: Record<string, number> = {
+  "fast-480p-i2v": 100,
+  "fast-480p-t2v": 100,
+  "fast-720p-i2v": 250,
+  "fast-720p-t2v": 250,
+  "standard-480p-i2v": 130,
+  "standard-480p-t2v": 150,
+  "standard-720p-i2v": 270,
+  "standard-720p-t2v": 300,
+};
+
+function computeCreditCost(model: string, quality: string, duration: number): number {
+  const isFast = model.includes("fast");
+  const speed = isFast ? "fast" : "standard";
+  const isI2V = model.includes("reference-to-video") || model.includes("image-to-video");
+  const genType = isI2V ? "i2v" : "t2v";
+  const key = `${speed}-${quality}-${genType}`;
+  const rate = PRICING[key];
+  if (!rate) {
+    console.error(`[seedance-generate] Unknown pricing key: ${key}, falling back to 300/s`);
+    return 300 * duration; // fail-safe: charge highest rate
+  }
+  return rate * duration;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -43,7 +69,7 @@ serve(async (req) => {
     const body = await req.json();
     const {
       model, prompt, imageUrls, videoUrls, audioUrls,
-      duration, quality, aspectRatio, generateAudio, jobId, creditCost
+      duration, quality, aspectRatio, generateAudio, jobId
     } = body;
 
     if (!model || !prompt || !jobId) {
@@ -52,30 +78,116 @@ serve(async (req) => {
       });
     }
 
-    const creditsToCharge = creditCost || 0;
+    // SERVER-SIDE cost calculation — never trust client
+    const parsedDuration = parseInt(duration) || 5;
+    const parsedQuality = (quality === "720p" || quality === "480p") ? quality : "480p";
+    const creditsToCharge = computeCreditCost(model, parsedQuality, parsedDuration);
 
-    // Credit check
-    const { data: creditBalance } = await supabase.rpc("get_upscaler_credits", { _user_id: user.id });
-    if (!creditBalance || creditBalance < creditsToCharge) {
+    if (creditsToCharge <= 0) {
+      return new Response(JSON.stringify({ success: false, error: "Invalid credit cost calculation" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    console.log(`[seedance-generate] Server-calculated cost: ${creditsToCharge} credits (model=${model}, quality=${parsedQuality}, duration=${parsedDuration}s)`);
+
+    // Credit check — use raw balance, NOT the unlimited-aware RPC
+    const { data: creditRow } = await supabase
+      .from("upscaler_credits")
+      .select("monthly_balance, lifetime_balance")
+      .eq("user_id", user.id)
+      .single();
+
+    const totalBalance = (creditRow?.monthly_balance || 0) + (creditRow?.lifetime_balance || 0);
+    if (totalBalance < creditsToCharge) {
       return new Response(JSON.stringify({ success: false, error: "Créditos insuficientes" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Charge credits IMMEDIATELY before calling Evolink
-    if (creditsToCharge > 0) {
-      const { error: consumeError } = await supabase.rpc("consume_upscaler_credits", {
-        _user_id: user.id,
-        _amount: creditsToCharge,
-        _description: `Cinema Studio - Seedance 2 (${model})`,
-      });
-      if (consumeError) {
-        console.error("[seedance-generate] Failed to consume credits:", consumeError);
+    // Charge credits IMMEDIATELY — use force_consume RPC that always charges (even unlimited)
+    // We call consume_upscaler_credits_forced which bypasses unlimited check
+    // Fallback: direct SQL deduction via service role
+    const { data: consumeResult, error: consumeError } = await supabase.rpc("consume_upscaler_credits_forced", {
+      _user_id: user.id,
+      _amount: creditsToCharge,
+      _description: `Cinema Studio - Seedance 2 (${model})`,
+    });
+
+    let actuallyCharged = false;
+
+    if (consumeError) {
+      // Fallback: RPC doesn't exist yet, do manual deduction with service role
+      console.warn("[seedance-generate] consume_upscaler_credits_forced not available, using direct deduction:", consumeError.message);
+
+      const monthly = creditRow?.monthly_balance || 0;
+      const lifetime = creditRow?.lifetime_balance || 0;
+
+      let monthlyDeduct = 0;
+      let lifetimeDeduct = 0;
+      let txCreditType = "monthly";
+
+      if (monthly >= creditsToCharge) {
+        monthlyDeduct = creditsToCharge;
+        txCreditType = "monthly";
+      } else if (monthly > 0) {
+        monthlyDeduct = monthly;
+        lifetimeDeduct = creditsToCharge - monthly;
+        txCreditType = "mixed";
+      } else {
+        lifetimeDeduct = creditsToCharge;
+        txCreditType = "lifetime";
+      }
+
+      const newMonthly = monthly - monthlyDeduct;
+      const newLifetime = lifetime - lifetimeDeduct;
+      const newBalance = newMonthly + newLifetime;
+
+      const { error: updateErr } = await supabase
+        .from("upscaler_credits")
+        .update({
+          monthly_balance: newMonthly,
+          lifetime_balance: newLifetime,
+          balance: newBalance,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", user.id);
+
+      if (updateErr) {
+        console.error("[seedance-generate] Failed to deduct credits:", updateErr);
         return new Response(JSON.stringify({ success: false, error: "Erro ao cobrar créditos" }), {
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      console.log(`[seedance-generate] Charged ${creditsToCharge} credits from user ${user.id}`);
+
+      // Log transaction
+      await supabase.from("upscaler_credit_transactions").insert({
+        user_id: user.id,
+        amount: -creditsToCharge,
+        balance_after: newBalance,
+        transaction_type: "consumption",
+        description: `Cinema Studio - Seedance 2 (${model})`,
+        credit_type: txCreditType,
+      });
+
+      actuallyCharged = true;
+      console.log(`[seedance-generate] Direct deduction: ${creditsToCharge} credits from user ${user.id}, new balance: ${newBalance}`);
+    } else {
+      // RPC succeeded
+      const result = Array.isArray(consumeResult) ? consumeResult[0] : consumeResult;
+      if (result && result.success === false) {
+        return new Response(JSON.stringify({ success: false, error: result.error_message || "Erro ao cobrar créditos" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      actuallyCharged = true;
+      console.log(`[seedance-generate] Forced RPC charged ${creditsToCharge} credits from user ${user.id}`);
+    }
+
+    if (!actuallyCharged) {
+      return new Response(JSON.stringify({ success: false, error: "Falha na cobrança de créditos" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Update job with credits_charged
@@ -83,14 +195,14 @@ serve(async (req) => {
       credits_charged: creditsToCharge,
     }).eq("id", jobId);
 
-    console.log("[seedance-generate] Calling Evolink API via shared client:", JSON.stringify({ model, duration: duration || 5, quality: quality || "720p" }));
+    console.log("[seedance-generate] Calling Evolink API via shared client:", JSON.stringify({ model, duration: parsedDuration, quality: parsedQuality }));
 
     // Use shared Evolink client
     const result = await evolinkGenerate(evolinkKey, {
       model,
       prompt,
-      duration: duration || 5,
-      quality: quality || "720p",
+      duration: parsedDuration,
+      quality: parsedQuality,
       aspectRatio: aspectRatio || "16:9",
       generateAudio: generateAudio !== false,
       imageUrls: model.includes("image-to-video") || model.includes("reference-to-video") ? imageUrls : undefined,
@@ -100,14 +212,12 @@ serve(async (req) => {
 
     if (!result.success) {
       // REFUND credits on API failure
-      if (creditsToCharge > 0) {
-        await supabase.rpc("add_upscaler_credits", {
-          _user_id: user.id,
-          _amount: creditsToCharge,
-          _description: `Estorno - Seedance 2 falhou (${model})`,
-        });
-        console.log(`[seedance-generate] Refunded ${creditsToCharge} credits to user ${user.id}`);
-      }
+      await supabase.rpc("add_upscaler_credits", {
+        _user_id: user.id,
+        _amount: creditsToCharge,
+        _description: `Estorno - Seedance 2 falhou (${model})`,
+      });
+      console.log(`[seedance-generate] Refunded ${creditsToCharge} credits to user ${user.id}`);
 
       await supabase.from("seedance_jobs").update({
         status: "failed",
