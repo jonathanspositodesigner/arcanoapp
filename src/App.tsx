@@ -158,6 +158,7 @@ const CheckoutSucesso = lazy(() => import("./pages/CheckoutSucesso"));
 const CheckoutCancelado = lazy(() => import("./pages/CheckoutCancelado"));
 const UpscalerArcanoV3 = lazy(() => import("./pages/UpscalerArcanoV3"));
 const UpscalerArcanoV3Es = lazy(() => import("./pages/UpscalerArcanoV3Es"));
+const UpscalerArcanoV3EsHot = lazy(() => import("./pages/UpscalerArcanoV3EsHot"));
 const UpscalerArcanoV3Teste = lazy(() => import("./pages/UpscalerArcanoV3Teste"));
 const SelfieNaLua = lazy(() => import("./pages/SelfieNaLua"));
 const CinemaStudio = lazy(() => import("./pages/CinemaStudio"));
@@ -356,6 +357,7 @@ const AppContent = () => {
            <Route path="/pack-agendas" element={<PackAgendas />} />
             <Route path="/upscalerarcanov3" element={<UpscalerArcanoV3 />} />
             <Route path="/upscalerarcanov3-es" element={<UpscalerArcanoV3Es />} />
+            <Route path="/upscalerarcanov3-eshot" element={<UpscalerArcanoV3EsHot />} />
             <Route path="/upscalerarcanov3-teste" element={<UpscalerArcanoV3Teste />} />
           <Route path="/planos-creditos" element={<Navigate to="/planos-2" replace />} />
           <Route path="/ferramentas-ia-aplicativo" element={<FerramentasIAAplicativo />} />
