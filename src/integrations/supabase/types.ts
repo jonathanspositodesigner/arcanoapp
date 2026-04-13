@@ -5439,6 +5439,14 @@ export type Database = {
           success: boolean
         }[]
       }
+      consume_upscaler_credits_forced: {
+        Args: { _amount: number; _description?: string; _user_id: string }
+        Returns: {
+          error_message: string
+          new_balance: number
+          success: boolean
+        }[]
+      }
       convert_to_brl: {
         Args: { _amount: number; _currency: string }
         Returns: number
