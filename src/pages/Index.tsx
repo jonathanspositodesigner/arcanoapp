@@ -16,6 +16,7 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/contexts/CreditsContext";
 import { forcePwaUpdate } from "@/utils/forcePwaUpdate";
+import Seedance2PromoBanner from "@/components/Seedance2PromoBanner";
 
 // Imagens de preview para os cards
 import cardArtesArcanas from "@/assets/card-artes-arcanas.webp";
@@ -393,6 +394,9 @@ const Index = () => {
               </p>
             </div>
           </FadeIn>
+
+          {/* Banner Seedance 2 */}
+          <Seedance2PromoBanner />
 
           {/* Loading state */}
           {isLoading ? (
