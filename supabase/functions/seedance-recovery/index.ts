@@ -25,12 +25,11 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Find jobs in "timeout_recovery" status OR stuck in "running" for > 25 min
+    // Find jobs in "timeout_recovery", stuck "running", OR orphaned "queued" status
     const { data: recoveryJobs, error: queryError } = await supabase
       .from("seedance_jobs")
       .select("id, task_id, user_id, credits_charged, status, created_at")
-      .or("status.eq.timeout_recovery,status.eq.running")
-      .not("task_id", "is", null)
+      .or("status.eq.timeout_recovery,status.eq.running,status.eq.queued")
       .order("created_at", { ascending: true })
       .limit(20);
 
@@ -41,13 +40,19 @@ serve(async (req) => {
       });
     }
 
-    // Filter: only process jobs older than 10 minutes (give Evolink time)
-    const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
     const eligibleJobs = recoveryJobs.filter(j => {
+      // Orphaned "queued" jobs (no task_id, stuck > 3 minutes = edge function never ran)
+      if (j.status === "queued") {
+        const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+        return j.created_at && j.created_at < threeMinAgo;
+      }
       if (j.status === "timeout_recovery") return true; // always check these
-      // For "running" jobs, only if stuck > 25 min (safety net)
-      const twentyFiveMinAgo = new Date(Date.now() - 25 * 60 * 1000).toISOString();
-      return j.created_at && j.created_at < twentyFiveMinAgo;
+      // For "running" jobs with task_id, only if stuck > 25 min (safety net)
+      if (j.status === "running" && j.task_id) {
+        const twentyFiveMinAgo = new Date(Date.now() - 25 * 60 * 1000).toISOString();
+        return j.created_at && j.created_at < twentyFiveMinAgo;
+      }
+      return false;
     });
 
     if (eligibleJobs.length === 0) {
