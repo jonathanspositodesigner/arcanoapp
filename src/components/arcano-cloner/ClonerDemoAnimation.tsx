@@ -428,7 +428,7 @@ const ClonerDemoAnimation: React.FC = () => {
             transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-[#2a0a4a]/97 via-[#1e0a3a]/95 to-[#2a0a4a]/97 backdrop-blur-md" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#2a0a4a]/97 via-[#111113]/95 to-[#2a0a4a]/97 backdrop-blur-md" />
           <div className="relative z-10 flex flex-col items-center justify-center w-full h-full p-6">
             {/* Floating sparkles */}
             {['✦','✦','✦','✦','✦','✦'].map((s, i) => (
@@ -461,7 +461,7 @@ const ClonerDemoAnimation: React.FC = () => {
                   <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
                 </svg>
               </div>
-              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-slate-500 border-2 border-[#1e0a3a] flex items-center justify-center">
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-slate-500 border-2 border-[#111113] flex items-center justify-center">
                 <Check className="w-4 h-4 text-white" />
               </div>
             </div>
