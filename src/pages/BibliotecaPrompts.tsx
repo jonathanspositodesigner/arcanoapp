@@ -22,6 +22,7 @@ import Seedance2PromoBanner from "@/components/Seedance2PromoBanner";
 import arcanoClonerCover from "@/assets/arcano-cloner-cover.webp";
 import removerFundoCover from "@/assets/removedor-fundo-capa.png";
 import flyerMakerCover from "@/assets/flyer-maker-preview.webp";
+import upscalerHeroCover from "@/assets/upscaler-hero-depois.webp";
 
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 import AppLayout from "@/components/layout/AppLayout";
@@ -474,15 +475,15 @@ const BibliotecaPrompts = () => {
 
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {[
-              { name: 'Upscaler Arcano', desc: 'Melhorar qualidade de imagens com IA', cost: 100, path: '/upscaler-arcano-tool', cover: 'https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/artes-premium/upscaler-arcano-cover.webp' },
-              { name: 'Arcano Cloner', desc: 'Crie ensaios fotográficos ultra realistas com IA', cost: 150, path: '/arcano-cloner-tool', cover: arcanoClonerCover },
-              { name: 'Seedance 2.0', desc: 'Gerar vídeos IA', cost: 300, path: '/seedance2', cover: '', highlight: true },
-              { name: 'Gerar Imagem', desc: 'Crie imagens do zero com IA', cost: 100, path: '/gerar-imagem', cover: '' },
-              { name: 'Gerar Vídeo', desc: 'Gere vídeos com Veo 3.1 e WAN 2.2', cost: 200, path: '/gerar-video', cover: '' },
-              { name: 'Veste AI', desc: 'Troque a roupa de qualquer foto com IA', cost: 120, path: '/veste-ai-tool', cover: '' },
-              { name: 'Pose Changer', desc: 'Mude a pose de qualquer foto com IA', cost: 100, path: '/pose-changer-tool', cover: '' },
-              { name: 'MovieLed Maker', desc: 'Gere movies para telão de LED com um clique', cost: 200, path: '/movieled-maker', cover: 'https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/prompts-cloudinary/references/BOTECO-DO-LUAN-ref.jpg' },
-              { name: 'Remover Fundo', desc: 'Remova o fundo de qualquer imagem com IA', cost: 50, path: '/remover-fundo', cover: removerFundoCover },
+              { name: 'Upscaler Arcano', desc: 'Melhorar qualidade de imagens com IA', cost: 60, path: '/upscaler-arcano-tool', cover: upscalerHeroCover },
+              { name: 'Arcano Cloner', desc: 'Crie ensaios fotográficos ultra realistas com IA', cost: 75, path: '/arcano-cloner-tool', cover: arcanoClonerCover },
+              { name: 'Seedance 2.0', desc: 'Gerar vídeos IA', cost: 148, path: '/seedance2', video: '/videos/seedance2-promo.mp4', highlight: true },
+              { name: 'Gerar Imagem', desc: 'Crie imagens do zero com IA', cost: 60, path: '/gerar-imagem' },
+              { name: 'Gerar Vídeo', desc: 'Gere vídeos com Veo 3.1 e WAN 2.2', cost: 127, path: '/gerar-video' },
+              { name: 'Veste AI', desc: 'Troque a roupa de qualquer foto com IA', cost: 60, path: '/veste-ai-tool' },
+              { name: 'Pose Changer', desc: 'Mude a pose de qualquer foto com IA', cost: 60, path: '/pose-changer-tool' },
+              { name: 'MovieLed Maker', desc: 'Gere movies para telão de LED com um clique', cost: 500, path: '/movieled-maker', cover: 'https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/prompts-cloudinary/references/BOTECO-DO-LUAN-ref.jpg' },
+              { name: 'Remover Fundo', desc: 'Remova o fundo de qualquer imagem com IA', cost: 5, path: '/remover-fundo', cover: removerFundoCover },
               { name: 'Flyer Maker', desc: 'Crie flyers para eventos incríveis com IA', cost: 100, path: '/flyer-maker', cover: flyerMakerCover },
             ].map((tool) => (
               <div
@@ -495,7 +496,11 @@ const BibliotecaPrompts = () => {
                 }`}
               >
                 <div className="aspect-[16/9] relative overflow-hidden">
-                  {tool.cover ? (
+                  {'video' in tool && tool.video ? (
+                    <video className="w-full h-full object-cover" autoPlay loop muted playsInline>
+                      <source src={tool.video} type="video/mp4" />
+                    </video>
+                  ) : 'cover' in tool && tool.cover ? (
                     <img src={tool.cover} alt={tool.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
