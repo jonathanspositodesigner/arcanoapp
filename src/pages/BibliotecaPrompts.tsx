@@ -433,10 +433,10 @@ const BibliotecaPrompts = () => {
       {item.isPremium ? <Badge className="bg-gradient-to-r from-purple-600 to-purple-500 text-foreground border-0 text-[10px] sm:text-xs">
         <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" fill="currentColor" />
         {t('badges.premium')}
-      </Badge> : <Badge variant="outline" className="border-green-500 text-green-400 text-[10px] sm:text-xs">
+      </Badge> : <Badge variant="outline" className="border-green-500 dark:text-green-400 text-green-600 text-[10px] sm:text-xs">
         {t('badges.free')}
       </Badge>}
-      {item.tutorialUrl && <Badge className="bg-red-600 text-foreground border-0 text-[10px] sm:text-xs">
+      {item.tutorialUrl && <Badge className="bg-red-600 text-primary-foreground border-0 text-[10px] sm:text-xs">
         <Youtube className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
         {t('badges.tutorial')}
       </Badge>}
@@ -461,7 +461,7 @@ const BibliotecaPrompts = () => {
 
         {/* Page Title and Content Type Tabs */}
         <div className="mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">{t('library.title')}</h2>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r dark:from-gray-200 dark:to-gray-400 from-purple-700 to-purple-500 bg-clip-text text-transparent">{t('library.title')}</h2>
           <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-muted-foreground">{t('library.description')}</p>
 
           {/* Content Type Tabs */}
