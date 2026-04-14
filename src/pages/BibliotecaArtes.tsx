@@ -407,14 +407,8 @@ const BibliotecaArtes = () => {
         : 'text-muted-foreground hover:text-foreground hover:bg-accent'
     }`;
 
-  const InternalSidebar = () => (
-    <aside className={`
-      fixed lg:static inset-y-0 left-0 z-40
-      w-64 lg:h-full lg:min-h-0 lg:self-stretch min-h-screen bg-sidebar-background border-r border-border p-4 flex flex-col
-      transform transition-transform duration-300 ease-in-out
-      lg:pt-4
-      ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-    `}>
+  const InternalSidebarContent = () => (
+    <div className="flex flex-col h-full p-4 pt-4">
       <div className="flex-1 min-h-0 overflow-y-auto space-y-1">
         <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider px-3 mb-1">Navegação</p>
 
@@ -468,7 +462,7 @@ const BibliotecaArtes = () => {
           <span className="ml-auto text-[10px] text-muted-foreground">{allArtes.length}</span>
         </button>
 
-        {/* Divider + Ferramentas IA */}
+        {/* Ferramentas IA */}
         <div className="my-3 border-t border-border" />
         <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider px-3 mb-1">Ferramentas IA</p>
 
@@ -546,7 +540,7 @@ const BibliotecaArtes = () => {
           </button>
         </div>
       )}
-    </aside>
+    </div>
   );
   const getSectionTitle = () => {
     switch (activeSection) {
