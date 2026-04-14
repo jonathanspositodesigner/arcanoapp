@@ -1414,7 +1414,8 @@ const BibliotecaArtes = () => {
         </DialogContent>
       </Dialog>
 
-    </div>
-  </>;
+      </div>
+    </AppLayout>
+  );
 };
 export default BibliotecaArtes;
