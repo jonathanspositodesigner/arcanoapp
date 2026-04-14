@@ -17,6 +17,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/contexts/CreditsContext";
 import { forcePwaUpdate } from "@/utils/forcePwaUpdate";
 import Seedance2PromoBanner from "@/components/Seedance2PromoBanner";
+import { useTheme } from "@/hooks/useTheme";
+import { AnimatedCreditsDisplay } from "@/components/upscaler/AnimatedCreditsDisplay";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Imagens de preview para os cards
 import cardArtesArcanas from "@/assets/card-artes-arcanas.webp";
