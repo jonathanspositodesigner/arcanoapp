@@ -208,7 +208,7 @@ export const ResilientImage = ({
               <ImageIcon className="w-8 h-8 text-muted-foreground" />
             </div>
             <div className="space-y-1">
-              <p className="text-white font-medium">
+              <p className="text-foreground font-medium">
                 {locale === 'es' ? 'Vista previa no disponible' : 'Visualização indisponível'}
               </p>
               <p className="text-muted-foreground text-sm">

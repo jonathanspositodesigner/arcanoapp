@@ -191,7 +191,7 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
 
           <Button
             onClick={() => { setPhase('active'); onPhaseChange?.('active'); }}
-            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600 text-white font-semibold gap-2 rounded-xl py-5 mb-2"
+            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600 text-foreground font-semibold gap-2 rounded-xl py-5 mb-2"
           >
             <Play className="w-4 h-4" />
             Iniciar Tutorial

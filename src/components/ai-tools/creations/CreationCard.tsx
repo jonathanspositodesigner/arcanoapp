@@ -140,7 +140,7 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
         
         {/* Media type indicator */}
         <div className="absolute top-2 left-2">
-          <Badge variant="secondary" className="bg-black/50 text-white text-[10px] gap-1">
+          <Badge variant="secondary" className="bg-black/50 text-foreground text-[10px] gap-1">
             {isVideo ? <Video className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />}
             {isVideo ? 'Vídeo' : 'Imagem'}
           </Badge>

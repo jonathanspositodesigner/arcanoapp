@@ -698,23 +698,23 @@ const FlyerMakerTool: React.FC = () => {
                     <div className="space-y-2.5">
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Data e Horário:</span>
-                        <Input placeholder="SEG.18.ABR - 18H" value={dateTimeLocation} onChange={e => setDateTimeLocation(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-white text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="SEG.18.ABR - 18H" value={dateTimeLocation} onChange={e => setDateTimeLocation(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Título do Evento:</span>
-                        <Input placeholder="DEU FERIAS" value={title} onChange={e => setTitle(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-white text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="DEU FERIAS" value={title} onChange={e => setTitle(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Endereço:</span>
-                        <Input placeholder="ENDEREÇO DO LOCAL..." value={address} onChange={e => setAddress(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-white text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="ENDEREÇO DO LOCAL..." value={address} onChange={e => setAddress(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Nomes dos Artistas:</span>
-                        <Input placeholder="DJ ALOK - RASTA CHINELA..." value={artistNames} onChange={e => setArtistNames(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-white text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="DJ ALOK - RASTA CHINELA..." value={artistNames} onChange={e => setArtistNames(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Rodapé / Promoção:</span>
-                        <Input placeholder="ENTRADA OFF PARA ELAS..." value={footerPromo} onChange={e => setFooterPromo(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-white text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="ENTRADA OFF PARA ELAS..." value={footerPromo} onChange={e => setFooterPromo(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
                       </div>
                     </div>
 
@@ -861,7 +861,7 @@ const FlyerMakerTool: React.FC = () => {
                         <div className="absolute inset-0 rounded-full border-4 border-t-blue-400 animate-spin"></div>
                         <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-blue-400" />
                       </div>
-                      <p className="text-white font-medium mb-1">Refinando imagem...</p>
+                      <p className="text-foreground font-medium mb-1">Refinando imagem...</p>
                       <p className="text-xs text-muted-foreground animate-pulse">A IA está modificando sua imagem</p>
                     </div>
                   ) : (
@@ -872,7 +872,7 @@ const FlyerMakerTool: React.FC = () => {
                             <div className="absolute inset-0 rounded-full border-4 border-border"></div>
                             <div className="absolute inset-0 rounded-full border-4 border-t-blue-500 animate-spin"></div>
                           </div>
-                          <p className="text-white font-medium mb-1">{status === 'uploading' ? 'Enviando imagens...' : status === 'waiting' ? `Na fila: Posição ${queuePosition}` : 'Processando IA...'}</p>
+                          <p className="text-foreground font-medium mb-1">{status === 'uploading' ? 'Enviando imagens...' : status === 'waiting' ? `Na fila: Posição ${queuePosition}` : 'Processando IA...'}</p>
                           <p className="text-xs text-muted-foreground animate-pulse">{queueMessages[queueMessageIndex].text}</p>
                           <div className="w-48 h-1 bg-accent rounded-full mt-4 overflow-hidden"><div className="h-full bg-gradient-to-r from-blue-500 to-slate-400 transition-all duration-300" style={{ width: `${progress}%` }}></div></div>
                         </div>

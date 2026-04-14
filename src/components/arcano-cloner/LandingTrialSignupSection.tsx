@@ -33,7 +33,7 @@ export const LandingTrialSignupSection = () => {
 
         <Button
           onClick={() => setShowModal(true)}
-          className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold py-6 rounded-xl text-base"
+          className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold py-6 rounded-xl text-base"
         >
           🚀 Ir para o Arcano Cloner
         </Button>

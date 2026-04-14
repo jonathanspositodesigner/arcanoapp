@@ -313,13 +313,13 @@ const PlanosArtes = () => {
 
         <AnimatedSection animation="fade-up" className="text-center mb-8" as="div">
           {isRenewal && (
-            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-lg px-4 py-2 mb-4">
+            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-foreground text-lg px-4 py-2 mb-4">
               <Percent className="h-5 w-5 mr-2" />
               {t('renewal30Off')}
             </Badge>
           )}
           {hasNotificationDiscount && (
-            <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-lg px-4 py-2 mb-4 animate-pulse">
+            <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-foreground text-lg px-4 py-2 mb-4 animate-pulse">
               <Bell className="h-5 w-5 mr-2" />
               {notificationDiscountPercent}% OFF - {t('exclusiveDiscount')}
             </Badge>
@@ -360,12 +360,12 @@ const PlanosArtes = () => {
                     >
                       {pack.slug === 'pack-arcano-vol-4' && (
                         <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                          <Badge className="bg-[#2d4a5e] text-white text-[10px] px-1.5 py-0.5">Novo</Badge>
-                          <Badge className="bg-amber-500/90 text-white text-[10px] px-1.5 py-0.5 leading-tight">Atualizando</Badge>
+                          <Badge className="bg-[#2d4a5e] text-foreground text-[10px] px-1.5 py-0.5">Novo</Badge>
+                          <Badge className="bg-amber-500/90 text-foreground text-[10px] px-1.5 py-0.5 leading-tight">Atualizando</Badge>
                         </div>
                       )}
                       {pack.notification_discount_enabled && isNotificationEligible && (
-                        <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
+                        <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-foreground text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
                           <Bell className="h-3 w-3" />
                           {pack.notification_discount_percent || 20}% OFF
                         </div>
@@ -382,7 +382,7 @@ const PlanosArtes = () => {
                             <Star className="h-8 w-8 text-[#2d4a5e]" />
                           </div>
                         )}
-                        <h3 className="text-white font-medium text-center">{pack.name}</h3>
+                        <h3 className="text-foreground font-medium text-center">{pack.name}</h3>
                       </CardContent>
                     </Card>
                   ))}
@@ -401,7 +401,7 @@ const PlanosArtes = () => {
                       onClick={() => setSelectedPack(pack)}
                     >
                       {pack.notification_discount_enabled && isNotificationEligible && (
-                        <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
+                        <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-foreground text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
                           <Bell className="h-3 w-3" />
                           {pack.notification_discount_percent || 20}% OFF
                         </div>
@@ -418,7 +418,7 @@ const PlanosArtes = () => {
                             <Star className="h-8 w-8 text-[#2d4a5e]" />
                           </div>
                         )}
-                        <h3 className="text-white font-medium text-center">{pack.name}</h3>
+                        <h3 className="text-foreground font-medium text-center">{pack.name}</h3>
                       </CardContent>
                     </Card>
                   ))}
@@ -485,7 +485,7 @@ const PlanosArtes = () => {
                         >
                           <div className="flex items-center gap-3">
                             <RadioGroupItem value={option.type} className="border-border text-[#2d4a5e]" />
-                            <span className="text-white font-medium">{option.label}</span>
+                            <span className="text-foreground font-medium">{option.label}</span>
                           </div>
                           <span className={`font-semibold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
                             {formatPrice(calculatePrice(option.type))}
@@ -508,10 +508,10 @@ const PlanosArtes = () => {
                       <Button
                         className={`w-full ${
                           isRenewal
-                            ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold shadow-lg shadow-green-500/30"
+                            ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-foreground font-bold shadow-lg shadow-green-500/30"
                             : hasNotificationDiscount
-                              ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-amber-500/30"
-                              : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-amber-500/30"
+                              ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-foreground font-bold shadow-lg shadow-amber-500/30"
+                              : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-foreground font-bold shadow-lg shadow-amber-500/30"
                         }`}
                         onClick={() => handleSelectOption(selectedAccessType)}
                         disabled={isCheckoutSubmitting}

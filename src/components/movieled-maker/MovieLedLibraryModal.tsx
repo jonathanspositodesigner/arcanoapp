@@ -174,7 +174,7 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
             <Button
               onClick={handleUploadClick}
               disabled={isUploading}
-              className="w-full mt-2 sm:mt-3 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white text-sm font-medium py-2.5 h-auto flex-shrink-0"
+              className="w-full mt-2 sm:mt-3 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground text-sm font-medium py-2.5 h-auto flex-shrink-0"
             >
               {isUploading ? (
                 <>
@@ -250,13 +250,13 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                       <div className="hidden sm:block absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <p className="text-[10px] text-white font-medium text-center line-clamp-2">
+                        <p className="text-[10px] text-foreground font-medium text-center line-clamp-2">
                           {item.title}
                         </p>
                       </div>
 
                       <div className="absolute inset-0 bg-accent0/0 group-hover:bg-accent0/10 transition-colors flex items-center justify-center">
-                        <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-slate-600 px-3 py-1 rounded-full transition-opacity">
+                        <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-foreground text-xs font-medium bg-slate-600 px-3 py-1 rounded-full transition-opacity">
                           Selecionar
                         </span>
                       </div>

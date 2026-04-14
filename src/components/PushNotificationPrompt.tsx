@@ -118,7 +118,7 @@ const PushNotificationPrompt = () => {
           <Button
             onClick={handleActivate}
             disabled={isActivating}
-            className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-6 text-lg shadow-lg shadow-amber-500/30"
+            className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-foreground font-semibold py-6 text-lg shadow-lg shadow-amber-500/30"
           >
             {isActivating ? (
               t('pushNotifications.activating')

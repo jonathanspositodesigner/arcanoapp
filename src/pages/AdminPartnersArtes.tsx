@@ -211,7 +211,7 @@ const AdminPartnersArtes = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="text-white">Carregando...</div>
+        <div className="text-foreground">Carregando...</div>
       </div>
     );
   }
@@ -303,7 +303,7 @@ const AdminPartnersArtes = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-white font-medium">{partner.name}</h3>
+                        <h3 className="text-foreground font-medium">{partner.name}</h3>
                         <Badge className={partner.is_active ? "bg-green-500" : "bg-red-500"}>
                           {partner.is_active ? "Ativo" : "Inativo"}
                         </Badge>
@@ -413,7 +413,7 @@ const AdminPartnersArtes = () => {
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Email:</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-white">{createdPartnerEmail}</span>
+                  <span className="text-foreground">{createdPartnerEmail}</span>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -426,7 +426,7 @@ const AdminPartnersArtes = () => {
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Senha:</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-white font-mono">{generatedPassword}</span>
+                  <span className="text-foreground font-mono">{generatedPassword}</span>
                   <Button
                     size="sm"
                     variant="ghost"

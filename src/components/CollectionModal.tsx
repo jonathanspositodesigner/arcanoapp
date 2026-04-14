@@ -464,7 +464,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
 
                 {/* Title */}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                  <p className="text-white text-xs font-medium truncate">{item.title}</p>
+                  <p className="text-foreground text-xs font-medium truncate">{item.title}</p>
                 </div>
               </div>
             ))}
@@ -473,7 +473,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
           {/* CTA Button */}
           <Button 
             onClick={goToLibrary} 
-            className="w-full mt-6 bg-gradient-primary hover:opacity-90 text-white font-semibold py-6"
+            className="w-full mt-6 bg-gradient-primary hover:opacity-90 text-foreground font-semibold py-6"
           >
             {t("collectionModal.seeMorePrompts")}
             <ArrowRight className="h-5 w-5 ml-2" />

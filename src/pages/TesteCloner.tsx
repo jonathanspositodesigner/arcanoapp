@@ -115,7 +115,7 @@ const TesteCloner = () => {
             <FadeIn duration={700}>
               <button
                 onClick={() => setShowModal(true)}
-                className="mb-6 px-8 py-3 rounded-xl bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-sm md:text-base transition-all pointer-events-auto"
+                className="mb-6 px-8 py-3 rounded-xl bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-sm md:text-base transition-all pointer-events-auto"
               >
                 🚀 Iniciar Teste Grátis
               </button>

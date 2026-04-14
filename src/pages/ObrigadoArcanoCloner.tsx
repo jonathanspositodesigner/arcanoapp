@@ -99,7 +99,7 @@ const ObrigadoArcanoCloner = () => {
                   {benefit.icon}
                 </div>
                 <div>
-                  <p className="text-white font-semibold text-sm mb-1">{benefit.title}</p>
+                  <p className="text-foreground font-semibold text-sm mb-1">{benefit.title}</p>
                   <p className="text-muted-foreground text-xs leading-relaxed">{benefit.description}</p>
                 </div>
               </div>

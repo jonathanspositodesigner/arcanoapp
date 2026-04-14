@@ -201,7 +201,7 @@ const PartnerDashboardArtes = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="text-white">Carregando...</div>
+        <div className="text-foreground">Carregando...</div>
       </div>
     );
   }
@@ -334,7 +334,7 @@ const PartnerDashboardArtes = () => {
                     )}
                   </div>
                   <CardContent className="p-3">
-                    <h3 className="text-white font-medium truncate">{arte.title}</h3>
+                    <h3 className="text-foreground font-medium truncate">{arte.title}</h3>
                     <p className="text-muted-foreground text-sm">{arte.category}</p>
                     <div className="flex gap-2 mt-2">
                       <Button
@@ -395,7 +395,7 @@ const PartnerDashboardArtes = () => {
                 </SelectTrigger>
                 <SelectContent className="bg-card border-border/50">
                   {CATEGORIES.map((cat) => (
-                    <SelectItem key={cat.value} value={cat.value} className="text-white">
+                    <SelectItem key={cat.value} value={cat.value} className="text-foreground">
                       {cat.label}
                     </SelectItem>
                   ))}

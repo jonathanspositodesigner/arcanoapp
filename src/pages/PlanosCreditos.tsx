@@ -176,7 +176,7 @@ const PlanosCreditos = () => {
                   <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${tool.color} flex items-center justify-center mx-auto mb-3`}>
                     <Icon className="w-5 h-5 text-white" />
                   </div>
-                  <h3 className="text-white font-semibold text-sm mb-1">{tool.name}</h3>
+                  <h3 className="text-foreground font-semibold text-sm mb-1">{tool.name}</h3>
                   <p className="text-muted-foreground text-xs leading-tight">{tool.description}</p>
                 </Card>
               );
@@ -306,7 +306,7 @@ const PlanosCreditos = () => {
                     {/* CTA Button */}
                     <Button 
                       onClick={() => handlePurchase(plan.link)}
-                      className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5`}
+                      className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-foreground font-semibold py-5`}
                     >
                       Comprar Agora
                     </Button>

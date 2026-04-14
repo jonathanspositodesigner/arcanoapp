@@ -123,7 +123,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
             </div>
 
             <Button
-              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold"
               onClick={handleSendCode}
               disabled={loading}
             >
@@ -143,24 +143,24 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
         ) : (
           <div className="space-y-4 pt-2">
             <p className="text-muted-foreground text-sm text-center">
-              Enviamos um código de 6 dígitos para <strong className="text-white">{email}</strong>
+              Enviamos um código de 6 dígitos para <strong className="text-foreground">{email}</strong>
             </p>
 
             <div className="flex justify-center">
               <InputOTP maxLength={6} value={code} onChange={setCode}>
                 <InputOTPGroup>
-                  <InputOTPSlot index={0} className="bg-accent border-border text-white text-lg w-12 h-12" />
-                  <InputOTPSlot index={1} className="bg-accent border-border text-white text-lg w-12 h-12" />
-                  <InputOTPSlot index={2} className="bg-accent border-border text-white text-lg w-12 h-12" />
-                  <InputOTPSlot index={3} className="bg-accent border-border text-white text-lg w-12 h-12" />
-                  <InputOTPSlot index={4} className="bg-accent border-border text-white text-lg w-12 h-12" />
-                  <InputOTPSlot index={5} className="bg-accent border-border text-white text-lg w-12 h-12" />
+                  <InputOTPSlot index={0} className="bg-accent border-border text-foreground text-lg w-12 h-12" />
+                  <InputOTPSlot index={1} className="bg-accent border-border text-foreground text-lg w-12 h-12" />
+                  <InputOTPSlot index={2} className="bg-accent border-border text-foreground text-lg w-12 h-12" />
+                  <InputOTPSlot index={3} className="bg-accent border-border text-foreground text-lg w-12 h-12" />
+                  <InputOTPSlot index={4} className="bg-accent border-border text-foreground text-lg w-12 h-12" />
+                  <InputOTPSlot index={5} className="bg-accent border-border text-foreground text-lg w-12 h-12" />
                 </InputOTPGroup>
               </InputOTP>
             </div>
 
             <Button
-              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold"
               onClick={handleVerify}
               disabled={loading || code.length !== 6}
             >

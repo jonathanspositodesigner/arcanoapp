@@ -395,7 +395,7 @@ const Planos2 = () => {
             {/* Left: Promo text */}
             <div className="flex items-center gap-2 animate-pulse">
               <span className="text-lg">🔥</span>
-              <span className="text-white font-bold tracking-wide text-sm md:text-base">
+              <span className="text-foreground font-bold tracking-wide text-sm md:text-base">
                 Promoção por tempo limitado!
               </span>
               <span className="text-lg">🔥</span>
@@ -407,15 +407,15 @@ const Planos2 = () => {
               <span className="text-red-300 text-xs sm:text-sm font-medium">Essa oferta expira em</span>
               <div className="flex items-center gap-1">
                 <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
-                  <span className="text-white font-mono font-bold text-sm">{countdown.hours}</span>
+                  <span className="text-foreground font-mono font-bold text-sm">{countdown.hours}</span>
                 </div>
                 <span className="text-red-400 font-bold text-sm">:</span>
                 <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
-                  <span className="text-white font-mono font-bold text-sm">{countdown.minutes}</span>
+                  <span className="text-foreground font-mono font-bold text-sm">{countdown.minutes}</span>
                 </div>
                 <span className="text-red-400 font-bold text-sm">:</span>
                 <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
-                  <span className="text-white font-mono font-bold text-sm">{countdown.seconds}</span>
+                  <span className="text-foreground font-mono font-bold text-sm">{countdown.seconds}</span>
                 </div>
               </div>
             </div>
@@ -437,7 +437,7 @@ const Planos2 = () => {
               </TabsTrigger>
               <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white text-muted-foreground px-6 relative flex items-center gap-2">
                 {t('planos.annualInstallments')}
-                <span className="bg-gradient-to-r from-slate-600 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-gradient-to-r from-slate-600 to-pink-500 text-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
                   52% OFF
                 </span>
               </TabsTrigger>
@@ -546,7 +546,7 @@ const Planos2 = () => {
                         }
                       }}
                       disabled={isDisabled || isMPLoading}
-                      className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-accent0/20 border border-slate-500/40 text-muted-foreground cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-accent hover:bg-accent text-muted-foreground"}`}
+                      className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-accent0/20 border border-slate-500/40 text-muted-foreground cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-foreground font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-accent hover:bg-accent text-muted-foreground"}`}
                     >
                       {buttonText}
                     </Button>
@@ -755,7 +755,7 @@ const Planos2 = () => {
 
                   <Button
                     onClick={() => handleCreditPurchase(plan.slug)}
-                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5`}
+                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-foreground font-semibold py-5`}
                   >
                     Comprar Agora
                   </Button>
@@ -770,7 +770,7 @@ const Planos2 = () => {
           <div className="flex items-center gap-3">
             <ShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
             <div>
-              <p className="text-white text-sm font-semibold leading-tight">Pagamento seguro</p>
+              <p className="text-foreground text-sm font-semibold leading-tight">Pagamento seguro</p>
               <p className="text-muted-foreground text-xs">transmissão criptografada SSL</p>
             </div>
           </div>
@@ -778,7 +778,7 @@ const Planos2 = () => {
           <div className="flex items-center gap-3">
             <Zap className="w-5 h-5 text-muted-foreground shrink-0" />
             <div>
-              <p className="text-white text-sm font-semibold leading-tight">Pagamento instantâneo</p>
+              <p className="text-foreground text-sm font-semibold leading-tight">Pagamento instantâneo</p>
               <p className="text-muted-foreground text-xs">Os pontos chegam instantaneamente.</p>
             </div>
           </div>
@@ -786,7 +786,7 @@ const Planos2 = () => {
           <div className="flex items-center gap-3">
             <Headset className="w-5 h-5 text-muted-foreground shrink-0" />
             <div>
-              <p className="text-white text-sm font-semibold leading-tight">Suporte 24 horas por dia, 7 dias por semana</p>
+              <p className="text-foreground text-sm font-semibold leading-tight">Suporte 24 horas por dia, 7 dias por semana</p>
               <p className="text-muted-foreground text-xs">Estamos à sua disposição a qualquer momento.</p>
             </div>
           </div>

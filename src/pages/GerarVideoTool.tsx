@@ -588,7 +588,7 @@ const GerarVideoTool = () => {
             </p>
             <button
               onClick={goBack}
-              className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-accent0 text-white text-sm font-medium transition-colors"
+              className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-accent0 text-foreground text-sm font-medium transition-colors"
             >
               Voltar
             </button>
@@ -647,14 +647,14 @@ const GerarVideoTool = () => {
               <div className="text-center">
                 {isQueued ? (
                   <>
-                    <p className="text-sm text-white font-medium">Você está na fila</p>
+                    <p className="text-sm text-foreground font-medium">Você está na fila</p>
                     <p className="text-lg text-muted-foreground font-bold mt-1">Posição {queuePosition}</p>
                     <p className="text-xs text-muted-foreground mt-2">Sua geração será processada em breve</p>
                     <p className="text-[10px] text-slate-400 mt-1">Fila global compartilhada</p>
                   </>
                 ) : (
                   <>
-                    <p className="text-sm text-white font-medium">Gerando vídeo...</p>
+                    <p className="text-sm text-foreground font-medium">Gerando vídeo...</p>
                     <p className="text-xs text-muted-foreground mt-1">Isso pode levar de 2 a 5 minutos</p>
                     <p className="text-[10px] text-slate-400 mt-1">Você pode sair da página — receberá uma notificação</p>
                   </>
@@ -800,7 +800,7 @@ const GerarVideoTool = () => {
                     onClick={handleGenerate}
                     disabled={isGenerating || isSubmitting || !prompt.trim() || (generationMode === 'with_frames' && !framesReady)}
                     size="sm"
-                    className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-9 min-w-0 shrink-0"
+                    className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-9 min-w-0 shrink-0"
                   >
                     {isGenerating ? (
                       <>

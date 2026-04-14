@@ -421,7 +421,7 @@ const ToolVersionLessons = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/')}
-                className="text-white hover:text-foreground hover:bg-accent0/20 gap-2"
+                className="text-foreground hover:text-foreground hover:bg-accent0/20 gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
                 <span className="hidden sm:inline">Voltar para Home</span>

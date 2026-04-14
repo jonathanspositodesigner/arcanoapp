@@ -172,7 +172,7 @@ const ProfileSettingsArtes = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="text-white">{t('common:loading')}</div>
+        <div className="text-foreground">{t('common:loading')}</div>
       </div>
     );
   }
@@ -191,7 +191,7 @@ const ProfileSettingsArtes = () => {
 
         <Card className="bg-card/80 border-border/30">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-foreground flex items-center gap-2">
               <User className="h-5 w-5" />
               {t('common:profile.title')}
             </CardTitle>
@@ -320,7 +320,7 @@ const ProfileSettingsArtes = () => {
       <Dialog open={showDisableModal} onOpenChange={setShowDisableModal}>
         <DialogContent className="bg-card border-border/30 max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-white text-center flex items-center justify-center gap-2">
+            <DialogTitle className="text-foreground text-center flex items-center justify-center gap-2">
               <BellOff className="h-5 w-5 text-red-400" />
               {t('common:notifications.disableTitle')}
             </DialogTitle>

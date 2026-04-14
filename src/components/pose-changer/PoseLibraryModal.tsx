@@ -117,14 +117,14 @@ const PoseLibraryModal: React.FC<PoseLibraryModalProps> = ({
 
                 {/* Label */}
                 <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                  <p className="text-xs text-white font-medium text-center">
+                  <p className="text-xs text-foreground font-medium text-center">
                     {pose.label}
                   </p>
                 </div>
 
                 {/* Hover overlay */}
                 <div className="absolute inset-0 bg-accent0/0 group-hover:bg-accent0/20 transition-colors flex items-center justify-center">
-                  <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-slate-600 px-3 py-1 rounded-full transition-opacity">
+                  <span className="opacity-0 group-hover:opacity-100 text-foreground text-xs font-medium bg-slate-600 px-3 py-1 rounded-full transition-opacity">
                     Selecionar
                   </span>
                 </div>

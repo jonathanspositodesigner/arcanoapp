@@ -158,10 +158,10 @@ const FullscreenModal = ({
         </div>
 
         {/* Labels */}
-        <div className="absolute top-4 left-4 bg-black/80 text-white text-base font-semibold px-5 py-2.5 rounded-full">
+        <div className="absolute top-4 left-4 bg-black/80 text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
           {t('tools:upscaler.beforeAfter.before')}
         </div>
-        <div className="absolute top-4 right-4 bg-gradient-to-r from-slate-500 to-slate-500 text-white text-base font-semibold px-5 py-2.5 rounded-full">
+        <div className="absolute top-4 right-4 bg-gradient-to-r from-slate-500 to-slate-500 text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
           {t('tools:upscaler.beforeAfter.after')}
         </div>
       </div>
@@ -242,7 +242,7 @@ const PricingStatsBar = () => {
           <div className="flex flex-col items-center gap-0.5">
             <Image className="w-5 h-5 text-muted-foreground mb-1" />
             <div className="flex items-center gap-1">
-              <span className="text-white font-bold text-base sm:text-lg">{animatedImages.displayValue.toLocaleString('pt-BR')}</span>
+              <span className="text-foreground font-bold text-base sm:text-lg">{animatedImages.displayValue.toLocaleString('pt-BR')}</span>
               <span className="text-muted-foreground text-lg font-bold">+</span>
             </div>
             <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium text-center">Imagens Geradas</span>
@@ -250,7 +250,7 @@ const PricingStatsBar = () => {
           <div className="flex flex-col items-center gap-0.5">
             <Award className="w-5 h-5 text-yellow-500 mb-1" />
             <div className="flex items-center gap-0.5">
-              <span className="text-white font-bold text-base sm:text-lg">{animatedSatisfaction.displayValue}</span>
+              <span className="text-foreground font-bold text-base sm:text-lg">{animatedSatisfaction.displayValue}</span>
               <span className="text-yellow-500 text-lg font-bold">%</span>
             </div>
             <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium text-center">Satisfação</span>
@@ -373,7 +373,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
     <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
       <div className="max-w-7xl mx-auto">
         <AnimatedSection as="div" delay={100}>
-          <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-3 tracking-wide">
+          <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-3 tracking-wide">
             {t('tools:upscaler.finalCTA.title')} <span className="text-muted-foreground">{t('tools:upscaler.finalCTA.subtitle')}</span>
           </h2>
           <p className="text-muted-foreground text-center text-sm mb-8 max-w-xl mx-auto">
@@ -408,7 +408,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
                   </Badge>
                 )}
                 {plan.isLifetime && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold px-4 py-1">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-amber-500 to-orange-500 text-foreground font-semibold px-4 py-1">
                     ♾️ ACESSO VITALÍCIO
                   </Badge>
                 )}
@@ -443,9 +443,9 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
                   onClick={() => handlePurchase(plan)}
                   disabled={false}
                   className={`w-full mb-2 text-sm lg:text-base h-10 lg:h-12 ${
-                    plan.isLifetime ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold" :
+                    plan.isLifetime ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-foreground font-semibold" :
                     plan.bestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" :
-                    plan.hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-white font-semibold" :
+                    plan.hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-foreground font-semibold" :
                     "bg-accent hover:bg-white/20 text-foreground"
                   }`}
                 >
@@ -493,7 +493,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <ShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
               <div className="text-left">
-                <p className="text-white text-sm font-semibold leading-tight">Pagamento seguro</p>
+                <p className="text-foreground text-sm font-semibold leading-tight">Pagamento seguro</p>
                 <p className="text-muted-foreground text-xs">transmissão criptografada SSL</p>
               </div>
             </div>
@@ -502,7 +502,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <Zap className="w-5 h-5 text-muted-foreground shrink-0" />
               <div className="text-left">
-                <p className="text-white text-sm font-semibold leading-tight">Pagamento instantâneo</p>
+                <p className="text-foreground text-sm font-semibold leading-tight">Pagamento instantâneo</p>
                 <p className="text-muted-foreground text-xs">Os pontos chegam instantaneamente.</p>
               </div>
             </div>
@@ -511,7 +511,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <Headset className="w-5 h-5 text-muted-foreground shrink-0" />
               <div className="text-left">
-                <p className="text-white text-sm font-semibold leading-tight">Suporte 24/7</p>
+                <p className="text-foreground text-sm font-semibold leading-tight">Suporte 24/7</p>
                 <p className="text-muted-foreground text-xs">estamos aqui para ajudar</p>
               </div>
             </div>
@@ -764,7 +764,7 @@ const PlanosUpscalerArcano69v2 = () => {
         <div className="max-w-lg mx-auto px-4 py-12">
           <Card className="bg-background/80 border-green-500/50 rounded-3xl">
             <CardContent className="p-8 text-center">
-              <Badge className="bg-green-500 text-white text-lg px-6 py-3 rounded-full mb-6">
+              <Badge className="bg-green-500 text-foreground text-lg px-6 py-3 rounded-full mb-6">
                 <Check className="h-5 w-5 mr-2" />
                 {t('tools:upscaler.alreadyHaveAccess')}
               </Badge>
@@ -858,7 +858,7 @@ const PlanosUpscalerArcano69v2 = () => {
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
             <div className="max-w-5xl mx-auto">
               <AnimatedSection as="div" className="text-center" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-8 md:mb-12 tracking-wide">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-8 md:mb-12 tracking-wide">
                   {t('tools:upscaler.pain.title')}
                 </h2>
               </AnimatedSection>
@@ -928,7 +928,7 @@ const PlanosUpscalerArcano69v2 = () => {
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">
                   {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">{t('tools:upscaler.targetAudience.titlePart2')}</span>
                 </h2>
               </AnimatedSection>
@@ -957,7 +957,7 @@ const PlanosUpscalerArcano69v2 = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">
                   {t('tools:upscaler.howItWorks.title')} <span className="text-muted-foreground">{t('tools:upscaler.howItWorks.subtitle')}</span>
                 </h2>
               </AnimatedSection>
@@ -972,7 +972,7 @@ const PlanosUpscalerArcano69v2 = () => {
                         <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-slate-500/50 to-transparent" />
                       )}
                       
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-foreground font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
                         {index + 1}
                       </div>
                       <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
@@ -997,7 +997,7 @@ const PlanosUpscalerArcano69v2 = () => {
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">
                   {t('tools:upscaler.benefits.title')} <span className="text-muted-foreground">{t('tools:upscaler.benefits.subtitle')}</span>?
                 </h2>
               </AnimatedSection>
@@ -1025,7 +1025,7 @@ const PlanosUpscalerArcano69v2 = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-2xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">
                   {t('tools:upscaler.faq.title')} <span className="text-muted-foreground">{t('tools:upscaler.faq.subtitle')}</span>
                 </h2>
               </AnimatedSection>
@@ -1038,7 +1038,7 @@ const PlanosUpscalerArcano69v2 = () => {
                       value={`item-${index}`}
                       className="bg-accent border border-border rounded-2xl px-6 data-[state=open]:border-border"
                     >
-                      <AccordionTrigger className="text-white text-left text-lg font-medium py-5 hover:no-underline">
+                      <AccordionTrigger className="text-foreground text-left text-lg font-medium py-5 hover:no-underline">
                         {item.question}
                       </AccordionTrigger>
                       <AccordionContent className="text-muted-foreground pb-5">

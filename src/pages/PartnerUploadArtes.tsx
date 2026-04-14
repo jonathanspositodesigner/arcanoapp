@@ -266,7 +266,7 @@ const PartnerUploadArtes = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="text-white">Carregando...</div>
+        <div className="text-foreground">Carregando...</div>
       </div>
     );
   }
@@ -299,7 +299,7 @@ const PartnerUploadArtes = () => {
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="h-12 w-12 mx-auto text-[#2d4a5e] mb-4" />
-              <p className="text-white font-medium mb-2">
+              <p className="text-foreground font-medium mb-2">
                 Arraste imagens ou vídeos aqui ou clique para selecionar
               </p>
               <p className="text-muted-foreground text-sm">
@@ -418,7 +418,7 @@ const PartnerUploadArtes = () => {
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border/50 z-50">
                     {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.name} className="text-white">
+                      <SelectItem key={cat.id} value={cat.name} className="text-foreground">
                         {cat.name}
                       </SelectItem>
                     ))}
@@ -437,7 +437,7 @@ const PartnerUploadArtes = () => {
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border/50 z-50">
                     {packs.map((pack) => (
-                      <SelectItem key={pack.id} value={pack.name} className="text-white">
+                      <SelectItem key={pack.id} value={pack.name} className="text-foreground">
                         {pack.name}
                       </SelectItem>
                     ))}

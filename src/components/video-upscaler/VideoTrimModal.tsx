@@ -404,7 +404,7 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">0s</span>
               <div className="flex items-center gap-2 bg-accent0/20 px-3 py-1.5 rounded-full">
-                <span className="text-white font-medium">
+                <span className="text-foreground font-medium">
                   {formatTime(range[0])} → {formatTime(range[1])}
                 </span>
                 <span className={cn(

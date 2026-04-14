@@ -23,7 +23,7 @@ const AngleExamplesModal: React.FC<AngleExamplesModalProps> = ({ open, onOpenCha
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card border-border w-[calc(100%-32px)] max-w-md rounded-xl p-4">
         <DialogHeader>
-          <DialogTitle className="text-white text-sm text-center">📸 Exemplo de cada ângulo</DialogTitle>
+          <DialogTitle className="text-foreground text-sm text-center">📸 Exemplo de cada ângulo</DialogTitle>
         </DialogHeader>
         
         <div className="grid grid-cols-2 gap-3 mt-2">
@@ -40,7 +40,7 @@ const AngleExamplesModal: React.FC<AngleExamplesModalProps> = ({ open, onOpenCha
 
         <DialogFooter className="mt-3">
           <Button
-            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white text-xs"
+            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground text-xs"
             onClick={() => onOpenChange(false)}
           >
             Ok, entendi!

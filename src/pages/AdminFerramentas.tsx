@@ -484,7 +484,7 @@ const AdminFerramentas = () => {
                   <p className="text-muted-foreground hidden sm:block">Usuários que criaram conta sem comprar</p>
                 </div>
                 {leadsCount > 0 && (
-                  <span className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                  <span className="absolute top-2 right-2 bg-blue-500 text-foreground text-xs px-2 py-1 rounded-full">
                     {leadsCount}
                   </span>
                 )}
@@ -539,7 +539,7 @@ const AdminFerramentas = () => {
                   <p className="text-muted-foreground hidden sm:block">Remarketing de leads</p>
                 </div>
                 {pendingAbandonedCount > 0 && (
-                  <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                  <span className="absolute top-2 right-2 bg-red-500 text-foreground text-xs px-2 py-1 rounded-full">
                     {pendingAbandonedCount}
                   </span>
                 )}
@@ -554,7 +554,7 @@ const AdminFerramentas = () => {
                   <p className="text-muted-foreground hidden sm:block">Logs de reembolsos e chargebacks</p>
                 </div>
                 {refundCount > 0 && (
-                  <span className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                  <span className="absolute top-2 right-2 bg-red-500 text-foreground text-xs px-2 py-1 rounded-full">
                     {refundCount}
                   </span>
                 )}

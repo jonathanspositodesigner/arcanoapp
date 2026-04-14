@@ -46,7 +46,7 @@ const NavigationBlockerModal = ({
             </AlertDialogTitle>
           </div>
           <AlertDialogDescription className="text-muted-foreground text-base leading-relaxed">
-            Você tem um processamento de <span className="text-white font-medium">{toolDisplay}</span> em andamento.
+            Você tem um processamento de <span className="text-foreground font-medium">{toolDisplay}</span> em andamento.
             <br /><br />
             <span className="text-amber-400 font-medium">
               Se você sair agora, perderá o resultado e os créditos serão cobrados do mesmo jeito.

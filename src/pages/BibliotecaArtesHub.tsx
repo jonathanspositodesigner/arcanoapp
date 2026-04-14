@@ -43,7 +43,7 @@ const BibliotecaArtesHub = () => {
           </p>
           
           {/* Button */}
-          <button className="relative z-10 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-medium hover:from-amber-400 hover:to-yellow-500 transition-all shadow-md hover:shadow-lg">
+          <button className="relative z-10 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 text-foreground font-medium hover:from-amber-400 hover:to-yellow-500 transition-all shadow-md hover:shadow-lg">
             {t('artesHub.access')}
           </button>
         </div>
@@ -69,7 +69,7 @@ const BibliotecaArtesHub = () => {
           </p>
           
           {/* Button */}
-          <button className="relative z-10 px-6 py-2.5 rounded-full bg-gradient-to-r from-slate-500 to-slate-500 text-white font-medium hover:from-slate-400 hover:to-slate-400 transition-all shadow-md hover:shadow-lg">
+          <button className="relative z-10 px-6 py-2.5 rounded-full bg-gradient-to-r from-slate-500 to-slate-500 text-foreground font-medium hover:from-slate-400 hover:to-slate-400 transition-all shadow-md hover:shadow-lg">
             {t('artesHub.access')}
           </button>
         </div>

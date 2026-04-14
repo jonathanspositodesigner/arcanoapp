@@ -908,14 +908,14 @@ const AdminPackPurchases = () => {
                               {access.access_type !== 'vitalicio' && access.expires_at && new Date(access.expires_at) < new Date() && (
                                 <div className="flex items-center justify-between p-2 bg-red-500/10 border border-red-500/30 rounded-lg">
                                   <div className="flex items-center gap-2">
-                                    <Badge className="bg-red-500 text-white text-xs">ACESSO EXPIRADO</Badge>
+                                    <Badge className="bg-red-500 text-foreground text-xs">ACESSO EXPIRADO</Badge>
                                     <span className="text-xs text-red-400">
                                       Expirou em {format(new Date(access.expires_at), "dd/MM/yyyy", { locale: ptBR })}
                                     </span>
                                   </div>
                                   <Button 
                                     type="button" size="sm" 
-                                    className="bg-green-600 hover:bg-green-700 text-white text-xs"
+                                    className="bg-green-600 hover:bg-green-700 text-foreground text-xs"
                                     onClick={() => {
                                       const packName = packs.find(p => p.slug === access.pack_slug)?.name || access.pack_slug;
                                       const whatsappMessage = encodeURIComponent(`Olá! Gostaria de renovar meu acesso ao ${packName} com desconto especial.`);

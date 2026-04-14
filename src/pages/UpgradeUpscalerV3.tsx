@@ -601,7 +601,7 @@ const UpgradeUpscalerV3 = () => {
                   </div>
                   <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Seu acesso está protegido</h2>
                   <p className="text-muted-foreground text-sm md:text-base leading-relaxed max-w-[520px] mx-auto">
-                    O upgrade para V3 é <strong className="text-white">aditivo</strong>. Você não perde nada do que já tem. Seu acesso ao V2 permanece ativo. O V3 adiciona dois novos recursos ao que você já possui.
+                    O upgrade para V3 é <strong className="text-foreground">aditivo</strong>. Você não perde nada do que já tem. Seu acesso ao V2 permanece ativo. O V3 adiciona dois novos recursos ao que você já possui.
                   </p>
                   <div className="mt-6 flex flex-wrap justify-center gap-4 text-xs md:text-sm font-semibold">
                     {["Acesso V2 mantido", "Acesso imediato ao V3", "Upgrade aditivo"].map((text, i) => (
@@ -735,7 +735,7 @@ const UpgradeUpscalerV3 = () => {
           <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
             <div className="max-w-3xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-10 tracking-wide">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-10 tracking-wide">
                   Perguntas <span className="text-muted-foreground">frequentes</span>
                 </h2>
               </AnimatedSection>

@@ -51,7 +51,7 @@ const StatsBar = () => {
           <div className="flex flex-col items-center gap-0.5">
             <Image className="w-5 h-5 text-muted-foreground mb-1" />
             <div className="flex items-center gap-1">
-              <span className="text-white font-bold text-base sm:text-lg">{animatedImages.displayValue.toLocaleString('pt-BR')}</span>
+              <span className="text-foreground font-bold text-base sm:text-lg">{animatedImages.displayValue.toLocaleString('pt-BR')}</span>
               <span className="text-muted-foreground text-lg font-bold">+</span>
             </div>
             <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium text-center">Imagens Geradas</span>
@@ -59,7 +59,7 @@ const StatsBar = () => {
           <div className="flex flex-col items-center gap-0.5">
             <Video className="w-5 h-5 text-muted-foreground mb-1" />
             <div className="flex items-center gap-1">
-              <span className="text-white font-bold text-base sm:text-lg">{animatedVideos.displayValue.toLocaleString('pt-BR')}</span>
+              <span className="text-foreground font-bold text-base sm:text-lg">{animatedVideos.displayValue.toLocaleString('pt-BR')}</span>
               <span className="text-muted-foreground text-lg font-bold">+</span>
             </div>
             <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium text-center">Vídeos Gerados</span>
@@ -67,7 +67,7 @@ const StatsBar = () => {
           <div className="flex flex-col items-center gap-0.5">
             <Award className="w-5 h-5 text-yellow-500 mb-1" />
             <div className="flex items-center gap-0.5">
-              <span className="text-white font-bold text-base sm:text-lg">{animatedSatisfaction.displayValue}</span>
+              <span className="text-foreground font-bold text-base sm:text-lg">{animatedSatisfaction.displayValue}</span>
               <span className="text-yellow-500 text-lg font-bold">%</span>
             </div>
             <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium text-center">Satisfação</span>
@@ -158,7 +158,7 @@ const LandingPricingSection = () => {
     <AnimatedSection className="px-4 py-16 md:py-20">
       <div className="max-w-7xl mx-auto">
         <AnimatedSection as="div" delay={100}>
-          <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
+          <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
             Comece agora mesmo a gerar suas próprias{" "}
             <span className="text-muted-foreground">fotos profissionais!</span>
           </h2>
@@ -223,7 +223,7 @@ const LandingPricingSection = () => {
                   disabled={isLoading}
                   className={`w-full mb-2 text-sm lg:text-base h-10 lg:h-12 ${
                     plan.bestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" :
-                    plan.hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-white font-semibold" :
+                    plan.hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-foreground font-semibold" :
                     "bg-accent hover:bg-white/20 text-foreground"
                   }`}
                 >
@@ -269,7 +269,7 @@ const LandingPricingSection = () => {
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <ShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
               <div className="text-left">
-                <p className="text-white text-sm font-semibold leading-tight">Pagamento seguro</p>
+                <p className="text-foreground text-sm font-semibold leading-tight">Pagamento seguro</p>
                 <p className="text-muted-foreground text-xs">transmissão criptografada SSL</p>
               </div>
             </div>
@@ -278,7 +278,7 @@ const LandingPricingSection = () => {
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <Zap className="w-5 h-5 text-muted-foreground shrink-0" />
               <div className="text-left">
-                <p className="text-white text-sm font-semibold leading-tight">Pagamento instantâneo</p>
+                <p className="text-foreground text-sm font-semibold leading-tight">Pagamento instantâneo</p>
                 <p className="text-muted-foreground text-xs">Os pontos chegam instantaneamente.</p>
               </div>
             </div>
@@ -287,7 +287,7 @@ const LandingPricingSection = () => {
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <Headset className="w-5 h-5 text-muted-foreground shrink-0" />
               <div className="text-left">
-                <p className="text-white text-sm font-semibold leading-tight">Suporte 24/7</p>
+                <p className="text-foreground text-sm font-semibold leading-tight">Suporte 24/7</p>
                 <p className="text-muted-foreground text-xs">estamos aqui para ajudar</p>
               </div>
             </div>

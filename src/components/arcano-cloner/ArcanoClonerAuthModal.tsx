@@ -102,7 +102,7 @@ function SimpleSignupForm({ defaultEmail, onSubmit, onBackToLogin, isLoading: fo
       <Button
         type="submit"
         disabled={formLoading}
-        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-5"
+        className="w-full bg-green-600 hover:bg-green-700 text-foreground font-bold py-5"
       >
         {formLoading ? (
           <>
@@ -543,7 +543,7 @@ export default function ArcanoClonerAuthModal({
               <div>
                 <h3 className="text-lg font-bold text-white">Confirme seu email para continuar</h3>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Enviamos um link de confirmação para <strong className="text-white">{verifiedEmail || email}</strong>
+                  Enviamos um link de confirmação para <strong className="text-foreground">{verifiedEmail || email}</strong>
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
                   Verifique também a pasta de spam/lixo eletrônico. Sem confirmação do link, o login e o acesso ficam bloqueados.

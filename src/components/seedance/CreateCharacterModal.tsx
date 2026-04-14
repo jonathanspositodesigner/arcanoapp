@@ -366,7 +366,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
             <Button
               onClick={handleGenerate}
               disabled={!uploadedFile || currentCount >= 20}
-              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white text-[12px]"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground text-[12px]"
             >
               <span className="mr-1">✦</span>
               Gerar Personagem
@@ -478,7 +478,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                 size="sm"
                 onClick={handleSave}
                 disabled={!characterName.trim() || !gender || saving}
-                className="flex-1 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white text-[11px]"
+                className="flex-1 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground text-[11px]"
               >
                 {saving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
                 Salvar Personagem

@@ -299,7 +299,7 @@ const FerramentasIAAplicativo = () => {
       >
         <div className="aspect-[16/9] sm:aspect-[3/4] relative overflow-hidden">
           {(tool.slug === "arcano-cloner" || isNew) && (
-            <div className="absolute top-2 right-2 z-10 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
+            <div className="absolute top-2 right-2 z-10 bg-green-500 text-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
               <Sparkles className="w-3 h-3" />
               NOVO
             </div>
@@ -327,7 +327,7 @@ const FerramentasIAAplicativo = () => {
           )}
           
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 via-50% to-transparent flex flex-col justify-end p-3 sm:p-4">
-            <h3 className="font-bold text-sm sm:text-lg text-white text-center leading-tight drop-shadow-lg">
+            <h3 className="font-bold text-sm sm:text-lg text-foreground text-center leading-tight drop-shadow-lg">
               {toolNameOverrides[tool.slug] || tool.name}
             </h3>
             <p className="text-[10px] sm:text-sm text-foreground text-center mt-1 line-clamp-2">

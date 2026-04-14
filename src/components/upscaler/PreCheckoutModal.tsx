@@ -435,7 +435,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
           </button>
 
           {/* Title */}
-          <h3 className="font-bebas text-xl md:text-3xl text-white text-center mb-0.5 md:mb-1 tracking-wide">
+          <h3 className="font-bebas text-xl md:text-3xl text-foreground text-center mb-0.5 md:mb-1 tracking-wide">
             {titleText.includes(' ') ? (
               <>{titleText.split(' ').slice(0, -1).join(' ')} <span className={accentText}>{titleText.split(' ').slice(-1)}</span></>
             ) : (
@@ -464,7 +464,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     <div className="flex items-center gap-3">
                       <CreditCard className={`h-5 w-5 ${accentText}`} />
                       <div>
-                        <span className="text-white text-sm font-medium">
+                        <span className="text-foreground text-sm font-medium">
                           •••• {card.card_last_four}
                         </span>
                         <span className="text-muted-foreground text-xs ml-2">

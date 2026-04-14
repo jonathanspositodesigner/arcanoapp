@@ -232,7 +232,7 @@ const Planos = () => {
       <div className="container mx-auto px-4 pb-16">
         {/* Limited Time Promo Banner */}
         <AnimatedSection animation="scale" className="bg-gradient-to-r from-red-600 to-orange-500 rounded-xl text-center max-w-5xl mx-auto py-3 px-4 mb-6" as="div">
-          <span className="text-white font-bold tracking-wide text-sm md:text-base flex items-center justify-center gap-2">
+          <span className="text-foreground font-bold tracking-wide text-sm md:text-base flex items-center justify-center gap-2">
             🔥 Promoção por tempo limitado! 🔥
           </span>
         </AnimatedSection>
@@ -261,7 +261,7 @@ const Planos = () => {
         {/* Discount Banner - Only show on annual */}
         {billingPeriod === "anual" && (
           <AnimatedSection animation="scale" delay={100} className="bg-gradient-to-r from-slate-600 to-pink-600 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-6xl mx-auto py-[13px] px-px my-[20px]" as="div">
-            <span className="text-white font-semibold tracking-wide">
+            <span className="text-foreground font-semibold tracking-wide">
               Economize até 20% no plano anual!
             </span>
           </AnimatedSection>
@@ -319,7 +319,7 @@ const Planos = () => {
 
               <Button 
                 onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
-                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 text-white font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-accent hover:bg-accent text-muted-foreground"}`}
+                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 text-foreground font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-accent hover:bg-accent text-muted-foreground"}`}
               >
                 {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>

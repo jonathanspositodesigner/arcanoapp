@@ -145,10 +145,10 @@ const FullscreenModal = ({
         </div>
 
         {/* Labels */}
-        <div className="absolute top-4 left-4 bg-black/80 text-white text-base font-semibold px-5 py-2.5 rounded-full">
+        <div className="absolute top-4 left-4 bg-black/80 text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
           {t('tools:upscaler.beforeAfter.before')}
         </div>
-        <div className="absolute top-4 right-4 bg-gradient-to-r from-slate-500 to-slate-500 text-white text-base font-semibold px-5 py-2.5 rounded-full">
+        <div className="absolute top-4 right-4 bg-gradient-to-r from-slate-500 to-slate-500 text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
           {t('tools:upscaler.beforeAfter.after')}
         </div>
       </div>
@@ -348,7 +348,7 @@ const PlanosUpscalerArcano69v2 = () => {
         <div className="max-w-lg mx-auto px-4 py-12">
           <Card className="bg-background/80 border-green-500/50 rounded-3xl">
             <CardContent className="p-8 text-center">
-              <Badge className="bg-green-500 text-white text-lg px-6 py-3 rounded-full mb-6">
+              <Badge className="bg-green-500 text-foreground text-lg px-6 py-3 rounded-full mb-6">
                 <Check className="h-5 w-5 mr-2" />
                 {t('tools:upscaler.alreadyHaveAccess')}
               </Badge>
@@ -422,7 +422,7 @@ const PlanosUpscalerArcano69v2 = () => {
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
             <div className="max-w-5xl mx-auto">
               <AnimatedSection as="div" className="text-center" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-8 md:mb-12 tracking-wide">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-8 md:mb-12 tracking-wide">
                   {t('tools:upscaler.pain.title')}
                 </h2>
               </AnimatedSection>
@@ -492,7 +492,7 @@ const PlanosUpscalerArcano69v2 = () => {
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">
                   {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">{t('tools:upscaler.targetAudience.titlePart2')}</span>
                 </h2>
               </AnimatedSection>
@@ -521,7 +521,7 @@ const PlanosUpscalerArcano69v2 = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">
                   {t('tools:upscaler.howItWorks.title')} <span className="text-muted-foreground">{t('tools:upscaler.howItWorks.subtitle')}</span>
                 </h2>
               </AnimatedSection>
@@ -536,7 +536,7 @@ const PlanosUpscalerArcano69v2 = () => {
                         <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-slate-500/50 to-transparent" />
                       )}
                       
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-foreground font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
                         {index + 1}
                       </div>
                       <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
@@ -565,7 +565,7 @@ const PlanosUpscalerArcano69v2 = () => {
                   </Badge>
 
                   {isPremium && (
-                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-slate-500 to-pink-500 text-white text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-4 md:mb-6">
+                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-slate-500 to-pink-500 text-foreground text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-4 md:mb-6">
                       <Crown className="h-3 w-3 md:h-4 md:w-4" />
                       {t('tools:upscaler.finalCTA.memberDiscount')}
                     </div>
@@ -635,7 +635,7 @@ const PlanosUpscalerArcano69v2 = () => {
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">
                   {t('tools:upscaler.benefits.title')} <span className="text-muted-foreground">{t('tools:upscaler.benefits.subtitle')}</span>?
                 </h2>
               </AnimatedSection>
@@ -663,7 +663,7 @@ const PlanosUpscalerArcano69v2 = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-2xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">
                   {t('tools:upscaler.faq.title')} <span className="text-muted-foreground">{t('tools:upscaler.faq.subtitle')}</span>
                 </h2>
               </AnimatedSection>
@@ -676,7 +676,7 @@ const PlanosUpscalerArcano69v2 = () => {
                       value={`item-${index}`}
                       className="bg-accent border border-border rounded-2xl px-6 data-[state=open]:border-border"
                     >
-                      <AccordionTrigger className="text-white text-left text-lg font-medium py-5 hover:no-underline">
+                      <AccordionTrigger className="text-foreground text-left text-lg font-medium py-5 hover:no-underline">
                         {item.question}
                       </AccordionTrigger>
                       <AccordionContent className="text-muted-foreground pb-5">

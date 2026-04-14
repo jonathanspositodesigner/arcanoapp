@@ -46,7 +46,7 @@ const NoCreditsModal = ({ isOpen, onClose, reason }: NoCreditsModalProps) => {
           {isNotLogged ? (
             <Button 
               onClick={handleLogin}
-              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:opacity-90 text-white font-semibold"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:opacity-90 text-foreground font-semibold"
             >
               <LogIn className="h-4 w-4 mr-2" />
               Fazer Login
@@ -54,7 +54,7 @@ const NoCreditsModal = ({ isOpen, onClose, reason }: NoCreditsModalProps) => {
           ) : (
             <Button 
               onClick={handleRecharge}
-              className="w-full bg-gradient-to-r from-yellow-500 to-slate-500 hover:opacity-90 text-white font-semibold"
+              className="w-full bg-gradient-to-r from-yellow-500 to-slate-500 hover:opacity-90 text-foreground font-semibold"
             >
               <Coins className="h-4 w-4 mr-2" />
               Recarregar Créditos

@@ -117,7 +117,7 @@ const ChangePasswordArtes = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-white font-medium bg-[#2d4a5e]/30 py-2 px-4 rounded-lg text-center">
+            <p className="text-foreground font-medium bg-[#2d4a5e]/30 py-2 px-4 rounded-lg text-center">
               {emailParam}
             </p>
             <p className="text-muted-foreground text-sm text-center">

@@ -301,13 +301,13 @@ const PromosNatal = () => {
               <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
 
-            <Badge className="bg-gradient-to-r from-red-600 to-red-500 text-white text-base sm:text-xl px-3 sm:px-6 py-1.5 sm:py-2 shadow-lg">
+            <Badge className="bg-gradient-to-r from-red-600 to-red-500 text-foreground text-base sm:text-xl px-3 sm:px-6 py-1.5 sm:py-2 shadow-lg">
               <Percent className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
               {discountPercent}% OFF<span className="hidden sm:inline"> {t('promo.offAllPacks')}</span>
             </Badge>
 
             {isRenewal && (
-              <Badge className="bg-gradient-to-r from-red-700 to-red-600 text-white text-sm sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2 shadow-lg">
+              <Badge className="bg-gradient-to-r from-red-700 to-red-600 text-foreground text-sm sm:text-lg px-3 sm:px-4 py-1.5 sm:py-2 shadow-lg">
                 {t('promo.renewalOff')}
               </Badge>
             )}
@@ -336,7 +336,7 @@ const PromosNatal = () => {
                       className="bg-accent border border-red-500/20 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
                       onClick={() => setSelectedPack(pack)}
                     >
-                      <div className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-2 py-1 rounded-full z-10 font-bold shadow-lg">
+                      <div className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-red-500 text-foreground text-xs px-2 py-1 rounded-full z-10 font-bold shadow-lg">
                         -{discountPercent}%
                       </div>
                       <CardContent className="p-4">
@@ -369,7 +369,7 @@ const PromosNatal = () => {
                       className="bg-accent border border-red-500/20 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
                       onClick={() => setSelectedPack(pack)}
                     >
-                      <div className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-2 py-1 rounded-full z-10 font-bold shadow-lg">
+                      <div className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-red-500 text-foreground text-xs px-2 py-1 rounded-full z-10 font-bold shadow-lg">
                         -{discountPercent}%
                       </div>
                       <CardContent className="p-4">
@@ -445,7 +445,7 @@ const PromosNatal = () => {
                           <span className="text-muted-foreground line-through text-lg">
                             {formatOriginalPrice(option.type)}
                           </span>
-                          <Badge className="bg-red-600 text-white text-xs font-bold">
+                          <Badge className="bg-red-600 text-foreground text-xs font-bold">
                             -{isRenewal ? '30' : discountPercent}%
                           </Badge>
                         </div>

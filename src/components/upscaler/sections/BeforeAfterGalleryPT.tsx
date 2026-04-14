@@ -85,7 +85,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       <div className="absolute inset-0 bg-gradient-to-b from-slate-500/5 via-slate-500/5 to-transparent pointer-events-none" />
       
       <div className="max-w-6xl mx-auto relative">
-        <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3 md:mb-4">
+        <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3 md:mb-4">
           {t('tools:upscaler.beforeAfter.title')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">{t('tools:upscaler.beforeAfter.anyImage')}</span>
         </h2>
         <p className="text-muted-foreground text-center text-sm md:text-lg mb-10 md:mb-14 max-w-2xl mx-auto">

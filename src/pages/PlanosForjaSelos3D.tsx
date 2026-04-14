@@ -115,7 +115,7 @@ const PlanosForjaSelos3D = () => {
           <AnimatedSection animation="scale" as="div">
             <Card className="bg-card/80 border-green-500/50">
               <CardContent className="p-6 text-center">
-                <Badge className="bg-green-500 text-white text-lg px-4 py-2 mb-4">
+                <Badge className="bg-green-500 text-foreground text-lg px-4 py-2 mb-4">
                   <Check className="h-5 w-5 mr-2" />
                   {t("forja3D.alreadyHaveAccess")}
                 </Badge>
@@ -139,7 +139,7 @@ const PlanosForjaSelos3D = () => {
               </div>
 
               {isPremium && (
-                <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-500 to-orange-500 text-foreground text-xs px-2 py-1 rounded-full flex items-center gap-1">
                   <Crown className="h-3 w-3" />
                   {t("forja3D.memberDiscount")}
                 </div>
@@ -151,7 +151,7 @@ const PlanosForjaSelos3D = () => {
                     <Box className="h-10 w-10 text-muted-foreground" />
                   </div>
                 </div>
-                <CardTitle className="text-white text-2xl">{t("forja3D.title")}</CardTitle>
+                <CardTitle className="text-foreground text-2xl">{t("forja3D.title")}</CardTitle>
                 <p className="text-muted-foreground text-sm">
                   {t("forja3D.toolDescription")}
                 </p>

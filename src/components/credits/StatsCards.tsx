@@ -74,7 +74,7 @@ export const StatsCards = () => {
           <div className="flex flex-col items-center gap-0.5">
             <Image className="w-5 h-5 text-muted-foreground mb-1" />
             <div className="flex items-center gap-1">
-              <span className="text-white font-bold text-base sm:text-lg">
+              <span className="text-foreground font-bold text-base sm:text-lg">
                 {animatedImages.displayValue.toLocaleString('pt-BR')}
               </span>
               <span className="text-muted-foreground text-lg font-bold">+</span>
@@ -88,7 +88,7 @@ export const StatsCards = () => {
           <div className="flex flex-col items-center gap-0.5">
             <Video className="w-5 h-5 text-muted-foreground mb-1" />
             <div className="flex items-center gap-1">
-              <span className="text-white font-bold text-base sm:text-lg">
+              <span className="text-foreground font-bold text-base sm:text-lg">
                 {animatedVideos.displayValue.toLocaleString('pt-BR')}
               </span>
               <span className="text-muted-foreground text-lg font-bold">+</span>
@@ -102,7 +102,7 @@ export const StatsCards = () => {
           <div className="flex flex-col items-center gap-0.5">
             <Award className="w-5 h-5 text-yellow-500 mb-1" />
             <div className="flex items-center gap-0.5">
-              <span className="text-white font-bold text-base sm:text-lg">
+              <span className="text-foreground font-bold text-base sm:text-lg">
                 {animatedSatisfaction.displayValue}
               </span>
               <span className="text-yellow-500 text-lg font-bold">%</span>

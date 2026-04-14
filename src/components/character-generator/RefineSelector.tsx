@@ -72,14 +72,14 @@ const RefineSelector: React.FC<RefineSelectorProps> = ({
       {selected.length > 0 && (
         <div className="bg-slate-800/30 border border-border rounded-md px-3 py-1.5">
           <p className="text-[10px] text-muted-foreground mb-0.5">Selecionados:</p>
-          <p className="text-xs text-white font-mono">{selectionText}</p>
+          <p className="text-xs text-foreground font-mono">{selectionText}</p>
         </div>
       )}
 
       {/* Submit */}
       <Button
         size="sm"
-        className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-medium text-xs disabled:opacity-50"
+        className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-medium text-xs disabled:opacity-50"
         disabled={!canSubmit}
         onClick={() => onSubmit(selectionText)}
       >

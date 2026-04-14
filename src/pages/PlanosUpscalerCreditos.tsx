@@ -146,10 +146,10 @@ const FullscreenModal = ({
         </div>
 
         {/* Labels */}
-        <div className="absolute top-4 left-4 bg-black/80 text-white text-base font-semibold px-5 py-2.5 rounded-full">
+        <div className="absolute top-4 left-4 bg-black/80 text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
           {t('tools:upscaler.beforeAfter.before')}
         </div>
-        <div className="absolute top-4 right-4 bg-gradient-to-r from-slate-500 to-slate-500 text-white text-base font-semibold px-5 py-2.5 rounded-full">
+        <div className="absolute top-4 right-4 bg-gradient-to-r from-slate-500 to-slate-500 text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
           {t('tools:upscaler.beforeAfter.after')}
         </div>
       </div>
@@ -416,7 +416,7 @@ const PlanosUpscalerCreditos = () => {
         <div className="max-w-lg mx-auto px-4 py-12">
           <Card className="bg-background/80 border-green-500/50 rounded-3xl">
             <CardContent className="p-8 text-center">
-              <Badge className="bg-green-500 text-white text-lg px-6 py-3 rounded-full mb-6">
+              <Badge className="bg-green-500 text-foreground text-lg px-6 py-3 rounded-full mb-6">
                 <Check className="h-5 w-5 mr-2" />
                 {t('tools:upscaler.alreadyHaveAccess')}
               </Badge>
@@ -515,7 +515,7 @@ const PlanosUpscalerCreditos = () => {
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
             <div className="max-w-5xl mx-auto">
               <AnimatedSection as="div" className="text-center" delay={100}>
-                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-8 md:mb-12">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-8 md:mb-12">
                   {t('tools:upscaler.pain.title')}
                 </h2>
               </AnimatedSection>
@@ -585,7 +585,7 @@ const PlanosUpscalerCreditos = () => {
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-12">
                   {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">{t('tools:upscaler.targetAudience.titlePart2')}</span>
                 </h2>
               </AnimatedSection>
@@ -614,7 +614,7 @@ const PlanosUpscalerCreditos = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-12">
                   {t('tools:upscaler.howItWorks.title')} <span className="text-muted-foreground">{t('tools:upscaler.howItWorks.subtitle')}</span>
                 </h2>
               </AnimatedSection>
@@ -629,7 +629,7 @@ const PlanosUpscalerCreditos = () => {
                         <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-slate-500/50 to-transparent" />
                       )}
                       
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-foreground font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
                         {index + 1}
                       </div>
                       <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
@@ -652,11 +652,11 @@ const PlanosUpscalerCreditos = () => {
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
             <div className="max-w-5xl mx-auto">
               <div className="max-w-2xl mx-auto text-center mb-6">
-                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-2 tracking-tight leading-tight">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-2 tracking-tight leading-tight">
                   Melhore agora mesmo suas <span className="text-muted-foreground">imagens!</span>
                 </h2>
                 <p className="text-muted-foreground text-sm md:text-base font-space-grotesk">
-                  Escolha o plano que melhor te atende — <span className="text-white font-bold">sem mensalidade, pague apenas uma vez!</span>
+                  Escolha o plano que melhor te atende — <span className="text-foreground font-bold">sem mensalidade, pague apenas uma vez!</span>
                 </p>
               </div>
 
@@ -860,7 +860,7 @@ const PlanosUpscalerCreditos = () => {
                     </div>
                     <Button 
                       onClick={() => window.open(appendUtmToUrl("https://payfast.greenn.com.br/fz9ce38/offer/SQCSxN"), "_blank")}
-                      className="w-full mb-5 text-lg h-14 bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-white font-semibold"
+                      className="w-full mb-5 text-lg h-14 bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-foreground font-semibold"
                     >
                       Comprar
                     </Button>
@@ -932,7 +932,7 @@ const PlanosUpscalerCreditos = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-2xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-12">
                   {t('tools:upscaler.faq.title')} <span className="text-muted-foreground">{t('tools:upscaler.faq.subtitle')}</span>
                 </h2>
               </AnimatedSection>
@@ -945,7 +945,7 @@ const PlanosUpscalerCreditos = () => {
                       value={`item-${index}`}
                       className="bg-accent border border-border rounded-2xl px-6 data-[state=open]:border-border"
                     >
-                      <AccordionTrigger className="text-white text-left text-lg font-medium py-5 hover:no-underline">
+                      <AccordionTrigger className="text-foreground text-left text-lg font-medium py-5 hover:no-underline">
                         {item.question}
                       </AccordionTrigger>
                       <AccordionContent className="text-muted-foreground pb-5">

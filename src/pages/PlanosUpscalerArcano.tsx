@@ -135,7 +135,7 @@ const StickyFooterBar = () => {
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-slate-600 to-slate-600 border-b border-border shadow-[0_4px_20px_rgba(217,70,239,0.3)]">
       <div className="max-w-7xl mx-auto px-3 py-3 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-3">
-        <div className="flex items-center gap-1.5 sm:gap-2 text-white text-xs sm:text-sm font-medium min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-foreground text-xs sm:text-sm font-medium min-w-0">
           <span className="truncate">🔥 Suas imagens em qualidade cinematográfica</span>
         </div>
         <button
@@ -541,7 +541,7 @@ const PlanosUpscalerArcano = () => {
         <div className="max-w-lg mx-auto px-4 py-12">
           <Card className="bg-background/80 border-green-500/50 rounded-3xl">
             <CardContent className="p-8 text-center">
-              <Badge className="bg-green-500 text-white text-lg px-6 py-3 rounded-full mb-6">
+              <Badge className="bg-green-500 text-foreground text-lg px-6 py-3 rounded-full mb-6">
                 <Check className="h-5 w-5 mr-2" />
                 {t('tools:upscaler.alreadyHaveAccess')}
               </Badge>
@@ -641,7 +641,7 @@ const PlanosUpscalerArcano = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-12">
                   {t('tools:upscaler.howItWorks.title')} <span className="text-muted-foreground">{t('tools:upscaler.howItWorks.subtitle')}</span>
                 </h2>
               </AnimatedSection>
@@ -654,7 +654,7 @@ const PlanosUpscalerArcano = () => {
                       {index < steps.length - 1 && (
                         <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-slate-500/50 to-transparent" />
                       )}
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-foreground font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
                         {index + 1}
                       </div>
                       <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
@@ -682,7 +682,7 @@ const PlanosUpscalerArcano = () => {
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-12">
                   {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">{t('tools:upscaler.targetAudience.titlePart2')}</span>
                 </h2>
               </AnimatedSection>
@@ -725,7 +725,7 @@ const PlanosUpscalerArcano = () => {
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3">
                 <div className="flex items-center gap-2 animate-pulse">
                   <span className="text-lg">🔥</span>
-                  <span className="text-white font-bold tracking-wide text-sm md:text-base">Promoção por tempo limitado!</span>
+                  <span className="text-foreground font-bold tracking-wide text-sm md:text-base">Promoção por tempo limitado!</span>
                   <span className="text-lg">🔥</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -733,22 +733,22 @@ const PlanosUpscalerArcano = () => {
                   <span className="text-red-300 text-xs sm:text-sm font-medium">Essa oferta expira em</span>
                   <div className="flex items-center gap-1">
                     <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
-                      <span className="text-white font-mono font-bold text-sm">{countdown.hours}</span>
+                      <span className="text-foreground font-mono font-bold text-sm">{countdown.hours}</span>
                     </div>
                     <span className="text-red-400 font-bold text-sm">:</span>
                     <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
-                      <span className="text-white font-mono font-bold text-sm">{countdown.minutes}</span>
+                      <span className="text-foreground font-mono font-bold text-sm">{countdown.minutes}</span>
                     </div>
                     <span className="text-red-400 font-bold text-sm">:</span>
                     <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
-                      <span className="text-white font-mono font-bold text-sm">{countdown.seconds}</span>
+                      <span className="text-foreground font-mono font-bold text-sm">{countdown.seconds}</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-8">
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-8">
               Comece agora mesmo a entregar imagens que <span className="text-muted-foreground">impressionam</span>
             </h2>
 
@@ -779,7 +779,7 @@ const PlanosUpscalerArcano = () => {
                     </Badge>
                   )}
                   {plan.isLifetime && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold px-4 py-1">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-green-500 to-emerald-600 text-foreground font-semibold px-4 py-1">
                       🔥 69% OFF
                     </Badge>
                   )}
@@ -813,11 +813,11 @@ const PlanosUpscalerArcano = () => {
                       onClick={() => openCheckout(plan.productSlug)}
                       className={`w-full mb-2 text-sm lg:text-base h-10 lg:h-12 ${
                         plan.isLifetime
-                          ? "bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600 text-white font-semibold"
+                          ? "bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600 text-foreground font-semibold"
                           : plan.bestSeller
                           ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold"
                           : plan.bestValue
-                          ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-white font-semibold"
+                          ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-foreground font-semibold"
                           : "bg-accent hover:bg-white/20 text-foreground"
                       }`}
                     >
@@ -891,7 +891,7 @@ const PlanosUpscalerArcano = () => {
                   <div className="flex flex-col items-center gap-0.5">
                     <ImageIcon className="w-5 h-5 text-muted-foreground mb-1" />
                     <div className="flex items-center gap-1">
-                      <span className="text-white font-bold text-base">5.184</span>
+                      <span className="text-foreground font-bold text-base">5.184</span>
                       <span className="text-muted-foreground text-lg font-bold">+</span>
                     </div>
                     <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Upscalers de Imagens</span>
@@ -899,7 +899,7 @@ const PlanosUpscalerArcano = () => {
                   <div className="flex flex-col items-center gap-0.5">
                     <User className="w-5 h-5 text-muted-foreground mb-1" />
                     <div className="flex items-center gap-1">
-                      <span className="text-white font-bold text-base">3.248</span>
+                      <span className="text-foreground font-bold text-base">3.248</span>
                       <span className="text-muted-foreground text-lg font-bold">+</span>
                     </div>
                     <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Usuários Ativos</span>
@@ -907,7 +907,7 @@ const PlanosUpscalerArcano = () => {
                   <div className="flex flex-col items-center gap-0.5">
                     <Award className="w-5 h-5 text-yellow-500 mb-1" />
                     <div className="flex items-center gap-0.5">
-                      <span className="text-white font-bold text-base">100</span>
+                      <span className="text-foreground font-bold text-base">100</span>
                       <span className="text-yellow-500 text-lg font-bold">%</span>
                     </div>
                     <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Satisfação</span>
@@ -969,7 +969,7 @@ const PlanosUpscalerArcano = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-2xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-12">
                   {t('tools:upscaler.faq.title')} <span className="text-muted-foreground">{t('tools:upscaler.faq.subtitle')}</span>
                 </h2>
               </AnimatedSection>
@@ -982,7 +982,7 @@ const PlanosUpscalerArcano = () => {
                       value={`item-${index}`}
                       className="bg-accent border border-border rounded-2xl px-6 data-[state=open]:border-border"
                     >
-                      <AccordionTrigger className="text-white text-left text-lg font-medium py-5 hover:no-underline">
+                      <AccordionTrigger className="text-foreground text-left text-lg font-medium py-5 hover:no-underline">
                         {item.question}
                       </AccordionTrigger>
                       <AccordionContent className="text-muted-foreground pb-5">

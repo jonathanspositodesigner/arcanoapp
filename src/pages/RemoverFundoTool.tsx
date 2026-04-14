@@ -372,7 +372,7 @@ const RemoverFundoTool: React.FC = () => {
 
               <Button
                 size="sm"
-                className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-medium py-2 text-xs disabled:opacity-50"
+                className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-medium py-2 text-xs disabled:opacity-50"
                 disabled={!canProcess || isProcessing || isSubmitting}
                 onClick={handleProcess}
               >
@@ -417,7 +417,7 @@ const RemoverFundoTool: React.FC = () => {
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                       <div className="relative"><div className="w-14 h-14 rounded-full border-4 border-border border-t-slate-500 animate-spin" /><Sparkles className="absolute inset-0 m-auto w-6 h-6 text-muted-foreground" /></div>
                       <div className="text-center">
-                        <p className="text-sm text-white font-medium flex items-center gap-2"><span>{currentQueueMessage.emoji}</span><span>{currentQueueMessage.text}</span></p>
+                        <p className="text-sm text-foreground font-medium flex items-center gap-2"><span>{currentQueueMessage.emoji}</span><span>{currentQueueMessage.text}</span></p>
                         {status === 'waiting' && queuePosition > 0 && <p className="text-xs text-muted-foreground mt-1">Posição na fila: #{queuePosition}</p>}
                         {status === 'processing' && <p className="text-xs text-muted-foreground mt-0.5">{Math.round(progress)}% concluído</p>}
                       </div>

@@ -147,7 +147,7 @@ const ResgatarCreditos = () => {
               <Button
                 type="submit"
                 disabled={status === 'checking'}
-                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-slate-500/20"
+                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold text-base shadow-lg shadow-slate-500/20"
               >
                 {status === 'checking' ? (
                   <>
@@ -204,7 +204,7 @@ const ResgatarCreditos = () => {
               {errorReason === 'already_claimed' ? (
                 <Button
                   onClick={() => navigate('/ferramentas-ia-aplicativo')}
-                  className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold"
+                  className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold"
                 >
                   Ir para a ferramenta
                   <ArrowRight className="w-5 h-5 ml-2" />
@@ -213,7 +213,7 @@ const ResgatarCreditos = () => {
                 <>
                   <Button
                     onClick={handleViewPlans}
-                    className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold"
+                    className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold"
                   >
                     Ver Planos de Créditos
                     <ArrowRight className="w-5 h-5 ml-2" />

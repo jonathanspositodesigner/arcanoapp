@@ -1094,7 +1094,7 @@ const ArcanoClonerTool: React.FC = () => {
                       <div className="w-14 h-14 rounded-full border-4 border-border border-t-slate-400 animate-spin" />
                       <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-muted-foreground" />
                     </div>
-                    <p className="text-sm text-white font-medium">Refinando imagem...</p>
+                    <p className="text-sm text-foreground font-medium">Refinando imagem...</p>
                   </div>
                 ) : isProcessing ? (
                   <div className="flex flex-col items-center justify-center gap-4">

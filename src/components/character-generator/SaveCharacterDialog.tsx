@@ -97,7 +97,7 @@ const SaveCharacterDialog: React.FC<SaveCharacterDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-background border-border text-white sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-white">Salvar Avatar</DialogTitle>
+          <DialogTitle className="text-foreground">Salvar Avatar</DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Dê um nome para salvar este avatar na sua galeria.
           </DialogDescription>

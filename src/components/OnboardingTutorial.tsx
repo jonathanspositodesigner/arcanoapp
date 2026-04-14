@@ -275,7 +275,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
               
               {/* Highlighted button */}
               <Button 
-                className="w-full bg-gradient-primary text-white font-semibold py-3 ring-4 ring-white/50 animate-pulse"
+                className="w-full bg-gradient-primary text-foreground font-semibold py-3 ring-4 ring-white/50 animate-pulse"
                 onClick={handleCopyPrompt}
                 data-tutorial-modal="copy-prompt"
               >

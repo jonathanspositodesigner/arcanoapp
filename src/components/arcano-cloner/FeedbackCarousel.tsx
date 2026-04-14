@@ -63,7 +63,7 @@ const FeedbackCard = ({ fb }: { fb: typeof feedbacks[0] }) => (
         loading="lazy"
       />
       <div>
-        <p className="text-white font-semibold text-sm">{fb.name}</p>
+        <p className="text-foreground font-semibold text-sm">{fb.name}</p>
         <div className="flex gap-0.5">
           {Array.from({ length: 5 }).map((_, i) => (
             <Star key={i} className="w-3 h-3 fill-gray-400 text-muted-foreground" />
@@ -112,7 +112,7 @@ const DesktopFeedbackCarousel = () => {
     <AnimatedSection className="py-16 md:py-20">
       <div className="max-w-5xl mx-auto px-4">
         <AnimatedSection as="div" delay={100}>
-          <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-4">
+          <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-4">
             O que nossos{" "}
             <span className="text-muted-foreground">usuários</span> dizem
           </h2>
@@ -181,7 +181,7 @@ const MobileFeedbackCarousel = () => {
     <AnimatedSection className="py-16">
       <div className="px-4">
         <AnimatedSection as="div" delay={100}>
-          <h2 className="font-space-grotesk font-bold text-2xl text-white text-center mb-4">
+          <h2 className="font-space-grotesk font-bold text-2xl text-foreground text-center mb-4">
             O que nossos{" "}
             <span className="text-muted-foreground">usuários</span> dizem
           </h2>
@@ -211,7 +211,7 @@ const MobileFeedbackCarousel = () => {
                     loading="lazy"
                   />
                   <div>
-                    <p className="text-white font-semibold text-sm">{fb.name}</p>
+                    <p className="text-foreground font-semibold text-sm">{fb.name}</p>
                     <div className="flex gap-0.5">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star key={i} className="w-3 h-3 fill-gray-400 text-muted-foreground" />

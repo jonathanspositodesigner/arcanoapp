@@ -161,7 +161,7 @@ const PlanosArtesMusicos = () => {
         </div>
 
         <div className="bg-gradient-to-r from-slate-600 to-slate-500 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-5xl mx-auto py-[13px] px-px my-[20px]">
-          <span className="text-white font-semibold tracking-wide">{t('plansMusicos.discountBanner', { percent: billingPeriod === "anual" ? "40" : "20" })}</span>
+          <span className="text-foreground font-semibold tracking-wide">{t('plansMusicos.discountBanner', { percent: billingPeriod === "anual" ? "40" : "20" })}</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-0 max-w-5xl mx-auto">
@@ -201,7 +201,7 @@ const PlanosArtesMusicos = () => {
                     <li key={fIndex} className="flex items-start gap-2 text-sm">
                       {feature.included ? <Check className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" /> : <X className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />}
                       <span className={`${feature.included ? "text-gray-200" : "text-orange-500"} ${(feature as any).bold ? "font-bold" : ""}`}>{feature.text}</span>
-                      {isLedFeature && !feature.included && <Badge className="ml-1 bg-amber-600 text-white text-[10px] px-1.5 py-0 h-4 border-0">{t('plansMusicos.badges.proPlusBadge')}</Badge>}
+                      {isLedFeature && !feature.included && <Badge className="ml-1 bg-amber-600 text-foreground text-[10px] px-1.5 py-0 h-4 border-0">{t('plansMusicos.badges.proPlusBadge')}</Badge>}
                       {isLedFeature && feature.included && <Monitor className="w-3 h-3 text-amber-400 shrink-0 ml-1" />}
                     </li>
                   );
@@ -226,9 +226,9 @@ const PlanosArtesMusicos = () => {
               <Monitor className="w-6 h-6 text-amber-400" />
             </div>
             <div className="flex-1">
-              <h3 className="text-white font-semibold flex flex-wrap items-center gap-2">
+              <h3 className="text-foreground font-semibold flex flex-wrap items-center gap-2">
                 {t('plansMusicos.ledCallout.title')}
-                <Badge className="bg-amber-600 text-white text-[10px] px-1.5 py-0.5 border-0">{t('plansMusicos.badges.exclusivePro')}</Badge>
+                <Badge className="bg-amber-600 text-foreground text-[10px] px-1.5 py-0.5 border-0">{t('plansMusicos.badges.exclusivePro')}</Badge>
               </h3>
               <p className="text-muted-foreground text-sm mt-1">{t('plansMusicos.ledCallout.description')}</p>
             </div>

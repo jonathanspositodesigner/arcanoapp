@@ -640,10 +640,10 @@ const BibliotecaArtes = () => {
         {/* Top Bar - Tablet */}
         <header className={`hidden md:flex lg:hidden bg-primary px-4 py-3 items-center justify-between shadow-lg sticky z-10 ${isPromoActive ? 'top-11' : 'top-0'}`}>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
+            <Button variant="ghost" size="sm" className="text-foreground hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
-            <button onClick={() => navigate("/")} className="text-white hover:text-foreground p-1">
+            <button onClick={() => navigate("/")} className="text-foreground hover:text-foreground p-1">
               <Home className="h-5 w-5" />
             </button>
             <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-9" />
@@ -659,28 +659,28 @@ const BibliotecaArtes = () => {
           </div>
           <div className="flex items-center gap-2">
             {!user && <>
-                <Button onClick={() => navigate('/login-artes?redirect=/biblioteca-artes')} size="sm" className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-sm animate-pulse">
+                <Button onClick={() => navigate('/login-artes?redirect=/biblioteca-artes')} size="sm" className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-foreground text-sm animate-pulse">
                   <UserCheck className="h-4 w-4 mr-2" />
                   {t('firstAccess.alreadyClient')}
                 </Button>
-                <Button onClick={() => navigate("/login-artes?redirect=/biblioteca-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-sm">
+                <Button onClick={() => navigate("/login-artes?redirect=/biblioteca-artes")} size="sm" variant="ghost" className="text-foreground hover:bg-white/20 text-sm">
                   <LogIn className="h-4 w-4 mr-1" />
                   {t('buttons.login')}
                 </Button>
-                <Button onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")} size="sm" className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-sm animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-sm"}>
+                <Button onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")} size="sm" className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-foreground text-sm animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-foreground text-sm"}>
                   <Star className="h-3 w-3 mr-1" fill="currentColor" />
                   {isPromoActive ? t('badges.off50') : t('buttons.buyPack')}
                 </Button>
               </>}
             {user && <>
-                {userPacks.length > 0 && <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm">
+                {userPacks.length > 0 && <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-foreground text-sm">
                     <Star className="h-3 w-3 mr-1" fill="currentColor" />
                     {userPacks.length} Pack{userPacks.length > 1 ? 's' : ''}
                   </Badge>}
-                <Button onClick={() => navigate("/perfil-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
+                <Button onClick={() => navigate("/perfil-artes")} size="sm" variant="ghost" className="text-foreground hover:bg-white/20 p-1.5">
                   <Settings className="h-4 w-4" />
                 </Button>
-                <Button onClick={logout} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
+                <Button onClick={logout} size="sm" variant="ghost" className="text-foreground hover:bg-white/20 p-1.5">
                   <LogOut className="h-4 w-4" />
                 </Button>
               </>}
@@ -690,10 +690,10 @@ const BibliotecaArtes = () => {
         {/* Top Bar - Mobile */}
         <header className={`md:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg sticky z-10 ${isPromoActive ? 'top-11' : 'top-0'}`}>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
+            <Button variant="ghost" size="sm" className="text-foreground hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
-            <button onClick={() => navigate("/")} className="text-white hover:text-foreground p-1">
+            <button onClick={() => navigate("/")} className="text-foreground hover:text-foreground p-1">
               <Home className="h-5 w-5" />
             </button>
             <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-8" />
@@ -709,24 +709,24 @@ const BibliotecaArtes = () => {
           </div>
           <div className="flex items-center gap-2">
             {!user && <>
-                <Button onClick={() => navigate("/login-artes?redirect=/biblioteca-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 text-xs">
+                <Button onClick={() => navigate("/login-artes?redirect=/biblioteca-artes")} size="sm" variant="ghost" className="text-foreground hover:bg-white/20 text-xs">
                   <LogIn className="h-4 w-4 mr-1" />
                   {t('buttons.login')}
                 </Button>
-                <Button onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")} size="sm" className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-xs animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs"}>
+                <Button onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")} size="sm" className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-foreground text-xs animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-foreground text-xs"}>
                   <Star className="h-3 w-3 mr-1" fill="currentColor" />
                   {isPromoActive ? t('badges.off50') : t('buttons.buyPack')}
                 </Button>
               </>}
             {user && <>
-                {userPacks.length > 0 && <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs">
+                {userPacks.length > 0 && <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-foreground text-xs">
                     <Star className="h-3 w-3 mr-1" fill="currentColor" />
                     {userPacks.length} Pack{userPacks.length > 1 ? 's' : ''}
                   </Badge>}
-                <Button onClick={() => navigate("/perfil-artes")} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
+                <Button onClick={() => navigate("/perfil-artes")} size="sm" variant="ghost" className="text-foreground hover:bg-white/20 p-1.5">
                   <Settings className="h-4 w-4" />
                 </Button>
-                <Button onClick={logout} size="sm" variant="ghost" className="text-white hover:bg-white/20 p-1.5">
+                <Button onClick={logout} size="sm" variant="ghost" className="text-foreground hover:bg-white/20 p-1.5">
                   <LogOut className="h-4 w-4" />
                 </Button>
               </>}
@@ -886,7 +886,7 @@ const BibliotecaArtes = () => {
                         
                         {/* Overlay with pack info */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-3 sm:p-4">
-                          <h3 className="font-bold text-sm sm:text-lg text-white text-center leading-tight drop-shadow-lg">
+                          <h3 className="font-bold text-sm sm:text-lg text-foreground text-center leading-tight drop-shadow-lg">
                             {pack.name}
                           </h3>
                           
@@ -926,7 +926,7 @@ const BibliotecaArtes = () => {
                             </Badge>}
                           
                           {/* Renewal Button for expired packs */}
-                          {!hasPackAccess && isExpired && !isBonusType && <Button size="sm" className="mt-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
+                          {!hasPackAccess && isExpired && !isBonusType && <Button size="sm" className="mt-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-foreground text-xs" onClick={e => {
                         e.stopPropagation();
                         navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
                       }}>
@@ -967,7 +967,7 @@ const BibliotecaArtes = () => {
                         
                         {/* Overlay with tutorial info */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-3 sm:p-4">
-                          <h3 className="font-bold text-sm sm:text-lg text-white text-center leading-tight drop-shadow-lg">
+                          <h3 className="font-bold text-sm sm:text-lg text-foreground text-center leading-tight drop-shadow-lg">
                             {tutorial.name}
                           </h3>
                           <Badge className="mt-2 bg-white/20 text-white border-0 text-xs self-center backdrop-blur-sm">
@@ -1004,7 +1004,7 @@ const BibliotecaArtes = () => {
                         
                         {/* Overlay with curso info */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-3 sm:p-4">
-                          <h3 className="font-bold text-sm sm:text-lg text-white text-center leading-tight drop-shadow-lg">
+                          <h3 className="font-bold text-sm sm:text-lg text-foreground text-center leading-tight drop-shadow-lg">
                             {curso.name}
                           </h3>
                         </div>
@@ -1068,7 +1068,7 @@ const BibliotecaArtes = () => {
                             </div>}
                           
                           <div className="absolute bottom-2 left-2 right-2">
-                            <Badge variant="secondary" className={`bg-primary/80 text-white text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}>
+                            <Badge variant="secondary" className={`bg-primary/80 text-foreground text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}>
                               <Copy className="h-2.5 w-2.5" />
                               {totalClicks}
                             </Badge>
@@ -1086,25 +1086,25 @@ const BibliotecaArtes = () => {
                         handleItemClick(arte);
                       }}>
                               {t('buttons.viewDetails')}
-                            </Button> : hasExpiredPack(packSlug) ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 text-white text-xs" onClick={e => {
+                            </Button> : hasExpiredPack(packSlug) ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 text-foreground text-xs" onClick={e => {
                         e.stopPropagation();
                         navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
                       }}>
                               <RotateCcw className="h-3 w-3 mr-1" />
                               {t('buttons.renewWithDiscount')}
-                            </Button> : isPremium ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-slate-500 to-slate-400 hover:opacity-90 text-white text-xs" onClick={e => {
+                            </Button> : isPremium ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-slate-500 to-slate-400 hover:opacity-90 text-foreground text-xs" onClick={e => {
                         e.stopPropagation();
                         navigate(`/planos-artes-membro?pack=${packSlug}`);
                       }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
                               {t('buttons.memberDiscount')}
-                            </Button> : isPromoActive ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-xs animate-pulse" onClick={e => {
+                            </Button> : isPromoActive ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-foreground text-xs animate-pulse" onClick={e => {
                         e.stopPropagation();
                         navigate(`/promos-natal?pack=${packSlug}`);
                       }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
                               {t('buttons.buyWith50Off')}
-                            </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
+                            </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-foreground text-xs" onClick={e => {
                         e.stopPropagation();
                         navigate(`/planos-artes?pack=${packSlug}`);
                       }}>
@@ -1180,7 +1180,7 @@ const BibliotecaArtes = () => {
                             ) : <SecureImage src={arte.imageUrl} alt={arte.title} className="w-full h-full object-cover" isPremium={false} />}
                           
                           <div className="absolute bottom-2 left-2 right-2">
-                            <Badge variant="secondary" className={`bg-primary/80 text-white text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}>
+                            <Badge variant="secondary" className={`bg-primary/80 text-foreground text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}>
                               <Copy className="h-2.5 w-2.5" />
                               {totalClicks}
                             </Badge>
@@ -1290,7 +1290,7 @@ const BibliotecaArtes = () => {
                             </div>}
                           
                           <div className="absolute bottom-2 left-2 right-2">
-                            <Badge variant="secondary" className={`bg-primary/80 text-white text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}>
+                            <Badge variant="secondary" className={`bg-primary/80 text-foreground text-[10px] flex items-center gap-1 w-fit transition-transform ${isAnimating ? 'scale-110' : ''}`}>
                               <Copy className="h-2.5 w-2.5" />
                               {totalClicks}
                             </Badge>
@@ -1308,25 +1308,25 @@ const BibliotecaArtes = () => {
                         handleItemClick(arte);
                       }}>
                               Editar Agora 
-                            </Button> : hasExpiredPack(packSlug) ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 text-white text-xs" onClick={e => {
+                            </Button> : hasExpiredPack(packSlug) ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:opacity-90 text-foreground text-xs" onClick={e => {
                         e.stopPropagation();
                         navigate(`/planos-artes?pack=${packSlug}&renovacao=true`);
                       }}>
                               <RotateCcw className="h-3 w-3 mr-1" />
                               {t('buttons.renewWithDiscount')}
-                            </Button> : isPremium ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-slate-500 to-slate-400 hover:opacity-90 text-white text-xs" onClick={e => {
+                            </Button> : isPremium ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-slate-500 to-slate-400 hover:opacity-90 text-foreground text-xs" onClick={e => {
                         e.stopPropagation();
                         navigate(`/planos-artes-membro?pack=${packSlug}`);
                       }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
                               {t('buttons.memberDiscount')}
-                            </Button> : isPromoActive ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-xs animate-pulse" onClick={e => {
+                            </Button> : isPromoActive ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-foreground text-xs animate-pulse" onClick={e => {
                         e.stopPropagation();
                         navigate(`/promos-natal?pack=${packSlug}`);
                       }}>
                               <Star className="h-3 w-3 mr-1" fill="currentColor" />
                               {t('buttons.buyWith50Off')}
-                            </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-white text-xs" onClick={e => {
+                            </Button> : <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:opacity-90 text-foreground text-xs" onClick={e => {
                         e.stopPropagation();
                         navigate(`/planos-artes?pack=${packSlug}`);
                       }}>

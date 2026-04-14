@@ -265,7 +265,7 @@ const PlanosArtesMembro = () => {
         </Button>
 
         <div className="text-center mb-8">
-          <Badge className="bg-gradient-to-r from-slate-500 to-slate-400 text-white text-lg px-4 py-2 mb-4">
+          <Badge className="bg-gradient-to-r from-slate-500 to-slate-400 text-foreground text-lg px-4 py-2 mb-4">
             <Crown className="h-5 w-5 mr-2" />
             {t('memberDiscountLabel')}
           </Badge>
@@ -308,8 +308,8 @@ const PlanosArtesMembro = () => {
                 >
                   {pack.slug === 'pack-arcano-vol-4' && (
                     <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                      <Badge className="bg-accent0 text-white text-[10px] px-1.5 py-0.5">Novo</Badge>
-                      <Badge className="bg-amber-500/90 text-white text-[10px] px-1.5 py-0.5 leading-tight">Atualizando</Badge>
+                      <Badge className="bg-accent0 text-foreground text-[10px] px-1.5 py-0.5">Novo</Badge>
+                      <Badge className="bg-amber-500/90 text-foreground text-[10px] px-1.5 py-0.5 leading-tight">Atualizando</Badge>
                     </div>
                   )}
                   <Badge className="absolute top-2 right-2 bg-accent0/20 text-muted-foreground text-xs">
@@ -327,7 +327,7 @@ const PlanosArtesMembro = () => {
                         <Star className="h-8 w-8 text-[#2d4a5e]" />
                       </div>
                     )}
-                    <h3 className="text-white font-medium text-center">{pack.name}</h3>
+                    <h3 className="text-foreground font-medium text-center">{pack.name}</h3>
                   </CardContent>
                 </Card>
               ))
@@ -387,7 +387,7 @@ const PlanosArtesMembro = () => {
                         >
                           <div className="flex items-center gap-3">
                             <RadioGroupItem value={option.type} className="border-border text-muted-foreground" />
-                            <span className="text-white font-medium">{option.label}</span>
+                            <span className="text-foreground font-medium">{option.label}</span>
                           </div>
                           <span className="text-muted-foreground font-semibold">
                             {formatPrice(calculatePrice(option.type))}
@@ -408,7 +408,7 @@ const PlanosArtesMembro = () => {
                         ))}
                       </ul>
                       <Button
-                        className="w-full bg-gradient-to-r from-slate-500 to-slate-400 hover:from-slate-600 hover:to-slate-500 text-white font-bold shadow-lg shadow-slate-500/20"
+                        className="w-full bg-gradient-to-r from-slate-500 to-slate-400 hover:from-slate-600 hover:to-slate-500 text-foreground font-bold shadow-lg shadow-slate-500/20"
                         onClick={() => handleSelectOption(selectedAccessType)}
                         disabled={isCheckoutSubmitting}
                       >

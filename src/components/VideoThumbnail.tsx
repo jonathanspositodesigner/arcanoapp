@@ -60,7 +60,7 @@ export const VideoThumbnail = memo(({
       </div>
       
       {/* Video badge */}
-      <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+      <div className="absolute bottom-2 right-2 bg-black/70 text-foreground text-xs px-2 py-1 rounded flex items-center gap-1">
         <Play className="h-3 w-3" />
         Vídeo
       </div>

@@ -41,7 +41,7 @@ const PromoToolsBanner = ({ onClose }: PromoToolsBannerProps) => {
           </div>
           
           {/* Promo text */}
-          <p className="text-white text-[11px] sm:text-sm font-medium text-center leading-tight">
+          <p className="text-foreground text-[11px] sm:text-sm font-medium text-center leading-tight">
             comece agora mesmo a usar nossas ferramentas de IA com{" "}
             <span className="font-bold text-yellow-200">30% de desconto</span>
           </p>

@@ -90,7 +90,7 @@ const UpscalerChoiceModal = ({
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-xl font-bold text-white text-center mb-3">
+                  <h3 className="text-xl font-bold text-foreground text-center mb-3">
                     Versão Ilimitada
                   </h3>
 
@@ -105,7 +105,7 @@ const UpscalerChoiceModal = ({
                       e.stopPropagation();
                       handleUnlimitedClick();
                     }}
-                    className="w-full h-12 bg-slate-600 hover:bg-accent0 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5 text-base"
+                    className="w-full h-12 bg-slate-600 hover:bg-accent0 text-foreground font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5 text-base"
                   >
                     Acessar Versão Ilimitada
                   </Button>
@@ -151,7 +151,7 @@ const UpscalerChoiceModal = ({
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-lg font-bold text-white text-center mb-2">
+                  <h3 className="text-lg font-bold text-foreground text-center mb-2">
                     Versão App
                   </h3>
 
@@ -167,7 +167,7 @@ const UpscalerChoiceModal = ({
                       handleAppVersionClick();
                     }}
                     disabled={isCheckingClaim || isClaiming}
-                    className="w-full h-11 bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-500 hover:to-pink-500 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-11 bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-500 hover:to-pink-500 text-foreground font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isCheckingClaim || isClaiming ? (
                       <span className="flex items-center justify-center gap-2">
@@ -204,7 +204,7 @@ const UpscalerChoiceModal = ({
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-lg font-bold text-white text-center mb-2">
+                  <h3 className="text-lg font-bold text-foreground text-center mb-2">
                     Versão Ilimitada
                   </h3>
 
@@ -219,7 +219,7 @@ const UpscalerChoiceModal = ({
                       e.stopPropagation();
                       handleUnlimitedClick();
                     }}
-                    className="w-full h-11 bg-slate-600 hover:bg-accent0 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5"
+                    className="w-full h-11 bg-slate-600 hover:bg-accent0 text-foreground font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5"
                   >
                     Acessar Versão Ilimitada
                   </Button>

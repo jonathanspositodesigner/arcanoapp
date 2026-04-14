@@ -228,7 +228,7 @@ const FerramentasIA = () => {
           )}
           
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 via-50% to-transparent flex flex-col justify-end p-4">
-            <h3 className="font-bold text-base sm:text-lg text-white text-center leading-tight drop-shadow-lg">
+            <h3 className="font-bold text-base sm:text-lg text-foreground text-center leading-tight drop-shadow-lg">
               {tool.name}
             </h3>
             <p className="text-xs sm:text-sm text-foreground text-center mt-1 line-clamp-2">

@@ -238,7 +238,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                           )}
                           {isSelected && (
                             <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-accent0 flex items-center justify-center">
-                              <span className="text-[8px] text-white font-bold">✓</span>
+                              <span className="text-[8px] text-foreground font-bold">✓</span>
                             </div>
                           )}
                           <button

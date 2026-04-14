@@ -257,7 +257,7 @@ const IOSMockup = ({ step }: { step: number }) => (
               <div className="flex gap-4 overflow-x-auto pb-4 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex flex-col items-center gap-1 min-w-[60px]">
                   <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
-                    <span className="text-white text-lg">M</span>
+                    <span className="text-foreground text-lg">M</span>
                   </div>
                   <span className="text-[8px]">Mensagens</span>
                 </div>
@@ -292,7 +292,7 @@ const IOSMockup = ({ step }: { step: number }) => (
               <div className="bg-white dark:bg-gray-800 rounded-xl w-[90%] p-4 shadow-xl">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
-                    <span className="text-white font-bold">A</span>
+                    <span className="text-foreground font-bold">A</span>
                   </div>
                   <div>
                     <p className="font-semibold text-sm">ArcanoApp</p>
@@ -422,19 +422,19 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
                   <div className="flex gap-3 overflow-x-auto pb-1">
                     <div className="flex flex-col items-center gap-1 min-w-[50px]">
                       <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-[10px]">📡</span>
+                        <span className="text-foreground text-[10px]">📡</span>
                       </div>
                       <span className="text-[8px] text-muted-foreground">AirDrop</span>
                     </div>
                     <div className="flex flex-col items-center gap-1 min-w-[50px]">
                       <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-[10px]">💬</span>
+                        <span className="text-foreground text-[10px]">💬</span>
                       </div>
                       <span className="text-[8px] text-muted-foreground">Mensagens</span>
                     </div>
                     <div className="flex flex-col items-center gap-1 min-w-[50px]">
                       <div className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center">
-                        <span className="text-white text-[10px]">✉️</span>
+                        <span className="text-foreground text-[10px]">✉️</span>
                       </div>
                       <span className="text-[8px] text-muted-foreground">E-mail</span>
                     </div>
@@ -714,7 +714,7 @@ const AndroidMockup = ({ step }: { step: number }) => (
               <div className="bg-white dark:bg-gray-800 rounded-t-2xl w-full p-4 shadow-xl animate-slide-up">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
-                    <span className="text-white font-bold">A</span>
+                    <span className="text-foreground font-bold">A</span>
                   </div>
                   <div>
                     <p className="font-semibold">Instalar ArcanoApp?</p>
@@ -798,7 +798,7 @@ const DesktopMockup = ({ step, browser }: { step: number; browser: BrowserType }
           <div className="absolute top-4 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-xl w-64 p-4 animate-scale-in border border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">A</span>
+                <span className="text-foreground font-bold text-sm">A</span>
               </div>
               <div>
                 <p className="font-semibold text-sm">Instalar ArcanoApp?</p>

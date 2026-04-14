@@ -46,7 +46,7 @@ const TestimonialCard = ({ result }: { result: UserResult }) => (
             </div>
           )}
           <div>
-            <p className="font-space-grotesk font-semibold text-white text-sm">{result.name}</p>
+            <p className="font-space-grotesk font-semibold text-foreground text-sm">{result.name}</p>
             <p className="text-muted-foreground/70 text-xs">{result.handle}</p>
           </div>
         </div>
@@ -111,7 +111,7 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
     <AnimatedSection className="px-4 py-20 bg-black/30">
       <div className="max-w-5xl mx-auto">
         <AnimatedSection as="div" delay={100}>
-          <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-2 tracking-tight leading-tight px-2">
+          <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-2 tracking-tight leading-tight px-2">
             {t('tools:upscaler.socialProof.title')} <span className="text-muted-foreground">{t('tools:upscaler.socialProof.result')}</span>
             <span className="block sm:inline"> {t('tools:upscaler.socialProof.subtitle')}</span>
           </h2>

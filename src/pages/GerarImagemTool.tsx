@@ -536,7 +536,7 @@ const GerarImagemTool = () => {
             <p className="text-muted-foreground text-sm">
               A geração de imagens está disponível a partir do plano <strong className="text-muted-foreground">Pro</strong>.
             </p>
-            <button onClick={goBack} className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-accent0 text-white text-sm font-medium transition-colors">
+            <button onClick={goBack} className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-accent0 text-foreground text-sm font-medium transition-colors">
               Voltar
             </button>
           </div>
@@ -675,7 +675,7 @@ const GerarImagemTool = () => {
               >
                 <Paperclip className="h-4 w-4" />
                 {referenceImages.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-green-500 text-foreground text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                     {referenceImages.length}
                   </span>
                 )}
@@ -802,7 +802,7 @@ const GerarImagemTool = () => {
                 onClick={handleGenerate}
                 disabled={isSubmitting || isProcessing || !prompt.trim()}
                 size="sm"
-                className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-8 shrink-0"
+                className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-8 shrink-0"
               >
                 {isSubmitting || isProcessing ? (
                   <>

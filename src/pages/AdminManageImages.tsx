@@ -839,7 +839,7 @@ const AdminManageImages = () => {
                         {/* Badge indicando se é thumbnail provisória (reference_images) */}
                         {hasRefButNoThumb && (
                           <div className="absolute top-2 left-2">
-                            <Badge className="bg-yellow-500/90 text-white text-xs">
+                            <Badge className="bg-yellow-500/90 text-foreground text-xs">
                               Imagem de referência
                             </Badge>
                           </div>

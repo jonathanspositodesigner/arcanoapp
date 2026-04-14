@@ -70,7 +70,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
     return (
       <div className="bg-background/80 border border-border rounded-2xl p-4 md:p-6">
         <div className="text-center mb-4">
-          <h3 className="text-white font-semibold text-lg">✨ Resultado</h3>
+          <h3 className="text-foreground font-semibold text-lg">✨ Resultado</h3>
           <p className="text-muted-foreground text-sm">Arraste para mover, use pinça para zoom</p>
         </div>
         
@@ -123,7 +123,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
             <div className="absolute inset-0 bg-accent blur-xl rounded-full" />
           </div>
           <div className="text-center">
-            <h3 className="text-white font-semibold text-lg mb-2">Processando sua imagem...</h3>
+            <h3 className="text-foreground font-semibold text-lg mb-2">Processando sua imagem...</h3>
             <p className="text-muted-foreground text-sm mb-4">
               {status === 'uploading' ? 'Enviando imagens...' : 'Gerando seu clone perfeito...'}
             </p>
@@ -222,7 +222,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
         <Button
           onClick={onGenerate}
           disabled={!userImage || !referenceImage || isProcessing}
-          className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-base rounded-xl shadow-lg shadow-slate-500/20 disabled:opacity-50"
+          className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-base rounded-xl shadow-lg shadow-slate-500/20 disabled:opacity-50"
         >
           <ImageIcon className="w-5 h-5 mr-2" />
           Gerar Imagem

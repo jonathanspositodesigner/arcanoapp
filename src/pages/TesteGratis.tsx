@@ -237,7 +237,7 @@ const TesteGratis = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-slate-500/20"
+                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold text-base shadow-lg shadow-slate-500/20"
               >
                 {loading ? (
                   <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Verificando...</>
@@ -292,7 +292,7 @@ const TesteGratis = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-slate-500/20"
+                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold text-base shadow-lg shadow-slate-500/20"
               >
                 {loading ? (
                   <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Entrando...</>
@@ -365,7 +365,7 @@ const TesteGratis = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-slate-500/20"
+                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold text-base shadow-lg shadow-slate-500/20"
               >
                 {loading ? (
                   <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Criando conta...</>
@@ -390,7 +390,7 @@ const TesteGratis = () => {
             <p className="text-red-400 text-sm mb-6">Você já resgatou uma promoção anteriormente.</p>
             <Button
               onClick={() => navigate('/ferramentas-ia-aplicativo')}
-              className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold"
+              className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold"
             >
               Ir para as Ferramentas de IA
               <ArrowRight className="w-5 h-5 ml-2" />

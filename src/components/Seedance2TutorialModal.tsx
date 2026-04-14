@@ -70,7 +70,7 @@ const Seedance2TutorialModal = ({ open, onClose }: Seedance2TutorialModalProps) 
           </div>
         </div>
         <div className="p-4 sm:px-6 sm:pb-6 pt-0">
-          <Button onClick={handleClose} className="w-full bg-gradient-primary text-white font-semibold py-3">
+          <Button onClick={handleClose} className="w-full bg-gradient-primary text-foreground font-semibold py-3">
             Continuar para a ferramenta
           </Button>
         </div>

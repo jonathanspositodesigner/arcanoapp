@@ -357,17 +357,17 @@ const BibliotecaArtesMusicos = () => {
                 return (
                   <div key={arte.id} className="group relative bg-accent backdrop-blur-sm rounded-xl overflow-hidden border border-border hover:border-border transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10">
                     {arte.is_premium && !ledRestricted && (
-                      <div className="absolute top-2 left-2 z-10 bg-gradient-to-r from-pink-500 to-slate-400 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                      <div className="absolute top-2 left-2 z-10 bg-gradient-to-r from-pink-500 to-slate-400 text-foreground text-xs px-2 py-1 rounded-full flex items-center gap-1">
                         <Lock className="w-3 h-3" />{t('musicos.badges.premium')}
                       </div>
                     )}
                     {ledRestricted && (
-                      <div className="absolute top-2 left-2 z-10 bg-amber-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                      <div className="absolute top-2 left-2 z-10 bg-amber-500 text-foreground text-xs px-2 py-1 rounded-full flex items-center gap-1">
                         <Lock className="w-3 h-3" />{t('musicos.badges.proPlus')}
                       </div>
                     )}
                     {arte.motion_type && (
-                      <div className={`absolute top-2 right-2 z-10 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 ${arte.motion_type === 'canva' ? 'bg-gradient-to-r from-cyan-500 to-blue-500' : 'bg-gradient-to-r from-slate-500 to-pink-500'}`}>
+                      <div className={`absolute top-2 right-2 z-10 text-foreground text-xs px-2 py-1 rounded-full flex items-center gap-1 ${arte.motion_type === 'canva' ? 'bg-gradient-to-r from-cyan-500 to-blue-500' : 'bg-gradient-to-r from-slate-500 to-pink-500'}`}>
                         {arte.motion_type === 'canva' ? '🎨 Canva' : '🎬 After Effects'}
                       </div>
                     )}
@@ -388,7 +388,7 @@ const BibliotecaArtesMusicos = () => {
                         <span className="text-xs bg-accent text-muted-foreground px-2 py-1 rounded">{categories.find(c => c.slug === arte.category)?.name || arte.category}</span>
                         {isLed && <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-medium">Pro+</span>}
                       </div>
-                      <h3 className="text-white font-medium text-sm line-clamp-2 mb-3 min-h-[2.5rem]">{arte.title}</h3>
+                      <h3 className="text-foreground font-medium text-sm line-clamp-2 mb-3 min-h-[2.5rem]">{arte.title}</h3>
                       <Button
                         className={`w-full text-xs sm:text-sm whitespace-nowrap ${canAccess ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0" : ledRestricted ? "bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30" : "bg-accent hover:bg-white/20 text-muted-foreground border border-border"}`}
                         size="sm"
@@ -415,7 +415,7 @@ const BibliotecaArtesMusicos = () => {
 
         <Dialog open={!!selectedArte} onOpenChange={() => setSelectedArte(null)}>
           <DialogContent className="max-w-md bg-[#161b22] border-border">
-            <DialogHeader><DialogTitle className="text-white">{selectedArte?.title}</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle className="text-foreground">{selectedArte?.title}</DialogTitle></DialogHeader>
             {selectedArte && (
               <div className="space-y-4">
                 <div className="aspect-square rounded-lg overflow-hidden">

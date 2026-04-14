@@ -854,15 +854,15 @@ const UpscalerArcanoTool: React.FC = () => {
                           }
                         }}
                       >
-                        <SelectTrigger className="w-full bg-black/40 border-border text-white text-sm h-10">
+                        <SelectTrigger className="w-full bg-black/40 border-border text-foreground text-sm h-10">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-card border-border">
-                          <SelectItem value="pessoas" className="text-white text-sm">Pessoas</SelectItem>
-                          <SelectItem value="comida" className="text-white text-sm">Comida/Objeto</SelectItem>
-                          <SelectItem value="fotoAntiga" className="text-white text-sm">Foto Antiga</SelectItem>
-                          <SelectItem value="render3d" className="text-white text-sm">Selo 3D</SelectItem>
-                          <SelectItem value="logo" className="text-white text-sm">Logo/Arte</SelectItem>
+                          <SelectItem value="pessoas" className="text-foreground text-sm">Pessoas</SelectItem>
+                          <SelectItem value="comida" className="text-foreground text-sm">Comida/Objeto</SelectItem>
+                          <SelectItem value="fotoAntiga" className="text-foreground text-sm">Foto Antiga</SelectItem>
+                          <SelectItem value="render3d" className="text-foreground text-sm">Selo 3D</SelectItem>
+                          <SelectItem value="logo" className="text-foreground text-sm">Logo/Arte</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1287,10 +1287,10 @@ const UpscalerArcanoTool: React.FC = () => {
                             </div>
 
                             {/* Labels */}
-                            <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-black/90 border border-white/30 text-white text-xs font-bold z-20 pointer-events-none">
+                            <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-black/90 border border-white/30 text-foreground text-xs font-bold z-20 pointer-events-none">
                               {t('upscalerTool.labels.before')}
                             </div>
-                            <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-slate-600/90 border border-border text-white text-xs font-bold z-20 pointer-events-none">
+                            <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-slate-600/90 border border-border text-foreground text-xs font-bold z-20 pointer-events-none">
                               {t('upscalerTool.labels.after')}
                             </div>
                           </div>
@@ -1550,15 +1550,15 @@ const UpscalerArcanoTool: React.FC = () => {
                       }
                     }}
                   >
-                    <SelectTrigger className="w-full bg-black/40 border-border text-white text-sm h-9">
+                    <SelectTrigger className="w-full bg-black/40 border-border text-foreground text-sm h-9">
                       <SelectValue placeholder="Escolha o tipo de imagem" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-border">
-                      <SelectItem value="pessoas" className="text-white text-sm">Pessoas</SelectItem>
-                      <SelectItem value="comida" className="text-white text-sm">Comida/Objeto</SelectItem>
-                      <SelectItem value="fotoAntiga" className="text-white text-sm">Foto Antiga</SelectItem>
-                      <SelectItem value="render3d" className="text-white text-sm">Selo 3D</SelectItem>
-                      <SelectItem value="logo" className="text-white text-sm">Logo/Arte</SelectItem>
+                      <SelectItem value="pessoas" className="text-foreground text-sm">Pessoas</SelectItem>
+                      <SelectItem value="comida" className="text-foreground text-sm">Comida/Objeto</SelectItem>
+                      <SelectItem value="fotoAntiga" className="text-foreground text-sm">Foto Antiga</SelectItem>
+                      <SelectItem value="render3d" className="text-foreground text-sm">Selo 3D</SelectItem>
+                      <SelectItem value="logo" className="text-foreground text-sm">Logo/Arte</SelectItem>
                     </SelectContent>
                   </Select>
                 )}

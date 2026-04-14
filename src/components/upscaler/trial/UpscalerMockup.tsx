@@ -123,7 +123,7 @@ export default function UpscalerMockup({
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
           <Wand2 className="w-4 h-4 text-white" />
         </div>
-        <span className="text-white font-semibold text-lg">Upscaler Arcano</span>
+        <span className="text-foreground font-semibold text-lg">Upscaler Arcano</span>
         <div className="ml-auto flex gap-2">
           <span className="px-3 py-1 rounded-full text-xs font-medium bg-accent text-muted-foreground border border-border">
             Standard
@@ -357,10 +357,10 @@ export default function UpscalerMockup({
                       </div>
 
                       {/* Labels */}
-                      <div className="absolute top-3 left-3 bg-black/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                      <div className="absolute top-3 left-3 bg-black/80 text-foreground text-xs font-semibold px-3 py-1.5 rounded-full">
                         Antes
                       </div>
-                      <div className="absolute top-3 right-3 bg-gradient-to-r from-slate-500 to-slate-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                      <div className="absolute top-3 right-3 bg-gradient-to-r from-slate-500 to-slate-500 text-foreground text-xs font-semibold px-3 py-1.5 rounded-full">
                         Depois
                       </div>
                     </div>
@@ -452,7 +452,7 @@ export default function UpscalerMockup({
       {/* Generate button */}
       <div className="px-6 pb-6">
         <Button
-          className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base rounded-xl border-0"
+          className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold text-base rounded-xl border-0"
           disabled={!isActive || isProcessing || (!uploadedFile && !resultUrl)}
           onClick={onGenerate}
         >

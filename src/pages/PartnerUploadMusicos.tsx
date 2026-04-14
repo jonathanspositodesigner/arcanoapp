@@ -218,13 +218,13 @@ const PartnerUploadMusicos = () => {
 
         <Card className="bg-card/80 border-pink-500/30">
           <CardHeader>
-            <CardTitle className="text-white text-2xl">Enviar Nova Arte</CardTitle>
+            <CardTitle className="text-foreground text-2xl">Enviar Nova Arte</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Image Upload */}
               <div className="space-y-2">
-                <Label className="text-white">Imagem *</Label>
+                <Label className="text-foreground">Imagem *</Label>
                 <div
                   onClick={() => fileInputRef.current?.click()}
                   className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
@@ -257,7 +257,7 @@ const PartnerUploadMusicos = () => {
 
               {/* Title */}
               <div className="space-y-2">
-                <Label className="text-white">Título *</Label>
+                <Label className="text-foreground">Título *</Label>
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -269,14 +269,14 @@ const PartnerUploadMusicos = () => {
 
               {/* Category */}
               <div className="space-y-2">
-                <Label className="text-white">Categoria *</Label>
+                <Label className="text-foreground">Categoria *</Label>
                 <Select value={category} onValueChange={setCategory} required>
                   <SelectTrigger className="bg-card border-pink-500/50 text-white">
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-pink-500/50">
                     {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.slug} className="text-white">
+                      <SelectItem key={cat.id} value={cat.slug} className="text-foreground">
                         {cat.name}
                       </SelectItem>
                     ))}
@@ -286,7 +286,7 @@ const PartnerUploadMusicos = () => {
 
               {/* Description */}
               <div className="space-y-2">
-                <Label className="text-white">Descrição</Label>
+                <Label className="text-foreground">Descrição</Label>
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -297,7 +297,7 @@ const PartnerUploadMusicos = () => {
 
               {/* Canva Link */}
               <div className="space-y-2">
-                <Label className="text-white">Link do Canva (opcional)</Label>
+                <Label className="text-foreground">Link do Canva (opcional)</Label>
                 <Input
                   value={canvaLink}
                   onChange={(e) => setCanvaLink(e.target.value)}
@@ -308,7 +308,7 @@ const PartnerUploadMusicos = () => {
 
               {/* Drive Link */}
               <div className="space-y-2">
-                <Label className="text-white">Link do Drive (opcional)</Label>
+                <Label className="text-foreground">Link do Drive (opcional)</Label>
                 <Input
                   value={driveLink}
                   onChange={(e) => setDriveLink(e.target.value)}

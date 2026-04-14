@@ -670,7 +670,7 @@ const GeradorPersonagemTool: React.FC = () => {
             {/* Action Button */}
             <Button
               size="sm"
-              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-medium py-2 text-xs disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-medium py-2 text-xs disabled:opacity-50"
               disabled={!canProcess || isProcessing || isSubmitting}
               onClick={handleProcess}
             >
@@ -791,7 +791,7 @@ const GeradorPersonagemTool: React.FC = () => {
                       <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-muted-foreground" />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm text-white font-medium flex items-center gap-2">
+                      <p className="text-sm text-foreground font-medium flex items-center gap-2">
                         <span>{currentQueueMessage.emoji}</span>
                         <span>{currentQueueMessage.text}</span>
                       </p>

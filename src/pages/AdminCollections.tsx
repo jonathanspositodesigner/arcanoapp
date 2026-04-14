@@ -416,7 +416,7 @@ const AdminCollections = () => {
                 </div>
                 
                 <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-1">
-                  <p className="text-white text-[10px] truncate">{prompt.title}</p>
+                  <p className="text-foreground text-[10px] truncate">{prompt.title}</p>
                 </div>
               </div>
             );
