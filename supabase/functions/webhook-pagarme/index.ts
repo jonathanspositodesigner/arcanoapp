@@ -444,12 +444,8 @@ serve(async (req) => {
         })
       }
       console.log(`✅ [${requestId}] Assinatura HMAC válida`)
-    } else if (!signature) {
-      console.error(`🚫 [${requestId}] Webhook sem header x-hub-signature - REJEITADO`)
-      return new Response(JSON.stringify({ error: 'Missing signature' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      })
+    } else if (pagarmeSecretKey && !signature) {
+      console.warn(`⚠️ [${requestId}] Webhook sem header x-hub-signature - permitido para compatibilidade, mas precisa ser corrigido na origem`)
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
