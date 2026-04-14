@@ -218,7 +218,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
             className={cn(
               "flex-1 h-8 sm:h-9 text-xs sm:text-sm",
               filter === 'masculino'
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0"
+                ? "bg-gradient-to-r from-slate-500 to-slate-700 text-white border-0"
                 : "bg-transparent border-white/10 text-gray-300 hover:bg-white/50/20"
             )}
           >

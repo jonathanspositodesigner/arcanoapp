@@ -24,7 +24,7 @@ const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ 
     ],
     politico: [
       { id: 'm-p1', label: 'Terno Político', color: 'from-blue-700 to-blue-900' },
-      { id: 'm-p2', label: 'Visual Campanha', color: 'from-indigo-700 to-indigo-900' },
+      { id: 'm-p2', label: 'Visual Campanha', color: 'from-slate-700 to-slate-900' },
       { id: 'm-p3', label: 'Look Institucional', color: 'from-slate-700 to-slate-900' },
       { id: 'm-p4', label: 'Estilo Autoridade', color: 'from-gray-700 to-gray-900' },
     ],
@@ -37,18 +37,18 @@ const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ 
     formal: [
       { id: 'm-f1', label: 'Terno Clássico', color: 'from-gray-700 to-gray-900' },
       { id: 'm-f2', label: 'Camisa Social', color: 'from-blue-700 to-blue-900' },
-      { id: 'm-f3', label: 'Blazer', color: 'from-indigo-700 to-indigo-900' },
+      { id: 'm-f3', label: 'Blazer', color: 'from-slate-700 to-slate-900' },
       { id: 'm-f4', label: 'Gravata & Colete', color: 'from-slate-700 to-slate-800' },
     ],
     empresarial: [
       { id: 'm-emp1', label: 'Look Executivo', color: 'from-slate-800 to-black' },
       { id: 'm-emp2', label: 'CEO Style', color: 'from-blue-800 to-blue-950' },
-      { id: 'm-emp3', label: 'Business Casual', color: 'from-indigo-800 to-indigo-950' },
+      { id: 'm-emp3', label: 'Business Casual', color: 'from-slate-800 to-slate-950' },
       { id: 'm-emp4', label: 'Empresário', color: 'from-gray-800 to-gray-950' },
     ],
     casual: [
       { id: 'm-c1', label: 'Camiseta Básica', color: 'from-blue-600 to-blue-800' },
-      { id: 'm-c2', label: 'Polo Casual', color: 'from-indigo-600 to-indigo-800' },
+      { id: 'm-c2', label: 'Polo Casual', color: 'from-slate-600 to-slate-800' },
       { id: 'm-c3', label: 'Jeans & Camisa', color: 'from-slate-600 to-slate-800' },
       { id: 'm-c4', label: 'Moletom', color: 'from-gray-600 to-gray-800' },
     ],
@@ -62,7 +62,7 @@ const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ 
     ],
     politico: [
       { id: 'f-p1', label: 'Tailleur Político', color: 'from-blue-700 to-blue-900' },
-      { id: 'f-p2', label: 'Visual Campanha', color: 'from-indigo-700 to-indigo-900' },
+      { id: 'f-p2', label: 'Visual Campanha', color: 'from-slate-700 to-slate-900' },
       { id: 'f-p3', label: 'Look Institucional', color: 'from-slate-700 to-slate-900' },
       { id: 'f-p4', label: 'Estilo Autoridade', color: 'from-gray-700 to-gray-900' },
     ],
@@ -75,13 +75,13 @@ const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ 
     formal: [
       { id: 'f-f1', label: 'Blazer Feminino', color: 'from-gray-700 to-gray-900' },
       { id: 'f-f2', label: 'Vestido Social', color: 'from-blue-700 to-blue-900' },
-      { id: 'f-f3', label: 'Saia & Blusa', color: 'from-indigo-700 to-indigo-900' },
+      { id: 'f-f3', label: 'Saia & Blusa', color: 'from-slate-700 to-slate-900' },
       { id: 'f-f4', label: 'Tailleur', color: 'from-slate-700 to-slate-800' },
     ],
     empresarial: [
       { id: 'f-emp1', label: 'Look Executiva', color: 'from-slate-800 to-black' },
       { id: 'f-emp2', label: 'CEO Style', color: 'from-blue-800 to-blue-950' },
-      { id: 'f-emp3', label: 'Business Casual', color: 'from-indigo-800 to-indigo-950' },
+      { id: 'f-emp3', label: 'Business Casual', color: 'from-slate-800 to-slate-950' },
       { id: 'f-emp4', label: 'Empresária', color: 'from-gray-800 to-gray-950' },
     ],
     casual: [
@@ -139,7 +139,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
             className={cn(
               "flex-1",
               genderFilter === 'masculino'
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0"
+                ? "bg-gradient-to-r from-slate-500 to-slate-700 text-white border-0"
                 : "bg-transparent border-white/10 text-gray-300 hover:bg-white/50/20"
             )}
           >

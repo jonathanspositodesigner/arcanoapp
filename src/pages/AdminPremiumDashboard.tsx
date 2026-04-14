@@ -59,7 +59,7 @@ const PLAN_LABELS: Record<string, string> = {
 
 const PLAN_COLORS: Record<string, string> = {
   arcano_basico: "#f59e0b",
-  arcano_pro: "#8b5cf6",
+  arcano_pro: "#64748b",
   arcano_unlimited: "#10b981"
 };
 

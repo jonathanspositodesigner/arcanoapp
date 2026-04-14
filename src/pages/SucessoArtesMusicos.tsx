@@ -21,7 +21,7 @@ const SucessoArtesMusicos = () => {
         <div className="fixed inset-0 pointer-events-none z-50">
           {[...Array(50)].map((_, i) => (
             <div key={i} className="absolute animate-confetti" style={{ left: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 3}s`, animationDuration: `${3 + Math.random() * 2}s` }}>
-              <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'][Math.floor(Math.random() * 6)], transform: `rotate(${Math.random() * 360}deg)` }} />
+              <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#64748b', '#ec4899'][Math.floor(Math.random() * 6)], transform: `rotate(${Math.random() * 360}deg)` }} />
             </div>
           ))}
         </div>
