@@ -181,7 +181,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
             className="w-full flex items-center text-left text-[12px] font-medium text-muted-foreground hover:text-foreground py-2 px-2.5 rounded-lg hover:bg-accent transition-colors"
           >
             <BookOpen className="h-3.5 w-3.5 mr-1.5" />
-            PromptClub
+            Biblioteca de Prompts
           </button>
 
           {/* Gerar Imagem e Gerar Vídeo */}
