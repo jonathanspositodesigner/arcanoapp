@@ -125,7 +125,7 @@ export default function UpscalerMockup({
         </div>
         <span className="text-white font-semibold text-lg">Upscaler Arcano</span>
         <div className="ml-auto flex gap-2">
-          <span className="px-3 py-1 rounded-full text-xs font-medium bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30">
+          <span className="px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-gray-300 border border-white/10">
             Standard
           </span>
           <Tooltip>
@@ -173,7 +173,7 @@ export default function UpscalerMockup({
                 disabled={!isActive}
                 className={`flex-1 px-2 py-1.5 text-[10px] rounded-md transition-all ${
                   displayCategory === cat
-                    ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30' 
+                    ? 'bg-white/10 text-gray-300 border border-white/10' 
                     : 'border border-white/10 text-white/50 hover:bg-white/10'
                 }`}
               >
@@ -190,7 +190,7 @@ export default function UpscalerMockup({
                 disabled={!isActive}
                 className={`flex-1 px-2 py-1.5 text-[10px] rounded-md transition-all ${
                   displayCategory === cat
-                    ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30' 
+                    ? 'bg-white/10 text-gray-300 border border-white/10' 
                     : 'border border-white/10 text-white/50 hover:bg-white/10'
                 }`}
               >
@@ -213,7 +213,7 @@ export default function UpscalerMockup({
                 value="perto" 
                 className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all h-auto ${
                   pessoasFraming === 'perto'
-                    ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30' 
+                    ? 'bg-white/10 text-gray-300 border border-white/10' 
                     : 'border border-white/10 text-white/50 hover:bg-white/10'
                 }`}
               >
@@ -229,7 +229,7 @@ export default function UpscalerMockup({
                 value="longe" 
                 className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all h-auto ${
                   pessoasFraming === 'longe'
-                    ? 'bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30' 
+                    ? 'bg-white/10 text-gray-300 border border-white/10' 
                     : 'border border-white/10 text-white/50 hover:bg-white/10'
                 }`}
               >
@@ -252,7 +252,7 @@ export default function UpscalerMockup({
           <div className="mt-3 pt-3 border-t border-white/10">
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-fuchsia-400" />
+                <Sparkles className="w-3.5 h-3.5 text-gray-400" />
                 <span className="text-xs font-medium text-white">Nível de Detalhes</span>
               </div>
               <span className="text-xs text-gray-300 font-mono">{Math.round(comidaDetailLevel * 100)}%</span>
@@ -306,7 +306,7 @@ export default function UpscalerMockup({
                   <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
                     <div 
                       ref={sliderContainerRef}
-                      className="relative w-full rounded-xl overflow-hidden cursor-ew-resize select-none border-2 border-fuchsia-500/30"
+                      className="relative w-full rounded-xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10"
                       style={{ aspectRatio: '4/3' }}
                       onMouseDown={handleMouseDown}
                       onMouseUp={handleMouseUp}
@@ -376,13 +376,13 @@ export default function UpscalerMockup({
                   <span className="text-xs font-mono text-white/60">{beforeRes.w}×{beforeRes.h}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <svg width="20" height="12" viewBox="0 0 20 12" fill="none" className="text-fuchsia-400">
+                  <svg width="20" height="12" viewBox="0 0 20 12" fill="none" className="text-gray-400">
                     <path d="M13 1l5 5m0 0l-5 5m5-5H2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/30">
-                  <span className="text-[10px] text-fuchsia-300 uppercase tracking-wider">Depois</span>
-                  <span className="text-xs font-mono text-fuchsia-300 font-semibold">{afterRes.w}×{afterRes.h}</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-500/10 border border-white/10">
+                  <span className="text-[10px] text-gray-300 uppercase tracking-wider">Depois</span>
+                  <span className="text-xs font-mono text-gray-300 font-semibold">{afterRes.w}×{afterRes.h}</span>
                   {afterRes.w * afterRes.h > beforeRes.w * beforeRes.h && (
                     <span className="text-[10px] font-bold text-emerald-400">
                       +{Math.round(((afterRes.w * afterRes.h) / (beforeRes.w * beforeRes.h) - 1) * 100)}%
@@ -395,8 +395,8 @@ export default function UpscalerMockup({
           </div>
         ) : (status === 'uploading' || status === 'processing') ? (
           /* PROCESSING: Progress indicator */
-          <div className="flex flex-col items-center justify-center gap-4 h-64 rounded-xl border-2 border-fuchsia-500/20 bg-black/30">
-            <Loader2 className="w-12 h-12 text-fuchsia-400 animate-spin" />
+          <div className="flex flex-col items-center justify-center gap-4 h-64 rounded-xl border-2 border-white/15/20 bg-black/30">
+            <Loader2 className="w-12 h-12 text-gray-400 animate-spin" />
             <div className="text-center">
               <p className="text-lg font-medium text-white">
                 {status === 'uploading' ? 'Enviando imagem...' : 'Processando...'}
@@ -416,18 +416,18 @@ export default function UpscalerMockup({
           </div>
         ) : previewUrl ? (
           /* PREVIEW: Show uploaded image */
-          <div className="relative rounded-xl overflow-hidden border border-fuchsia-500/30">
+          <div className="relative rounded-xl overflow-hidden border border-white/10">
             <img src={previewUrl} alt="Preview" className="w-full h-64 object-contain bg-black/50" />
           </div>
         ) : (
           /* EMPTY: Upload area */
           <label
             className={`flex flex-col items-center justify-center gap-4 h-64 border-2 border-dashed border-white/20 rounded-xl bg-white/5 transition-colors ${
-              isActive ? "hover:border-fuchsia-500/50 hover:bg-white/10 cursor-pointer" : "cursor-default"
+              isActive ? "hover:border-white/15/50 hover:bg-white/10 cursor-pointer" : "cursor-default"
             }`}
           >
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center">
-              <Upload className="w-8 h-8 text-fuchsia-400" />
+              <Upload className="w-8 h-8 text-gray-400" />
             </div>
             <div className="text-center">
               <p className="text-white/80 text-sm font-medium">Arraste ou clique para enviar</p>

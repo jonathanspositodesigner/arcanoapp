@@ -116,7 +116,7 @@ const ForceUpdate = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center text-white p-4">
       {status === 'cleaning' && (
         <>
-          <RefreshCw className="w-16 h-16 text-fuchsia-500 animate-spin mb-4" />
+          <RefreshCw className="w-16 h-16 text-slate-400 animate-spin mb-4" />
           <h1 className="text-2xl font-bold mb-2">Atualizando...</h1>
           <p className="text-gray-400 text-center mb-2">{step}</p>
           <p className="text-xs text-gray-500 text-center">

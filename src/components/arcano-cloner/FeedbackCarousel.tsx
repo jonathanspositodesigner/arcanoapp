@@ -66,7 +66,7 @@ const FeedbackCard = ({ fb }: { fb: typeof feedbacks[0] }) => (
         <p className="text-white font-semibold text-sm">{fb.name}</p>
         <div className="flex gap-0.5">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Star key={i} className="w-3 h-3 fill-fuchsia-400 text-fuchsia-400" />
+            <Star key={i} className="w-3 h-3 fill-gray-400 text-gray-400" />
           ))}
         </div>
       </div>
@@ -114,7 +114,7 @@ const DesktopFeedbackCarousel = () => {
         <AnimatedSection as="div" delay={100}>
           <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-4">
             O que nossos{" "}
-            <span className="text-fuchsia-400">usuários</span> dizem
+            <span className="text-gray-400">usuários</span> dizem
           </h2>
           <p className="text-white/60 text-center mb-12 max-w-xl mx-auto">
             Feedbacks reais de quem já usa a ferramenta no dia a dia
@@ -183,7 +183,7 @@ const MobileFeedbackCarousel = () => {
         <AnimatedSection as="div" delay={100}>
           <h2 className="font-space-grotesk font-bold text-2xl text-white text-center mb-4">
             O que nossos{" "}
-            <span className="text-fuchsia-400">usuários</span> dizem
+            <span className="text-gray-400">usuários</span> dizem
           </h2>
           <p className="text-white/60 text-center mb-8 text-sm">
             Feedbacks reais de quem já usa a ferramenta no dia a dia
@@ -214,7 +214,7 @@ const MobileFeedbackCarousel = () => {
                     <p className="text-white font-semibold text-sm">{fb.name}</p>
                     <div className="flex gap-0.5">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className="w-3 h-3 fill-fuchsia-400 text-fuchsia-400" />
+                        <Star key={i} className="w-3 h-3 fill-gray-400 text-gray-400" />
                       ))}
                     </div>
                   </div>
@@ -233,7 +233,7 @@ const MobileFeedbackCarousel = () => {
               onClick={() => goTo(index)}
               className={`w-2 h-2 rounded-full transition-all duration-300 ${
                 index === currentIndex
-                  ? "bg-fuchsia-400 w-5"
+                  ? "bg-slate-400 w-5"
                   : "bg-white/20 hover:bg-white/40"
               }`}
             />

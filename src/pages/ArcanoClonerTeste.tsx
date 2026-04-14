@@ -61,7 +61,7 @@ const CountUp = ({ target, duration = 2000 }: { target: number; duration?: numbe
       <span className="font-space-grotesk font-bold text-6xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40">
         {count}
       </span>
-      <span className="text-fuchsia-400 text-3xl md:text-4xl font-bold">+</span>
+      <span className="text-gray-400 text-3xl md:text-4xl font-bold">+</span>
     </div>
   );
 };
@@ -177,7 +177,7 @@ const ArcanoClonerTeste = () => {
 
         {/* Layer 2: Purple glow behind person */}
         <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
-          <div className="w-[400px] h-[500px] md:w-[600px] md:h-[700px] bg-fuchsia-600/50 blur-[150px] md:blur-[200px] rounded-full" />
+          <div className="w-[400px] h-[500px] md:w-[600px] md:h-[700px] bg-slate-600/50 blur-[150px] md:blur-[200px] rounded-full" />
         </div>
 
         {/* Layer 3: Hero PNG image - LARGE, centered */}
@@ -221,7 +221,7 @@ const ArcanoClonerTeste = () => {
               <br className="hidden md:block" />
               profissionais com IA{" "}
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
                 sem prompt, sem complicação
               </span>
             </h1>
@@ -230,7 +230,7 @@ const ArcanoClonerTeste = () => {
             <FadeIn duration={700}>
               <p className="text-sm md:text-base text-white/60 mb-6 md:mb-8 max-w-lg leading-relaxed mx-auto">
                 Basta subir sua foto e escolher a referência.{" "}
-                <span className="text-fuchsia-400 font-semibold">Resultado pronto em segundos.</span>
+                <span className="text-gray-400 font-semibold">Resultado pronto em segundos.</span>
               </p>
             </FadeIn>
 
@@ -238,15 +238,15 @@ const ArcanoClonerTeste = () => {
             <FadeIn duration={700}>
               <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10">
                 <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                  <Sparkles className="h-3.5 w-3.5 text-fuchsia-400" />
+                  <Sparkles className="h-3.5 w-3.5 text-gray-400" />
                   <span>Sem prompt</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                  <Clock className="h-3.5 w-3.5 text-fuchsia-400" />
+                  <Clock className="h-3.5 w-3.5 text-gray-400" />
                   <span>Pronto em segundos</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                  <MousePointerClick className="h-3.5 w-3.5 text-fuchsia-400" />
+                  <MousePointerClick className="h-3.5 w-3.5 text-gray-400" />
                   <span>Fácil de usar</span>
                 </div>
               </div>
@@ -278,8 +278,8 @@ const ArcanoClonerTeste = () => {
             })}
           </StaggeredAnimation>
           <AnimatedSection as="div" delay={400}>
-            <div className="mt-10 md:mt-12 bg-gradient-to-r from-slate-500/10 to-slate-500/10 border border-fuchsia-500/30 rounded-3xl p-8 text-center">
-              <Sparkles className="h-8 w-8 text-fuchsia-400 mx-auto mb-4" />
+            <div className="mt-10 md:mt-12 bg-gradient-to-r from-slate-500/10 to-slate-500/10 border border-white/10 rounded-3xl p-8 text-center">
+              <Sparkles className="h-8 w-8 text-gray-400 mx-auto mb-4" />
               <p className="text-xl md:text-2xl text-white font-semibold">
                 Com o Arcano Cloner você resolve tudo isso
               </p>
@@ -298,7 +298,7 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
               <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
                 Gere suas fotos{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">sem gastar com ensaios</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">sem gastar com ensaios</span>
              </h2>
             <p className="text-white/50 text-center text-sm mb-10">Todas as imagens abaixo foram feitas com o Arcano Cloner</p>
           </AnimatedSection>
@@ -308,17 +308,17 @@ const ArcanoClonerTeste = () => {
           </Suspense>
 
           <div className="mt-10 flex flex-nowrap justify-center gap-2">
-            <div className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-3 py-1.5 shrink-0">
-              <Zap className="h-3 w-3 text-fuchsia-400 shrink-0" />
-              <span className="text-fuchsia-300 text-[11px] font-medium whitespace-nowrap">Motor de IA</span>
+            <div className="inline-flex items-center gap-1.5 bg-slate-500/10 border border-white/10 rounded-full px-3 py-1.5 shrink-0">
+              <Zap className="h-3 w-3 text-gray-400 shrink-0" />
+              <span className="text-gray-300 text-[11px] font-medium whitespace-nowrap">Motor de IA</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-3 py-1.5 shrink-0">
-              <MousePointerClick className="h-3 w-3 text-fuchsia-400 shrink-0" />
-              <span className="text-fuchsia-300 text-[11px] font-medium whitespace-nowrap">Sem Prompt</span>
+            <div className="inline-flex items-center gap-1.5 bg-slate-500/10 border border-white/10 rounded-full px-3 py-1.5 shrink-0">
+              <MousePointerClick className="h-3 w-3 text-gray-400 shrink-0" />
+              <span className="text-gray-300 text-[11px] font-medium whitespace-nowrap">Sem Prompt</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-3 py-1.5 shrink-0">
-              <Clock className="h-3 w-3 text-fuchsia-400 shrink-0" />
-              <span className="text-fuchsia-300 text-[11px] font-medium whitespace-nowrap">Em Segundos</span>
+            <div className="inline-flex items-center gap-1.5 bg-slate-500/10 border border-white/10 rounded-full px-3 py-1.5 shrink-0">
+              <Clock className="h-3 w-3 text-gray-400 shrink-0" />
+              <span className="text-gray-300 text-[11px] font-medium whitespace-nowrap">Em Segundos</span>
             </div>
           </div>
           <p className="text-white/50 text-center text-sm mt-4 max-w-xl mx-auto">
@@ -335,7 +335,7 @@ const ArcanoClonerTeste = () => {
             <AnimatedSection as="div" delay={100}>
               <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
                 O Arcano Cloner entrega tudo que você precisa{" "}
-                <span className="text-fuchsia-400">na palma da mão.</span>
+                <span className="text-gray-400">na palma da mão.</span>
               </h2>
               <p className="text-white/50 text-center text-sm mb-10 max-w-xl mx-auto">
                 Chega de ferramentas complexas que não entregam o que prometem e não funcionam no seu celular.
@@ -347,7 +347,7 @@ const ArcanoClonerTeste = () => {
               <div className="grid grid-cols-3 border-b border-white/10 bg-white/[0.02]">
                 <div className="px-4 py-4 text-white/70 text-xs uppercase tracking-wider font-semibold">Recursos</div>
                 <div className="px-4 py-4 text-white/40 text-xs uppercase tracking-wider text-center font-semibold">Outras IAs</div>
-                <div className="px-4 py-4 text-fuchsia-400 text-xs uppercase tracking-wider text-center font-semibold">Arcano Cloner</div>
+                <div className="px-4 py-4 text-gray-400 text-xs uppercase tracking-wider text-center font-semibold">Arcano Cloner</div>
               </div>
 
               {[
@@ -406,7 +406,7 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3">
               Tudo feito com um clique,{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">sem prompt!</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">sem prompt!</span>
             </h2>
             <p className="text-white/50 text-sm mb-10">
               Resultados reais de clientes usando o Arcano Cloner
@@ -438,7 +438,7 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
               Simples assim.{" "}
-              <span className="text-fuchsia-400">Sem prompt. Sem complicação.</span>
+              <span className="text-gray-400">Sem prompt. Sem complicação.</span>
             </h2>
             <p className="text-white/50 text-center text-sm mb-12">4 passos e seu ensaio está pronto</p>
           </AnimatedSection>
@@ -458,7 +458,7 @@ const ArcanoClonerTeste = () => {
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
-              E tem <span className="text-fuchsia-400">bônus</span> 🎁
+              E tem <span className="text-gray-400">bônus</span> 🎁
             </h2>
             <p className="text-white/50 text-center text-sm mb-2">Ao adquirir o Arcano Cloner, você leva de bônus:</p>
           </AnimatedSection>
@@ -477,7 +477,7 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
               Quem já está{" "}
-              <span className="text-fuchsia-400">lucrando e se destacando</span>{" "}
+              <span className="text-gray-400">lucrando e se destacando</span>{" "}
               com o Arcano Cloner
             </h2>
             <p className="text-white/50 text-center text-sm mb-12">
@@ -497,8 +497,8 @@ const ArcanoClonerTeste = () => {
               const IconComp = item.icon;
               return (
                 <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col items-center text-center h-full">
-                  <div className="w-14 h-14 rounded-2xl bg-fuchsia-500/10 flex items-center justify-center mb-4">
-                    <IconComp className="w-7 h-7 text-fuchsia-400" />
+                  <div className="w-14 h-14 rounded-2xl bg-slate-500/10 flex items-center justify-center mb-4">
+                    <IconComp className="w-7 h-7 text-gray-400" />
                   </div>
                   <h3 className="text-white font-semibold text-lg mb-2">{item.title}</h3>
                   <p className="text-white/60 text-sm leading-relaxed">{item.text}</p>
@@ -526,7 +526,7 @@ const ArcanoClonerTeste = () => {
         <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="fade">
           <div className="max-w-4xl mx-auto text-center mb-10">
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-2">
-              Uma biblioteca completa de referências <span className="text-fuchsia-400">para você gerar com um clique</span>
+              Uma biblioteca completa de referências <span className="text-gray-400">para você gerar com um clique</span>
             </h2>
 
             <div className="flex flex-col items-center mt-8 mb-2">
@@ -598,7 +598,7 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
               Perguntas{" "}
-              <span className="text-fuchsia-400">frequentes</span>
+              <span className="text-gray-400">frequentes</span>
             </h2>
           </AnimatedSection>
 
@@ -608,7 +608,7 @@ const ArcanoClonerTeste = () => {
                 <AccordionItem
                   key={index}
                   value={`item-${index}`}
-                  className="bg-white/5 border border-white/10 rounded-2xl px-6 data-[state=open]:border-fuchsia-500/30"
+                  className="bg-white/5 border border-white/10 rounded-2xl px-6 data-[state=open]:border-white/10"
                 >
                   <AccordionTrigger className="text-white text-left text-lg font-medium py-5 hover:no-underline">
                     {item.question}

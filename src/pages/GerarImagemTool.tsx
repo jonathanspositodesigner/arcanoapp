@@ -534,7 +534,7 @@ const GerarImagemTool = () => {
             <div className="text-6xl">🔒</div>
             <h1 className="text-xl font-bold text-white">Recurso não disponível no seu plano</h1>
             <p className="text-gray-300 text-sm">
-              A geração de imagens está disponível a partir do plano <strong className="text-fuchsia-400">Pro</strong>.
+              A geração de imagens está disponível a partir do plano <strong className="text-gray-400">Pro</strong>.
             </p>
             <button onClick={goBack} className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-slate-500 text-white text-sm font-medium transition-colors">
               Voltar
@@ -557,7 +557,7 @@ const GerarImagemTool = () => {
               </button>
               <div>
                 <h1 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-fuchsia-400" />
+                  <Sparkles className="h-5 w-5 text-gray-400" />
                   Gerar Imagem
                 </h1>
                 <p className="text-[10px] text-gray-400">IA Generativa</p>
@@ -575,9 +575,9 @@ const GerarImagemTool = () => {
         >
           {/* Drag overlay */}
           {isDragOver && (
-            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-fuchsia-900/60 backdrop-blur-sm border-2 border-dashed border-fuchsia-400 pointer-events-none">
-              <ImagePlus className="h-12 w-12 text-fuchsia-300 mb-2" />
-              <p className="text-fuchsia-200 font-semibold text-sm">Solte para adicionar referência</p>
+            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-sm border-2 border-dashed border-white/15 pointer-events-none">
+              <ImagePlus className="h-12 w-12 text-gray-300 mb-2" />
+              <p className="text-gray-300 font-semibold text-sm">Solte para adicionar referência</p>
             </div>
           )}
 
@@ -598,7 +598,7 @@ const GerarImagemTool = () => {
             <div className="flex flex-col items-center gap-4 text-gray-300">
               <div className="relative">
                 <div className="w-20 h-20 rounded-full border-2 border-white/10 flex items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-fuchsia-400" />
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
                 </div>
               </div>
               {status === 'queued' && queuePosition > 0 ? (
@@ -611,7 +611,7 @@ const GerarImagemTool = () => {
               )}
               {/* Progress bar */}
               <div className="w-48 h-1.5 rounded-full bg-white/5 overflow-hidden">
-                <div className="h-full rounded-full bg-fuchsia-500 transition-all duration-700" style={{ width: `${progress}%` }} />
+                <div className="h-full rounded-full bg-slate-500 transition-all duration-700" style={{ width: `${progress}%` }} />
               </div>
               {/* Cancel & reconcile */}
               <div className="flex gap-2">
@@ -723,7 +723,7 @@ const GerarImagemTool = () => {
                         type="button"
                         onClick={() => { setEngine(opt.value); setEngineDropdownOpen(false); }}
                         className={`flex items-center gap-2 w-full px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                          engine === opt.value ? 'text-fuchsia-300 bg-fuchsia-500/15' : 'text-gray-300 hover:bg-slate-500/15 hover:text-white'
+                          engine === opt.value ? 'text-gray-300 bg-slate-500/15' : 'text-gray-300 hover:bg-slate-500/15 hover:text-white'
                         }`}
                       >
                         {opt.label}
@@ -764,7 +764,7 @@ const GerarImagemTool = () => {
                           type="button"
                           onClick={() => { setAspectRatio(ratio); setAspectDropdownOpen(false); }}
                           className={`flex items-center gap-2 w-full px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                            isSelected ? 'text-fuchsia-300 bg-fuchsia-500/15' : 'text-gray-300 hover:bg-slate-500/15 hover:text-white'
+                            isSelected ? 'text-gray-300 bg-slate-500/15' : 'text-gray-300 hover:bg-slate-500/15 hover:text-white'
                           }`}
                         >
                           <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="flex-shrink-0">

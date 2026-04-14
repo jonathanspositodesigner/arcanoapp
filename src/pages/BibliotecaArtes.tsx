@@ -943,7 +943,7 @@ const BibliotecaArtes = () => {
               </div>}
 
             {/* Mobile Button to open sidebar for Bonus and Updates - Only show in packs section */}
-            {!selectedPack && activeSection === 'packs' && <Button className="lg:hidden w-full mt-6 bg-gradient-to-r from-slate-600 to-violet-600 hover:from-slate-700 hover:to-violet-700 text-white py-6 text-base font-semibold" onClick={() => setSidebarOpen(true)}>
+            {!selectedPack && activeSection === 'packs' && <Button className="lg:hidden w-full mt-6 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600 text-white py-6 text-base font-semibold" onClick={() => setSidebarOpen(true)}>
                 <Gift className="h-5 w-5 mr-2" />
                 {t('buttons.bonusAndUpdates')}
               </Button>}
@@ -1092,7 +1092,7 @@ const BibliotecaArtes = () => {
                       }}>
                               <RotateCcw className="h-3 w-3 mr-1" />
                               {t('buttons.renewWithDiscount')}
-                            </Button> : isPremium ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-slate-500 to-violet-500 hover:opacity-90 text-white text-xs" onClick={e => {
+                            </Button> : isPremium ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-slate-500 to-slate-400 hover:opacity-90 text-white text-xs" onClick={e => {
                         e.stopPropagation();
                         navigate(`/planos-artes-membro?pack=${packSlug}`);
                       }}>
@@ -1314,7 +1314,7 @@ const BibliotecaArtes = () => {
                       }}>
                               <RotateCcw className="h-3 w-3 mr-1" />
                               {t('buttons.renewWithDiscount')}
-                            </Button> : isPremium ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-slate-500 to-violet-500 hover:opacity-90 text-white text-xs" onClick={e => {
+                            </Button> : isPremium ? <Button size="sm" className="w-full mt-2 bg-gradient-to-r from-slate-500 to-slate-400 hover:opacity-90 text-white text-xs" onClick={e => {
                         e.stopPropagation();
                         navigate(`/planos-artes-membro?pack=${packSlug}`);
                       }}>

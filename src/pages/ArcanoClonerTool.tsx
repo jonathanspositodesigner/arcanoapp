@@ -1091,8 +1091,8 @@ const ArcanoClonerTool: React.FC = () => {
                 ) : isRefining ? (
                   <div className="flex flex-col items-center justify-center gap-3">
                     <div className="relative">
-                      <div className="w-14 h-14 rounded-full border-4 border-fuchsia-500/30 border-t-fuchsia-500 animate-spin" />
-                      <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-fuchsia-400" />
+                      <div className="w-14 h-14 rounded-full border-4 border-white/10 border-t-slate-400 animate-spin" />
+                      <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-gray-400" />
                     </div>
                     <p className="text-sm text-white font-medium">Refinando imagem...</p>
                   </div>
@@ -1126,8 +1126,8 @@ const ArcanoClonerTool: React.FC = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-fuchsia-500/20 flex items-center justify-center">
-                      <ImageIcon className="w-10 h-10 text-fuchsia-400" />
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-white/15/20 flex items-center justify-center">
+                      <ImageIcon className="w-10 h-10 text-gray-400" />
                     </div>
                     <div>
                       <h2 className="text-lg font-bold text-white">Arcano Cloner</h2>

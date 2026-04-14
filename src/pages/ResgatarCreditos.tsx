@@ -101,14 +101,14 @@ const ResgatarCreditos = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center p-4">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-fuchsia-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-slate-500/10 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-slate-500/10 rounded-full blur-3xl" />
       </div>
 
       {/* Logo */}
       <div className="relative z-10 mb-8">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-fuchsia-400" />
+          <Sparkles className="w-6 h-6 text-gray-400" />
           ArcanoApp
         </h1>
       </div>
@@ -119,7 +119,7 @@ const ResgatarCreditos = () => {
           <>
             {/* Header */}
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4 shadow-lg shadow-fuchsia-500/30">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4 shadow-lg shadow-slate-500/20">
                 <Gift className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">
@@ -133,21 +133,21 @@ const ResgatarCreditos = () => {
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-fuchsia-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
                   type="email"
                   placeholder="Digite o email da sua compra"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={status === 'checking'}
-                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20"
+                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-slate-500/20"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={status === 'checking'}
-                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-fuchsia-500/25"
+                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-slate-500/20"
               >
                 {status === 'checking' ? (
                   <>
@@ -184,7 +184,7 @@ const ResgatarCreditos = () => {
               Redirecionando para as Ferramentas de IA...
             </p>
             <div className="flex justify-center">
-              <Loader2 className="w-6 h-6 text-fuchsia-400 animate-spin" />
+              <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
             </div>
           </div>
         ) : (

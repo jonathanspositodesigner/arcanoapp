@@ -304,7 +304,7 @@ export default function ClonerTrialSection() {
     <div className="px-4 py-16 md:py-20 bg-black/30">
       <div className="max-w-3xl mx-auto">
         <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-white text-center mb-3">
-          Quer <span className="text-fuchsia-400">testar antes</span> de comprar?
+          Quer <span className="text-gray-400">testar antes</span> de comprar?
         </h2>
         <p className="text-white/50 text-sm text-center mb-8">
           Faça um teste gratuito do Arcano Cloner e veja o resultado por conta própria
@@ -341,7 +341,7 @@ export default function ClonerTrialSection() {
                     </div>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-fuchsia-500/25"
+                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-slate-500/20"
                       onClick={openSignup}
                     >
                       <Sparkles className="w-5 h-5 mr-2" />
@@ -358,7 +358,7 @@ export default function ClonerTrialSection() {
                     </p>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-fuchsia-500/25"
+                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-slate-500/20"
                       onClick={scrollToPricing}
                     >
                       <ShoppingCart className="w-5 h-5 mr-2" />

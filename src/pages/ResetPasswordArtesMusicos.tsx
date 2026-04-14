@@ -110,11 +110,11 @@ const ResetPasswordArtesMusicos = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#2d1b4e] to-[#0f0f1a] flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-white/10">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-violet-500/30 rounded-full flex items-center justify-center mb-4">
-            <Lock className="h-6 w-6 text-violet-400" />
+          <div className="mx-auto w-12 h-12 bg-slate-500/30 rounded-full flex items-center justify-center mb-4">
+            <Lock className="h-6 w-6 text-gray-400" />
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Music className="h-5 w-5 text-violet-400" />
+            <Music className="h-5 w-5 text-gray-400" />
           </div>
           <CardTitle className="text-2xl text-white">{t('createNewPassword')}</CardTitle>
           <CardDescription className="text-white/60">
@@ -164,7 +164,7 @@ const ResetPasswordArtesMusicos = () => {
 
             <Button
               type="submit"
-              className="w-full bg-violet-600 hover:bg-violet-700 text-white"
+              className="w-full bg-slate-600 hover:bg-slate-700 text-white"
               disabled={isLoading}
             >
               {isLoading ? t('saving') : t('saveNewPassword')}

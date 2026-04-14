@@ -94,7 +94,7 @@ const ChangePasswordArtesMusicos = () => {
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#2d1b4e] to-[#0f0f1a] flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-violet-400 animate-spin" />
+        <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
       </div>
     );
   }
@@ -105,11 +105,11 @@ const ChangePasswordArtesMusicos = () => {
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#2d1b4e] to-[#0f0f1a] flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-white/10">
           <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-violet-500/30 rounded-full flex items-center justify-center mb-4">
-              <Mail className="h-6 w-6 text-violet-400" />
+            <div className="mx-auto w-12 h-12 bg-slate-500/30 rounded-full flex items-center justify-center mb-4">
+              <Mail className="h-6 w-6 text-gray-400" />
             </div>
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Music className="h-5 w-5 text-violet-400" />
+              <Music className="h-5 w-5 text-gray-400" />
             </div>
             <CardTitle className="text-2xl text-white">Primeiro Acesso</CardTitle>
             <CardDescription className="text-white/60">
@@ -117,7 +117,7 @@ const ChangePasswordArtesMusicos = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-white font-medium bg-violet-500/20 py-2 px-4 rounded-lg text-center">
+            <p className="text-white font-medium bg-slate-500/20 py-2 px-4 rounded-lg text-center">
               {emailParam}
             </p>
             <p className="text-white/50 text-sm text-center">
@@ -128,7 +128,7 @@ const ChangePasswordArtesMusicos = () => {
               <Button
                 onClick={handleRefreshSession}
                 variant="outline"
-                className="w-full border-white/10 text-white hover:bg-violet-500/20"
+                className="w-full border-white/10 text-white hover:bg-slate-500/20"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Já cliquei no link
@@ -218,11 +218,11 @@ const ChangePasswordArtesMusicos = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#2d1b4e] to-[#0f0f1a] flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-white/10">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-violet-500/30 rounded-full flex items-center justify-center mb-4">
-            <Lock className="h-6 w-6 text-violet-400" />
+          <div className="mx-auto w-12 h-12 bg-slate-500/30 rounded-full flex items-center justify-center mb-4">
+            <Lock className="h-6 w-6 text-gray-400" />
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Music className="h-5 w-5 text-violet-400" />
+            <Music className="h-5 w-5 text-gray-400" />
           </div>
           <CardTitle className="text-2xl text-white">Alterar Senha</CardTitle>
           <CardDescription className="text-white/60">
@@ -272,7 +272,7 @@ const ChangePasswordArtesMusicos = () => {
 
             <Button
               type="submit"
-              className="w-full bg-violet-600 hover:bg-violet-700 text-white"
+              className="w-full bg-slate-600 hover:bg-slate-700 text-white"
               disabled={isLoading}
             >
               {isLoading ? "Alterando..." : "Alterar Senha"}

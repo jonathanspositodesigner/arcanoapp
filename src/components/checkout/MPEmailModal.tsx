@@ -88,7 +88,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-md bg-[#1a0a2e] border-fuchsia-500/20">
+      <DialogContent className="sm:max-w-md bg-[#1a0a2e] border-white/15/20">
         <DialogHeader>
           <DialogTitle className="text-white text-xl text-center">
             Preencha seus dados para continuar
@@ -109,7 +109,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
               placeholder="Seu nome completo"
               value={name}
               onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: undefined })); }}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-fuchsia-500"
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-white/15"
               autoFocus
               disabled={loading}
             />
@@ -126,7 +126,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
               placeholder="seu@email.com"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: undefined, confirmEmail: undefined })); }}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-fuchsia-500"
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-white/15"
               disabled={loading}
               autoComplete="off"
               onPaste={(e) => e.preventDefault()}
@@ -144,7 +144,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
               placeholder="Digite seu e-mail novamente"
               value={confirmEmail}
               onChange={(e) => { setConfirmEmail(e.target.value); setErrors(prev => ({ ...prev, confirmEmail: undefined })); }}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-fuchsia-500"
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-white/15"
               disabled={loading}
               autoComplete="off"
               onPaste={(e) => e.preventDefault()}
@@ -163,7 +163,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
               placeholder="000.000.000-00"
               value={cpf}
               onChange={(e) => { setCpf(formatCPF(e.target.value)); setErrors(prev => ({ ...prev, cpf: undefined })); }}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-fuchsia-500"
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-white/15"
               disabled={loading}
               maxLength={14}
             />
@@ -173,7 +173,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-fuchsia-700 hover:to-slate-600 text-white font-semibold h-12"
+            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600 text-white font-semibold h-12"
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />

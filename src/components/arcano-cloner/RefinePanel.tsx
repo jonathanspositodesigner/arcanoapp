@@ -45,8 +45,8 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2 p-3 bg-fuchsia-900/20 border border-fuchsia-500/30 rounded-lg">
-      <h4 className="text-xs font-semibold text-fuchsia-300 flex items-center gap-1.5">
+    <div className="flex flex-col gap-2 p-3 bg-white/5 border border-white/10 rounded-lg">
+      <h4 className="text-xs font-semibold text-gray-300 flex items-center gap-1.5">
         <Wand2 className="w-3.5 h-3.5" />
         {panelTitle}
       </h4>
@@ -63,7 +63,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
       <div>
         <label className="text-[10px] text-gray-300 mb-1 block">Imagem extra (opcional)</label>
         {referencePreview ? (
-          <div className="relative w-16 h-16 rounded-md overflow-hidden border border-fuchsia-500/40">
+          <div className="relative w-16 h-16 rounded-md overflow-hidden border border-white/10">
             <img src={referencePreview} alt="Ref" className="w-full h-full object-cover" />
             <button
               onClick={() => onReferenceChange(null, null)}

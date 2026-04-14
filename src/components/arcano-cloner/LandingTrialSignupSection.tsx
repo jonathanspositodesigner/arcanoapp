@@ -16,13 +16,13 @@ export const LandingTrialSignupSection = () => {
     <section className="px-4 py-16 md:py-20 bg-black/30">
       <AnimatedSection className="max-w-lg mx-auto">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-fuchsia-500/10 border border-fuchsia-500/30 rounded-full px-4 py-1.5 mb-4">
-            <Gift className="w-4 h-4 text-fuchsia-400" />
-            <span className="text-fuchsia-300 text-xs font-medium">Teste Grátis</span>
+          <div className="inline-flex items-center gap-2 bg-slate-500/10 border border-white/10 rounded-full px-4 py-1.5 mb-4">
+            <Gift className="w-4 h-4 text-gray-400" />
+            <span className="text-gray-300 text-xs font-medium">Teste Grátis</span>
           </div>
           <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-white mb-3">
             Teste{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
               grátis agora mesmo
             </span>
           </h2>

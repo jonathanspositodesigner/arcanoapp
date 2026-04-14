@@ -161,7 +161,7 @@ const CTAButton = ({ onClick, isPremium, t, loading }: { onClick: () => void; is
   <Button
     onClick={onClick}
     disabled={loading}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40 disabled:opacity-70 disabled:cursor-wait"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-white shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20 disabled:opacity-70 disabled:cursor-wait"
   >
     {loading ? 'Gerando checkout...' : t('tools:upscaler.cta')}
     {!loading && <ArrowRight className="h-5 w-5 ml-2" />}
@@ -180,7 +180,7 @@ const TrustBadges = ({ t }: { t: (key: string) => string }) => (
       {t('tools:upscaler.trustBadges.immediate')}
     </span>
     <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
-      <Infinity className="h-3 w-3 text-fuchsia-400" />
+      <Infinity className="h-3 w-3 text-gray-400" />
       {t('tools:upscaler.trustBadges.lifetime')}
     </span>
   </div>
@@ -373,7 +373,7 @@ const PlanosUpscalerArcano69v2 = () => {
               <div className="w-full max-w-[95vw] md:max-w-[60vw]">
                 <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
                   {t('tools:upscaler.hero.title1')}{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
                     {t('tools:upscaler.hero.title2')}
                   </span>
                 </h1>
@@ -399,7 +399,7 @@ const PlanosUpscalerArcano69v2 = () => {
               
               <FadeIn delay={400} duration={700}>
                 <p className="text-base md:text-lg lg:text-xl text-white/70 mb-4 md:mb-6 max-w-2xl">
-                  {t('tools:upscaler.hero.subtitle')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.hero.sharp')}</span>
+                  {t('tools:upscaler.hero.subtitle')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.hero.sharp')}</span>
                 </p>
               </FadeIn>
 
@@ -430,46 +430,46 @@ const PlanosUpscalerArcano69v2 = () => {
               {/* Grid responsivo: 1 coluna mobile, 2 tablet, 3 cards em cima + 2 centralizados embaixo no desktop */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 md:gap-6 items-stretch">
                 <AnimatedElement className="h-full lg:col-span-2" delay={0}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                     <div className="text-4xl md:text-5xl mb-4 md:mb-6">📱</div>
                     <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.phone')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.bad')}</span>?
+                      {t('tools:upscaler.pain.phone')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.pain.bad')}</span>?
                     </p>
                   </div>
                 </AnimatedElement>
 
                 <AnimatedElement className="h-full lg:col-span-2" delay={100}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                     <div className="text-4xl md:text-5xl mb-4 md:mb-6">😤</div>
                     <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.client')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.lowQuality')}</span>?
+                      {t('tools:upscaler.pain.client')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.pain.lowQuality')}</span>?
                     </p>
                   </div>
                 </AnimatedElement>
 
                 <AnimatedElement className="h-full lg:col-span-2" delay={200}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                     <div className="text-4xl md:text-5xl mb-4 md:mb-6">📷</div>
                     <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.aiGenerated')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.notGood')}</span>?
+                      {t('tools:upscaler.pain.aiGenerated')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.pain.notGood')}</span>?
                     </p>
                   </div>
                 </AnimatedElement>
 
                 <AnimatedElement className="h-full lg:col-span-2 lg:col-start-2" delay={300}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                     <div className="text-4xl md:text-5xl mb-4 md:mb-6">🤖</div>
                     <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.aiImage')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.aiNotGood')}</span>?
+                      {t('tools:upscaler.pain.aiImage')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.pain.aiNotGood')}</span>?
                     </p>
                   </div>
                 </AnimatedElement>
 
                 <AnimatedElement className="h-full lg:col-span-2 lg:col-start-4" delay={400}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-fuchsia-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                     <div className="text-4xl md:text-5xl mb-4 md:mb-6">🎸</div>
                     <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.lostContract')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.pain.noProPhotos')}</span>?
+                      {t('tools:upscaler.pain.lostContract')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.pain.noProPhotos')}</span>?
                     </p>
                   </div>
                 </AnimatedElement>
@@ -493,7 +493,7 @@ const PlanosUpscalerArcano69v2 = () => {
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">{t('tools:upscaler.targetAudience.titlePart2')}</span>
+                  {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">{t('tools:upscaler.targetAudience.titlePart2')}</span>
                 </h2>
               </AnimatedSection>
               
@@ -503,10 +503,10 @@ const PlanosUpscalerArcano69v2 = () => {
                   return (
                     <div 
                       key={index}
-                      className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-fuchsia-500/50 transition-all duration-300 hover:transform hover:scale-[1.02] h-full flex flex-col"
+                      className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-white/15/50 transition-all duration-300 hover:transform hover:scale-[1.02] h-full flex flex-col"
                     >
                       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center mx-auto mb-6">
-                        <IconComponent className="h-8 w-8 text-fuchsia-400" />
+                        <IconComponent className="h-8 w-8 text-gray-400" />
                       </div>
                       <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
                       <p className="text-white/60 flex-1">{item.description}</p>
@@ -522,7 +522,7 @@ const PlanosUpscalerArcano69v2 = () => {
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  {t('tools:upscaler.howItWorks.title')} <span className="text-fuchsia-400">{t('tools:upscaler.howItWorks.subtitle')}</span>
+                  {t('tools:upscaler.howItWorks.title')} <span className="text-gray-400">{t('tools:upscaler.howItWorks.subtitle')}</span>
                 </h2>
               </AnimatedSection>
               
@@ -536,11 +536,11 @@ const PlanosUpscalerArcano69v2 = () => {
                         <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-slate-500/50 to-transparent" />
                       )}
                       
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-fuchsia-500/30">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
                         {index + 1}
                       </div>
-                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-fuchsia-500/30 flex items-center justify-center mb-5">
-                        <IconComponent className="h-10 w-10 text-fuchsia-400" />
+                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-white/10 flex items-center justify-center mb-5">
+                        <IconComponent className="h-10 w-10 text-gray-400" />
                       </div>
                       <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
                       <p className="text-white/60 max-w-[180px]">{step.description}</p>
@@ -557,7 +557,7 @@ const PlanosUpscalerArcano69v2 = () => {
           {/* SEÇÃO DE PREÇO E CTA - Com Card */}
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
             <div className="max-w-lg mx-auto">
-              <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-fuchsia-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-fuchsia-500/10">
+              <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-white/10 rounded-3xl overflow-hidden shadow-2xl shadow-white/5">
                 <CardContent className="p-5 md:p-8 text-center">
                   {/* Badge de desconto */}
                   <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-sm md:text-lg font-bold mb-4 md:mb-6">
@@ -572,7 +572,7 @@ const PlanosUpscalerArcano69v2 = () => {
                   )}
 
                   <h2 className="font-bebas text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6 tracking-wide">
-                    {t('tools:upscaler.finalCTA.title')} <span className="text-fuchsia-400">{t('tools:upscaler.finalCTA.subtitle')}</span>
+                    {t('tools:upscaler.finalCTA.title')} <span className="text-gray-400">{t('tools:upscaler.finalCTA.subtitle')}</span>
                   </h2>
 
                   {/* Preços */}
@@ -582,7 +582,7 @@ const PlanosUpscalerArcano69v2 = () => {
                       {formatPrice(price)}
                     </div>
                     <p className="text-white/60 text-base md:text-lg">
-                      {t('tools:upscaler.finalCTA.or')} <span className="text-fuchsia-400 font-semibold">{t('tools:upscaler.finalCTA.installments')} {formatPrice(installmentPrice)}</span>
+                      {t('tools:upscaler.finalCTA.or')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.finalCTA.installments')} {formatPrice(installmentPrice)}</span>
                     </p>
                     <p className="text-white/40 text-xs md:text-sm mt-2">{t('tools:upscaler.finalCTA.oneTimePayment')}</p>
                   </div>
@@ -636,7 +636,7 @@ const PlanosUpscalerArcano69v2 = () => {
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  {t('tools:upscaler.benefits.title')} <span className="text-fuchsia-400">{t('tools:upscaler.benefits.subtitle')}</span>?
+                  {t('tools:upscaler.benefits.title')} <span className="text-gray-400">{t('tools:upscaler.benefits.subtitle')}</span>?
                 </h2>
               </AnimatedSection>
               
@@ -646,10 +646,10 @@ const PlanosUpscalerArcano69v2 = () => {
                   return (
                     <div 
                       key={index}
-                      className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-fuchsia-500/30 transition-all duration-300"
+                      className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-white/10 transition-all duration-300"
                     >
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center flex-shrink-0">
-                        <IconComponent className="h-6 w-6 text-fuchsia-400" />
+                        <IconComponent className="h-6 w-6 text-gray-400" />
                       </div>
                       <span className="text-white/90 text-lg">{feature.text}</span>
                     </div>
@@ -664,7 +664,7 @@ const PlanosUpscalerArcano69v2 = () => {
             <div className="max-w-2xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  {t('tools:upscaler.faq.title')} <span className="text-fuchsia-400">{t('tools:upscaler.faq.subtitle')}</span>
+                  {t('tools:upscaler.faq.title')} <span className="text-gray-400">{t('tools:upscaler.faq.subtitle')}</span>
                 </h2>
               </AnimatedSection>
               
@@ -674,7 +674,7 @@ const PlanosUpscalerArcano69v2 = () => {
                     <AccordionItem 
                       key={index} 
                       value={`item-${index}`}
-                      className="bg-white/5 border border-white/10 rounded-2xl px-6 data-[state=open]:border-fuchsia-500/30"
+                      className="bg-white/5 border border-white/10 rounded-2xl px-6 data-[state=open]:border-white/10"
                     >
                       <AccordionTrigger className="text-white text-left text-lg font-medium py-5 hover:no-underline">
                         {item.question}

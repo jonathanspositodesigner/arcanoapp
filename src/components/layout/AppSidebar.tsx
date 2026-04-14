@@ -133,7 +133,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
             className="w-full flex items-center justify-between text-left text-[12px] font-semibold text-white hover:text-gray-300 py-2 px-2.5 rounded-lg bg-gradient-to-r from-slate-500/20 to-slate-500/20 hover:from-slate-500/30 hover:to-slate-500/30 transition-colors"
           >
             <span className="flex items-center gap-1.5">
-              <Zap className="h-3.5 w-3.5 text-fuchsia-400" />
+              <Zap className="h-3.5 w-3.5 text-gray-400" />
               {t('sidebar.aiTools')}
             </span>
             <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${aiToolsOpen ? 'rotate-180' : ''}`} />
@@ -156,7 +156,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
               ))}
               <button
                 onClick={() => handleNavAndClose("/ferramentas-ia-aplicativo")}
-                className="w-full flex items-center justify-center text-[11px] py-1.5 px-2.5 rounded-md text-fuchsia-300 hover:text-white hover:bg-slate-500/20 transition-colors font-medium mt-1"
+                className="w-full flex items-center justify-center text-[11px] py-1.5 px-2.5 rounded-md text-gray-300 hover:text-white hover:bg-slate-500/20 transition-colors font-medium mt-1"
               >
                 Ver todas →
               </button>

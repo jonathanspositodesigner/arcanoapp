@@ -84,7 +84,7 @@ const RefinementCarousel: React.FC<RefinementCarouselProps> = ({ history, select
                 className={cn(
                   "w-16 h-16 rounded-lg overflow-hidden border-2 transition-all",
                   index === selectedIndex
-                    ? "border-fuchsia-500 shadow-[0_0_8px_rgba(217,70,239,0.4)]"
+                    ? "border-white/15 shadow-[0_0_8px_rgba(217,70,239,0.4)]"
                     : "border-white/10 hover:border-white/15"
                 )}
               >
@@ -97,7 +97,7 @@ const RefinementCarousel: React.FC<RefinementCarouselProps> = ({ history, select
               </div>
               <span className={cn(
                 "text-[9px] font-medium max-w-[64px] truncate",
-                index === selectedIndex ? "text-fuchsia-400" : "text-gray-400"
+                index === selectedIndex ? "text-gray-400" : "text-gray-400"
               )}>
                 {item.label}
               </span>

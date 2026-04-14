@@ -137,7 +137,7 @@ const MetaCapiLogsContent = () => {
           <p className="text-xs text-muted-foreground">Taxa Sucesso</p>
         </Card>
         <Card className="p-4 text-center">
-          <Activity className="h-5 w-5 mx-auto mb-1 text-violet-500" />
+          <Activity className="h-5 w-5 mx-auto mb-1 text-slate-400" />
           <p className="text-2xl font-bold text-foreground">{matchRate}%</p>
           <p className="text-xs text-muted-foreground">Match Rate (fbp/fbc)</p>
         </Card>

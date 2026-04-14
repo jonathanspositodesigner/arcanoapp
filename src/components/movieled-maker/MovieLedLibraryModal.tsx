@@ -157,7 +157,7 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
         <DialogContent data-tutorial-movieled="library-modal" className="max-w-2xl w-[calc(100%-32px)] sm:w-full bg-[#111113] border border-slate-500/40 text-white max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-xl">
           <DialogHeader className="flex-shrink-0 pb-2">
             <DialogTitle className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
-              <Video className="w-4 h-4 sm:w-5 sm:h-5 text-fuchsia-400" />
+              <Video className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
               Biblioteca de Telões
             </DialogTitle>
           </DialogHeader>
@@ -233,7 +233,7 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
                     <button
                       key={item.id}
                       onClick={() => handleSelectItem(item)}
-                      className="group relative aspect-video rounded-lg sm:rounded-xl overflow-hidden border border-white/10 hover:border-fuchsia-400 transition-all active:scale-95 sm:hover:scale-105"
+                      className="group relative aspect-video rounded-lg sm:rounded-xl overflow-hidden border border-white/10 hover:border-white-400 transition-all active:scale-95 sm:hover:scale-105"
                     >
                       <SecureVideo
                         src={item.image_url}
@@ -255,8 +255,8 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
                         </p>
                       </div>
 
-                      <div className="absolute inset-0 bg-fuchsia-500/0 group-hover:bg-fuchsia-500/10 transition-colors flex items-center justify-center">
-                        <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-fuchsia-600 px-3 py-1 rounded-full transition-opacity">
+                      <div className="absolute inset-0 bg-slate-500/0 group-hover:bg-slate-500/10 transition-colors flex items-center justify-center">
+                        <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-slate-600 px-3 py-1 rounded-full transition-opacity">
                           Selecionar
                         </span>
                       </div>

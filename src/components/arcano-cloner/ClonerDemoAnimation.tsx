@@ -146,20 +146,20 @@ const ClonerDemoAnimation: React.FC = () => {
             <div className={cn(
               'relative w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500',
               step === i
-                ? 'bg-gradient-to-br from-slate-500 to-slate-500 text-white shadow-lg shadow-fuchsia-500/40 scale-110'
+                ? 'bg-gradient-to-br from-slate-500 to-slate-500 text-white shadow-lg shadow-slate-500/20 scale-110'
                 : step > i
-                ? 'bg-fuchsia-500/30 text-fuchsia-300 border border-fuchsia-500/40'
+                ? 'bg-white/10 text-gray-300 border border-white/10'
                 : 'bg-white/5 text-white/30 border border-white/10'
             )}>
               {step > i ? <Check className="w-4 h-4" /> : i + 1}
               {step === i && (
-                <span className="absolute inset-0 rounded-full bg-fuchsia-500/30 animate-ping" />
+                <span className="absolute inset-0 rounded-full bg-white/10 animate-ping" />
               )}
             </div>
             {i < 3 && (
               <div className={cn(
                 'h-0.5 w-8 md:w-16 rounded-full transition-all duration-700',
-                step > i ? 'bg-fuchsia-500/60' : 'bg-white/10'
+                step > i ? 'bg-slate-500/60' : 'bg-white/10'
               )} />
             )}
           </div>
@@ -203,7 +203,7 @@ const ClonerDemoAnimation: React.FC = () => {
               <path d="M4 2L4 16L8 12L11 19L13.5 18L10.5 11L16 11L4 2Z" fill="white" stroke="#1A0A2E" strokeWidth="1.5" strokeLinejoin="round" />
             </svg>
             {cursorClicking && (
-              <span className="absolute -inset-2 rounded-full bg-fuchsia-400/30 animate-ping" />
+              <span className="absolute -inset-2 rounded-full bg-white/10 animate-ping" />
             )}
           </div>
 
@@ -216,7 +216,7 @@ const ClonerDemoAnimation: React.FC = () => {
                  <div ref={faceCardRef} className={cn(
                    'relative border-2 border-dashed rounded-xl overflow-hidden transition-all duration-300',
                    step === 0
-                     ? 'border-fuchsia-500/70 shadow-lg shadow-fuchsia-500/20'
+                     ? 'border-white/15 shadow-lg shadow-white/5'
                      : 'border-white/10',
                  )}>
                    <div className="aspect-square bg-white/5 relative">
@@ -237,8 +237,8 @@ const ClonerDemoAnimation: React.FC = () => {
                          <div className="flex-1 flex items-center justify-center bg-slate-800/30">
                            <div className="relative flex flex-col items-center gap-1.5">
                              {/* Head circle */}
-                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500/50 to-slate-400/40 border border-fuchsia-400/30 flex items-center justify-center">
-                               <svg viewBox="0 0 24 24" className="w-6 h-6 fill-fuchsia-300/60">
+                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500/50 to-slate-400/40 border border-white/10 flex items-center justify-center">
+                               <svg viewBox="0 0 24 24" className="w-6 h-6 fill-gray-400">
                                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
                                </svg>
                              </div>
@@ -249,9 +249,9 @@ const ClonerDemoAnimation: React.FC = () => {
                              </div>
                            </div>
                          </div>
-                         <div className="bg-fuchsia-600/20 px-2 py-1 flex items-center gap-1">
-                           <Check className="w-3 h-3 text-fuchsia-400" />
-                           <span className="text-[9px] text-fuchsia-300 font-medium">Sua Foto</span>
+                         <div className="bg-white/5 px-2 py-1 flex items-center gap-1">
+                           <Check className="w-3 h-3 text-gray-400" />
+                           <span className="text-[9px] text-gray-300 font-medium">Sua Foto</span>
                          </div>
                        </div>
                      )}
@@ -262,7 +262,7 @@ const ClonerDemoAnimation: React.FC = () => {
                  <div ref={refCardRef} className={cn(
                    'relative border-2 border-dashed rounded-xl overflow-hidden transition-all duration-300',
                    step === 1
-                     ? 'border-fuchsia-500/70 shadow-lg shadow-fuchsia-500/20'
+                     ? 'border-white/15 shadow-lg shadow-white/5'
                      : 'border-white/10',
                  )}>
                    <div className="aspect-square bg-white/5 relative">
@@ -279,7 +279,7 @@ const ClonerDemoAnimation: React.FC = () => {
                            {[0,1,2,3,4,5].map(n => (
                              <div key={n} className={cn(
                                'rounded bg-slate-700/40 border border-white/10 flex items-center justify-center transition-all duration-300',
-                               n === 4 ? 'border-fuchsia-500/60 bg-fuchsia-700/30 scale-105' : ''
+                               n === 4 ? 'border-white/15 bg-white/10 scale-105' : ''
                              )}>
                                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-gray-400/40">
                                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
@@ -298,11 +298,11 @@ const ClonerDemoAnimation: React.FC = () => {
                          <div className="flex-1 flex items-center justify-center bg-slate-800/30">
                            <div className="relative flex flex-col items-center gap-1.5">
                              {/* Landscape/photo icon skeleton */}
-                             <div className="w-12 h-9 rounded-lg bg-gradient-to-br from-slate-500/40 to-slate-400/30 border border-fuchsia-400/30 flex items-center justify-center overflow-hidden">
+                             <div className="w-12 h-9 rounded-lg bg-gradient-to-br from-slate-500/40 to-slate-400/30 border border-white/10 flex items-center justify-center overflow-hidden">
                                {/* Simulated sky/ground */}
                                <div className="w-full h-1/2 bg-slate-600/30" />
                                <div className="absolute bottom-0 w-full h-1/2 bg-slate-800/30" />
-                               <svg viewBox="0 0 24 24" className="absolute w-6 h-6 fill-fuchsia-300/50">
+                               <svg viewBox="0 0 24 24" className="absolute w-6 h-6 fill-gray-400">
                                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
                                </svg>
                              </div>
@@ -312,9 +312,9 @@ const ClonerDemoAnimation: React.FC = () => {
                              </div>
                            </div>
                          </div>
-                         <div className="bg-fuchsia-600/20 px-2 py-1 flex items-center gap-1">
-                           <Check className="w-3 h-3 text-fuchsia-400" />
-                           <span className="text-[9px] text-fuchsia-300 font-medium">Referência</span>
+                         <div className="bg-white/5 px-2 py-1 flex items-center gap-1">
+                           <Check className="w-3 h-3 text-gray-400" />
+                           <span className="text-[9px] text-gray-300 font-medium">Referência</span>
                          </div>
                        </div>
                      )}
@@ -326,7 +326,7 @@ const ClonerDemoAnimation: React.FC = () => {
               <div className={cn(
                 'bg-white/5 border rounded-lg p-2.5 transition-all duration-300',
                 step === 2
-                  ? 'border-fuchsia-500/50 shadow-md shadow-fuchsia-500/10'
+                  ? 'border-white/15/50 shadow-md shadow-white/5'
                   : 'border-white/10',
               )}>
                 <p className="text-[10px] font-semibold text-white/70 mb-2 flex items-center gap-1.5">
@@ -346,7 +346,7 @@ const ClonerDemoAnimation: React.FC = () => {
                        className={cn(
                          'flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-lg border text-center transition-all duration-300',
                          selectedRatio === opt.value
-                           ? 'bg-gradient-to-r from-slate-600 to-slate-500 border-fuchsia-500 text-white scale-105'
+                           ? 'bg-gradient-to-r from-slate-600 to-slate-500 border-white/15 text-white scale-105'
                            : 'bg-white/5 border-white/10 text-gray-300'
                        )}
                      >
@@ -367,7 +367,7 @@ const ClonerDemoAnimation: React.FC = () => {
                     <Zap className="w-3 h-3 text-gray-400" />
                     Criatividade
                   </p>
-                  <span className="text-[9px] text-fuchsia-400 font-bold">50%</span>
+                  <span className="text-[9px] text-gray-400 font-bold">50%</span>
                 </div>
                 <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                   <div className="h-full w-1/2 bg-gradient-to-r from-slate-500 to-slate-400 rounded-full" />
@@ -379,7 +379,7 @@ const ClonerDemoAnimation: React.FC = () => {
                 ref={genBtnRef}
                 className={cn(
                   'w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-200',
-                  'bg-gradient-to-r from-slate-600 to-slate-500 shadow-lg shadow-fuchsia-500/30',
+                  'bg-gradient-to-r from-slate-600 to-slate-500 shadow-lg shadow-slate-500/20',
                   step === 3 && buttonClicked ? 'scale-95 brightness-110' : 'scale-100',
                 )}
               >
@@ -396,7 +396,7 @@ const ClonerDemoAnimation: React.FC = () => {
               )}>
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[10px] text-gray-400">Gerando sua imagem...</span>
-                  <span className="text-[10px] text-fuchsia-400 font-bold">{Math.round(loadingProgress)}%</span>
+                  <span className="text-[10px] text-gray-400 font-bold">{Math.round(loadingProgress)}%</span>
                 </div>
                 <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                   <div
@@ -428,13 +428,13 @@ const ClonerDemoAnimation: React.FC = () => {
             transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-[#2a0a4a]/97 via-[#1e0a3a]/95 to-[#2a0a4a]/97 backdrop-blur-md" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#2a0a4a]/97 via-[#111113]/95 to-[#2a0a4a]/97 backdrop-blur-md" />
           <div className="relative z-10 flex flex-col items-center justify-center w-full h-full p-6">
             {/* Floating sparkles */}
             {['✦','✦','✦','✦','✦','✦'].map((s, i) => (
               <span
                 key={i}
-                className="absolute text-fuchsia-400 animate-pulse pointer-events-none select-none"
+                className="absolute text-gray-400 animate-pulse pointer-events-none select-none"
                 style={{
                   fontSize: `${9 + i * 2}px`,
                   top: `${[10, 75, 18, 82, 5, 88][i]}%`,
@@ -445,30 +445,30 @@ const ClonerDemoAnimation: React.FC = () => {
             ))}
 
             {/* Glow behind avatar */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-fuchsia-500/20 blur-3xl pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
 
             {/* Top badge */}
-            <div className="mb-5 bg-fuchsia-500 rounded-full px-3 py-1.5 flex items-center gap-1.5 shadow-lg shadow-fuchsia-500/60 animate-bounce">
+            <div className="mb-5 bg-slate-500 rounded-full px-3 py-1.5 flex items-center gap-1.5 shadow-lg shadow-slate-500/30 animate-bounce">
               <Sparkles className="w-3.5 h-3.5 text-white" />
               <span className="text-xs text-white font-bold">Pronto! ✓</span>
             </div>
 
             {/* Large avatar */}
             <div className="relative mb-5">
-              <div className="absolute -inset-4 rounded-full bg-fuchsia-500/25 blur-xl animate-pulse" />
-              <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-fuchsia-400/80 to-slate-500/70 border-2 border-fuchsia-400/80 flex items-center justify-center shadow-2xl shadow-fuchsia-500/60">
-                <svg viewBox="0 0 24 24" className="w-16 h-16 fill-fuchsia-100/90">
+              <div className="absolute -inset-4 rounded-full bg-white/10 blur-xl animate-pulse" />
+              <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-slate-400 to-slate-500/70 border-2 border-white/15 flex items-center justify-center shadow-2xl shadow-slate-500/30">
+                <svg viewBox="0 0 24 24" className="w-16 h-16 fill-gray-200">
                   <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
                 </svg>
               </div>
-              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-fuchsia-500 border-2 border-[#1e0a3a] flex items-center justify-center">
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-slate-500 border-2 border-[#111113] flex items-center justify-center">
                 <Check className="w-4 h-4 text-white" />
               </div>
             </div>
 
             {/* Title */}
             <h3 className="text-white font-bold text-lg mb-1">Imagem gerada!</h3>
-            <p className="text-fuchsia-300/80 text-xs mb-5">Sem prompt. Sem complicação.</p>
+            <p className="text-gray-400 text-xs mb-5">Sem prompt. Sem complicação.</p>
 
             {/* Stats row */}
             <div className="flex gap-3 mb-6">
@@ -477,21 +477,21 @@ const ClonerDemoAnimation: React.FC = () => {
                 { label: '1:1', icon: '⬛' },
                 { label: '~15s', icon: '⚡' },
               ].map((stat) => (
-                <div key={stat.label} className="flex flex-col items-center gap-0.5 bg-white/5 border border-fuchsia-500/30 rounded-xl px-4 py-2">
+                <div key={stat.label} className="flex flex-col items-center gap-0.5 bg-white/5 border border-white/10 rounded-xl px-4 py-2">
                   <span className="text-base">{stat.icon}</span>
-                  <span className="text-[10px] text-fuchsia-300 font-bold">{stat.label}</span>
+                  <span className="text-[10px] text-gray-300 font-bold">{stat.label}</span>
                 </div>
               ))}
             </div>
 
             {/* Download button */}
-            <div className="bg-gradient-to-r from-slate-600 to-slate-500 rounded-xl px-6 py-3 flex items-center gap-2 shadow-lg shadow-fuchsia-500/40">
+            <div className="bg-gradient-to-r from-slate-600 to-slate-500 rounded-xl px-6 py-3 flex items-center gap-2 shadow-lg shadow-slate-500/20">
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v4h5.66V9h3.84L12 2z"/></svg>
               <span className="text-sm text-white font-bold">Baixar Imagem</span>
             </div>
 
             {/* Footer text */}
-            <p className="mt-4 text-[11px] text-fuchsia-300/60">⚡ Gerado em ~15 segundos</p>
+            <p className="mt-4 text-[11px] text-gray-500">⚡ Gerado em ~15 segundos</p>
           </div>
         </div>
       </div>
@@ -502,7 +502,7 @@ const ClonerDemoAnimation: React.FC = () => {
           'text-sm md:text-base font-medium transition-all duration-500',
           'text-white/70'
         )}>
-          <span className="text-fuchsia-400 font-bold">Passo {step + 1} de 4</span>
+          <span className="text-gray-400 font-bold">Passo {step + 1} de 4</span>
           {' — '}
           <span>{stepLabels[step].emoji} {stepLabels[step].text}</span>
         </p>
@@ -512,7 +512,7 @@ const ClonerDemoAnimation: React.FC = () => {
               key={i}
               className={cn(
                 'h-1 rounded-full transition-all duration-500',
-                step === i ? 'w-8 bg-fuchsia-500' : 'w-4 bg-white/20'
+                step === i ? 'w-8 bg-slate-500' : 'w-4 bg-white/20'
               )}
             />
           ))}

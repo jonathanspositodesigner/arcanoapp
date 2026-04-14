@@ -492,7 +492,7 @@ const AdminFerramentas = () => {
 
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-promotions')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-                  <div className="p-2 sm:p-4 bg-gradient-to-r from-slate-500 to-violet-500 rounded-full">
+                  <div className="p-2 sm:p-4 bg-gradient-to-r from-slate-500 to-slate-400 rounded-full">
                     <Gift className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Promoções</h2>

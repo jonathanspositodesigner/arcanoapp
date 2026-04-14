@@ -706,8 +706,8 @@ const PoseChangerTool: React.FC = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-fuchsia-500/20 flex items-center justify-center">
-                      <ImageIcon className="w-10 h-10 text-fuchsia-400" />
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-white/15/20 flex items-center justify-center">
+                      <ImageIcon className="w-10 h-10 text-gray-400" />
                     </div>
                     <div>
                       <h2 className="text-lg font-bold text-white">Pose Changer</h2>

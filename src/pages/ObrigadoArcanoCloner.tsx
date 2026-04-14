@@ -7,22 +7,22 @@ const ObrigadoArcanoCloner = () => {
 
   const benefits = [
     {
-      icon: <Camera className="w-6 h-6 text-fuchsia-400" />,
+      icon: <Camera className="w-6 h-6 text-gray-400" />,
       title: "~70 Fotos Geradas",
       description: "Ensaios fotográficos profissionais criados com IA em minutos",
     },
     {
-      icon: <BookImage className="w-6 h-6 text-fuchsia-400" />,
+      icon: <BookImage className="w-6 h-6 text-gray-400" />,
       title: "Biblioteca +300 Referências",
       description: "Acesso à biblioteca completa de estilos e referências fotográficas",
     },
     {
-      icon: <Sparkles className="w-6 h-6 text-fuchsia-400" />,
+      icon: <Sparkles className="w-6 h-6 text-gray-400" />,
       title: "Upscaler Arcano (Bônus)",
       description: "Ferramenta para aumentar a resolução das suas fotos com IA",
     },
     {
-      icon: <MessageCircle className="w-6 h-6 text-fuchsia-400" />,
+      icon: <MessageCircle className="w-6 h-6 text-gray-400" />,
       title: "Suporte via WhatsApp",
       description: "Equipe dedicada para te ajudar a extrair o máximo da ferramenta",
     },
@@ -32,7 +32,7 @@ const ObrigadoArcanoCloner = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] font-space-grotesk relative overflow-hidden">
       {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-fuchsia-600/10 rounded-full blur-[120px]" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-slate-600/10 rounded-full blur-[120px]" />
         <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-slate-700/8 rounded-full blur-[100px]" />
       </div>
 
@@ -60,13 +60,13 @@ const ObrigadoArcanoCloner = () => {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-fuchsia-400 to-slate-400 bg-clip-text text-transparent mb-6">
+          <p className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-gray-400 to-slate-400 bg-clip-text text-transparent mb-6">
             Seja bem-vindo ao Arcano Cloner
           </p>
 
           {/* Description */}
           <p className="text-white/70 text-base md:text-lg leading-relaxed max-w-xl mb-8">
-            <span className="font-bold text-fuchsia-400">Se o pagamento já foi processado,</span> clique no botão abaixo para acessar sua compra e começar a criar ensaios fotográficos profissionais agora mesmo.
+            <span className="font-bold text-gray-400">Se o pagamento já foi processado,</span> clique no botão abaixo para acessar sua compra e começar a criar ensaios fotográficos profissionais agora mesmo.
           </p>
 
           {/* CTA Button */}
@@ -95,7 +95,7 @@ const ObrigadoArcanoCloner = () => {
                 key={index}
                 className="bg-white/5 border border-white/10 rounded-2xl p-5 flex items-start gap-4 hover:bg-white/8 transition-colors"
               >
-                <div className="flex-shrink-0 w-10 h-10 bg-fuchsia-500/15 rounded-xl flex items-center justify-center">
+                <div className="flex-shrink-0 w-10 h-10 bg-slate-500/15 rounded-xl flex items-center justify-center">
                   {benefit.icon}
                 </div>
                 <div>

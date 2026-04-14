@@ -166,7 +166,7 @@ const ToolsHeader = ({
                   className="h-7 w-7 flex items-center justify-center rounded hover:bg-slate-500/10"
                   title="Comprar créditos"
                 >
-                  <PlusCircle className="w-4 h-4 text-fuchsia-400" style={{ filter: 'drop-shadow(0 0 4px rgba(217, 70, 239, 0.5))' }} />
+                  <PlusCircle className="w-4 h-4 text-gray-400" style={{ filter: 'drop-shadow(0 0 4px rgba(148, 163, 184, 0.5))' }} />
                 </button>
               </div>
 
@@ -226,7 +226,7 @@ const ToolsHeader = ({
                         className="p-1 rounded hover:bg-slate-500/10"
                         title="Comprar créditos"
                       >
-                        <PlusCircle className="w-4 h-4 text-fuchsia-400" />
+                        <PlusCircle className="w-4 h-4 text-gray-400" />
                       </button>
                     </div>
                   </div>

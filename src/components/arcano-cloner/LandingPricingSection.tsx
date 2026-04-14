@@ -49,18 +49,18 @@ const StatsBar = () => {
         </div>
         <div className="flex items-center justify-center gap-8 w-full">
           <div className="flex flex-col items-center gap-0.5">
-            <Image className="w-5 h-5 text-fuchsia-400 mb-1" />
+            <Image className="w-5 h-5 text-gray-400 mb-1" />
             <div className="flex items-center gap-1">
               <span className="text-white font-bold text-base sm:text-lg">{animatedImages.displayValue.toLocaleString('pt-BR')}</span>
-              <span className="text-fuchsia-400 text-lg font-bold">+</span>
+              <span className="text-gray-400 text-lg font-bold">+</span>
             </div>
             <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium text-center">Imagens Geradas</span>
           </div>
           <div className="flex flex-col items-center gap-0.5">
-            <Video className="w-5 h-5 text-fuchsia-400 mb-1" />
+            <Video className="w-5 h-5 text-gray-400 mb-1" />
             <div className="flex items-center gap-1">
               <span className="text-white font-bold text-base sm:text-lg">{animatedVideos.displayValue.toLocaleString('pt-BR')}</span>
-              <span className="text-fuchsia-400 text-lg font-bold">+</span>
+              <span className="text-gray-400 text-lg font-bold">+</span>
             </div>
             <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium text-center">Vídeos Gerados</span>
           </div>
@@ -160,7 +160,7 @@ const LandingPricingSection = () => {
         <AnimatedSection as="div" delay={100}>
           <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
             Comece agora mesmo a gerar suas próprias{" "}
-            <span className="text-fuchsia-400">fotos profissionais!</span>
+            <span className="text-gray-400">fotos profissionais!</span>
           </h2>
           <p className="text-white/50 text-center text-sm mb-8 max-w-xl mx-auto">
             Sem <strong className="text-white/70">prompts complexos! Sem dificuldade!</strong> Escolha o melhor pacote para você iniciar
@@ -180,7 +180,7 @@ const LandingPricingSection = () => {
             <div key={plan.name} className="flex flex-col h-full w-full">
               <Card className={`relative flex flex-col rounded-2xl bg-white/[0.03] w-full h-full p-5 sm:p-6 lg:p-8 min-h-[420px] lg:min-h-[520px] ${
                 plan.bestSeller ? "border-2 border-lime-400 shadow-[0_0_40px_-8px_rgba(163,230,53,0.25)]" :
-                plan.hasCountdown ? "border-2 border-fuchsia-500 shadow-[0_0_40px_-8px_rgba(217,70,239,0.25)]" :
+                plan.hasCountdown ? "border-2 border-white/15 shadow-[0_0_40px_-8px_rgba(217,70,239,0.25)]" :
                 "border border-white/10 hover:border-white/20 transition-colors"
               }`}>
                 {plan.bestSeller && (
@@ -199,7 +199,7 @@ const LandingPricingSection = () => {
                   {plan.bestSeller ? (
                     <Crown className="w-8 h-8 lg:w-10 lg:h-10 text-lime-400" />
                   ) : plan.hasCountdown ? (
-                    <Flame className="w-8 h-8 lg:w-10 lg:h-10 text-fuchsia-500" />
+                    <Flame className="w-8 h-8 lg:w-10 lg:h-10 text-slate-400" />
                   ) : (
                     <Rocket className="w-8 h-8 lg:w-10 lg:h-10 text-white/60" />
                   )}
@@ -212,7 +212,7 @@ const LandingPricingSection = () => {
                 {/* Price */}
                 <div className="text-center mb-5 lg:mb-6">
                   <div className="flex items-baseline justify-center gap-0.5">
-                    <span className="text-fuchsia-400 text-base lg:text-lg">R$</span>
+                    <span className="text-gray-400 text-base lg:text-lg">R$</span>
                     <span className="text-4xl lg:text-5xl font-bold text-white">{plan.price}</span>
                   </div>
                 </div>
@@ -223,14 +223,14 @@ const LandingPricingSection = () => {
                   disabled={isLoading}
                   className={`w-full mb-2 text-sm lg:text-base h-10 lg:h-12 ${
                     plan.bestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" :
-                    plan.hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-fuchsia-700 hover:to-blue-600 text-white font-semibold" :
+                    plan.hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-white font-semibold" :
                     "bg-white/10 hover:bg-white/20 text-white/80"
                   }`}
                 >
                   Comprar agora
                 </Button>
                 {plan.tagline && (
-                  <p className="text-[10px] lg:text-[11px] text-fuchsia-400 text-center mb-2 italic">{plan.tagline}</p>
+                  <p className="text-[10px] lg:text-[11px] text-gray-400 text-center mb-2 italic">{plan.tagline}</p>
                 )}
 
                 {/* Images badge (highlighted) */}
@@ -247,7 +247,7 @@ const LandingPricingSection = () => {
                   {plan.features.map((f, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs lg:text-sm">
                       {f.included ? (
-                        <Check className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-fuchsia-400 shrink-0 mt-0.5" />
+                        <Check className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-gray-400 shrink-0 mt-0.5" />
                       ) : (
                         <X className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-orange-500 shrink-0 mt-0.5" />
                       )}
@@ -263,11 +263,11 @@ const LandingPricingSection = () => {
         {/* Acesso Imediato + Trust Badges */}
         <div className="mt-12 text-center">
           <h3 className="font-space-grotesk font-extrabold text-3xl md:text-4xl lg:text-5xl text-white tracking-tight mb-6">
-            ACESSO <span className="text-fuchsia-400">IMEDIATO</span>
+            ACESSO <span className="text-gray-400">IMEDIATO</span>
           </h3>
           <div className="max-w-4xl mx-auto rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 sm:px-8 py-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 sm:gap-4">
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <ShieldCheck className="w-5 h-5 text-fuchsia-400 shrink-0" />
+              <ShieldCheck className="w-5 h-5 text-gray-400 shrink-0" />
               <div className="text-left">
                 <p className="text-white text-sm font-semibold leading-tight">Pagamento seguro</p>
                 <p className="text-white/50 text-xs">transmissão criptografada SSL</p>
@@ -276,7 +276,7 @@ const LandingPricingSection = () => {
             <div className="hidden sm:block w-px h-8 bg-white/10" />
             <div className="block sm:hidden w-full h-px bg-white/10" />
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Zap className="w-5 h-5 text-fuchsia-400 shrink-0" />
+              <Zap className="w-5 h-5 text-gray-400 shrink-0" />
               <div className="text-left">
                 <p className="text-white text-sm font-semibold leading-tight">Pagamento instantâneo</p>
                 <p className="text-white/50 text-xs">Os pontos chegam instantaneamente.</p>
@@ -285,7 +285,7 @@ const LandingPricingSection = () => {
             <div className="hidden sm:block w-px h-8 bg-white/10" />
             <div className="block sm:hidden w-full h-px bg-white/10" />
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Headset className="w-5 h-5 text-fuchsia-400 shrink-0" />
+              <Headset className="w-5 h-5 text-gray-400 shrink-0" />
               <div className="text-left">
                 <p className="text-white text-sm font-semibold leading-tight">Suporte 24/7</p>
                 <p className="text-white/50 text-xs">estamos aqui para ajudar</p>

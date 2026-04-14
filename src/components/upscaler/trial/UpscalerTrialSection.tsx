@@ -343,7 +343,7 @@ export default function UpscalerTrialSection() {
     <div className="px-4 py-20 bg-black/30">
       <div className="max-w-4xl mx-auto">
         <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-4">
-          Ainda na dúvida? <span className="text-fuchsia-400">Faça um teste gratuito!</span>
+          Ainda na dúvida? <span className="text-gray-400">Faça um teste gratuito!</span>
         </h2>
         <p className="text-gray-300/70 text-center mb-10 max-w-xl mx-auto">
           Experimente o poder do Upscaler Arcano agora mesmo. Sem cadastro, sem compromisso.
@@ -366,7 +366,7 @@ export default function UpscalerTrialSection() {
                     </div>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-fuchsia-500/25"
+                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-slate-500/20"
                       onClick={openSignup}
                     >
                       <Sparkles className="w-5 h-5 mr-2" />
@@ -383,7 +383,7 @@ export default function UpscalerTrialSection() {
                     </p>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-fuchsia-500/25"
+                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-slate-500/20"
                       onClick={scrollToPricing}
                     >
                       <ShoppingCart className="w-5 h-5 mr-2" />
@@ -420,7 +420,7 @@ export default function UpscalerTrialSection() {
                 <div className="text-center mt-4">
                   <Button
                     variant="outline"
-                    className="border-fuchsia-500/30 text-fuchsia-300 hover:bg-fuchsia-500/10"
+                    className="border-white/10 text-gray-300 hover:bg-slate-500/10"
                     onClick={handleNewUpload}
                   >
                     {usesRemaining > 0 

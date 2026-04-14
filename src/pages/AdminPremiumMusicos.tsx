@@ -355,7 +355,7 @@ const AdminPremiumMusicos = () => {
     return (
       <AdminLayoutPlatform platform="artes-musicos">
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-500" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white/10" />
         </div>
       </AdminLayoutPlatform>
     );
@@ -375,7 +375,7 @@ const AdminPremiumMusicos = () => {
               <p className="text-muted-foreground">Gerencie assinantes da plataforma de músicos</p>
             </div>
           </div>
-          <Button onClick={handleOpenAdd} className="bg-gradient-to-r from-violet-500 to-slate-400">
+          <Button onClick={handleOpenAdd} className="bg-gradient-to-r from-slate-500 to-gray-400">
             <Plus className="h-4 w-4 mr-2" />
             Novo Cliente
           </Button>
@@ -385,8 +385,8 @@ const AdminPremiumMusicos = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-violet-500/20 rounded-full">
-                <Users className="h-5 w-5 text-violet-500" />
+              <div className="p-2 bg-slate-500/20 rounded-full">
+                <Users className="h-5 w-5 text-slate-400" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total de Clientes</p>
@@ -640,7 +640,7 @@ const AdminPremiumMusicos = () => {
               <Button 
                 onClick={handleSave} 
                 disabled={isSaving}
-                className="flex-1 bg-gradient-to-r from-violet-500 to-slate-400"
+                className="flex-1 bg-gradient-to-r from-slate-500 to-slate-400"
               >
                 {isSaving ? "Salvando..." : "Salvar"}
               </Button>

@@ -129,7 +129,7 @@ export function CheckoutCustomerModal({ open, onClose, onConfirm, loading }: Che
           <Button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full bg-gradient-to-r from-slate-600 to-violet-600 hover:from-slate-500 hover:to-violet-500 text-white h-12 text-base font-semibold"
+            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white h-12 text-base font-semibold"
           >
             {loading ? (
               <>

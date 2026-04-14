@@ -116,7 +116,7 @@ const UpscalerChoiceModal = ({
               <button
                 onClick={handleAppVersionClick}
                 disabled={isCheckingClaim || isClaiming}
-                className="w-full mt-4 text-center text-fuchsia-400/70 hover:text-fuchsia-300 text-xs transition-colors duration-200 disabled:opacity-50"
+                className="w-full mt-4 text-center text-gray-400/70 hover:text-gray-300 text-xs transition-colors duration-200 disabled:opacity-50"
               >
                 {isCheckingClaim || isClaiming ? (
                   <span className="flex items-center justify-center gap-1.5">
@@ -136,18 +136,18 @@ const UpscalerChoiceModal = ({
               {/* Card Versão App */}
               <div 
                 onClick={handleAppVersionClick}
-                className={`group relative bg-gradient-to-br from-[#261433] to-[#3D1B4D] rounded-xl border-2 border-fuchsia-500/30 hover:border-fuchsia-400 transition-all duration-300 overflow-hidden hover:shadow-[0_0_30px_rgba(217,70,239,0.3)] ${isCheckingClaim || isClaiming ? 'cursor-wait' : 'cursor-pointer'}`}
+                className={`group relative bg-gradient-to-br from-[#261433] to-[#3D1B4D] rounded-xl border-2 border-white/10 hover:border-white-400 transition-all duration-300 overflow-hidden hover:shadow-[0_0_30px_rgba(217,70,239,0.3)] ${isCheckingClaim || isClaiming ? 'cursor-wait' : 'cursor-pointer'}`}
               >
                 {/* Badge */}
-                <div className="absolute top-3 right-3 flex items-center gap-1 bg-fuchsia-500/20 px-2 py-1 rounded-full">
-                  <Sparkles className="w-3 h-3 text-fuchsia-300" />
-                  <span className="text-[10px] text-fuchsia-300 font-medium">FÁCIL</span>
+                <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/10 px-2 py-1 rounded-full">
+                  <Sparkles className="w-3 h-3 text-gray-300" />
+                  <span className="text-[10px] text-gray-300 font-medium">FÁCIL</span>
                 </div>
 
                 <div className="p-5">
                   {/* Icon */}
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-500/30 to-pink-600/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 mx-auto border border-fuchsia-400/30">
-                    <Zap className="w-7 h-7 text-fuchsia-300" />
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-500/30 to-pink-600/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 mx-auto border border-white/10">
+                    <Zap className="w-7 h-7 text-gray-300" />
                   </div>
 
                   {/* Title */}
@@ -156,8 +156,8 @@ const UpscalerChoiceModal = ({
                   </h3>
 
                   {/* Description */}
-                  <p className="text-fuchsia-200/70 text-sm text-center leading-relaxed mb-5">
-                    Nova versão <span className="text-fuchsia-300 font-medium">mais fácil de usar</span>. Consome créditos por uso.
+                  <p className="text-gray-400 text-sm text-center leading-relaxed mb-5">
+                    Nova versão <span className="text-gray-300 font-medium">mais fácil de usar</span>. Consome créditos por uso.
                   </p>
 
                   {/* Button */}
@@ -167,7 +167,7 @@ const UpscalerChoiceModal = ({
                       handleAppVersionClick();
                     }}
                     disabled={isCheckingClaim || isClaiming}
-                    className="w-full h-11 bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-500 hover:to-pink-500 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-fuchsia-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-11 bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-500 hover:to-pink-500 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isCheckingClaim || isClaiming ? (
                       <span className="flex items-center justify-center gap-2">

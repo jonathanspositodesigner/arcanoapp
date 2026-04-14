@@ -41,7 +41,7 @@ const CountUp = ({ target, duration = 2000 }: { target: number; duration?: numbe
       <span className="font-space-grotesk font-bold text-6xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40">
         {count}
       </span>
-      <span className="text-fuchsia-400 text-3xl md:text-4xl font-bold">+</span>
+      <span className="text-gray-400 text-3xl md:text-4xl font-bold">+</span>
     </div>
   );
 };
@@ -62,7 +62,7 @@ const TesteCloner = () => {
         <HeroCarouselBackground />
 
         <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
-          <div className="w-[400px] h-[500px] md:w-[600px] md:h-[700px] bg-fuchsia-600/50 blur-[150px] md:blur-[200px] rounded-full" />
+          <div className="w-[400px] h-[500px] md:w-[600px] md:h-[700px] bg-slate-600/50 blur-[150px] md:blur-[200px] rounded-full" />
         </div>
 
         <div className="absolute inset-0 z-[10] flex items-center justify-center pointer-events-none">
@@ -100,7 +100,7 @@ const TesteCloner = () => {
               <br className="hidden md:block" />
               profissionais com IA{" "}
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
                 sem prompt, sem complicação
               </span>
             </h1>
@@ -108,7 +108,7 @@ const TesteCloner = () => {
             <FadeIn duration={700}>
               <p className="text-sm md:text-base text-white/60 mb-6 md:mb-8 max-w-lg leading-relaxed mx-auto">
                 Basta subir sua foto e escolher a referência.{" "}
-                <span className="text-fuchsia-400 font-semibold">Resultado pronto em segundos.</span>
+                <span className="text-gray-400 font-semibold">Resultado pronto em segundos.</span>
               </p>
             </FadeIn>
 
@@ -124,15 +124,15 @@ const TesteCloner = () => {
             <FadeIn duration={700}>
               <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10">
                 <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                  <Sparkles className="h-3.5 w-3.5 text-fuchsia-400" />
+                  <Sparkles className="h-3.5 w-3.5 text-gray-400" />
                   <span>Sem prompt</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                  <Clock className="h-3.5 w-3.5 text-fuchsia-400" />
+                  <Clock className="h-3.5 w-3.5 text-gray-400" />
                   <span>Pronto em segundos</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                  <MousePointerClick className="h-3.5 w-3.5 text-fuchsia-400" />
+                  <MousePointerClick className="h-3.5 w-3.5 text-gray-400" />
                   <span>Fácil de usar</span>
                 </div>
               </div>
@@ -148,7 +148,7 @@ const TesteCloner = () => {
             <AnimatedSection as="div" delay={100}>
               <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3">
                 Tudo feito com um clique,{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">sem prompt!</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">sem prompt!</span>
               </h2>
               <p className="text-white/50 text-sm mb-10">
                 Resultados reais de clientes usando o Arcano Cloner
@@ -178,7 +178,7 @@ const TesteCloner = () => {
         <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="fade">
           <div className="max-w-4xl mx-auto text-center mb-10">
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-2">
-              Uma biblioteca completa de referências <span className="text-fuchsia-400">para você gerar com um clique</span>
+              Uma biblioteca completa de referências <span className="text-gray-400">para você gerar com um clique</span>
             </h2>
 
             <div className="flex flex-col items-center mt-8 mb-2">

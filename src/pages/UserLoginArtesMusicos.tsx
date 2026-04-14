@@ -62,7 +62,7 @@ const UserLoginArtesMusicos = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />{t('back')}
           </Button>
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Music className="h-6 w-6 text-violet-400" />
+            <Music className="h-6 w-6 text-gray-400" />
             <CardTitle className="text-2xl text-white">{t('loginCard.titleMusicos')}</CardTitle>
           </div>
           <CardDescription className="text-white/60">{t('loginCard.descriptionMusicos')}</CardDescription>

@@ -27,7 +27,7 @@ interface UserResult {
 }
 
 const TestimonialCard = ({ result }: { result: UserResult }) => (
-  <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-fuchsia-500/30 transition-all duration-300">
+  <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-white/10 transition-all duration-300">
     <div className="flex flex-col md:flex-row">
       <div className="p-3 md:p-6 md:w-1/2 md:flex-shrink-0">
         <HeroBeforeAfterSlider
@@ -42,12 +42,12 @@ const TestimonialCard = ({ result }: { result: UserResult }) => (
             <img src={result.avatar} alt={result.name} width="40" height="40" loading="lazy" className="w-10 h-10 rounded-full border border-white/10 object-cover flex-shrink-0" />
           ) : (
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500/30 to-slate-400/30 border border-white/10 flex items-center justify-center flex-shrink-0">
-              <User className="w-5 h-5 text-fuchsia-400" />
+              <User className="w-5 h-5 text-gray-400" />
             </div>
           )}
           <div>
             <p className="font-space-grotesk font-semibold text-white text-sm">{result.name}</p>
-            <p className="text-fuchsia-400/70 text-xs">{result.handle}</p>
+            <p className="text-gray-400/70 text-xs">{result.handle}</p>
           </div>
         </div>
         <p className="font-space-grotesk text-white/80 text-sm md:text-base leading-relaxed">
@@ -112,7 +112,7 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
       <div className="max-w-5xl mx-auto">
         <AnimatedSection as="div" delay={100}>
           <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-2 tracking-tight leading-tight px-2">
-            {t('tools:upscaler.socialProof.title')} <span className="text-fuchsia-400">{t('tools:upscaler.socialProof.result')}</span>
+            {t('tools:upscaler.socialProof.title')} <span className="text-gray-400">{t('tools:upscaler.socialProof.result')}</span>
             <span className="block sm:inline"> {t('tools:upscaler.socialProof.subtitle')}</span>
           </h2>
           <p className="text-white/60 text-center text-sm md:text-base mb-8 md:mb-12 px-4 font-space-grotesk">
@@ -130,8 +130,8 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="-left-2 h-10 w-10 bg-fuchsia-500 hover:bg-fuchsia-600 border-none text-white shadow-lg shadow-fuchsia-500/30" />
-            <CarouselNext className="-right-2 h-10 w-10 bg-fuchsia-500 hover:bg-fuchsia-600 border-none text-white shadow-lg shadow-fuchsia-500/30" />
+            <CarouselPrevious className="-left-2 h-10 w-10 bg-slate-500 hover:bg-slate-600 border-none text-white shadow-lg shadow-slate-500/20" />
+            <CarouselNext className="-right-2 h-10 w-10 bg-slate-500 hover:bg-slate-600 border-none text-white shadow-lg shadow-slate-500/20" />
           </Carousel>
         </div>
 
