@@ -31,8 +31,8 @@ export const AnimatedCreditsDisplay = ({
   };
 
   const getBalanceColorClass = () => {
-    if (direction === 'up') return 'text-green-400';
-    if (direction === 'down') return 'text-red-400';
+    if (direction === 'up') return 'text-emerald-600 dark:text-green-400';
+    if (direction === 'down') return 'text-rose-600 dark:text-red-400';
     return isUnlimited ? 'text-foreground' : '';
   };
 
@@ -82,8 +82,8 @@ export const AnimatedCreditsDisplay = ({
         className={cn(
           "font-medium flex items-center gap-1.5 transition-colors duration-200",
           isUnlimited 
-            ? "bg-emerald-600/80 text-foreground border border-emerald-400/30" 
-            : "bg-secondary text-foreground",
+            ? "bg-emerald-600/90 text-primary-foreground border border-emerald-500/30" 
+            : "bg-accent text-accent-foreground border border-border shadow-sm",
           sizeClasses[size].badge,
           direction && "bg-opacity-90",
           className
