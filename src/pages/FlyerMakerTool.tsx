@@ -649,21 +649,29 @@ const FlyerMakerTool: React.FC = () => {
                     {/* Artist Photos */}
                     <div className="border border-white/10 rounded-xl p-4 bg-black/30">
                       <span className="text-sm font-medium text-white mb-2 block">Fotos dos Artistas (1-5)</span>
-                      <div className="grid grid-cols-5 gap-1.5">
-                        {artistPhotos.map((photo, idx) => (
-                          <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group">
-                            <img src={photo.url} alt="" className="w-full h-full object-cover" />
-                            <button onClick={() => removeArtistPhoto(idx)} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity" disabled={isProcessing}>
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                        {artistPhotos.length < 5 && (
-                          <label className={`aspect-square rounded-lg border-2 border-dashed border-white/15 flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
-                            <input type="file" accept="image/*" className="hidden" onChange={handleArtistPhotoUpload} disabled={isProcessing} />
-                            <Plus className="w-5 h-5 text-gray-400" />
-                          </label>
-                        )}
+                      <div className="grid grid-cols-3 gap-2">
+                        {[0, 1, 2, 3, 4].map((idx) => {
+                          const photo = artistPhotos[idx];
+                          if (photo) {
+                            return (
+                              <div key={idx} className={`relative aspect-[3/4] rounded-lg overflow-hidden group ${idx >= 3 ? 'col-span-1' : ''}`}>
+                                <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                                <button onClick={() => removeArtistPhoto(idx)} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity" disabled={isProcessing}>
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            );
+                          }
+                          if (idx === artistPhotos.length) {
+                            return (
+                              <label key={idx} className={`aspect-[3/4] rounded-lg border-2 border-dashed border-white/15 flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
+                                <input type="file" accept="image/*" className="hidden" onChange={handleArtistPhotoUpload} disabled={isProcessing} />
+                                <Plus className="w-5 h-5 text-gray-400" />
+                              </label>
+                            );
+                          }
+                          return null;
+                        })}
                       </div>
                     </div>
 
