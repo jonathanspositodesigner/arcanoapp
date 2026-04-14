@@ -67,8 +67,8 @@ const ForjaSelos3DArtes = () => {
 
   if (isLoading || !checked) {
     return (
-      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
-        <div className="text-gray-300">{t('forja3DArtes.loading')}</div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-muted-foreground">{t('forja3DArtes.loading')}</div>
       </div>
     );
   }
@@ -78,15 +78,15 @@ const ForjaSelos3DArtes = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#111113]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-[#111113] border-b border-white/10 p-4">
+      <header className="bg-background border-b border-border p-4">
         <div className="container mx-auto flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={goBack}
-            className="text-gray-300 hover:text-white hover:bg-white/50/20"
+            className="text-muted-foreground hover:text-white hover:bg-accent0/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -94,7 +94,7 @@ const ForjaSelos3DArtes = () => {
             <h1 className="text-xl font-bold text-white">
               {t('forja3DArtes.title')}
             </h1>
-            <p className="text-sm text-gray-300">
+            <p className="text-sm text-muted-foreground">
               {t('forja3DArtes.description')}
             </p>
           </div>
@@ -104,13 +104,13 @@ const ForjaSelos3DArtes = () => {
       {/* Content */}
       <main className="container mx-auto p-4 md:p-6">
         {lessons.length === 0 ? (
-          <Card className="max-w-2xl mx-auto bg-[#111113]/50 border-white/10">
+          <Card className="max-w-2xl mx-auto bg-background/50 border-border">
             <CardContent className="p-8 text-center">
-              <Play className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <Play className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-white mb-2">
                 {t('forja3DArtes.comingSoon')}
               </h2>
-              <p className="text-gray-300">
+              <p className="text-muted-foreground">
                 {t('forja3DArtes.comingSoonDesc')}
               </p>
             </CardContent>
@@ -118,7 +118,7 @@ const ForjaSelos3DArtes = () => {
         ) : (
           <div className="space-y-6 max-w-4xl mx-auto">
             {lessons.map((lesson, index) => (
-              <Card key={index} className="bg-[#111113]/50 border-white/10">
+              <Card key={index} className="bg-background/50 border-border">
                 <CardHeader>
                   <CardTitle className="text-lg text-white">{lesson.title}</CardTitle>
                 </CardHeader>

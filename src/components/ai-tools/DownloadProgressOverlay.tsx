@@ -37,7 +37,7 @@ export const DownloadProgressOverlay: React.FC<DownloadProgressOverlayProps> = (
 
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center backdrop-blur-sm">
-      <div className="bg-gray-900 rounded-2xl p-8 max-w-sm mx-4 text-center space-y-4 border border-white/10 shadow-2xl">
+      <div className="bg-gray-900 rounded-2xl p-8 max-w-sm mx-4 text-center space-y-4 border border-border shadow-2xl">
         
         {/* Circular progress indicator */}
         <div className="relative w-24 h-24 mx-auto">

@@ -268,8 +268,8 @@ const FerramentasIAAplicativo = () => {
 
   if (loading || isPremiumLoading || isPromptsLoading) {
     return (
-      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -290,7 +290,7 @@ const FerramentasIAAplicativo = () => {
     return (
       <Card 
         key={tool.id}
-        className={`overflow-hidden transition-all group border border-white/10 shadow-md bg-[#111113]/50 ${
+        className={`overflow-hidden transition-all group border border-border shadow-md bg-background/50 ${
           isComingSoon 
             ? "cursor-not-allowed opacity-70" 
             : "cursor-pointer hover:ring-2 hover:ring-white/20 hover:shadow-xl"
@@ -319,9 +319,9 @@ const FerramentasIAAplicativo = () => {
                 : "bg-gradient-to-br from-slate-500 to-slate-500"
             }`}>
               {tool.slug === "arcano-cloner" || tool.slug === "flyer-maker" ? (
-                <Users className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
+                <Users className="h-12 w-12 sm:h-16 sm:w-16 text-foreground" />
               ) : (
-                <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
+                <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-foreground" />
               )}
             </div>
           )}
@@ -330,7 +330,7 @@ const FerramentasIAAplicativo = () => {
             <h3 className="font-bold text-sm sm:text-lg text-white text-center leading-tight drop-shadow-lg">
               {toolNameOverrides[tool.slug] || tool.name}
             </h3>
-            <p className="text-[10px] sm:text-sm text-white/80 text-center mt-1 line-clamp-2">
+            <p className="text-[10px] sm:text-sm text-foreground text-center mt-1 line-clamp-2">
               {description}
             </p>
             
@@ -338,7 +338,7 @@ const FerramentasIAAplicativo = () => {
               <Button
                 size="sm"
                 disabled
-                className="mt-2 sm:mt-3 w-full text-xs sm:text-sm font-medium bg-gray-600 text-gray-300 cursor-not-allowed"
+                className="mt-2 sm:mt-3 w-full text-xs sm:text-sm font-medium bg-gray-600 text-muted-foreground cursor-not-allowed"
               >
                 Em Breve
               </Button>
@@ -383,7 +383,7 @@ const FerramentasIAAplicativo = () => {
 
       {/* Content - Single grid with all tools */}
       <main className="container mx-auto px-4 py-8">
-        <p className="text-gray-300 text-center mb-8 max-w-2xl mx-auto hidden sm:block">
+        <p className="text-muted-foreground text-center mb-8 max-w-2xl mx-auto hidden sm:block">
           {t('ferramentas.description')}
         </p>
 
@@ -395,8 +395,8 @@ const FerramentasIAAplicativo = () => {
 
         {tools.length === 0 && (
           <div className="text-center py-16">
-            <Sparkles className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-300">{t('ferramentas.noToolsAvailable')}</p>
+            <Sparkles className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">{t('ferramentas.noToolsAvailable')}</p>
           </div>
         )}
       </main>

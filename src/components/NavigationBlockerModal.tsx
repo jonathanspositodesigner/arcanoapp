@@ -35,7 +35,7 @@ const NavigationBlockerModal = ({
   
   return (
     <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onCancelLeave()}>
-      <AlertDialogContent className="bg-[#111113] border-white/10 text-white max-w-md">
+      <AlertDialogContent className="bg-background border-border text-white max-w-md">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center">
@@ -45,7 +45,7 @@ const NavigationBlockerModal = ({
               Processamento em Andamento
             </AlertDialogTitle>
           </div>
-          <AlertDialogDescription className="text-gray-300 text-base leading-relaxed">
+          <AlertDialogDescription className="text-muted-foreground text-base leading-relaxed">
             Você tem um processamento de <span className="text-white font-medium">{toolDisplay}</span> em andamento.
             <br /><br />
             <span className="text-amber-400 font-medium">

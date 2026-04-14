@@ -74,7 +74,7 @@ const ProjectPicker: React.FC<Props> = ({
     return (
       <AppLayout fullScreen>
         <div className="flex h-full items-center justify-center bg-[#08080f]">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       </AppLayout>
     );
@@ -86,10 +86,10 @@ const ProjectPicker: React.FC<Props> = ({
         {/* Header */}
         <div className="h-12 flex-shrink-0 flex items-center justify-between px-4 bg-[#0c0c16]" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
           <div className="flex items-center gap-2.5">
-            <button onClick={() => navigate(-1)} className="p-1.5 rounded-md hover:bg-white/5 transition-colors">
-              <ArrowLeft className="w-4 h-4 text-gray-500" />
+            <button onClick={() => navigate(-1)} className="p-1.5 rounded-md hover:bg-accent transition-colors">
+              <ArrowLeft className="w-4 h-4 text-muted-foreground" />
             </button>
-            <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.15em]">Cinema Studio</span>
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.15em]">Cinema Studio</span>
           </div>
         </div>
 
@@ -98,7 +98,7 @@ const ProjectPicker: React.FC<Props> = ({
           <div className="max-w-5xl mx-auto">
             <div className="mb-6">
               <h1 className="text-lg sm:text-xl font-semibold text-gray-200">Meus Projetos</h1>
-              <p className="text-xs text-gray-500 mt-1">Até {MAX_PROJECTS} projetos • {projectCount}/{MAX_PROJECTS}</p>
+              <p className="text-xs text-muted-foreground mt-1">Até {MAX_PROJECTS} projetos • {projectCount}/{MAX_PROJECTS}</p>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -113,14 +113,14 @@ const ProjectPicker: React.FC<Props> = ({
               >
                 {atLimit ? (
                   <>
-                    <Lock className="w-6 h-6 text-gray-400" />
-                    <span className="text-[11px] text-gray-400 font-medium">Limite atingido</span>
-                    <span className="text-[9px] text-gray-400">{projectCount}/{MAX_PROJECTS}</span>
+                    <Lock className="w-6 h-6 text-muted-foreground" />
+                    <span className="text-[11px] text-muted-foreground font-medium">Limite atingido</span>
+                    <span className="text-[9px] text-muted-foreground">{projectCount}/{MAX_PROJECTS}</span>
                   </>
                 ) : (
                   <>
-                    <Plus className="w-7 h-7 text-gray-500" />
-                    <span className="text-xs text-gray-400 font-medium">Novo Projeto</span>
+                    <Plus className="w-7 h-7 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground font-medium">Novo Projeto</span>
                   </>
                 )}
               </button>
@@ -129,7 +129,7 @@ const ProjectPicker: React.FC<Props> = ({
               {projects.map((project) => (
                 <div
                   key={project.id}
-                  className="aspect-video rounded-xl overflow-hidden relative group cursor-pointer bg-[#1a1a2e] transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-white/5 hover:ring-1 hover:ring-white/[0.08]"
+                  className="aspect-video rounded-xl overflow-hidden relative group cursor-pointer bg-card transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-white/5 hover:ring-1 hover:ring-white/[0.08]"
                   onClick={() => onSelectProject(project.id)}
                 >
                   {/* Cover */}
@@ -137,7 +137,7 @@ const ProjectPicker: React.FC<Props> = ({
                     <img src={project.coverUrl} className="w-full h-full object-cover" alt={project.name} />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-[#1a1a2e] to-[#12121e] flex items-center justify-center">
-                      <Film className="w-8 h-8 text-gray-400/50" />
+                      <Film className="w-8 h-8 text-muted-foreground/50" />
                     </div>
                   )}
 
@@ -157,13 +157,13 @@ const ProjectPicker: React.FC<Props> = ({
                         }}
                         onBlur={() => handleRenameSubmit(project.id)}
                         onClick={(e) => e.stopPropagation()}
-                        className="h-6 text-xs bg-black/60 border-white/10 text-white px-1.5"
+                        className="h-6 text-xs bg-black/60 border-border text-white px-1.5"
                         autoFocus
                       />
                     ) : (
                       <>
                         <p className="text-xs sm:text-sm font-semibold text-white truncate">{project.name}</p>
-                        <p className="text-[10px] text-gray-400 mt-0.5">{formatDate(project.updatedAt)}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{formatDate(project.updatedAt)}</p>
                       </>
                     )}
                   </div>
@@ -176,10 +176,10 @@ const ProjectPicker: React.FC<Props> = ({
                           onClick={(e) => e.stopPropagation()}
                           className="p-1 rounded-md bg-black/50 hover:bg-black/70 transition-colors"
                         >
-                          <MoreVertical className="w-3.5 h-3.5 text-gray-300" />
+                          <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
                         </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-[#1a1a2e] border-white/[0.06] text-gray-200 min-w-[120px]">
+                      <DropdownMenuContent className="bg-card border-white/[0.06] text-gray-200 min-w-[120px]">
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation();
@@ -219,12 +219,12 @@ const ProjectPicker: React.FC<Props> = ({
           <AlertDialogContent className="bg-[#12121e] border-white/[0.06] text-gray-200">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-gray-100">Excluir {deleteTarget?.name}?</AlertDialogTitle>
-              <AlertDialogDescription className="text-gray-400">
+              <AlertDialogDescription className="text-muted-foreground">
                 Esta ação não pode ser desfeita.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel className="bg-white/[0.04] border-white/[0.06] text-gray-300 hover:bg-white/[0.08]">
+              <AlertDialogCancel className="bg-white/[0.04] border-white/[0.06] text-muted-foreground hover:bg-white/[0.08]">
                 Cancelar
               </AlertDialogCancel>
               <AlertDialogAction

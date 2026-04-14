@@ -62,7 +62,7 @@ const ArtesEventosDashboard = () => {
                       </h2>
                       {isActive && <Sparkles className="h-5 w-5 text-yellow-300 animate-pulse" />}
                     </div>
-                    <p className={`${isActive ? "text-white/80" : "text-muted-foreground"}`}>
+                    <p className={`${isActive ? "text-foreground" : "text-muted-foreground"}`}>
                       {isActive ? (
                         <>
                           <span className="font-semibold">ATIVA!</span> Todos os visitantes veem {discountPercent}% OFF

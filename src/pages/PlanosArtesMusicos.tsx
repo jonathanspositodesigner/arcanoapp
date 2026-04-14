@@ -132,13 +132,13 @@ const PlanosArtesMusicos = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0f0f0f] via-[#1a1a2e] to-[#16213e]">
       <div className="container mx-auto px-4 py-6 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" onClick={goBack} className="text-gray-300 hover:text-gray-200 hover:bg-white/50/20">
+          <Button variant="ghost" onClick={goBack} className="text-muted-foreground hover:text-gray-200 hover:bg-accent0/20">
             <ArrowLeft className="w-4 h-4 mr-2" />{t('plansMusicos.back')}
           </Button>
           <img src={baaLogo} alt="BAA" className="h-8 hidden sm:block" />
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => navigate('/login-artes-musicos')} className="gap-2 border-white/10 text-gray-300 hover:bg-white/50/20 hover:text-gray-200">
+          <Button variant="outline" onClick={() => navigate('/login-artes-musicos')} className="gap-2 border-border text-muted-foreground hover:bg-accent0/20 hover:text-gray-200">
             <LogIn className="w-4 h-4" />
             <span className="hidden sm:inline">{t('plansMusicos.alreadySubscriber')}</span>
             <span className="sm:hidden">{t('plansMusicos.login')}</span>
@@ -150,9 +150,9 @@ const PlanosArtesMusicos = () => {
         <div className="text-center mb-10">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">{t('plansMusicos.title')}</h1>
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
-            <TabsList className="bg-white/50/10 border border-white/10">
-              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white px-6 text-gray-300">{t('plansMusicos.monthly')}</TabsTrigger>
-              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white px-6 text-gray-300 relative">
+            <TabsList className="bg-accent0/10 border border-border">
+              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white px-6 text-muted-foreground">{t('plansMusicos.monthly')}</TabsTrigger>
+              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white px-6 text-muted-foreground relative">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] text-green-400 font-medium whitespace-nowrap">{t('plansMusicos.discount')}</span>
                 {t('plansMusicos.annual')}
               </TabsTrigger>
@@ -166,7 +166,7 @@ const PlanosArtesMusicos = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-0 max-w-5xl mx-auto">
           {currentPlans.map((plan, index) => (
-            <Card key={plan.name} className={`relative bg-[#1a1a2e] border-white/10/20 p-6 flex flex-col rounded-xl lg:rounded-none ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${plan.popular ? "border-2 border-white/10" : ""}`}>
+            <Card key={plan.name} className={`relative bg-card border-border/20 p-6 flex flex-col rounded-xl lg:rounded-none ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${plan.popular ? "border-2 border-border" : ""}`}>
               {(plan.promo || plan.popular) && (
                 <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap ${plan.promo ? "bg-orange-500 text-white" : "bg-emerald-500 text-white"}`}>
                   {plan.promo ? t('plansMusicos.badges.promo') : t('plansMusicos.badges.popular')}
@@ -176,13 +176,13 @@ const PlanosArtesMusicos = () => {
                 <h2 className="text-xl font-bold text-white">{plan.name}</h2>
               </div>
               <div className="text-center mb-6 min-h-[80px]">
-                {plan.originalPrice && <p className="text-gray-300/60 line-through text-sm">R${plan.originalPrice}{t('plansMusicos.perMonth')}</p>}
+                {plan.originalPrice && <p className="text-muted-foreground/60 line-through text-sm">R${plan.originalPrice}{t('plansMusicos.perMonth')}</p>}
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-gray-300 text-lg">R$</span>
+                  <span className="text-muted-foreground text-lg">R$</span>
                   <span className="text-4xl font-bold text-white">{plan.price}</span>
-                  <span className="text-gray-300">{t('plansMusicos.perMonth')}</span>
+                  <span className="text-muted-foreground">{t('plansMusicos.perMonth')}</span>
                 </div>
-                {billingPeriod === "anual" && (plan as any).yearlyTotal && <p className="text-gray-400 text-sm mt-1">R${(plan as any).yearlyTotal}{t('plansMusicos.perYear')}</p>}
+                {billingPeriod === "anual" && (plan as any).yearlyTotal && <p className="text-muted-foreground text-sm mt-1">R${(plan as any).yearlyTotal}{t('plansMusicos.perYear')}</p>}
               </div>
               <Button onClick={() => {
                 if ((plan as any).paymentUrl === "#") { setShowComingSoonModal(true); } 
@@ -191,7 +191,7 @@ const PlanosArtesMusicos = () => {
                   const planName = encodeURIComponent(`${plan.name} ${billingPeriod === 'anual' ? 'Anual' : 'Mensal'}`);
                   navigate(`/aguardando-pagamento-musicos?checkout=${checkoutUrl}&plan=${planName}`);
                 }
-              }} className={`w-full mb-6 ${plan.popular ? "bg-slate-600 hover:bg-white/50 text-white" : "bg-white/50/20 hover:bg-white/50/30 text-gray-200"}`}>
+              }} className={`w-full mb-6 ${plan.popular ? "bg-slate-600 hover:bg-accent0 text-white" : "bg-accent0/20 hover:bg-accent0/30 text-gray-200"}`}>
                 {(plan as any).hasTrial ? t('plansMusicos.freeTrial') : t('plansMusicos.subscribe')}
               </Button>
               <ul className="space-y-3 flex-1">
@@ -199,7 +199,7 @@ const PlanosArtesMusicos = () => {
                   const isLedFeature = feature.text.includes("LED");
                   return (
                     <li key={fIndex} className="flex items-start gap-2 text-sm">
-                      {feature.included ? <Check className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" /> : <X className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />}
+                      {feature.included ? <Check className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" /> : <X className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />}
                       <span className={`${feature.included ? "text-gray-200" : "text-orange-500"} ${(feature as any).bold ? "font-bold" : ""}`}>{feature.text}</span>
                       {isLedFeature && !feature.included && <Badge className="ml-1 bg-amber-600 text-white text-[10px] px-1.5 py-0 h-4 border-0">{t('plansMusicos.badges.proPlusBadge')}</Badge>}
                       {isLedFeature && feature.included && <Monitor className="w-3 h-3 text-amber-400 shrink-0 ml-1" />}
@@ -208,10 +208,10 @@ const PlanosArtesMusicos = () => {
                 })}
               </ul>
               {plan.name === t('plansMusicos.plans.unlimited') && (
-                <div className="mt-6 pt-4 border-t border-white/10/20">
-                  <p className="text-xs text-gray-300/60 mb-2 uppercase tracking-wide">{t('plansMusicos.features.extraBenefits')}</p>
+                <div className="mt-6 pt-4 border-t border-border/20">
+                  <p className="text-xs text-muted-foreground/60 mb-2 uppercase tracking-wide">{t('plansMusicos.features.extraBenefits')}</p>
                   <div className="flex items-center gap-2 text-sm">
-                    <Sparkles className="w-4 h-4 text-gray-400" />
+                    <Sparkles className="w-4 h-4 text-muted-foreground" />
                     <span className="text-gray-200">{t('plansMusicos.features.allUnlocked')}</span>
                   </div>
                 </div>
@@ -230,22 +230,22 @@ const PlanosArtesMusicos = () => {
                 {t('plansMusicos.ledCallout.title')}
                 <Badge className="bg-amber-600 text-white text-[10px] px-1.5 py-0.5 border-0">{t('plansMusicos.badges.exclusivePro')}</Badge>
               </h3>
-              <p className="text-gray-400 text-sm mt-1">{t('plansMusicos.ledCallout.description')}</p>
+              <p className="text-muted-foreground text-sm mt-1">{t('plansMusicos.ledCallout.description')}</p>
             </div>
           </div>
         </div>
       </div>
 
       <Dialog open={showComingSoonModal} onOpenChange={setShowComingSoonModal}>
-        <DialogContent className="sm:max-w-md bg-[#1a1a2e] border-white/10">
+        <DialogContent className="sm:max-w-md bg-card border-border">
           <DialogHeader className="text-center">
-            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-white/50/20 flex items-center justify-center">
-              <Clock className="w-8 h-8 text-gray-400" />
+            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-accent0/20 flex items-center justify-center">
+              <Clock className="w-8 h-8 text-muted-foreground" />
             </div>
             <DialogTitle className="text-2xl font-bold text-center text-white">{t('plansMusicos.comingSoon.title')}</DialogTitle>
-            <DialogDescription className="text-center text-gray-400">{t('plansMusicos.comingSoon.description')}</DialogDescription>
+            <DialogDescription className="text-center text-muted-foreground">{t('plansMusicos.comingSoon.description')}</DialogDescription>
           </DialogHeader>
-          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-slate-600 hover:bg-white/50 text-white">{t('plansMusicos.comingSoon.understood')}</Button>
+          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-slate-600 hover:bg-accent0 text-white">{t('plansMusicos.comingSoon.understood')}</Button>
         </DialogContent>
       </Dialog>
     </div>

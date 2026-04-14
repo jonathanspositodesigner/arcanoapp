@@ -218,7 +218,7 @@ const BannerCarousel = () => {
                   {item.title}
                 </h3>
                 {(isVideoBanner(item) ? item.description : item.description) && (
-                  <p className="text-[10px] sm:text-sm lg:text-base text-white/80 mb-2 sm:mb-4 line-clamp-2 leading-snug">
+                  <p className="text-[10px] sm:text-sm lg:text-base text-foreground mb-2 sm:mb-4 line-clamp-2 leading-snug">
                     {isVideoBanner(item) ? item.description : item.description}
                   </p>
                 )}
@@ -233,7 +233,7 @@ const BannerCarousel = () => {
                   {isVideoBanner(item) && (
                     <button 
                       onClick={() => handleButtonClick(item.secondaryLink)}
-                      className="text-white/80 hover:text-white text-[10px] sm:text-sm underline underline-offset-2 transition-colors"
+                      className="text-foreground hover:text-white text-[10px] sm:text-sm underline underline-offset-2 transition-colors"
                     >
                       {item.secondaryText}
                     </button>
@@ -277,7 +277,7 @@ const BannerCarousel = () => {
               className={`h-1.5 sm:h-2 rounded-full transition-all ${
                 index === currentIndex 
                   ? 'w-3 sm:w-6 bg-white' 
-                  : 'w-1.5 sm:w-2 bg-white/50 hover:bg-white/70'
+                  : 'w-1.5 sm:w-2 bg-accent0 hover:bg-white/70'
               }`}
             />
           ))}

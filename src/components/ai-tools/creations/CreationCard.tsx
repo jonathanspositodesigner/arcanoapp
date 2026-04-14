@@ -111,11 +111,11 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
   };
 
   return (
-    <Card className="overflow-hidden bg-white/5 border-white/10 hover:border-slate-500/50 transition-all group">
+    <Card className="overflow-hidden bg-accent border-border hover:border-slate-500/50 transition-all group">
       {/* Media Preview */}
-      <div className="relative aspect-square bg-white/5 flex items-center justify-center overflow-hidden">
+      <div className="relative aspect-square bg-accent flex items-center justify-center overflow-hidden">
         {imageError ? (
-          <div className="flex flex-col items-center gap-2 text-gray-500 p-4">
+          <div className="flex flex-col items-center gap-2 text-muted-foreground p-4">
             <AlertCircle className="w-8 h-8" />
             <span className="text-xs text-center">Mídia indisponível ou expirada</span>
           </div>
@@ -175,7 +175,7 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
               size="sm"
               onClick={handleDownload}
               disabled={isDownloading || imageError}
-              className="h-7 text-xs bg-white/50/10 border-white/10 text-gray-300 hover:bg-white/50/20"
+              className="h-7 text-xs bg-accent0/10 border-border text-muted-foreground hover:bg-accent0/20"
             >
               <Download className="w-3 h-3 mr-1" />
               {isDownloading ? '...' : 'Baixar'}
@@ -184,7 +184,7 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
         </div>
         
         {/* Tool name & date */}
-        <div className="text-[11px] text-gray-400 truncate">
+        <div className="text-[11px] text-muted-foreground truncate">
           {creation.tool_name} • {formatDate(creation.created_at)}
         </div>
       </div>

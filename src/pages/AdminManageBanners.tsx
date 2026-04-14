@@ -470,7 +470,7 @@ const AdminManageBanners = () => {
                       {formData.title || "Título do Banner"}
                     </h3>
                     {formData.description && (
-                      <p className="text-[10px] text-white/80 mb-1 line-clamp-1">
+                      <p className="text-[10px] text-foreground mb-1 line-clamp-1">
                         {formData.description}
                       </p>
                     )}
@@ -501,7 +501,7 @@ const AdminManageBanners = () => {
                         {formData.title || "Título do Banner"}
                       </h3>
                       {formData.description && (
-                        <p className="text-[10px] text-white/80 mb-1 line-clamp-1">
+                        <p className="text-[10px] text-foreground mb-1 line-clamp-1">
                           {formData.description}
                         </p>
                       )}

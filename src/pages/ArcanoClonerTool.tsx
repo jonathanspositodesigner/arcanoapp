@@ -829,13 +829,13 @@ const ArcanoClonerTool: React.FC = () => {
           
           {/* Left Side - Controls Panel */}
           <div className={`lg:col-span-2 ${isMobile ? 'overflow-visible' : 'min-h-0 overflow-hidden'}`}>
-            <div className={`bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-5 ${isMobile ? '' : 'overflow-y-auto h-full max-h-full'}`}
+            <div className={`bg-card border border-border rounded-2xl p-5 flex flex-col gap-5 ${isMobile ? '' : 'overflow-y-auto h-full max-h-full'}`}
               style={!isMobile ? { scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' } : undefined}
             >
               {/* Title */}
               <div>
                 <h1 className="text-xl font-bold text-white">Arcano Cloner</h1>
-                <p className="text-xs text-gray-400 mt-1">Transforme sua foto usando qualquer imagem como referência. A IA clona o estilo, pose e cenário na sua pessoa.</p>
+                <p className="text-xs text-muted-foreground mt-1">Transforme sua foto usando qualquer imagem como referência. A IA clona o estilo, pose e cenário na sua pessoa.</p>
               </div>
 
               {/* Inputs: always visible on both mobile and desktop */}
@@ -925,7 +925,7 @@ const ArcanoClonerTool: React.FC = () => {
                       {status === 'waiting' && (
                         <Button
                           variant="outline"
-                          className="w-full py-3 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                          className="w-full py-3 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl"
                           onClick={handleCancelQueue}
                         >
                           <XCircle className="w-4 h-4 mr-2" />
@@ -993,7 +993,7 @@ const ArcanoClonerTool: React.FC = () => {
                           </Button>
                           <Button
                             variant="outline"
-                            className="w-full py-3 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                            className="w-full py-3 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl"
                             onClick={handleNewImage}
                           >
                             <RotateCcw className="w-4 h-4 mr-2" />
@@ -1011,7 +1011,7 @@ const ArcanoClonerTool: React.FC = () => {
                           </div>
                           <Button
                             variant="outline"
-                            className="w-full mt-2 py-2 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg"
+                            className="w-full mt-2 py-2 text-xs border-border text-muted-foreground hover:bg-accent rounded-lg"
                             onClick={handleReset}
                           >
                             <RotateCcw className="w-3.5 h-3.5 mr-1" />
@@ -1039,7 +1039,7 @@ const ArcanoClonerTool: React.FC = () => {
 
           {/* Right Side - Result Viewer */}
           <div className="lg:col-span-5 min-h-0 overflow-hidden">
-            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-[400px] h-full">
+            <div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col min-h-[400px] h-full">
               {/* Warning Banner */}
               {isProcessing && (
                 <div className="bg-amber-500/20 border-b border-amber-500/50 px-3 py-2 flex items-center gap-2">
@@ -1091,26 +1091,26 @@ const ArcanoClonerTool: React.FC = () => {
                 ) : isRefining ? (
                   <div className="flex flex-col items-center justify-center gap-3">
                     <div className="relative">
-                      <div className="w-14 h-14 rounded-full border-4 border-white/10 border-t-slate-400 animate-spin" />
-                      <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-gray-400" />
+                      <div className="w-14 h-14 rounded-full border-4 border-border border-t-slate-400 animate-spin" />
+                      <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-muted-foreground" />
                     </div>
                     <p className="text-sm text-white font-medium">Refinando imagem...</p>
                   </div>
                 ) : isProcessing ? (
                   <div className="flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-gray-400 animate-spin" />
+                    <Loader2 className="w-12 h-12 text-muted-foreground animate-spin" />
                     <div className="text-center">
                       <p className="text-lg font-medium text-white">
                         {currentQueueMessage.emoji} {currentQueueMessage.text}
                       </p>
                       {status === 'waiting' && queuePosition > 0 && (
-                        <p className="text-sm text-gray-400 mt-1">Posição na fila: #{queuePosition}</p>
+                        <p className="text-sm text-muted-foreground mt-1">Posição na fila: #{queuePosition}</p>
                       )}
                       {status === 'processing' && (
-                        <p className="text-sm text-gray-400 mt-1">{Math.round(progress)}% concluído</p>
+                        <p className="text-sm text-muted-foreground mt-1">{Math.round(progress)}% concluído</p>
                       )}
                     </div>
-                    <div className="w-48 h-2 bg-white/5 rounded-full overflow-hidden">
+                    <div className="w-48 h-2 bg-accent rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-slate-500 to-pink-500 transition-all duration-500"
                         style={{ width: `${progress}%` }}
@@ -1126,12 +1126,12 @@ const ArcanoClonerTool: React.FC = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-white/15/20 flex items-center justify-center">
-                      <ImageIcon className="w-10 h-10 text-gray-400" />
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border/20 flex items-center justify-center">
+                      <ImageIcon className="w-10 h-10 text-muted-foreground" />
                     </div>
                     <div>
                       <h2 className="text-lg font-bold text-white">Arcano Cloner</h2>
-                      <p className="text-sm text-gray-400 mt-1 max-w-sm">
+                      <p className="text-sm text-muted-foreground mt-1 max-w-sm">
                         Envie as imagens e clique em "Gerar Imagem"
                       </p>
                     </div>
@@ -1152,11 +1152,11 @@ const ArcanoClonerTool: React.FC = () => {
 
       {/* MOBILE FIXED BOTTOM BAR */}
       {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#1a1a2e]/95 backdrop-blur-md border-t border-white/10 safe-area-pb">
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t border-border safe-area-pb">
           
           {/* Expandable Configurações panel */}
           {showMobileConfig && !isProcessing && status !== 'completed' && status !== 'error' && !refineMode && (
-            <div className="px-4 pt-3 pb-2 space-y-3 border-b border-white/10 max-h-[50vh] overflow-y-auto">
+            <div className="px-4 pt-3 pb-2 space-y-3 border-b border-border max-h-[50vh] overflow-y-auto">
               <AspectRatioSelector
                 value={aspectRatio}
                 onChange={setAspectRatio}
@@ -1205,7 +1205,7 @@ const ArcanoClonerTool: React.FC = () => {
                 </Button>
                 <button
                   onClick={() => setShowMobileConfig(!showMobileConfig)}
-                  className="w-full flex items-center justify-center gap-2 py-2 text-xs text-gray-400 hover:text-white transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-white transition-colors"
                 >
                   <Settings className="w-3.5 h-3.5" />
                   Configurações
@@ -1218,7 +1218,7 @@ const ArcanoClonerTool: React.FC = () => {
             {isProcessing && (
               <div className="flex gap-2">
                 <div className="flex-1 flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 text-gray-400 animate-spin flex-shrink-0" />
+                  <Loader2 className="w-4 h-4 text-muted-foreground animate-spin flex-shrink-0" />
                   <p className="text-xs text-white truncate">
                     {status === 'waiting' ? `Fila #${queuePosition}` : `${Math.round(progress)}%`}
                   </p>
@@ -1226,7 +1226,7 @@ const ArcanoClonerTool: React.FC = () => {
                 {status === 'waiting' && (
                   <Button
                     variant="outline"
-                    className="py-3 px-4 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg flex-shrink-0"
+                    className="py-3 px-4 text-xs border-border text-muted-foreground hover:bg-accent rounded-lg flex-shrink-0"
                     onClick={handleCancelQueue}
                   >
                     Sair
@@ -1247,7 +1247,7 @@ const ArcanoClonerTool: React.FC = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="py-4 px-4 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                  className="py-4 px-4 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl"
                   onClick={() => setRefineMode(true)}
                   disabled={isRefining}
                 >
@@ -1255,7 +1255,7 @@ const ArcanoClonerTool: React.FC = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="py-4 px-4 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                  className="py-4 px-4 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl"
                   onClick={handleNewImage}
                 >
                   <RotateCcw className="w-4 h-4" />
@@ -1271,7 +1271,7 @@ const ArcanoClonerTool: React.FC = () => {
                 </div>
                 <Button
                   variant="outline"
-                  className="py-3 px-4 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg flex-shrink-0"
+                  className="py-3 px-4 text-xs border-border text-muted-foreground hover:bg-accent rounded-lg flex-shrink-0"
                   onClick={handleReset}
                 >
                   <RotateCcw className="w-3.5 h-3.5 mr-1" />

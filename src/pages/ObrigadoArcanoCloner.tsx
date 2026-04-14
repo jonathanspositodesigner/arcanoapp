@@ -7,22 +7,22 @@ const ObrigadoArcanoCloner = () => {
 
   const benefits = [
     {
-      icon: <Camera className="w-6 h-6 text-gray-400" />,
+      icon: <Camera className="w-6 h-6 text-muted-foreground" />,
       title: "~70 Fotos Geradas",
       description: "Ensaios fotográficos profissionais criados com IA em minutos",
     },
     {
-      icon: <BookImage className="w-6 h-6 text-gray-400" />,
+      icon: <BookImage className="w-6 h-6 text-muted-foreground" />,
       title: "Biblioteca +300 Referências",
       description: "Acesso à biblioteca completa de estilos e referências fotográficas",
     },
     {
-      icon: <Sparkles className="w-6 h-6 text-gray-400" />,
+      icon: <Sparkles className="w-6 h-6 text-muted-foreground" />,
       title: "Upscaler Arcano (Bônus)",
       description: "Ferramenta para aumentar a resolução das suas fotos com IA",
     },
     {
-      icon: <MessageCircle className="w-6 h-6 text-gray-400" />,
+      icon: <MessageCircle className="w-6 h-6 text-muted-foreground" />,
       title: "Suporte via WhatsApp",
       description: "Equipe dedicada para te ajudar a extrair o máximo da ferramenta",
     },
@@ -47,7 +47,7 @@ const ObrigadoArcanoCloner = () => {
         </div>
 
         {/* Main card */}
-        <div className="w-full bg-white/5 border border-white/10 rounded-3xl p-8 md:p-12 flex flex-col items-center text-center mb-8">
+        <div className="w-full bg-accent border border-border rounded-3xl p-8 md:p-12 flex flex-col items-center text-center mb-8">
           {/* Animated check icon */}
           <div className="mb-6 relative">
             <div className="absolute inset-0 bg-green-500/20 rounded-full blur-xl animate-pulse" />
@@ -65,8 +65,8 @@ const ObrigadoArcanoCloner = () => {
           </p>
 
           {/* Description */}
-          <p className="text-white/70 text-base md:text-lg leading-relaxed max-w-xl mb-8">
-            <span className="font-bold text-gray-400">Se o pagamento já foi processado,</span> clique no botão abaixo para acessar sua compra e começar a criar ensaios fotográficos profissionais agora mesmo.
+          <p className="text-muted-foreground text-base md:text-lg leading-relaxed max-w-xl mb-8">
+            <span className="font-bold text-muted-foreground">Se o pagamento já foi processado,</span> clique no botão abaixo para acessar sua compra e começar a criar ensaios fotográficos profissionais agora mesmo.
           </p>
 
           {/* CTA Button */}
@@ -86,21 +86,21 @@ const ObrigadoArcanoCloner = () => {
 
         {/* Benefits section */}
         <div className="w-full">
-          <p className="text-white/50 text-sm text-center uppercase tracking-widest mb-5 font-medium">
+          <p className="text-muted-foreground text-sm text-center uppercase tracking-widest mb-5 font-medium">
             O que você recebeu
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {benefits.map((benefit, index) => (
               <div
                 key={index}
-                className="bg-white/5 border border-white/10 rounded-2xl p-5 flex items-start gap-4 hover:bg-white/8 transition-colors"
+                className="bg-accent border border-border rounded-2xl p-5 flex items-start gap-4 hover:bg-white/8 transition-colors"
               >
-                <div className="flex-shrink-0 w-10 h-10 bg-white/50/15 rounded-xl flex items-center justify-center">
+                <div className="flex-shrink-0 w-10 h-10 bg-accent0/15 rounded-xl flex items-center justify-center">
                   {benefit.icon}
                 </div>
                 <div>
                   <p className="text-white font-semibold text-sm mb-1">{benefit.title}</p>
-                  <p className="text-white/50 text-xs leading-relaxed">{benefit.description}</p>
+                  <p className="text-muted-foreground text-xs leading-relaxed">{benefit.description}</p>
                 </div>
               </div>
             ))}

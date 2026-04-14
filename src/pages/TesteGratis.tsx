@@ -196,14 +196,14 @@ const TesteGratis = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center p-4">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/50/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/50/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent0/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent0/10 rounded-full blur-3xl" />
       </div>
 
       {/* Logo */}
       <div className="relative z-10 mb-8">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-gray-400" />
+          <Sparkles className="w-6 h-6 text-muted-foreground" />
           ArcanoApp
         </h1>
       </div>
@@ -219,19 +219,19 @@ const TesteGratis = () => {
                 <Gift className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Teste Grátis</h2>
-              <p className="text-gray-300 text-sm">Ganhe 180 créditos para usar nas Ferramentas de IA</p>
-              <p className="text-gray-400/80 text-xs mt-1">⏳ Créditos válidos por 24 horas</p>
+              <p className="text-muted-foreground text-sm">Ganhe 180 créditos para usar nas Ferramentas de IA</p>
+              <p className="text-muted-foreground/80 text-xs mt-1">⏳ Créditos válidos por 24 horas</p>
             </div>
             <form onSubmit={checkEligibility} className="space-y-4">
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   type="email"
                   placeholder="Digite seu email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
-                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-slate-500/20"
+                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                 />
               </div>
               <Button
@@ -257,34 +257,34 @@ const TesteGratis = () => {
                 <Lock className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Faça Login</h2>
-              <p className="text-gray-300 text-sm">Digite sua senha para resgatar seus 180 créditos</p>
+              <p className="text-muted-foreground text-sm">Digite sua senha para resgatar seus 180 créditos</p>
             </div>
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <Label className="text-gray-300 text-sm">Email</Label>
+                <Label className="text-muted-foreground text-sm">Email</Label>
                 <div className="relative mt-1">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     type="email"
                     value={email}
                     readOnly
-                    className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/30 text-gray-300 opacity-70"
+                    className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/30 text-muted-foreground opacity-70"
                   />
                 </div>
               </div>
               <div>
-                <Label className="text-gray-300 text-sm">Senha</Label>
+                <Label className="text-muted-foreground text-sm">Senha</Label>
                 <div className="relative mt-1">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Digite sua senha"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
-                    className="pl-10 pr-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-slate-500/20"
+                    className="pl-10 pr-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                   />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
@@ -300,7 +300,7 @@ const TesteGratis = () => {
                   <>Entrar e Resgatar<ArrowRight className="w-5 h-5 ml-2" /></>
                 )}
               </Button>
-              <button type="button" onClick={() => { setPageState('email'); setPassword(''); }} className="w-full text-sm text-gray-400 hover:text-gray-300 mt-2">
+              <button type="button" onClick={() => { setPageState('email'); setPassword(''); }} className="w-full text-sm text-muted-foreground hover:text-muted-foreground mt-2">
                 ← Voltar
               </button>
             </form>
@@ -315,49 +315,49 @@ const TesteGratis = () => {
                 <User className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Crie sua Conta</h2>
-              <p className="text-gray-300 text-sm">Cadastre-se para ganhar 180 créditos grátis</p>
-              <p className="text-gray-400/80 text-xs mt-1">⏳ Créditos válidos por 24 horas</p>
+              <p className="text-muted-foreground text-sm">Cadastre-se para ganhar 180 créditos grátis</p>
+              <p className="text-muted-foreground/80 text-xs mt-1">⏳ Créditos válidos por 24 horas</p>
             </div>
             <form onSubmit={handleSignup} className="space-y-4">
               <div>
-                <Label className="text-gray-300 text-sm">Nome</Label>
+                <Label className="text-muted-foreground text-sm">Nome</Label>
                 <div className="relative mt-1">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     type="text"
                     placeholder="Seu nome"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     disabled={loading}
-                    className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-slate-500/20"
+                    className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                   />
                 </div>
               </div>
               <div>
-                <Label className="text-gray-300 text-sm">Email</Label>
+                <Label className="text-muted-foreground text-sm">Email</Label>
                 <div className="relative mt-1">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     type="email"
                     value={email}
                     readOnly
-                    className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/30 text-gray-300 opacity-70"
+                    className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/30 text-muted-foreground opacity-70"
                   />
                 </div>
               </div>
               <div>
-                <Label className="text-gray-300 text-sm">Senha</Label>
+                <Label className="text-muted-foreground text-sm">Senha</Label>
                 <div className="relative mt-1">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Mínimo 6 caracteres"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
-                    className="pl-10 pr-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-slate-500/20"
+                    className="pl-10 pr-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                   />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
@@ -373,7 +373,7 @@ const TesteGratis = () => {
                   <>Criar Conta<ArrowRight className="w-5 h-5 ml-2" /></>
                 )}
               </Button>
-              <button type="button" onClick={() => { setPageState('email'); setPassword(''); setName(''); }} className="w-full text-sm text-gray-400 hover:text-gray-300 mt-2">
+              <button type="button" onClick={() => { setPageState('email'); setPassword(''); setName(''); }} className="w-full text-sm text-muted-foreground hover:text-muted-foreground mt-2">
                 ← Voltar
               </button>
             </form>
@@ -401,9 +401,9 @@ const TesteGratis = () => {
         {/* CLAIMING STATE */}
         {pageState === 'claiming' && (
           <div className="text-center py-8">
-            <Loader2 className="w-12 h-12 text-gray-400 animate-spin mx-auto mb-4" />
+            <Loader2 className="w-12 h-12 text-muted-foreground animate-spin mx-auto mb-4" />
             <h2 className="text-xl font-bold text-white mb-2">Resgatando créditos...</h2>
-            <p className="text-gray-300 text-sm">Aguarde um momento</p>
+            <p className="text-muted-foreground text-sm">Aguarde um momento</p>
           </div>
         )}
 
@@ -415,8 +415,8 @@ const TesteGratis = () => {
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Parabéns! 🎉</h2>
             <p className="text-green-400 text-lg font-semibold mb-2">180 créditos adicionados!</p>
-            <p className="text-gray-300 text-sm mb-6">Redirecionando para as Ferramentas de IA...</p>
-            <Loader2 className="w-6 h-6 text-gray-400 animate-spin mx-auto" />
+            <p className="text-muted-foreground text-sm mb-6">Redirecionando para as Ferramentas de IA...</p>
+            <Loader2 className="w-6 h-6 text-muted-foreground animate-spin mx-auto" />
           </div>
         )}
 
@@ -427,17 +427,17 @@ const TesteGratis = () => {
               <Mail className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Verifique seu Email</h2>
-            <p className="text-gray-300 text-sm mb-2">
+            <p className="text-muted-foreground text-sm mb-2">
               Enviamos um link de confirmação para:
             </p>
-            <p className="text-gray-400 font-semibold mb-4">{email}</p>
-            <p className="text-gray-400 text-xs mb-6">
+            <p className="text-muted-foreground font-semibold mb-4">{email}</p>
+            <p className="text-muted-foreground text-xs mb-6">
               Após confirmar seu email, faça login nesta página para resgatar seus 180 créditos.
             </p>
             <Button
               onClick={() => { setPageState('email'); setPassword(''); setName(''); }}
               variant="outline"
-              className="w-full h-10 border-slate-500/50 bg-white/5 text-white hover:bg-slate-800/70"
+              className="w-full h-10 border-slate-500/50 bg-accent text-white hover:bg-slate-800/70"
             >
               Voltar para o início
             </Button>
@@ -446,7 +446,7 @@ const TesteGratis = () => {
       </Card>
 
       {/* Footer */}
-      <p className="relative z-10 text-gray-500 text-xs mt-8">
+      <p className="relative z-10 text-muted-foreground text-xs mt-8">
         © {new Date().getFullYear()} ArcanoApp
       </p>
     </div>

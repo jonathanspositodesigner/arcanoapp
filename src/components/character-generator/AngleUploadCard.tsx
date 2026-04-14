@@ -147,7 +147,7 @@ const AngleUploadCard: React.FC<AngleUploadCardProps> = ({
 
   return (
     <Card
-      className={`relative overflow-hidden border-white/10 bg-white/5 cursor-pointer transition-all hover:border-white/15/50 ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
+      className={`relative overflow-hidden border-border bg-accent cursor-pointer transition-all hover:border-border/50 ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
       onClick={() => !disabled && inputRef.current?.click()}
     >
       <input
@@ -181,9 +181,9 @@ const AngleUploadCard: React.FC<AngleUploadCardProps> = ({
         </div>
       ) : (
         <div className="aspect-square flex flex-col items-center justify-center gap-1.5 p-2">
-          <IconComponent className="w-12 h-12 text-gray-400/70" />
-          <p className="text-[10px] font-bold text-gray-300 uppercase tracking-wider text-center">{label}</p>
-          <div className="flex items-center gap-1 text-gray-400">
+          <IconComponent className="w-12 h-12 text-muted-foreground/70" />
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider text-center">{label}</p>
+          <div className="flex items-center gap-1 text-muted-foreground">
             <Camera className="w-3 h-3" />
             <span className="text-[9px]">Toque para enviar</span>
           </div>

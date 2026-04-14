@@ -625,13 +625,13 @@ const FlyerMakerTool: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-5 flex-1 lg:min-h-0">
             {/* INPUTS */}
             <div className="lg:col-span-2 min-h-0 overflow-hidden">
-              <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-4 overflow-y-auto h-full max-h-full"
+              <div className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-4 overflow-y-auto h-full max-h-full"
                 style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}
               >
                 {/* Title */}
                 <div>
                   <h1 className="text-xl font-bold text-white">Flyer Maker</h1>
-                  <p className="text-xs text-gray-400 mt-1">Crie flyers profissionais a partir de uma referência e seus dados.</p>
+                  <p className="text-xs text-muted-foreground mt-1">Crie flyers profissionais a partir de uma referência e seus dados.</p>
                 </div>
 
                 {!refineMode ? (
@@ -647,7 +647,7 @@ const FlyerMakerTool: React.FC = () => {
                     />
 
                     {/* Artist Photos */}
-                    <div className="border border-white/10 rounded-xl p-4 bg-black/30">
+                    <div className="border border-border rounded-xl p-4 bg-black/30">
                       <span className="text-sm font-medium text-white mb-2 block">Fotos dos Artistas (Max 5)</span>
                       <div className="grid grid-cols-3 gap-2">
                         {[0, 1, 2, 3, 4].map((idx) => {
@@ -664,9 +664,9 @@ const FlyerMakerTool: React.FC = () => {
                           }
                           if (idx === artistPhotos.length) {
                             return (
-                              <label key={idx} className={`aspect-[3/4] rounded-lg border-2 border-dashed border-white/15 flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
+                              <label key={idx} className={`aspect-[3/4] rounded-lg border-2 border-dashed border-border flex items-center justify-center cursor-pointer hover:bg-accent transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
                                 <input type="file" accept="image/*" className="hidden" onChange={handleArtistPhotoUpload} disabled={isProcessing} />
-                                <Plus className="w-5 h-5 text-gray-400" />
+                                <Plus className="w-5 h-5 text-muted-foreground" />
                               </label>
                             );
                           }
@@ -676,7 +676,7 @@ const FlyerMakerTool: React.FC = () => {
                     </div>
 
                     {/* Logo */}
-                    <div className="border border-white/10 rounded-xl p-4 bg-black/30">
+                    <div className="border border-border rounded-xl p-4 bg-black/30">
                       <span className="text-sm font-medium text-white mb-2 block">Logo do Local</span>
                       {logoImage ? (
                         <div className="relative h-20 rounded-lg overflow-hidden group">
@@ -686,10 +686,10 @@ const FlyerMakerTool: React.FC = () => {
                           </button>
                         </div>
                       ) : (
-                        <label className={`h-20 rounded-lg border-2 border-dashed border-white/15 flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
+                        <label className={`h-20 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
                           <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={isProcessing} />
-                          <Upload className="w-5 h-5 text-gray-400 mb-1" />
-                          <span className="text-[10px] text-gray-500">Upload Logo</span>
+                          <Upload className="w-5 h-5 text-muted-foreground mb-1" />
+                          <span className="text-[10px] text-muted-foreground">Upload Logo</span>
                         </label>
                       )}
                     </div>
@@ -697,37 +697,37 @@ const FlyerMakerTool: React.FC = () => {
                     {/* Text inputs */}
                     <div className="space-y-2.5">
                       <div>
-                        <span className="text-xs text-gray-400 mb-1 block">Data e Horário:</span>
-                        <Input placeholder="SEG.18.ABR - 18H" value={dateTimeLocation} onChange={e => setDateTimeLocation(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-white/10 text-white text-sm h-10 uppercase placeholder:text-gray-500" />
+                        <span className="text-xs text-muted-foreground mb-1 block">Data e Horário:</span>
+                        <Input placeholder="SEG.18.ABR - 18H" value={dateTimeLocation} onChange={e => setDateTimeLocation(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-white text-sm h-10 uppercase placeholder:text-muted-foreground" />
                       </div>
                       <div>
-                        <span className="text-xs text-gray-400 mb-1 block">Título do Evento:</span>
-                        <Input placeholder="DEU FERIAS" value={title} onChange={e => setTitle(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-white/10 text-white text-sm h-10 uppercase placeholder:text-gray-500" />
+                        <span className="text-xs text-muted-foreground mb-1 block">Título do Evento:</span>
+                        <Input placeholder="DEU FERIAS" value={title} onChange={e => setTitle(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-white text-sm h-10 uppercase placeholder:text-muted-foreground" />
                       </div>
                       <div>
-                        <span className="text-xs text-gray-400 mb-1 block">Endereço:</span>
-                        <Input placeholder="ENDEREÇO DO LOCAL..." value={address} onChange={e => setAddress(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-white/10 text-white text-sm h-10 uppercase placeholder:text-gray-500" />
+                        <span className="text-xs text-muted-foreground mb-1 block">Endereço:</span>
+                        <Input placeholder="ENDEREÇO DO LOCAL..." value={address} onChange={e => setAddress(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-white text-sm h-10 uppercase placeholder:text-muted-foreground" />
                       </div>
                       <div>
-                        <span className="text-xs text-gray-400 mb-1 block">Nomes dos Artistas:</span>
-                        <Input placeholder="DJ ALOK - RASTA CHINELA..." value={artistNames} onChange={e => setArtistNames(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-white/10 text-white text-sm h-10 uppercase placeholder:text-gray-500" />
+                        <span className="text-xs text-muted-foreground mb-1 block">Nomes dos Artistas:</span>
+                        <Input placeholder="DJ ALOK - RASTA CHINELA..." value={artistNames} onChange={e => setArtistNames(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-white text-sm h-10 uppercase placeholder:text-muted-foreground" />
                       </div>
                       <div>
-                        <span className="text-xs text-gray-400 mb-1 block">Rodapé / Promoção:</span>
-                        <Input placeholder="ENTRADA OFF PARA ELAS..." value={footerPromo} onChange={e => setFooterPromo(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-white/10 text-white text-sm h-10 uppercase placeholder:text-gray-500" />
+                        <span className="text-xs text-muted-foreground mb-1 block">Rodapé / Promoção:</span>
+                        <Input placeholder="ENTRADA OFF PARA ELAS..." value={footerPromo} onChange={e => setFooterPromo(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-white text-sm h-10 uppercase placeholder:text-muted-foreground" />
                       </div>
                     </div>
 
                     {/* Size Toggle */}
                     <div>
                       <span className="text-sm font-medium text-white mb-2 block">Tamanho</span>
-                      <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1">
+                      <div className="grid grid-cols-2 gap-0 bg-black/40 border border-border rounded-lg p-1">
                         <button
                           onClick={() => setImageSize('3:4')}
                           className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                             imageSize === '3:4'
-                              ? 'bg-white/10 text-white'
-                              : 'text-gray-400 hover:text-white'
+                              ? 'bg-accent text-white'
+                              : 'text-muted-foreground hover:text-white'
                           }`}
                           disabled={isProcessing}
                         >
@@ -737,8 +737,8 @@ const FlyerMakerTool: React.FC = () => {
                           onClick={() => setImageSize('9:16')}
                           className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                             imageSize === '9:16'
-                              ? 'bg-white/10 text-white'
-                              : 'text-gray-400 hover:text-white'
+                              ? 'bg-accent text-white'
+                              : 'text-muted-foreground hover:text-white'
                           }`}
                           disabled={isProcessing}
                         >
@@ -780,14 +780,14 @@ const FlyerMakerTool: React.FC = () => {
                         <div className="grid grid-cols-2 gap-2">
                           <Button
                             variant="outline"
-                            className="w-full py-3 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                            className="w-full py-3 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl"
                             onClick={handleNew}
                           >
                             <RefreshCw className="w-4 h-4 mr-2" /> Nova
                           </Button>
                           <Button
                             variant="outline"
-                            className="w-full py-3 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                            className="w-full py-3 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl"
                             onClick={() => setRefineMode(true)}
                           >
                             <Wand2 className="w-4 h-4 mr-2" /> Alterar
@@ -833,13 +833,13 @@ const FlyerMakerTool: React.FC = () => {
 
             {/* OUTPUT */}
             <div className="lg:col-span-5 min-h-0 overflow-hidden">
-              <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-[400px] h-full">
-                <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between flex-shrink-0">
-                  <h3 className="text-sm font-semibold text-white flex items-center gap-1.5"><ImageIcon className="w-4 h-4 text-gray-400" /> Resultado</h3>
+              <div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col min-h-[400px] h-full">
+                <div className="px-4 py-3 border-b border-border flex items-center justify-between flex-shrink-0">
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-1.5"><ImageIcon className="w-4 h-4 text-muted-foreground" /> Resultado</h3>
                   {outputImage && (
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-4 h-4" /></Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white" onClick={() => transformRef.current?.zoomIn(0.5)}><ZoomIn className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-white" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-white" onClick={() => transformRef.current?.zoomIn(0.5)}><ZoomIn className="w-4 h-4" /></Button>
                     </div>
                   )}
                 </div>
@@ -857,27 +857,27 @@ const FlyerMakerTool: React.FC = () => {
                   ) : isRefining ? (
                     <div className="flex flex-col items-center p-8">
                       <div className="relative w-16 h-16 mb-4">
-                        <div className="absolute inset-0 rounded-full border-4 border-white/10"></div>
+                        <div className="absolute inset-0 rounded-full border-4 border-border"></div>
                         <div className="absolute inset-0 rounded-full border-4 border-t-blue-400 animate-spin"></div>
                         <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-blue-400" />
                       </div>
                       <p className="text-white font-medium mb-1">Refinando imagem...</p>
-                      <p className="text-xs text-gray-400 animate-pulse">A IA está modificando sua imagem</p>
+                      <p className="text-xs text-muted-foreground animate-pulse">A IA está modificando sua imagem</p>
                     </div>
                   ) : (
                     <div className="text-center p-8">
                       {isProcessing ? (
                         <div className="flex flex-col items-center">
                           <div className="relative w-16 h-16 mb-4">
-                            <div className="absolute inset-0 rounded-full border-4 border-white/10"></div>
+                            <div className="absolute inset-0 rounded-full border-4 border-border"></div>
                             <div className="absolute inset-0 rounded-full border-4 border-t-blue-500 animate-spin"></div>
                           </div>
                           <p className="text-white font-medium mb-1">{status === 'uploading' ? 'Enviando imagens...' : status === 'waiting' ? `Na fila: Posição ${queuePosition}` : 'Processando IA...'}</p>
-                          <p className="text-xs text-gray-400 animate-pulse">{queueMessages[queueMessageIndex].text}</p>
-                          <div className="w-48 h-1 bg-white/10 rounded-full mt-4 overflow-hidden"><div className="h-full bg-gradient-to-r from-blue-500 to-slate-400 transition-all duration-300" style={{ width: `${progress}%` }}></div></div>
+                          <p className="text-xs text-muted-foreground animate-pulse">{queueMessages[queueMessageIndex].text}</p>
+                          <div className="w-48 h-1 bg-accent rounded-full mt-4 overflow-hidden"><div className="h-full bg-gradient-to-r from-blue-500 to-slate-400 transition-all duration-300" style={{ width: `${progress}%` }}></div></div>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center text-gray-500">
+                        <div className="flex flex-col items-center text-muted-foreground">
                           <ImageIcon className="w-16 h-16 mb-2" />
                           <p className="text-sm">O resultado aparecerá aqui</p>
                         </div>

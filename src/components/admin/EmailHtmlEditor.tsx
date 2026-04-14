@@ -161,8 +161,8 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
       type="button"
       onClick={onClick}
       title={title}
-      className={`p-1.5 rounded hover:bg-white/10 transition-colors ${
-        active ? "bg-white/20 text-white" : "text-gray-400 hover:text-white"
+      className={`p-1.5 rounded hover:bg-accent transition-colors ${
+        active ? "bg-white/20 text-white" : "text-muted-foreground hover:text-white"
       }`}
     >
       {children}
@@ -223,7 +223,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
                   key={size}
                   type="button"
                   onClick={() => setFontSize(size)}
-                  className="block w-full text-left px-3 py-1 text-xs text-gray-300 hover:bg-white/10 hover:text-white"
+                  className="block w-full text-left px-3 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-white"
                 >
                   {size}
                 </button>
@@ -282,7 +282,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
                       editor.chain().focus().setColor(color).run();
                       setShowColorPicker(false);
                     }}
-                    className="w-6 h-6 rounded border border-white/20 hover:scale-110 transition-transform"
+                    className="w-6 h-6 rounded border border-border hover:scale-110 transition-transform"
                     style={{ backgroundColor: color }}
                     title={color}
                   />
@@ -298,7 +298,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
                   className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
                   title="Cor personalizada"
                 />
-                <span className="text-xs text-gray-400 self-center">Personalizada</span>
+                <span className="text-xs text-muted-foreground self-center">Personalizada</span>
               </div>
             </div>
           )}
@@ -400,7 +400,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
               Remover
             </Button>
           )}
-          <button type="button" onClick={() => setShowLinkInput(false)} className="text-gray-400 hover:text-white">
+          <button type="button" onClick={() => setShowLinkInput(false)} className="text-muted-foreground hover:text-white">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -419,7 +419,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
           <Button size="sm" className="h-7 text-xs" onClick={addImage}>
             Inserir
           </Button>
-          <button type="button" onClick={() => setShowImageInput(false)} className="text-gray-400 hover:text-white">
+          <button type="button" onClick={() => setShowImageInput(false)} className="text-muted-foreground hover:text-white">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -427,13 +427,13 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
 
       {/* Variables bar */}
       <div className="bg-[#150828]/50 border-b border-border px-2 py-1 flex gap-1 flex-wrap items-center">
-        <span className="text-xs text-gray-500 mr-1">Variáveis:</span>
+        <span className="text-xs text-muted-foreground mr-1">Variáveis:</span>
         {VARIABLE_BUTTONS.map((v) => (
           <button
             key={v.value}
             type="button"
             onClick={() => insertVariable(v.value)}
-            className="px-2 py-0.5 text-xs bg-white/5 text-gray-300 rounded hover:bg-slate-800/60 transition-colors border border-slate-700/30"
+            className="px-2 py-0.5 text-xs bg-accent text-muted-foreground rounded hover:bg-slate-800/60 transition-colors border border-slate-700/30"
           >
             {v.label}
           </button>
@@ -445,7 +445,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
         <textarea
           value={sourceCode}
           onChange={(e) => setSourceCode(e.target.value)}
-          className="w-full min-h-[300px] p-4 bg-[#1e0a3c] text-gray-300 font-mono text-xs resize-y focus:outline-none"
+          className="w-full min-h-[300px] p-4 bg-[#1e0a3c] text-muted-foreground font-mono text-xs resize-y focus:outline-none"
           spellCheck={false}
         />
       ) : (

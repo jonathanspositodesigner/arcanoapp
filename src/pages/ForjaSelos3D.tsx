@@ -63,7 +63,7 @@ const ForjaSelos3D = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-500"></div>
       </div>
     );
@@ -80,9 +80,9 @@ const ForjaSelos3D = () => {
         {/* Video Lessons */}
         <div className="space-y-8">
           {lessons.map((lesson, index) => (
-            <Card key={index} className="p-4 md:p-6 bg-[#111113]/50 border-white/10">
+            <Card key={index} className="p-4 md:p-6 bg-background/50 border-border">
               <h2 className="text-lg md:text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                <Play className="h-5 w-5 text-gray-400" />
+                <Play className="h-5 w-5 text-muted-foreground" />
                 {t(lesson.titleKey)}
               </h2>
               

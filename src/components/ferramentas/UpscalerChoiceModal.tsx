@@ -59,11 +59,11 @@ const UpscalerChoiceModal = ({
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle className="text-center text-2xl font-bold text-white flex items-center justify-center gap-2">
-            <Sparkles className="w-5 h-5 text-gray-400" />
+            <Sparkles className="w-5 h-5 text-muted-foreground" />
             Escolha sua versão
-            <Sparkles className="w-5 h-5 text-gray-400" />
+            <Sparkles className="w-5 h-5 text-muted-foreground" />
           </DialogTitle>
-          <p className="text-center text-gray-400 text-sm mt-1">
+          <p className="text-center text-muted-foreground text-sm mt-1">
             Selecione qual versão do Upscaler deseja utilizar
           </p>
         </DialogHeader>
@@ -75,7 +75,7 @@ const UpscalerChoiceModal = ({
               {/* Card Versão Ilimitada - Destaque Grande */}
               <div 
                 onClick={handleUnlimitedClick}
-                className="group relative bg-gradient-to-br from-[#1E1433] to-[#2A1B4D] rounded-xl border-2 border-white/15 transition-all duration-300 cursor-pointer overflow-hidden shadow-[0_0_30px_rgba(139,92,246,0.25)] hover:shadow-[0_0_40px_rgba(139,92,246,0.4)]"
+                className="group relative bg-gradient-to-br from-[#1E1433] to-[#2A1B4D] rounded-xl border-2 border-border transition-all duration-300 cursor-pointer overflow-hidden shadow-[0_0_30px_rgba(139,92,246,0.25)] hover:shadow-[0_0_40px_rgba(139,92,246,0.4)]"
               >
                 {/* Badge */}
                 <div className="absolute top-3 right-3 flex items-center gap-1 bg-yellow-500/20 px-3 py-1 rounded-full border border-yellow-400/30">
@@ -85,8 +85,8 @@ const UpscalerChoiceModal = ({
 
                 <div className="p-6">
                   {/* Icon */}
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-slate-500/30 to-slate-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 mx-auto border border-white/10">
-                    <Infinity className="w-8 h-8 text-gray-300" />
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-slate-500/30 to-slate-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 mx-auto border border-border">
+                    <Infinity className="w-8 h-8 text-muted-foreground" />
                   </div>
 
                   {/* Title */}
@@ -95,8 +95,8 @@ const UpscalerChoiceModal = ({
                   </h3>
 
                   {/* Description */}
-                  <p className="text-gray-300/70 text-sm text-center leading-relaxed mb-6">
-                    Esta é a versão que você adquiriu. <span className="text-gray-300 font-medium">Sem limite de uso</span> e sem consumo de créditos.
+                  <p className="text-muted-foreground/70 text-sm text-center leading-relaxed mb-6">
+                    Esta é a versão que você adquiriu. <span className="text-muted-foreground font-medium">Sem limite de uso</span> e sem consumo de créditos.
                   </p>
 
                   {/* Button */}
@@ -105,7 +105,7 @@ const UpscalerChoiceModal = ({
                       e.stopPropagation();
                       handleUnlimitedClick();
                     }}
-                    className="w-full h-12 bg-slate-600 hover:bg-white/50 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5 text-base"
+                    className="w-full h-12 bg-slate-600 hover:bg-accent0 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5 text-base"
                   >
                     Acessar Versão Ilimitada
                   </Button>
@@ -116,7 +116,7 @@ const UpscalerChoiceModal = ({
               <button
                 onClick={handleAppVersionClick}
                 disabled={isCheckingClaim || isClaiming}
-                className="w-full mt-4 text-center text-gray-400/70 hover:text-gray-300 text-xs transition-colors duration-200 disabled:opacity-50"
+                className="w-full mt-4 text-center text-muted-foreground/70 hover:text-muted-foreground text-xs transition-colors duration-200 disabled:opacity-50"
               >
                 {isCheckingClaim || isClaiming ? (
                   <span className="flex items-center justify-center gap-1.5">
@@ -136,18 +136,18 @@ const UpscalerChoiceModal = ({
               {/* Card Versão App */}
               <div 
                 onClick={handleAppVersionClick}
-                className={`group relative bg-gradient-to-br from-[#261433] to-[#3D1B4D] rounded-xl border-2 border-white/10 hover:border-white-400 transition-all duration-300 overflow-hidden hover:shadow-[0_0_30px_rgba(217,70,239,0.3)] ${isCheckingClaim || isClaiming ? 'cursor-wait' : 'cursor-pointer'}`}
+                className={`group relative bg-gradient-to-br from-[#261433] to-[#3D1B4D] rounded-xl border-2 border-border hover:border-white-400 transition-all duration-300 overflow-hidden hover:shadow-[0_0_30px_rgba(217,70,239,0.3)] ${isCheckingClaim || isClaiming ? 'cursor-wait' : 'cursor-pointer'}`}
               >
                 {/* Badge */}
-                <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/10 px-2 py-1 rounded-full">
-                  <Sparkles className="w-3 h-3 text-gray-300" />
-                  <span className="text-[10px] text-gray-300 font-medium">FÁCIL</span>
+                <div className="absolute top-3 right-3 flex items-center gap-1 bg-accent px-2 py-1 rounded-full">
+                  <Sparkles className="w-3 h-3 text-muted-foreground" />
+                  <span className="text-[10px] text-muted-foreground font-medium">FÁCIL</span>
                 </div>
 
                 <div className="p-5">
                   {/* Icon */}
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-500/30 to-pink-600/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 mx-auto border border-white/10">
-                    <Zap className="w-7 h-7 text-gray-300" />
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-500/30 to-pink-600/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 mx-auto border border-border">
+                    <Zap className="w-7 h-7 text-muted-foreground" />
                   </div>
 
                   {/* Title */}
@@ -156,8 +156,8 @@ const UpscalerChoiceModal = ({
                   </h3>
 
                   {/* Description */}
-                  <p className="text-gray-400 text-sm text-center leading-relaxed mb-5">
-                    Nova versão <span className="text-gray-300 font-medium">mais fácil de usar</span>. Consome créditos por uso.
+                  <p className="text-muted-foreground text-sm text-center leading-relaxed mb-5">
+                    Nova versão <span className="text-muted-foreground font-medium">mais fácil de usar</span>. Consome créditos por uso.
                   </p>
 
                   {/* Button */}
@@ -189,18 +189,18 @@ const UpscalerChoiceModal = ({
               {/* Card Versão Ilimitada */}
               <div 
                 onClick={handleUnlimitedClick}
-                className="group relative bg-gradient-to-br from-[#1E1433] to-[#2A1B4D] rounded-xl border-2 border-white/10 hover:border-white/15 transition-all duration-300 cursor-pointer overflow-hidden hover:shadow-[0_0_30px_rgba(139,92,246,0.3)]"
+                className="group relative bg-gradient-to-br from-[#1E1433] to-[#2A1B4D] rounded-xl border-2 border-border hover:border-border transition-all duration-300 cursor-pointer overflow-hidden hover:shadow-[0_0_30px_rgba(139,92,246,0.3)]"
               >
                 {/* Badge */}
-                <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/50/20 px-2 py-1 rounded-full">
+                <div className="absolute top-3 right-3 flex items-center gap-1 bg-accent0/20 px-2 py-1 rounded-full">
                   <Crown className="w-3 h-3 text-yellow-400" />
                   <span className="text-[10px] text-yellow-400 font-medium">VITALÍCIO</span>
                 </div>
 
                 <div className="p-5">
                   {/* Icon */}
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-500/30 to-slate-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 mx-auto border border-white/10">
-                    <Infinity className="w-7 h-7 text-gray-300" />
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-500/30 to-slate-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 mx-auto border border-border">
+                    <Infinity className="w-7 h-7 text-muted-foreground" />
                   </div>
 
                   {/* Title */}
@@ -209,8 +209,8 @@ const UpscalerChoiceModal = ({
                   </h3>
 
                   {/* Description */}
-                  <p className="text-gray-300/70 text-sm text-center leading-relaxed mb-5">
-                    Esta é a versão que você adquiriu. <span className="text-gray-300 font-medium">Sem limite de uso</span> e sem consumo de créditos.
+                  <p className="text-muted-foreground/70 text-sm text-center leading-relaxed mb-5">
+                    Esta é a versão que você adquiriu. <span className="text-muted-foreground font-medium">Sem limite de uso</span> e sem consumo de créditos.
                   </p>
 
                   {/* Button */}
@@ -219,7 +219,7 @@ const UpscalerChoiceModal = ({
                       e.stopPropagation();
                       handleUnlimitedClick();
                     }}
-                    className="w-full h-11 bg-slate-600 hover:bg-white/50 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5"
+                    className="w-full h-11 bg-slate-600 hover:bg-accent0 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5"
                   >
                     Acessar Versão Ilimitada
                   </Button>

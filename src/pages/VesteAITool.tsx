@@ -509,13 +509,13 @@ const VesteAITool: React.FC = () => {
           
           {/* Left Side - Controls Panel */}
           <div className={`lg:col-span-2 ${isMobile ? 'overflow-visible' : 'min-h-0 overflow-hidden'}`}>
-            <div className={`bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-5 ${isMobile ? '' : 'overflow-y-auto h-full max-h-full'}`}
+            <div className={`bg-card border border-border rounded-2xl p-5 flex flex-col gap-5 ${isMobile ? '' : 'overflow-y-auto h-full max-h-full'}`}
               style={!isMobile ? { scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' } : undefined}
             >
               {/* Title */}
               <div>
                 <h1 className="text-xl font-bold text-white">Veste AI</h1>
-                <p className="text-xs text-gray-400 mt-1">Troque a roupa da sua foto usando qualquer imagem como referência. A IA veste a peça na sua pessoa de forma realista.</p>
+                <p className="text-xs text-muted-foreground mt-1">Troque a roupa da sua foto usando qualquer imagem como referência. A IA veste a peça na sua pessoa de forma realista.</p>
               </div>
 
               {/* Person Image */}
@@ -566,7 +566,7 @@ const VesteAITool: React.FC = () => {
                   {status === 'waiting' && (
                     <Button
                       variant="outline"
-                      className="w-full py-3 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                      className="w-full py-3 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl"
                       onClick={handleCancelQueue}
                     >
                       <XCircle className="w-4 h-4 mr-2" />
@@ -586,7 +586,7 @@ const VesteAITool: React.FC = () => {
                       </Button>
                       <Button
                         variant="outline"
-                        className="w-full py-3 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                        className="w-full py-3 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl"
                         onClick={handleReset}
                       >
                         <RotateCcw className="w-4 h-4 mr-2" />
@@ -604,7 +604,7 @@ const VesteAITool: React.FC = () => {
                       </div>
                       <Button
                         variant="outline"
-                        className="w-full mt-2 py-2 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg"
+                        className="w-full mt-2 py-2 text-xs border-border text-muted-foreground hover:bg-accent rounded-lg"
                         onClick={handleReset}
                       >
                         <RotateCcw className="w-3.5 h-3.5 mr-1" />
@@ -630,7 +630,7 @@ const VesteAITool: React.FC = () => {
 
           {/* Right Side - Result Viewer */}
           <div className="lg:col-span-5 min-h-0 overflow-hidden">
-            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-[400px] h-full">
+            <div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col min-h-[400px] h-full">
               {/* Warning Banner */}
               {isProcessing && (
                 <div className="bg-amber-500/20 border-b border-amber-500/50 px-3 py-2 flex items-center gap-2">
@@ -676,17 +676,17 @@ const VesteAITool: React.FC = () => {
                   </TransformWrapper>
                 ) : isProcessing ? (
                   <div className="flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-gray-400 animate-spin" />
+                    <Loader2 className="w-12 h-12 text-muted-foreground animate-spin" />
                     <div className="text-center">
                       <p className="text-lg font-medium text-white">
                         {currentQueueMessage.emoji} {currentQueueMessage.text}
                       </p>
                       {status === 'waiting' && queuePosition > 0 && (
-                        <p className="text-sm text-gray-400 mt-1">Posição na fila: #{queuePosition}</p>
+                        <p className="text-sm text-muted-foreground mt-1">Posição na fila: #{queuePosition}</p>
                       )}
                     </div>
                     {status === 'processing' && (
-                      <div className="w-48 h-2 bg-white/5 rounded-full overflow-hidden">
+                      <div className="w-48 h-2 bg-accent rounded-full overflow-hidden">
                         <div 
                           className="h-full bg-gradient-to-r from-slate-500 to-pink-500 transition-all duration-500"
                           style={{ width: `${progress}%` }}
@@ -703,12 +703,12 @@ const VesteAITool: React.FC = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-white/15/20 flex items-center justify-center">
-                      <Shirt className="w-10 h-10 text-gray-400" />
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border/20 flex items-center justify-center">
+                      <Shirt className="w-10 h-10 text-muted-foreground" />
                     </div>
                     <div>
                       <h2 className="text-lg font-bold text-white">Veste AI</h2>
-                      <p className="text-sm text-gray-400 mt-1 max-w-sm">
+                      <p className="text-sm text-muted-foreground mt-1 max-w-sm">
                         O resultado aparecerá aqui
                       </p>
                     </div>
@@ -722,7 +722,7 @@ const VesteAITool: React.FC = () => {
 
       {/* MOBILE FIXED BOTTOM BAR */}
       {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#1a1a2e]/95 backdrop-blur-md border-t border-white/10 safe-area-pb">
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t border-border safe-area-pb">
           <div className="px-4 py-3 space-y-2.5">
             {/* Idle state */}
             {!isProcessing && status !== 'completed' && status !== 'error' && (
@@ -753,7 +753,7 @@ const VesteAITool: React.FC = () => {
             {isProcessing && (
               <div className="flex gap-2">
                 <div className="flex-1 flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 text-gray-400 animate-spin flex-shrink-0" />
+                  <Loader2 className="w-4 h-4 text-muted-foreground animate-spin flex-shrink-0" />
                   <p className="text-xs text-white truncate">
                     {status === 'waiting' ? `Fila #${queuePosition}` : 'Processando...'}
                   </p>
@@ -761,7 +761,7 @@ const VesteAITool: React.FC = () => {
                 {status === 'waiting' && (
                   <Button
                     variant="outline"
-                    className="py-3 px-4 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg flex-shrink-0"
+                    className="py-3 px-4 text-xs border-border text-muted-foreground hover:bg-accent rounded-lg flex-shrink-0"
                     onClick={handleCancelQueue}
                   >
                     Sair
@@ -782,7 +782,7 @@ const VesteAITool: React.FC = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="py-4 px-4 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                  className="py-4 px-4 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl"
                   onClick={handleReset}
                 >
                   <RotateCcw className="w-4 h-4" />
@@ -798,7 +798,7 @@ const VesteAITool: React.FC = () => {
                 </div>
                 <Button
                   variant="outline"
-                  className="py-3 px-4 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg flex-shrink-0"
+                  className="py-3 px-4 text-xs border-border text-muted-foreground hover:bg-accent rounded-lg flex-shrink-0"
                   onClick={handleReset}
                 >
                   <RotateCcw className="w-3.5 h-3.5 mr-1" />

@@ -117,21 +117,21 @@ export default function UpscalerMockup({
 
   return (
     <TooltipProvider>
-    <div className="w-full max-w-2xl mx-auto rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden">
+    <div className="w-full max-w-2xl mx-auto rounded-2xl border border-border bg-accent backdrop-blur-sm overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-white/10 flex items-center gap-3">
+      <div className="px-6 py-4 border-b border-border flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
           <Wand2 className="w-4 h-4 text-white" />
         </div>
         <span className="text-white font-semibold text-lg">Upscaler Arcano</span>
         <div className="ml-auto flex gap-2">
-          <span className="px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-gray-300 border border-white/10">
+          <span className="px-3 py-1 rounded-full text-xs font-medium bg-accent text-muted-foreground border border-border">
             Standard
           </span>
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                className="px-3 py-1 rounded-full text-xs font-medium bg-white/5 text-white/30 border border-white/10 flex items-center gap-1.5 cursor-not-allowed opacity-60"
+                className="px-3 py-1 rounded-full text-xs font-medium bg-accent text-white/30 border border-border flex items-center gap-1.5 cursor-not-allowed opacity-60"
                 onClick={(e) => {
                   e.preventDefault();
                   setShowProMessage(true);
@@ -142,7 +142,7 @@ export default function UpscalerMockup({
                 PRO
               </button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="bg-black/90 border-white/10 text-white/80 text-xs">
+            <TooltipContent side="bottom" className="bg-black/90 border-border text-foreground text-xs">
               Exclusivo para assinantes
             </TooltipContent>
           </Tooltip>
@@ -157,7 +157,7 @@ export default function UpscalerMockup({
       )}
 
       {/* Category Selector */}
-      <div className="px-6 py-3 border-b border-white/10">
+      <div className="px-6 py-3 border-b border-border">
         <ToggleGroup 
           type="single" 
           value={displayCategory} 
@@ -173,8 +173,8 @@ export default function UpscalerMockup({
                 disabled={!isActive}
                 className={`flex-1 px-2 py-1.5 text-[10px] rounded-md transition-all ${
                   displayCategory === cat
-                    ? 'bg-white/10 text-gray-300 border border-white/10' 
-                    : 'border border-white/10 text-white/50 hover:bg-white/10'
+                    ? 'bg-accent text-muted-foreground border border-border' 
+                    : 'border border-border text-muted-foreground hover:bg-accent'
                 }`}
               >
                 {cat === 'pessoas' ? 'Pessoas' : cat === 'comida' ? 'Comida/Objeto' : 'Foto Antiga'}
@@ -190,8 +190,8 @@ export default function UpscalerMockup({
                 disabled={!isActive}
                 className={`flex-1 px-2 py-1.5 text-[10px] rounded-md transition-all ${
                   displayCategory === cat
-                    ? 'bg-white/10 text-gray-300 border border-white/10' 
-                    : 'border border-white/10 text-white/50 hover:bg-white/10'
+                    ? 'bg-accent text-muted-foreground border border-border' 
+                    : 'border border-border text-muted-foreground hover:bg-accent'
                 }`}
               >
                 {cat === 'render3d' ? 'Selo 3D' : 'Logo/Arte'}
@@ -202,7 +202,7 @@ export default function UpscalerMockup({
 
         {/* Pessoas Framing Selector */}
         {isPessoas && isActive && (
-          <div className="mt-3 pt-3 border-t border-white/10">
+          <div className="mt-3 pt-3 border-t border-border">
             <ToggleGroup 
               type="single" 
               value={pessoasFraming} 
@@ -213,11 +213,11 @@ export default function UpscalerMockup({
                 value="perto" 
                 className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all h-auto ${
                   pessoasFraming === 'perto'
-                    ? 'bg-white/10 text-gray-300 border border-white/10' 
-                    : 'border border-white/10 text-white/50 hover:bg-white/10'
+                    ? 'bg-accent text-muted-foreground border border-border' 
+                    : 'border border-border text-muted-foreground hover:bg-accent'
                 }`}
               >
-                <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center border border-white/10 relative">
+                <div className="w-8 h-8 rounded bg-accent flex items-center justify-center border border-border relative">
                   <svg width="24" height="24" viewBox="0 0 48 48" fill="none" className="text-current">
                     <circle cx="24" cy="20" r="14" fill="currentColor" opacity="0.85" />
                     <ellipse cx="24" cy="48" rx="18" ry="14" fill="currentColor" opacity="0.55" />
@@ -229,11 +229,11 @@ export default function UpscalerMockup({
                 value="longe" 
                 className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-all h-auto ${
                   pessoasFraming === 'longe'
-                    ? 'bg-white/10 text-gray-300 border border-white/10' 
-                    : 'border border-white/10 text-white/50 hover:bg-white/10'
+                    ? 'bg-accent text-muted-foreground border border-border' 
+                    : 'border border-border text-muted-foreground hover:bg-accent'
                 }`}
               >
-                <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center border border-white/10 relative">
+                <div className="w-8 h-8 rounded bg-accent flex items-center justify-center border border-border relative">
                   <svg width="24" height="24" viewBox="0 0 48 48" fill="none" className="text-current">
                     <circle cx="24" cy="14" r="5" fill="currentColor" opacity="0.85" />
                     <rect x="20" y="19" width="8" height="12" rx="3" fill="currentColor" opacity="0.75" />
@@ -249,13 +249,13 @@ export default function UpscalerMockup({
 
         {/* Comida/Objeto Detail Level Slider */}
         {isComida && isActive && (
-          <div className="mt-3 pt-3 border-t border-white/10">
+          <div className="mt-3 pt-3 border-t border-border">
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-gray-400" />
+                <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
                 <span className="text-xs font-medium text-white">Nível de Detalhes</span>
               </div>
-              <span className="text-xs text-gray-300 font-mono">{Math.round(comidaDetailLevel * 100)}%</span>
+              <span className="text-xs text-muted-foreground font-mono">{Math.round(comidaDetailLevel * 100)}%</span>
             </div>
             <Slider
               value={[comidaDetailLevel]}
@@ -265,7 +265,7 @@ export default function UpscalerMockup({
               step={0.01}
               className="w-full"
             />
-            <div className="flex justify-between text-[10px] text-gray-300/50 mt-1">
+            <div className="flex justify-between text-[10px] text-muted-foreground/50 mt-1">
               <span>Mais Fiel</span>
               <span>Mais Criativo</span>
             </div>
@@ -290,15 +290,15 @@ export default function UpscalerMockup({
               {({ zoomIn, zoomOut, resetTransform }) => (
                 <>
                   {/* Zoom controls */}
-                  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1 border border-white/10">
-                    <button onClick={() => zoomOut()} className="p-1.5 text-white/70 hover:text-white transition-colors">
+                  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1 border border-border">
+                    <button onClick={() => zoomOut()} className="p-1.5 text-muted-foreground hover:text-white transition-colors">
                       <ZoomOut className="w-4 h-4" />
                     </button>
-                    <button onClick={() => zoomIn()} className="p-1.5 text-white/70 hover:text-white transition-colors">
+                    <button onClick={() => zoomIn()} className="p-1.5 text-muted-foreground hover:text-white transition-colors">
                       <ZoomIn className="w-4 h-4" />
                     </button>
                     <div className="w-px h-4 bg-white/20 mx-0.5" />
-                    <button onClick={() => resetTransform()} className="p-1.5 text-white/70 hover:text-white transition-colors">
+                    <button onClick={() => resetTransform()} className="p-1.5 text-muted-foreground hover:text-white transition-colors">
                       <Maximize2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -306,7 +306,7 @@ export default function UpscalerMockup({
                   <TransformComponent wrapperClass="!w-full" contentClass="!w-full">
                     <div 
                       ref={sliderContainerRef}
-                      className="relative w-full rounded-xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10"
+                      className="relative w-full rounded-xl overflow-hidden cursor-ew-resize select-none border-2 border-border"
                       style={{ aspectRatio: '4/3' }}
                       onMouseDown={handleMouseDown}
                       onMouseUp={handleMouseUp}
@@ -371,18 +371,18 @@ export default function UpscalerMockup({
             {/* Resolution comparison */}
             {beforeRes && afterRes && (
               <div className="mt-3 flex items-center justify-center gap-3">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent border border-border">
                   <span className="text-[10px] text-white/40 uppercase tracking-wider">Antes</span>
-                  <span className="text-xs font-mono text-white/60">{beforeRes.w}×{beforeRes.h}</span>
+                  <span className="text-xs font-mono text-muted-foreground">{beforeRes.w}×{beforeRes.h}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <svg width="20" height="12" viewBox="0 0 20 12" fill="none" className="text-gray-400">
+                  <svg width="20" height="12" viewBox="0 0 20 12" fill="none" className="text-muted-foreground">
                     <path d="M13 1l5 5m0 0l-5 5m5-5H2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/50/10 border border-white/10">
-                  <span className="text-[10px] text-gray-300 uppercase tracking-wider">Depois</span>
-                  <span className="text-xs font-mono text-gray-300 font-semibold">{afterRes.w}×{afterRes.h}</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent0/10 border border-border">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Depois</span>
+                  <span className="text-xs font-mono text-muted-foreground font-semibold">{afterRes.w}×{afterRes.h}</span>
                   {afterRes.w * afterRes.h > beforeRes.w * beforeRes.h && (
                     <span className="text-[10px] font-bold text-emerald-400">
                       +{Math.round(((afterRes.w * afterRes.h) / (beforeRes.w * beforeRes.h) - 1) * 100)}%
@@ -391,46 +391,46 @@ export default function UpscalerMockup({
                 </div>
               </div>
             )}
-            <p className="text-center text-[10px] text-gray-300/40 mt-2">Pinça ou scroll para dar zoom • Clique duplo para alternar</p>
+            <p className="text-center text-[10px] text-muted-foreground/40 mt-2">Pinça ou scroll para dar zoom • Clique duplo para alternar</p>
           </div>
         ) : (status === 'uploading' || status === 'processing') ? (
           /* PROCESSING: Progress indicator */
-          <div className="flex flex-col items-center justify-center gap-4 h-64 rounded-xl border-2 border-white/15/20 bg-black/30">
-            <Loader2 className="w-12 h-12 text-gray-400 animate-spin" />
+          <div className="flex flex-col items-center justify-center gap-4 h-64 rounded-xl border-2 border-border/20 bg-black/30">
+            <Loader2 className="w-12 h-12 text-muted-foreground animate-spin" />
             <div className="text-center">
               <p className="text-lg font-medium text-white">
                 {status === 'uploading' ? 'Enviando imagem...' : 'Processando...'}
               </p>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 Isso pode levar até 2 minutos
               </p>
             </div>
             {/* Progress bar */}
-            <div className="w-48 h-2 bg-white/5 rounded-full overflow-hidden">
+            <div className="w-48 h-2 bg-accent rounded-full overflow-hidden">
               <div 
                 className="h-full bg-gradient-to-r from-slate-500 to-slate-400 transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <span className="text-xs text-gray-300/50">{Math.round(progress)}%</span>
+            <span className="text-xs text-muted-foreground/50">{Math.round(progress)}%</span>
           </div>
         ) : previewUrl ? (
           /* PREVIEW: Show uploaded image */
-          <div className="relative rounded-xl overflow-hidden border border-white/10">
+          <div className="relative rounded-xl overflow-hidden border border-border">
             <img src={previewUrl} alt="Preview" className="w-full h-64 object-contain bg-black/50" />
           </div>
         ) : (
           /* EMPTY: Upload area */
           <label
-            className={`flex flex-col items-center justify-center gap-4 h-64 border-2 border-dashed border-white/20 rounded-xl bg-white/5 transition-colors ${
-              isActive ? "hover:border-white/15/50 hover:bg-white/10 cursor-pointer" : "cursor-default"
+            className={`flex flex-col items-center justify-center gap-4 h-64 border-2 border-dashed border-border rounded-xl bg-accent transition-colors ${
+              isActive ? "hover:border-border/50 hover:bg-accent cursor-pointer" : "cursor-default"
             }`}
           >
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center">
-              <Upload className="w-8 h-8 text-gray-400" />
+              <Upload className="w-8 h-8 text-muted-foreground" />
             </div>
             <div className="text-center">
-              <p className="text-white/80 text-sm font-medium">Arraste ou clique para enviar</p>
+              <p className="text-foreground text-sm font-medium">Arraste ou clique para enviar</p>
               <p className="text-white/40 text-xs mt-1">PNG, JPG, WEBP • Máx 10MB</p>
             </div>
             {isActive && onFileSelect && (

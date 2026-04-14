@@ -123,8 +123,8 @@ const AdminHub = () => {
       description: "Gerenciar artes para músicos, bandas e artistas",
       icon: Music,
       color: "from-slate-500 to-slate-400",
-      borderColor: "border-white/10",
-      hoverBorder: "hover:border-white/10/60",
+      borderColor: "border-border",
+      hoverBorder: "hover:border-border/60",
       path: "/admin-artes-musicos"
     },
     {

@@ -40,13 +40,13 @@ const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRem
                 )
               ) : (
                 <div className="w-full h-full bg-white/[0.02] flex flex-col items-center justify-center gap-0.5">
-                  <Film className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400" />
-                  <span className="text-[7px] sm:text-[8px] text-gray-400">{index + 1}</span>
+                  <Film className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-muted-foreground" />
+                  <span className="text-[7px] sm:text-[8px] text-muted-foreground">{index + 1}</span>
                 </div>
               )}
 
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-1 py-1 sm:px-1.5">
-                <p className="text-[8px] sm:text-[9px] text-gray-300 truncate">Cena {index + 1}</p>
+                <p className="text-[8px] sm:text-[9px] text-muted-foreground truncate">Cena {index + 1}</p>
               </div>
 
               {hasContent && (
@@ -54,7 +54,7 @@ const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRem
                   onClick={e => { e.stopPropagation(); onRemove(scene.id); }}
                   className="absolute top-0.5 right-0.5 p-0.5 bg-black/50 rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                 >
-                  <X className="w-2.5 h-2.5 text-gray-400" />
+                  <X className="w-2.5 h-2.5 text-muted-foreground" />
                 </button>
               )}
             </div>
@@ -67,8 +67,8 @@ const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRem
             className="flex-shrink-0 rounded border border-gray-600/30 hover:border-gray-500/50 bg-white/[0.03] hover:bg-white/[0.06] flex flex-col items-center justify-center gap-1 transition-all
               w-[68px] h-[46px] sm:w-[86px] sm:h-[56px] lg:w-[112px] lg:h-[72px]"
           >
-            <Play className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
-            <span className="text-[7px] sm:text-[9px] text-gray-400 font-medium">Animar ({generatedCount})</span>
+            <Play className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
+            <span className="text-[7px] sm:text-[9px] text-muted-foreground font-medium">Animar ({generatedCount})</span>
           </button>
         )}
       </div>

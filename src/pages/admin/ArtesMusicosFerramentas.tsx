@@ -21,10 +21,10 @@ const ArtesMusicosFerramentas = () => {
         </div>
 
         {/* Info Banner */}
-        <div className="p-4 bg-white/50/10 border border-white/10/20 rounded-lg mb-6">
+        <div className="p-4 bg-accent0/10 border border-border/20 rounded-lg mb-6">
           <div className="flex items-center gap-3">
             <Clock className="h-5 w-5 text-slate-400" />
-            <p className="text-sm text-gray-400 font-medium">
+            <p className="text-sm text-muted-foreground font-medium">
               As demais ferramentas estão em desenvolvimento. Em breve você poderá configurar tudo por aqui!
             </p>
           </div>
@@ -32,12 +32,12 @@ const ArtesMusicosFerramentas = () => {
 
         {/* Stats Cards - Disabled */}
         <div className="grid grid-cols-1 gap-4 mb-6">
-          <Card className="p-6 bg-gradient-to-r from-slate-500/10 to-slate-400/5 border-white/10/20 opacity-60 cursor-not-allowed relative">
-            <Badge className="absolute top-2 right-2 bg-white/50/20 text-gray-400 border-white/10">
+          <Card className="p-6 bg-gradient-to-r from-slate-500/10 to-slate-400/5 border-border/20 opacity-60 cursor-not-allowed relative">
+            <Badge className="absolute top-2 right-2 bg-accent0/20 text-muted-foreground border-border">
               Em breve
             </Badge>
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/50/20 rounded-full">
+              <div className="p-3 bg-accent0/20 rounded-full">
                 <Inbox className="h-8 w-8 text-slate-400" />
               </div>
               <div className="flex-1">
@@ -57,7 +57,7 @@ const ArtesMusicosFerramentas = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {/* Upload - ENABLED */}
           <Card 
-            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-white/10/50"
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-border/50"
             onClick={() => navigate("/admin-upload-artes-musicos")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
@@ -70,7 +70,7 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card 
-            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-white/10/50"
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-border/50"
             onClick={() => navigate("/admin-artes-musicos/review")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
@@ -83,7 +83,7 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card 
-            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-white/10/50"
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-border/50"
             onClick={() => navigate("/admin-manage-artes-musicos")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
@@ -96,7 +96,7 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card className="p-3 sm:p-8 opacity-60 cursor-not-allowed relative">
-            <Badge className="absolute top-2 right-2 bg-white/50/20 text-gray-400 border-white/10 text-[10px] sm:text-xs">
+            <Badge className="absolute top-2 right-2 bg-accent0/20 text-muted-foreground border-border text-[10px] sm:text-xs">
               Em breve
             </Badge>
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
@@ -109,7 +109,7 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card 
-            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-white/10/50"
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-border/50"
             onClick={() => navigate("/admin-premium-musicos")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
@@ -122,7 +122,7 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card 
-            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-white/10/50"
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-border/50"
             onClick={() => navigate("/admin-categories-musicos")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
@@ -135,7 +135,7 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card className="p-3 sm:p-8 opacity-60 cursor-not-allowed relative">
-            <Badge className="absolute top-2 right-2 bg-white/50/20 text-gray-400 border-white/10 text-[10px] sm:text-xs">
+            <Badge className="absolute top-2 right-2 bg-accent0/20 text-muted-foreground border-border text-[10px] sm:text-xs">
               Em breve
             </Badge>
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">

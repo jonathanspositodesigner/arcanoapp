@@ -93,7 +93,7 @@ export function FloatingToolsNav() {
                 "flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200",
                 isActive
                   ? "bg-primary text-primary-foreground shadow-md shadow-primary/40"
-                  : "text-white/60 hover:text-white hover:bg-white/10"
+                  : "text-muted-foreground hover:text-white hover:bg-accent"
               )}
             >
               <item.icon className="h-[18px] w-[18px]" />

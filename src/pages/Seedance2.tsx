@@ -471,7 +471,7 @@ export default function Seedance2() {
               <h1 className="text-lg sm:text-xl font-bold text-white">Seedance 2.0</h1>
               <button
                 onClick={() => setShowTutorial(true)}
-                className="flex items-center gap-1 rounded-md border border-white/10 bg-white/50/10 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-gray-300 hover:bg-white/50/20 transition-colors"
+                className="flex items-center gap-1 rounded-md border border-border bg-accent0/10 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-muted-foreground hover:bg-accent0/20 transition-colors"
               >
                 <Play className="h-3 w-3" />
                 Ver tutorial
@@ -481,7 +481,7 @@ export default function Seedance2() {
               <button
                 onClick={() => setGalleryTab("creations")}
                 className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
-                  galleryTab === "creations" ? "border-white/10 bg-white/50/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                  galleryTab === "creations" ? "border-border bg-accent0/20 text-muted-foreground shadow-sm shadow-white/5" : "border-transparent text-muted-foreground hover:text-muted-foreground hover:bg-white/[0.04]"
                 }`}
               >
                 Minhas Criações
@@ -489,7 +489,7 @@ export default function Seedance2() {
               <button
                 onClick={() => setGalleryTab("library")}
                 className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
-                  galleryTab === "library" ? "border-white/10 bg-white/50/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                  galleryTab === "library" ? "border-border bg-accent0/20 text-muted-foreground shadow-sm shadow-white/5" : "border-transparent text-muted-foreground hover:text-muted-foreground hover:bg-white/[0.04]"
                 }`}
               >
                 Biblioteca
@@ -512,9 +512,9 @@ export default function Seedance2() {
                   <div className="flex-1 min-w-0">
                     <p className="text-[10px] uppercase tracking-wider text-green-400 font-semibold mb-0.5">Modelo selecionado</p>
                     <p className="text-sm text-white font-medium truncate">{selectedModel.title}</p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">Selecione seu personagem e clique em Gerar</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Selecione seu personagem e clique em Gerar</p>
                   </div>
-                  <button onClick={() => setSelectedModel(null)} className="shrink-0 p-1 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
+                  <button onClick={() => setSelectedModel(null)} className="shrink-0 p-1 rounded-full hover:bg-accent text-muted-foreground hover:text-white transition-colors">
                     <X className="h-4 w-4" />
                   </button>
                 </div>
@@ -524,20 +524,20 @@ export default function Seedance2() {
               <>
                 {galleryTab === "creations" && (
                   <div className="flex items-center gap-1.5 px-3 pt-2">
-                    <Clock className="h-3 w-3 text-gray-400" />
-                    <span className="text-[10px] text-gray-400">Vídeos armazenados por 24h</span>
+                    <Clock className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-[10px] text-muted-foreground">Vídeos armazenados por 24h</span>
                   </div>
                 )}
                 {loadingCreations ? (
                   <div className="flex h-full min-h-[320px] items-center justify-center">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-white/40" />
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-white/40" />
                   </div>
                 ) : generations.length === 0 ? (
                   <div className="flex h-full min-h-[320px] flex-col items-center justify-center px-6 text-center lg:min-h-[420px] gap-3">
-                    <p className="text-sm text-gray-500">Você ainda não tem criações. Veja os modelos ou digite um prompt para começar.</p>
+                    <p className="text-sm text-muted-foreground">Você ainda não tem criações. Veja os modelos ou digite um prompt para começar.</p>
                     <button
                       onClick={() => setGalleryTab("library")}
-                      className="rounded-lg border border-white/10 bg-white/50/10 px-4 py-1.5 text-xs font-medium text-gray-300 transition-all hover:bg-white/50/20"
+                      className="rounded-lg border border-border bg-accent0/10 px-4 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:bg-accent0/20"
                     >
                       Explorar modelos
                     </button>
@@ -556,11 +556,11 @@ export default function Seedance2() {
               <>
                 {loadingLibrary ? (
                   <div className="flex h-full min-h-[320px] items-center justify-center">
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-white/40" />
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-white/40" />
                   </div>
                 ) : libraryItems.length === 0 ? (
                   <div className="flex h-full min-h-[320px] items-center justify-center px-6 text-center lg:min-h-[420px]">
-                    <p className="text-sm text-gray-500">Nenhum vídeo na biblioteca ainda.</p>
+                    <p className="text-sm text-muted-foreground">Nenhum vídeo na biblioteca ainda.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-3 p-3">
@@ -582,21 +582,21 @@ export default function Seedance2() {
                   {libraryItems.some(li => li.id === previewGen.id) && (
                     <button
                       onClick={() => handleUseLibraryItem(previewGen)}
-                      className="rounded-full bg-slate-600/80 px-4 py-2 text-sm font-medium text-white hover:bg-white/50 transition-colors"
+                      className="rounded-full bg-slate-600/80 px-4 py-2 text-sm font-medium text-white hover:bg-accent0 transition-colors"
                     >
                       Usar modelo
                     </button>
                   )}
                   <button
                     onClick={() => previewGen.videoUrl && handleDownloadVideo(previewGen.videoUrl, previewGen.prompt)}
-                    className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
+                    className="rounded-full bg-accent p-2 text-white hover:bg-white/20 transition-colors"
                     title="Baixar vídeo"
                   >
                     <Download className="h-5 w-5" />
                   </button>
                   <button
                     onClick={() => setPreviewGen(null)}
-                    className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors"
+                    className="rounded-full bg-accent p-2 text-white hover:bg-white/20 transition-colors"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -607,7 +607,7 @@ export default function Seedance2() {
                   autoPlay
                   className="w-full rounded-xl max-h-[calc(90vh-4rem)] object-contain"
                 />
-                <p className="mt-2 text-xs text-gray-400 truncate shrink-0">{previewGen.prompt} · {previewGen.ratio} · {previewGen.duration}s</p>
+                <p className="mt-2 text-xs text-muted-foreground truncate shrink-0">{previewGen.prompt} · {previewGen.ratio} · {previewGen.duration}s</p>
               </div>
             </div>
           )}
@@ -618,7 +618,7 @@ export default function Seedance2() {
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 {mode === "startend" && (
                   <>
-                    <span className="text-[10px] uppercase tracking-wider text-gray-500">Imagens</span>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Imagens</span>
                     <div className="flex gap-1.5">
                       <UploadSlot
                         url={startImage}
@@ -640,7 +640,7 @@ export default function Seedance2() {
 
                 {mode === "multiref" && (
                   <>
-                    <span className="text-[10px] uppercase tracking-wider text-gray-500">Refs</span>
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Refs</span>
                     <div className="flex flex-wrap gap-1">
                       {refImages.map((url, index) => (
                         <UploadSlot key={index} url={url} onRemove={() => setRefImages((prev) => prev.filter((_, i) => i !== index))} size={40} />
@@ -658,19 +658,19 @@ export default function Seedance2() {
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={handleVideoDrop}
                       onClick={() => refVideos.length < 3 && openFilePicker("video/mp4,video/quicktime", (url) => setRefVideos((prev) => [...prev, url]))}
-                      className="flex h-[28px] cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-white/10 bg-black/30 px-3 text-[10px] text-gray-500 transition-colors hover:border-white/20"
+                      className="flex h-[28px] cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-border bg-black/30 px-3 text-[10px] text-muted-foreground transition-colors hover:border-border"
                     >
                       {refVideos.length > 0 ? `${refVideos.length} vídeo(s)` : "+ vídeo"}
-                      {refVideos.length > 0 && <button onClick={(e) => { e.stopPropagation(); setRefVideos([]); }} className="ml-1 text-gray-400 hover:text-white">×</button>}
+                      {refVideos.length > 0 && <button onClick={(e) => { e.stopPropagation(); setRefVideos([]); }} className="ml-1 text-muted-foreground hover:text-white">×</button>}
                     </div>
                     <div
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={handleAudioDrop}
                       onClick={() => refAudios.length < 3 && openFilePicker("audio/mpeg,audio/wav", (url) => setRefAudios((prev) => [...prev, url]))}
-                      className="flex h-[28px] cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-white/10 bg-black/30 px-3 text-[10px] text-gray-500 transition-colors hover:border-white/20"
+                      className="flex h-[28px] cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-border bg-black/30 px-3 text-[10px] text-muted-foreground transition-colors hover:border-border"
                     >
                       {refAudios.length > 0 ? `${refAudios.length} áudio(s)` : "+ áudio"}
-                      {refAudios.length > 0 && <button onClick={(e) => { e.stopPropagation(); setRefAudios([]); }} className="ml-1 text-gray-400 hover:text-white">×</button>}
+                      {refAudios.length > 0 && <button onClick={(e) => { e.stopPropagation(); setRefAudios([]); }} className="ml-1 text-muted-foreground hover:text-white">×</button>}
                     </div>
                   </>
                 )}
@@ -686,7 +686,7 @@ export default function Seedance2() {
                   className={`group relative flex h-[44px] items-center justify-center gap-2 overflow-hidden rounded-xl px-4 text-sm font-semibold transition-all duration-300 ${
                     canGenerate() && !uploading
                       ? "bg-gradient-to-r from-slate-600 to-slate-400 text-white shadow-lg shadow-slate-500/20 active:scale-[0.98]"
-                      : "cursor-not-allowed bg-white/5 text-gray-400"
+                      : "cursor-not-allowed bg-accent text-muted-foreground"
                   }`}
                 >
                   {uploading ? "Enviando..." : hasActiveJob ? (
@@ -698,7 +698,7 @@ export default function Seedance2() {
                     <>
                       <span className="text-base">✦</span>
                       Gerar vídeo
-                      <span className="flex items-center gap-1 rounded-md bg-white/10 px-1.5 py-0.5 text-[11px]">
+                      <span className="flex items-center gap-1 rounded-md bg-accent px-1.5 py-0.5 text-[11px]">
                         <Coins className="h-3 w-3" />
                         {creditCost}
                       </span>
@@ -710,21 +710,21 @@ export default function Seedance2() {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
                   placeholder="Descreva o vídeo que deseja gerar..."
-                  className="min-h-[60px] max-h-[100px] resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white outline-none placeholder:text-gray-400 focus:border-slate-500/40"
+                  className="min-h-[60px] max-h-[100px] resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white outline-none placeholder:text-muted-foreground focus:border-slate-500/40"
                   rows={2}
                 />
-                <span className="text-right text-[10px] text-gray-400 -mt-1">{prompt.length}/2000</span>
+                <span className="text-right text-[10px] text-muted-foreground -mt-1">{prompt.length}/2000</span>
 
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="flex items-center gap-1">
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Modo</span>
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Modo</span>
                     <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
                       {MODE_OPTIONS.map((option) => (
                         <button
                           key={option.value}
                           onClick={() => handleModeChange(option.value)}
                           className={`rounded-md border px-2 py-1 text-[10px] font-medium transition-all ${
-                            mode === option.value ? "border-white/10 bg-white/50/20 text-gray-300" : "border-transparent text-gray-500"
+                            mode === option.value ? "border-border bg-accent0/20 text-muted-foreground" : "border-transparent text-muted-foreground"
                           }`}
                         >
                           {option.label}
@@ -735,7 +735,7 @@ export default function Seedance2() {
 
                   <button
                     onClick={() => setShowSettings(!showSettings)}
-                    className="flex items-center gap-1 rounded-lg border border-white/[0.06] bg-white/[0.03] px-2 py-1 text-[10px] font-medium text-gray-500"
+                    className="flex items-center gap-1 rounded-lg border border-white/[0.06] bg-white/[0.03] px-2 py-1 text-[10px] font-medium text-muted-foreground"
                   >
                     Config
                     <ChevronDown className={`h-3 w-3 transition-transform ${showSettings ? "rotate-180" : ""}`} />
@@ -756,7 +756,7 @@ export default function Seedance2() {
                             <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-600 rotate-45 rounded-sm" />
                             <div className="flex items-center gap-2 relative">
                               <span className="text-[11px] sm:text-sm text-white font-bold drop-shadow-sm">👆 Adicione seu rosto aqui!</span>
-                              <button onClick={() => setShowCharacterTip(false)} className="text-white/70 hover:text-white text-sm shrink-0 font-bold">✕</button>
+                              <button onClick={() => setShowCharacterTip(false)} className="text-muted-foreground hover:text-white text-sm shrink-0 font-bold">✕</button>
                             </div>
                           </div>
                         </div>
@@ -772,7 +772,7 @@ export default function Seedance2() {
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
                     placeholder="Descreva o vídeo que deseja gerar..."
-                    className="min-h-[80px] max-h-[160px] min-w-0 resize-y rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none transition-all placeholder:text-gray-400 focus:border-slate-500/40 focus:min-h-[100px]"
+                    className="min-h-[80px] max-h-[160px] min-w-0 resize-y rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none transition-all placeholder:text-muted-foreground focus:border-slate-500/40 focus:min-h-[100px]"
                     rows={3}
                   />
                   <div className="flex flex-col gap-2">
@@ -782,7 +782,7 @@ export default function Seedance2() {
                       className={`group relative flex h-[48px] items-center justify-center gap-2.5 overflow-hidden rounded-xl px-5 text-sm font-semibold transition-all duration-300 ${
                         canGenerate() && !uploading
                           ? "bg-gradient-to-r from-slate-600 to-slate-400 text-white shadow-lg shadow-slate-500/20 hover:shadow-gray-500 hover:scale-[1.02] active:scale-[0.98]"
-                          : "cursor-not-allowed bg-white/5 text-gray-400"
+                          : "cursor-not-allowed bg-accent text-muted-foreground"
                       }`}
                     >
                       <span className="absolute inset-0 bg-gradient-to-r from-gray-400/0 via-white/10 to-gray-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -795,27 +795,27 @@ export default function Seedance2() {
                         <>
                           <span className="text-base">✦</span>
                           Gerar vídeo
-                          <span className="flex items-center gap-1 rounded-md bg-white/10 px-1.5 py-0.5 text-[11px]">
+                          <span className="flex items-center gap-1 rounded-md bg-accent px-1.5 py-0.5 text-[11px]">
                             <Coins className="h-3 w-3" />
                             {creditCost}
                           </span>
                         </>
                       )}
                     </button>
-                    <span className="text-right text-[10px] text-gray-400">{prompt.length}/2000</span>
+                    <span className="text-right text-[10px] text-muted-foreground">{prompt.length}/2000</span>
                   </div>
                 </div>
 
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 pb-1">
                   <div className="flex items-center gap-1.5 group/ctrl">
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Modo</span>
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Modo</span>
                     <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
                       {MODE_OPTIONS.map((option) => (
                         <button
                           key={option.value}
                           onClick={() => handleModeChange(option.value)}
                           className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
-                            mode === option.value ? "border-white/10 bg-white/50/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                            mode === option.value ? "border-border bg-accent0/20 text-muted-foreground shadow-sm shadow-white/5" : "border-transparent text-muted-foreground hover:text-muted-foreground hover:bg-white/[0.04]"
                           }`}
                           title={option.desc}
                         >
@@ -829,7 +829,7 @@ export default function Seedance2() {
 
                   <button
                     onClick={() => setShowSettings(!showSettings)}
-                    className="flex items-center gap-1 rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-1 text-[11px] font-medium text-gray-500 transition-all duration-200 hover:border-white/[0.1] hover:text-gray-300"
+                    className="flex items-center gap-1 rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-1 text-[11px] font-medium text-muted-foreground transition-all duration-200 hover:border-white/[0.1] hover:text-muted-foreground"
                   >
                     Configurações
                     <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${showSettings ? "rotate-180" : ""}`} />
@@ -851,7 +851,7 @@ export default function Seedance2() {
                             <div className="relative rounded-xl px-4 py-2.5 shadow-[0_0_20px_rgba(148,163,184,0.4)] whitespace-nowrap bg-gradient-to-r from-slate-600 via-slate-500 to-slate-500 animate-pulse-glow">
                               <div className="flex items-center gap-2 relative">
                                 <span className="text-sm text-white font-bold drop-shadow-sm">👆 Adicione seu rosto aqui!</span>
-                                <button onClick={() => setShowCharacterTip(false)} className="text-white/70 hover:text-white text-sm shrink-0 font-bold">✕</button>
+                                <button onClick={() => setShowCharacterTip(false)} className="text-muted-foreground hover:text-white text-sm shrink-0 font-bold">✕</button>
                               </div>
                             </div>
                           </div>
@@ -866,14 +866,14 @@ export default function Seedance2() {
             {showSettings && (
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-white/[0.04] bg-white/[0.02] px-3 py-2 animate-in fade-in slide-in-from-top-1 duration-200">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Motor</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Motor</span>
                   <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
                     {(["standard", "fast"] as Speed[]).map((value) => (
                       <button
                         key={value}
                         onClick={() => setSpeed(value)}
                         className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
-                          speed === value ? "border-white/10 bg-white/50/20 text-gray-300" : "border-transparent text-gray-500 hover:text-gray-300"
+                          speed === value ? "border-border bg-accent0/20 text-muted-foreground" : "border-transparent text-muted-foreground hover:text-muted-foreground"
                         }`}
                       >
                         {value === "standard" ? "Standard" : "Fast"}
@@ -885,11 +885,11 @@ export default function Seedance2() {
                 <div className="h-4 w-px bg-white/[0.06]" />
 
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Tamanho</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Tamanho</span>
                   <select
                     value={ratio}
                     onChange={(e) => setRatio(e.target.value as Ratio)}
-                    className="hidden sm:block rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white outline-none hover:border-white/10 cursor-pointer [&>option]:bg-black [&>option]:text-white"
+                    className="hidden sm:block rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white outline-none hover:border-border cursor-pointer [&>option]:bg-black [&>option]:text-white"
                   >
                     {RATIOS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                   </select>
@@ -902,14 +902,14 @@ export default function Seedance2() {
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Qualidade</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Qualidade</span>
                   <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
                     {(["480p", "720p"] as Quality[]).map((value) => (
                       <button
                         key={value}
                         onClick={() => setQuality(value)}
                         className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
-                          quality === value ? "border-white/10 bg-white/50/20 text-gray-300" : "border-transparent text-gray-500 hover:text-gray-300"
+                          quality === value ? "border-border bg-accent0/20 text-muted-foreground" : "border-transparent text-muted-foreground hover:text-muted-foreground"
                         }`}
                       >
                         {value}
@@ -919,23 +919,23 @@ export default function Seedance2() {
                 </div>
 
                 <div className="flex items-center gap-2 min-w-[140px]">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Duração</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Duração</span>
                   <input
                     type="range" min={4} max={15} step={1}
                     value={parseInt(duration)}
                     onChange={(e) => setDuration(e.target.value)}
-                    className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/10 accent-slate-500 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-slate-400"
+                    className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-accent accent-slate-500 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-slate-400"
                   />
-                  <span className="min-w-[24px] text-center text-[11px] font-medium text-gray-300">{duration}s</span>
+                  <span className="min-w-[24px] text-center text-[11px] font-medium text-muted-foreground">{duration}s</span>
                 </div>
 
                 <div className="h-4 w-px bg-white/[0.06]" />
 
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Áudio</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Áudio</span>
                   <button
                     onClick={() => setGenerateAudio(!generateAudio)}
-                    className={`relative w-8 h-[18px] rounded-full transition-colors duration-200 ${generateAudio ? "bg-emerald-500" : "bg-white/10"}`}
+                    className={`relative w-8 h-[18px] rounded-full transition-colors duration-200 ${generateAudio ? "bg-emerald-500" : "bg-accent"}`}
                   >
                     <div className={`absolute top-[2px] h-[14px] w-[14px] rounded-full bg-white shadow-sm transition-all duration-200 ${generateAudio ? "left-[16px]" : "left-[2px]"}`} />
                   </button>
@@ -948,8 +948,8 @@ export default function Seedance2() {
       {/* Ratio picker modal - mobile */}
       {showRatioModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:hidden" onClick={() => setShowRatioModal(false)}>
-          <div className="w-full max-w-sm rounded-t-2xl border-t border-white/10 bg-[#111] p-4 animate-in slide-in-from-bottom duration-200" onClick={(e) => e.stopPropagation()}>
-            <p className="mb-3 text-center text-xs font-medium text-gray-400">Escolha o tamanho</p>
+          <div className="w-full max-w-sm rounded-t-2xl border-t border-border bg-[#111] p-4 animate-in slide-in-from-bottom duration-200" onClick={(e) => e.stopPropagation()}>
+            <p className="mb-3 text-center text-xs font-medium text-muted-foreground">Escolha o tamanho</p>
             <div className="grid grid-cols-2 gap-2">
               {RATIOS.map((item) => (
                 <button
@@ -957,39 +957,39 @@ export default function Seedance2() {
                   onClick={() => { setRatio(item.value); setShowRatioModal(false); }}
                   className={`rounded-xl border px-3 py-2.5 text-xs font-medium transition-all ${
                     ratio === item.value
-                      ? "border-slate-500/40 bg-white/50/20 text-gray-300"
-                      : "border-white/[0.08] bg-white/[0.04] text-gray-400 hover:bg-white/[0.08]"
+                      ? "border-slate-500/40 bg-accent0/20 text-muted-foreground"
+                      : "border-white/[0.08] bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08]"
                   }`}
                 >
                   {item.label}
                 </button>
               ))}
             </div>
-            <button onClick={() => setShowRatioModal(false)} className="mt-3 w-full rounded-xl bg-white/[0.06] py-2 text-xs text-gray-400">Fechar</button>
+            <button onClick={() => setShowRatioModal(false)} className="mt-3 w-full rounded-xl bg-white/[0.06] py-2 text-xs text-muted-foreground">Fechar</button>
           </div>
         </div>
       )}
       {/* Face warning modal */}
       {showFaceWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowFaceWarning(null)}>
-          <div className="mx-4 w-full max-w-sm rounded-2xl border border-white/10 bg-[#111] p-5" onClick={(e) => e.stopPropagation()}>
+          <div className="mx-4 w-full max-w-sm rounded-2xl border border-border bg-[#111] p-5" onClick={(e) => e.stopPropagation()}>
             <p className="mb-2 text-sm font-semibold text-white">⚠️ Atenção</p>
-            <p className="mb-1 text-xs leading-relaxed text-gray-300">
+            <p className="mb-1 text-xs leading-relaxed text-muted-foreground">
               O Seedance 2 <span className="font-medium text-white">não aceita imagens com rostos reais</span> de pessoas.
             </p>
-            <p className="mb-4 text-xs leading-relaxed text-gray-400">
-              Se quiser adicionar um rosto, crie um <span className="font-medium text-gray-400">Personagem</span> usando o botão abaixo do prompt.
+            <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
+              Se quiser adicionar um rosto, crie um <span className="font-medium text-muted-foreground">Personagem</span> usando o botão abaixo do prompt.
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowFaceWarning(null)}
-                className="flex-1 rounded-xl bg-white/[0.06] py-2 text-xs font-medium text-gray-400 hover:bg-white/[0.1] transition-colors"
+                className="flex-1 rounded-xl bg-white/[0.06] py-2 text-xs font-medium text-muted-foreground hover:bg-white/[0.1] transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={confirmFilePicker}
-                className="flex-1 rounded-xl bg-slate-600/80 py-2 text-xs font-medium text-white hover:bg-white/50 transition-colors"
+                className="flex-1 rounded-xl bg-slate-600/80 py-2 text-xs font-medium text-white hover:bg-accent0 transition-colors"
               >
                 Entendi
               </button>
@@ -1025,10 +1025,10 @@ function UploadSlot({
 
   if (url) {
     return (
-      <div className="relative overflow-hidden rounded-lg border border-white/10" style={{ width: dimension, height: dimension }}>
+      <div className="relative overflow-hidden rounded-lg border border-border" style={{ width: dimension, height: dimension }}>
         <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
         {onRemove && (
-          <button onClick={onRemove} className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/70 text-[10px] text-gray-300 hover:text-white">×</button>
+          <button onClick={onRemove} className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/70 text-[10px] text-muted-foreground hover:text-white">×</button>
         )}
       </div>
     );
@@ -1039,7 +1039,7 @@ function UploadSlot({
       onDragOver={(e) => e.preventDefault()}
       onDrop={onDrop}
       onClick={onClickUpload}
-      className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-white/10 bg-black/30 text-base text-gray-500 transition-all duration-200 hover:border-white/10 hover:bg-white/50/5 hover:text-gray-400 hover:scale-105"
+      className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-border bg-black/30 text-base text-muted-foreground transition-all duration-200 hover:border-border hover:bg-accent0/5 hover:text-muted-foreground hover:scale-105"
       style={{ width: dimension, height: dimension }}
     >
       +
@@ -1051,7 +1051,7 @@ function VideoCard({ gen, onPreview, onDownload, onUse }: { gen: Generation; onP
   return (
     <div
       className={`relative flex aspect-video items-center justify-center overflow-hidden rounded-xl cursor-pointer group ${
-        gen.status === "queued" ? "border border-dashed border-white/10" : "border border-white/10 bg-[#1a1a2e]"
+        gen.status === "queued" ? "border border-dashed border-border" : "border border-border bg-card"
       }`}
       onClick={() => gen.status === "completed" && gen.videoUrl && onPreview(gen)}
     >
@@ -1060,7 +1060,7 @@ function VideoCard({ gen, onPreview, onDownload, onUse }: { gen: Generation; onP
           <HoverVideo src={gen.videoUrl} prompt={gen.prompt} ratio={gen.ratio} duration={gen.duration} />
           <button
             onClick={(e) => { e.stopPropagation(); onDownload?.(gen.videoUrl!, gen.prompt); }}
-            className="absolute top-2 right-2 z-10 rounded-full bg-black/60 p-1.5 text-white/70 opacity-0 group-hover:opacity-100 transition-all hover:bg-black/80 hover:text-white hover:scale-110"
+            className="absolute top-2 right-2 z-10 rounded-full bg-black/60 p-1.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-black/80 hover:text-white hover:scale-110"
             title="Baixar vídeo"
           >
             <Download className="h-4 w-4" />
@@ -1068,7 +1068,7 @@ function VideoCard({ gen, onPreview, onDownload, onUse }: { gen: Generation; onP
           {onUse && (
             <button
               onClick={(e) => { e.stopPropagation(); onUse(gen); }}
-              className="absolute bottom-2 left-2 right-2 z-10 rounded-lg bg-slate-600/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-white/50"
+              className="absolute bottom-2 left-2 right-2 z-10 rounded-lg bg-slate-600/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-accent0"
             >
               Usar modelo
             </button>
@@ -1077,8 +1077,8 @@ function VideoCard({ gen, onPreview, onDownload, onUse }: { gen: Generation; onP
       )}
       {gen.status === "processing" && (
         <div className="text-center">
-          <div className="mx-auto mb-1.5 h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-white/40" />
-          <span className="text-[10px] text-gray-500">gerando...</span>
+          <div className="mx-auto mb-1.5 h-5 w-5 animate-spin rounded-full border-2 border-border border-t-white/40" />
+          <span className="text-[10px] text-muted-foreground">gerando...</span>
         </div>
       )}
       {gen.status === "failed" && (
@@ -1125,7 +1125,7 @@ function HoverVideo({ src, prompt, ratio, duration }: { src: string; prompt: str
         onMouseLeave={handleMouseLeave}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-      <span className="absolute bottom-1.5 left-2 text-[9px] text-white/70 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+      <span className="absolute bottom-1.5 left-2 text-[9px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
         {prompt.length > 40 ? prompt.slice(0, 40) + "…" : prompt} · {ratio} · {duration}s
       </span>
     </>

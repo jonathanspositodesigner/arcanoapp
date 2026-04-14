@@ -157,7 +157,7 @@ const AdminSimpleMetrics = () => {
           {/* Installations Card */}
           <Card className="p-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/50/20 rounded-full">
+              <div className="p-3 bg-accent0/20 rounded-full">
                 <Smartphone className="h-8 w-8 text-slate-400" />
               </div>
               <div>

@@ -100,7 +100,7 @@ export const FullscreenModal = ({
     >
       <button 
         onClick={onClose}
-        className="absolute top-4 right-4 z-10 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+        className="absolute top-4 right-4 z-10 p-3 bg-accent hover:bg-white/20 rounded-full transition-colors"
       >
         <X className="h-6 w-6 text-white" />
       </button>
@@ -121,15 +121,15 @@ export const FullscreenModal = ({
           {({ zoomIn, zoomOut, resetTransform }) => (
             <>
               {/* Zoom controls */}
-              <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 border border-white/10">
-                <button onClick={() => zoomOut()} className="p-1.5 text-white/70 hover:text-white transition-colors">
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 border border-border">
+                <button onClick={() => zoomOut()} className="p-1.5 text-muted-foreground hover:text-white transition-colors">
                   <ZoomOut className="w-5 h-5" />
                 </button>
-                <button onClick={() => zoomIn()} className="p-1.5 text-white/70 hover:text-white transition-colors">
+                <button onClick={() => zoomIn()} className="p-1.5 text-muted-foreground hover:text-white transition-colors">
                   <ZoomIn className="w-5 h-5" />
                 </button>
                 <div className="w-px h-5 bg-white/20 mx-1" />
-                <button onClick={() => resetTransform()} className="p-1.5 text-white/70 hover:text-white transition-colors">
+                <button onClick={() => resetTransform()} className="p-1.5 text-muted-foreground hover:text-white transition-colors">
                   <Maximize2 className="w-4 h-4" />
                 </button>
               </div>
@@ -180,10 +180,10 @@ export const FullscreenModal = ({
                   </div>
 
                   {/* Labels */}
-                  <div className="absolute top-3 left-3 bg-black/60 text-white/80 text-xs font-medium px-3 py-1.5 rounded-full">
+                  <div className="absolute top-3 left-3 bg-black/60 text-foreground text-xs font-medium px-3 py-1.5 rounded-full">
                     {t('tools:upscaler.beforeAfter.before')}
                   </div>
-                  <div className="absolute top-3 right-3 bg-white/15 text-white/80 text-xs font-medium px-3 py-1.5 rounded-full">
+                  <div className="absolute top-3 right-3 bg-white/15 text-foreground text-xs font-medium px-3 py-1.5 rounded-full">
                     {t('tools:upscaler.beforeAfter.after')}
                   </div>
                 </div>

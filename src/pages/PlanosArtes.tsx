@@ -289,7 +289,7 @@ const PlanosArtes = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2d4a5e]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-border"></div>
       </div>
     );
   }
@@ -303,7 +303,7 @@ const PlanosArtes = () => {
         <FadeIn delay={0}>
           <Button
             variant="ghost"
-            className="text-white/70 hover:text-white mb-6"
+            className="text-muted-foreground hover:text-white mb-6"
             onClick={() => navigate("/biblioteca-artes")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -334,7 +334,7 @@ const PlanosArtes = () => {
                   : t('choosePack')
             }
           </h1>
-          <p className="text-white/60 max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto">
             {isRenewal
               ? t('enjoy30Discount')
               : hasNotificationDiscount
@@ -355,7 +355,7 @@ const PlanosArtes = () => {
                   {[...packItems].sort((a, b) => a.slug === 'pack-arcano-vol-4' ? -1 : b.slug === 'pack-arcano-vol-4' ? 1 : 0).map((pack) => (
                     <Card
                       key={pack.id}
-                      className={`bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all relative ${pack.slug === 'pack-arcano-vol-4' ? 'ring-2 ring-[#2d4a5e]/50' : ''}`}
+                      className={`bg-card/80 border-border/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all relative ${pack.slug === 'pack-arcano-vol-4' ? 'ring-2 ring-[#2d4a5e]/50' : ''}`}
                       onClick={() => setSelectedPack(pack)}
                     >
                       {pack.slug === 'pack-arcano-vol-4' && (
@@ -397,7 +397,7 @@ const PlanosArtes = () => {
                   {cursoItems.map((pack) => (
                     <Card
                       key={pack.id}
-                      className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all relative"
+                      className="bg-card/80 border-border/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all relative"
                       onClick={() => setSelectedPack(pack)}
                     >
                       {pack.notification_discount_enabled && isNotificationEligible && (
@@ -429,7 +429,7 @@ const PlanosArtes = () => {
         ) : (
           <>
             <div className="max-w-lg mx-auto">
-              <Card className="relative bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
+              <Card className="relative bg-card/80 border-border/30">
                 {selectedAccessType === 'vitalicio' && accessOptions.length > 1 && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2d4a5e] text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
                     {t('bestValue')}
@@ -440,14 +440,14 @@ const PlanosArtes = () => {
                     <img
                       src={selectedPack.cover_url}
                       alt={selectedPack.name}
-                      className="w-24 h-24 object-cover rounded-lg border-2 border-[#2d4a5e]/50 mx-auto mb-3"
+                      className="w-24 h-24 object-cover rounded-lg border-2 border-border/50 mx-auto mb-3"
                     />
                   )}
                   <CardTitle className="text-xl text-white">{selectedPack?.name}</CardTitle>
                   {!isRenewal && (
                     <button
                       onClick={() => setSelectedPack(null)}
-                      className="text-white/40 hover:text-white/70 text-xs underline underline-offset-2 transition-colors mt-1"
+                      className="text-white/40 hover:text-muted-foreground text-xs underline underline-offset-2 transition-colors mt-1"
                     >
                       {t('buttons.chooseAnotherPack', { ns: 'library' })}
                     </button>
@@ -464,7 +464,7 @@ const PlanosArtes = () => {
                     <span className={`text-3xl font-bold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
                       {formatPrice(calculatePrice(selectedAccessType))}
                     </span>
-                    <span className="text-white/60 text-sm block mt-1">{t('oneTimePayment')}</span>
+                    <span className="text-muted-foreground text-sm block mt-1">{t('oneTimePayment')}</span>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -479,12 +479,12 @@ const PlanosArtes = () => {
                           key={option.type}
                           className={`flex items-center justify-between gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                             selectedAccessType === option.type
-                              ? `border-[#2d4a5e] ${isRenewal ? 'bg-green-500/10' : hasNotificationDiscount ? 'bg-amber-500/10' : 'bg-[#2d4a5e]/10'}`
-                              : 'border-[#2d4a5e]/30 hover:border-[#2d4a5e]/60'
+                              ? `border-border ${isRenewal ? 'bg-green-500/10' : hasNotificationDiscount ? 'bg-amber-500/10' : 'bg-[#2d4a5e]/10'}`
+                              : 'border-border/30 hover:border-border/60'
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            <RadioGroupItem value={option.type} className="border-[#2d4a5e] text-[#2d4a5e]" />
+                            <RadioGroupItem value={option.type} className="border-border text-[#2d4a5e]" />
                             <span className="text-white font-medium">{option.label}</span>
                           </div>
                           <span className={`font-semibold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
@@ -499,7 +499,7 @@ const PlanosArtes = () => {
                     <>
                       <ul className="space-y-3 mb-6">
                         {selectedOption.features.map((feature) => (
-                          <li key={feature} className="flex items-start gap-2 text-white/80">
+                          <li key={feature} className="flex items-start gap-2 text-foreground">
                             <Check className="h-4 w-4 text-[#2d4a5e] mt-0.5 shrink-0" />
                             <span className="text-sm">{feature}</span>
                           </li>

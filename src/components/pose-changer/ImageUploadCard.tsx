@@ -126,14 +126,14 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
   return (
     <>
       <Card className={cn(
-        "relative overflow-hidden bg-white/5 border-white/10",
+        "relative overflow-hidden bg-accent border-border",
         disabled && "opacity-50 cursor-not-allowed",
         className
       )}>
         {/* Header */}
-        <div className="px-2 py-1 border-b border-white/10">
+        <div className="px-2 py-1 border-b border-border">
           <h3 className="text-[10px] font-semibold text-white flex items-center gap-1">
-            <ImageIcon className="w-3 h-3 text-gray-400" />
+            <ImageIcon className="w-3 h-3 text-muted-foreground" />
             {title}
           </h3>
         </div>
@@ -142,7 +142,7 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
         <div
           className={cn(
             "relative h-[120px] lg:h-[160px] cursor-pointer transition-all",
-            !image && "hover:bg-white/50/10",
+            !image && "hover:bg-accent0/10",
             disabled && "cursor-not-allowed"
           )}
           onDrop={handleDrop}
@@ -170,11 +170,11 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
             /* Overlay absoluto para centralização perfeita */
             <div className="absolute inset-0 grid place-items-center pointer-events-none">
               <div className="flex flex-col items-center gap-1 text-center">
-                <div className="w-8 h-8 rounded-lg bg-white/50/20 border border-dashed border-slate-500/40 flex items-center justify-center">
-                  <Upload className="w-4 h-4 text-gray-400" />
+                <div className="w-8 h-8 rounded-lg bg-accent0/20 border border-dashed border-slate-500/40 flex items-center justify-center">
+                  <Upload className="w-4 h-4 text-muted-foreground" />
                 </div>
-                <p className="text-[10px] text-gray-300 font-medium">Arraste ou clique</p>
-                <p className="text-[9px] text-gray-400">Ctrl+V para colar</p>
+                <p className="text-[10px] text-muted-foreground font-medium">Arraste ou clique</p>
+                <p className="text-[9px] text-muted-foreground">Ctrl+V para colar</p>
               </div>
             </div>
           )}
@@ -191,18 +191,18 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
 
         {/* Dimensions display */}
         {finalDimensions && image && (
-          <div className="text-[9px] text-gray-300 text-center py-1 border-t border-white/10">
+          <div className="text-[9px] text-muted-foreground text-center py-1 border-t border-border">
             📐 {finalDimensions.w} x {finalDimensions.h} px
           </div>
         )}
 
         {/* Library Button */}
         {showLibraryButton && (
-          <div className="px-2 py-1 border-t border-white/10">
+          <div className="px-2 py-1 border-t border-border">
             <Button
               variant="outline"
               size="sm"
-              className="w-full h-6 text-[10px] bg-white/50/10 border-white/10 text-gray-300 hover:bg-white/50/20 hover:text-white"
+              className="w-full h-6 text-[10px] bg-accent0/10 border-border text-muted-foreground hover:bg-accent0/20 hover:text-white"
               onClick={(e) => {
                 e.stopPropagation();
                 onOpenLibrary?.();

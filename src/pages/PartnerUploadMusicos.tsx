@@ -209,14 +209,14 @@ const PartnerUploadMusicos = () => {
       <div className="max-w-2xl mx-auto">
         <Button
           variant="ghost"
-          className="text-white/70 hover:text-white mb-6"
+          className="text-muted-foreground hover:text-white mb-6"
           onClick={() => navigate("/parceiro-dashboard-musicos")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar ao Dashboard
         </Button>
 
-        <Card className="bg-[#1a1a2e]/80 border-pink-500/30">
+        <Card className="bg-card/80 border-pink-500/30">
           <CardHeader>
             <CardTitle className="text-white text-2xl">Enviar Nova Arte</CardTitle>
           </CardHeader>
@@ -230,7 +230,7 @@ const PartnerUploadMusicos = () => {
                   className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
                     ${previewUrl 
                       ? 'border-pink-500/50' 
-                      : 'border-white/20 hover:border-pink-500/50'
+                      : 'border-border hover:border-pink-500/50'
                     }`}
                 >
                   {previewUrl ? (
@@ -240,7 +240,7 @@ const PartnerUploadMusicos = () => {
                       className="max-h-64 mx-auto rounded-lg"
                     />
                   ) : (
-                    <div className="text-white/60">
+                    <div className="text-muted-foreground">
                       <ImageIcon className="h-12 w-12 mx-auto mb-2" />
                       <p>Clique para selecionar uma imagem</p>
                     </div>
@@ -262,7 +262,7 @@ const PartnerUploadMusicos = () => {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Nome da arte"
-                  className="bg-[#0f0f1a] border-pink-500/50 text-white"
+                  className="bg-card border-pink-500/50 text-white"
                   required
                 />
               </div>
@@ -271,10 +271,10 @@ const PartnerUploadMusicos = () => {
               <div className="space-y-2">
                 <Label className="text-white">Categoria *</Label>
                 <Select value={category} onValueChange={setCategory} required>
-                  <SelectTrigger className="bg-[#0f0f1a] border-pink-500/50 text-white">
+                  <SelectTrigger className="bg-card border-pink-500/50 text-white">
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a2e] border-pink-500/50">
+                  <SelectContent className="bg-card border-pink-500/50">
                     {categories.map((cat) => (
                       <SelectItem key={cat.id} value={cat.slug} className="text-white">
                         {cat.name}
@@ -291,7 +291,7 @@ const PartnerUploadMusicos = () => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Descrição opcional"
-                  className="bg-[#0f0f1a] border-pink-500/50 text-white min-h-[100px]"
+                  className="bg-card border-pink-500/50 text-white min-h-[100px]"
                 />
               </div>
 
@@ -302,7 +302,7 @@ const PartnerUploadMusicos = () => {
                   value={canvaLink}
                   onChange={(e) => setCanvaLink(e.target.value)}
                   placeholder="https://www.canva.com/..."
-                  className="bg-[#0f0f1a] border-pink-500/50 text-white"
+                  className="bg-card border-pink-500/50 text-white"
                 />
               </div>
 
@@ -313,7 +313,7 @@ const PartnerUploadMusicos = () => {
                   value={driveLink}
                   onChange={(e) => setDriveLink(e.target.value)}
                   placeholder="https://drive.google.com/..."
-                  className="bg-[#0f0f1a] border-pink-500/50 text-white"
+                  className="bg-card border-pink-500/50 text-white"
                 />
               </div>
 

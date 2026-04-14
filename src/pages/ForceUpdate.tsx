@@ -118,8 +118,8 @@ const ForceUpdate = () => {
         <>
           <RefreshCw className="w-16 h-16 text-slate-400 animate-spin mb-4" />
           <h1 className="text-2xl font-bold mb-2">Atualizando...</h1>
-          <p className="text-gray-400 text-center mb-2">{step}</p>
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-muted-foreground text-center mb-2">{step}</p>
+          <p className="text-xs text-muted-foreground text-center">
             Limpando cache e baixando versão mais recente
           </p>
         </>
@@ -129,7 +129,7 @@ const ForceUpdate = () => {
         <>
           <CheckCircle className="w-16 h-16 text-green-500 mb-4" />
           <h1 className="text-2xl font-bold mb-2">Atualizado!</h1>
-          <p className="text-gray-400 text-center">{step}</p>
+          <p className="text-muted-foreground text-center">{step}</p>
         </>
       )}
       
@@ -137,8 +137,8 @@ const ForceUpdate = () => {
         <>
           <AlertTriangle className="w-16 h-16 text-yellow-500 mb-4" />
           <h1 className="text-2xl font-bold mb-2">Ops!</h1>
-          <p className="text-gray-400 text-center mb-2">{step}</p>
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-muted-foreground text-center mb-2">{step}</p>
+          <p className="text-xs text-muted-foreground text-center">
             Tentando recuperar automaticamente...
           </p>
         </>

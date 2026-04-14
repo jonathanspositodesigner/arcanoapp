@@ -56,13 +56,13 @@ const PreviewPanel: React.FC<Props> = ({
                 <div className="flex items-center gap-2 flex-wrap justify-end">
                   <button
                     onClick={downloadResult}
-                    className="text-[11px] text-gray-300 hover:text-white flex items-center gap-1 transition-colors"
+                    className="text-[11px] text-muted-foreground hover:text-white flex items-center gap-1 transition-colors"
                   >
                     <Download className="w-3 h-3" /> Baixar
                   </button>
                   <button
                     onClick={resetTool}
-                    className="text-[11px] text-gray-300 hover:text-white flex items-center gap-1 transition-colors"
+                    className="text-[11px] text-muted-foreground hover:text-white flex items-center gap-1 transition-colors"
                   >
                     <RotateCcw className="w-3 h-3" />
                   </button>
@@ -72,16 +72,16 @@ const PreviewPanel: React.FC<Props> = ({
           ) : isProcessing ? (
             <div className="flex min-h-full flex-col items-center justify-center gap-3">
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-white/[0.04]">
-                <div className="h-full bg-white/50/50 transition-all duration-500" style={{ width: `${progress}%` }} />
+                <div className="h-full bg-accent0/50 transition-all duration-500" style={{ width: `${progress}%` }} />
               </div>
-              <Loader2 className="w-6 h-6 text-gray-500 animate-spin" />
+              <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
               <div className="text-center">
-                <p className="text-[12px] text-gray-400">Processando sua cena...</p>
-                <p className="text-[11px] text-gray-400 mt-0.5">{formatTime(elapsedTime)}</p>
+                <p className="text-[12px] text-muted-foreground">Processando sua cena...</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{formatTime(elapsedTime)}</p>
               </div>
               <button
                 onClick={cancelGeneration}
-                className="text-[10px] text-gray-400 hover:text-gray-400 transition-colors"
+                className="text-[10px] text-muted-foreground hover:text-muted-foreground transition-colors"
               >
                 Cancelar
               </button>
@@ -92,7 +92,7 @@ const PreviewPanel: React.FC<Props> = ({
               <p className="text-[11px] text-red-400/80">{typeof errorMessage === 'object' && errorMessage !== null ? (errorMessage as any).message || JSON.stringify(errorMessage) : errorMessage}</p>
               <button
                 onClick={resetTool}
-                className="text-[10px] text-gray-500 hover:text-gray-300 flex items-center gap-1 transition-colors"
+                className="text-[10px] text-muted-foreground hover:text-muted-foreground flex items-center gap-1 transition-colors"
               >
                 <RotateCcw className="w-3 h-3" /> Tentar novamente
               </button>
@@ -106,7 +106,7 @@ const PreviewPanel: React.FC<Props> = ({
           ) : (
             <div className="flex min-h-full flex-col items-center justify-center gap-2 text-center">
               <Film className="w-8 h-8 text-gray-200" strokeWidth={1} />
-              <p className="text-[12px] text-gray-400">Sua cena aparecerá aqui</p>
+              <p className="text-[12px] text-muted-foreground">Sua cena aparecerá aqui</p>
             </div>
           )}
         </div>
@@ -114,7 +114,7 @@ const PreviewPanel: React.FC<Props> = ({
 
       {status === 'idle' && (
         <div className="flex-shrink-0 px-3 pb-2 text-center">
-          <span className="text-[10px] text-gray-400">≈ {estimatedCredits} créditos</span>
+          <span className="text-[10px] text-muted-foreground">≈ {estimatedCredits} créditos</span>
         </div>
       )}
     </div>

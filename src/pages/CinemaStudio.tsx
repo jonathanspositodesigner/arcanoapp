@@ -179,22 +179,22 @@ const CinemaStudio: React.FC = () => {
       <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#08080f]">
         <div className="h-12 flex-shrink-0 flex items-center justify-between px-3 bg-[#0c0c16]" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
           <div className="flex items-center gap-2.5 min-w-0">
-            <button onClick={handleBackToPicker} className="p-1.5 rounded-md hover:bg-white/5 transition-colors flex-shrink-0">
-              <ArrowLeft className="w-4 h-4 text-gray-500" />
+            <button onClick={handleBackToPicker} className="p-1.5 rounded-md hover:bg-accent transition-colors flex-shrink-0">
+              <ArrowLeft className="w-4 h-4 text-muted-foreground" />
             </button>
             {projectManager.activeProject && (
-              <span className="text-[11px] text-gray-500 truncate max-w-[120px] sm:max-w-[200px]" title={projectManager.activeProject.name}>
+              <span className="text-[11px] text-muted-foreground truncate max-w-[120px] sm:max-w-[200px]" title={projectManager.activeProject.name}>
                 {projectManager.activeProject.name}
               </span>
             )}
-            <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.15em] truncate hidden sm:inline">Cinema Studio</span>
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-[0.15em] truncate hidden sm:inline">Cinema Studio</span>
           </div>
 
           <div className="bg-white/[0.04] rounded-md p-0.5 flex flex-shrink-0">
             <button
               onClick={() => studio.setMode('photo')}
               className={`px-2.5 sm:px-3 py-1 text-[11px] rounded font-medium flex items-center gap-1.5 transition-all ${
-                studio.mode === 'photo' ? 'bg-white/[0.08] text-gray-200' : 'text-gray-500 hover:text-gray-300'
+                studio.mode === 'photo' ? 'bg-white/[0.08] text-gray-200' : 'text-muted-foreground hover:text-muted-foreground'
               }`}
             >
               <Camera className="w-3 h-3" /> Foto
@@ -202,7 +202,7 @@ const CinemaStudio: React.FC = () => {
             <button
               onClick={() => studio.setMode('video')}
               className={`px-2.5 sm:px-3 py-1 text-[11px] rounded font-medium flex items-center gap-1.5 transition-all ${
-                studio.mode === 'video' ? 'bg-white/[0.08] text-gray-200' : 'text-gray-500 hover:text-gray-300'
+                studio.mode === 'video' ? 'bg-white/[0.08] text-gray-200' : 'text-muted-foreground hover:text-muted-foreground'
               }`}
             >
               <Film className="w-3 h-3" /> Vídeo
@@ -214,11 +214,11 @@ const CinemaStudio: React.FC = () => {
             {projectManager.activeProject && (
               <div className="flex items-center gap-1.5">
                 {lastSavedText && (
-                  <span className="text-[9px] text-gray-400 hidden sm:inline">{lastSavedText}</span>
+                  <span className="text-[9px] text-muted-foreground hidden sm:inline">{lastSavedText}</span>
                 )}
                 <button
                   onClick={handleManualSave}
-                  className="p-1.5 rounded-md hover:bg-white/5 transition-colors text-gray-500 hover:text-gray-300"
+                  className="p-1.5 rounded-md hover:bg-accent transition-colors text-muted-foreground hover:text-muted-foreground"
                   title="Salvar projeto"
                 >
                   <Save className="w-3.5 h-3.5" />
@@ -226,16 +226,16 @@ const CinemaStudio: React.FC = () => {
               </div>
             )}
 
-            <div className="hidden md:flex items-center gap-1 text-[11px] text-gray-500 px-2 py-1">
+            <div className="hidden md:flex items-center gap-1 text-[11px] text-muted-foreground px-2 py-1">
               <Coins className="w-3 h-3 text-yellow-500/60" />
-              <span className="text-gray-400 font-medium">{studio.creditsLoading ? '...' : studio.credits}</span>
+              <span className="text-muted-foreground font-medium">{studio.creditsLoading ? '...' : studio.credits}</span>
             </div>
             {!studio.isProcessing && studio.status !== 'completed' && (
               <Button
                 onClick={studio.handleGenerate}
                 disabled={!studio.canGenerate}
                 size="sm"
-                className="h-7 px-2.5 sm:px-3 text-[11px] bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 border-0 disabled:opacity-30 disabled:text-gray-400"
+                className="h-7 px-2.5 sm:px-3 text-[11px] bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 border-0 disabled:opacity-30 disabled:text-muted-foreground"
               >
                 {studio.isSubmitting ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
@@ -243,7 +243,7 @@ const CinemaStudio: React.FC = () => {
                   <>
                     <Sparkles className="w-3 h-3 mr-1" />
                     <span className="hidden sm:inline">Gerar</span>
-                    <span className="ml-1.5 text-gray-500 flex items-center gap-0.5">
+                    <span className="ml-1.5 text-muted-foreground flex items-center gap-0.5">
                       <Coins className="w-2.5 h-2.5" />{studio.estimatedCredits}
                     </span>
                   </>
@@ -258,7 +258,7 @@ const CinemaStudio: React.FC = () => {
             <button
               onClick={() => setMobileTab('controls')}
               className={`flex-1 py-2 text-[11px] font-medium transition-colors ${
-                mobileTab === 'controls' ? 'text-gray-200 border-b border-gray-400' : 'text-gray-400'
+                mobileTab === 'controls' ? 'text-gray-200 border-b border-gray-400' : 'text-muted-foreground'
               }`}
             >
               Controles
@@ -266,7 +266,7 @@ const CinemaStudio: React.FC = () => {
             <button
               onClick={() => setMobileTab('preview')}
               className={`flex-1 py-2 text-[11px] font-medium transition-colors ${
-                mobileTab === 'preview' ? 'text-gray-200 border-b border-gray-400' : 'text-gray-400'
+                mobileTab === 'preview' ? 'text-gray-200 border-b border-gray-400' : 'text-muted-foreground'
               }`}
             >
               Pré-visualização

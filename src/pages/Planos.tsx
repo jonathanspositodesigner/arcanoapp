@@ -215,14 +215,14 @@ const Planos = () => {
   const currentPlans = plans[billingPeriod];
   
   return (
-    <div className="min-h-screen bg-[#111113]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-        <Button variant="ghost" onClick={() => navigate('/biblioteca-prompts')} className="text-gray-300 hover:text-white hover:bg-white/50/20">
+        <Button variant="ghost" onClick={() => navigate('/biblioteca-prompts')} className="text-muted-foreground hover:text-white hover:bg-accent0/20">
           <ArrowLeft className="w-4 h-4 mr-2" />
           {t('planos.back')}
         </Button>
-        <Button variant="outline" onClick={() => navigate('/login')} className="gap-2 border-white/10 text-gray-300 hover:bg-white/50/20 hover:text-white">
+        <Button variant="outline" onClick={() => navigate('/login')} className="gap-2 border-border text-muted-foreground hover:bg-accent0/20 hover:text-white">
           <LogIn className="w-4 h-4" />
           {t('planos.alreadyPremium')}
         </Button>
@@ -244,11 +244,11 @@ const Planos = () => {
 
           {/* Billing Toggle */}
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
-            <TabsList className="bg-[#111113] border border-white/10">
-              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white text-gray-300 px-6">
+            <TabsList className="bg-background border border-border">
+              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white text-muted-foreground px-6">
                 {t('planos.monthly')}
               </TabsTrigger>
-              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white text-gray-300 px-6 relative">
+              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white text-muted-foreground px-6 relative">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] text-green-400 font-medium whitespace-nowrap">
                   {t('planos.discount')}
                 </span>
@@ -278,7 +278,7 @@ const Planos = () => {
             const isBestSeller = (plan as any).bestSeller;
             const savingsPercent = (plan as any).savingsPercent;
             return (
-            <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#111113] w-full ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === currentPlans.length - 1 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-slate-500 shadow-lg shadow-slate-500/20" : "border border-white/10"}`}>
+            <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-background w-full ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === currentPlans.length - 1 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-slate-500 shadow-lg shadow-slate-500/20" : "border border-border"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-slate-600 to-pink-600 text-white px-4 py-1">
                   {t('planos.bestSeller')}
@@ -296,17 +296,17 @@ const Planos = () => {
 
               <div className="text-center mb-2 lg:mb-6 min-h-[80px]">
                 {plan.originalPrice && (
-                  <p className="text-gray-400 line-through text-sm">
+                  <p className="text-muted-foreground line-through text-sm">
                     R${plan.originalPrice}{t('planos.perMonth')}
                   </p>
                 )}
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-gray-400 text-lg">R$</span>
+                  <span className="text-muted-foreground text-lg">R$</span>
                   <span className="text-4xl font-bold text-white">{plan.price}</span>
-                  <span className="text-gray-400">{t('planos.perMonth')}</span>
+                  <span className="text-muted-foreground">{t('planos.perMonth')}</span>
                 </div>
                 {billingPeriod === "anual" && (plan as any).yearlyTotal && (
-                  <p className="text-gray-400 text-sm mt-1">
+                  <p className="text-muted-foreground text-sm mt-1">
                     R${(plan as any).yearlyTotal}{t('planos.perYear')}
                   </p>
                 )}
@@ -319,7 +319,7 @@ const Planos = () => {
 
               <Button 
                 onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
-                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 text-white font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-white/10 text-gray-300"}`}
+                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 text-white font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-accent hover:bg-accent text-muted-foreground"}`}
               >
                 {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>
@@ -336,21 +336,21 @@ const Planos = () => {
                       }}
                     >
                       {feature.included ? (
-                        <Check className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+                        <Check className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
                       ) : (
                         <X className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
                       )}
-                      <span className={`${feature.included ? "text-gray-300" : "text-orange-500"} flex items-center gap-1.5`}>
+                      <span className={`${feature.included ? "text-muted-foreground" : "text-orange-500"} flex items-center gap-1.5`}>
                         {feature.text}
                       </span>
                       {(feature as any).isAiTools && (
-                        <ChevronDown className={`w-3.5 h-3.5 shrink-0 mt-0.5 transition-transform duration-200 ${feature.included ? 'text-gray-400' : 'text-orange-500'} ${expandedAiTools[plan.name] ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={`w-3.5 h-3.5 shrink-0 mt-0.5 transition-transform duration-200 ${feature.included ? 'text-muted-foreground' : 'text-orange-500'} ${expandedAiTools[plan.name] ? 'rotate-180' : ''}`} />
                       )}
                     </div>
                     {(feature as any).isAiTools && expandedAiTools[plan.name] && (
                       <ul className="ml-6 mt-1.5 space-y-1">
                         {aiToolsList.map((tool, tIndex) => (
-                          <li key={tIndex} className={`text-xs ${tIndex === aiToolsList.length - 1 ? 'text-gray-400 italic' : 'text-gray-400'}`}>
+                          <li key={tIndex} className={`text-xs ${tIndex === aiToolsList.length - 1 ? 'text-muted-foreground italic' : 'text-muted-foreground'}`}>
                             • {tool}
                           </li>
                         ))}
@@ -361,13 +361,13 @@ const Planos = () => {
               </ul>
 
               {(plan as any).bonusCredits && (
-                <div className="mt-6 pt-4 border-t border-white/10">
-                  <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">
+                <div className="mt-6 pt-4 border-t border-border">
+                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">
                     {t('planos.extraBenefits')}
                   </p>
                   <div className="flex items-center gap-2 text-sm">
                     <Coins className="w-4 h-4 text-yellow-400" />
-                    <span className="text-gray-300">
+                    <span className="text-muted-foreground">
                       +{(plan as any).bonusCredits} créditos de IA/mês
                     </span>
                   </div>
@@ -375,17 +375,17 @@ const Planos = () => {
               )}
 
               {plan.name === "IA Unlimited" && (
-                <div className="mt-6 pt-4 border-t border-white/10">
-                  <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">
+                <div className="mt-6 pt-4 border-t border-border">
+                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">
                     {t('planos.extraBenefits')}
                   </p>
                   <div className="flex items-center gap-2 text-sm mb-2">
-                    <Sparkles className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-300">{t('planos.allAIFeatures')}</span>
+                    <Sparkles className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">{t('planos.allAIFeatures')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Coins className="w-4 h-4 text-yellow-400" />
-                    <span className="text-gray-300">
+                    <span className="text-muted-foreground">
                       Créditos ilimitados de IA
                     </span>
                   </div>
@@ -399,13 +399,13 @@ const Planos = () => {
 
       {/* Coming Soon Modal */}
       <Dialog open={showComingSoonModal} onOpenChange={setShowComingSoonModal}>
-        <DialogContent className="sm:max-w-md bg-[#111113] border-white/10">
+        <DialogContent className="sm:max-w-md bg-background border-border">
           <DialogHeader className="text-center">
-            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-white/50/20 flex items-center justify-center">
-              <Clock className="w-8 h-8 text-gray-400" />
+            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-accent0/20 flex items-center justify-center">
+              <Clock className="w-8 h-8 text-muted-foreground" />
             </div>
             <DialogTitle className="text-2xl font-bold text-center text-white">{t('planos.comingSoon.title')}</DialogTitle>
-            <DialogDescription className="text-center text-gray-300">
+            <DialogDescription className="text-center text-muted-foreground">
               {t('planos.comingSoon.description')}
             </DialogDescription>
           </DialogHeader>

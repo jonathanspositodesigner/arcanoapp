@@ -100,8 +100,8 @@ const ArtesMusicosMarketing = () => {
         <p className="text-muted-foreground mb-4">Ferramentas de divulgação e campanhas</p>
 
         {isReordering && (
-          <div className="mb-4 p-3 bg-white/50/10 border border-white/10/20 rounded-lg text-center">
-            <p className="text-sm text-gray-400 font-medium">
+          <div className="mb-4 p-3 bg-accent0/10 border border-border/20 rounded-lg text-center">
+            <p className="text-sm text-muted-foreground font-medium">
               🔄 Arraste os cards para reordenar
             </p>
           </div>
@@ -118,7 +118,7 @@ const ArtesMusicosMarketing = () => {
             {...getDragProps("push-notifications")}
           >
             {isReordering && (
-              <div className="absolute top-2 right-2 z-10 p-1 bg-white/50/20 rounded-md">
+              <div className="absolute top-2 right-2 z-10 p-1 bg-accent0/20 rounded-md">
                 <GripVertical className="h-4 w-4 text-slate-400" />
               </div>
             )}
@@ -140,14 +140,14 @@ const ArtesMusicosMarketing = () => {
             isReordering && "[&>*]:ring-2 [&>*]:ring-slate-500/20 [&>*]:hover:ring-slate-500/40"
           )}>
             {/* Push Notification Analytics */}
-            <Card className="p-6 border-2 border-white/10 relative" {...getDragProps("push-analytics")}>
+            <Card className="p-6 border-2 border-border relative" {...getDragProps("push-analytics")}>
               {isReordering && (
-                <div className="absolute top-2 right-2 z-10 p-1 bg-white/50/20 rounded-md">
+                <div className="absolute top-2 right-2 z-10 p-1 bg-accent0/20 rounded-md">
                   <GripVertical className="h-4 w-4 text-slate-400" />
                 </div>
               )}
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-white/50/20 rounded-full">
+                <div className="p-2 bg-accent0/20 rounded-full">
                   <Bell className="h-6 w-6 text-slate-400" />
                 </div>
                 <div>

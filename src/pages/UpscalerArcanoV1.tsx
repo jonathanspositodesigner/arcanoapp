@@ -166,7 +166,7 @@ const UpscalerArcanoV1 = () => {
 
   if (isLoading || promptsLoading) {
     return (
-      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-500"></div>
       </div>
     );
@@ -179,7 +179,7 @@ const UpscalerArcanoV1 = () => {
   const currentLesson = lessons[selectedLesson];
 
   return (
-    <div className="min-h-screen bg-[#111113] flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <div className="container mx-auto px-4 py-8 max-w-6xl flex-1">
         {/* Confetti Animation */}
         {showConfetti && (
@@ -196,7 +196,7 @@ const UpscalerArcanoV1 = () => {
             variant="ghost"
             size="icon"
             onClick={goBack}
-            className="shrink-0 text-gray-300 hover:text-white hover:bg-white/50/20"
+            className="shrink-0 text-muted-foreground hover:text-white hover:bg-accent0/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -204,26 +204,26 @@ const UpscalerArcanoV1 = () => {
             <h1 className="text-lg md:text-3xl font-bold text-white">
               Upscaler Arcano v1.0
             </h1>
-            <p className="text-gray-300 text-sm md:text-base">
+            <p className="text-muted-foreground text-sm md:text-base">
               {t('upscalerLessons.description')}
             </p>
           </div>
         </div>
 
         {/* Master's Journey Progress Bar */}
-        <div className="mb-6 p-4 bg-[#111113]/50 border border-white/10 rounded-lg">
+        <div className="mb-6 p-4 bg-background/50 border border-border rounded-lg">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-white flex items-center gap-2">
               <Trophy className="h-4 w-4 text-yellow-500" />
               {t('toolLessons.mastersJourney')}
             </span>
-            <span className="text-xs text-gray-300">
+            <span className="text-xs text-muted-foreground">
               {progressCount}/{requiredLessons} {t('toolLessons.lessons').toLowerCase()}
             </span>
           </div>
           
           {/* Progress Bar */}
-          <div className="h-3 bg-white/5 rounded-full overflow-hidden">
+          <div className="h-3 bg-accent rounded-full overflow-hidden">
             <div 
               className="h-full bg-gradient-to-r from-slate-600 via-slate-500 to-gray-400 
                          transition-all duration-700 ease-out rounded-full"
@@ -295,15 +295,15 @@ const UpscalerArcanoV1 = () => {
                   </Button>
                 </div>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="bg-[#111113] border-white/10 p-3 max-w-xs">
-                <p className="text-sm text-gray-300">{getTooltipMessage()}</p>
+              <TooltipContent side="bottom" className="bg-background border-border p-3 max-w-xs">
+                <p className="text-sm text-muted-foreground">{getTooltipMessage()}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
 
           {/* Unlock message below button */}
           {!isToolUnlocked && (
-            <p className="text-xs text-center text-gray-400 mt-2">
+            <p className="text-xs text-center text-muted-foreground mt-2">
               {t('toolLessons.watchToUnlock')}
             </p>
           )}
@@ -316,9 +316,9 @@ const UpscalerArcanoV1 = () => {
             {currentLesson && (
               <>
                 {/* Lesson Info - ABOVE video */}
-                <Card className="p-4 bg-[#111113]/50 border-white/10">
+                <Card className="p-4 bg-background/50 border-border">
                   <h2 className="text-base md:text-xl font-bold mb-2 flex items-center gap-2 flex-wrap text-white">
-                    <Play className="h-5 w-5 text-gray-400" />
+                    <Play className="h-5 w-5 text-muted-foreground" />
                     {t(currentLesson.titleKey)}
                     {watchedLessons.includes(selectedLesson + 1) && (
                       <span className="text-xs bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full ml-2">
@@ -329,7 +329,7 @@ const UpscalerArcanoV1 = () => {
                 </Card>
 
                 {/* Video Player */}
-                <div className="aspect-video w-full rounded-lg overflow-hidden bg-white/5">
+                <div className="aspect-video w-full rounded-lg overflow-hidden bg-accent">
                   <iframe
                     src={currentLesson.videoUrl}
                     title={t(currentLesson.titleKey)}
@@ -347,7 +347,7 @@ const UpscalerArcanoV1 = () => {
                   className={`w-full sm:w-auto ${
                     watchedLessons.includes(selectedLesson + 1) 
                       ? 'bg-green-600 hover:bg-green-700 text-white' 
-                      : 'border-white/10 text-gray-300 hover:bg-green-600/10 hover:text-green-500 hover:border-green-600'
+                      : 'border-border text-muted-foreground hover:bg-green-600/10 hover:text-green-500 hover:border-green-600'
                   }`}
                 >
                   <Check className="h-4 w-4 mr-2" />
@@ -386,8 +386,8 @@ const UpscalerArcanoV1 = () => {
             {lessons.map((lesson, index) => (
               <Card
                 key={index}
-                className={`p-3 cursor-pointer transition-all bg-[#111113]/50 border-white/10 hover:bg-white/50/10 ${
-                  selectedLesson === index ? 'border-white/15 bg-white/50/10' : ''
+                className={`p-3 cursor-pointer transition-all bg-background/50 border-border hover:bg-accent0/10 ${
+                  selectedLesson === index ? 'border-border bg-accent0/10' : ''
                 }`}
                 onClick={() => handleLessonClick(index)}
               >
@@ -398,7 +398,7 @@ const UpscalerArcanoV1 = () => {
                       ? 'bg-green-500 text-white'
                       : selectedLesson === index 
                         ? 'bg-slate-600 text-white' 
-                        : 'bg-white/5 text-gray-400'
+                        : 'bg-accent text-muted-foreground'
                   }`}>
                     {watchedLessons.includes(index + 1) ? (
                       <Check className="h-4 w-4" />
@@ -410,7 +410,7 @@ const UpscalerArcanoV1 = () => {
                   <div className="flex-1 min-w-0">
                     <p className={`font-medium truncate ${
                       watchedLessons.includes(index + 1) ? 'text-green-500' :
-                      selectedLesson === index ? 'text-gray-300' : 'text-gray-400'
+                      selectedLesson === index ? 'text-muted-foreground' : 'text-muted-foreground'
                     }`}>
                       {t(lesson.titleKey)}
                     </p>
@@ -429,9 +429,9 @@ const UpscalerArcanoV1 = () => {
             {/* Light Version Notice - Below lessons, above WhatsApp */}
             <div 
               onClick={() => handleLessonClick(lessons.length - 1)}
-              className="mt-4 px-3 py-1.5 bg-white/50/20 border border-white/10 
-                         rounded-full cursor-pointer hover:bg-white/50/30 transition-all 
-                         inline-flex items-center gap-2 text-xs text-gray-300"
+              className="mt-4 px-3 py-1.5 bg-accent0/20 border border-border 
+                         rounded-full cursor-pointer hover:bg-accent0/30 transition-all 
+                         inline-flex items-center gap-2 text-xs text-muted-foreground"
             >
               <AlertTriangle className="h-3 w-3" />
               <span>{t('toolLessons.lightVersionAvailable')}</span>

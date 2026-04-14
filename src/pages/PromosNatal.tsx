@@ -284,7 +284,7 @@ const PromosNatal = () => {
       <div className="max-w-6xl mx-auto relative z-10">
         <Button
           variant="ghost"
-          className="text-gray-400 hover:text-gray-100 hover:bg-white/10 mb-6"
+          className="text-muted-foreground hover:text-gray-100 hover:bg-accent mb-6"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -319,7 +319,7 @@ const PromosNatal = () => {
               : t('promo.choosePackWithDiscount', { percent: discountPercent })
             }
           </h1>
-          <p className="text-gray-400 max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto">
             {t('promo.specialOfferDescription')}
           </p>
         </div>
@@ -333,7 +333,7 @@ const PromosNatal = () => {
                   {packItems.map((pack) => (
                     <Card
                       key={pack.id}
-                      className="bg-white/5 border border-red-500/20 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
+                      className="bg-accent border border-red-500/20 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
                       onClick={() => setSelectedPack(pack)}
                     >
                       <div className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-2 py-1 rounded-full z-10 font-bold shadow-lg">
@@ -366,7 +366,7 @@ const PromosNatal = () => {
                   {cursoItems.map((pack) => (
                     <Card
                       key={pack.id}
-                      className="bg-white/5 border border-red-500/20 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
+                      className="bg-accent border border-red-500/20 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
                       onClick={() => setSelectedPack(pack)}
                     >
                       <div className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-2 py-1 rounded-full z-10 font-bold shadow-lg">
@@ -397,7 +397,7 @@ const PromosNatal = () => {
             <div className="flex justify-center mb-6">
               <Button
                 variant="outline"
-                className="bg-white/10 border-red-500/30 text-red-400 hover:bg-white/15"
+                className="bg-accent border-red-500/30 text-red-400 hover:bg-white/15"
                 onClick={() => setSelectedPack(null)}
               >
                 {t('promo.chooseAnotherPack')}
@@ -420,7 +420,7 @@ const PromosNatal = () => {
                 return (
                   <Card
                     key={option.type}
-                    className={`relative bg-white/5 border border-red-500/20 shadow-md ${
+                    className={`relative bg-accent border border-red-500/20 shadow-md ${
                       option.highlighted ? "ring-2 ring-red-500 scale-105 shadow-xl border-red-500/30" : ""
                     }`}
                   >
@@ -442,7 +442,7 @@ const PromosNatal = () => {
                       <CardTitle className="text-lg text-gray-100 font-bold">{option.label}</CardTitle>
                       <div className="mt-4">
                         <div className="flex items-center justify-center gap-2 mb-1">
-                          <span className="text-gray-500 line-through text-lg">
+                          <span className="text-muted-foreground line-through text-lg">
                             {formatOriginalPrice(option.type)}
                           </span>
                           <Badge className="bg-red-600 text-white text-xs font-bold">
@@ -457,7 +457,7 @@ const PromosNatal = () => {
                     <CardContent className="space-y-4">
                       <ul className="space-y-2">
                         {option.features.map((feature, i) => (
-                          <li key={i} className="flex items-start gap-2 text-gray-400 text-sm">
+                          <li key={i} className="flex items-start gap-2 text-muted-foreground text-sm">
                             <Check className="h-4 w-4 text-green-400 mt-0.5 shrink-0" />
                             {feature}
                           </li>

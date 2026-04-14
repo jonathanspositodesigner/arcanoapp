@@ -7,7 +7,7 @@ const Seedance2PromoBanner = () => {
   const { t } = useTranslation("prompts");
 
   return (
-    <div className="mb-6 sm:mb-8 relative w-full rounded-2xl overflow-hidden border border-white/10">
+    <div className="mb-6 sm:mb-8 relative w-full rounded-2xl overflow-hidden border border-border">
       <div className="relative w-full aspect-[4/3] sm:aspect-[16/5]">
         <video className="absolute inset-0 w-full h-full object-cover" autoPlay loop muted playsInline>
           <source src="/videos/seedance2-promo.mp4" type="video/mp4" />
@@ -18,7 +18,7 @@ const Seedance2PromoBanner = () => {
             <h2 className="text-base sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-4 leading-tight">
               {t('banner.upscalerTitle')}
             </h2>
-            <p className="text-[10px] sm:text-sm lg:text-base text-white/80 mb-3 sm:mb-8 leading-relaxed">
+            <p className="text-[10px] sm:text-sm lg:text-base text-foreground mb-3 sm:mb-8 leading-relaxed">
               {t('banner.upscalerDescription')}
             </p>
             <div className="flex flex-row items-center gap-3 sm:gap-4">

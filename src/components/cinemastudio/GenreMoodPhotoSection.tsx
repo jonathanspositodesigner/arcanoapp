@@ -82,7 +82,7 @@ const StyleDropdown: React.FC<{
         className="flex items-center justify-between w-full py-1.5 px-2 rounded-md bg-black/20 border border-white/[0.06] hover:border-white/[0.12] transition-colors"
       >
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-[9px] text-gray-400 uppercase tracking-[0.12em] font-semibold w-12 flex-shrink-0">{label}</span>
+          <span className="text-[9px] text-muted-foreground uppercase tracking-[0.12em] font-semibold w-12 flex-shrink-0">{label}</span>
           {selected && (
             <div className="flex items-center gap-1.5 min-w-0">
               {selected.seed && (
@@ -93,11 +93,11 @@ const StyleDropdown: React.FC<{
                   loading="lazy"
                 />
               )}
-              <span className="text-[11px] text-gray-300 truncate">{selected.label}</span>
+              <span className="text-[11px] text-muted-foreground truncate">{selected.label}</span>
             </div>
           )}
         </div>
-        <ChevronDown className={`w-3 h-3 text-gray-400 flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3 h-3 text-muted-foreground flex-shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
@@ -128,14 +128,14 @@ const StyleDropdown: React.FC<{
                     />
                   ) : (
                     <div className="w-[40px] h-[40px] rounded bg-white/[0.04] flex-shrink-0 flex items-center justify-center">
-                      <span className="text-gray-400 text-[9px]">—</span>
+                      <span className="text-muted-foreground text-[9px]">—</span>
                     </div>
                   )}
                   <div className="text-left min-w-0">
-                    <span className={`text-[11px] font-medium block ${isSelected ? 'text-gray-200' : 'text-gray-400'}`}>
+                    <span className={`text-[11px] font-medium block ${isSelected ? 'text-gray-200' : 'text-muted-foreground'}`}>
                       {opt.label}
                     </span>
-                    <span className="text-[9px] text-gray-400 block">{opt.description}</span>
+                    <span className="text-[9px] text-muted-foreground block">{opt.description}</span>
                   </div>
                 </button>
               );

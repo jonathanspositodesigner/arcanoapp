@@ -24,13 +24,13 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
 }) => {
   return (
     <Card className={cn(
-      "relative overflow-hidden bg-white/5 border-white/10 flex-shrink-0",
+      "relative overflow-hidden bg-accent border-border flex-shrink-0",
       disabled && "opacity-50 cursor-not-allowed"
     )}>
       {/* Header - same as ImageUploadCard */}
-      <div className="px-2 py-1 border-b border-white/10">
+      <div className="px-2 py-1 border-b border-border">
         <h3 className="text-[10px] font-semibold text-white flex items-center gap-1">
-          <ImageIcon className="w-3 h-3 text-gray-400" />
+          <ImageIcon className="w-3 h-3 text-muted-foreground" />
            {title}
         </h3>
       </div>
@@ -39,7 +39,7 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
       <div
         className={cn(
           "relative min-h-[120px] h-[120px] lg:min-h-[160px] lg:h-[160px] transition-all",
-          !image && "cursor-pointer hover:bg-white/50/10",
+          !image && "cursor-pointer hover:bg-accent0/10",
           disabled && "cursor-not-allowed"
         )}
         onClick={!image && !disabled ? onOpenLibrary : undefined}
@@ -69,11 +69,11 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
           /* Overlay absoluto para centralização perfeita */
           <div className="absolute inset-0 grid place-items-center pointer-events-none">
             <div className="flex flex-col items-center gap-1 text-center">
-              <div className="w-8 h-8 rounded-lg bg-white/10 border border-dashed border-white/10 flex items-center justify-center">
-                <Plus className="w-4 h-4 text-gray-400" />
+              <div className="w-8 h-8 rounded-lg bg-accent border border-dashed border-border flex items-center justify-center">
+                <Plus className="w-4 h-4 text-muted-foreground" />
               </div>
-              <p className="text-[10px] text-gray-300 font-medium">{emptyLabel}</p>
-              <p className="text-[9px] text-gray-400">{emptySubLabel}</p>
+              <p className="text-[10px] text-muted-foreground font-medium">{emptyLabel}</p>
+              <p className="text-[9px] text-muted-foreground">{emptySubLabel}</p>
             </div>
           </div>
         )}
@@ -81,11 +81,11 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
 
       {/* Change button when image selected - same style as library button */}
       {image && (
-        <div className="px-2 py-1 border-t border-white/10">
+        <div className="px-2 py-1 border-t border-border">
           <button
             onClick={onOpenLibrary}
             disabled={disabled}
-            className="w-full h-6 text-[10px] rounded-md bg-white/50/10 border border-white/10 text-gray-300 hover:bg-white/50/20 hover:text-white transition-colors flex items-center justify-center gap-1"
+            className="w-full h-6 text-[10px] rounded-md bg-accent0/10 border border-border text-muted-foreground hover:bg-accent0/20 hover:text-white transition-colors flex items-center justify-center gap-1"
           >
             <ImageIcon className="w-3 h-3" />
             Trocar Imagem

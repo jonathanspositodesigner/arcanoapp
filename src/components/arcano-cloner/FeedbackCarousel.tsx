@@ -54,7 +54,7 @@ const feedbacks = [
 ];
 
 const FeedbackCard = ({ fb }: { fb: typeof feedbacks[0] }) => (
-  <div className="min-w-[280px] max-w-[280px] sm:min-w-[260px] sm:max-w-[260px] flex-shrink-0 bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
+  <div className="min-w-[280px] max-w-[280px] sm:min-w-[260px] sm:max-w-[260px] flex-shrink-0 bg-accent border border-border rounded-2xl p-4 flex flex-col gap-3">
     <div className="flex items-center gap-3">
       <img
         src={fb.photo}
@@ -66,12 +66,12 @@ const FeedbackCard = ({ fb }: { fb: typeof feedbacks[0] }) => (
         <p className="text-white font-semibold text-sm">{fb.name}</p>
         <div className="flex gap-0.5">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Star key={i} className="w-3 h-3 fill-gray-400 text-gray-400" />
+            <Star key={i} className="w-3 h-3 fill-gray-400 text-muted-foreground" />
           ))}
         </div>
       </div>
     </div>
-    <p className="text-white/70 text-sm leading-relaxed">"{fb.text}"</p>
+    <p className="text-muted-foreground text-sm leading-relaxed">"{fb.text}"</p>
   </div>
 );
 
@@ -114,9 +114,9 @@ const DesktopFeedbackCarousel = () => {
         <AnimatedSection as="div" delay={100}>
           <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-4">
             O que nossos{" "}
-            <span className="text-gray-400">usuários</span> dizem
+            <span className="text-muted-foreground">usuários</span> dizem
           </h2>
-          <p className="text-white/60 text-center mb-12 max-w-xl mx-auto">
+          <p className="text-muted-foreground text-center mb-12 max-w-xl mx-auto">
             Feedbacks reais de quem já usa a ferramenta no dia a dia
           </p>
         </AnimatedSection>
@@ -183,9 +183,9 @@ const MobileFeedbackCarousel = () => {
         <AnimatedSection as="div" delay={100}>
           <h2 className="font-space-grotesk font-bold text-2xl text-white text-center mb-4">
             O que nossos{" "}
-            <span className="text-gray-400">usuários</span> dizem
+            <span className="text-muted-foreground">usuários</span> dizem
           </h2>
-          <p className="text-white/60 text-center mb-8 text-sm">
+          <p className="text-muted-foreground text-center mb-8 text-sm">
             Feedbacks reais de quem já usa a ferramenta no dia a dia
           </p>
         </AnimatedSection>
@@ -202,7 +202,7 @@ const MobileFeedbackCarousel = () => {
         >
           {feedbacks.map((fb, index) => (
             <div key={`mobile-${fb.name}-${index}`} className="min-w-full px-2">
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col gap-3">
+              <div className="bg-accent border border-border rounded-2xl p-5 flex flex-col gap-3">
                 <div className="flex items-center gap-3">
                   <img
                     src={fb.photo}
@@ -214,12 +214,12 @@ const MobileFeedbackCarousel = () => {
                     <p className="text-white font-semibold text-sm">{fb.name}</p>
                     <div className="flex gap-0.5">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className="w-3 h-3 fill-gray-400 text-gray-400" />
+                        <Star key={i} className="w-3 h-3 fill-gray-400 text-muted-foreground" />
                       ))}
                     </div>
                   </div>
                 </div>
-                <p className="text-white/70 text-sm leading-relaxed">"{fb.text}"</p>
+                <p className="text-muted-foreground text-sm leading-relaxed">"{fb.text}"</p>
               </div>
             </div>
           ))}

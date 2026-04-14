@@ -51,7 +51,7 @@ const UserLogin = () => {
   }, [navigate, redirectTo]);
 
   return (
-    <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       {/* Signup Modal */}
       <Dialog open={auth.state.step === 'signup'} onOpenChange={(open) => !open && auth.goToLogin()}>
         <DialogContent className="max-w-md p-0 overflow-hidden border-0">
@@ -81,11 +81,11 @@ const UserLogin = () => {
         </DialogContent>
       </Dialog>
 
-      <Card className="w-full max-w-md p-8 bg-[#111113] border-white/10">
+      <Card className="w-full max-w-md p-8 bg-background border-border">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
-          className="mb-6 text-gray-300 hover:text-white hover:bg-white/50/20"
+          className="mb-6 text-muted-foreground hover:text-white hover:bg-accent0/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('back')}
@@ -98,7 +98,7 @@ const UserLogin = () => {
               {t('premiumArea')}
             </h1>
           </div>
-          <p className="text-gray-300">
+          <p className="text-muted-foreground">
             {t('premiumAreaDescription')}
           </p>
         </div>

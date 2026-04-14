@@ -101,14 +101,14 @@ const ResgatarCreditos = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center p-4">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/50/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/50/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent0/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent0/10 rounded-full blur-3xl" />
       </div>
 
       {/* Logo */}
       <div className="relative z-10 mb-8">
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-gray-400" />
+          <Sparkles className="w-6 h-6 text-muted-foreground" />
           ArcanoApp
         </h1>
       </div>
@@ -125,7 +125,7 @@ const ResgatarCreditos = () => {
               <h2 className="text-2xl font-bold text-white mb-2">
                 Resgate seus Créditos
               </h2>
-              <p className="text-gray-300 text-sm">
+              <p className="text-muted-foreground text-sm">
                 1.500 créditos mensais para usar nas Ferramentas de IA
               </p>
             </div>
@@ -133,14 +133,14 @@ const ResgatarCreditos = () => {
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   type="email"
                   placeholder="Digite o email da sua compra"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={status === 'checking'}
-                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-slate-500/20"
+                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                 />
               </div>
 
@@ -164,7 +164,7 @@ const ResgatarCreditos = () => {
             </form>
 
             {/* Info */}
-            <p className="text-center text-gray-400 text-xs mt-4">
+            <p className="text-center text-muted-foreground text-xs mt-4">
               Disponível apenas para quem comprou o Upscaler Arcano Vitalício
             </p>
           </>
@@ -180,11 +180,11 @@ const ResgatarCreditos = () => {
             <p className="text-green-400 text-lg font-semibold mb-2">
               {creditsAdded.toLocaleString('pt-BR')} créditos adicionados!
             </p>
-            <p className="text-gray-300 text-sm mb-6">
+            <p className="text-muted-foreground text-sm mb-6">
               Redirecionando para as Ferramentas de IA...
             </p>
             <div className="flex justify-center">
-              <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+              <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
             </div>
           </div>
         ) : (
@@ -226,7 +226,7 @@ const ResgatarCreditos = () => {
                       setErrorReason(null);
                       setEmail('');
                     }}
-                    className="w-full h-10 border-slate-500/50 bg-white/5 text-white hover:bg-slate-800/70"
+                    className="w-full h-10 border-slate-500/50 bg-accent text-white hover:bg-slate-800/70"
                   >
                     Tentar outro email
                   </Button>
@@ -238,7 +238,7 @@ const ResgatarCreditos = () => {
       </Card>
 
       {/* Footer */}
-      <p className="relative z-10 text-gray-500 text-xs mt-8">
+      <p className="relative z-10 text-muted-foreground text-xs mt-8">
         © {new Date().getFullYear()} ArcanoApp
       </p>
     </div>

@@ -440,7 +440,7 @@ const BibliotecaPrompts = () => {
         <Youtube className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
         {t('badges.tutorial')}
       </Badge>}
-      {item.isCommunity && <Badge variant="secondary" className="bg-white/5 text-gray-300 text-[10px] sm:text-xs">
+      {item.isCommunity && <Badge variant="secondary" className="bg-accent text-muted-foreground text-[10px] sm:text-xs">
         {t('badges.community')}
       </Badge>}
     </div>;
@@ -449,9 +449,9 @@ const BibliotecaPrompts = () => {
   return (
     <AppLayout>
       {/* Main Content */}
-      <div className="p-4 sm:p-6 lg:p-8 bg-[#111113] pb-24 lg:pb-8 overflow-x-hidden max-w-full">
+      <div className="p-4 sm:p-6 lg:p-8 bg-background pb-24 lg:pb-8 overflow-x-hidden max-w-full">
         {/* Mobile Install App Button */}
-        <Button onClick={() => navigate("/install-app")} variant="outline" className="w-full bg-white/5 border-white/15 text-white hover:bg-white/50/30 font-semibold mb-4 lg:hidden">
+        <Button onClick={() => navigate("/install-app")} variant="outline" className="w-full bg-accent border-border text-white hover:bg-accent0/30 font-semibold mb-4 lg:hidden">
           <Smartphone className="h-4 w-4 mr-2" />
           {t('sidebar.installApp')}
         </Button>
@@ -462,15 +462,15 @@ const BibliotecaPrompts = () => {
         {/* Page Title and Content Type Tabs */}
         <div className="mb-6 sm:mb-8">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">{t('library.title')}</h2>
-          <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-gray-400">{t('library.description')}</p>
+          <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-muted-foreground">{t('library.description')}</p>
 
           {/* Content Type Tabs */}
           <div className="flex gap-2 mb-3">
-            <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => { setContentType("exclusive"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "exclusive" ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-white/50/20 border-white/15 text-gray-300"}`}>
+            <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => { setContentType("exclusive"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "exclusive" ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-accent hover:bg-accent0/20 border-border text-muted-foreground"}`}>
               <Star className="h-3.5 w-3.5 mr-1.5" />
               {t('library.exclusiveFiles')}
             </Button>
-            <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => { setContentType("community"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "community" ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-white/50/20 border-white/15 text-gray-300"}`}>
+            <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => { setContentType("community"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "community" ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-accent hover:bg-accent0/20 border-border text-muted-foreground"}`}>
               <Users className="h-3.5 w-3.5 mr-1.5" />
               {t('library.community')}
             </Button>
@@ -480,12 +480,12 @@ const BibliotecaPrompts = () => {
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="text-xs bg-white/5 hover:bg-white/50/20 border-white/15 text-gray-300">
+                <Button variant="outline" size="sm" className="text-xs bg-accent hover:bg-accent0/20 border-border text-muted-foreground">
                   {getCategoryDisplayName(selectedCategory)}
                   <ChevronDown className="h-3.5 w-3.5 ml-1.5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="bg-[#1c1c1e] border-white/10 min-w-[160px]">
+              <DropdownMenuContent align="start" className="bg-card border-border min-w-[160px]">
                 {categories.map(cat => (
                   <DropdownMenuItem
                     key={cat}
@@ -493,7 +493,7 @@ const BibliotecaPrompts = () => {
                     className={`text-xs cursor-pointer ${
                       selectedCategory === cat
                         ? "bg-slate-600 text-white"
-                        : "text-gray-300 hover:bg-white/50/20"
+                        : "text-muted-foreground hover:bg-accent0/20"
                     }`}
                   >
                     {getCategoryDisplayName(cat)}
@@ -522,13 +522,13 @@ const BibliotecaPrompts = () => {
 
           {/* Search Input */}
           <div className="relative mt-3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Buscar por palavra-chave..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-9 text-sm bg-white/50/10 border-white/10 text-white placeholder:text-gray-500 focus:border-slate-400"
+              className="pl-10 h-9 text-sm bg-accent0/10 border-border text-white placeholder:text-muted-foreground focus:border-slate-400"
             />
           </div>
         </div>
@@ -574,7 +574,7 @@ const BibliotecaPrompts = () => {
                   className="absolute top-1.5 left-1.5 flex items-center gap-0.5 rounded-full bg-black/50 backdrop-blur-sm px-1.5 py-0.5 z-10 hover:bg-black/70 transition-colors"
                 >
                   <Heart
-                    className={`h-3 w-3 sm:h-3.5 sm:w-3.5 transition-colors ${userLikes.has(String(item.id)) ? 'text-red-500 fill-red-500' : 'text-white/80'}`}
+                    className={`h-3 w-3 sm:h-3.5 sm:w-3.5 transition-colors ${userLikes.has(String(item.id)) ? 'text-red-500 fill-red-500' : 'text-foreground'}`}
                   />
                   <span className="text-[9px] sm:text-[10px] font-medium text-white/90">
                     {likeCounts[String(item.id)] || 0}
@@ -612,7 +612,7 @@ const BibliotecaPrompts = () => {
                       onClick={(e) => { e.stopPropagation(); handleItemClick(item); }}
                       variant="outline"
                       size="sm"
-                      className="h-5 sm:h-7 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-white/10 border-white/20 text-white hover:bg-white/20 min-w-0"
+                      className="h-5 sm:h-7 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-accent border-border text-white hover:bg-white/20 min-w-0"
                     >
                       <span className="truncate">Ver</span>
                     </Button>
@@ -693,11 +693,11 @@ const BibliotecaPrompts = () => {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-4 mt-8">
-            <Button variant="outline" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="bg-white/5 border-white/15 text-gray-200 hover:bg-white/50/20 hover:text-white disabled:opacity-50">
+            <Button variant="outline" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="bg-accent border-border text-gray-200 hover:bg-accent0/20 hover:text-white disabled:opacity-50">
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-gray-300">{currentPage} / {totalPages}</span>
-            <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="bg-white/5 border-white/15 text-gray-200 hover:bg-white/50/20 hover:text-white disabled:opacity-50">
+            <span className="text-muted-foreground">{currentPage} / {totalPages}</span>
+            <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="bg-accent border-border text-gray-200 hover:bg-accent0/20 hover:text-white disabled:opacity-50">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -706,21 +706,21 @@ const BibliotecaPrompts = () => {
 
       {/* Modals */}
       <Dialog open={showPremiumModal} onOpenChange={handleClosePremiumModal}>
-        <DialogContent className="max-w-lg bg-[#111113] border-white/10 text-white">
+        <DialogContent className="max-w-lg bg-background border-border text-white">
           <div className="text-center p-6">
             <div className="w-20 h-20 mx-auto bg-gradient-to-r from-slate-600 to-blue-500 rounded-full flex items-center justify-center mb-4">
               <Star className="h-10 w-10 text-white" fill="currentColor" />
             </div>
             <h2 className="text-2xl font-bold mb-2">{t('premiumModal.title')}</h2>
-            <p className="text-gray-300 mb-6">{t('premiumModal.description')}</p>
+            <p className="text-muted-foreground mb-6">{t('premiumModal.description')}</p>
             {premiumModalItem && (
-              <div className="mb-6 rounded-lg overflow-hidden border border-white/10">
+              <div className="mb-6 rounded-lg overflow-hidden border border-border">
                 {isVideoUrl(premiumModalItem.imageUrl) ? (
                   <SecureVideo src={premiumModalItem.imageUrl} isPremium={false} className="w-full h-48 object-cover opacity-50" autoPlay muted loop playsInline controls={false} poster={premiumModalItem.thumbnailUrl || undefined} />
                 ) : (
                   <SecureImage src={premiumModalItem.imageUrl} alt={premiumModalItem.title} isPremium={false} className="w-full h-48 object-cover opacity-50" />
                 )}
-                <div className="p-3 bg-[#111113]">
+                <div className="p-3 bg-background">
                   <p className="font-semibold text-white">{premiumModalItem.title}</p>
                 </div>
               </div>
@@ -734,7 +734,7 @@ const BibliotecaPrompts = () => {
       </Dialog>
 
       <Dialog open={!!selectedPrompt} onOpenChange={() => handleCloseModal()}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-[#111113] border-white/10 text-white">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-background border-border text-white">
           {selectedPrompt && (
             <div className="space-y-6">
               <div className="flex justify-between items-start">
@@ -742,11 +742,11 @@ const BibliotecaPrompts = () => {
                   <h2 className="text-2xl font-bold text-white">{selectedPrompt.title}</h2>
                   <div className="mt-2">{getBadgeContent(selectedPrompt)}</div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={handleCloseModal} className="text-gray-300 hover:text-white hover:bg-white/50/20">
+                <Button variant="ghost" size="icon" onClick={handleCloseModal} className="text-muted-foreground hover:text-white hover:bg-accent0/20">
                   <X className="h-5 w-5" />
                 </Button>
               </div>
-              <div className="rounded-lg overflow-hidden border border-white/10">
+              <div className="rounded-lg overflow-hidden border border-border">
                 {isVideoUrl(selectedPrompt.imageUrl) ? (
                   <SecureVideo src={selectedPrompt.imageUrl} isPremium={selectedPrompt.isPremium} className="w-full" controls autoPlay muted loop playsInline poster={selectedPrompt.thumbnailUrl || undefined} />
                 ) : (
@@ -755,10 +755,10 @@ const BibliotecaPrompts = () => {
               </div>
               {selectedPrompt.referenceImages && selectedPrompt.referenceImages.length > 0 && (
                 <div>
-                  <h3 className="font-semibold mb-2 text-gray-300">{t('modal.referenceImages')}</h3>
+                  <h3 className="font-semibold mb-2 text-muted-foreground">{t('modal.referenceImages')}</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {selectedPrompt.referenceImages.map((img, idx) => (
-                      <SecureImage key={idx} src={img} alt={`Reference ${idx + 1}`} isPremium={selectedPrompt.isPremium} className="w-full h-24 object-cover rounded-lg border border-white/10" />
+                      <SecureImage key={idx} src={img} alt={`Reference ${idx + 1}`} isPremium={selectedPrompt.isPremium} className="w-full h-24 object-cover rounded-lg border border-border" />
                     ))}
                   </div>
                 </div>
@@ -768,7 +768,7 @@ const BibliotecaPrompts = () => {
                   <Copy className="h-4 w-4 mr-2" />
                   {t('modal.copyPrompt')}
                 </Button>
-                <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl)} variant="outline" className="bg-white/5 border-white/15 text-gray-200 hover:bg-white/50/20 hover:text-white">
+                <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl)} variant="outline" className="bg-accent border-border text-gray-200 hover:bg-accent0/20 hover:text-white">
                   <Download className="h-4 w-4 mr-2" />
                   {t('modal.download')}
                 </Button>
@@ -789,7 +789,7 @@ const BibliotecaPrompts = () => {
                         navigate('/arcano-cloner-tool', { state: { referenceImageUrl: selectedPrompt.imageUrl } });
                       }
                     }}
-                    className={`w-full ${selectedPrompt.isPremium && !isPremium ? 'bg-white/5 hover:bg-white/10 text-gray-300' : 'bg-gradient-to-r from-slate-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-white'}`}
+                    className={`w-full ${selectedPrompt.isPremium && !isPremium ? 'bg-accent hover:bg-accent text-muted-foreground' : 'bg-gradient-to-r from-slate-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-white'}`}
                   >
                     {selectedPrompt.isPremium && !isPremium ? (
                       <><Lock className="h-4 w-4 mr-2" />Exclusivo Premium</>
@@ -816,17 +816,17 @@ const BibliotecaPrompts = () => {
                 )}
               </div>
               <div>
-                <h3 className="font-semibold mb-2 text-gray-300">{t('modal.prompt')}</h3>
-                <div className="bg-[#111113] border border-white/10 rounded-lg p-4 relative">
+                <h3 className="font-semibold mb-2 text-muted-foreground">{t('modal.prompt')}</h3>
+                <div className="bg-background border border-border rounded-lg p-4 relative">
                   {revealedPrompts.has(String(selectedPrompt.id)) ? (
                     <p className="text-gray-200 whitespace-pre-wrap text-sm">{selectedPrompt.prompt}</p>
                   ) : (
                     <>
                       <p className="text-gray-200 whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">{selectedPrompt.prompt}</p>
-                      <div className="absolute inset-0 flex items-center justify-center bg-[#111113]/60 rounded-lg">
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-lg">
                         <div className="text-center">
-                          <Lock className="h-6 w-6 text-gray-400 mx-auto mb-2" />
-                          <p className="text-gray-300 text-sm">{t('modal.clickToCopy')}</p>
+                          <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-muted-foreground text-sm">{t('modal.clickToCopy')}</p>
                         </div>
                       </div>
                     </>
@@ -839,7 +839,7 @@ const BibliotecaPrompts = () => {
       </Dialog>
 
       <Dialog open={showTutorialModal} onOpenChange={setShowTutorialModal}>
-        <DialogContent className="max-w-4xl bg-[#111113] border-white/10 p-0 overflow-hidden">
+        <DialogContent className="max-w-4xl bg-background border-border p-0 overflow-hidden">
           <div className="aspect-video w-full">
             {tutorialUrl && (
               <iframe src={tutorialUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
@@ -849,13 +849,13 @@ const BibliotecaPrompts = () => {
       </Dialog>
 
       <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
-        <DialogContent className="max-w-md bg-[#111113] border-white/10 text-white">
+        <DialogContent className="max-w-md bg-background border-border text-white">
           <div className="text-center p-6">
             <div className="w-20 h-20 mx-auto bg-orange-500/20 rounded-full flex items-center justify-center mb-4">
               <AlertTriangle className="h-10 w-10 text-orange-500" />
             </div>
             <h2 className="text-2xl font-bold mb-2">{t('limitModal.title')}</h2>
-            <p className="text-gray-300 mb-6">
+            <p className="text-muted-foreground mb-6">
               {t('limitModal.description', { limit: planType === 'arcano_basico' ? 10 : 24 })}
             </p>
             <Button onClick={() => { setShowLimitModal(false); navigate("/planos-2"); }} className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 text-white py-6">

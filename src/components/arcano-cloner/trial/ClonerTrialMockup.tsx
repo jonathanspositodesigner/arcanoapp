@@ -68,13 +68,13 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
   // Result view with zoom/pan
   if (resultUrl) {
     return (
-      <div className="bg-[#111113]/80 border border-white/10 rounded-2xl p-4 md:p-6">
+      <div className="bg-background/80 border border-border rounded-2xl p-4 md:p-6">
         <div className="text-center mb-4">
           <h3 className="text-white font-semibold text-lg">✨ Resultado</h3>
-          <p className="text-gray-400 text-sm">Arraste para mover, use pinça para zoom</p>
+          <p className="text-muted-foreground text-sm">Arraste para mover, use pinça para zoom</p>
         </div>
         
-        <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black/30 aspect-square max-w-md mx-auto">
+        <div className="relative rounded-xl overflow-hidden border border-border bg-black/30 aspect-square max-w-md mx-auto">
           <TransformWrapper
             initialScale={1}
             minScale={0.5}
@@ -101,7 +101,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
         <div className="text-center mt-4">
           <Button
             variant="outline"
-            className="border-white/10 text-gray-300 hover:bg-white/50/10"
+            className="border-border text-muted-foreground hover:bg-accent0/10"
             onClick={onNewUpload}
           >
             {usesRemaining > 0 
@@ -116,21 +116,21 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
   // Processing view
   if (isProcessing) {
     return (
-      <div className="bg-[#111113]/80 border border-white/10 rounded-2xl p-6 md:p-8">
+      <div className="bg-background/80 border border-border rounded-2xl p-6 md:p-8">
         <div className="flex flex-col items-center justify-center py-12 gap-6">
           <div className="relative">
-            <Loader2 className="w-16 h-16 text-gray-400 animate-spin" />
-            <div className="absolute inset-0 bg-white/10 blur-xl rounded-full" />
+            <Loader2 className="w-16 h-16 text-muted-foreground animate-spin" />
+            <div className="absolute inset-0 bg-accent blur-xl rounded-full" />
           </div>
           <div className="text-center">
             <h3 className="text-white font-semibold text-lg mb-2">Processando sua imagem...</h3>
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-muted-foreground text-sm mb-4">
               {status === 'uploading' ? 'Enviando imagens...' : 'Gerando seu clone perfeito...'}
             </p>
           </div>
           <div className="w-full max-w-xs">
-            <Progress value={progress} className="h-2 bg-white/5" />
-            <p className="text-gray-400 text-xs text-center mt-2">{Math.round(progress)}%</p>
+            <Progress value={progress} className="h-2 bg-accent" />
+            <p className="text-muted-foreground text-xs text-center mt-2">{Math.round(progress)}%</p>
           </div>
         </div>
       </div>
@@ -139,11 +139,11 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
 
   // Main interface
   return (
-    <div className="bg-[#111113]/80 border border-white/10 rounded-2xl p-4 md:p-6">
+    <div className="bg-background/80 border border-border rounded-2xl p-4 md:p-6">
       {isActive && (
         <div className="flex items-center justify-between mb-4">
-          <span className="text-gray-400 text-sm">Teste Grátis</span>
-          <span className="text-xs bg-white/10 text-gray-300 px-2 py-1 rounded-full">
+          <span className="text-muted-foreground text-sm">Teste Grátis</span>
+          <span className="text-xs bg-accent text-muted-foreground px-2 py-1 rounded-full">
             {usesRemaining} {usesRemaining === 1 ? 'teste restante' : 'testes restantes'}
           </span>
         </div>
@@ -154,17 +154,17 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
         {/* User image */}
         <div className="space-y-2">
           <p className="text-[10px] font-semibold text-white flex items-center gap-1.5">
-            <Upload className="w-3 h-3 text-gray-400" />
+            <Upload className="w-3 h-3 text-muted-foreground" />
             Sua Foto
           </p>
           <div
-            className="aspect-[3/4] rounded-xl border-2 border-dashed border-white/10 bg-white/5 flex items-center justify-center cursor-pointer hover:border-white/15/50 transition-colors overflow-hidden"
+            className="aspect-[3/4] rounded-xl border-2 border-dashed border-border bg-accent flex items-center justify-center cursor-pointer hover:border-border/50 transition-colors overflow-hidden"
             onClick={() => userInputRef.current?.click()}
           >
             {userImage ? (
               <img src={userImage} alt="Sua foto" className="w-full h-full object-cover" />
             ) : (
-              <div className="flex flex-col items-center gap-2 text-gray-400">
+              <div className="flex flex-col items-center gap-2 text-muted-foreground">
                 <Upload className="w-8 h-8" />
                 <span className="text-[10px]">Enviar foto</span>
               </div>
@@ -176,15 +176,15 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
         {/* Reference image */}
         <div className="space-y-2">
           <p className="text-[10px] font-semibold text-white flex items-center gap-1.5">
-            <ImageIcon className="w-3 h-3 text-gray-400" />
+            <ImageIcon className="w-3 h-3 text-muted-foreground" />
             Referência
           </p>
           {referenceImage ? (
-            <div className="relative aspect-[3/4] rounded-xl border-2 border-white/10 bg-white/5 overflow-hidden group">
+            <div className="relative aspect-[3/4] rounded-xl border-2 border-border bg-accent overflow-hidden group">
               <img src={referenceImage} alt="Referência" className="w-full h-full object-cover" />
               <button
                 type="button"
-                className="absolute inset-x-0 bottom-0 bg-black/70 text-gray-300 text-[10px] font-semibold py-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute inset-x-0 bottom-0 bg-black/70 text-muted-foreground text-[10px] font-semibold py-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() => onOpenLibrary?.()}
               >
                 Trocar Imagem
@@ -192,11 +192,11 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
             </div>
           ) : (
             <div
-              className="aspect-[3/4] rounded-xl border-2 border-dashed border-white/10 bg-white/5 flex flex-col items-center justify-center cursor-pointer hover:border-white/15/50 transition-colors gap-3"
+              className="aspect-[3/4] rounded-xl border-2 border-dashed border-border bg-accent flex flex-col items-center justify-center cursor-pointer hover:border-border/50 transition-colors gap-3"
               onClick={() => onOpenLibrary?.()}
             >
-              <ImageIcon className="w-8 h-8 text-gray-400" />
-              <span className="text-[10px] text-gray-400 text-center px-2">Escolher da biblioteca ou enviar</span>
+              <ImageIcon className="w-8 h-8 text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground text-center px-2">Escolher da biblioteca ou enviar</span>
             </div>
           )}
           <input ref={refInputRef} type="file" accept="image/*" className="hidden" onChange={handleRefFileChange} />

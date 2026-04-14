@@ -63,11 +63,11 @@ const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
           <RefreshCw className="w-8 h-8 text-red-400" />
         </div>
         <p className="text-red-300 mb-2">Erro ao carregar criações</p>
-        <p className="text-sm text-gray-300/60 mb-4">{error}</p>
+        <p className="text-sm text-muted-foreground/60 mb-4">{error}</p>
         <Button 
           variant="outline" 
           onClick={onRetry}
-          className="border-white/10 text-gray-300 hover:bg-white/50/10"
+          className="border-border text-muted-foreground hover:bg-accent0/10"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
           Tentar novamente
@@ -81,12 +81,12 @@ const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center mb-4">
-          <Sparkles className="w-10 h-10 text-gray-400" />
+          <Sparkles className="w-10 h-10 text-muted-foreground" />
         </div>
         <h3 className="text-lg font-medium text-white mb-2">
           Você ainda não tem criações
         </h3>
-        <p className="text-sm text-gray-400 mb-6 max-w-sm">
+        <p className="text-sm text-muted-foreground mb-6 max-w-sm">
           Gere algo em uma das ferramentas de IA para aparecer nesta lista.
         </p>
         <Button
@@ -106,9 +106,9 @@ const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="space-y-2">
-            <Skeleton className="aspect-square w-full bg-white/50/10" />
-            <Skeleton className="h-4 w-3/4 bg-white/50/10" />
-            <Skeleton className="h-3 w-1/2 bg-white/50/10" />
+            <Skeleton className="aspect-square w-full bg-accent0/10" />
+            <Skeleton className="h-4 w-3/4 bg-accent0/10" />
+            <Skeleton className="h-3 w-1/2 bg-accent0/10" />
           </div>
         ))}
       </div>
@@ -130,13 +130,13 @@ const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
       {/* Loading more indicator */}
       {isLoading && creations.length > 0 && (
         <div className="flex justify-center py-4">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       )}
 
       {/* End of list */}
       {!hasMore && creations.length > 0 && (
-        <p className="text-center text-sm text-gray-300/50 py-4">
+        <p className="text-center text-sm text-muted-foreground/50 py-4">
           Fim da lista
         </p>
       )}

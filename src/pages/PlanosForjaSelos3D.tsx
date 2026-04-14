@@ -74,7 +74,7 @@ const PlanosForjaSelos3D = () => {
   if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2d4a5e]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-border"></div>
       </div>
     );
   }
@@ -94,7 +94,7 @@ const PlanosForjaSelos3D = () => {
         <FadeIn delay={0}>
           <Button
             variant="ghost"
-            className="text-white/70 hover:text-white mb-6"
+            className="text-muted-foreground hover:text-white mb-6"
             onClick={() => navigate("/biblioteca-artes")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -106,20 +106,20 @@ const PlanosForjaSelos3D = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
             {t("forja3D.title")}
           </h1>
-          <p className="text-white/60">
+          <p className="text-muted-foreground">
             {t("forja3D.subtitle")}
           </p>
         </AnimatedSection>
 
         {hasAccess ? (
           <AnimatedSection animation="scale" as="div">
-            <Card className="bg-[#1a1a2e]/80 border-green-500/50">
+            <Card className="bg-card/80 border-green-500/50">
               <CardContent className="p-6 text-center">
                 <Badge className="bg-green-500 text-white text-lg px-4 py-2 mb-4">
                   <Check className="h-5 w-5 mr-2" />
                   {t("forja3D.alreadyHaveAccess")}
                 </Badge>
-                <p className="text-white/70 mb-4">
+                <p className="text-muted-foreground mb-4">
                   {t("forja3D.alreadyHaveAccessDesc")}
                 </p>
                 <Button
@@ -133,7 +133,7 @@ const PlanosForjaSelos3D = () => {
           </AnimatedSection>
         ) : (
           <AnimatedSection animation="scale" delay={200} as="div">
-            <Card className="relative bg-[#1a1a2e]/80 border-2 border-slate-500/50 ring-2 ring-slate-500/20">
+            <Card className="relative bg-card/80 border-2 border-slate-500/50 ring-2 ring-slate-500/20">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-medium">
                 {t("forja3D.lifetimeAccess")}
               </div>
@@ -147,12 +147,12 @@ const PlanosForjaSelos3D = () => {
 
               <CardHeader className="text-center pt-8">
                 <div className="flex justify-center mb-4">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-pink-500/20 flex items-center justify-center border border-white/10">
-                    <Box className="h-10 w-10 text-gray-400" />
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-pink-500/20 flex items-center justify-center border border-border">
+                    <Box className="h-10 w-10 text-muted-foreground" />
                   </div>
                 </div>
                 <CardTitle className="text-white text-2xl">{t("forja3D.title")}</CardTitle>
-                <p className="text-white/60 text-sm">
+                <p className="text-muted-foreground text-sm">
                   {t("forja3D.toolDescription")}
                 </p>
               </CardHeader>
@@ -162,16 +162,16 @@ const PlanosForjaSelos3D = () => {
                   <div className="text-4xl font-bold text-white mb-1">
                     {formatPrice(price)}
                   </div>
-                  <p className="text-white/50 text-sm">{t("forja3D.oneTimePayment")}</p>
+                  <p className="text-muted-foreground text-sm">{t("forja3D.oneTimePayment")}</p>
                 </div>
 
                 <StaggeredAnimation className="space-y-3" staggerDelay={100} animation="fade-left">
                   {features.map((feature, index) => {
                     const IconComponent = feature.icon;
                     return (
-                      <div key={index} className="flex items-center gap-3 text-white/80">
-                        <div className="w-6 h-6 rounded-full bg-white/50/20 flex items-center justify-center flex-shrink-0">
-                          <IconComponent className="h-3.5 w-3.5 text-gray-400" />
+                      <div key={index} className="flex items-center gap-3 text-foreground">
+                        <div className="w-6 h-6 rounded-full bg-accent0/20 flex items-center justify-center flex-shrink-0">
+                          <IconComponent className="h-3.5 w-3.5 text-muted-foreground" />
                         </div>
                         <span className="text-sm">{feature.text}</span>
                       </div>
@@ -187,7 +187,7 @@ const PlanosForjaSelos3D = () => {
                 </Button>
 
                 {!user && (
-                  <p className="text-center text-white/50 text-xs">
+                  <p className="text-center text-muted-foreground text-xs">
                     {t("forja3D.afterPurchase")}
                   </p>
                 )}

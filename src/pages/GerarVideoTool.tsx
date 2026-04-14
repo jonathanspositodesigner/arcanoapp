@@ -580,15 +580,15 @@ const GerarVideoTool = () => {
           <div className="max-w-md text-center space-y-4">
             <div className="text-6xl">🔒</div>
             <h1 className="text-xl font-bold text-white">Recurso não disponível no seu plano</h1>
-            <p className="text-gray-300 text-sm">
-              A geração de vídeos está disponível a partir do plano <strong className="text-gray-400">Pro</strong>.
+            <p className="text-muted-foreground text-sm">
+              A geração de vídeos está disponível a partir do plano <strong className="text-muted-foreground">Pro</strong>.
             </p>
-            <p className="text-gray-400 text-xs">
+            <p className="text-muted-foreground text-xs">
               Faça upgrade do seu plano para desbloquear esta ferramenta.
             </p>
             <button
               onClick={goBack}
-              className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-white/50 text-white text-sm font-medium transition-colors"
+              className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-accent0 text-white text-sm font-medium transition-colors"
             >
               Voltar
             </button>
@@ -602,18 +602,18 @@ const GerarVideoTool = () => {
     <AppLayout>
       <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-[#0f0a15]/90 backdrop-blur-md border-b border-white/10 px-4 py-3">
+        <div className="sticky top-0 z-10 bg-[#0f0a15]/90 backdrop-blur-md border-b border-border px-4 py-3">
           <div className="flex items-center justify-between max-w-4xl mx-auto">
             <div className="flex items-center gap-3">
-              <button onClick={goBack} className="text-gray-300 hover:text-white transition-colors">
+              <button onClick={goBack} className="text-muted-foreground hover:text-white transition-colors">
                 <ArrowLeft className="h-5 w-5" />
               </button>
               <div>
                 <h1 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Video className="h-5 w-5 text-gray-400" />
+                  <Video className="h-5 w-5 text-muted-foreground" />
                   Gerar Vídeo
                 </h1>
-                <p className="text-[10px] text-gray-400">{currentModel.name} • {currentModel.description}</p>
+                <p className="text-[10px] text-muted-foreground">{currentModel.name} • {currentModel.description}</p>
               </div>
             </div>
           </div>
@@ -631,31 +631,31 @@ const GerarVideoTool = () => {
         <div className="flex-1 flex items-center justify-center p-4">
           {resultUrl ? (
             <div className="w-full max-w-2xl">
-              <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/30 shadow-2xl">
+              <div className="rounded-2xl overflow-hidden border border-border bg-black/30 shadow-2xl">
                 <video src={resultUrl} controls autoPlay className="w-full h-auto" />
               </div>
             </div>
           ) : isGenerating ? (
-            <div className="flex flex-col items-center gap-4 text-gray-300">
-              <div className="w-20 h-20 rounded-full border-2 border-white/10 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4 text-muted-foreground">
+              <div className="w-20 h-20 rounded-full border-2 border-border flex items-center justify-center">
                 {isQueued ? (
-                  <Clock className="h-8 w-8 text-gray-400 animate-pulse" />
+                  <Clock className="h-8 w-8 text-muted-foreground animate-pulse" />
                 ) : (
-                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 )}
               </div>
               <div className="text-center">
                 {isQueued ? (
                   <>
                     <p className="text-sm text-white font-medium">Você está na fila</p>
-                    <p className="text-lg text-gray-400 font-bold mt-1">Posição {queuePosition}</p>
-                    <p className="text-xs text-gray-400 mt-2">Sua geração será processada em breve</p>
+                    <p className="text-lg text-muted-foreground font-bold mt-1">Posição {queuePosition}</p>
+                    <p className="text-xs text-muted-foreground mt-2">Sua geração será processada em breve</p>
                     <p className="text-[10px] text-slate-400 mt-1">Fila global compartilhada</p>
                   </>
                 ) : (
                   <>
                     <p className="text-sm text-white font-medium">Gerando vídeo...</p>
-                    <p className="text-xs text-gray-400 mt-1">Isso pode levar de 2 a 5 minutos</p>
+                    <p className="text-xs text-muted-foreground mt-1">Isso pode levar de 2 a 5 minutos</p>
                     <p className="text-[10px] text-slate-400 mt-1">Você pode sair da página — receberá uma notificação</p>
                   </>
                 )}
@@ -677,7 +677,7 @@ const GerarVideoTool = () => {
                   <p className="text-red-400/60 text-xs mt-2">Seus créditos foram estornados automaticamente.</p>
                 </div>
               )}
-              <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-slate-500/50 text-gray-300 hover:bg-white/50/20 rounded-full px-5">
+              <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-slate-500/50 text-muted-foreground hover:bg-accent0/20 rounded-full px-5">
                 Tentar novamente
               </Button>
             </div>
@@ -702,7 +702,7 @@ const GerarVideoTool = () => {
                 <Button onClick={handleDownload} size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-full px-5">
                   <Download className="h-4 w-4 mr-2" /> Baixar
                 </Button>
-                <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-slate-500/50 text-gray-300 hover:bg-white/50/20 rounded-full px-5">
+                <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-slate-500/50 text-muted-foreground hover:bg-accent0/20 rounded-full px-5">
                   <Video className="h-4 w-4 mr-2" /> Gerar Novo
                 </Button>
               </div>
@@ -713,7 +713,7 @@ const GerarVideoTool = () => {
                   <div className="flex items-center gap-3">
                     {/* Start Frame / Reference Image Upload */}
                     <div className="flex-1">
-                      <p className="text-[10px] text-gray-400 mb-1 font-medium">
+                      <p className="text-[10px] text-muted-foreground mb-1 font-medium">
                         {isVeoModel ? 'Imagem de Referência' : '1º Frame (início)'}
                       </p>
                       {startFrame ? (
@@ -730,10 +730,10 @@ const GerarVideoTool = () => {
                         <button
                           onClick={() => startFrameRef.current?.click()}
                           disabled={isGenerating}
-                          className="w-full h-16 rounded-lg border-2 border-dashed border-slate-500/40 hover:border-white/15/60 bg-white/5 hover:bg-white/5 flex flex-col items-center justify-center gap-1 transition-colors"
+                          className="w-full h-16 rounded-lg border-2 border-dashed border-slate-500/40 hover:border-border/60 bg-accent hover:bg-accent flex flex-col items-center justify-center gap-1 transition-colors"
                         >
-                          <Upload className="h-4 w-4 text-gray-400" />
-                          <span className="text-[10px] text-gray-300">Enviar imagem</span>
+                          <Upload className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground">Enviar imagem</span>
                         </button>
                       )}
                     </div>
@@ -742,12 +742,12 @@ const GerarVideoTool = () => {
                     {(selectedModel === 'wan2.2' || isVeoModel) && (
                       <>
                         <div className="flex flex-col items-center gap-0.5 pt-4 flex-shrink-0">
-                          <span className="text-gray-400 text-lg">→</span>
+                          <span className="text-muted-foreground text-lg">→</span>
                           <span className="text-[8px] text-slate-400">{MODEL_DURATIONS[selectedModel] || 8}s</span>
                         </div>
 
                         <div className="flex-1">
-                          <p className="text-[10px] text-gray-400 mb-1 font-medium">
+                          <p className="text-[10px] text-muted-foreground mb-1 font-medium">
                             {isVeoModel ? 'Último Frame (opcional)' : 'Último Frame (fim)'}
                           </p>
                           {endFrame ? (
@@ -764,10 +764,10 @@ const GerarVideoTool = () => {
                             <button
                               onClick={() => endFrameRef.current?.click()}
                               disabled={isGenerating}
-                              className="w-full h-16 rounded-lg border-2 border-dashed border-slate-500/40 hover:border-white/15/60 bg-white/5 hover:bg-white/5 flex flex-col items-center justify-center gap-1 transition-colors"
+                              className="w-full h-16 rounded-lg border-2 border-dashed border-slate-500/40 hover:border-border/60 bg-accent hover:bg-accent flex flex-col items-center justify-center gap-1 transition-colors"
                             >
-                              <Upload className="h-4 w-4 text-gray-400" />
-                              <span className="text-[10px] text-gray-300">Enviar imagem</span>
+                              <Upload className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-[10px] text-muted-foreground">Enviar imagem</span>
                             </button>
                           )}
                         </div>
@@ -785,7 +785,7 @@ const GerarVideoTool = () => {
                       onChange={(e) => setPrompt(e.target.value)}
                       placeholder={generationMode === 'with_frames' ? "Descreva a transição entre os frames..." : "Descreva o vídeo que você quer gerar..."}
                       rows={1}
-                      className="w-full bg-white/5 border border-slate-500/25 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-400/50 resize-none focus:outline-none focus:border-white/15 transition-colors"
+                      className="w-full bg-accent border border-slate-500/25 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-400/50 resize-none focus:outline-none focus:border-border transition-colors"
                       style={{ minHeight: '36px', maxHeight: '80px' }}
                       disabled={isGenerating}
                       onInput={(e) => {
@@ -825,7 +825,7 @@ const GerarVideoTool = () => {
                       className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium transition-colors ${
                         generationMode === 'prompt_only' 
                           ? 'bg-slate-600/60 text-white' 
-                          : 'bg-white/5 text-gray-400 hover:text-gray-300'
+                          : 'bg-accent text-muted-foreground hover:text-muted-foreground'
                       }`}
                     >
                       <Type className="h-3 w-3" />
@@ -837,7 +837,7 @@ const GerarVideoTool = () => {
                       className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium transition-colors ${
                         generationMode === 'with_frames' 
                           ? 'bg-slate-600/60 text-white' 
-                          : 'bg-white/5 text-gray-400 hover:text-gray-300'
+                          : 'bg-accent text-muted-foreground hover:text-muted-foreground'
                       }`}
                     >
                       <ImagePlus className="h-3 w-3" />
@@ -847,21 +847,21 @@ const GerarVideoTool = () => {
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/5 border border-slate-500/25 text-[10px] text-gray-300 hover:bg-slate-800/50 transition-colors">
+                      <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent border border-slate-500/25 text-[10px] text-muted-foreground hover:bg-slate-800/50 transition-colors">
                         <span className="font-medium">{currentModel.name}</span>
-                        <ChevronDown className="h-3 w-3 text-gray-400" />
+                        <ChevronDown className="h-3 w-3 text-muted-foreground" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="bg-[#1a1525] border-white/10">
+                    <DropdownMenuContent align="start" className="bg-[#1a1525] border-border">
                       {availableModels.map(model => (
                         <DropdownMenuItem
                           key={model.id}
                           onClick={() => setSelectedModel(model.id)}
-                          className={`text-xs ${selectedModel === model.id ? 'text-gray-300 bg-white/50/10' : 'text-gray-300'}`}
+                          className={`text-xs ${selectedModel === model.id ? 'text-muted-foreground bg-accent0/10' : 'text-muted-foreground'}`}
                         >
                           <div className="flex flex-col">
                             <span className="font-medium">{model.name}</span>
-                            <span className="text-[10px] text-gray-400">
+                            <span className="text-[10px] text-muted-foreground">
                               {model.description} • {
                                 (isUnlimited && model.id === 'wan2.2')
                                   ? '∞ Grátis'
@@ -879,17 +879,17 @@ const GerarVideoTool = () => {
                   {(isVeoModel || isGeminiLite) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/5 border border-slate-500/25 text-[10px] text-gray-300 hover:bg-slate-800/50 transition-colors">
+                        <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent border border-slate-500/25 text-[10px] text-muted-foreground hover:bg-slate-800/50 transition-colors">
                           <span className="font-medium">{ASPECT_RATIO_LABELS[aspectRatio] || aspectRatio}</span>
-                          <ChevronDown className="h-3 w-3 text-gray-400" />
+                          <ChevronDown className="h-3 w-3 text-muted-foreground" />
                         </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="bg-[#1a1525] border-white/10">
+                      <DropdownMenuContent align="start" className="bg-[#1a1525] border-border">
                         {ASPECT_RATIOS.map(ratio => (
                           <DropdownMenuItem
                             key={ratio}
                             onClick={() => setAspectRatio(ratio)}
-                            className={`text-xs ${aspectRatio === ratio ? 'text-gray-300 bg-white/50/10' : 'text-gray-300'}`}
+                            className={`text-xs ${aspectRatio === ratio ? 'text-muted-foreground bg-accent0/10' : 'text-muted-foreground'}`}
                           >
                             {ASPECT_RATIO_LABELS[ratio]} ({ratio})
                           </DropdownMenuItem>
@@ -904,8 +904,8 @@ const GerarVideoTool = () => {
                       disabled={isGenerating}
                       className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[10px] font-medium transition-colors ${
                         generateAudio
-                          ? 'bg-slate-600/30 border-white/15/50 text-gray-300'
-                          : 'bg-white/5 border-slate-500/25 text-gray-400 hover:text-gray-300 hover:bg-slate-800/50'
+                          ? 'bg-slate-600/30 border-border/50 text-muted-foreground'
+                          : 'bg-accent border-slate-500/25 text-muted-foreground hover:text-muted-foreground hover:bg-slate-800/50'
                       } disabled:opacity-40 disabled:cursor-not-allowed`}
                       title={generateAudio ? 'Desativar áudio' : 'Ativar áudio (custo extra)'}
                     >
@@ -914,7 +914,7 @@ const GerarVideoTool = () => {
                     </button>
                   )}
 
-                  <span className="text-[10px] text-gray-400 ml-auto flex items-center gap-1.5">
+                  <span className="text-[10px] text-muted-foreground ml-auto flex items-center gap-1.5">
                     <span>⏱ {MODEL_DURATIONS[selectedModel] || 8}s</span>
                     <span>•</span>
                     <span className="flex items-center gap-0.5">

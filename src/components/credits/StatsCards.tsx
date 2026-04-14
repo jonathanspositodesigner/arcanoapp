@@ -47,7 +47,7 @@ export const StatsCards = () => {
 
   return (
     <div className="max-w-5xl mx-auto mb-8 px-2">
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center gap-4 sm:gap-0">
+      <div className="rounded-2xl border border-border bg-white/[0.03] backdrop-blur-sm px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center gap-4 sm:gap-0">
         {/* Left: Avatars + Text */}
         <div className="flex items-center gap-3 sm:flex-1 min-w-0">
           <div className="flex -space-x-2 shrink-0">
@@ -63,7 +63,7 @@ export const StatsCards = () => {
               />
             ))}
           </div>
-          <span className="text-white/80 text-xs sm:text-sm font-medium leading-tight">
+          <span className="text-foreground text-xs sm:text-sm font-medium leading-tight">
             Junte-se a mais de {animatedUsers.displayValue.toLocaleString('pt-BR')} criadores em todo o mundo.
           </span>
         </div>
@@ -72,28 +72,28 @@ export const StatsCards = () => {
         <div className="flex items-center gap-6 sm:gap-8 shrink-0">
           {/* Images */}
           <div className="flex flex-col items-center gap-0.5">
-            <Image className="w-5 h-5 text-gray-400 mb-1" />
+            <Image className="w-5 h-5 text-muted-foreground mb-1" />
             <div className="flex items-center gap-1">
               <span className="text-white font-bold text-base sm:text-lg">
                 {animatedImages.displayValue.toLocaleString('pt-BR')}
               </span>
-              <span className="text-gray-400 text-lg font-bold">+</span>
+              <span className="text-muted-foreground text-lg font-bold">+</span>
             </div>
-            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium">
               Imagens Geradas
             </span>
           </div>
 
           {/* Videos */}
           <div className="flex flex-col items-center gap-0.5">
-            <Video className="w-5 h-5 text-gray-400 mb-1" />
+            <Video className="w-5 h-5 text-muted-foreground mb-1" />
             <div className="flex items-center gap-1">
               <span className="text-white font-bold text-base sm:text-lg">
                 {animatedVideos.displayValue.toLocaleString('pt-BR')}
               </span>
-              <span className="text-gray-400 text-lg font-bold">+</span>
+              <span className="text-muted-foreground text-lg font-bold">+</span>
             </div>
-            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium">
               Vídeos Gerados
             </span>
           </div>
@@ -107,7 +107,7 @@ export const StatsCards = () => {
               </span>
               <span className="text-yellow-500 text-lg font-bold">%</span>
             </div>
-            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium">
               Satisfação
             </span>
           </div>

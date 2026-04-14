@@ -52,18 +52,18 @@ const PartnerLoginArtes = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
+      <Card className="w-full max-w-md bg-card/80 border-border/30">
         <CardHeader className="text-center">
           <Button
             variant="ghost"
-            className="absolute left-4 top-4 text-white/70 hover:text-white"
+            className="absolute left-4 top-4 text-muted-foreground hover:text-white"
             onClick={() => navigate("/biblioteca-artes")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
           </Button>
           <CardTitle className="text-2xl text-white">Área do Colaborador - Artes</CardTitle>
-          <CardDescription className="text-white/60">
+          <CardDescription className="text-muted-foreground">
             Acesse sua conta de colaborador da Biblioteca de Artes
           </CardDescription>
         </CardHeader>
@@ -106,11 +106,11 @@ const PartnerLoginArtes = () => {
             />
           )}
 
-          <div className="text-center pt-4 border-t border-[#2d4a5e]/30 mt-4">
+          <div className="text-center pt-4 border-t border-border/30 mt-4">
             <Button
               type="button"
               variant="ghost"
-              className="text-white/60 hover:text-white text-sm"
+              className="text-muted-foreground hover:text-white text-sm"
               onClick={() => navigate("/admin-login")}
             >
               <Shield className="h-4 w-4 mr-2" />

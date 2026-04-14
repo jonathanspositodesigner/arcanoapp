@@ -98,7 +98,7 @@ const FullscreenModal = ({
     >
       <button 
         onClick={onClose}
-        className="absolute top-4 right-4 z-10 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+        className="absolute top-4 right-4 z-10 p-3 bg-accent hover:bg-white/20 rounded-full transition-colors"
       >
         <X className="h-6 w-6 text-white" />
       </button>
@@ -171,16 +171,16 @@ const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: 
 // Trust Badges Component
 const TrustBadges = ({ t }: { t: (key: string) => string }) => (
   <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
-    <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
+    <span className="flex items-center gap-1.5 bg-accent text-muted-foreground text-xs px-3 py-1.5 rounded-full border border-border">
       <Shield className="h-3 w-3 text-green-400" />
       {t('tools:upscaler.trustBadges.secure')}
     </span>
-    <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
+    <span className="flex items-center gap-1.5 bg-accent text-muted-foreground text-xs px-3 py-1.5 rounded-full border border-border">
       <Zap className="h-3 w-3 text-yellow-400" />
       {t('tools:upscaler.trustBadges.immediate')}
     </span>
-    <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
-      <Infinity className="h-3 w-3 text-gray-400" />
+    <span className="flex items-center gap-1.5 bg-accent text-muted-foreground text-xs px-3 py-1.5 rounded-full border border-border">
+      <Infinity className="h-3 w-3 text-muted-foreground" />
       {t('tools:upscaler.trustBadges.lifetime')}
     </span>
   </div>
@@ -420,7 +420,7 @@ const PlanosUpscalerCreditos = () => {
                 <Check className="h-5 w-5 mr-2" />
                 {t('tools:upscaler.alreadyHaveAccess')}
               </Badge>
-              <p className="text-white/70 mb-6 text-lg">
+              <p className="text-muted-foreground mb-6 text-lg">
                 {t('tools:upscaler.alreadyHaveAccessDesc')}
               </p>
               <Button
@@ -440,13 +440,13 @@ const PlanosUpscalerCreditos = () => {
               
               {/* Social proof badge */}
               <FadeIn delay={100} duration={600}>
-                <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-5 md:mb-6 scale-[0.84] md:scale-100 origin-center">
+                <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-border rounded-full px-4 py-2 mb-5 md:mb-6 scale-[0.84] md:scale-100 origin-center">
                   <div className="flex -space-x-2">
                     <img src="/images/social-proof-1.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                     <img src="/images/social-proof-2.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                     <img src="/images/social-proof-3.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                   </div>
-                  <span className="text-white/80 text-xs font-medium">+5.000 profissionais já estão usando</span>
+                  <span className="text-foreground text-xs font-medium">+5.000 profissionais já estão usando</span>
                 </div>
               </FadeIn>
 
@@ -461,8 +461,8 @@ const PlanosUpscalerCreditos = () => {
 
               {/* Subtítulo */}
               <FadeIn delay={300} duration={700}>
-                <p className="text-xs md:text-sm text-white/60 mb-4 md:mb-6 max-w-lg leading-relaxed mx-auto">
-                  {t('tools:upscaler.hero.subtitle')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.hero.sharp')}</span>
+                <p className="text-xs md:text-sm text-muted-foreground mb-4 md:mb-6 max-w-lg leading-relaxed mx-auto">
+                  {t('tools:upscaler.hero.subtitle')} <span className="text-muted-foreground font-semibold">{t('tools:upscaler.hero.sharp')}</span>
                 </p>
               </FadeIn>
 
@@ -489,16 +489,16 @@ const PlanosUpscalerCreditos = () => {
               {/* Feature badges */}
               <FadeIn delay={600} duration={700}>
                 <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10">
-                  <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                    <Clock className="h-3.5 w-3.5 text-gray-400" />
+                  <div className="flex items-center gap-1.5 text-muted-foreground text-xs px-3 py-1">
+                    <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>Mais rápido que um miojo</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                    <MousePointerClick className="h-3.5 w-3.5 text-gray-400" />
+                  <div className="flex items-center gap-1.5 text-muted-foreground text-xs px-3 py-1">
+                    <MousePointerClick className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>Fácil de usar</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                    <Star className="h-3.5 w-3.5 text-gray-400" />
+                  <div className="flex items-center gap-1.5 text-muted-foreground text-xs px-3 py-1">
+                    <Star className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>+10.000 imagens melhoradas</span>
                   </div>
                 </div>
@@ -523,46 +523,46 @@ const PlanosUpscalerCreditos = () => {
               {/* Grid responsivo: 1 coluna mobile, 2 tablet, 3 cards em cima + 2 centralizados embaixo no desktop */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 md:gap-6 items-stretch">
                 <AnimatedElement className="h-full lg:col-span-2" delay={0}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                  <div className="bg-accent border border-border rounded-3xl p-6 md:p-8 text-center hover:border-border transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                     <div className="text-4xl md:text-5xl mb-4 md:mb-6">📱</div>
-                    <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.phone')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.pain.bad')}</span>?
+                    <p className="text-foreground text-base md:text-lg">
+                      {t('tools:upscaler.pain.phone')} <span className="text-muted-foreground font-semibold">{t('tools:upscaler.pain.bad')}</span>?
                     </p>
                   </div>
                 </AnimatedElement>
 
                 <AnimatedElement className="h-full lg:col-span-2" delay={100}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                  <div className="bg-accent border border-border rounded-3xl p-6 md:p-8 text-center hover:border-border transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                     <div className="text-4xl md:text-5xl mb-4 md:mb-6">😤</div>
-                    <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.client')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.pain.lowQuality')}</span>?
+                    <p className="text-foreground text-base md:text-lg">
+                      {t('tools:upscaler.pain.client')} <span className="text-muted-foreground font-semibold">{t('tools:upscaler.pain.lowQuality')}</span>?
                     </p>
                   </div>
                 </AnimatedElement>
 
                 <AnimatedElement className="h-full lg:col-span-2" delay={200}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                  <div className="bg-accent border border-border rounded-3xl p-6 md:p-8 text-center hover:border-border transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                     <div className="text-4xl md:text-5xl mb-4 md:mb-6">📷</div>
-                    <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.aiGenerated')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.pain.notGood')}</span>?
+                    <p className="text-foreground text-base md:text-lg">
+                      {t('tools:upscaler.pain.aiGenerated')} <span className="text-muted-foreground font-semibold">{t('tools:upscaler.pain.notGood')}</span>?
                     </p>
                   </div>
                 </AnimatedElement>
 
                 <AnimatedElement className="h-full lg:col-span-2 lg:col-start-2" delay={300}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                  <div className="bg-accent border border-border rounded-3xl p-6 md:p-8 text-center hover:border-border transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                     <div className="text-4xl md:text-5xl mb-4 md:mb-6">🤖</div>
-                    <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.aiImage')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.pain.aiNotGood')}</span>?
+                    <p className="text-foreground text-base md:text-lg">
+                      {t('tools:upscaler.pain.aiImage')} <span className="text-muted-foreground font-semibold">{t('tools:upscaler.pain.aiNotGood')}</span>?
                     </p>
                   </div>
                 </AnimatedElement>
 
                 <AnimatedElement className="h-full lg:col-span-2 lg:col-start-4" delay={400}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                  <div className="bg-accent border border-border rounded-3xl p-6 md:p-8 text-center hover:border-border transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                     <div className="text-4xl md:text-5xl mb-4 md:mb-6">🎸</div>
-                    <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.lostContract')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.pain.noProPhotos')}</span>?
+                    <p className="text-foreground text-base md:text-lg">
+                      {t('tools:upscaler.pain.lostContract')} <span className="text-muted-foreground font-semibold">{t('tools:upscaler.pain.noProPhotos')}</span>?
                     </p>
                   </div>
                 </AnimatedElement>
@@ -596,13 +596,13 @@ const PlanosUpscalerCreditos = () => {
                   return (
                     <div 
                       key={index}
-                      className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-white/15/50 transition-all duration-300 hover:transform hover:scale-[1.02] h-full flex flex-col"
+                      className="bg-gradient-to-br from-white/10 to-white/5 border border-border rounded-3xl p-8 text-center hover:border-border/50 transition-all duration-300 hover:transform hover:scale-[1.02] h-full flex flex-col"
                     >
                       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center mx-auto mb-6">
-                        <IconComponent className="h-8 w-8 text-gray-400" />
+                        <IconComponent className="h-8 w-8 text-muted-foreground" />
                       </div>
                       <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
-                      <p className="text-white/60 flex-1">{item.description}</p>
+                      <p className="text-muted-foreground flex-1">{item.description}</p>
                     </div>
                   );
                 })}
@@ -615,7 +615,7 @@ const PlanosUpscalerCreditos = () => {
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
-                  {t('tools:upscaler.howItWorks.title')} <span className="text-gray-400">{t('tools:upscaler.howItWorks.subtitle')}</span>
+                  {t('tools:upscaler.howItWorks.title')} <span className="text-muted-foreground">{t('tools:upscaler.howItWorks.subtitle')}</span>
                 </h2>
               </AnimatedSection>
               
@@ -632,11 +632,11 @@ const PlanosUpscalerCreditos = () => {
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
                         {index + 1}
                       </div>
-                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-white/10 flex items-center justify-center mb-5">
-                        <IconComponent className="h-10 w-10 text-gray-400" />
+                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
+                        <IconComponent className="h-10 w-10 text-muted-foreground" />
                       </div>
                       <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
-                      <p className="text-white/60 max-w-[180px]">{step.description}</p>
+                      <p className="text-muted-foreground max-w-[180px]">{step.description}</p>
                     </div>
                   );
                 })}
@@ -653,16 +653,16 @@ const PlanosUpscalerCreditos = () => {
             <div className="max-w-5xl mx-auto">
               <div className="max-w-2xl mx-auto text-center mb-6">
                 <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-2 tracking-tight leading-tight">
-                  Melhore agora mesmo suas <span className="text-gray-400">imagens!</span>
+                  Melhore agora mesmo suas <span className="text-muted-foreground">imagens!</span>
                 </h2>
-                <p className="text-white/60 text-sm md:text-base font-space-grotesk">
+                <p className="text-muted-foreground text-sm md:text-base font-space-grotesk">
                   Escolha o plano que melhor te atende — <span className="text-white font-bold">sem mensalidade, pague apenas uma vez!</span>
                 </p>
               </div>
 
               {/* Countdown Timer */}
               <div className="flex items-center justify-center gap-2 mb-8 md:mb-10">
-                <span className="text-gray-300 text-sm">Essa oferta expira em</span>
+                <span className="text-muted-foreground text-sm">Essa oferta expira em</span>
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3 text-red-500" />
                   <div className="flex items-center gap-0.5">
@@ -690,21 +690,21 @@ const PlanosUpscalerCreditos = () => {
               >
                 {/* Starter */}
                 <div className="flex flex-col h-full w-full">
-                  <Card className="relative p-8 flex flex-col rounded-xl bg-[#111113] border border-white/10 w-full h-full">
+                  <Card className="relative p-8 flex flex-col rounded-xl bg-background border border-border w-full h-full">
                     <div className="text-center mb-5 min-h-[68px] flex flex-col items-center justify-center">
                       <h3 className="text-xl font-bold text-white">Starter</h3>
-                      <p className="text-sm text-gray-400 mt-0.5">Pra quem quer testar sem compromisso!</p>
+                      <p className="text-sm text-muted-foreground mt-0.5">Pra quem quer testar sem compromisso!</p>
                     </div>
                     <div className="text-center mb-4 h-[98px] flex flex-col justify-center">
                       <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-gray-400 text-lg">R$</span>
+                        <span className="text-muted-foreground text-lg">R$</span>
                         <span className="text-5xl font-bold text-white">29,90</span>
                       </div>
-                      <p className="text-gray-400 text-base mt-1">Pagamento único</p>
+                      <p className="text-muted-foreground text-base mt-1">Pagamento único</p>
                     </div>
                     <Button 
                       onClick={() => window.open(appendUtmToUrl("https://payfast.greenn.com.br/rnq543f/offer/0RpIQa"), "_blank")}
-                      className="w-full mb-5 text-lg h-14 bg-white/5 hover:bg-white/10 text-gray-300"
+                      className="w-full mb-5 text-lg h-14 bg-accent hover:bg-accent text-muted-foreground"
                     >
                       Comprar
                     </Button>
@@ -713,41 +713,41 @@ const PlanosUpscalerCreditos = () => {
                         <Sparkles className="w-4 h-4" />
                         30 upscalers
                       </span>
-                      <span className="text-sm text-gray-400 mt-1">1.800 créditos</span>
+                      <span className="text-sm text-muted-foreground mt-1">1.800 créditos</span>
                     </div>
                     <ul className="space-y-3 flex-1">
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                        <span className="text-gray-300">Atualizações constantes na ferramenta</span>
+                        <Check className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">Atualizações constantes na ferramenta</span>
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                        <span className="text-gray-300">Liberação imediata</span>
+                        <Check className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">Liberação imediata</span>
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                        <span className="text-gray-300">Suporte exclusivo via WhatsApp</span>
+                        <Check className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">Suporte exclusivo via WhatsApp</span>
                       </li>
 
                       {/* Bonus section */}
-                      <li className="pt-4 border-t border-white/10 mt-4">
-                        <p className="text-sm text-gray-400 uppercase tracking-wide mb-2.5">Bônus</p>
+                      <li className="pt-4 border-t border-border mt-4">
+                        <p className="text-sm text-muted-foreground uppercase tracking-wide mb-2.5">Bônus</p>
                       </li>
                       <li>
                         <div 
                           className="flex items-start gap-2.5 text-base cursor-pointer select-none"
                           onClick={() => setExpandedAiTools(prev => ({ ...prev, starter: !prev.starter }))}
                         >
-                          <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                          <span className="text-gray-300 flex items-center gap-1.5">
+                          <Check className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                          <span className="text-muted-foreground flex items-center gap-1.5">
                             Acesso à todas Ferramentas de IA
                           </span>
-                          <ChevronDown className={`w-5 h-5 shrink-0 mt-0.5 text-gray-400 transition-transform duration-200 ${expandedAiTools.starter ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-5 h-5 shrink-0 mt-0.5 text-muted-foreground transition-transform duration-200 ${expandedAiTools.starter ? 'rotate-180' : ''}`} />
                         </div>
                         {expandedAiTools.starter && (
                           <ul className="ml-7 mt-2 space-y-0.5">
                             {aiToolsList.map((tool, tIndex) => (
-                              <li key={tIndex} className={`text-sm ${tIndex === aiToolsList.length - 1 ? 'text-gray-400 italic' : 'text-gray-400'}`}>
+                              <li key={tIndex} className={`text-sm ${tIndex === aiToolsList.length - 1 ? 'text-muted-foreground italic' : 'text-muted-foreground'}`}>
                                 • {tool}
                               </li>
                             ))}
@@ -764,21 +764,21 @@ const PlanosUpscalerCreditos = () => {
 
                 {/* Pro - MAIS VENDIDO */}
                 <div className="flex flex-col h-full w-full">
-                  <Card className="relative p-8 flex flex-col rounded-xl bg-[#111113] border-2 border-lime-400 shadow-lg shadow-lime-400/30 w-full h-full">
+                  <Card className="relative p-8 flex flex-col rounded-xl bg-background border-2 border-lime-400 shadow-lg shadow-lime-400/30 w-full h-full">
                     <Badge className="absolute -top-3.5 left-1/2 -translate-x-1/2 border-0 text-sm whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-5 py-1.5">
                       MAIS VENDIDO
                     </Badge>
                     <div className="text-center mb-5 min-h-[68px] flex flex-col items-center justify-center">
                       <h3 className="text-xl font-bold text-white">Pro</h3>
-                      <p className="text-sm text-gray-400 mt-0.5">Dobro de créditos por + R$10</p>
+                      <p className="text-sm text-muted-foreground mt-0.5">Dobro de créditos por + R$10</p>
                     </div>
                     <div className="text-center mb-4 h-[98px] flex flex-col justify-center">
-                      <p className="text-gray-400 line-through text-sm">R$69,90</p>
+                      <p className="text-muted-foreground line-through text-sm">R$69,90</p>
                       <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-gray-400 text-lg">R$</span>
+                        <span className="text-muted-foreground text-lg">R$</span>
                         <span className="text-5xl font-bold text-white">39,90</span>
                       </div>
-                      <p className="text-gray-400 text-base mt-1">Pagamento único</p>
+                      <p className="text-muted-foreground text-base mt-1">Pagamento único</p>
                     </div>
                     <Button 
                       onClick={() => window.open(appendUtmToUrl("https://payfast.greenn.com.br/sauzz2n/offer/2hn2nR"), "_blank")}
@@ -791,41 +791,41 @@ const PlanosUpscalerCreditos = () => {
                         <Sparkles className="w-4 h-4" />
                         70 upscalers
                       </span>
-                      <span className="text-sm text-gray-400 mt-1">4.200 créditos</span>
+                      <span className="text-sm text-muted-foreground mt-1">4.200 créditos</span>
                     </div>
                     <ul className="space-y-3 flex-1">
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                        <span className="text-gray-300">Atualizações constantes na ferramenta</span>
+                        <Check className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">Atualizações constantes na ferramenta</span>
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                        <span className="text-gray-300">Liberação imediata</span>
+                        <Check className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">Liberação imediata</span>
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                        <span className="text-gray-300">Suporte exclusivo via WhatsApp</span>
+                        <Check className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">Suporte exclusivo via WhatsApp</span>
                       </li>
 
                       {/* Bonus section */}
-                      <li className="pt-4 border-t border-white/10 mt-4">
-                        <p className="text-sm text-gray-400 uppercase tracking-wide mb-2.5">Bônus</p>
+                      <li className="pt-4 border-t border-border mt-4">
+                        <p className="text-sm text-muted-foreground uppercase tracking-wide mb-2.5">Bônus</p>
                       </li>
                       <li>
                         <div 
                           className="flex items-start gap-2.5 text-base cursor-pointer select-none"
                           onClick={() => setExpandedAiTools(prev => ({ ...prev, pro: !prev.pro }))}
                         >
-                          <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                          <span className="text-gray-300 flex items-center gap-1.5">
+                          <Check className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                          <span className="text-muted-foreground flex items-center gap-1.5">
                             Acesso à todas Ferramentas de IA
                           </span>
-                          <ChevronDown className={`w-5 h-5 shrink-0 mt-0.5 text-gray-400 transition-transform duration-200 ${expandedAiTools.pro ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-5 h-5 shrink-0 mt-0.5 text-muted-foreground transition-transform duration-200 ${expandedAiTools.pro ? 'rotate-180' : ''}`} />
                         </div>
                         {expandedAiTools.pro && (
                           <ul className="ml-7 mt-2 space-y-0.5">
                             {aiToolsList.map((tool, tIndex) => (
-                              <li key={tIndex} className={`text-sm ${tIndex === aiToolsList.length - 1 ? 'text-gray-400 italic' : 'text-gray-400'}`}>
+                              <li key={tIndex} className={`text-sm ${tIndex === aiToolsList.length - 1 ? 'text-muted-foreground italic' : 'text-muted-foreground'}`}>
                                 • {tool}
                               </li>
                             ))}
@@ -833,8 +833,8 @@ const PlanosUpscalerCreditos = () => {
                         )}
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                        <span className="text-gray-300">Fila prioritária nos upscalers</span>
+                        <Check className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">Fila prioritária nos upscalers</span>
                       </li>
                     </ul>
                   </Card>
@@ -842,21 +842,21 @@ const PlanosUpscalerCreditos = () => {
 
                 {/* Studio - MELHOR CUSTO/BENEFÍCIO */}
                 <div className="flex flex-col h-full w-full">
-                  <Card className="relative p-8 flex flex-col rounded-xl bg-[#111113] border-2 border-slate-500 shadow-lg shadow-slate-500/20 w-full h-full">
+                  <Card className="relative p-8 flex flex-col rounded-xl bg-background border-2 border-slate-500 shadow-lg shadow-slate-500/20 w-full h-full">
                     <Badge className="absolute -top-3.5 left-1/2 -translate-x-1/2 border-0 text-sm whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-white px-5 py-1.5">
                       MELHOR CUSTO/BENEFÍCIO
                     </Badge>
                     <div className="text-center mb-5 min-h-[68px] flex flex-col items-center justify-center">
                       <h3 className="text-xl font-bold text-white">Studio</h3>
-                      <p className="text-sm text-gray-400 mt-0.5">Para profissionais que usam muito no dia a dia</p>
+                      <p className="text-sm text-muted-foreground mt-0.5">Para profissionais que usam muito no dia a dia</p>
                     </div>
                     <div className="text-center mb-4 h-[98px] flex flex-col justify-center">
-                      <p className="text-gray-400 line-through text-sm">R$249,90</p>
+                      <p className="text-muted-foreground line-through text-sm">R$249,90</p>
                       <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-gray-400 text-lg">R$</span>
+                        <span className="text-muted-foreground text-lg">R$</span>
                         <span className="text-5xl font-bold text-white">99,90</span>
                       </div>
-                      <p className="text-gray-400 text-base mt-1">Pagamento único</p>
+                      <p className="text-muted-foreground text-base mt-1">Pagamento único</p>
                     </div>
                     <Button 
                       onClick={() => window.open(appendUtmToUrl("https://payfast.greenn.com.br/fz9ce38/offer/SQCSxN"), "_blank")}
@@ -869,41 +869,41 @@ const PlanosUpscalerCreditos = () => {
                         <Sparkles className="w-4 h-4" />
                         200 upscalers
                       </span>
-                      <span className="text-sm text-gray-400 mt-1">12.000 créditos</span>
+                      <span className="text-sm text-muted-foreground mt-1">12.000 créditos</span>
                     </div>
                     <ul className="space-y-3 flex-1">
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                        <span className="text-gray-300">Atualizações constantes na ferramenta</span>
+                        <Check className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">Atualizações constantes na ferramenta</span>
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                        <span className="text-gray-300">Liberação imediata</span>
+                        <Check className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">Liberação imediata</span>
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                        <span className="text-gray-300">Suporte exclusivo via WhatsApp</span>
+                        <Check className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">Suporte exclusivo via WhatsApp</span>
                       </li>
 
                       {/* Bonus section */}
-                      <li className="pt-4 border-t border-white/10 mt-4">
-                        <p className="text-sm text-gray-400 uppercase tracking-wide mb-2.5">Bônus</p>
+                      <li className="pt-4 border-t border-border mt-4">
+                        <p className="text-sm text-muted-foreground uppercase tracking-wide mb-2.5">Bônus</p>
                       </li>
                       <li>
                         <div 
                           className="flex items-start gap-2.5 text-base cursor-pointer select-none"
                           onClick={() => setExpandedAiTools(prev => ({ ...prev, studio: !prev.studio }))}
                         >
-                          <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                          <span className="text-gray-300 flex items-center gap-1.5">
+                          <Check className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                          <span className="text-muted-foreground flex items-center gap-1.5">
                             Acesso à todas Ferramentas de IA
                           </span>
-                          <ChevronDown className={`w-5 h-5 shrink-0 mt-0.5 text-gray-400 transition-transform duration-200 ${expandedAiTools.studio ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-5 h-5 shrink-0 mt-0.5 text-muted-foreground transition-transform duration-200 ${expandedAiTools.studio ? 'rotate-180' : ''}`} />
                         </div>
                         {expandedAiTools.studio && (
                           <ul className="ml-7 mt-2 space-y-0.5">
                             {aiToolsList.map((tool, tIndex) => (
-                              <li key={tIndex} className={`text-sm ${tIndex === aiToolsList.length - 1 ? 'text-gray-400 italic' : 'text-gray-400'}`}>
+                              <li key={tIndex} className={`text-sm ${tIndex === aiToolsList.length - 1 ? 'text-muted-foreground italic' : 'text-muted-foreground'}`}>
                                 • {tool}
                               </li>
                             ))}
@@ -911,8 +911,8 @@ const PlanosUpscalerCreditos = () => {
                         )}
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                        <span className="text-gray-300">Fila prioritária nos upscalers</span>
+                        <Check className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">Fila prioritária nos upscalers</span>
                       </li>
                     </ul>
                   </Card>
@@ -933,7 +933,7 @@ const PlanosUpscalerCreditos = () => {
             <div className="max-w-2xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
-                  {t('tools:upscaler.faq.title')} <span className="text-gray-400">{t('tools:upscaler.faq.subtitle')}</span>
+                  {t('tools:upscaler.faq.title')} <span className="text-muted-foreground">{t('tools:upscaler.faq.subtitle')}</span>
                 </h2>
               </AnimatedSection>
               
@@ -943,12 +943,12 @@ const PlanosUpscalerCreditos = () => {
                     <AccordionItem 
                       key={index} 
                       value={`item-${index}`}
-                      className="bg-white/5 border border-white/10 rounded-2xl px-6 data-[state=open]:border-white/10"
+                      className="bg-accent border border-border rounded-2xl px-6 data-[state=open]:border-border"
                     >
                       <AccordionTrigger className="text-white text-left text-lg font-medium py-5 hover:no-underline">
                         {item.question}
                       </AccordionTrigger>
-                      <AccordionContent className="text-white/70 pb-5">
+                      <AccordionContent className="text-muted-foreground pb-5">
                         {item.answer}
                       </AccordionContent>
                     </AccordionItem>
@@ -972,7 +972,7 @@ const PlanosUpscalerCreditos = () => {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-8 px-4">
+      <footer className="border-t border-border py-8 px-4">
         <div className="max-w-5xl mx-auto flex flex-col items-center gap-4">
           <img src={logoHorizontal} alt="ArcanoApp" className="h-7 w-auto opacity-70" />
           <p className="text-white/40 text-xs">© 2026 Arcano App. Todos os direitos reservados.</p>

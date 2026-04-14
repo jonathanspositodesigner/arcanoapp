@@ -106,10 +106,10 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-[calc(100%-32px)] sm:w-full bg-[#111113] border border-slate-500/40 text-white max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-xl">
+      <DialogContent className="max-w-2xl w-[calc(100%-32px)] sm:w-full bg-background border border-slate-500/40 text-white max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-xl">
         <DialogHeader className="flex-shrink-0 pb-2">
           <DialogTitle className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
-            <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+            <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
             Biblioteca de Flyers
           </DialogTitle>
         </DialogHeader>
@@ -127,29 +127,29 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
         )}
 
         <div className="flex items-center gap-2 mt-3 sm:mt-4 flex-shrink-0">
-          <div className="flex-1 h-px bg-white/50/30" />
-          <span className="text-[10px] sm:text-xs text-gray-400/80">ou escolha da biblioteca</span>
-          <div className="flex-1 h-px bg-white/50/30" />
+          <div className="flex-1 h-px bg-accent0/30" />
+          <span className="text-[10px] sm:text-xs text-muted-foreground/80">ou escolha da biblioteca</span>
+          <div className="flex-1 h-px bg-accent0/30" />
         </div>
 
         <div className="relative mt-3 flex-shrink-0">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             type="text"
             placeholder="buscar por nome ou categoria..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-9 text-sm bg-white/50/10 border-white/10 text-white placeholder:text-gray-500 focus:border-slate-400"
+            className="pl-10 h-9 text-sm bg-accent0/10 border-border text-white placeholder:text-muted-foreground focus:border-slate-400"
           />
         </div>
 
         <div className="mt-3 sm:mt-4 overflow-y-auto flex-1 pr-1 -mr-1">
           {isLoading && flyers.length === 0 ? (
             <div className="flex items-center justify-center py-8 sm:py-12">
-              <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 animate-spin" />
+              <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground animate-spin" />
             </div>
           ) : flyers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-gray-400">
+            <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-muted-foreground">
               <ImageIcon className="w-8 h-8 sm:w-12 sm:h-12 mb-2 opacity-50" />
               <p className="text-xs sm:text-sm">Nenhum flyer encontrado</p>
             </div>
@@ -160,7 +160,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
                   <button
                     key={flyer.id}
                     onClick={() => handleSelectFlyer(flyer)}
-                    className="group relative aspect-[3/4] rounded-lg sm:rounded-xl overflow-hidden border border-white/10 hover:border-white-400 transition-all active:scale-95 sm:hover:scale-105"
+                    className="group relative aspect-[3/4] rounded-lg sm:rounded-xl overflow-hidden border border-border hover:border-white-400 transition-all active:scale-95 sm:hover:scale-105"
                   >
                     <img 
                       src={flyer.image_url} 
@@ -172,7 +172,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
                     <div className="hidden sm:block absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <p className="text-[10px] text-white font-medium text-center line-clamp-2">{flyer.title}</p>
                     </div>
-                    <div className="absolute inset-0 bg-white/50/0 group-hover:bg-white/50/10 transition-colors flex items-center justify-center">
+                    <div className="absolute inset-0 bg-accent0/0 group-hover:bg-accent0/10 transition-colors flex items-center justify-center">
                       <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-slate-600 px-3 py-1 rounded-full transition-opacity">Selecionar</span>
                     </div>
                   </button>
@@ -181,14 +181,14 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
 
               {hasMore && (
                 <div className="flex justify-center mt-3 sm:mt-4">
-                  <Button variant="outline" size="sm" onClick={handleLoadMore} disabled={isLoading} className="bg-white/50/10 border-white/10 text-gray-300 hover:bg-white/50/20 text-xs h-8">
+                  <Button variant="outline" size="sm" onClick={handleLoadMore} disabled={isLoading} className="bg-accent0/10 border-border text-muted-foreground hover:bg-accent0/20 text-xs h-8">
                     {isLoading ? (<><Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> Carregando...</>) : 'Carregar mais'}
                   </Button>
                 </div>
               )}
             </>
           )}
-          <p className="text-[10px] sm:text-xs text-gray-400/70 text-center mt-3 pb-1">💡 Toque para selecionar um flyer de referência</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground/70 text-center mt-3 pb-1">💡 Toque para selecionar um flyer de referência</p>
         </div>
       </DialogContent>
     </Dialog>

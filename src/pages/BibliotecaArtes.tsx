@@ -643,7 +643,7 @@ const BibliotecaArtes = () => {
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
-            <button onClick={() => navigate("/")} className="text-white hover:text-white/80 p-1">
+            <button onClick={() => navigate("/")} className="text-white hover:text-foreground p-1">
               <Home className="h-5 w-5" />
             </button>
             <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-9" />
@@ -693,7 +693,7 @@ const BibliotecaArtes = () => {
             <Button variant="ghost" size="sm" className="text-white hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
-            <button onClick={() => navigate("/")} className="text-white hover:text-white/80 p-1">
+            <button onClick={() => navigate("/")} className="text-white hover:text-foreground p-1">
               <Home className="h-5 w-5" />
             </button>
             <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-8" />
@@ -827,7 +827,7 @@ const BibliotecaArtes = () => {
                 }}>
                       <div className="aspect-[3/4] relative overflow-hidden">
                         {pack.cover_url ? <img src={pack.cover_url} alt={pack.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
-                            {activeSection === 'bonus' ? <Gift className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" /> : <Package className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />}
+                            {activeSection === 'bonus' ? <Gift className="h-12 w-12 sm:h-16 sm:w-16 text-foreground" /> : <Package className="h-12 w-12 sm:h-16 sm:w-16 text-foreground" />}
                           </div>}
                         
                         {/* Promo 50% OFF Tag - show on packs when promo is active and user doesn't have access */}
@@ -899,7 +899,7 @@ const BibliotecaArtes = () => {
                                   <Eye className="h-3 w-3 mr-1" />
                                   Ver conteúdo
                                 </>) : <div className="flex flex-col items-center gap-1">
-                                  <span className="text-[10px] text-white/80 text-center">{t('messages.unlockToPurchase')}</span>
+                                  <span className="text-[10px] text-foreground text-center">{t('messages.unlockToPurchase')}</span>
                                   <span className="flex items-center">
                                     <Package className="h-3 w-3 mr-1" />
                                     {t('buttons.viewPacks')}
@@ -955,7 +955,7 @@ const BibliotecaArtes = () => {
                 return <Card key={tutorial.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => navigate(`/tutorial-artes/${tutorial.slug}`)}>
                       <div className="aspect-[3/4] relative overflow-hidden">
                         {tutorial.cover_url ? <img src={tutorial.cover_url} alt={tutorial.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <div className="w-full h-full bg-gradient-to-br from-emerald-500/60 to-emerald-600 flex items-center justify-center">
-                            <BookOpen className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
+                            <BookOpen className="h-12 w-12 sm:h-16 sm:w-16 text-foreground" />
                           </div>}
                         
                         {/* Free for everyone Tag */}
@@ -992,7 +992,7 @@ const BibliotecaArtes = () => {
                 return <Card key={curso.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => handleCursoClick(curso)}>
                       <div className="aspect-[3/4] relative overflow-hidden">
                         {curso.cover_url ? <img src={curso.cover_url} alt={curso.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <div className="w-full h-full bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center">
-                            <GraduationCap className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
+                            <GraduationCap className="h-12 w-12 sm:h-16 sm:w-16 text-foreground" />
                           </div>}
                         
                         {/* Access Tag */}
@@ -1509,7 +1509,7 @@ const BibliotecaArtes = () => {
             return <div className="space-y-4 text-center">
                 <div className="relative">
                   {selectedCurso.cover_url ? <img src={selectedCurso.cover_url} alt={selectedCurso.name} className="w-full h-48 object-cover rounded-lg" /> : <div className="w-full h-48 bg-gradient-to-br from-primary/60 to-primary flex items-center justify-center rounded-lg">
-                      <GraduationCap className="h-16 w-16 text-white/80" />
+                      <GraduationCap className="h-16 w-16 text-foreground" />
                     </div>}
                   
                   {/* Access Badge */}

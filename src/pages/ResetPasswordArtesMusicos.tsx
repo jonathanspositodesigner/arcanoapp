@@ -108,16 +108,16 @@ const ResetPasswordArtesMusicos = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#2d1b4e] to-[#0f0f1a] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-white/10">
+      <Card className="w-full max-w-md bg-card/80 border-border">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-white/50/30 rounded-full flex items-center justify-center mb-4">
-            <Lock className="h-6 w-6 text-gray-400" />
+          <div className="mx-auto w-12 h-12 bg-accent0/30 rounded-full flex items-center justify-center mb-4">
+            <Lock className="h-6 w-6 text-muted-foreground" />
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Music className="h-5 w-5 text-gray-400" />
+            <Music className="h-5 w-5 text-muted-foreground" />
           </div>
           <CardTitle className="text-2xl text-white">{t('createNewPassword')}</CardTitle>
-          <CardDescription className="text-white/60">
+          <CardDescription className="text-muted-foreground">
             {t('createNewPasswordDescription')}
           </CardDescription>
         </CardHeader>
@@ -129,13 +129,13 @@ const ResetPasswordArtesMusicos = () => {
                 placeholder={t('newPassword')}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-[#0f0f1a] border-white/10 text-white pr-10"
+                className="bg-card border-border text-white pr-10"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
               >
                 {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -146,19 +146,19 @@ const ResetPasswordArtesMusicos = () => {
                 placeholder={t('confirmNewPassword')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="bg-[#0f0f1a] border-white/10 text-white pr-10"
+                className="bg-card border-border text-white pr-10"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
 
-            <p className="text-white/50 text-sm">
+            <p className="text-muted-foreground text-sm">
               {t('passwordHint')}
             </p>
 

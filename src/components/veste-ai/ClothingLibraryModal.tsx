@@ -122,10 +122,10 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-[#111113] border-white/10 text-white max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-2xl bg-background border-border text-white max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
-            <Shirt className="w-5 h-5 text-gray-400" />
+            <Shirt className="w-5 h-5 text-muted-foreground" />
             Biblioteca de Roupas
           </DialogTitle>
         </DialogHeader>
@@ -140,7 +140,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
               "flex-1",
               genderFilter === 'masculino'
                 ? "bg-gradient-to-r from-slate-500 to-slate-700 text-white border-0"
-                : "bg-transparent border-white/10 text-gray-300 hover:bg-white/50/20"
+                : "bg-transparent border-border text-muted-foreground hover:bg-accent0/20"
             )}
           >
             <User className="w-4 h-4 mr-2" />
@@ -154,7 +154,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
               "flex-1",
               genderFilter === 'feminino'
                 ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white border-0"
-                : "bg-transparent border-white/10 text-gray-300 hover:bg-white/50/20"
+                : "bg-transparent border-border text-muted-foreground hover:bg-accent0/20"
             )}
           >
             <User className="w-4 h-4 mr-2" />
@@ -174,7 +174,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
                 "text-xs whitespace-nowrap relative",
                 categoryFilter === cat.id
                   ? "bg-slate-600 text-white"
-                  : "text-gray-300 hover:bg-white/50/20"
+                  : "text-muted-foreground hover:bg-accent0/20"
               )}
             >
               {cat.label}
@@ -192,7 +192,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
               <button
                 key={item.id}
                 onClick={() => handleSelectClothing(item.id)}
-                className="group relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-white/10 hover:border-white/15 transition-all hover:scale-105"
+                className="group relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-border hover:border-border transition-all hover:scale-105"
               >
                 {/* Placeholder gradient background */}
                 <div className={cn(
@@ -213,7 +213,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
                 </div>
 
                 {/* Hover overlay */}
-                <div className="absolute inset-0 bg-white/50/0 group-hover:bg-white/50/20 transition-colors flex items-center justify-center">
+                <div className="absolute inset-0 bg-accent0/0 group-hover:bg-accent0/20 transition-colors flex items-center justify-center">
                   <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-slate-600 px-3 py-1 rounded-full transition-opacity">
                     Selecionar
                   </span>
@@ -223,7 +223,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
           </div>
 
           {/* Info text */}
-          <p className="text-xs text-gray-400 text-center mt-4 pb-2">
+          <p className="text-xs text-muted-foreground text-center mt-4 pb-2">
             👕 Clique em uma roupa para usá-la como referência
           </p>
         </div>

@@ -340,15 +340,15 @@ const RemoverFundoTool: React.FC = () => {
         <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden flex flex-col">
           <div className="text-center py-3">
             <h1 className="text-2xl lg:text-3xl font-bold text-white">Remover Fundo</h1>
-            <p className="text-sm text-gray-300 mt-1 max-w-lg mx-auto">Remova o fundo de qualquer imagem automaticamente com IA. Resultado em PNG transparente.</p>
+            <p className="text-sm text-muted-foreground mt-1 max-w-lg mx-auto">Remova o fundo de qualquer imagem automaticamente com IA. Resultado em PNG transparente.</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 flex-1 lg:min-h-0">
             {/* Left Side - Input */}
             <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
-              <Card className="bg-white/5 border-white/10 p-3">
+              <Card className="bg-accent border-border p-3">
                 <h3 className="text-xs font-semibold text-white mb-2 flex items-center gap-1.5">
-                  <ImageIcon className="w-3.5 h-3.5 text-gray-400" /> Sua Imagem
+                  <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" /> Sua Imagem
                 </h3>
                 {inputImage ? (
                   <div className="relative">
@@ -359,12 +359,12 @@ const RemoverFundoTool: React.FC = () => {
                   </div>
                 ) : (
                   <div
-                    className="border-2 border-dashed border-white/10 rounded-lg p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-white/15 transition-colors"
+                    className="border-2 border-dashed border-border rounded-lg p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-border transition-colors"
                     onClick={() => fileInputRef.current?.click()}
                   >
                     <Upload className="w-8 h-8 text-slate-400/40" />
-                    <p className="text-xs text-gray-300 text-center">Clique para enviar uma imagem</p>
-                    <p className="text-[10px] text-gray-400">PNG, JPG ou WebP</p>
+                    <p className="text-xs text-muted-foreground text-center">Clique para enviar uma imagem</p>
+                    <p className="text-[10px] text-muted-foreground">PNG, JPG ou WebP</p>
                   </div>
                 )}
                 <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} disabled={isProcessing} />
@@ -394,14 +394,14 @@ const RemoverFundoTool: React.FC = () => {
 
             {/* Right Side - Result */}
             <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
-              <Card className="relative overflow-hidden bg-white/5 border-white/10 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
-                <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between flex-shrink-0">
-                  <h3 className="text-xs font-semibold text-white flex items-center gap-1.5"><ImageIcon className="w-3.5 h-3.5 text-gray-400" />Resultado</h3>
+              <Card className="relative overflow-hidden bg-accent border-border flex-1 flex flex-col min-h-[250px] lg:min-h-0">
+                <div className="px-3 py-2 border-b border-border flex items-center justify-between flex-shrink-0">
+                  <h3 className="text-xs font-semibold text-white flex items-center gap-1.5"><ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />Resultado</h3>
                   {outputImage && (
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-300 hover:text-white hover:bg-white/50/20" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-3.5 h-3.5" /></Button>
-                      <span className="text-[10px] text-gray-300 w-8 text-center">{Math.round(zoomLevel * 100)}%</span>
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-300 hover:text-white hover:bg-white/50/20" onClick={() => transformRef.current?.zoomIn(0.5)}><ZoomIn className="w-3.5 h-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-white hover:bg-accent0/20" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-3.5 h-3.5" /></Button>
+                      <span className="text-[10px] text-muted-foreground w-8 text-center">{Math.round(zoomLevel * 100)}%</span>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-white hover:bg-accent0/20" onClick={() => transformRef.current?.zoomIn(0.5)}><ZoomIn className="w-3.5 h-3.5" /></Button>
                     </div>
                   )}
                 </div>
@@ -415,30 +415,30 @@ const RemoverFundoTool: React.FC = () => {
                     </TransformWrapper>
                   ) : isProcessing ? (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                      <div className="relative"><div className="w-14 h-14 rounded-full border-4 border-white/10 border-t-slate-500 animate-spin" /><Sparkles className="absolute inset-0 m-auto w-6 h-6 text-gray-400" /></div>
+                      <div className="relative"><div className="w-14 h-14 rounded-full border-4 border-border border-t-slate-500 animate-spin" /><Sparkles className="absolute inset-0 m-auto w-6 h-6 text-muted-foreground" /></div>
                       <div className="text-center">
                         <p className="text-sm text-white font-medium flex items-center gap-2"><span>{currentQueueMessage.emoji}</span><span>{currentQueueMessage.text}</span></p>
-                        {status === 'waiting' && queuePosition > 0 && <p className="text-xs text-gray-300 mt-1">Posição na fila: #{queuePosition}</p>}
-                        {status === 'processing' && <p className="text-xs text-gray-300 mt-0.5">{Math.round(progress)}% concluído</p>}
+                        {status === 'waiting' && queuePosition > 0 && <p className="text-xs text-muted-foreground mt-1">Posição na fila: #{queuePosition}</p>}
+                        {status === 'processing' && <p className="text-xs text-muted-foreground mt-0.5">{Math.round(progress)}% concluído</p>}
                       </div>
-                      <div className="w-36 h-1.5 bg-white/5 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-slate-500 to-slate-400 transition-all duration-300" style={{ width: `${progress}%` }} /></div>
+                      <div className="w-36 h-1.5 bg-accent rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-slate-500 to-slate-400 transition-all duration-300" style={{ width: `${progress}%` }} /></div>
                     </div>
                   ) : status === 'error' ? (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                       <div className="w-16 h-16 rounded-xl bg-red-500/10 border-2 border-dashed border-red-500/30 flex items-center justify-center"><XCircle className="w-8 h-8 text-red-500/60" /></div>
-                      <div className="text-center"><p className="text-sm text-red-300">Erro no processamento</p><Button variant="link" size="sm" className="text-xs text-gray-400" onClick={handleReset}>Tentar novamente</Button></div>
+                      <div className="text-center"><p className="text-sm text-red-300">Erro no processamento</p><Button variant="link" size="sm" className="text-xs text-muted-foreground" onClick={handleReset}>Tentar novamente</Button></div>
                     </div>
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                      <div className="w-16 h-16 rounded-xl bg-white/50/10 border-2 border-dashed border-white/10 flex items-center justify-center"><ImageIcon className="w-8 h-8 text-slate-400/40" /></div>
-                      <div className="text-center"><p className="text-sm text-gray-300">O resultado aparecerá aqui</p><p className="text-xs text-gray-400 mt-0.5">Envie uma imagem e clique em "Remover Fundo"</p></div>
+                      <div className="w-16 h-16 rounded-xl bg-accent0/10 border-2 border-dashed border-border flex items-center justify-center"><ImageIcon className="w-8 h-8 text-slate-400/40" /></div>
+                      <div className="text-center"><p className="text-sm text-muted-foreground">O resultado aparecerá aqui</p><p className="text-xs text-muted-foreground mt-0.5">Envie uma imagem e clique em "Remover Fundo"</p></div>
                     </div>
                   )}
                 </div>
 
                 {outputImage && status === 'completed' && (
                   <div className="absolute bottom-3 left-3 right-3 flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-white/15 text-white hover:bg-white/50/90" onClick={handleReset}><RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova Imagem</Button>
+                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-border text-white hover:bg-accent0/90" onClick={handleReset}><RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova Imagem</Button>
                     <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white" onClick={handleDownload}><Download className="w-3.5 h-3.5 mr-1.5" />Baixar PNG</Button>
                   </div>
                 )}

@@ -52,11 +52,11 @@ const UserLoginArtes = () => {
         </DialogContent>
       </Dialog>
 
-      <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
+      <Card className="w-full max-w-md bg-card/80 border-border/30">
         <CardHeader className="text-center">
           <Button
             variant="ghost"
-            className="absolute left-4 top-4 text-white/70 hover:text-white"
+            className="absolute left-4 top-4 text-muted-foreground hover:text-white"
             onClick={() => navigate("/")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -65,7 +65,7 @@ const UserLoginArtes = () => {
           <CardTitle className="text-2xl text-white">
             {t('loginCard.title')}
           </CardTitle>
-          <CardDescription className="text-white/60">
+          <CardDescription className="text-muted-foreground">
             {t('loginCard.description')}
           </CardDescription>
         </CardHeader>

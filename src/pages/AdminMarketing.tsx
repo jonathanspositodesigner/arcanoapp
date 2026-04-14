@@ -142,17 +142,17 @@ const AdminMarketing = () => {
           )}>
             {/* Push Notification Analytics Dashboard */}
             <Card 
-              className="p-6 border-2 border-white/15 relative"
+              className="p-6 border-2 border-border relative"
               {...getDragProps("push-analytics")}
             >
               {isReordering && (
                 <div className="absolute top-2 right-2 z-10 p-1 bg-white/20/20 rounded-md">
-                  <GripVertical className="h-4 w-4 text-white/50" />
+                  <GripVertical className="h-4 w-4 text-muted-foreground" />
                 </div>
               )}
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-white/20/20 rounded-full">
-                  <Bell className="h-6 w-6 text-white/50" />
+                  <Bell className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <div>
                   <p className="text-lg font-semibold text-foreground">Analytics de Notificações Push</p>

@@ -106,13 +106,13 @@ const ChangePasswordArtes = () => {
   if (sentParam === '1' && emailParam && !hasSession) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
+        <Card className="w-full max-w-md bg-card/80 border-border/30">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-[#2d4a5e] rounded-full flex items-center justify-center mb-4">
               <Mail className="h-6 w-6 text-white" />
             </div>
             <CardTitle className="text-2xl text-white">Primeiro Acesso</CardTitle>
-            <CardDescription className="text-white/60">
+            <CardDescription className="text-muted-foreground">
               Enviamos um link para criar sua senha para:
             </CardDescription>
           </CardHeader>
@@ -120,7 +120,7 @@ const ChangePasswordArtes = () => {
             <p className="text-white font-medium bg-[#2d4a5e]/30 py-2 px-4 rounded-lg text-center">
               {emailParam}
             </p>
-            <p className="text-white/50 text-sm text-center">
+            <p className="text-muted-foreground text-sm text-center">
               Clique no link do email para voltar aqui e cadastrar sua senha.
             </p>
 
@@ -128,7 +128,7 @@ const ChangePasswordArtes = () => {
               <Button
                 onClick={handleRefreshSession}
                 variant="outline"
-                className="w-full border-[#2d4a5e]/50 text-white hover:bg-[#2d4a5e]/30"
+                className="w-full border-border/50 text-white hover:bg-[#2d4a5e]/30"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Já cliquei no link
@@ -138,7 +138,7 @@ const ChangePasswordArtes = () => {
                 onClick={handleResendLink}
                 disabled={resendCooldown > 0 || isResending}
                 variant="ghost"
-                className="w-full text-white/60 hover:text-white"
+                className="w-full text-muted-foreground hover:text-white"
               >
                 {isResending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {resendCooldown > 0 
@@ -216,13 +216,13 @@ const ChangePasswordArtes = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
+      <Card className="w-full max-w-md bg-card/80 border-border/30">
         <CardHeader className="text-center">
           <div className="mx-auto w-12 h-12 bg-[#2d4a5e] rounded-full flex items-center justify-center mb-4">
             <Lock className="h-6 w-6 text-white" />
           </div>
           <CardTitle className="text-2xl text-white">{t('changePassword')}</CardTitle>
-          <CardDescription className="text-white/60">
+          <CardDescription className="text-muted-foreground">
             {t('changePasswordDescription') || 'Por segurança, crie uma nova senha para sua conta'}
           </CardDescription>
         </CardHeader>
@@ -234,13 +234,13 @@ const ChangePasswordArtes = () => {
                 placeholder={t('newPassword')}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white pr-10"
+                className="bg-card border-border/50 text-white pr-10"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
               >
                 {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -251,19 +251,19 @@ const ChangePasswordArtes = () => {
                 placeholder={t('confirmNewPassword')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white pr-10"
+                className="bg-card border-border/50 text-white pr-10"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
 
-            <p className="text-white/50 text-sm">
+            <p className="text-muted-foreground text-sm">
               {t('passwordHint')}
             </p>
 

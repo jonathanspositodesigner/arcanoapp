@@ -96,7 +96,7 @@ const AdminWebhookLogs = () => {
 
   const getPlatformBadge = (platform: string | null) => {
     const colors: Record<string, string> = {
-      'hotmart-es': 'bg-white/50/10 text-slate-400',
+      'hotmart-es': 'bg-accent0/10 text-slate-400',
       'artes-eventos': 'bg-amber-500/10 text-amber-500',
       'app': 'bg-blue-500/10 text-blue-500',
       'prompts': 'bg-cyan-500/10 text-cyan-500',

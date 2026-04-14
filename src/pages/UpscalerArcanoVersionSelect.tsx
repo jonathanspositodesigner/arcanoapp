@@ -50,7 +50,7 @@ const COLOR_MAP = {
   blue: 'bg-blue-500/30 text-blue-300',
   green: 'bg-green-500/30 text-green-300',
   orange: 'bg-orange-500/30 text-orange-300',
-   gray: 'bg-white/50/30 text-gray-300',
+   gray: 'bg-accent0/30 text-muted-foreground',
 };
 
 // Fallback versions for backwards compatibility
@@ -139,7 +139,7 @@ const UpscalerArcanoVersionSelect = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-500"></div>
       </div>
     );
@@ -148,10 +148,10 @@ const UpscalerArcanoVersionSelect = () => {
   // Não redireciona silenciosamente (isso parecia que "não saiu da página")
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#111113]">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">{t('upscaler.title')}</h1>
-          <p className="text-gray-300">{t('versionSelect.loginRequired')}</p>
+          <p className="text-muted-foreground">{t('versionSelect.loginRequired')}</p>
           <Button onClick={() => navigate(loginPath)} className="bg-gradient-to-r from-slate-600 to-blue-500">
             {t('ferramentas.login')}
           </Button>
@@ -181,7 +181,7 @@ const UpscalerArcanoVersionSelect = () => {
   };
 
   const getVersionColors = (_version: ToolVersion, _isUnlocked: boolean) => {
-    return 'bg-gradient-to-br from-white/5 to-slate-700/30 border-white/10 hover:border-white/15';
+    return 'bg-gradient-to-br from-white/5 to-slate-700/30 border-border hover:border-border';
   };
 
   return (
@@ -199,7 +199,7 @@ const UpscalerArcanoVersionSelect = () => {
             return (
               <Card 
                 key={version.id + '-' + version.name}
-                className={`relative overflow-hidden transition-all cursor-pointer group bg-gradient-to-br from-white/5 to-slate-700/30 border-white/10 hover:border-white/15`}
+                className={`relative overflow-hidden transition-all cursor-pointer group bg-gradient-to-br from-white/5 to-slate-700/30 border-border hover:border-border`}
                 onClick={() => {
                   if (hasVersionAccess) {
                     handleVersionClick(version);
@@ -239,7 +239,7 @@ const UpscalerArcanoVersionSelect = () => {
                  {/* Status Badge - top right */}
                  <div className="absolute top-4 right-4 flex flex-col gap-2">
                    {!hasVersionAccess && isV3 ? (
-                     <div className="flex items-center gap-1.5 bg-white/50/20 backdrop-blur-sm text-gray-300 px-3 py-1 rounded-full text-xs font-medium">
+                     <div className="flex items-center gap-1.5 bg-accent0/20 backdrop-blur-sm text-muted-foreground px-3 py-1 rounded-full text-xs font-medium">
                        <Sparkles className="h-3 w-3" />
                        Novidades
                      </div>
@@ -278,7 +278,7 @@ const UpscalerArcanoVersionSelect = () => {
                       ? 'bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-500 hover:to-blue-400 text-white group-hover:scale-[1.02] transition-transform' 
                       : isV3
                         ? 'bg-gradient-to-r from-slate-600 to-slate-400 hover:opacity-90 text-white group-hover:scale-[1.02] transition-transform'
-                        : 'bg-gray-600 text-gray-300 cursor-not-allowed'
+                        : 'bg-gray-600 text-muted-foreground cursor-not-allowed'
                     }`}
                     disabled={!hasVersionAccess && !isV3}
                     onClick={(e) => {

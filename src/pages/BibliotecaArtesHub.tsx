@@ -49,7 +49,7 @@ const BibliotecaArtesHub = () => {
         </div>
 
         {/* Card - Músicos & Artistas */}
-        <div onClick={() => navigate("/biblioteca-artes-musicos")} className="group cursor-pointer relative overflow-hidden rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-2xl bg-gradient-to-br from-slate-950/40 to-white/5 border-2 border-white/10 hover:border-white/20">
+        <div onClick={() => navigate("/biblioteca-artes-musicos")} className="group cursor-pointer relative overflow-hidden rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-2xl bg-gradient-to-br from-slate-950/40 to-white/5 border-2 border-border hover:border-border">
           {/* Glow Effect */}
           <div className="absolute inset-0 bg-gradient-to-br from-slate-500/10 to-slate-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
@@ -64,7 +64,7 @@ const BibliotecaArtesHub = () => {
           </h2>
           
           {/* Description */}
-          <p className="relative z-10 text-sm sm:text-base text-gray-400 mb-4">
+          <p className="relative z-10 text-sm sm:text-base text-muted-foreground mb-4">
             {t('artesHub.musicosDescription')}
           </p>
           

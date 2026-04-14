@@ -240,7 +240,7 @@ const PartnerDashboardMusicos = () => {
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
-              className="text-white/70 hover:text-white"
+              className="text-muted-foreground hover:text-white"
               onClick={() => navigate("/parceiro-plataformas")}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -252,7 +252,7 @@ const PartnerDashboardMusicos = () => {
           </div>
           <Button
             variant="ghost"
-            className="text-white/70 hover:text-white"
+            className="text-muted-foreground hover:text-white"
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4 mr-2" />
@@ -304,7 +304,7 @@ const PartnerDashboardMusicos = () => {
               variant={activeFilter === filter.key ? "default" : "outline"}
               className={activeFilter === filter.key 
                 ? "bg-gradient-to-r from-pink-500 to-rose-600 text-white" 
-                : "border-pink-500/50 text-white/70"}
+                : "border-pink-500/50 text-muted-foreground"}
               onClick={() => setActiveFilter(filter.key as FilterType)}
             >
               {filter.label}
@@ -314,8 +314,8 @@ const PartnerDashboardMusicos = () => {
 
         {/* Artes Grid */}
         {filteredArtes.length === 0 ? (
-          <Card className="bg-[#1a1a2e]/80 border-pink-500/30">
-            <CardContent className="p-8 text-center text-white/60">
+          <Card className="bg-card/80 border-pink-500/30">
+            <CardContent className="p-8 text-center text-muted-foreground">
               Nenhuma arte encontrada
             </CardContent>
           </Card>
@@ -324,7 +324,7 @@ const PartnerDashboardMusicos = () => {
             {filteredArtes.map((arte) => {
               const status = getArteStatus(arte);
               return (
-                <Card key={arte.id} className="bg-[#1a1a2e]/80 border-pink-500/30 overflow-hidden">
+                <Card key={arte.id} className="bg-card/80 border-pink-500/30 overflow-hidden">
                   <div className="aspect-square relative">
                     <SecureImage
                       src={arte.image_url}
@@ -333,7 +333,7 @@ const PartnerDashboardMusicos = () => {
                       isPremium={true}
                     />
                     <div className="absolute top-2 right-2 flex gap-1">
-                      <Badge className="text-xs flex items-center gap-1 bg-[#1a1a2e]/80">
+                      <Badge className="text-xs flex items-center gap-1 bg-card/80">
                         <Copy className="h-3 w-3" />
                         {arte.bonus_clicks}
                       </Badge>
@@ -361,12 +361,12 @@ const PartnerDashboardMusicos = () => {
                   </div>
                   <CardContent className="p-3">
                     <h3 className="text-white font-medium truncate">{arte.title}</h3>
-                    <p className="text-white/60 text-sm">{arte.category}</p>
+                    <p className="text-muted-foreground text-sm">{arte.category}</p>
                     <div className="flex gap-2 mt-2">
                       <Button
                         size="sm"
                         variant="outline"
-                        className="flex-1 border-pink-500/50 text-white/70 hover:text-white"
+                        className="flex-1 border-pink-500/50 text-muted-foreground hover:text-white"
                         onClick={() => openEditModal(arte)}
                         disabled={arte.approved === true}
                       >
@@ -394,7 +394,7 @@ const PartnerDashboardMusicos = () => {
 
       {/* Edit Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="bg-[#1a1a2e] border-pink-500/30 text-white">
+        <DialogContent className="bg-card border-pink-500/30 text-white">
           <DialogHeader>
             <DialogTitle>Editar Arte</DialogTitle>
           </DialogHeader>
@@ -406,20 +406,20 @@ const PartnerDashboardMusicos = () => {
               </p>
             </div>
             <div>
-              <label className="text-sm text-white/60">Título</label>
+              <label className="text-sm text-muted-foreground">Título</label>
               <Input
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="bg-[#0f0f1a] border-pink-500/50 text-white"
+                className="bg-card border-pink-500/50 text-white"
               />
             </div>
             <div>
-              <label className="text-sm text-white/60">Categoria</label>
+              <label className="text-sm text-muted-foreground">Categoria</label>
               <Select value={editCategory} onValueChange={setEditCategory}>
-                <SelectTrigger className="bg-[#0f0f1a] border-pink-500/50 text-white">
+                <SelectTrigger className="bg-card border-pink-500/50 text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1a1a2e] border-pink-500/50">
+                <SelectContent className="bg-card border-pink-500/50">
                   {categories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.slug} className="text-white">
                       {cat.name}
@@ -429,17 +429,17 @@ const PartnerDashboardMusicos = () => {
               </Select>
             </div>
             <div>
-              <label className="text-sm text-white/60">Descrição</label>
+              <label className="text-sm text-muted-foreground">Descrição</label>
               <Textarea
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
-                className="bg-[#0f0f1a] border-pink-500/50 text-white min-h-[100px]"
+                className="bg-card border-pink-500/50 text-white min-h-[100px]"
               />
             </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                className="flex-1 border-pink-500/50 text-white/70"
+                className="flex-1 border-pink-500/50 text-muted-foreground"
                 onClick={() => setShowEditModal(false)}
               >
                 Cancelar

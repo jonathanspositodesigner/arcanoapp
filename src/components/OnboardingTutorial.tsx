@@ -228,7 +228,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
       {/* Skip button - always on top and clickable */}
       <button
         onClick={handleSkip}
-        className="absolute top-3 right-3 z-[100] flex items-center gap-1 text-white/80 hover:text-white text-sm pointer-events-auto"
+        className="absolute top-3 right-3 z-[100] flex items-center gap-1 text-foreground hover:text-white text-sm pointer-events-auto"
       >
         <X className="h-4 w-4" />
         {t("onboarding.skip")}
@@ -240,7 +240,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
           {/* Welcome header */}
           <div className="text-center mb-4">
             <h2 className="text-2xl font-bold text-white mb-1">{t("onboarding.welcome")}</h2>
-            <p className="text-white/70 text-sm">{t("onboarding.tutorialIntro")}</p>
+            <p className="text-muted-foreground text-sm">{t("onboarding.tutorialIntro")}</p>
           </div>
           {/* Example card */}
           <div className="bg-card rounded-2xl overflow-hidden shadow-xl flex flex-col" style={{ height: '55vh', maxHeight: '400px' }}>

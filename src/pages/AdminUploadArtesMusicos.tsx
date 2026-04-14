@@ -400,7 +400,7 @@ const AdminUploadArtesMusicos = () => {
           <div 
             onDragOver={handleDragOver} 
             onDrop={handleDrop} 
-            className="border-2 border-dashed border-border rounded-lg p-12 text-center hover:border-white/10 transition-colors cursor-pointer"
+            className="border-2 border-dashed border-border rounded-lg p-12 text-center hover:border-border transition-colors cursor-pointer"
           >
             <input 
               id="media" 
@@ -418,7 +418,7 @@ const AdminUploadArtesMusicos = () => {
               <p className="text-sm text-muted-foreground">
                 Você pode enviar vários arquivos de uma vez
               </p>
-              <p className="text-xs text-gray-400 mt-2 font-medium">
+              <p className="text-xs text-muted-foreground mt-2 font-medium">
                 Tamanho recomendado: 1080x1350 pixels
               </p>
             </label>
@@ -452,7 +452,7 @@ const AdminUploadArtesMusicos = () => {
                         className="w-full h-32 object-cover rounded-lg hover:ring-2 hover:ring-slate-500 transition-all" 
                       />
                     )}
-                    <div className={`absolute top-2 left-2 text-[10px] px-1.5 py-0.5 rounded ${media.isVideo ? 'bg-white/50' : 'bg-blue-500'} text-white flex items-center gap-1`}>
+                    <div className={`absolute top-2 left-2 text-[10px] px-1.5 py-0.5 rounded ${media.isVideo ? 'bg-accent0' : 'bg-blue-500'} text-white flex items-center gap-1`}>
                       {media.isVideo ? <Video className="h-3 w-3" /> : <Image className="h-3 w-3" />}
                       {media.isVideo ? 'Vídeo' : 'Img'}
                     </div>
@@ -474,7 +474,7 @@ const AdminUploadArtesMusicos = () => {
               {allFieldsFilled && (
                 <Button 
                   onClick={handleSubmitAll} 
-                  className="w-full mt-6 bg-slate-600 hover:bg-white/50" 
+                  className="w-full mt-6 bg-slate-600 hover:bg-accent0" 
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Enviando..." : "Enviar Todos"}
@@ -581,7 +581,7 @@ const AdminUploadArtesMusicos = () => {
                           {cat.name}
                         </SelectItem>
                       ))}
-                      <SelectItem value="__new__" className="text-gray-400">
+                      <SelectItem value="__new__" className="text-muted-foreground">
                         <span className="flex items-center gap-2">
                           <Plus className="h-4 w-4" />
                           Adicionar nova categoria
@@ -650,7 +650,7 @@ const AdminUploadArtesMusicos = () => {
 
               {/* AI Generated Toggle */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 bg-white/50/10 border border-white/10/20 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-accent0/10 border border-border/20 rounded-lg">
                   <div className="flex items-center gap-3">
                     <Sparkles className="h-5 w-5 text-slate-400" />
                     <div>
@@ -700,7 +700,7 @@ const AdminUploadArtesMusicos = () => {
                         type="file"
                         accept="image/*"
                         onChange={handleAiReferenceImageChange}
-                        className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20"
+                        className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-white/20"
                       />
                       <p className="text-xs text-muted-foreground">
                         Esta imagem será disponibilizada para os usuários baixarem junto com o prompt
@@ -754,7 +754,7 @@ const AdminUploadArtesMusicos = () => {
                 <Button 
                   onClick={handleSaveSingleItem} 
                   disabled={isSubmitting || !isCurrentItemComplete(currentMedia)}
-                  className="bg-slate-600 hover:bg-white/50"
+                  className="bg-slate-600 hover:bg-accent0"
                 >
                   {isSubmitting ? "Enviando..." : "Enviar Este"}
                 </Button>
@@ -789,7 +789,7 @@ const AdminUploadArtesMusicos = () => {
               </Button>
               <Button 
                 onClick={() => setShowSuccessModal(false)}
-                className="bg-slate-600 hover:bg-white/50"
+                className="bg-slate-600 hover:bg-accent0"
               >
                 Enviar Mais
               </Button>

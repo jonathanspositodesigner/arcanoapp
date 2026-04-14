@@ -170,9 +170,9 @@ export const ScrollDrivenGallery = ({ items }: ScrollDrivenGalleryProps) => {
                 key={i}
                 className={`rounded-full transition-all duration-300 ${
                   i === currentIndex
-                    ? "w-8 h-2 bg-white/50"
+                    ? "w-8 h-2 bg-accent0"
                     : i < currentIndex
-                      ? "w-2 h-2 bg-white/50/50"
+                      ? "w-2 h-2 bg-accent0/50"
                       : "w-2 h-2 bg-white/20"
                 }`}
               />

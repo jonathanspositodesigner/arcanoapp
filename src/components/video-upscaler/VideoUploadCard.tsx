@@ -256,14 +256,14 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
   return (
     <>
       <Card className={cn(
-        "relative overflow-hidden bg-white/5 border-white/10",
+        "relative overflow-hidden bg-accent border-border",
         disabled && "opacity-50 cursor-not-allowed",
         className
       )}>
         {/* Header */}
-        <div className="px-2 py-1 border-b border-white/10">
+        <div className="px-2 py-1 border-b border-border">
           <h3 className="text-[10px] font-semibold text-white flex items-center gap-1">
-            <Video className="w-3 h-3 text-gray-400" />
+            <Video className="w-3 h-3 text-muted-foreground" />
             {title}
           </h3>
         </div>
@@ -272,7 +272,7 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
         <div
           className={cn(
             "relative h-32 lg:h-auto lg:aspect-video flex flex-col items-center justify-center cursor-pointer transition-all",
-            !videoUrl && "hover:bg-white/50/10",
+            !videoUrl && "hover:bg-accent0/10",
             disabled && "cursor-not-allowed"
           )}
           onDrop={handleDrop}
@@ -297,11 +297,11 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
                 {metadata && (
                   <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2 text-[9px]">
                     <div className="flex items-center gap-2 bg-black/60 rounded px-2 py-1">
-                      <span className="flex items-center gap-1 text-gray-300">
+                      <span className="flex items-center gap-1 text-muted-foreground">
                         <Maximize className="w-3 h-3" />
                         {metadata.width}x{metadata.height}
                       </span>
-                      <span className="flex items-center gap-1 text-gray-300">
+                      <span className="flex items-center gap-1 text-muted-foreground">
                         <Clock className="w-3 h-3" />
                         {formatDuration(metadata.duration)}
                       </span>
@@ -321,12 +321,12 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
             </>
           ) : (
             <div className="flex flex-col items-center gap-2 p-4">
-              <div className="w-12 h-12 rounded-lg bg-white/50/20 border border-dashed border-slate-500/40 flex items-center justify-center">
-                <Upload className="w-6 h-6 text-gray-400" />
+              <div className="w-12 h-12 rounded-lg bg-accent0/20 border border-dashed border-slate-500/40 flex items-center justify-center">
+                <Upload className="w-6 h-6 text-muted-foreground" />
               </div>
               <div className="text-center">
-                <p className="text-xs text-gray-300 font-medium">Arraste ou clique</p>
-                <p className="text-[10px] text-gray-400 mt-1">
+                <p className="text-xs text-muted-foreground font-medium">Arraste ou clique</p>
+                <p className="text-[10px] text-muted-foreground mt-1">
                   MP4, WebM ou MOV
                 </p>
                 <p className="text-[9px] text-slate-400 mt-0.5">

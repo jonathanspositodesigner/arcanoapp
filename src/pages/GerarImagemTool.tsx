@@ -533,10 +533,10 @@ const GerarImagemTool = () => {
           <div className="max-w-md text-center space-y-4">
             <div className="text-6xl">🔒</div>
             <h1 className="text-xl font-bold text-white">Recurso não disponível no seu plano</h1>
-            <p className="text-gray-300 text-sm">
-              A geração de imagens está disponível a partir do plano <strong className="text-gray-400">Pro</strong>.
+            <p className="text-muted-foreground text-sm">
+              A geração de imagens está disponível a partir do plano <strong className="text-muted-foreground">Pro</strong>.
             </p>
-            <button onClick={goBack} className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-white/50 text-white text-sm font-medium transition-colors">
+            <button onClick={goBack} className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-accent0 text-white text-sm font-medium transition-colors">
               Voltar
             </button>
           </div>
@@ -549,18 +549,18 @@ const GerarImagemTool = () => {
     <AppLayout>
       <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-[#0f0a15]/90 backdrop-blur-md border-b border-white/10 px-4 py-3">
+        <div className="sticky top-0 z-10 bg-[#0f0a15]/90 backdrop-blur-md border-b border-border px-4 py-3">
           <div className="flex items-center justify-between max-w-4xl mx-auto">
             <div className="flex items-center gap-3">
-              <button onClick={goBack} className="text-gray-300 hover:text-white transition-colors">
+              <button onClick={goBack} className="text-muted-foreground hover:text-white transition-colors">
                 <ArrowLeft className="h-5 w-5" />
               </button>
               <div>
                 <h1 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-gray-400" />
+                  <Sparkles className="h-5 w-5 text-muted-foreground" />
                   Gerar Imagem
                 </h1>
-                <p className="text-[10px] text-gray-400">IA Generativa</p>
+                <p className="text-[10px] text-muted-foreground">IA Generativa</p>
               </div>
             </div>
           </div>
@@ -575,9 +575,9 @@ const GerarImagemTool = () => {
         >
           {/* Drag overlay */}
           {isDragOver && (
-            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-sm border-2 border-dashed border-white/15 pointer-events-none">
-              <ImagePlus className="h-12 w-12 text-gray-300 mb-2" />
-              <p className="text-gray-300 font-semibold text-sm">Solte para adicionar referência</p>
+            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-sm border-2 border-dashed border-border pointer-events-none">
+              <ImagePlus className="h-12 w-12 text-muted-foreground mb-2" />
+              <p className="text-muted-foreground font-semibold text-sm">Solte para adicionar referência</p>
             </div>
           )}
 
@@ -586,7 +586,7 @@ const GerarImagemTool = () => {
 
           {resultUrl ? (
             <div className="w-full h-full flex flex-col items-center justify-center space-y-3 overflow-hidden">
-              <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/30 shadow-2xl max-w-2xl max-h-full flex items-center justify-center">
+              <div className="rounded-2xl overflow-hidden border border-border bg-black/30 shadow-2xl max-w-2xl max-h-full flex items-center justify-center">
                 <TransformWrapper>
                   <TransformComponent wrapperClass="!w-full !h-full !flex !items-center !justify-center" contentClass="!w-full !h-full !flex !items-center !justify-center">
                     <img src={resultUrl} alt="Imagem gerada" className="max-w-full max-h-[calc(100vh-180px)] object-contain" />
@@ -595,23 +595,23 @@ const GerarImagemTool = () => {
               </div>
             </div>
           ) : isProcessing ? (
-            <div className="flex flex-col items-center gap-4 text-gray-300">
+            <div className="flex flex-col items-center gap-4 text-muted-foreground">
               <div className="relative">
-                <div className="w-20 h-20 rounded-full border-2 border-white/10 flex items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                <div className="w-20 h-20 rounded-full border-2 border-border flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
               </div>
               {status === 'queued' && queuePosition > 0 ? (
                 <div className="text-center space-y-1">
                   <p className="text-sm font-medium">Na fila — posição {queuePosition}</p>
-                  <p className="text-xs text-gray-400">Aguardando vaga...</p>
+                  <p className="text-xs text-muted-foreground">Aguardando vaga...</p>
                 </div>
               ) : (
                 <p className="text-sm">Gerando imagem...</p>
               )}
               {/* Progress bar */}
-              <div className="w-48 h-1.5 rounded-full bg-white/5 overflow-hidden">
-                <div className="h-full rounded-full bg-white/50 transition-all duration-700" style={{ width: `${progress}%` }} />
+              <div className="w-48 h-1.5 rounded-full bg-accent overflow-hidden">
+                <div className="h-full rounded-full bg-accent0 transition-all duration-700" style={{ width: `${progress}%` }} />
               </div>
               {/* Cancel & reconcile */}
               <div className="flex gap-2">
@@ -619,7 +619,7 @@ const GerarImagemTool = () => {
                   <button onClick={handleCancel} className="text-xs text-red-400 hover:text-red-300 underline">Cancelar</button>
                 )}
                 {showReconcileButton && (
-                  <button onClick={handleReconcile} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-300">
+                  <button onClick={handleReconcile} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-muted-foreground">
                     <RefreshCw className="h-3 w-3" /> Verificar status
                   </button>
                 )}
@@ -629,7 +629,7 @@ const GerarImagemTool = () => {
             <div className="flex flex-col items-center gap-3 text-red-400">
               <p className="text-sm text-center font-medium">{(() => { const info = getAIErrorMessage(errorMessage || ''); return info.message; })()}</p>
               <p className="text-xs text-center text-red-300/70">{(() => { const info = getAIErrorMessage(errorMessage || ''); return info.solution; })()}</p>
-              <button onClick={resetJobState} className="text-xs text-gray-400 hover:text-gray-300 underline">Tentar novamente</button>
+              <button onClick={resetJobState} className="text-xs text-muted-foreground hover:text-muted-foreground underline">Tentar novamente</button>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-3 text-slate-400/60">
@@ -647,10 +647,10 @@ const GerarImagemTool = () => {
           {/* Reference images strip */}
           {referenceImages.length > 0 && (
             <div className="px-3 pt-2">
-              <div className="max-w-3xl mx-auto flex gap-2 items-center bg-[#1a1525]/90 rounded-xl p-2 border border-white/10 overflow-x-auto">
+              <div className="max-w-3xl mx-auto flex gap-2 items-center bg-[#1a1525]/90 rounded-xl p-2 border border-border overflow-x-auto">
                 {referenceImages.map((img, idx) => (
                   <div key={idx} className="relative w-14 h-14 rounded-lg overflow-visible flex-shrink-0">
-                    <img src={img.preview} alt="" className="w-full h-full object-cover rounded-lg border border-white/10" />
+                    <img src={img.preview} alt="" className="w-full h-full object-cover rounded-lg border border-border" />
                     <button
                       onClick={() => removeReferenceImage(idx)}
                       className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-600 hover:bg-red-500/100 rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
@@ -659,7 +659,7 @@ const GerarImagemTool = () => {
                     </button>
                   </div>
                 ))}
-                <span className="text-[10px] text-gray-400 ml-1 flex-shrink-0">{referenceImages.length}/5</span>
+                <span className="text-[10px] text-muted-foreground ml-1 flex-shrink-0">{referenceImages.length}/5</span>
               </div>
             </div>
           )}
@@ -671,7 +671,7 @@ const GerarImagemTool = () => {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isProcessing || referenceImages.length >= 5}
-                className="relative flex-shrink-0 w-9 h-9 rounded-full border border-white/10 bg-white/5 flex items-center justify-center text-gray-300 hover:text-white hover:border-white/15/60 transition-colors disabled:opacity-40 self-end mb-0.5"
+                className="relative flex-shrink-0 w-9 h-9 rounded-full border border-border bg-accent flex items-center justify-center text-muted-foreground hover:text-white hover:border-border/60 transition-colors disabled:opacity-40 self-end mb-0.5"
               >
                 <Paperclip className="h-4 w-4" />
                 {referenceImages.length > 0 && (
@@ -688,7 +688,7 @@ const GerarImagemTool = () => {
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Descreva a imagem que você quer gerar..."
                 rows={2}
-                className="flex-1 bg-white/5 border border-slate-500/25 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-400/50 resize-none focus:outline-none focus:border-white/15 transition-colors [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                className="flex-1 bg-accent border border-slate-500/25 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-400/50 resize-none focus:outline-none focus:border-border transition-colors [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                 style={{ minHeight: '56px', maxHeight: '100px', overflow: 'auto' }}
                 disabled={isProcessing}
                 onInput={(e) => {
@@ -707,13 +707,13 @@ const GerarImagemTool = () => {
                   type="button"
                   disabled={isProcessing}
                   onClick={() => setEngineDropdownOpen(!engineDropdownOpen)}
-                  className="flex items-center gap-1.5 bg-white/5 border border-slate-500/25 rounded-lg pl-2 pr-5 py-1.5 text-[11px] text-gray-300 font-medium cursor-pointer hover:border-white/15 disabled:opacity-40 transition-colors relative"
+                  className="flex items-center gap-1.5 bg-accent border border-slate-500/25 rounded-lg pl-2 pr-5 py-1.5 text-[11px] text-muted-foreground font-medium cursor-pointer hover:border-border disabled:opacity-40 transition-colors relative"
                 >
                   <span>{engine === 'flux2_klein' ? '⚡ Flux2 Klein' : '🍌 Nano Banana'}</span>
                   <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
                 </button>
                 {engineDropdownOpen && (
-                  <div className="absolute bottom-full mb-1 left-0 z-50 bg-[#1a0a2e] border border-white/10 rounded-lg shadow-xl py-1 min-w-[130px]">
+                  <div className="absolute bottom-full mb-1 left-0 z-50 bg-popover border border-border rounded-lg shadow-xl py-1 min-w-[130px]">
                     {([
                       { value: 'flux2_klein' as const, label: '⚡ Flux2 Klein' },
                       { value: 'nano_banana' as const, label: '🍌 Nano Banana' },
@@ -723,7 +723,7 @@ const GerarImagemTool = () => {
                         type="button"
                         onClick={() => { setEngine(opt.value); setEngineDropdownOpen(false); }}
                         className={`flex items-center gap-2 w-full px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                          engine === opt.value ? 'text-gray-300 bg-white/50/15' : 'text-gray-300 hover:bg-white/50/15 hover:text-white'
+                          engine === opt.value ? 'text-muted-foreground bg-accent0/15' : 'text-muted-foreground hover:bg-accent0/15 hover:text-white'
                         }`}
                       >
                         {opt.label}
@@ -739,7 +739,7 @@ const GerarImagemTool = () => {
                   type="button"
                   disabled={isProcessing}
                   onClick={() => setAspectDropdownOpen(!aspectDropdownOpen)}
-                  className="flex items-center gap-1.5 bg-white/5 border border-slate-500/25 rounded-lg pl-2 pr-5 py-1.5 text-[11px] text-gray-300 font-medium cursor-pointer hover:border-white/15 disabled:opacity-40 transition-colors relative"
+                  className="flex items-center gap-1.5 bg-accent border border-slate-500/25 rounded-lg pl-2 pr-5 py-1.5 text-[11px] text-muted-foreground font-medium cursor-pointer hover:border-border disabled:opacity-40 transition-colors relative"
                 >
                   {(() => {
                     const current = ASPECT_RATIOS.find(a => a.ratio === aspectRatio) || ASPECT_RATIOS[0];
@@ -755,7 +755,7 @@ const GerarImagemTool = () => {
                   <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
                 </button>
                 {aspectDropdownOpen && (
-                  <div className="absolute bottom-full mb-1 left-0 z-50 bg-[#1a0a2e] border border-white/10 rounded-lg shadow-xl py-1 min-w-[140px]">
+                  <div className="absolute bottom-full mb-1 left-0 z-50 bg-popover border border-border rounded-lg shadow-xl py-1 min-w-[140px]">
                     {ASPECT_RATIOS.map(({ ratio, label, w, h }) => {
                       const isSelected = aspectRatio === ratio;
                       return (
@@ -764,7 +764,7 @@ const GerarImagemTool = () => {
                           type="button"
                           onClick={() => { setAspectRatio(ratio); setAspectDropdownOpen(false); }}
                           className={`flex items-center gap-2 w-full px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                            isSelected ? 'text-gray-300 bg-white/50/15' : 'text-gray-300 hover:bg-white/50/15 hover:text-white'
+                            isSelected ? 'text-muted-foreground bg-accent0/15' : 'text-muted-foreground hover:bg-accent0/15 hover:text-white'
                           }`}
                         >
                           <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="flex-shrink-0">
@@ -788,7 +788,7 @@ const GerarImagemTool = () => {
                     <Download className="h-3 w-3" />
                     <span className="font-medium">Baixar</span>
                   </button>
-                  <button onClick={handleNewGeneration} className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-white/5 border border-slate-500/25 text-xs text-gray-300 hover:bg-slate-800/50 transition-colors">
+                  <button onClick={handleNewGeneration} className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-accent border border-slate-500/25 text-xs text-muted-foreground hover:bg-slate-800/50 transition-colors">
                     <Sparkles className="h-3 w-3" />
                     <span className="font-medium">Nova</span>
                   </button>

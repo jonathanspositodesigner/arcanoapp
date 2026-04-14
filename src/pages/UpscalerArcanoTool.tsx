@@ -762,19 +762,19 @@ const UpscalerArcanoTool: React.FC = () => {
           {/* Left Side - Controls Panel inside ONE card */}
           {/* On mobile: only show upload area. Controls move to bottom bar */}
           <div className={`lg:col-span-2 ${isMobile ? 'overflow-visible' : 'min-h-0 overflow-hidden'}`}>
-            <div className={`bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-5 ${isMobile ? '' : 'overflow-y-auto h-full max-h-full'}`}
+            <div className={`bg-card border border-border rounded-2xl p-5 flex flex-col gap-5 ${isMobile ? '' : 'overflow-y-auto h-full max-h-full'}`}
               style={!isMobile ? { scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' } : undefined}
             >
               
               {/* Title inside card */}
               <div>
                 <h1 className="text-xl font-bold text-white">Upscaler Arcano App</h1>
-                <p className="text-xs text-gray-400 mt-1">Aumente a qualidade das suas imagens com inteligência artificial. Transforme fotos em alta resolução sem perder detalhes.</p>
+                <p className="text-xs text-muted-foreground mt-1">Aumente a qualidade das suas imagens com inteligência artificial. Transforme fotos em alta resolução sem perder detalhes.</p>
               </div>
 
               {/* Upload Area */}
               <div 
-                className="bg-black/60 border border-white/10 border-dashed rounded-xl p-6 cursor-pointer hover:bg-black/80 transition-colors"
+                className="bg-black/60 border border-border border-dashed rounded-xl p-6 cursor-pointer hover:bg-black/80 transition-colors"
                 onClick={() => fileInputRef.current?.click()}
                 onDrop={handleDrop}
                 onDragOver={(e) => e.preventDefault()}
@@ -785,9 +785,9 @@ const UpscalerArcanoTool: React.FC = () => {
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-white truncate">{inputFileName || 'Imagem selecionada'}</p>
                       <div className="flex items-center gap-2">
-                        <p className="text-[10px] text-gray-500">Clique para trocar</p>
+                        <p className="text-[10px] text-muted-foreground">Clique para trocar</p>
                         {inputDimensions && (
-                          <span className="text-[10px] text-gray-400">
+                          <span className="text-[10px] text-muted-foreground">
                             📐 {inputDimensions.w}x{inputDimensions.h}
                           </span>
                         )}
@@ -796,9 +796,9 @@ const UpscalerArcanoTool: React.FC = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-2 py-6">
-                    <Upload className="w-6 h-6 text-gray-400" />
+                    <Upload className="w-6 h-6 text-muted-foreground" />
                     <p className="text-sm font-medium text-white">Arraste sua imagem aqui</p>
-                    <p className="text-[10px] text-gray-500">PNG, JPEG, WEBP - Máximo 10MB</p>
+                    <p className="text-[10px] text-muted-foreground">PNG, JPEG, WEBP - Máximo 10MB</p>
                   </div>
                 )}
                 <input
@@ -816,13 +816,13 @@ const UpscalerArcanoTool: React.FC = () => {
                   {/* Modo */}
                   <div>
                     <span className="text-sm font-medium text-white mb-2 block">Modo</span>
-                    <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1">
+                    <div className="grid grid-cols-2 gap-0 bg-black/40 border border-border rounded-lg p-1">
                       <button
                         onClick={() => setVersion('standard')}
                         className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                           version === 'standard'
-                            ? 'bg-white/10 text-white'
-                            : 'text-gray-400 hover:text-white'
+                            ? 'bg-accent text-white'
+                            : 'text-muted-foreground hover:text-white'
                         }`}
                       >
                         V3 Turbo
@@ -831,8 +831,8 @@ const UpscalerArcanoTool: React.FC = () => {
                         onClick={() => setVersion('pro')}
                         className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                           version === 'pro'
-                            ? 'bg-white/10 text-white'
-                            : 'text-gray-400 hover:text-white'
+                            ? 'bg-accent text-white'
+                            : 'text-muted-foreground hover:text-white'
                         }`}
                       >
                         V3 Pro
@@ -854,10 +854,10 @@ const UpscalerArcanoTool: React.FC = () => {
                           }
                         }}
                       >
-                        <SelectTrigger className="w-full bg-black/40 border-white/10 text-white text-sm h-10">
+                        <SelectTrigger className="w-full bg-black/40 border-border text-white text-sm h-10">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#1a1a2e] border-white/10">
+                        <SelectContent className="bg-card border-border">
                           <SelectItem value="pessoas" className="text-white text-sm">Pessoas</SelectItem>
                           <SelectItem value="comida" className="text-white text-sm">Comida/Objeto</SelectItem>
                           <SelectItem value="fotoAntiga" className="text-white text-sm">Foto Antiga</SelectItem>
@@ -872,13 +872,13 @@ const UpscalerArcanoTool: React.FC = () => {
                   {!isSpecialWorkflow && (
                     <div>
                       <span className="text-sm font-medium text-white mb-2 block">Tamanho</span>
-                      <div className="inline-flex gap-0 bg-black/40 border border-white/10 rounded-lg p-1">
+                      <div className="inline-flex gap-0 bg-black/40 border border-border rounded-lg p-1">
                         <button
                           onClick={() => setResolution('2k')}
                           className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
                             resolution === '2k'
-                              ? 'bg-white/10 text-white'
-                              : 'text-gray-400 hover:text-white'
+                              ? 'bg-accent text-white'
+                              : 'text-muted-foreground hover:text-white'
                           }`}
                         >
                           2K
@@ -887,8 +887,8 @@ const UpscalerArcanoTool: React.FC = () => {
                           onClick={() => setResolution('4k')}
                           className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
                             resolution === '4k'
-                              ? 'bg-white/10 text-white'
-                              : 'text-gray-400 hover:text-white'
+                              ? 'bg-accent text-white'
+                              : 'text-muted-foreground hover:text-white'
                           }`}
                         >
                           4k
@@ -899,7 +899,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
                   {/* Detalhar Rosto */}
                   {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
-                    <div className="border border-white/10 rounded-xl p-4 space-y-3 bg-black/30">
+                    <div className="border border-border rounded-xl p-4 space-y-3 bg-black/30">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-white">Detalhar Rosto</span>
                         <Switch
@@ -908,14 +908,14 @@ const UpscalerArcanoTool: React.FC = () => {
                             if (!checked) setDetailDenoise(0);
                             else setDetailDenoise(0.15);
                           }}
-                          className="data-[state=checked]:bg-white/30 data-[state=unchecked]:bg-white/10 [&>span]:bg-white"
+                          className="data-[state=checked]:bg-white/30 data-[state=unchecked]:bg-accent [&>span]:bg-white"
                         />
                       </div>
                       {detailDenoise > 0 && (
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs text-gray-400">Nível de detalhes</span>
-                            <span className="text-xs text-gray-300 font-mono">{detailDenoise.toFixed(2)}</span>
+                            <span className="text-xs text-muted-foreground">Nível de detalhes</span>
+                            <span className="text-xs text-muted-foreground font-mono">{detailDenoise.toFixed(2)}</span>
                           </div>
                           <Slider
                             value={[detailDenoise]}
@@ -925,7 +925,7 @@ const UpscalerArcanoTool: React.FC = () => {
                             step={0.01}
                             className="w-full [&_[role=slider]]:bg-white [&_[role=slider]]:border-white/50 [&_.relative>div:first-child]:bg-white/20 [&_.relative>div:first-child>div]:bg-white/60"
                           />
-                          <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+                          <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
                             <span>Menos</span>
                             <span>Mais</span>
                           </div>
@@ -936,10 +936,10 @@ const UpscalerArcanoTool: React.FC = () => {
 
                   {/* Comida/Objeto Detail Level Slider */}
                   {isComidaMode && (
-                    <div className="border border-white/10 rounded-xl p-4">
+                    <div className="border border-border rounded-xl p-4">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-white">Nível de Detalhes</span>
-                        <span className="text-xs text-gray-300 font-mono">{Math.round(comidaDetailLevel * 100)}%</span>
+                        <span className="text-xs text-muted-foreground font-mono">{Math.round(comidaDetailLevel * 100)}%</span>
                       </div>
                       <Slider
                         value={[comidaDetailLevel]}
@@ -949,7 +949,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         step={0.01}
                         className="w-full"
                       />
-                      <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+                      <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
                         <span>Mais Fiel</span>
                         <span>Mais Criativo</span>
                       </div>
@@ -958,10 +958,10 @@ const UpscalerArcanoTool: React.FC = () => {
 
                   {/* Logo/Arte Detail Level Slider */}
                   {isLogoMode && version === 'pro' && (
-                    <div className="border border-white/10 rounded-xl p-4">
+                    <div className="border border-border rounded-xl p-4">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-white">Nível de Detalhe</span>
-                        <span className="text-xs text-gray-300 font-mono">{logoDetailLevel.toFixed(2)}</span>
+                        <span className="text-xs text-muted-foreground font-mono">{logoDetailLevel.toFixed(2)}</span>
                       </div>
                       <Slider
                         value={[logoDetailLevel]}
@@ -971,7 +971,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         step={0.01}
                         className="w-full"
                       />
-                      <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+                      <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
                         <span>Mais Fidelidade</span>
                         <span>Mais Criatividade</span>
                       </div>
@@ -980,10 +980,10 @@ const UpscalerArcanoTool: React.FC = () => {
 
                   {/* Selos 3D Detail Level Slider */}
                   {isRender3dMode && version === 'pro' && (
-                    <div className="border border-white/10 rounded-xl p-4">
+                    <div className="border border-border rounded-xl p-4">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-white">Nível de Detalhe</span>
-                        <span className="text-xs text-gray-300 font-mono">{render3dDetailLevel.toFixed(2)}</span>
+                        <span className="text-xs text-muted-foreground font-mono">{render3dDetailLevel.toFixed(2)}</span>
                       </div>
                       <Slider
                         value={[render3dDetailLevel]}
@@ -993,7 +993,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         step={0.01}
                         className="w-full"
                       />
-                      <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+                      <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
                         <span>Mais Fidelidade</span>
                         <span>Mais Criatividade</span>
                       </div>
@@ -1037,7 +1037,7 @@ const UpscalerArcanoTool: React.FC = () => {
                       </Button>
                       <Button
                         variant="outline"
-                        className="w-full py-3 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                        className="w-full py-3 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl"
                         onClick={resetTool}
                       >
                         <RotateCcw className="w-4 h-4 mr-2" />
@@ -1054,13 +1054,13 @@ const UpscalerArcanoTool: React.FC = () => {
                         <div className="flex-1 space-y-1">
                           <p className="text-xs font-medium text-red-300">{lastError.message}</p>
                           {lastError.solution && (
-                            <p className="text-[10px] text-gray-400">💡 {lastError.solution}</p>
+                            <p className="text-[10px] text-muted-foreground">💡 {lastError.solution}</p>
                           )}
                         </div>
                       </div>
                       <Button
                         variant="outline"
-                        className="w-full mt-2 py-2 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg"
+                        className="w-full mt-2 py-2 text-xs border-border text-muted-foreground hover:bg-accent rounded-lg"
                         onClick={resetTool}
                       >
                         <RotateCcw className="w-3.5 h-3.5 mr-1" />
@@ -1086,7 +1086,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
           {/* Right Side - Result Viewer (~72%) */}
           <div className="lg:col-span-5 min-h-0 overflow-hidden">
-            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-[400px] h-full">
+            <div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col min-h-[400px] h-full">
               {/* Warning Banner */}
               {isProcessing && (
                 <div className="bg-amber-500/20 border-b border-amber-500/50 px-3 py-2 flex items-center gap-2">
@@ -1110,7 +1110,7 @@ const UpscalerArcanoTool: React.FC = () => {
                       <p className="text-3xl font-bold text-white mt-2">
                         {queueMessageCombos[currentQueueCombo].position(queuePosition)}
                       </p>
-                      <p className="text-sm text-gray-400 mt-2">
+                      <p className="text-sm text-muted-foreground mt-2">
                         {queueMessageCombos[currentQueueCombo].subtitle}
                       </p>
                     </div>
@@ -1290,14 +1290,14 @@ const UpscalerArcanoTool: React.FC = () => {
                             <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-black/90 border border-white/30 text-white text-xs font-bold z-20 pointer-events-none">
                               {t('upscalerTool.labels.before')}
                             </div>
-                            <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-slate-600/90 border border-white/15 text-white text-xs font-bold z-20 pointer-events-none">
+                            <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-slate-600/90 border border-border text-white text-xs font-bold z-20 pointer-events-none">
                               {t('upscalerTool.labels.after')}
                             </div>
                           </div>
                         </div>
 
                         {/* Zoom Hint */}
-                        <div className="hidden sm:block absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/90 bg-black/80 px-4 py-1.5 rounded-full z-20 border border-white/20">
+                        <div className="hidden sm:block absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/90 bg-black/80 px-4 py-1.5 rounded-full z-20 border border-border">
                           🔍 {t('upscalerTool.zoomHint')}
                         </div>
                       </div>
@@ -1306,23 +1306,23 @@ const UpscalerArcanoTool: React.FC = () => {
                 ) : status === 'completed' && isMobile && isOptimizingForSlider ? (
                   /* Mobile: Optimization loading state */
                   <div className="flex flex-col items-center justify-center gap-3">
-                    <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
-                    <p className="text-sm text-gray-300">Preparando visualização...</p>
+                    <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
+                    <p className="text-sm text-muted-foreground">Preparando visualização...</p>
                   </div>
                 ) : (status === 'uploading' || status === 'processing') && !isWaitingInQueue ? (
                   /* Processing State */
                   <div className="flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-gray-400 animate-spin" />
+                    <Loader2 className="w-12 h-12 text-muted-foreground animate-spin" />
                     <div className="text-center">
                       <p className="text-lg font-medium text-white">
                         {status === 'uploading' ? t('upscalerTool.status.uploading') : t('upscalerTool.status.processing')}
                       </p>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-muted-foreground">
                         {t('upscalerTool.status.mayTake2Min')}
                       </p>
                     </div>
                     {/* Progress bar */}
-                    <div className="w-48 h-2 bg-white/5 rounded-full overflow-hidden">
+                    <div className="w-48 h-2 bg-accent rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-slate-500 to-pink-500 transition-all duration-500"
                         style={{ width: `${progress}%` }}
@@ -1392,14 +1392,14 @@ const UpscalerArcanoTool: React.FC = () => {
                       </div>
                     </div>
                     {/* Labels */}
-                    <div className="absolute top-3 left-3 text-[10px] px-2.5 py-1 bg-black/60 text-white/80 font-medium rounded-full z-10 pointer-events-none">
+                    <div className="absolute top-3 left-3 text-[10px] px-2.5 py-1 bg-black/60 text-foreground font-medium rounded-full z-10 pointer-events-none">
                       Antes
                     </div>
-                    <div className="absolute top-3 right-3 text-[10px] px-2.5 py-1 bg-white/15 text-white/80 font-medium rounded-full z-10 pointer-events-none">
+                    <div className="absolute top-3 right-3 text-[10px] px-2.5 py-1 bg-white/15 text-foreground font-medium rounded-full z-10 pointer-events-none">
                       Depois
                     </div>
                     {/* Hint text */}
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/70 bg-black/60 px-3 py-1 rounded-full z-10 pointer-events-none">
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-muted-foreground bg-black/60 px-3 py-1 rounded-full z-10 pointer-events-none">
                       Arraste para comparar • Exemplo
                     </div>
                   </div>
@@ -1412,19 +1412,19 @@ const UpscalerArcanoTool: React.FC = () => {
 
       {/* MOBILE FIXED BOTTOM BAR */}
       {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#1a1a2e]/95 backdrop-blur-md border-t border-white/10 safe-area-pb">
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t border-border safe-area-pb">
           
           {/* Expandable Configurações panel */}
           {showMobileConfig && !isProcessing && status !== 'completed' && status !== 'error' && (
-            <div className="px-4 pt-3 pb-2 space-y-3 border-b border-white/10 max-h-[50vh] overflow-y-auto">
+            <div className="px-4 pt-3 pb-2 space-y-3 border-b border-border max-h-[50vh] overflow-y-auto">
               {/* Modo */}
               <div>
-                <span className="text-xs font-medium text-gray-400 mb-1.5 block">Modo</span>
-                <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1">
+                <span className="text-xs font-medium text-muted-foreground mb-1.5 block">Modo</span>
+                <div className="grid grid-cols-2 gap-0 bg-black/40 border border-border rounded-lg p-1">
                   <button
                     onClick={() => setVersion('standard')}
                     className={`py-2 px-3 text-sm rounded-md transition-all font-medium ${
-                      version === 'standard' ? 'bg-white/10 text-white' : 'text-gray-400'
+                      version === 'standard' ? 'bg-accent text-white' : 'text-muted-foreground'
                     }`}
                   >
                     V3 Turbo
@@ -1432,7 +1432,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   <button
                     onClick={() => setVersion('pro')}
                     className={`py-2 px-3 text-sm rounded-md transition-all font-medium ${
-                      version === 'pro' ? 'bg-white/10 text-white' : 'text-gray-400'
+                      version === 'pro' ? 'bg-accent text-white' : 'text-muted-foreground'
                     }`}
                   >
                     V3 Pro
@@ -1443,12 +1443,12 @@ const UpscalerArcanoTool: React.FC = () => {
               {/* Tamanho */}
               {!isSpecialWorkflow && (
                 <div>
-                  <span className="text-xs font-medium text-gray-400 mb-1.5 block">Tamanho</span>
-                  <div className="inline-flex gap-0 bg-black/40 border border-white/10 rounded-lg p-1">
+                  <span className="text-xs font-medium text-muted-foreground mb-1.5 block">Tamanho</span>
+                  <div className="inline-flex gap-0 bg-black/40 border border-border rounded-lg p-1">
                     <button
                       onClick={() => setResolution('2k')}
                       className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
-                        resolution === '2k' ? 'bg-white/10 text-white' : 'text-gray-400'
+                        resolution === '2k' ? 'bg-accent text-white' : 'text-muted-foreground'
                       }`}
                     >
                       2K
@@ -1456,7 +1456,7 @@ const UpscalerArcanoTool: React.FC = () => {
                     <button
                       onClick={() => setResolution('4k')}
                       className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
-                        resolution === '4k' ? 'bg-white/10 text-white' : 'text-gray-400'
+                        resolution === '4k' ? 'bg-accent text-white' : 'text-muted-foreground'
                       }`}
                     >
                       4k
@@ -1467,7 +1467,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
               {/* Detalhar Rosto */}
               {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
-                <div className="border border-white/10 rounded-xl p-3 space-y-2 bg-black/30">
+                <div className="border border-border rounded-xl p-3 space-y-2 bg-black/30">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-white">Detalhar Rosto</span>
                     <Switch
@@ -1476,7 +1476,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         if (!checked) setDetailDenoise(0);
                         else setDetailDenoise(0.15);
                       }}
-                      className="data-[state=checked]:bg-white/30 data-[state=unchecked]:bg-white/10 [&>span]:bg-white"
+                      className="data-[state=checked]:bg-white/30 data-[state=unchecked]:bg-accent [&>span]:bg-white"
                     />
                   </div>
                   {detailDenoise > 0 && (
@@ -1489,7 +1489,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         step={0.01}
                         className="w-full"
                       />
-                      <div className="flex justify-between text-[10px] text-gray-500 mt-1">
+                      <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
                         <span>Menos</span>
                         <span>Mais</span>
                       </div>
@@ -1500,10 +1500,10 @@ const UpscalerArcanoTool: React.FC = () => {
 
               {/* Comida slider */}
               {isComidaMode && (
-                <div className="border border-white/10 rounded-xl p-3">
+                <div className="border border-border rounded-xl p-3">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-medium text-white">Nível de Detalhes</span>
-                    <span className="text-[10px] text-gray-300 font-mono">{Math.round(comidaDetailLevel * 100)}%</span>
+                    <span className="text-[10px] text-muted-foreground font-mono">{Math.round(comidaDetailLevel * 100)}%</span>
                   </div>
                   <Slider value={[comidaDetailLevel]} onValueChange={([v]) => setComidaDetailLevel(v)} min={0.70} max={1.00} step={0.01} className="w-full" />
                 </div>
@@ -1511,10 +1511,10 @@ const UpscalerArcanoTool: React.FC = () => {
 
               {/* Logo slider */}
               {isLogoMode && version === 'pro' && (
-                <div className="border border-white/10 rounded-xl p-3">
+                <div className="border border-border rounded-xl p-3">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-medium text-white">Nível de Detalhe</span>
-                    <span className="text-[10px] text-gray-300 font-mono">{logoDetailLevel.toFixed(2)}</span>
+                    <span className="text-[10px] text-muted-foreground font-mono">{logoDetailLevel.toFixed(2)}</span>
                   </div>
                   <Slider value={[logoDetailLevel]} onValueChange={([v]) => setLogoDetailLevel(v)} min={0.01} max={1.00} step={0.01} className="w-full" />
                 </div>
@@ -1522,10 +1522,10 @@ const UpscalerArcanoTool: React.FC = () => {
 
               {/* 3D slider */}
               {isRender3dMode && version === 'pro' && (
-                <div className="border border-white/10 rounded-xl p-3">
+                <div className="border border-border rounded-xl p-3">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-medium text-white">Nível de Detalhe</span>
-                    <span className="text-[10px] text-gray-300 font-mono">{render3dDetailLevel.toFixed(2)}</span>
+                    <span className="text-[10px] text-muted-foreground font-mono">{render3dDetailLevel.toFixed(2)}</span>
                   </div>
                   <Slider value={[render3dDetailLevel]} onValueChange={([v]) => setRender3dDetailLevel(v)} min={0.01} max={1.00} step={0.01} className="w-full" />
                 </div>
@@ -1550,10 +1550,10 @@ const UpscalerArcanoTool: React.FC = () => {
                       }
                     }}
                   >
-                    <SelectTrigger className="w-full bg-black/40 border-white/10 text-white text-sm h-9">
+                    <SelectTrigger className="w-full bg-black/40 border-border text-white text-sm h-9">
                       <SelectValue placeholder="Escolha o tipo de imagem" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#1a1a2e] border-white/10">
+                    <SelectContent className="bg-card border-border">
                       <SelectItem value="pessoas" className="text-white text-sm">Pessoas</SelectItem>
                       <SelectItem value="comida" className="text-white text-sm">Comida/Objeto</SelectItem>
                       <SelectItem value="fotoAntiga" className="text-white text-sm">Foto Antiga</SelectItem>
@@ -1589,7 +1589,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 {/* Configurações toggle */}
                 <button
                   onClick={() => setShowMobileConfig(!showMobileConfig)}
-                  className="w-full flex items-center justify-center gap-2 py-2 text-xs text-gray-400 hover:text-white transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-white transition-colors"
                 >
                   <Settings className="w-3.5 h-3.5" />
                   Configurações
@@ -1610,7 +1610,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="py-4 px-4 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                  className="py-4 px-4 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl"
                   onClick={resetTool}
                 >
                   <RotateCcw className="w-4 h-4" />
@@ -1626,7 +1626,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 </div>
                 <Button
                   variant="outline"
-                  className="py-3 px-4 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg flex-shrink-0"
+                  className="py-3 px-4 text-xs border-border text-muted-foreground hover:bg-accent rounded-lg flex-shrink-0"
                   onClick={resetTool}
                 >
                   <RotateCcw className="w-3.5 h-3.5 mr-1" />

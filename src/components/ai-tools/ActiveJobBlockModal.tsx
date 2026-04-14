@@ -118,7 +118,7 @@ const ActiveJobBlockModal: React.FC<ActiveJobBlockModalProps> = ({
                 </p>
               </div>
               
-              <p className="text-sm text-center text-gray-300/60">
+              <p className="text-sm text-center text-muted-foreground/60">
                 Tem certeza que deseja cancelar e perder os créditos?
               </p>
             </AlertDialogDescription>
