@@ -377,11 +377,11 @@ const Planos2 = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-        <Button variant="ghost" onClick={() => navigate('/biblioteca-prompts')} className="text-muted-foreground hover:text-foreground hover:bg-accent0/20">
+        <Button variant="ghost" onClick={() => navigate('/biblioteca-prompts')} className="text-foreground hover:text-foreground hover:bg-accent">
           <ArrowLeft className="w-4 h-4 mr-2" />
           {t('planos.back')}
         </Button>
-        <Button variant="outline" onClick={() => navigate('/login')} className="gap-2 border-border text-muted-foreground hover:bg-accent0/20 hover:text-foreground">
+        <Button variant="outline" onClick={() => navigate('/login')} className="gap-2 border-border text-foreground hover:bg-accent hover:text-foreground">
           <LogIn className="w-4 h-4" />
           {t('planos.alreadyPremium')}
         </Button>
@@ -390,12 +390,12 @@ const Planos2 = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 pb-16">
         {/* Limited Time Promo Banner with Countdown */}
-        <div className="max-w-6xl mx-auto mb-6 rounded-xl overflow-hidden border border-red-500/30 bg-gradient-to-r from-red-950/80 via-slate-950/60 to-red-950/80">
+        <div className="max-w-6xl mx-auto mb-6 rounded-xl overflow-hidden border border-primary/30 bg-gradient-to-r from-primary via-primary/90 to-primary/80 shadow-lg shadow-primary/10">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3">
             {/* Left: Promo text */}
             <div className="flex items-center gap-2 animate-pulse">
               <span className="text-lg">🔥</span>
-              <span className="text-foreground font-bold tracking-wide text-sm md:text-base">
+              <span className="text-primary-foreground font-bold tracking-wide text-sm md:text-base">
                 Promoção por tempo limitado!
               </span>
               <span className="text-lg">🔥</span>
@@ -403,19 +403,19 @@ const Planos2 = () => {
 
             {/* Right: Countdown */}
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-red-400" />
-              <span className="text-red-300 text-xs sm:text-sm font-medium">Essa oferta expira em</span>
+              <Clock className="w-4 h-4 text-primary-foreground/80" />
+              <span className="text-primary-foreground/80 text-xs sm:text-sm font-medium">Essa oferta expira em</span>
               <div className="flex items-center gap-1">
-                <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
-                  <span className="text-foreground font-mono font-bold text-sm">{countdown.hours}</span>
+                <div className="bg-background/15 border border-white/20 rounded-md px-2 py-1 min-w-[28px] text-center backdrop-blur-sm">
+                  <span className="text-primary-foreground font-mono font-bold text-sm">{countdown.hours}</span>
                 </div>
-                <span className="text-red-400 font-bold text-sm">:</span>
-                <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
-                  <span className="text-foreground font-mono font-bold text-sm">{countdown.minutes}</span>
+                <span className="text-primary-foreground/80 font-bold text-sm">:</span>
+                <div className="bg-background/15 border border-white/20 rounded-md px-2 py-1 min-w-[28px] text-center backdrop-blur-sm">
+                  <span className="text-primary-foreground font-mono font-bold text-sm">{countdown.minutes}</span>
                 </div>
-                <span className="text-red-400 font-bold text-sm">:</span>
-                <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
-                  <span className="text-foreground font-mono font-bold text-sm">{countdown.seconds}</span>
+                <span className="text-primary-foreground/80 font-bold text-sm">:</span>
+                <div className="bg-background/15 border border-white/20 rounded-md px-2 py-1 min-w-[28px] text-center backdrop-blur-sm">
+                  <span className="text-primary-foreground font-mono font-bold text-sm">{countdown.seconds}</span>
                 </div>
               </div>
             </div>
@@ -431,11 +431,11 @@ const Planos2 = () => {
 
           {/* Billing Toggle */}
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
-            <TabsList className="bg-background border border-border">
-              <TabsTrigger value="mensal" className="data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground text-muted-foreground px-6">
+            <TabsList className="bg-muted/60 border border-border shadow-sm">
+              <TabsTrigger value="mensal" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground px-6">
                 {t('planos.monthly')}
               </TabsTrigger>
-              <TabsTrigger value="anual" className="data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground text-muted-foreground px-6 relative flex items-center gap-2">
+              <TabsTrigger value="anual" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground px-6 relative flex items-center gap-2">
                 {t('planos.annualInstallments')}
                 <span className="bg-gradient-to-r from-purple-600 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                   52% OFF
@@ -461,7 +461,7 @@ const Planos2 = () => {
             const isUnlimitedBadge = (plan as any).isUnlimitedBadge;
             return (
             <div key={plan.name} className="flex flex-col h-full w-full">
-              <Card className={`relative p-4 flex flex-col rounded-lg bg-background w-full h-full ${isUnlimitedBadge ? "border-2 border-yellow-400 shadow-lg shadow-yellow-400/30" : isBestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "border-2 border-slate-500 shadow-lg shadow-primary/10" : "border border-border"}`}>
+              <Card className={`relative p-4 flex flex-col rounded-lg bg-card text-card-foreground w-full h-full shadow-sm ${isUnlimitedBadge ? "border-2 border-yellow-500/60 shadow-lg shadow-yellow-500/20" : isBestSeller ? "border-2 border-lime-500/60 shadow-lg shadow-lime-500/20" : hasCountdown ? "border-2 border-primary/50 shadow-lg shadow-primary/10" : "border border-border"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-3 py-0.5">
                   {t('planos.bestSeller')}
@@ -546,12 +546,12 @@ const Planos2 = () => {
                         }
                       }}
                       disabled={isDisabled || isMPLoading}
-                      className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-accent0/20 border border-purple-500/40 text-muted-foreground cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold" : plan.popular ? "bg-secondary hover:bg-secondary text-white" : "bg-accent hover:bg-accent text-muted-foreground"}`}
+                      className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-muted border border-border text-muted-foreground cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-500 to-emerald-500 hover:from-lime-600 hover:to-emerald-600 text-white font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold" : plan.popular ? "bg-primary hover:bg-primary/90 text-primary-foreground" : "bg-card border border-border text-foreground hover:bg-muted"}`}
                     >
                       {buttonText}
                     </Button>
                     {(plan as any).tagline && (
-                      <p className="text-[10px] text-muted-foreground text-center mb-1 italic">{(plan as any).tagline}</p>
+                      <p className="text-[10px] text-foreground/80 text-center mb-1 italic">{(plan as any).tagline}</p>
                     )}
                   </>
                 );
@@ -561,25 +561,25 @@ const Planos2 = () => {
               <div className="h-[28px] mb-2 flex items-center justify-center">
                 {billingPeriod === "anual" ? (
                   plan.name === "Starter" || plan.name === "Free" ? (
-                    <div className="flex items-center justify-center gap-1.5 bg-muted/50 border border-gray-600/30 rounded-full px-3 py-1 whitespace-nowrap">
-                      <Tag className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                      <span className="text-[10px] text-muted-foreground">Sem diferença comparado ao mensal</span>
+                      <div className="flex items-center justify-center gap-1.5 bg-muted/70 border border-border rounded-full px-3 py-1 whitespace-nowrap">
+                        <Tag className="w-3 h-3 text-foreground/80 flex-shrink-0" />
+                        <span className="text-[10px] text-foreground/80">Sem diferença comparado ao mensal</span>
                     </div>
                   ) : (
                     <div className={`flex items-center justify-center gap-1.5 rounded-full px-3 py-1 whitespace-nowrap ${
-                      plan.name === "Pro" ? "bg-yellow-900/30 border border-yellow-600/40" :
-                      plan.name === "Ultimate" ? "bg-lime-900/30 border border-lime-500/40" :
-                      "bg-accent border border-purple-500/40"
+                        plan.name === "Pro" ? "bg-amber-500/10 border border-amber-500/30" :
+                        plan.name === "Ultimate" ? "bg-primary/10 border border-primary/30" :
+                        "bg-primary/10 border border-primary/30"
                     }`}>
                       <Tag className={`w-3 h-3 flex-shrink-0 ${
-                        plan.name === "Pro" ? "text-yellow-400" :
-                        plan.name === "Ultimate" ? "text-lime-400" :
-                        "text-muted-foreground"
+                          plan.name === "Pro" ? "text-amber-700 dark:text-amber-300" :
+                          plan.name === "Ultimate" ? "text-primary" :
+                          "text-primary"
                       }`} />
                       <span className={`text-[10px] font-medium ${
-                        plan.name === "Pro" ? "text-yellow-400" :
-                        plan.name === "Ultimate" ? "text-lime-400" :
-                        "text-muted-foreground"
+                          plan.name === "Pro" ? "text-amber-700 dark:text-amber-300" :
+                          plan.name === "Ultimate" ? "text-primary" :
+                          "text-primary"
                       }`}>
                         Economize {(plan as any).savings} comparado ao mensal
                       </span>
@@ -597,7 +597,7 @@ const Planos2 = () => {
                     <TooltipProvider delayDuration={0}>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Info className="w-3 h-3 text-blue-200 cursor-pointer ml-0.5" />
+                            <Info className="w-3 h-3 text-white/80 cursor-pointer ml-0.5" />
                         </TooltipTrigger>
                         <TooltipContent side="top" className="bg-background border-border text-muted-foreground text-xs max-w-[200px]">
                           14.000 créditos para usar em ferramentas não ilimitadas por mês
@@ -613,10 +613,10 @@ const Planos2 = () => {
 
               {/* Seedance 2 Badge for Pro, Ultimate, Unlimited */}
               {(plan.name === "Pro" || plan.name === "Ultimate" || plan.name === "IA Unlimited") && (
-                <div className="mb-3 mx-auto w-full rounded-lg bg-gradient-to-r from-lime-400 via-lime-500 to-lime-400 px-3 py-2 flex items-center justify-center gap-2 shadow-md shadow-lime-500/30">
-                    <Video className="w-3.5 h-3.5 text-black" />
-                    <span className="text-[12px] font-extrabold italic text-black tracking-wider">Seedance 2</span>
-                    <span className="text-[8px] font-extrabold bg-black text-lime-400 px-2 py-0.5 rounded-full leading-none animate-pulse">INCLUSO</span>
+                <div className="mb-3 mx-auto w-full rounded-lg bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-500 px-3 py-2 flex items-center justify-center gap-2 shadow-md shadow-emerald-500/25">
+                    <Video className="w-3.5 h-3.5 text-white" />
+                    <span className="text-[12px] font-extrabold italic text-white tracking-wider">Seedance 2</span>
+                    <span className="text-[8px] font-extrabold bg-white/15 border border-white/20 text-white px-2 py-0.5 rounded-full leading-none animate-pulse">INCLUSO</span>
                 </div>
               )}
 
@@ -632,11 +632,11 @@ const Planos2 = () => {
                       }}
                     >
                       {feature.included ? (
-                        <Check className="w-3 h-3 text-muted-foreground shrink-0 mt-0.5" />
+                        <Check className="w-3 h-3 text-primary shrink-0 mt-0.5" />
                       ) : (
-                        <X className="w-3 h-3 text-orange-500 shrink-0 mt-0.5" />
+                        <X className="w-3 h-3 text-muted-foreground shrink-0 mt-0.5" />
                       )}
-                      <span className={`${feature.included ? "text-muted-foreground" : "text-orange-500"} flex items-center gap-1.5`}>
+                      <span className={`${feature.included ? "text-foreground" : "text-muted-foreground"} flex items-center gap-1.5`}>
                         {(feature as any).iconType === 'video' && <Video className="w-3 h-3 shrink-0" />}
                         {(feature as any).iconType === 'image' && <ImageIcon className="w-3 h-3 shrink-0" />}
                         {feature.text}
@@ -647,7 +647,7 @@ const Planos2 = () => {
                         )}
                       </span>
                       {(feature as any).isAiTools && (
-                        <ChevronDown className={`w-3 h-3 shrink-0 mt-0.5 transition-transform duration-200 ${feature.included ? 'text-muted-foreground' : 'text-orange-500'} ${expandedAiTools[plan.name] ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={`w-3 h-3 shrink-0 mt-0.5 transition-transform duration-200 ${feature.included ? 'text-foreground' : 'text-muted-foreground'} ${expandedAiTools[plan.name] ? 'rotate-180' : ''}`} />
                       )}
                     </div>
                     {(feature as any).isAiTools && expandedAiTools[plan.name] && (
@@ -665,12 +665,12 @@ const Planos2 = () => {
 
               {plan.name === "IA Unlimited" && (
                 <div className="mt-4 pt-3 border-t border-border">
-                  <p className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wide">
+                  <p className="text-[10px] text-foreground/80 mb-1.5 uppercase tracking-wide">
                     {t('planos.extraBenefits')}
                   </p>
                   <div className="flex items-center gap-1.5 text-xs">
-                    <Sparkles className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-muted-foreground">{t('planos.allAIFeatures')}</span>
+                    <Sparkles className="w-3 h-3 text-primary" />
+                    <span className="text-foreground">{t('planos.allAIFeatures')}</span>
                   </div>
                 </div>
               )}
@@ -691,7 +691,7 @@ const Planos2 = () => {
             Compre um pacote de créditos avulsos
           </h2>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Créditos <span className="text-green-400 font-semibold">vitalícios</span> que nunca expiram — use quando quiser!
+            Créditos <span className="text-primary font-semibold">vitalícios</span> que nunca expiram — use quando quiser!
           </p>
         </div>
 
@@ -705,9 +705,9 @@ const Planos2 = () => {
             return (
               <Card
                 key={plan.credits}
-                className={`relative p-6 bg-background border-border flex flex-col items-center text-center transition-all duration-300 hover:scale-[1.02] hover:border-border/40 ${
+                className={`relative p-6 bg-card border border-border shadow-sm flex flex-col items-center text-center transition-all duration-300 hover:scale-[1.02] hover:border-primary/30 ${
                   plan.bestValue ? 'ring-2 ring-yellow-500/50 border-yellow-500/30' : ''
-                } ${plan.popular ? 'ring-2 ring-white/20 border-border' : ''}`}
+                } ${plan.popular ? 'ring-2 ring-primary/20 border-primary/30' : ''}`}
               >
                 {plan.bestValue && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 px-3 py-1 text-xs">
@@ -732,20 +732,20 @@ const Planos2 = () => {
                 <p className="text-muted-foreground text-sm mb-3">{plan.description}</p>
 
                 {plan.savings && (
-                  <Badge className="bg-green-500/20 border border-green-500/40 text-green-400 font-semibold text-xs mb-2 gap-1">
+                  <Badge className="bg-primary/10 border border-primary/30 text-primary font-semibold text-xs mb-2 gap-1">
                     <Tag className="w-3 h-3" />
                     Economize {plan.savings}%
                   </Badge>
                 )}
 
-                <Badge variant="outline" className="bg-green-500/10 border-green-500/30 text-green-400 text-xs mb-3">
+                <Badge variant="outline" className="bg-muted/70 border-border text-foreground text-xs mb-3">
                   ♾️ Vitalício
                 </Badge>
 
                 <div className="flex-1 flex flex-col justify-end w-full">
                   <div className="mb-4">
                     {plan.originalPrice && (
-                      <span className="text-sm text-slate-400 line-through block mb-1">R$ {plan.originalPrice}</span>
+                      <span className="text-sm text-muted-foreground line-through block mb-1">R$ {plan.originalPrice}</span>
                     )}
                     <div>
                       <span className="text-sm text-muted-foreground">R$ </span>
@@ -766,7 +766,7 @@ const Planos2 = () => {
         </div>
 
         {/* Trust Badges */}
-        <div className="max-w-4xl mx-auto mt-10 rounded-xl border border-border bg-white/[0.02] px-4 sm:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="max-w-4xl mx-auto mt-10 rounded-xl border border-border bg-card/70 shadow-sm px-4 sm:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <ShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
             <div>
@@ -794,7 +794,7 @@ const Planos2 = () => {
 
         <div className="mt-8 text-center">
           <p className="text-muted-foreground text-sm max-w-lg mx-auto">
-            💡 Os créditos vitalícios são consumidos <strong className="text-muted-foreground">após</strong> os créditos mensais da sua assinatura,
+            💡 Os créditos vitalícios são consumidos <strong className="text-foreground">após</strong> os créditos mensais da sua assinatura,
             garantindo que você aproveite ao máximo seu plano.
           </p>
         </div>

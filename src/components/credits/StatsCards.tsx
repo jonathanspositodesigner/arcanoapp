@@ -47,7 +47,7 @@ export const StatsCards = () => {
 
   return (
     <div className="max-w-5xl mx-auto mb-8 px-2">
-      <div className="rounded-2xl border border-border bg-white/[0.03] backdrop-blur-sm px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center gap-4 sm:gap-0">
+      <div className="rounded-2xl border border-border bg-card/80 shadow-sm backdrop-blur-sm px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center gap-4 sm:gap-0">
         {/* Left: Avatars + Text */}
         <div className="flex items-center gap-3 sm:flex-1 min-w-0">
           <div className="flex -space-x-2 shrink-0">
@@ -59,7 +59,7 @@ export const StatsCards = () => {
                 width="32"
                 height="32"
                 decoding="async"
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-[#0d0b1a] object-cover"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-background object-cover"
               />
             ))}
           </div>
