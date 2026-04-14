@@ -23,6 +23,7 @@ import arcanoClonerCover from "@/assets/arcano-cloner-cover.webp";
 import removerFundoCover from "@/assets/removedor-fundo-capa.png";
 import flyerMakerCover from "@/assets/flyer-maker-preview.webp";
 import upscalerHeroCover from "@/assets/upscaler-hero-depois.webp";
+import gerarImagemCover from "@/assets/gerar-imagem-cover.jpg";
 
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 import AppLayout from "@/components/layout/AppLayout";
