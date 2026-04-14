@@ -36,8 +36,8 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
     { name: "Arcano Cloner", path: "/arcano-cloner-tool", badge: null, badgeColor: null, disabled: false },
     { name: "Pose Changer", path: "/pose-changer-tool", badge: null, badgeColor: null, disabled: false },
     { name: "Veste AI", path: "/veste-ai-tool", badge: null, badgeColor: null, disabled: false },
-    { name: "MovieLed Maker", path: "/movieled-maker", badge: "Novo", badgeColor: "bg-green-500/30", textColor: "text-green-300", disabled: false },
-    { name: "Forja de Selos 3D", path: "#", badge: "Em breve", badgeColor: "bg-muted/30", textColor: "text-muted-foreground", disabled: true },
+    { name: "MovieLed Maker", path: "/movieled-maker", badge: "Novo", badgeColor: "bg-emerald-600/20", textColor: "text-emerald-700 dark:text-emerald-400", disabled: false },
+    { name: "Forja de Selos 3D", path: "#", badge: "Em breve", badgeColor: "bg-muted/50", textColor: "text-foreground/70", disabled: true },
   ];
 
   const handleLogout = async () => {
