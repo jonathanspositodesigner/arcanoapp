@@ -514,7 +514,7 @@ const BibliotecaPrompts = () => {
             >
               <Video className="h-3.5 w-3.5 mr-1.5" />
               Prompts Seedance 2
-              <span className="ml-1.5 px-1.5 py-0.5 text-[9px] font-bold bg-yellow-400 text-black rounded-full animate-pulse leading-none">
+              <span className="ml-1.5 px-1.5 py-0.5 text-[9px] font-bold bg-yellow-400 rounded-full animate-pulse leading-none text-secondary-foreground">
                 NOVO
               </span>
             </Button>
