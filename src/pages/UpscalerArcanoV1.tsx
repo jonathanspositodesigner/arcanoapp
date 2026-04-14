@@ -167,7 +167,7 @@ const UpscalerArcanoV1 = () => {
   if (isLoading || promptsLoading) {
     return (
       <div className="min-h-screen bg-[#111113] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-500"></div>
       </div>
     );
   }
@@ -196,7 +196,7 @@ const UpscalerArcanoV1 = () => {
             variant="ghost"
             size="icon"
             onClick={goBack}
-            className="shrink-0 text-purple-300 hover:text-white hover:bg-slate-500/20"
+            className="shrink-0 text-gray-300 hover:text-white hover:bg-slate-500/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -204,20 +204,20 @@ const UpscalerArcanoV1 = () => {
             <h1 className="text-lg md:text-3xl font-bold text-white">
               Upscaler Arcano v1.0
             </h1>
-            <p className="text-purple-300 text-sm md:text-base">
+            <p className="text-gray-300 text-sm md:text-base">
               {t('upscalerLessons.description')}
             </p>
           </div>
         </div>
 
         {/* Master's Journey Progress Bar */}
-        <div className="mb-6 p-4 bg-[#1A0A2E]/50 border border-purple-500/20 rounded-lg">
+        <div className="mb-6 p-4 bg-[#1A0A2E]/50 border border-white/10 rounded-lg">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-white flex items-center gap-2">
               <Trophy className="h-4 w-4 text-yellow-500" />
               {t('toolLessons.mastersJourney')}
             </span>
-            <span className="text-xs text-purple-300">
+            <span className="text-xs text-gray-300">
               {progressCount}/{requiredLessons} {t('toolLessons.lessons').toLowerCase()}
             </span>
           </div>
@@ -295,15 +295,15 @@ const UpscalerArcanoV1 = () => {
                   </Button>
                 </div>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="bg-[#1A0A2E] border-purple-500/20 p-3 max-w-xs">
-                <p className="text-sm text-purple-300">{getTooltipMessage()}</p>
+              <TooltipContent side="bottom" className="bg-[#1A0A2E] border-white/10 p-3 max-w-xs">
+                <p className="text-sm text-gray-300">{getTooltipMessage()}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
 
           {/* Unlock message below button */}
           {!isToolUnlocked && (
-            <p className="text-xs text-center text-purple-300/70 mt-2">
+            <p className="text-xs text-center text-gray-400 mt-2">
               {t('toolLessons.watchToUnlock')}
             </p>
           )}
@@ -316,9 +316,9 @@ const UpscalerArcanoV1 = () => {
             {currentLesson && (
               <>
                 {/* Lesson Info - ABOVE video */}
-                <Card className="p-4 bg-[#1A0A2E]/50 border-purple-500/20">
+                <Card className="p-4 bg-[#1A0A2E]/50 border-white/10">
                   <h2 className="text-base md:text-xl font-bold mb-2 flex items-center gap-2 flex-wrap text-white">
-                    <Play className="h-5 w-5 text-purple-400" />
+                    <Play className="h-5 w-5 text-gray-400" />
                     {t(currentLesson.titleKey)}
                     {watchedLessons.includes(selectedLesson + 1) && (
                       <span className="text-xs bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full ml-2">
@@ -347,7 +347,7 @@ const UpscalerArcanoV1 = () => {
                   className={`w-full sm:w-auto ${
                     watchedLessons.includes(selectedLesson + 1) 
                       ? 'bg-green-600 hover:bg-green-700 text-white' 
-                      : 'border-purple-500/30 text-purple-300 hover:bg-green-600/10 hover:text-green-500 hover:border-green-600'
+                      : 'border-white/10 text-gray-300 hover:bg-green-600/10 hover:text-green-500 hover:border-green-600'
                   }`}
                 >
                   <Check className="h-4 w-4 mr-2" />
@@ -386,8 +386,8 @@ const UpscalerArcanoV1 = () => {
             {lessons.map((lesson, index) => (
               <Card
                 key={index}
-                className={`p-3 cursor-pointer transition-all bg-[#1A0A2E]/50 border-purple-500/20 hover:bg-slate-500/10 ${
-                  selectedLesson === index ? 'border-purple-400 bg-slate-500/10' : ''
+                className={`p-3 cursor-pointer transition-all bg-[#1A0A2E]/50 border-white/10 hover:bg-slate-500/10 ${
+                  selectedLesson === index ? 'border-white/15 bg-slate-500/10' : ''
                 }`}
                 onClick={() => handleLessonClick(index)}
               >
@@ -398,7 +398,7 @@ const UpscalerArcanoV1 = () => {
                       ? 'bg-green-500 text-white'
                       : selectedLesson === index 
                         ? 'bg-slate-600 text-white' 
-                        : 'bg-white/5 text-purple-400'
+                        : 'bg-white/5 text-gray-400'
                   }`}>
                     {watchedLessons.includes(index + 1) ? (
                       <Check className="h-4 w-4" />
@@ -410,7 +410,7 @@ const UpscalerArcanoV1 = () => {
                   <div className="flex-1 min-w-0">
                     <p className={`font-medium truncate ${
                       watchedLessons.includes(index + 1) ? 'text-green-500' :
-                      selectedLesson === index ? 'text-purple-300' : 'text-purple-300/70'
+                      selectedLesson === index ? 'text-gray-300' : 'text-gray-400'
                     }`}>
                       {t(lesson.titleKey)}
                     </p>
@@ -429,9 +429,9 @@ const UpscalerArcanoV1 = () => {
             {/* Light Version Notice - Below lessons, above WhatsApp */}
             <div 
               onClick={() => handleLessonClick(lessons.length - 1)}
-              className="mt-4 px-3 py-1.5 bg-slate-500/20 border border-purple-400/30 
+              className="mt-4 px-3 py-1.5 bg-slate-500/20 border border-white/10 
                          rounded-full cursor-pointer hover:bg-slate-500/30 transition-all 
-                         inline-flex items-center gap-2 text-xs text-purple-300"
+                         inline-flex items-center gap-2 text-xs text-gray-300"
             >
               <AlertTriangle className="h-3 w-3" />
               <span>{t('toolLessons.lightVersionAvailable')}</span>

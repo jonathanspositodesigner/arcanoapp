@@ -160,10 +160,10 @@ const BibliotecaArtesMusicos = () => {
         {isSupported && !isSubscribed && (
           <Button
             variant="ghost"
-            className="w-full justify-start gap-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-purple-500/20 hover:to-pink-500/20 border border-transparent hover:border-purple-500/30"
+            className="w-full justify-start gap-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-purple-500/20 hover:to-pink-500/20 border border-transparent hover:border-white/10"
             onClick={() => { handleActivateNotifications(); onClose?.(); }}
           >
-            <Bell className="w-5 h-5 text-purple-400" />
+            <Bell className="w-5 h-5 text-gray-400" />
             <span>{t('musicos.sidebar.activateNotifications')}</span>
           </Button>
         )}
@@ -423,7 +423,7 @@ const BibliotecaArtesMusicos = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs bg-white/10 text-gray-300 px-2 py-1 rounded">{categories.find(c => c.slug === selectedArte.category)?.name || selectedArte.category}</span>
-                  {selectedArte.is_ai_generated && <span className="text-xs bg-slate-500/20 text-purple-300 px-2 py-1 rounded">IA</span>}
+                  {selectedArte.is_ai_generated && <span className="text-xs bg-slate-500/20 text-gray-300 px-2 py-1 rounded">IA</span>}
                 </div>
                 {selectedArte.is_ai_generated && selectedArte.ai_prompt && (
                   <div className="p-3 bg-white/5 rounded-lg border border-white/10">
@@ -435,8 +435,8 @@ const BibliotecaArtesMusicos = () => {
                   </div>
                 )}
                 {selectedArte.is_ai_generated && selectedArte.ai_reference_image_url && (
-                  <div className="p-3 bg-slate-500/10 rounded-lg border border-purple-500/20">
-                    <p className="text-xs text-purple-300 mb-2">{t('musicos.modal.referenceImage')}</p>
+                  <div className="p-3 bg-slate-500/10 rounded-lg border border-white/10">
+                    <p className="text-xs text-gray-300 mb-2">{t('musicos.modal.referenceImage')}</p>
                     <img src={selectedArte.ai_reference_image_url} alt="Referência para IA" className="w-full max-h-40 object-contain rounded-lg mb-2 bg-black/20" />
                     <Button className="w-full bg-slate-500 hover:bg-slate-600 text-white" size="sm" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { window.open(selectedArte.ai_reference_image_url!, '_blank'); } }}>
                       <Download className="w-4 h-4 mr-2" />{t('musicos.modal.downloadReference')}

@@ -190,7 +190,7 @@ const FerramentasIA = () => {
   if (loading || isPremiumLoading || isPromptsLoading) {
     return (
       <div className="min-h-screen bg-[#111113] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
       </div>
     );
   }
@@ -202,7 +202,7 @@ const FerramentasIA = () => {
     return (
       <Card 
         key={tool.id}
-        className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all group border border-purple-500/20 shadow-md hover:shadow-xl bg-[#1A0A2E]/50"
+        className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all group border border-white/10 shadow-md hover:shadow-xl bg-[#1A0A2E]/50"
         onClick={() => handleToolClick(tool)}
       >
         <div className="aspect-[16/9] sm:aspect-[3/4] relative overflow-hidden">
@@ -266,7 +266,7 @@ const FerramentasIA = () => {
 
       {/* Primeiro Acesso Button - Below Header - Only for logged out users */}
       {!user && (
-        <div className="bg-[#1A0A2E] border-b border-purple-500/20">
+        <div className="bg-[#1A0A2E] border-b border-white/10">
           <div className="container mx-auto px-4 py-3">
             <Button
               onClick={() => navigate('/login-artes?redirect=/ferramentas-ia')}
@@ -282,7 +282,7 @@ const FerramentasIA = () => {
 
       {/* Button for VIP users: has upscaler pack AND (is prompts premium OR has credits) */}
       {hasUpscalerArcano && (promptsPlanType || credits > 0) && (
-        <div className="bg-gradient-to-r from-purple-900/50 to-fuchsia-900/50 border-b border-purple-500/30">
+        <div className="bg-gradient-to-r from-purple-900/50 to-fuchsia-900/50 border-b border-white/10">
           <div className="container mx-auto px-4 py-3">
             <Button
               onClick={() => navigate('/ferramentas-ia-aplicativo')}
@@ -298,7 +298,7 @@ const FerramentasIA = () => {
 
       {/* Content */}
       <main className="container mx-auto px-4 py-8">
-        <p className="text-purple-300 text-center mb-8 max-w-2xl mx-auto hidden sm:block">
+        <p className="text-gray-300 text-center mb-8 max-w-2xl mx-auto hidden sm:block">
           {t('ferramentas.description')}
         </p>
 
@@ -319,7 +319,7 @@ const FerramentasIA = () => {
         {toolsWithoutAccess.length > 0 && (
           <section>
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-400" />
+              <Sparkles className="w-5 h-5 text-gray-400" />
               {t('ferramentas.availableForPurchase')}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -330,8 +330,8 @@ const FerramentasIA = () => {
 
         {tools.length === 0 && (
           <div className="text-center py-16">
-            <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-            <p className="text-purple-300">{t('ferramentas.noToolsAvailable')}</p>
+            <Sparkles className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-300">{t('ferramentas.noToolsAvailable')}</p>
           </div>
         )}
       </main>

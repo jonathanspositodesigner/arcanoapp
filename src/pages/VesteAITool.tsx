@@ -676,13 +676,13 @@ const VesteAITool: React.FC = () => {
                   </TransformWrapper>
                 ) : isProcessing ? (
                   <div className="flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
+                    <Loader2 className="w-12 h-12 text-gray-400 animate-spin" />
                     <div className="text-center">
                       <p className="text-lg font-medium text-white">
                         {currentQueueMessage.emoji} {currentQueueMessage.text}
                       </p>
                       {status === 'waiting' && queuePosition > 0 && (
-                        <p className="text-sm text-purple-300/70 mt-1">Posição na fila: #{queuePosition}</p>
+                        <p className="text-sm text-gray-400 mt-1">Posição na fila: #{queuePosition}</p>
                       )}
                     </div>
                     {status === 'processing' && (
@@ -753,7 +753,7 @@ const VesteAITool: React.FC = () => {
             {isProcessing && (
               <div className="flex gap-2">
                 <div className="flex-1 flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 text-purple-400 animate-spin flex-shrink-0" />
+                  <Loader2 className="w-4 h-4 text-gray-400 animate-spin flex-shrink-0" />
                   <p className="text-xs text-white truncate">
                     {status === 'waiting' ? `Fila #${queuePosition}` : 'Processando...'}
                   </p>

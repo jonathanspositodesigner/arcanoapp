@@ -340,7 +340,7 @@ const ToolVersionLessons = () => {
   if (loading || premiumLoading) {
     return (
       <div className="min-h-screen bg-[#111113] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-500"></div>
       </div>
     );
   }
@@ -350,7 +350,7 @@ const ToolVersionLessons = () => {
       <div className="min-h-screen bg-[#111113]">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">{toolName}</h1>
-          <p className="text-purple-300">{t('versionSelect.loginRequired')}</p>
+          <p className="text-gray-300">{t('versionSelect.loginRequired')}</p>
           <Button onClick={() => navigate(loginPath)} className="bg-gradient-to-r from-purple-600 to-blue-500">
             {t('ferramentas.login')}
           </Button>
@@ -377,7 +377,7 @@ const ToolVersionLessons = () => {
       <div className="min-h-screen bg-[#111113]">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">{toolName}</h1>
-          <p className="text-purple-300">{t('versionSelect.noAccess')}</p>
+          <p className="text-gray-300">{t('versionSelect.noAccess')}</p>
           <Button onClick={() => navigate(plansPath)} className="bg-gradient-to-r from-purple-600 to-blue-500">
             {t('ferramentas.seePlans')}
           </Button>
@@ -397,7 +397,7 @@ const ToolVersionLessons = () => {
       <div className="min-h-screen bg-[#111113]">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">{t('toolLessons.versionNotFound')}</h1>
-          <p className="text-purple-300">{t('toolLessons.versionNotFoundDesc')}</p>
+          <p className="text-gray-300">{t('toolLessons.versionNotFoundDesc')}</p>
           <Button onClick={() => navigate(toolSelectPath)} className="bg-gradient-to-r from-purple-600 to-blue-500">
             {t('upscaler.back')}
           </Button>
@@ -415,7 +415,7 @@ const ToolVersionLessons = () => {
       return (
         <div className="min-h-screen bg-[#111113] flex flex-col">
           {/* Header standalone */}
-          <header className="sticky top-0 z-50 bg-[#111113]/90 backdrop-blur-md border-b border-purple-500/20">
+          <header className="sticky top-0 z-50 bg-[#111113]/90 backdrop-blur-md border-b border-white/10">
             <div className="container mx-auto px-4 max-w-6xl flex items-center justify-between h-14">
                 <Button
                 variant="ghost"
@@ -459,13 +459,13 @@ const ToolVersionLessons = () => {
 
         {/* Master's Journey Progress Bar - Only for upscaler tools */}
         {toolSlug === 'upscaller-arcano' && lessons.length >= 1 && (
-          <div className="mb-6 p-4 bg-[#1A0A2E]/50 border border-purple-500/20 rounded-lg">
+          <div className="mb-6 p-4 bg-[#1A0A2E]/50 border border-white/10 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-white flex items-center gap-2">
                 <Trophy className="h-4 w-4 text-yellow-500" />
                 {t('toolLessons.mastersJourney')}
               </span>
-              <span className="text-xs text-purple-300">
+              <span className="text-xs text-gray-300">
                 {t('toolLessons.lessonsProgress', { current: progressCount })}
               </span>
             </div>
@@ -531,8 +531,8 @@ const ToolVersionLessons = () => {
                     </Button>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="bg-[#1A0A2E] border-purple-500/20 p-3 max-w-xs">
-                  <p className="text-sm text-purple-300">{tooltipMessage}</p>
+                <TooltipContent side="bottom" className="bg-[#1A0A2E] border-white/10 p-3 max-w-xs">
+                  <p className="text-sm text-gray-300">{tooltipMessage}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -551,9 +551,9 @@ const ToolVersionLessons = () => {
             {currentLesson && (
               <>
                 {/* Lesson Info - ABOVE video */}
-                <Card className="p-4 bg-[#1A0A2E]/50 border-purple-500/20">
+                <Card className="p-4 bg-[#1A0A2E]/50 border-white/10">
                   <h2 className="text-base md:text-xl font-bold mb-2 flex items-center gap-2 flex-wrap text-white">
-                    <Play className="h-5 w-5 text-purple-400" />
+                    <Play className="h-5 w-5 text-gray-400" />
                     {currentLesson.title}
                     {watchedLessons.includes(selectedLesson + 1) && (
                       <span className="text-xs bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full ml-2">
@@ -562,7 +562,7 @@ const ToolVersionLessons = () => {
                     )}
                   </h2>
                   {currentLesson.description && (
-                    <p className="text-purple-300">{currentLesson.description}</p>
+                    <p className="text-gray-300">{currentLesson.description}</p>
                   )}
                 </Card>
 
@@ -602,7 +602,7 @@ const ToolVersionLessons = () => {
                   className={`w-full sm:w-auto ${
                     watchedLessons.includes(selectedLesson + 1) 
                       ? 'bg-green-600 hover:bg-green-700 text-white' 
-                      : 'bg-purple-900/60 border border-purple-400/50 text-purple-200 hover:bg-green-600/20 hover:text-green-400 hover:border-green-500'
+                      : 'bg-purple-900/60 border border-white/15 text-gray-300 hover:bg-green-600/20 hover:text-green-400 hover:border-green-500'
                   }`}
                 >
                   <Check className="h-4 w-4 mr-2" />
@@ -623,7 +623,7 @@ const ToolVersionLessons = () => {
                             ? handleToolButtonClick(button.url)
                             : handleRegularButtonClick(button.url)
                         }
-                        className="gap-2 bg-purple-900/60 border border-purple-400/50 text-purple-200 hover:bg-slate-500/30 hover:text-white hover:border-purple-400"
+                        className="gap-2 bg-purple-900/60 border border-white/15 text-gray-300 hover:bg-slate-500/30 hover:text-white hover:border-white/15"
                       >
                         <ExternalLink className="w-4 h-4" />
                         {button.text}
@@ -641,8 +641,8 @@ const ToolVersionLessons = () => {
             {lessons.map((lesson, index) => (
               <Card
                 key={index}
-                className={`p-3 cursor-pointer transition-all bg-[#1A0A2E]/50 border-purple-500/20 hover:bg-slate-500/10 ${
-                  selectedLesson === index ? 'border-purple-400 bg-slate-500/10' : ''
+                className={`p-3 cursor-pointer transition-all bg-[#1A0A2E]/50 border-white/10 hover:bg-slate-500/10 ${
+                  selectedLesson === index ? 'border-white/15 bg-slate-500/10' : ''
                 }`}
                 onClick={() => handleLessonClick(index)}
               >
@@ -653,7 +653,7 @@ const ToolVersionLessons = () => {
                       ? 'bg-green-500 text-white'
                       : selectedLesson === index 
                         ? 'bg-slate-600 text-white' 
-                        : 'bg-white/5 text-purple-400'
+                        : 'bg-white/5 text-gray-400'
                   }`}>
                     {watchedLessons.includes(index + 1) ? (
                       <Check className="h-4 w-4" />
@@ -665,7 +665,7 @@ const ToolVersionLessons = () => {
                   <div className="flex-1 min-w-0">
                     <p className={`font-medium truncate ${
                       watchedLessons.includes(index + 1) ? 'text-green-500' :
-                      selectedLesson === index ? 'text-purple-300' : 'text-purple-300/70'
+                      selectedLesson === index ? 'text-gray-300' : 'text-gray-400'
                     }`}>
                       {lesson.title || `${t('toolLessons.lesson')} ${index + 1}`}
                     </p>
@@ -685,9 +685,9 @@ const ToolVersionLessons = () => {
             {toolSlug === 'upscaller-arcano' && lessons.length >= 1 && (
               <div 
                 onClick={() => handleLessonClick(lessons.length - 1)}
-                className="mt-4 px-3 py-1.5 bg-slate-500/20 border border-purple-400/30 
+                className="mt-4 px-3 py-1.5 bg-slate-500/20 border border-white/10 
                            rounded-full cursor-pointer hover:bg-slate-500/30 transition-all 
-                           inline-flex items-center gap-2 text-xs text-purple-300"
+                           inline-flex items-center gap-2 text-xs text-gray-300"
               >
                 <AlertTriangle className="h-3 w-3" />
                 <span>{t('toolLessons.lightVersionAvailable')}</span>

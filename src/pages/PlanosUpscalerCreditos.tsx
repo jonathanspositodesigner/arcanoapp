@@ -662,7 +662,7 @@ const PlanosUpscalerCreditos = () => {
 
               {/* Countdown Timer */}
               <div className="flex items-center justify-center gap-2 mb-8 md:mb-10">
-                <span className="text-purple-300 text-sm">Essa oferta expira em</span>
+                <span className="text-gray-300 text-sm">Essa oferta expira em</span>
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3 text-red-500" />
                   <div className="flex items-center gap-0.5">
@@ -690,21 +690,21 @@ const PlanosUpscalerCreditos = () => {
               >
                 {/* Starter */}
                 <div className="flex flex-col h-full w-full">
-                  <Card className="relative p-8 flex flex-col rounded-xl bg-[#1A0A2E] border border-purple-500/20 w-full h-full">
+                  <Card className="relative p-8 flex flex-col rounded-xl bg-[#1A0A2E] border border-white/10 w-full h-full">
                     <div className="text-center mb-5 min-h-[68px] flex flex-col items-center justify-center">
                       <h3 className="text-xl font-bold text-white">Starter</h3>
-                      <p className="text-sm text-purple-400 mt-0.5">Pra quem quer testar sem compromisso!</p>
+                      <p className="text-sm text-gray-400 mt-0.5">Pra quem quer testar sem compromisso!</p>
                     </div>
                     <div className="text-center mb-4 h-[98px] flex flex-col justify-center">
                       <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-purple-400 text-lg">R$</span>
+                        <span className="text-gray-400 text-lg">R$</span>
                         <span className="text-5xl font-bold text-white">29,90</span>
                       </div>
-                      <p className="text-purple-400 text-base mt-1">Pagamento único</p>
+                      <p className="text-gray-400 text-base mt-1">Pagamento único</p>
                     </div>
                     <Button 
                       onClick={() => window.open(appendUtmToUrl("https://payfast.greenn.com.br/rnq543f/offer/0RpIQa"), "_blank")}
-                      className="w-full mb-5 text-lg h-14 bg-white/5 hover:bg-purple-900/70 text-purple-200"
+                      className="w-full mb-5 text-lg h-14 bg-white/5 hover:bg-purple-900/70 text-gray-300"
                     >
                       Comprar
                     </Button>
@@ -713,41 +713,41 @@ const PlanosUpscalerCreditos = () => {
                         <Sparkles className="w-4 h-4" />
                         30 upscalers
                       </span>
-                      <span className="text-sm text-purple-400 mt-1">1.800 créditos</span>
+                      <span className="text-sm text-gray-400 mt-1">1.800 créditos</span>
                     </div>
                     <ul className="space-y-3 flex-1">
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-                        <span className="text-purple-200">Atualizações constantes na ferramenta</span>
+                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+                        <span className="text-gray-300">Atualizações constantes na ferramenta</span>
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-                        <span className="text-purple-200">Liberação imediata</span>
+                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+                        <span className="text-gray-300">Liberação imediata</span>
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-                        <span className="text-purple-200">Suporte exclusivo via WhatsApp</span>
+                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+                        <span className="text-gray-300">Suporte exclusivo via WhatsApp</span>
                       </li>
 
                       {/* Bonus section */}
-                      <li className="pt-4 border-t border-purple-500/20 mt-4">
-                        <p className="text-sm text-purple-400 uppercase tracking-wide mb-2.5">Bônus</p>
+                      <li className="pt-4 border-t border-white/10 mt-4">
+                        <p className="text-sm text-gray-400 uppercase tracking-wide mb-2.5">Bônus</p>
                       </li>
                       <li>
                         <div 
                           className="flex items-start gap-2.5 text-base cursor-pointer select-none"
                           onClick={() => setExpandedAiTools(prev => ({ ...prev, starter: !prev.starter }))}
                         >
-                          <Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-                          <span className="text-purple-200 flex items-center gap-1.5">
+                          <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+                          <span className="text-gray-300 flex items-center gap-1.5">
                             Acesso à todas Ferramentas de IA
                           </span>
-                          <ChevronDown className={`w-5 h-5 shrink-0 mt-0.5 text-purple-400 transition-transform duration-200 ${expandedAiTools.starter ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-5 h-5 shrink-0 mt-0.5 text-gray-400 transition-transform duration-200 ${expandedAiTools.starter ? 'rotate-180' : ''}`} />
                         </div>
                         {expandedAiTools.starter && (
                           <ul className="ml-7 mt-2 space-y-0.5">
                             {aiToolsList.map((tool, tIndex) => (
-                              <li key={tIndex} className={`text-sm ${tIndex === aiToolsList.length - 1 ? 'text-purple-400 italic' : 'text-purple-300/70'}`}>
+                              <li key={tIndex} className={`text-sm ${tIndex === aiToolsList.length - 1 ? 'text-gray-400 italic' : 'text-gray-400'}`}>
                                 • {tool}
                               </li>
                             ))}
@@ -770,15 +770,15 @@ const PlanosUpscalerCreditos = () => {
                     </Badge>
                     <div className="text-center mb-5 min-h-[68px] flex flex-col items-center justify-center">
                       <h3 className="text-xl font-bold text-white">Pro</h3>
-                      <p className="text-sm text-purple-400 mt-0.5">Dobro de créditos por + R$10</p>
+                      <p className="text-sm text-gray-400 mt-0.5">Dobro de créditos por + R$10</p>
                     </div>
                     <div className="text-center mb-4 h-[98px] flex flex-col justify-center">
-                      <p className="text-purple-400 line-through text-sm">R$69,90</p>
+                      <p className="text-gray-400 line-through text-sm">R$69,90</p>
                       <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-purple-400 text-lg">R$</span>
+                        <span className="text-gray-400 text-lg">R$</span>
                         <span className="text-5xl font-bold text-white">39,90</span>
                       </div>
-                      <p className="text-purple-400 text-base mt-1">Pagamento único</p>
+                      <p className="text-gray-400 text-base mt-1">Pagamento único</p>
                     </div>
                     <Button 
                       onClick={() => window.open(appendUtmToUrl("https://payfast.greenn.com.br/sauzz2n/offer/2hn2nR"), "_blank")}
@@ -791,41 +791,41 @@ const PlanosUpscalerCreditos = () => {
                         <Sparkles className="w-4 h-4" />
                         70 upscalers
                       </span>
-                      <span className="text-sm text-purple-400 mt-1">4.200 créditos</span>
+                      <span className="text-sm text-gray-400 mt-1">4.200 créditos</span>
                     </div>
                     <ul className="space-y-3 flex-1">
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-                        <span className="text-purple-200">Atualizações constantes na ferramenta</span>
+                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+                        <span className="text-gray-300">Atualizações constantes na ferramenta</span>
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-                        <span className="text-purple-200">Liberação imediata</span>
+                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+                        <span className="text-gray-300">Liberação imediata</span>
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-                        <span className="text-purple-200">Suporte exclusivo via WhatsApp</span>
+                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+                        <span className="text-gray-300">Suporte exclusivo via WhatsApp</span>
                       </li>
 
                       {/* Bonus section */}
-                      <li className="pt-4 border-t border-purple-500/20 mt-4">
-                        <p className="text-sm text-purple-400 uppercase tracking-wide mb-2.5">Bônus</p>
+                      <li className="pt-4 border-t border-white/10 mt-4">
+                        <p className="text-sm text-gray-400 uppercase tracking-wide mb-2.5">Bônus</p>
                       </li>
                       <li>
                         <div 
                           className="flex items-start gap-2.5 text-base cursor-pointer select-none"
                           onClick={() => setExpandedAiTools(prev => ({ ...prev, pro: !prev.pro }))}
                         >
-                          <Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-                          <span className="text-purple-200 flex items-center gap-1.5">
+                          <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+                          <span className="text-gray-300 flex items-center gap-1.5">
                             Acesso à todas Ferramentas de IA
                           </span>
-                          <ChevronDown className={`w-5 h-5 shrink-0 mt-0.5 text-purple-400 transition-transform duration-200 ${expandedAiTools.pro ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-5 h-5 shrink-0 mt-0.5 text-gray-400 transition-transform duration-200 ${expandedAiTools.pro ? 'rotate-180' : ''}`} />
                         </div>
                         {expandedAiTools.pro && (
                           <ul className="ml-7 mt-2 space-y-0.5">
                             {aiToolsList.map((tool, tIndex) => (
-                              <li key={tIndex} className={`text-sm ${tIndex === aiToolsList.length - 1 ? 'text-purple-400 italic' : 'text-purple-300/70'}`}>
+                              <li key={tIndex} className={`text-sm ${tIndex === aiToolsList.length - 1 ? 'text-gray-400 italic' : 'text-gray-400'}`}>
                                 • {tool}
                               </li>
                             ))}
@@ -833,8 +833,8 @@ const PlanosUpscalerCreditos = () => {
                         )}
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-                        <span className="text-purple-200">Fila prioritária nos upscalers</span>
+                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+                        <span className="text-gray-300">Fila prioritária nos upscalers</span>
                       </li>
                     </ul>
                   </Card>
@@ -842,21 +842,21 @@ const PlanosUpscalerCreditos = () => {
 
                 {/* Studio - MELHOR CUSTO/BENEFÍCIO */}
                 <div className="flex flex-col h-full w-full">
-                  <Card className="relative p-8 flex flex-col rounded-xl bg-[#1A0A2E] border-2 border-purple-500 shadow-lg shadow-purple-500/30 w-full h-full">
+                  <Card className="relative p-8 flex flex-col rounded-xl bg-[#1A0A2E] border-2 border-slate-500 shadow-lg shadow-purple-500/30 w-full h-full">
                     <Badge className="absolute -top-3.5 left-1/2 -translate-x-1/2 border-0 text-sm whitespace-nowrap bg-gradient-to-r from-purple-600 to-blue-500 text-white px-5 py-1.5">
                       MELHOR CUSTO/BENEFÍCIO
                     </Badge>
                     <div className="text-center mb-5 min-h-[68px] flex flex-col items-center justify-center">
                       <h3 className="text-xl font-bold text-white">Studio</h3>
-                      <p className="text-sm text-purple-400 mt-0.5">Para profissionais que usam muito no dia a dia</p>
+                      <p className="text-sm text-gray-400 mt-0.5">Para profissionais que usam muito no dia a dia</p>
                     </div>
                     <div className="text-center mb-4 h-[98px] flex flex-col justify-center">
-                      <p className="text-purple-400 line-through text-sm">R$249,90</p>
+                      <p className="text-gray-400 line-through text-sm">R$249,90</p>
                       <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-purple-400 text-lg">R$</span>
+                        <span className="text-gray-400 text-lg">R$</span>
                         <span className="text-5xl font-bold text-white">99,90</span>
                       </div>
-                      <p className="text-purple-400 text-base mt-1">Pagamento único</p>
+                      <p className="text-gray-400 text-base mt-1">Pagamento único</p>
                     </div>
                     <Button 
                       onClick={() => window.open(appendUtmToUrl("https://payfast.greenn.com.br/fz9ce38/offer/SQCSxN"), "_blank")}
@@ -869,41 +869,41 @@ const PlanosUpscalerCreditos = () => {
                         <Sparkles className="w-4 h-4" />
                         200 upscalers
                       </span>
-                      <span className="text-sm text-purple-400 mt-1">12.000 créditos</span>
+                      <span className="text-sm text-gray-400 mt-1">12.000 créditos</span>
                     </div>
                     <ul className="space-y-3 flex-1">
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-                        <span className="text-purple-200">Atualizações constantes na ferramenta</span>
+                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+                        <span className="text-gray-300">Atualizações constantes na ferramenta</span>
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-                        <span className="text-purple-200">Liberação imediata</span>
+                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+                        <span className="text-gray-300">Liberação imediata</span>
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-                        <span className="text-purple-200">Suporte exclusivo via WhatsApp</span>
+                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+                        <span className="text-gray-300">Suporte exclusivo via WhatsApp</span>
                       </li>
 
                       {/* Bonus section */}
-                      <li className="pt-4 border-t border-purple-500/20 mt-4">
-                        <p className="text-sm text-purple-400 uppercase tracking-wide mb-2.5">Bônus</p>
+                      <li className="pt-4 border-t border-white/10 mt-4">
+                        <p className="text-sm text-gray-400 uppercase tracking-wide mb-2.5">Bônus</p>
                       </li>
                       <li>
                         <div 
                           className="flex items-start gap-2.5 text-base cursor-pointer select-none"
                           onClick={() => setExpandedAiTools(prev => ({ ...prev, studio: !prev.studio }))}
                         >
-                          <Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-                          <span className="text-purple-200 flex items-center gap-1.5">
+                          <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+                          <span className="text-gray-300 flex items-center gap-1.5">
                             Acesso à todas Ferramentas de IA
                           </span>
-                          <ChevronDown className={`w-5 h-5 shrink-0 mt-0.5 text-purple-400 transition-transform duration-200 ${expandedAiTools.studio ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-5 h-5 shrink-0 mt-0.5 text-gray-400 transition-transform duration-200 ${expandedAiTools.studio ? 'rotate-180' : ''}`} />
                         </div>
                         {expandedAiTools.studio && (
                           <ul className="ml-7 mt-2 space-y-0.5">
                             {aiToolsList.map((tool, tIndex) => (
-                              <li key={tIndex} className={`text-sm ${tIndex === aiToolsList.length - 1 ? 'text-purple-400 italic' : 'text-purple-300/70'}`}>
+                              <li key={tIndex} className={`text-sm ${tIndex === aiToolsList.length - 1 ? 'text-gray-400 italic' : 'text-gray-400'}`}>
                                 • {tool}
                               </li>
                             ))}
@@ -911,8 +911,8 @@ const PlanosUpscalerCreditos = () => {
                         )}
                       </li>
                       <li className="flex items-start gap-2.5 text-base">
-                        <Check className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-                        <span className="text-purple-200">Fila prioritária nos upscalers</span>
+                        <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
+                        <span className="text-gray-300">Fila prioritária nos upscalers</span>
                       </li>
                     </ul>
                   </Card>

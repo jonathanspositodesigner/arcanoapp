@@ -235,9 +235,9 @@ const PlanosArcanoCloner = () => {
             {painPoints.map((pain, index) => {
               const IconComp = pain.icon;
               return (
-                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-purple-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-500/10 border border-purple-500/20 flex items-center justify-center mb-4 shrink-0">
-                    <IconComp className="h-6 w-6 text-purple-400" />
+                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-500/10 border border-white/10 flex items-center justify-center mb-4 shrink-0">
+                    <IconComp className="h-6 w-6 text-gray-400" />
                   </div>
                   <p className="text-white/80 text-base md:text-lg">{pain.text}</p>
                 </div>
@@ -351,7 +351,7 @@ const PlanosArcanoCloner = () => {
               {[...Array.from({ length: 8 }, (_, i) => i), ...Array.from({ length: 8 }, (_, i) => i)].map((i, idx) => (
                 <div
                   key={idx}
-                  className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 overflow-hidden"
+                  className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-white/10 overflow-hidden"
                 >
                   <img
                     src={`/images/refs/ref-${i + 1}.jpg`}
@@ -372,7 +372,7 @@ const PlanosArcanoCloner = () => {
               {[...Array.from({ length: 8 }, (_, i) => i), ...Array.from({ length: 8 }, (_, i) => i)].map((i, idx) => (
                 <div
                   key={idx}
-                  className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 overflow-hidden"
+                  className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-white/10 overflow-hidden"
                 >
                   <img
                     src={`/images/refs/ref-${((i + 4) % 8) + 1}.jpg`}
@@ -467,7 +467,7 @@ const PlanosArcanoCloner = () => {
 
             {/* Countdown */}
             <div className="flex items-center justify-center gap-2 mb-8">
-              <span className="text-purple-300 text-sm">Essa oferta expira em</span>
+              <span className="text-gray-300 text-sm">Essa oferta expira em</span>
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3 text-red-500" />
                 <div className="flex items-center gap-0.5">
@@ -497,16 +497,16 @@ const PlanosArcanoCloner = () => {
 
               <div className="text-center mb-6 mt-2">
                 <h3 className="text-xl font-bold text-white">Arcano Cloner</h3>
-                <p className="text-sm text-purple-400 mt-0.5">Gere ensaios fotográficos com IA</p>
+                <p className="text-sm text-gray-400 mt-0.5">Gere ensaios fotográficos com IA</p>
               </div>
 
               <div className="text-center mb-6">
-                <div className="text-purple-400 text-sm line-through mb-1">R$ 97,00</div>
+                <div className="text-gray-400 text-sm line-through mb-1">R$ 97,00</div>
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-purple-400 text-lg">R$</span>
+                  <span className="text-gray-400 text-lg">R$</span>
                   <span className="text-5xl font-bold text-white">39,90</span>
                 </div>
-                <p className="text-purple-400 text-base mt-1">Pagamento único</p>
+                <p className="text-gray-400 text-base mt-1">Pagamento único</p>
               </div>
 
               <Button
@@ -522,14 +522,14 @@ const PlanosArcanoCloner = () => {
                   <Sparkles className="w-4 h-4" />
                   ~70 fotos incluídas
                 </span>
-                <span className="text-sm text-purple-400 mt-1">4.200 créditos</span>
+                <span className="text-sm text-gray-400 mt-1">4.200 créditos</span>
               </div>
 
               <ul className="space-y-3">
                 {includedItems.map((item, index) => (
                   <li key={index} className="flex items-start gap-2.5 text-base">
                     <Check className="w-5 h-5 text-fuchsia-400 shrink-0 mt-0.5" />
-                    <span className="text-purple-200">{item}</span>
+                    <span className="text-gray-300">{item}</span>
                   </li>
                 ))}
               </ul>

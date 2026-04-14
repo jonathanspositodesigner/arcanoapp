@@ -1110,7 +1110,7 @@ const UpscalerArcanoTool: React.FC = () => {
                       <p className="text-3xl font-bold text-white mt-2">
                         {queueMessageCombos[currentQueueCombo].position(queuePosition)}
                       </p>
-                      <p className="text-sm text-purple-300/70 mt-2">
+                      <p className="text-sm text-gray-400 mt-2">
                         {queueMessageCombos[currentQueueCombo].subtitle}
                       </p>
                     </div>
@@ -1290,7 +1290,7 @@ const UpscalerArcanoTool: React.FC = () => {
                             <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-black/90 border border-white/30 text-white text-xs font-bold z-20 pointer-events-none">
                               {t('upscalerTool.labels.before')}
                             </div>
-                            <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-slate-600/90 border border-purple-400/50 text-white text-xs font-bold z-20 pointer-events-none">
+                            <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-slate-600/90 border border-white/15 text-white text-xs font-bold z-20 pointer-events-none">
                               {t('upscalerTool.labels.after')}
                             </div>
                           </div>
@@ -1306,18 +1306,18 @@ const UpscalerArcanoTool: React.FC = () => {
                 ) : status === 'completed' && isMobile && isOptimizingForSlider ? (
                   /* Mobile: Optimization loading state */
                   <div className="flex flex-col items-center justify-center gap-3">
-                    <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
-                    <p className="text-sm text-purple-300">Preparando visualização...</p>
+                    <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+                    <p className="text-sm text-gray-300">Preparando visualização...</p>
                   </div>
                 ) : (status === 'uploading' || status === 'processing') && !isWaitingInQueue ? (
                   /* Processing State */
                   <div className="flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
+                    <Loader2 className="w-12 h-12 text-gray-400 animate-spin" />
                     <div className="text-center">
                       <p className="text-lg font-medium text-white">
                         {status === 'uploading' ? t('upscalerTool.status.uploading') : t('upscalerTool.status.processing')}
                       </p>
-                      <p className="text-sm text-purple-300/70">
+                      <p className="text-sm text-gray-400">
                         {t('upscalerTool.status.mayTake2Min')}
                       </p>
                     </div>

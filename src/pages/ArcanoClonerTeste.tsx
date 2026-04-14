@@ -268,9 +268,9 @@ const ArcanoClonerTeste = () => {
             {painPoints.map((pain, index) => {
               const IconComp = pain.icon;
               return (
-                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-purple-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-500/10 border border-purple-500/20 flex items-center justify-center mb-4 shrink-0">
-                    <IconComp className="h-6 w-6 text-purple-400" />
+                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-500/10 border border-white/10 flex items-center justify-center mb-4 shrink-0">
+                    <IconComp className="h-6 w-6 text-gray-400" />
                   </div>
                   <p className="text-white/80 text-base md:text-lg">{pain.text}</p>
                 </div>
@@ -551,7 +551,7 @@ const ArcanoClonerTeste = () => {
                     key={`r1-${setIndex}-${num}`}
                     src={`/images/results/result-${num}.webp`}
                     alt={`Resultado ${num}`}
-                    className="w-[255px] md:w-[234px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 object-cover"
+                    className="w-[255px] md:w-[234px] shrink-0 aspect-[3/4] rounded-2xl border border-white/10 object-cover"
                     loading="lazy"
                   />
                 ))
@@ -570,7 +570,7 @@ const ArcanoClonerTeste = () => {
                     key={`r2-${setIndex}-${num}`}
                     src={`/images/results/result-${num}.webp`}
                     alt={`Resultado ${num}`}
-                    className="w-[255px] md:w-[234px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 object-cover"
+                    className="w-[255px] md:w-[234px] shrink-0 aspect-[3/4] rounded-2xl border border-white/10 object-cover"
                     loading="lazy"
                   />
                 ))

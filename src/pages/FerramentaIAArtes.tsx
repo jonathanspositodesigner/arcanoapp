@@ -114,7 +114,7 @@ const FerramentaIAArtes = () => {
   if (loading || premiumLoading || isPromptsLoading) {
     return (
       <div className="min-h-screen bg-[#111113] flex items-center justify-center">
-        <div className="text-purple-300">{t('tools.loading')}</div>
+        <div className="text-gray-300">{t('tools.loading')}</div>
       </div>
     );
   }
@@ -123,13 +123,13 @@ const FerramentaIAArtes = () => {
   if (!hasAccess) {
     return (
       <div className="min-h-screen bg-[#111113]">
-        <header className="bg-[#1A0A2E] border-b border-purple-500/20 p-4">
+        <header className="bg-[#1A0A2E] border-b border-white/10 p-4">
           <div className="container mx-auto flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={locale === 'es' ? () => navigate(toolsHomePath) : goBack}
-            className="text-purple-300 hover:text-white hover:bg-slate-500/20"
+            className="text-gray-300 hover:text-white hover:bg-slate-500/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -142,13 +142,13 @@ const FerramentaIAArtes = () => {
         </header>
 
         <main className="container mx-auto p-4 md:p-6">
-          <Card className="max-w-2xl mx-auto bg-[#1A0A2E]/50 border-purple-500/20">
+          <Card className="max-w-2xl mx-auto bg-[#1A0A2E]/50 border-white/10">
             <CardContent className="p-8 text-center">
-              <Lock className="h-16 w-16 text-purple-400 mx-auto mb-4" />
+              <Lock className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-white mb-2">
                 {t('tools.restrictedAccess')}
               </h2>
-              <p className="text-purple-300 mb-6">
+              <p className="text-gray-300 mb-6">
                 {t('tools.restrictedDescription')}
               </p>
               <Button 
@@ -171,13 +171,13 @@ const FerramentaIAArtes = () => {
   return (
     <div className="min-h-screen bg-[#111113]">
       {/* Header */}
-      <header className="bg-[#1A0A2E] border-b border-purple-500/20 p-4">
+      <header className="bg-[#1A0A2E] border-b border-white/10 p-4">
         <div className="container mx-auto flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={locale === 'es' ? () => navigate(toolsHomePath) : goBack}
-            className="text-purple-300 hover:text-white hover:bg-slate-500/20"
+            className="text-gray-300 hover:text-white hover:bg-slate-500/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -185,7 +185,7 @@ const FerramentaIAArtes = () => {
             <h1 className="text-xl font-bold text-white">
               {title}
             </h1>
-            <p className="text-sm text-purple-300">
+            <p className="text-sm text-gray-300">
               {description}
             </p>
           </div>
@@ -195,13 +195,13 @@ const FerramentaIAArtes = () => {
       {/* Content */}
       <main className="container mx-auto p-4 md:p-6">
         {lessons.length === 0 ? (
-          <Card className="max-w-2xl mx-auto bg-[#1A0A2E]/50 border-purple-500/20">
+          <Card className="max-w-2xl mx-auto bg-[#1A0A2E]/50 border-white/10">
             <CardContent className="p-8 text-center">
-              <Play className="h-16 w-16 text-purple-400 mx-auto mb-4" />
+              <Play className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-white mb-2">
                 {t('tools.comingSoon')}
               </h2>
-              <p className="text-purple-300">
+              <p className="text-gray-300">
                 {t('tools.comingSoonDescription')}
               </p>
             </CardContent>
@@ -209,11 +209,11 @@ const FerramentaIAArtes = () => {
         ) : (
           <div className="space-y-6 max-w-4xl mx-auto">
             {lessons.map((lesson, index) => (
-              <Card key={index} className="bg-[#1A0A2E]/50 border-purple-500/20">
+              <Card key={index} className="bg-[#1A0A2E]/50 border-white/10">
                 <CardHeader>
                   <CardTitle className="text-lg text-white">{lesson.title}</CardTitle>
                   {lesson.description && (
-                    <p className="text-purple-300 text-sm mt-1">{lesson.description}</p>
+                    <p className="text-gray-300 text-sm mt-1">{lesson.description}</p>
                   )}
                 </CardHeader>
                 <CardContent className="space-y-4">

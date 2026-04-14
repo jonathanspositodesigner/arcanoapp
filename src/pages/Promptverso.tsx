@@ -22,7 +22,7 @@ const Promptverso = () => {
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent px-2">
             {t('promptverso.title')}
           </h1>
-          <p className="text-base sm:text-xl text-purple-200 mx-auto text-center px-2">
+          <p className="text-base sm:text-xl text-gray-300 mx-auto text-center px-2">
             {t('promptverso.subtitle')}
           </p>
         </div>
@@ -33,34 +33,34 @@ const Promptverso = () => {
             {t('promptverso.accessPrompts')}
           </Button>
 
-          <Button onClick={() => navigate("/contribuir")} size="lg" variant="outline" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-purple-500 text-purple-300 hover:bg-slate-500/20 hover:text-white w-full sm:w-auto">
+          <Button onClick={() => navigate("/contribuir")} size="lg" variant="outline" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-slate-500 text-gray-300 hover:bg-slate-500/20 hover:text-white w-full sm:w-auto">
             <Users className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
             {t('promptverso.contributeWithCommunity')}
           </Button>
 
-          <Button onClick={() => navigate("/install-app")} size="lg" variant="outline" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-purple-500/50 hover:border-purple-400 text-purple-300 hover:bg-slate-500/10 w-full sm:w-auto">
+          <Button onClick={() => navigate("/install-app")} size="lg" variant="outline" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-slate-500/50 hover:border-white/15 text-gray-300 hover:bg-slate-500/10 w-full sm:w-auto">
             <Download className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
             {t('promptverso.installApp')}
           </Button>
         </div>
 
         {/* Seção separada - Biblioteca de Artes Arcanas */}
-        <div className="mt-10 sm:mt-14 pt-6 sm:pt-8 border-t border-purple-500/20">
-          <Button onClick={() => setShowBAAModal(true)} size="lg" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 w-full sm:w-auto bg-[#1A0A2E] border-purple-500 text-purple-300 border-2 hover:text-white hover:bg-slate-500/20">
+        <div className="mt-10 sm:mt-14 pt-6 sm:pt-8 border-t border-white/10">
+          <Button onClick={() => setShowBAAModal(true)} size="lg" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 w-full sm:w-auto bg-[#1A0A2E] border-slate-500 text-gray-300 border-2 hover:text-white hover:bg-slate-500/20">
             <img alt="" className="mr-2 h-6 sm:h-7 w-auto object-contain" src="/lovable-uploads/53db2877-63c8-4fb8-bbf3-4aa471ca6154.png" />
             {t('promptverso.accessArtesLibrary')}
           </Button>
-          <p className="text-purple-400 text-xs sm:text-sm mt-2">
+          <p className="text-gray-400 text-xs sm:text-sm mt-2">
             {t('promptverso.artesEditableDesc')}
           </p>
         </div>
 
         <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-2 justify-center items-center">
-          <Button onClick={() => navigate("/admin-login")} variant="link" className="text-purple-400 hover:text-purple-300 text-sm sm:text-base">
+          <Button onClick={() => navigate("/admin-login")} variant="link" className="text-gray-400 hover:text-gray-300 text-sm sm:text-base">
             {t('promptverso.adminSubmission')}
           </Button>
-          <span className="hidden sm:inline text-purple-500">•</span>
-          <Button onClick={() => navigate("/parceiro-login")} variant="link" className="text-purple-400 hover:text-purple-300 text-sm sm:text-base">
+          <span className="hidden sm:inline text-slate-400">•</span>
+          <Button onClick={() => navigate("/parceiro-login")} variant="link" className="text-gray-400 hover:text-gray-300 text-sm sm:text-base">
             {t('promptverso.partnerArea')}
           </Button>
         </div>
@@ -68,7 +68,7 @@ const Promptverso = () => {
 
       {/* Modal Biblioteca de Artes Arcanas */}
       <Dialog open={showBAAModal} onOpenChange={setShowBAAModal}>
-        <DialogContent className="sm:max-w-md bg-[#1A0A2E] border-purple-500/30">
+        <DialogContent className="sm:max-w-md bg-[#1A0A2E] border-white/10">
           <DialogHeader>
             <DialogTitle className="text-center flex flex-col items-center gap-3 text-white">
               <img src={baaIcon} alt="Biblioteca de Artes Arcanas" className="h-16 w-auto" />
@@ -80,7 +80,7 @@ const Promptverso = () => {
               <ExternalLink className="mr-2 h-5 w-5" />
               {t('promptverso.modal.alreadyMember')}
             </Button>
-            <Button onClick={() => window.open("https://voxvisual.com.br/linksbio/", "_blank")} variant="outline" className="border-purple-500/30 text-purple-300 hover:bg-slate-500/20 hover:text-white py-6">
+            <Button onClick={() => window.open("https://voxvisual.com.br/linksbio/", "_blank")} variant="outline" className="border-white/10 text-gray-300 hover:bg-slate-500/20 hover:text-white py-6">
               <ExternalLink className="mr-2 h-5 w-5" />
               {t('promptverso.modal.knowPacks')}
             </Button>

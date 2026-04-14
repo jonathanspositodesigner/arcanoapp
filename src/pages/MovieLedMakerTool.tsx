@@ -751,7 +751,7 @@ const MovieLedMakerTool = () => {
                     <div>
                       <p className="text-xl font-bold text-yellow-300">🔥 Na fila!</p>
                       <p className="text-3xl font-bold text-white mt-2">Posição {queuePosition}</p>
-                      <p className="text-sm text-purple-300/70 mt-2">Aguarde, já já é sua vez!</p>
+                      <p className="text-sm text-gray-400 mt-2">Aguarde, já já é sua vez!</p>
                     </div>
                     <Button
                       variant="ghost" size="sm"
@@ -773,12 +773,12 @@ const MovieLedMakerTool = () => {
                   </div>
                 ) : (status === 'uploading' || status === 'processing') && !isQueued ? (
                   <div className="flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
+                    <Loader2 className="w-12 h-12 text-gray-400 animate-spin" />
                     <div className="text-center">
                       <p className="text-lg font-medium text-white">
                         {status === 'uploading' ? 'Enviando imagem...' : 'Gerando movie para telão...'}
                       </p>
-                      <p className="text-sm text-purple-300/70">
+                      <p className="text-sm text-gray-400">
                         Tempo estimado: {currentEngine.time}
                       </p>
                     </div>
@@ -896,7 +896,7 @@ const MovieLedMakerTool = () => {
             {isProcessing && (
               <div className="flex gap-2">
                 <div className="flex-1 flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 text-purple-400 animate-spin flex-shrink-0" />
+                  <Loader2 className="w-4 h-4 text-gray-400 animate-spin flex-shrink-0" />
                   <p className="text-xs text-white truncate">
                     {isQueued ? `Fila #${queuePosition}` : 'Gerando movie...'}
                   </p>

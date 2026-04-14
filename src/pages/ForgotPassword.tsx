@@ -39,18 +39,18 @@ const ForgotPassword = () => {
   if (emailSent) {
     return (
       <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-purple-500/20 text-center">
+        <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-white/10 text-center">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white mb-4">
             {t('emailSent.title')}
           </h1>
-          <p className="text-purple-300 mb-6">
+          <p className="text-gray-300 mb-6">
             {t('emailSent.checkInboxInstructions')}
           </p>
           <Button
             onClick={() => navigate("/login")}
             variant="outline"
-            className="w-full border-purple-500/30 text-purple-300 hover:bg-slate-500/20 hover:text-white"
+            className="w-full border-white/10 text-gray-300 hover:bg-slate-500/20 hover:text-white"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t('emailSent.backToLogin')}
@@ -62,11 +62,11 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-purple-500/20">
+      <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-white/10">
         <Button
           variant="ghost"
           onClick={() => navigate("/login")}
-          className="mb-6 text-purple-300 hover:text-white hover:bg-slate-500/20"
+          className="mb-6 text-gray-300 hover:text-white hover:bg-slate-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('back')}
@@ -74,26 +74,26 @@ const ForgotPassword = () => {
 
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Mail className="h-8 w-8 text-purple-400" />
+            <Mail className="h-8 w-8 text-gray-400" />
             <h1 className="text-2xl font-bold text-white">
               {t('recoverPassword')}
             </h1>
           </div>
-          <p className="text-purple-300">
+          <p className="text-gray-300">
             {t('recoverPasswordDescription')}
           </p>
         </div>
 
         <form onSubmit={handleResetPassword} className="space-y-6">
           <div>
-            <Label htmlFor="email" className="text-purple-200">{t('email')}</Label>
+            <Label htmlFor="email" className="text-gray-300">{t('email')}</Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="seu-email@exemplo.com"
-              className="mt-2 bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
+              className="mt-2 bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
               required
             />
           </div>

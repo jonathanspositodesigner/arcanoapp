@@ -141,17 +141,17 @@ const ChangePassword = () => {
   if (isCheckingSession) {
     return (
       <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
-        <Loader2 className="h-8 w-8 text-purple-400 animate-spin" />
+        <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-purple-500/20">
+      <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-white/10">
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Lock className="h-8 w-8 text-purple-400" />
+            <Lock className="h-8 w-8 text-gray-400" />
             <h1 className="text-2xl font-bold text-white">
               {isFirstAccessWithoutSession ? "Primeiro Acesso" : t("createNewPassword")}
             </h1>
@@ -159,19 +159,19 @@ const ChangePassword = () => {
 
           {isFirstAccessWithoutSession ? (
             <>
-              <p className="text-purple-300 mb-3">Cadastre sua senha agora para liberar seu acesso.</p>
+              <p className="text-gray-300 mb-3">Cadastre sua senha agora para liberar seu acesso.</p>
               <p className="text-white font-medium bg-slate-500/20 py-2 px-4 rounded-lg inline-block mb-2">
                 {emailParam}
               </p>
             </>
           ) : (
-            <p className="text-purple-300">{t("createNewPasswordDescription")}</p>
+            <p className="text-gray-300">{t("createNewPasswordDescription")}</p>
           )}
         </div>
 
         <form onSubmit={handleChangePassword} className="space-y-6">
           <div>
-            <Label htmlFor="newPassword" className="text-purple-200">
+            <Label htmlFor="newPassword" className="text-gray-300">
               {t("newPassword")}
             </Label>
             <div className="relative mt-2">
@@ -183,12 +183,12 @@ const ChangePassword = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
+                className="bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -196,7 +196,7 @@ const ChangePassword = () => {
           </div>
 
           <div>
-            <Label htmlFor="confirmPassword" className="text-purple-200">
+            <Label htmlFor="confirmPassword" className="text-gray-300">
               {t("confirmNewPassword")}
             </Label>
             <div className="relative mt-2">
@@ -208,12 +208,12 @@ const ChangePassword = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
+                className="bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -237,7 +237,7 @@ const ChangePassword = () => {
               type="button"
               variant="ghost"
               onClick={() => navigate(-1)}
-              className="w-full text-purple-400/70 hover:text-purple-300"
+              className="w-full text-gray-400/70 hover:text-gray-300"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Usar outro email

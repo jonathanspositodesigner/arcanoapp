@@ -609,7 +609,7 @@ const AdminUploadArtes = () => {
                         value="after_effects" 
                         checked={currentMedia.motionType === 'after_effects'} 
                         onChange={() => updateMediaData('motionType', 'after_effects')}
-                        className="w-4 h-4 text-purple-500"
+                        className="w-4 h-4 text-slate-400"
                       />
                       <span className="text-sm">🎬 Motion After Effects</span>
                     </label>

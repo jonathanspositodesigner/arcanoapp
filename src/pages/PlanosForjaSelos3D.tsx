@@ -133,7 +133,7 @@ const PlanosForjaSelos3D = () => {
           </AnimatedSection>
         ) : (
           <AnimatedSection animation="scale" delay={200} as="div">
-            <Card className="relative bg-[#1a1a2e]/80 border-2 border-purple-500/50 ring-2 ring-purple-500/20">
+            <Card className="relative bg-[#1a1a2e]/80 border-2 border-slate-500/50 ring-2 ring-purple-500/20">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-medium">
                 {t("forja3D.lifetimeAccess")}
               </div>
@@ -147,8 +147,8 @@ const PlanosForjaSelos3D = () => {
 
               <CardHeader className="text-center pt-8">
                 <div className="flex justify-center mb-4">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center border border-purple-500/30">
-                    <Box className="h-10 w-10 text-purple-400" />
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center border border-white/10">
+                    <Box className="h-10 w-10 text-gray-400" />
                   </div>
                 </div>
                 <CardTitle className="text-white text-2xl">{t("forja3D.title")}</CardTitle>
@@ -171,7 +171,7 @@ const PlanosForjaSelos3D = () => {
                     return (
                       <div key={index} className="flex items-center gap-3 text-white/80">
                         <div className="w-6 h-6 rounded-full bg-slate-500/20 flex items-center justify-center flex-shrink-0">
-                          <IconComponent className="h-3.5 w-3.5 text-purple-400" />
+                          <IconComponent className="h-3.5 w-3.5 text-gray-400" />
                         </div>
                         <span className="text-sm">{feature.text}</span>
                       </div>

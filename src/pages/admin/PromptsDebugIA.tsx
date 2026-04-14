@@ -125,7 +125,7 @@ const PromptsDebugIA = () => {
                 </div>
                 <div className="p-4 bg-muted/30 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="outline" className="bg-slate-500/10 text-purple-400 border-purple-500/30">1 POR USER</Badge>
+                    <Badge variant="outline" className="bg-slate-500/10 text-gray-400 border-white/10">1 POR USER</Badge>
                     <span className="font-medium">Um Job por Usuário</span>
                   </div>
                   <p className="text-sm text-muted-foreground">

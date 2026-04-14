@@ -269,7 +269,7 @@ const FerramentasIAAplicativo = () => {
   if (loading || isPremiumLoading || isPromptsLoading) {
     return (
       <div className="min-h-screen bg-[#111113] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
       </div>
     );
   }
@@ -290,7 +290,7 @@ const FerramentasIAAplicativo = () => {
     return (
       <Card 
         key={tool.id}
-        className={`overflow-hidden transition-all group border border-purple-500/20 shadow-md bg-[#1A0A2E]/50 ${
+        className={`overflow-hidden transition-all group border border-white/10 shadow-md bg-[#1A0A2E]/50 ${
           isComingSoon 
             ? "cursor-not-allowed opacity-70" 
             : "cursor-pointer hover:ring-2 hover:ring-purple-400 hover:shadow-xl"
@@ -383,7 +383,7 @@ const FerramentasIAAplicativo = () => {
 
       {/* Content - Single grid with all tools */}
       <main className="container mx-auto px-4 py-8">
-        <p className="text-purple-300 text-center mb-8 max-w-2xl mx-auto hidden sm:block">
+        <p className="text-gray-300 text-center mb-8 max-w-2xl mx-auto hidden sm:block">
           {t('ferramentas.description')}
         </p>
 
@@ -395,8 +395,8 @@ const FerramentasIAAplicativo = () => {
 
         {tools.length === 0 && (
           <div className="text-center py-16">
-            <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-            <p className="text-purple-300">{t('ferramentas.noToolsAvailable')}</p>
+            <Sparkles className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-300">{t('ferramentas.noToolsAvailable')}</p>
           </div>
         )}
       </main>

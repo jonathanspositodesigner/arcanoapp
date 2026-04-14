@@ -114,7 +114,7 @@ const ResgatarCreditos = () => {
       </div>
 
       {/* Main Card */}
-      <Card className="relative z-10 w-full max-w-md bg-[#1a1025] border-2 border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)] p-6 sm:p-8">
+      <Card className="relative z-10 w-full max-w-md bg-[#1a1025] border-2 border-slate-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)] p-6 sm:p-8">
         {status === 'idle' || status === 'checking' ? (
           <>
             {/* Header */}
@@ -125,7 +125,7 @@ const ResgatarCreditos = () => {
               <h2 className="text-2xl font-bold text-white mb-2">
                 Resgate seus Créditos
               </h2>
-              <p className="text-purple-300 text-sm">
+              <p className="text-gray-300 text-sm">
                 1.500 créditos mensais para usar nas Ferramentas de IA
               </p>
             </div>
@@ -140,7 +140,7 @@ const ResgatarCreditos = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={status === 'checking'}
-                  className="pl-10 h-12 bg-[#0d0912] border-2 border-purple-600/50 text-white placeholder:text-purple-400/60 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20"
+                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20"
                 />
               </div>
 
@@ -164,7 +164,7 @@ const ResgatarCreditos = () => {
             </form>
 
             {/* Info */}
-            <p className="text-center text-purple-400 text-xs mt-4">
+            <p className="text-center text-gray-400 text-xs mt-4">
               Disponível apenas para quem comprou o Upscaler Arcano Vitalício
             </p>
           </>
@@ -180,7 +180,7 @@ const ResgatarCreditos = () => {
             <p className="text-green-400 text-lg font-semibold mb-2">
               {creditsAdded.toLocaleString('pt-BR')} créditos adicionados!
             </p>
-            <p className="text-purple-300 text-sm mb-6">
+            <p className="text-gray-300 text-sm mb-6">
               Redirecionando para as Ferramentas de IA...
             </p>
             <div className="flex justify-center">
@@ -226,7 +226,7 @@ const ResgatarCreditos = () => {
                       setErrorReason(null);
                       setEmail('');
                     }}
-                    className="w-full h-10 border-purple-500/50 bg-white/5 text-white hover:bg-slate-800/70"
+                    className="w-full h-10 border-slate-500/50 bg-white/5 text-white hover:bg-slate-800/70"
                   >
                     Tentar outro email
                   </Button>
@@ -238,7 +238,7 @@ const ResgatarCreditos = () => {
       </Card>
 
       {/* Footer */}
-      <p className="relative z-10 text-purple-400/50 text-xs mt-8">
+      <p className="relative z-10 text-gray-500 text-xs mt-8">
         © {new Date().getFullYear()} ArcanoApp
       </p>
     </div>

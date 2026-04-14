@@ -288,7 +288,7 @@ const PlanosArtesMembro = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {availablePacks.length === 0 ? (
               <div className="col-span-full text-center py-12">
-                <Crown className="h-16 w-16 text-purple-500 mx-auto mb-4" />
+                <Crown className="h-16 w-16 text-slate-400 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-white mb-2">
                   {t('youOwnAllPacks')}
                 </h3>
@@ -312,7 +312,7 @@ const PlanosArtesMembro = () => {
                       <Badge className="bg-amber-500/90 text-white text-[10px] px-1.5 py-0.5 leading-tight">Atualizando</Badge>
                     </div>
                   )}
-                  <Badge className="absolute top-2 right-2 bg-slate-500/20 text-purple-400 text-xs">
+                  <Badge className="absolute top-2 right-2 bg-slate-500/20 text-gray-400 text-xs">
                     -20%
                   </Badge>
                   <CardContent className="p-4">
@@ -348,7 +348,7 @@ const PlanosArtesMembro = () => {
                     <img
                       src={selectedPack.cover_url}
                       alt={selectedPack.name}
-                      className="w-24 h-24 object-cover rounded-lg border-2 border-purple-500/50 mx-auto mb-3"
+                      className="w-24 h-24 object-cover rounded-lg border-2 border-slate-500/50 mx-auto mb-3"
                     />
                   )}
                   <CardTitle className="text-xl text-white">{selectedPack.name}</CardTitle>
@@ -361,9 +361,9 @@ const PlanosArtesMembro = () => {
                   <div className="mt-4">
                     <div className="flex items-center justify-center gap-2 mb-1">
                       <span className="text-white/40 line-through text-lg">{formatOriginalPrice(selectedAccessType)}</span>
-                      <Badge className="bg-slate-500/20 text-purple-400 text-xs">-20%</Badge>
+                      <Badge className="bg-slate-500/20 text-gray-400 text-xs">-20%</Badge>
                     </div>
-                    <span className="text-3xl font-bold text-purple-400">
+                    <span className="text-3xl font-bold text-gray-400">
                       {formatPrice(calculatePrice(selectedAccessType))}
                     </span>
                     <span className="text-white/60 text-sm block mt-1">{t('oneTimePayment')}</span>
@@ -381,15 +381,15 @@ const PlanosArtesMembro = () => {
                           key={option.type}
                           className={`flex items-center justify-between gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                             selectedAccessType === option.type
-                              ? 'border-purple-500 bg-slate-500/10'
+                              ? 'border-slate-500 bg-slate-500/10'
                               : 'border-[#2d4a5e]/30 hover:border-[#2d4a5e]/60'
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            <RadioGroupItem value={option.type} className="border-purple-400 text-purple-400" />
+                            <RadioGroupItem value={option.type} className="border-white/15 text-gray-400" />
                             <span className="text-white font-medium">{option.label}</span>
                           </div>
-                          <span className="text-purple-400 font-semibold">
+                          <span className="text-gray-400 font-semibold">
                             {formatPrice(calculatePrice(option.type))}
                           </span>
                         </label>
@@ -402,7 +402,7 @@ const PlanosArtesMembro = () => {
                       <ul className="space-y-3 mb-6">
                         {selectedOption.features.map((feature) => (
                           <li key={feature} className="flex items-start gap-2 text-white/80">
-                            <Check className="h-4 w-4 text-purple-400 mt-0.5 shrink-0" />
+                            <Check className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
                             <span className="text-sm">{feature}</span>
                           </li>
                         ))}
