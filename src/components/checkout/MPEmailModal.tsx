@@ -125,11 +125,31 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
               type="email"
               placeholder="seu@email.com"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: undefined })); }}
+              onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: undefined, confirmEmail: undefined })); }}
               className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-fuchsia-500"
               disabled={loading}
+              autoComplete="off"
+              onPaste={(e) => e.preventDefault()}
             />
             {errors.email && <p className="text-red-400 text-xs">{errors.email}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="mp-confirm-email" className="text-white/70 flex items-center gap-2">
+              <Mail className="w-4 h-4" /> Confirme seu e-mail
+            </Label>
+            <Input
+              id="mp-confirm-email"
+              type="email"
+              placeholder="Digite seu e-mail novamente"
+              value={confirmEmail}
+              onChange={(e) => { setConfirmEmail(e.target.value); setErrors(prev => ({ ...prev, confirmEmail: undefined })); }}
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-fuchsia-500"
+              disabled={loading}
+              autoComplete="off"
+              onPaste={(e) => e.preventDefault()}
+            />
+            {errors.confirmEmail && <p className="text-red-400 text-xs">{errors.confirmEmail}</p>}
           </div>
 
           <div className="space-y-2">
