@@ -152,7 +152,7 @@ export const MobileBeforeAfterGallery = ({ items }: MobileBeforeAfterGalleryProp
       {currentIndex > 0 && (
         <button
           onClick={goPrev}
-          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-border active:scale-95 transition-transform"
+          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-foreground border border-border active:scale-95 transition-transform"
           aria-label="Anterior"
         >
           <ChevronLeft className="w-5 h-5" />
@@ -161,7 +161,7 @@ export const MobileBeforeAfterGallery = ({ items }: MobileBeforeAfterGalleryProp
       {currentIndex < totalItems - 1 && (
         <button
           onClick={goNext}
-          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-border active:scale-95 transition-transform"
+          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-foreground border border-border active:scale-95 transition-transform"
           aria-label="Próximo"
         >
           <ChevronRight className="w-5 h-5" />

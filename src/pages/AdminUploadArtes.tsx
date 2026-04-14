@@ -478,7 +478,7 @@ const AdminUploadArtes = () => {
                     >
                       <X className="h-4 w-4" />
                     </button>
-                    <div className={`absolute bottom-2 left-2 right-2 text-xs ${isCurrentItemComplete(media) ? 'bg-green-500' : 'bg-yellow-500'} text-white px-2 py-1 rounded text-center`}>
+                    <div className={`absolute bottom-2 left-2 right-2 text-xs ${isCurrentItemComplete(media) ? 'bg-green-500' : 'bg-yellow-500'} text-foreground px-2 py-1 rounded text-center`}>
                       {isCurrentItemComplete(media) ? 'Completo' : 'Pendente'}
                     </div>
                   </div>

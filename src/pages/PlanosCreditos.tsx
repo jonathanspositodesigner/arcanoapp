@@ -155,9 +155,9 @@ const PlanosCreditos = () => {
         {/* AI Tools Section */}
         <section className="text-center">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4">
-            <Sparkles className="w-7 h-7 text-white" />
+            <Sparkles className="w-7 h-7 text-foreground" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
             Ferramentas de IA Integradas
           </h2>
           <p className="text-muted-foreground max-w-lg mx-auto mb-8">
@@ -174,7 +174,7 @@ const PlanosCreditos = () => {
                   className="p-4 bg-background border-border hover:border-border/40 transition-all duration-300"
                 >
                   <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${tool.color} flex items-center justify-center mx-auto mb-3`}>
-                    <Icon className="w-5 h-5 text-white" />
+                    <Icon className="w-5 h-5 text-foreground" />
                   </div>
                   <h3 className="text-foreground font-semibold text-sm mb-1">{tool.name}</h3>
                   <p className="text-muted-foreground text-xs leading-tight">{tool.description}</p>
@@ -214,9 +214,9 @@ const PlanosCreditos = () => {
         <section>
           <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4">
-              <Coins className="w-7 h-7 text-white" />
+              <Coins className="w-7 h-7 text-foreground" />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
               Recarregue seus Créditos
             </h2>
             <p className="text-muted-foreground max-w-md sm:max-w-none mx-auto mb-2">
@@ -249,24 +249,24 @@ const PlanosCreditos = () => {
                 >
                   {/* Badges */}
                   {plan.bestValue && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 px-3 py-1 text-xs">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-foreground border-0 px-3 py-1 text-xs">
                       ⭐ MELHOR VALOR
                     </Badge>
                   )}
                   {plan.popular && !plan.bestValue && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-500 to-pink-500 text-white border-0 px-3 py-1 text-xs">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-500 to-pink-500 text-foreground border-0 px-3 py-1 text-xs">
                       🔥 POPULAR
                     </Badge>
                   )}
 
                   {/* Icon */}
                   <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${plan.color} flex items-center justify-center mb-3 mt-2`}>
-                    <Icon className="w-6 h-6 text-white" />
+                    <Icon className="w-6 h-6 text-foreground" />
                   </div>
 
                   {/* Credits */}
                   <div className="mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold text-white">
+                    <span className="text-2xl sm:text-3xl font-bold text-foreground">
                       {plan.credits}
                     </span>
                     <p className="text-muted-foreground text-sm">créditos</p>
@@ -299,7 +299,7 @@ const PlanosCreditos = () => {
                       )}
                       <div>
                         <span className="text-sm text-muted-foreground">R$ </span>
-                        <span className="text-2xl font-bold text-white">{plan.price}</span>
+                        <span className="text-2xl font-bold text-foreground">{plan.price}</span>
                       </div>
                     </div>
 

@@ -116,7 +116,7 @@ const ResetPasswordArtesMusicos = () => {
           <div className="flex items-center justify-center gap-2 mb-2">
             <Music className="h-5 w-5 text-muted-foreground" />
           </div>
-          <CardTitle className="text-2xl text-white">{t('createNewPassword')}</CardTitle>
+          <CardTitle className="text-2xl text-foreground">{t('createNewPassword')}</CardTitle>
           <CardDescription className="text-muted-foreground">
             {t('createNewPasswordDescription')}
           </CardDescription>
@@ -129,7 +129,7 @@ const ResetPasswordArtesMusicos = () => {
                 placeholder={t('newPassword')}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-card border-border text-white pr-10"
+                className="bg-card border-border text-foreground pr-10"
                 required
               />
               <button
@@ -146,7 +146,7 @@ const ResetPasswordArtesMusicos = () => {
                 placeholder={t('confirmNewPassword')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="bg-card border-border text-white pr-10"
+                className="bg-card border-border text-foreground pr-10"
                 required
               />
               <button
@@ -164,7 +164,7 @@ const ResetPasswordArtesMusicos = () => {
 
             <Button
               type="submit"
-              className="w-full bg-slate-600 hover:bg-slate-700 text-white"
+              className="w-full bg-slate-600 hover:bg-slate-700 text-foreground"
               disabled={isLoading}
             >
               {isLoading ? t('saving') : t('saveNewPassword')}

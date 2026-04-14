@@ -178,7 +178,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
                       }}
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-1 py-0.5">
-                      <p className="text-[8px] text-white truncate">{char.name}</p>
+                      <p className="text-[8px] text-foreground truncate">{char.name}</p>
                     </div>
                   </button>
                 ))}

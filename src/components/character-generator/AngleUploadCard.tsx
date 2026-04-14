@@ -166,7 +166,7 @@ const AngleUploadCard: React.FC<AngleUploadCardProps> = ({
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 bg-black/60 hover:bg-red-500/100/80 text-white rounded-full"
+              className="h-6 w-6 bg-black/60 hover:bg-red-500/100/80 text-foreground rounded-full"
               onClick={(e) => {
                 e.stopPropagation();
                 onImageChange(null);

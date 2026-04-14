@@ -95,7 +95,7 @@ const TesteCloner = () => {
               </div>
             </FadeIn>
 
-            <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3 md:mb-4 leading-[1.2]">
+            <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-3 md:mb-4 leading-[1.2]">
               Crie ensaios fotográficos{" "}
               <br className="hidden md:block" />
               profissionais com IA{" "}
@@ -146,7 +146,7 @@ const TesteCloner = () => {
         <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
           <div className="max-w-7xl mx-auto text-center">
             <AnimatedSection as="div" delay={100}>
-              <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3">
+              <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-3">
                 Tudo feito com um clique,{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">sem prompt!</span>
               </h2>
@@ -177,7 +177,7 @@ const TesteCloner = () => {
       <LazySection>
         <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="fade">
           <div className="max-w-4xl mx-auto text-center mb-10">
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-2">
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-2">
               Uma biblioteca completa de referências <span className="text-muted-foreground">para você gerar com um clique</span>
             </h2>
 

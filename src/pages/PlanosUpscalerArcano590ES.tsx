@@ -39,7 +39,7 @@ interface ToolData {
 const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
   <Button
     onClick={onClick}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-white shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20"
   >
     {t('tools:upscaler.cta')}
     <ArrowRight className="h-5 w-5 ml-2" />
@@ -281,7 +281,7 @@ const PlanosUpscalerArcano590ES = () => {
             <div className="flex flex-col items-center text-center">
               {/* H1 sem FadeIn para ser visível imediatamente (LCP) */}
               <div className="w-full max-w-[95vw] md:max-w-[60vw]">
-                <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
+                <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-foreground mb-4 md:mb-6 leading-tight tracking-wide">
                   {t('tools:upscaler.hero.title1')}{' '}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
                     {t('tools:upscaler.hero.title2')}
@@ -378,7 +378,7 @@ const PlanosUpscalerArcano590ES = () => {
               </div>
               
               <AnimatedSection as="div" delay={400}>
-                <p className="text-center text-xl md:text-2xl text-white mt-10 md:mt-12">
+                <p className="text-center text-xl md:text-2xl text-foreground mt-10 md:mt-12">
                   {t('tools:upscaler.pain.solution')}
                 </p>
               </AnimatedSection>
@@ -410,7 +410,7 @@ const PlanosUpscalerArcano590ES = () => {
                       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center mx-auto mb-6">
                         <IconComponent className="h-8 w-8 text-muted-foreground" />
                       </div>
-                      <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
+                      <h3 className="text-xl font-semibold text-foreground mb-3">{item.title}</h3>
                       <p className="text-muted-foreground flex-1">{item.description}</p>
                     </div>
                   );
@@ -444,7 +444,7 @@ const PlanosUpscalerArcano590ES = () => {
                       <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
                         <IconComponent className="h-10 w-10 text-muted-foreground" />
                       </div>
-                      <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
+                      <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
                       <p className="text-muted-foreground max-w-[180px]">{step.description}</p>
                     </div>
                   );
@@ -462,7 +462,7 @@ const PlanosUpscalerArcano590ES = () => {
               
               {/* Alerta de escassez exclusivo desta página */}
               <div className="bg-red-600/90 border-2 border-red-500 rounded-2xl p-4 mb-6 animate-pulse">
-                <div className="flex items-center justify-center gap-2 text-white">
+                <div className="flex items-center justify-center gap-2 text-foreground">
                   <AlertTriangle className="h-5 w-5 flex-shrink-0" />
                   <span className="font-bold text-xs md:text-sm text-center">
                     ⚠️ OFERTA EXCLUSIVA DE ESTA PÁGINA - SI LA CIERRAS, LA PIERDES PARA SIEMPRE ⚠️
@@ -473,7 +473,7 @@ const PlanosUpscalerArcano590ES = () => {
               <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-border rounded-3xl overflow-hidden shadow-2xl shadow-white/5">
                 <CardContent className="p-5 md:p-8 text-center">
                   {/* Badge principal */}
-                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-sm md:text-lg font-bold mb-4 md:mb-6">
+                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-foreground border-0 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-sm md:text-lg font-bold mb-4 md:mb-6">
                     🔥 OFERTA ESPECIAL
                   </Badge>
 
@@ -484,7 +484,7 @@ const PlanosUpscalerArcano590ES = () => {
                     </div>
                   )}
 
-                  <h2 className="font-bebas text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6 tracking-wide">
+                  <h2 className="font-bebas text-2xl md:text-3xl lg:text-4xl text-foreground mb-4 md:mb-6 tracking-wide">
                     {t('tools:upscaler.finalCTA.title')} <span className="text-muted-foreground">{t('tools:upscaler.finalCTA.subtitle')}</span>
                   </h2>
 
@@ -497,7 +497,7 @@ const PlanosUpscalerArcano590ES = () => {
                     <div className="flex items-center justify-center gap-2 mb-2">
                       <span className="text-foreground text-base md:text-lg">POR SOLO</span>
                     </div>
-                    <div className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-3">
+                    <div className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground mb-3">
                       {formatPrice(price)}
                     </div>
                     <p className="text-muted-foreground text-base md:text-lg">
@@ -521,7 +521,7 @@ const PlanosUpscalerArcano590ES = () => {
                   <div className="px-0 md:px-2">
                     <Button
                       onClick={handlePurchase}
-                      className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-white shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20"
+                      className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20"
                     >
                       ¡QUIERO MI ACCESO AHORA!
                       <ArrowRight className="h-5 w-5 ml-2" />

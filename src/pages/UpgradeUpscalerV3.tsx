@@ -68,7 +68,7 @@ const CountdownTimer = () => {
         {units.map((u, i) => (
           <div key={i} className="text-center">
             <div className="bg-accent rounded-lg px-3 py-2 min-w-[48px]">
-              <span className="text-xl md:text-2xl font-black text-white tabular-nums">
+              <span className="text-xl md:text-2xl font-black text-foreground tabular-nums">
                 {String(u.value).padStart(2, "0")}
               </span>
             </div>
@@ -156,7 +156,7 @@ const YouTubeFacade = ({ videoId }: { videoId: string }) => {
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-red-600 flex items-center justify-center shadow-2xl shadow-black/50 group-hover:scale-110 transition-transform duration-300">
-                <Play className="h-7 w-7 md:h-9 md:w-9 text-white fill-white ml-1" />
+                <Play className="h-7 w-7 md:h-9 md:w-9 text-foreground fill-white ml-1" />
               </div>
             </div>
           </button>
@@ -205,7 +205,7 @@ const FakePurchaseNotifications = () => {
         isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
       }`}
     >
-      <div className="flex items-center gap-3 bg-emerald-600 text-white rounded-xl px-4 py-3 shadow-lg shadow-emerald-900/40 border border-emerald-400/20">
+      <div className="flex items-center gap-3 bg-emerald-600 text-foreground rounded-xl px-4 py-3 shadow-lg shadow-emerald-900/40 border border-emerald-400/20">
         <ShoppingCart className="h-4 w-4 shrink-0" />
         <span className="text-xs font-medium leading-tight">{notification.name} acabou de comprar!</span>
         <button onClick={() => setIsVisible(false)} className="shrink-0 ml-1 hover:bg-accent rounded p-0.5">
@@ -286,21 +286,21 @@ const TestimonialsGallery = () => {
         >
           <button
             onClick={() => setLightboxIndex(null)}
-            className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-accent hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+            className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-accent hover:bg-white/20 flex items-center justify-center text-foreground transition-colors"
           >
             <X className="h-6 w-6" />
           </button>
 
           <button
             onClick={(e) => { e.stopPropagation(); goPrev(); }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-accent hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-accent hover:bg-white/20 flex items-center justify-center text-foreground transition-colors"
           >
             <ChevronLeft className="h-6 w-6" />
           </button>
 
           <button
             onClick={(e) => { e.stopPropagation(); goNext(); }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-accent hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-accent hover:bg-white/20 flex items-center justify-center text-foreground transition-colors"
           >
             <ChevronRight className="h-6 w-6" />
           </button>
@@ -389,7 +389,7 @@ const UpgradeUpscalerV3 = () => {
             </div>
           </FadeIn>
 
-          <h1 className="font-space-grotesk font-bold text-3xl md:text-5xl lg:text-5xl xl:text-6xl text-white mb-5 leading-[1.15]">
+          <h1 className="font-space-grotesk font-bold text-3xl md:text-5xl lg:text-5xl xl:text-6xl text-foreground mb-5 leading-[1.15]">
             Você já sabe que funciona.
             <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
@@ -439,7 +439,7 @@ const UpgradeUpscalerV3 = () => {
       <AnimatedSection className="px-4 py-16 md:py-20">
         <div className="max-w-5xl mx-auto text-center">
           <AnimatedSection as="div" delay={100}>
-            <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
+            <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground mb-3 tracking-wide">
               O que mudou no <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">V3</span>
             </h2>
             <p className="text-muted-foreground text-sm md:text-base mb-12">
@@ -458,7 +458,7 @@ const UpgradeUpscalerV3 = () => {
                   <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-500 text-[#0f0a15] mb-1">
                     NOVO
                   </span>
-                  <h3 className="text-xl font-bold text-white">Modo Turbo</h3>
+                  <h3 className="text-xl font-bold text-foreground">Modo Turbo</h3>
                 </div>
               </div>
 
@@ -493,7 +493,7 @@ const UpgradeUpscalerV3 = () => {
                   <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-500 text-[#0f0a15] mb-1">
                     NOVO
                   </span>
-                  <h3 className="text-xl font-bold text-white">Upscale em Lote</h3>
+                  <h3 className="text-xl font-bold text-foreground">Upscale em Lote</h3>
                 </div>
               </div>
 
@@ -527,7 +527,7 @@ const UpgradeUpscalerV3 = () => {
           <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
             <div className="max-w-3xl mx-auto text-center">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground mb-3 tracking-wide">
                   V2 vs V3 — <span className="text-muted-foreground">O que muda pra você</span>
                 </h2>
                 <p className="text-muted-foreground text-sm md:text-base mb-10">Tudo que você já tem, mais duas funcionalidades poderosas.</p>
@@ -599,7 +599,7 @@ const UpgradeUpscalerV3 = () => {
                   <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto mb-5">
                     <Shield className="h-8 w-8 text-emerald-400" />
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">Seu acesso está protegido</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Seu acesso está protegido</h2>
                   <p className="text-muted-foreground text-sm md:text-base leading-relaxed max-w-[520px] mx-auto">
                     O upgrade para V3 é <strong className="text-foreground">aditivo</strong>. Você não perde nada do que já tem. Seu acesso ao V2 permanece ativo. O V3 adiciona dois novos recursos ao que você já possui.
                   </p>
@@ -635,7 +635,7 @@ const UpgradeUpscalerV3 = () => {
                   <SocialProofCounter />
                 </div>
 
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground mb-3 tracking-wide">
                   O que estão dizendo do <span className="text-muted-foreground">V3</span>
                 </h2>
                 <p className="text-muted-foreground text-sm mb-10">Os primeiros a testar o V3 já estão falando.</p>
@@ -661,7 +661,7 @@ const UpgradeUpscalerV3 = () => {
             </div>
           </FadeIn>
 
-          <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
+          <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground mb-3 tracking-wide">
             Faça o <span className="text-muted-foreground">upgrade</span> agora
           </h2>
           <p className="text-muted-foreground text-sm mb-10">
@@ -683,7 +683,7 @@ const UpgradeUpscalerV3 = () => {
                   <span className="text-red-400 text-xs font-bold uppercase">🔥 50% OFF</span>
                 </div>
 
-                <h3 className="text-xl font-bold text-white mb-1">Arcano V3 — Upgrade Vitalício</h3>
+                <h3 className="text-xl font-bold text-foreground mb-1">Arcano V3 — Upgrade Vitalício</h3>
                 <p className="text-xs text-white/40 mb-6">Pagamento único. Acesso para sempre.</p>
 
                 <div className="mb-8">
@@ -773,7 +773,7 @@ const UpgradeUpscalerV3 = () => {
       <section className="px-4 py-20 md:py-24 text-center">
         <div className="max-w-2xl mx-auto">
           <FadeIn delay={0} duration={400}>
-            <h2 className="font-space-grotesk font-bold text-3xl md:text-4xl lg:text-5xl text-white mb-5 leading-[1.15]">
+            <h2 className="font-space-grotesk font-bold text-3xl md:text-4xl lg:text-5xl text-foreground mb-5 leading-[1.15]">
               Você já sabe que funciona.
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">

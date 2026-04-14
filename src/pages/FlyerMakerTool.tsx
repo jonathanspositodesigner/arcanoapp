@@ -630,7 +630,7 @@ const FlyerMakerTool: React.FC = () => {
               >
                 {/* Title */}
                 <div>
-                  <h1 className="text-xl font-bold text-white">Flyer Maker</h1>
+                  <h1 className="text-xl font-bold text-foreground">Flyer Maker</h1>
                   <p className="text-xs text-muted-foreground mt-1">Crie flyers profissionais a partir de uma referência e seus dados.</p>
                 </div>
 
@@ -648,7 +648,7 @@ const FlyerMakerTool: React.FC = () => {
 
                     {/* Artist Photos */}
                     <div className="border border-border rounded-xl p-4 bg-black/30">
-                      <span className="text-sm font-medium text-white mb-2 block">Fotos dos Artistas (Max 5)</span>
+                      <span className="text-sm font-medium text-foreground mb-2 block">Fotos dos Artistas (Max 5)</span>
                       <div className="grid grid-cols-3 gap-2">
                         {[0, 1, 2, 3, 4].map((idx) => {
                           const photo = artistPhotos[idx];
@@ -656,7 +656,7 @@ const FlyerMakerTool: React.FC = () => {
                             return (
                               <div key={idx} className={`relative aspect-[3/4] rounded-lg overflow-hidden group ${idx >= 3 ? 'col-span-1' : ''}`}>
                                 <img src={photo.url} alt="" className="w-full h-full object-cover" />
-                                <button onClick={() => removeArtistPhoto(idx)} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity" disabled={isProcessing}>
+                                <button onClick={() => removeArtistPhoto(idx)} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-foreground transition-opacity" disabled={isProcessing}>
                                   <Trash2 className="w-4 h-4" />
                                 </button>
                               </div>
@@ -677,11 +677,11 @@ const FlyerMakerTool: React.FC = () => {
 
                     {/* Logo */}
                     <div className="border border-border rounded-xl p-4 bg-black/30">
-                      <span className="text-sm font-medium text-white mb-2 block">Logo do Local</span>
+                      <span className="text-sm font-medium text-foreground mb-2 block">Logo do Local</span>
                       {logoImage ? (
                         <div className="relative h-20 rounded-lg overflow-hidden group">
                           <img src={logoImage} alt="" className="w-full h-full object-contain bg-black/20" />
-                          <button onClick={() => { setLogoImage(null); setLogoFile(null); }} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity" disabled={isProcessing}>
+                          <button onClick={() => { setLogoImage(null); setLogoFile(null); }} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-foreground transition-opacity" disabled={isProcessing}>
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
@@ -720,7 +720,7 @@ const FlyerMakerTool: React.FC = () => {
 
                     {/* Size Toggle */}
                     <div>
-                      <span className="text-sm font-medium text-white mb-2 block">Tamanho</span>
+                      <span className="text-sm font-medium text-foreground mb-2 block">Tamanho</span>
                       <div className="grid grid-cols-2 gap-0 bg-black/40 border border-border rounded-lg p-1">
                         <button
                           onClick={() => setImageSize('3:4')}
@@ -835,7 +835,7 @@ const FlyerMakerTool: React.FC = () => {
             <div className="lg:col-span-5 min-h-0 overflow-hidden">
               <div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col min-h-[400px] h-full">
                 <div className="px-4 py-3 border-b border-border flex items-center justify-between flex-shrink-0">
-                  <h3 className="text-sm font-semibold text-white flex items-center gap-1.5"><ImageIcon className="w-4 h-4 text-muted-foreground" /> Resultado</h3>
+                  <h3 className="text-sm font-semibold text-foreground flex items-center gap-1.5"><ImageIcon className="w-4 h-4 text-muted-foreground" /> Resultado</h3>
                   {outputImage && (
                     <div className="flex items-center gap-1">
                       <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-4 h-4" /></Button>

@@ -107,7 +107,7 @@ const ResgatarCreditos = () => {
 
       {/* Logo */}
       <div className="relative z-10 mb-8">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Sparkles className="w-6 h-6 text-muted-foreground" />
           ArcanoApp
         </h1>
@@ -120,9 +120,9 @@ const ResgatarCreditos = () => {
             {/* Header */}
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4 shadow-lg shadow-slate-500/20">
-                <Gift className="w-8 h-8 text-white" />
+                <Gift className="w-8 h-8 text-foreground" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
                 Resgate seus Créditos
               </h2>
               <p className="text-muted-foreground text-sm">
@@ -140,7 +140,7 @@ const ResgatarCreditos = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={status === 'checking'}
-                  className="pl-10 h-12 bg-background border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
+                  className="pl-10 h-12 bg-background border-2 border-slate-600/50 text-foreground placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                 />
               </div>
 
@@ -172,9 +172,9 @@ const ResgatarCreditos = () => {
           /* Success State */
           <div className="text-center py-4">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 mb-4 shadow-lg shadow-green-500/30">
-              <CheckCircle className="w-10 h-10 text-white" />
+              <CheckCircle className="w-10 h-10 text-foreground" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <h2 className="text-2xl font-bold text-foreground mb-2">
               Parabéns! 🎉
             </h2>
             <p className="text-green-400 text-lg font-semibold mb-2">
@@ -193,7 +193,7 @@ const ResgatarCreditos = () => {
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 mb-4">
               <XCircle className="w-10 h-10 text-red-400" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">
+            <h2 className="text-xl font-bold text-foreground mb-2">
               {errorReason === 'already_claimed' ? 'Promoção já resgatada' : 'Não foi possível resgatar'}
             </h2>
             <p className="text-red-400 text-sm mb-6">
@@ -226,7 +226,7 @@ const ResgatarCreditos = () => {
                       setErrorReason(null);
                       setEmail('');
                     }}
-                    className="w-full h-10 border-slate-500/50 bg-accent text-white hover:bg-slate-800/70"
+                    className="w-full h-10 border-slate-500/50 bg-accent text-foreground hover:bg-slate-800/70"
                   >
                     Tentar outro email
                   </Button>

@@ -209,7 +209,7 @@ const BibliotecaArtesMusicos = () => {
 
       <div className="p-4 border-t border-border">
         <Button
-          className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white gap-2"
+          className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-foreground gap-2"
           onClick={() => { window.open("https://chat.whatsapp.com/SEU_LINK_AQUI", '_blank'); onClose?.(); }}
         >
           <MessageCircle className="w-5 h-5" />
@@ -264,7 +264,7 @@ const BibliotecaArtesMusicos = () => {
                 <>
                   <div className="flex items-center gap-1 sm:gap-2">
                     {isPremium ? (
-                      <span className="text-xs bg-gradient-to-r from-pink-500 to-slate-400 text-white px-2 sm:px-3 py-1 rounded-full font-medium">Premium</span>
+                      <span className="text-xs bg-gradient-to-r from-pink-500 to-slate-400 text-foreground px-2 sm:px-3 py-1 rounded-full font-medium">Premium</span>
                     ) : (
                       <span className="text-xs bg-accent text-muted-foreground px-2 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm border border-border">
                         <Download className="w-3 h-3" />
@@ -283,7 +283,7 @@ const BibliotecaArtesMusicos = () => {
                 </>
               ) : (
                 <>
-                  <Button onClick={() => navigate("/planos-artes-musicos")} className="bg-gradient-to-r from-pink-500 to-slate-500 hover:from-pink-600 hover:to-slate-600 text-white gap-2 border-0" size="sm">
+                  <Button onClick={() => navigate("/planos-artes-musicos")} className="bg-gradient-to-r from-pink-500 to-slate-500 hover:from-pink-600 hover:to-slate-600 text-foreground gap-2 border-0" size="sm">
                     <UserPlus className="w-4 h-4" />
                     <span className="hidden sm:inline">{t('musicos.header.becomeMember')}</span>
                     <span className="sm:hidden">{t('musicos.header.becomeMember')}</span>
@@ -302,12 +302,12 @@ const BibliotecaArtesMusicos = () => {
           {(!isAppInstalled || (isAppInstalled && isSupported && !isSubscribed)) && (
             <div className="text-center mb-6">
               {!isAppInstalled ? (
-                <Button onClick={() => navigate('/install')} className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 py-3 text-base font-semibold shadow-lg shadow-amber-500/25 animate-pulse">
+                <Button onClick={() => navigate('/install')} className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-foreground px-6 py-3 text-base font-semibold shadow-lg shadow-amber-500/25 animate-pulse">
                   <Smartphone className="w-5 h-5 mr-2" />
                   {t('musicos.sidebar.installApp')}
                 </Button>
               ) : isSupported && !isSubscribed ? (
-                <Button onClick={subscribe} className="bg-gradient-to-r from-slate-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-white px-6 py-3 text-base font-semibold shadow-lg shadow-slate-500/20 animate-pulse">
+                <Button onClick={subscribe} className="bg-gradient-to-r from-slate-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-foreground px-6 py-3 text-base font-semibold shadow-lg shadow-slate-500/20 animate-pulse">
                   <Bell className="w-5 h-5 mr-2" />
                   {t('musicos.sidebar.activateNotifications')}
                 </Button>
@@ -325,7 +325,7 @@ const BibliotecaArtesMusicos = () => {
               <Button
                 variant={selectedCategory === "todos" ? "default" : "outline"}
                 onClick={() => setSelectedCategory("todos")}
-                className={`h-auto min-h-[44px] px-4 py-2.5 text-sm whitespace-normal text-center leading-tight ${selectedCategory === "todos" ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0" : "border-border text-muted-foreground hover:bg-accent hover:text-foreground hover:border-white/30 bg-transparent"}`}
+                className={`h-auto min-h-[44px] px-4 py-2.5 text-sm whitespace-normal text-center leading-tight ${selectedCategory === "todos" ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-foreground border-0" : "border-border text-muted-foreground hover:bg-accent hover:text-foreground hover:border-white/30 bg-transparent"}`}
               >
                 {t('musicos.content.all')}
               </Button>
@@ -336,10 +336,10 @@ const BibliotecaArtesMusicos = () => {
                     key={cat.id}
                     variant={selectedCategory === cat.slug ? "default" : "outline"}
                     onClick={() => setSelectedCategory(cat.slug)}
-                    className={`h-auto min-h-[44px] px-4 py-2.5 text-sm whitespace-normal text-center leading-tight flex-col sm:flex-row gap-1 ${selectedCategory === cat.slug ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0" : "border-border text-muted-foreground hover:bg-accent hover:text-foreground hover:border-white/30 bg-transparent"}`}
+                    className={`h-auto min-h-[44px] px-4 py-2.5 text-sm whitespace-normal text-center leading-tight flex-col sm:flex-row gap-1 ${selectedCategory === cat.slug ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-foreground border-0" : "border-border text-muted-foreground hover:bg-accent hover:text-foreground hover:border-white/30 bg-transparent"}`}
                   >
                     <span>{cat.name}</span>
-                    {isLedCategory && <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-medium">Pro+</span>}
+                    {isLedCategory && <span className="text-[10px] bg-amber-500 text-foreground px-1.5 py-0.5 rounded font-medium">Pro+</span>}
                   </Button>
                 );
               })}
@@ -376,7 +376,7 @@ const BibliotecaArtesMusicos = () => {
                         <div className="relative w-full h-full">
                           <video src={arte.image_url} className="w-full h-full object-cover" muted loop autoPlay playsInline />
                           <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"><Play className="w-6 h-6 text-white fill-white" /></div>
+                            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"><Play className="w-6 h-6 text-foreground fill-white" /></div>
                           </div>
                         </div>
                       ) : (
@@ -386,11 +386,11 @@ const BibliotecaArtesMusicos = () => {
                     <div className="p-3">
                       <div className="mb-2 flex items-center gap-1.5">
                         <span className="text-xs bg-accent text-muted-foreground px-2 py-1 rounded">{categories.find(c => c.slug === arte.category)?.name || arte.category}</span>
-                        {isLed && <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-medium">Pro+</span>}
+                        {isLed && <span className="text-[10px] bg-amber-500 text-foreground px-1.5 py-0.5 rounded font-medium">Pro+</span>}
                       </div>
                       <h3 className="text-foreground font-medium text-sm line-clamp-2 mb-3 min-h-[2.5rem]">{arte.title}</h3>
                       <Button
-                        className={`w-full text-xs sm:text-sm whitespace-nowrap ${canAccess ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0" : ledRestricted ? "bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30" : "bg-accent hover:bg-white/20 text-muted-foreground border border-border"}`}
+                        className={`w-full text-xs sm:text-sm whitespace-nowrap ${canAccess ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-foreground border-0" : ledRestricted ? "bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30" : "bg-accent hover:bg-white/20 text-muted-foreground border border-border"}`}
                         size="sm"
                         onClick={() => handleArteClick(arte)}
                       >
@@ -404,7 +404,7 @@ const BibliotecaArtesMusicos = () => {
           ) : (
             <div className="text-center py-16">
               <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center"><Loader2 className="w-10 h-10 text-cyan-400" /></div>
-              <h2 className="text-2xl font-bold text-white mb-2">{t('musicos.empty.title')}</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">{t('musicos.empty.title')}</h2>
               <p className="text-muted-foreground max-w-md mx-auto mb-6">{t('musicos.empty.description')}</p>
               <div className="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
                 {categories.map((cat) => (<span key={cat.id} className="bg-accent text-muted-foreground px-3 py-1.5 rounded-full text-sm">{cat.name}</span>))}
@@ -429,7 +429,7 @@ const BibliotecaArtesMusicos = () => {
                   <div className="p-3 bg-accent rounded-lg border border-border">
                     <p className="text-xs text-muted-foreground mb-1">{t('musicos.modal.promptUsed')}</p>
                     <p className="text-sm text-gray-200 mb-3">{selectedArte.ai_prompt}</p>
-                    <Button className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-white" size="sm" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { navigator.clipboard.writeText(selectedArte.ai_prompt!); toast.success(t('musicos.toast.promptCopied')); } }}>
+                    <Button className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-foreground" size="sm" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { navigator.clipboard.writeText(selectedArte.ai_prompt!); toast.success(t('musicos.toast.promptCopied')); } }}>
                       <Copy className="w-4 h-4 mr-2" />{t('musicos.modal.copyPrompt')}
                     </Button>
                   </div>
@@ -438,7 +438,7 @@ const BibliotecaArtesMusicos = () => {
                   <div className="p-3 bg-accent0/10 rounded-lg border border-border">
                     <p className="text-xs text-muted-foreground mb-2">{t('musicos.modal.referenceImage')}</p>
                     <img src={selectedArte.ai_reference_image_url} alt="Referência para IA" className="w-full max-h-40 object-contain rounded-lg mb-2 bg-black/20" />
-                    <Button className="w-full bg-accent0 hover:bg-slate-600 text-white" size="sm" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { window.open(selectedArte.ai_reference_image_url!, '_blank'); } }}>
+                    <Button className="w-full bg-accent0 hover:bg-slate-600 text-foreground" size="sm" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { window.open(selectedArte.ai_reference_image_url!, '_blank'); } }}>
                       <Download className="w-4 h-4 mr-2" />{t('musicos.modal.downloadReference')}
                     </Button>
                   </div>
@@ -447,8 +447,8 @@ const BibliotecaArtesMusicos = () => {
                   <div className="text-center text-sm text-muted-foreground bg-accent rounded-lg py-2 px-3 border border-border">{t('musicos.modal.downloadsToday')} <span className="font-bold">{downloadCount}/{dailyLimit}</span></div>
                 )}
                 <div className="flex gap-2">
-                  {selectedArte.canva_link && (<Button className="flex-1 bg-[#00C4CC] hover:bg-[#00b3b8] text-white" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { window.open(selectedArte.canva_link!, '_blank'); } }}>{t('musicos.modal.openInCanva')}</Button>)}
-                  {selectedArte.drive_link && (<Button className="flex-1 bg-[#31A8FF] hover:bg-[#2997e6] text-white" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { window.open(selectedArte.drive_link!, '_blank'); } }}>{selectedArte.motion_type === 'after_effects' ? 'Arquivo PSD e After' : t('musicos.modal.downloadPsd')}</Button>)}
+                  {selectedArte.canva_link && (<Button className="flex-1 bg-[#00C4CC] hover:bg-[#00b3b8] text-foreground" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { window.open(selectedArte.canva_link!, '_blank'); } }}>{t('musicos.modal.openInCanva')}</Button>)}
+                  {selectedArte.drive_link && (<Button className="flex-1 bg-[#31A8FF] hover:bg-[#2997e6] text-foreground" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { window.open(selectedArte.drive_link!, '_blank'); } }}>{selectedArte.motion_type === 'after_effects' ? 'Arquivo PSD e After' : t('musicos.modal.downloadPsd')}</Button>)}
                 </div>
                 {!selectedArte.canva_link && !selectedArte.drive_link && (<p className="text-center text-muted-foreground text-sm">{t('musicos.modal.noEditLinks')}</p>)}
               </div>

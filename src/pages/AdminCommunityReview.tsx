@@ -322,7 +322,7 @@ const AdminCommunityReview = () => {
                           <Badge className="bg-green-500">Aprovado</Badge>
                         )}
                         {status === "pending" && (
-                          <Badge variant="secondary" className="bg-yellow-500 text-white">
+                          <Badge variant="secondary" className="bg-yellow-500 text-foreground">
                             Pendente
                           </Badge>
                         )}

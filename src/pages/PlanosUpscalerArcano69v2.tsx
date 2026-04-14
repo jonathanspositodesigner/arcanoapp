@@ -112,7 +112,7 @@ const FullscreenModal = ({
         onClick={onClose}
         className="absolute top-4 right-4 z-10 p-3 bg-accent hover:bg-white/20 rounded-full transition-colors"
       >
-        <X className="h-6 w-6 text-white" />
+        <X className="h-6 w-6 text-foreground" />
       </button>
       
       <div 
@@ -174,7 +174,7 @@ const CTAButton = ({ onClick, isPremium, t, loading }: { onClick: () => void; is
   <Button
     onClick={onClick}
     disabled={loading}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-white shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20 disabled:opacity-70 disabled:cursor-wait"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20 disabled:opacity-70 disabled:cursor-wait"
   >
     {loading ? 'Gerando checkout...' : t('tools:upscaler.cta')}
     {!loading && <ArrowRight className="h-5 w-5 ml-2" />}
@@ -403,7 +403,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
                   </Badge>
                 )}
                 {plan.hasCountdown && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-white px-4 py-1">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-foreground px-4 py-1">
                     MELHOR CUSTO/BENEFÍCIO
                   </Badge>
                 )}
@@ -427,14 +427,14 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
                 </div>
 
                 <div className="text-center mb-4 lg:mb-5 min-h-[36px] flex items-center justify-center">
-                  <h3 className="text-lg lg:text-xl font-bold text-white">{plan.name}</h3>
+                  <h3 className="text-lg lg:text-xl font-bold text-foreground">{plan.name}</h3>
                 </div>
 
                 {/* Price */}
                 <div className="text-center mb-5 lg:mb-6">
                   <div className="flex items-baseline justify-center gap-0.5">
                     <span className="text-muted-foreground text-base lg:text-lg">R$</span>
-                    <span className="text-4xl lg:text-5xl font-bold text-white">{plan.price}</span>
+                    <span className="text-4xl lg:text-5xl font-bold text-foreground">{plan.price}</span>
                   </div>
                 </div>
 
@@ -457,7 +457,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
 
                 {/* Images badge */}
                 <div className="flex flex-col items-center mb-5 lg:mb-6 mt-3 gap-1.5">
-                  <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs lg:text-sm font-bold text-white ${
+                  <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs lg:text-sm font-bold text-foreground ${
                     plan.isLifetime ? "bg-gradient-to-r from-amber-500 to-orange-500" : "bg-gradient-to-r from-slate-600 to-blue-500"
                   }`}>
                     <Sparkles className="w-3.5 h-3.5" />
@@ -486,7 +486,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
 
         {/* Acesso Imediato + Trust Badges */}
         <div className="mt-12 text-center">
-          <h3 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white tracking-tight mb-6">
+          <h3 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground tracking-tight mb-6">
             ACESSO <span className="text-muted-foreground">IMEDIATO</span>
           </h3>
           <div className="max-w-4xl mx-auto rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 sm:px-8 py-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 sm:gap-4">
@@ -569,14 +569,14 @@ const HeroCarousel = ({ isMobile, locale, label }: { isMobile: boolean; locale: 
       {/* Arrows */}
       <button
         onClick={() => goTo(-1)}
-        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 backdrop-blur-sm transition-colors"
+        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-foreground rounded-full p-1.5 backdrop-blur-sm transition-colors"
         aria-label="Anterior"
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
       <button
         onClick={() => goTo(1)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 backdrop-blur-sm transition-colors"
+        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-foreground rounded-full p-1.5 backdrop-blur-sm transition-colors"
         aria-label="Próximo"
       >
         <ChevronRight className="h-4 w-4" />
@@ -799,7 +799,7 @@ const PlanosUpscalerArcano69v2 = () => {
               </FadeIn>
 
               {/* Título principal */}
-              <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3 md:mb-4 leading-[1.25]">
+              <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-3 md:mb-4 leading-[1.25]">
                 {t('tools:upscaler.hero.title1')}{' '}
                 <br className="hidden md:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
@@ -912,7 +912,7 @@ const PlanosUpscalerArcano69v2 = () => {
               </div>
               
               <AnimatedSection as="div" delay={400}>
-                <p className="text-center text-xl md:text-2xl text-white mt-10 md:mt-12">
+                <p className="text-center text-xl md:text-2xl text-foreground mt-10 md:mt-12">
                   {t('tools:upscaler.pain.solution')}
                 </p>
               </AnimatedSection>
@@ -944,7 +944,7 @@ const PlanosUpscalerArcano69v2 = () => {
                       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center mx-auto mb-6">
                         <IconComponent className="h-8 w-8 text-muted-foreground" />
                       </div>
-                      <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
+                      <h3 className="text-xl font-semibold text-foreground mb-3">{item.title}</h3>
                       <p className="text-muted-foreground flex-1">{item.description}</p>
                     </div>
                   );
@@ -978,7 +978,7 @@ const PlanosUpscalerArcano69v2 = () => {
                       <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
                         <IconComponent className="h-10 w-10 text-muted-foreground" />
                       </div>
-                      <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
+                      <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
                       <p className="text-muted-foreground max-w-[180px]">{step.description}</p>
                     </div>
                   );

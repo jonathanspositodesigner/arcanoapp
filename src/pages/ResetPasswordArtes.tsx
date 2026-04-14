@@ -111,9 +111,9 @@ const ResetPasswordArtes = () => {
       <Card className="w-full max-w-md bg-card/80 border-border/30">
         <CardHeader className="text-center">
           <div className="mx-auto w-12 h-12 bg-[#2d4a5e] rounded-full flex items-center justify-center mb-4">
-            <Lock className="h-6 w-6 text-white" />
+            <Lock className="h-6 w-6 text-foreground" />
           </div>
-          <CardTitle className="text-2xl text-white">{t('newPasswordTitle')}</CardTitle>
+          <CardTitle className="text-2xl text-foreground">{t('newPasswordTitle')}</CardTitle>
           <CardDescription className="text-muted-foreground">
             {t('setNewPassword')}
           </CardDescription>
@@ -126,7 +126,7 @@ const ResetPasswordArtes = () => {
                 placeholder={t('newPassword')}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-card border-border/50 text-white pr-10"
+                className="bg-card border-border/50 text-foreground pr-10"
                 required
               />
               <button
@@ -143,7 +143,7 @@ const ResetPasswordArtes = () => {
                 placeholder={t('confirmNewPassword')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="bg-card border-border/50 text-white pr-10"
+                className="bg-card border-border/50 text-foreground pr-10"
                 required
               />
               <button
@@ -161,7 +161,7 @@ const ResetPasswordArtes = () => {
 
             <Button
               type="submit"
-              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
               disabled={isLoading}
             >
               {isLoading ? t('saving') : t('saveNewPassword')}

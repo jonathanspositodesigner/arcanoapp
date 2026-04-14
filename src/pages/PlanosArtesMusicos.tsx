@@ -148,7 +148,7 @@ const PlanosArtesMusicos = () => {
 
       <div className="container mx-auto px-4 pb-16">
         <div className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">{t('plansMusicos.title')}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">{t('plansMusicos.title')}</h1>
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
             <TabsList className="bg-accent0/10 border border-border">
               <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white px-6 text-muted-foreground">{t('plansMusicos.monthly')}</TabsTrigger>
@@ -168,18 +168,18 @@ const PlanosArtesMusicos = () => {
           {currentPlans.map((plan, index) => (
             <Card key={plan.name} className={`relative bg-card border-border/20 p-6 flex flex-col rounded-xl lg:rounded-none ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${plan.popular ? "border-2 border-border" : ""}`}>
               {(plan.promo || plan.popular) && (
-                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap ${plan.promo ? "bg-orange-500 text-white" : "bg-emerald-500 text-white"}`}>
+                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap ${plan.promo ? "bg-orange-500 text-foreground" : "bg-emerald-500 text-foreground"}`}>
                   {plan.promo ? t('plansMusicos.badges.promo') : t('plansMusicos.badges.popular')}
                 </Badge>
               )}
               <div className="text-center mb-4 min-h-[40px] flex items-center justify-center">
-                <h2 className="text-xl font-bold text-white">{plan.name}</h2>
+                <h2 className="text-xl font-bold text-foreground">{plan.name}</h2>
               </div>
               <div className="text-center mb-6 min-h-[80px]">
                 {plan.originalPrice && <p className="text-muted-foreground/60 line-through text-sm">R${plan.originalPrice}{t('plansMusicos.perMonth')}</p>}
                 <div className="flex items-baseline justify-center gap-1">
                   <span className="text-muted-foreground text-lg">R$</span>
-                  <span className="text-4xl font-bold text-white">{plan.price}</span>
+                  <span className="text-4xl font-bold text-foreground">{plan.price}</span>
                   <span className="text-muted-foreground">{t('plansMusicos.perMonth')}</span>
                 </div>
                 {billingPeriod === "anual" && (plan as any).yearlyTotal && <p className="text-muted-foreground text-sm mt-1">R${(plan as any).yearlyTotal}{t('plansMusicos.perYear')}</p>}
@@ -191,7 +191,7 @@ const PlanosArtesMusicos = () => {
                   const planName = encodeURIComponent(`${plan.name} ${billingPeriod === 'anual' ? 'Anual' : 'Mensal'}`);
                   navigate(`/aguardando-pagamento-musicos?checkout=${checkoutUrl}&plan=${planName}`);
                 }
-              }} className={`w-full mb-6 ${plan.popular ? "bg-slate-600 hover:bg-accent0 text-white" : "bg-accent0/20 hover:bg-accent0/30 text-gray-200"}`}>
+              }} className={`w-full mb-6 ${plan.popular ? "bg-slate-600 hover:bg-accent0 text-foreground" : "bg-accent0/20 hover:bg-accent0/30 text-gray-200"}`}>
                 {(plan as any).hasTrial ? t('plansMusicos.freeTrial') : t('plansMusicos.subscribe')}
               </Button>
               <ul className="space-y-3 flex-1">
@@ -242,10 +242,10 @@ const PlanosArtesMusicos = () => {
             <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-accent0/20 flex items-center justify-center">
               <Clock className="w-8 h-8 text-muted-foreground" />
             </div>
-            <DialogTitle className="text-2xl font-bold text-center text-white">{t('plansMusicos.comingSoon.title')}</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-center text-foreground">{t('plansMusicos.comingSoon.title')}</DialogTitle>
             <DialogDescription className="text-center text-muted-foreground">{t('plansMusicos.comingSoon.description')}</DialogDescription>
           </DialogHeader>
-          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-slate-600 hover:bg-accent0 text-white">{t('plansMusicos.comingSoon.understood')}</Button>
+          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-slate-600 hover:bg-accent0 text-foreground">{t('plansMusicos.comingSoon.understood')}</Button>
         </DialogContent>
       </Dialog>
     </div>

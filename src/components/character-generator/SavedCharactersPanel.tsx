@@ -126,7 +126,7 @@ const SavedCharactersPanel: React.FC<SavedCharactersPanelProps> = ({ userId, ref
                     />
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-1.5">
-                    <p className="text-[10px] font-medium text-white truncate">{char.name}</p>
+                    <p className="text-[10px] font-medium text-foreground truncate">{char.name}</p>
                   </div>
                   
                   <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -135,12 +135,12 @@ const SavedCharactersPanel: React.FC<SavedCharactersPanelProps> = ({ userId, ref
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-5 w-5 bg-red-500/80 hover:bg-red-600 text-white rounded-full"
+                          className="h-5 w-5 bg-red-500/80 hover:bg-red-600 text-foreground rounded-full"
                         >
                           <Trash2 className="w-3 h-3" />
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="bg-background border-border text-white">
+                      <AlertDialogContent className="bg-background border-border text-foreground">
                         <AlertDialogHeader>
                           <AlertDialogTitle>Remover avatar?</AlertDialogTitle>
                           <AlertDialogDescription className="text-muted-foreground">
@@ -150,7 +150,7 @@ const SavedCharactersPanel: React.FC<SavedCharactersPanelProps> = ({ userId, ref
                         <AlertDialogFooter>
                           <AlertDialogCancel className="border-border text-muted-foreground hover:bg-accent">Cancelar</AlertDialogCancel>
                           <AlertDialogAction
-                            className="bg-red-600 hover:bg-red-700 text-white"
+                            className="bg-red-600 hover:bg-red-700 text-foreground"
                             onClick={() => handleDelete(char.id)}
                             disabled={deletingId === char.id}
                           >

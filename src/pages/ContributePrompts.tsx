@@ -251,7 +251,7 @@ const ContributePrompts = () => {
                 onChange={(e) => setContributorName(e.target.value.slice(0, 20))}
                 placeholder={t('contribute.yourNamePlaceholder')}
                 maxLength={20}
-                className="mt-2 bg-background border-border text-white placeholder:text-muted-foreground"
+                className="mt-2 bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
               <p className="text-xs text-muted-foreground mt-1">
                 {contributorName.length}/20
@@ -265,14 +265,14 @@ const ContributePrompts = () => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t('contribute.fileTitlePlaceholder')}
-                className="mt-2 bg-background border-border text-white placeholder:text-muted-foreground"
+                className="mt-2 bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
             <div>
               <Label htmlFor="category" className="text-muted-foreground">{t('contribute.category')}</Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="mt-2 bg-background border-border text-white">
+                <SelectTrigger className="mt-2 bg-background border-border text-foreground">
                   <SelectValue placeholder={t('contribute.selectCategory')} />
                 </SelectTrigger>
                 <SelectContent className="bg-background border-border">
@@ -329,7 +329,7 @@ const ContributePrompts = () => {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder={t('contribute.promptPlaceholder')}
-                className="mt-2 min-h-32 bg-background border-border text-white placeholder:text-muted-foreground"
+                className="mt-2 min-h-32 bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
@@ -381,7 +381,7 @@ const ContributePrompts = () => {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 transition-opacity text-lg py-6 text-white"
+              className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 transition-opacity text-lg py-6 text-foreground"
             >
               {isSubmitting ? t('contribute.submitting') : t('contribute.submit')}
             </Button>

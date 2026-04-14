@@ -358,7 +358,7 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && !isProcessing && onClose()}>
       <DialogContent className="sm:max-w-2xl bg-[#1a1625] border-border">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-white">
+          <DialogTitle className="flex items-center gap-2 text-foreground">
             <Scissors className="w-5 h-5 text-muted-foreground" />
             Cortar Vídeo
           </DialogTitle>
@@ -379,7 +379,7 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
               />
             )}
             
-            <div className="absolute bottom-2 left-2 bg-black/70 px-2 py-1 rounded text-xs text-white">
+            <div className="absolute bottom-2 left-2 bg-black/70 px-2 py-1 rounded text-xs text-foreground">
               {formatTime(currentPreviewTime)} / {formatTime(videoDuration)}
             </div>
           </div>
@@ -450,7 +450,7 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
               <Button
                 onClick={handleSave}
                 disabled={selectedDuration > MAX_TRIM_DURATION}
-                className="bg-slate-600 hover:bg-slate-700 text-white px-6"
+                className="bg-slate-600 hover:bg-slate-700 text-foreground px-6"
               >
                 Salvar Vídeo
               </Button>

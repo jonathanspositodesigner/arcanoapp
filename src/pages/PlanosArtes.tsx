@@ -324,7 +324,7 @@ const PlanosArtes = () => {
               {notificationDiscountPercent}% OFF - {t('exclusiveDiscount')}
             </Badge>
           )}
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             {isRenewal 
               ? t('renewAccessTo', { pack: selectedPack?.name || "Pack" })
               : hasNotificationDiscount
@@ -350,7 +350,7 @@ const PlanosArtes = () => {
           <div className="space-y-8">
             {packItems.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-white mb-4">{t('packsOfArts')}</h2>
+                <h2 className="text-xl font-bold text-foreground mb-4">{t('packsOfArts')}</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {[...packItems].sort((a, b) => a.slug === 'pack-arcano-vol-4' ? -1 : b.slug === 'pack-arcano-vol-4' ? 1 : 0).map((pack) => (
                     <Card
@@ -392,7 +392,7 @@ const PlanosArtes = () => {
 
             {cursoItems.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-white mb-4">{t('courses')}</h2>
+                <h2 className="text-xl font-bold text-foreground mb-4">{t('courses')}</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {cursoItems.map((pack) => (
                     <Card
@@ -431,7 +431,7 @@ const PlanosArtes = () => {
             <div className="max-w-lg mx-auto">
               <Card className="relative bg-card/80 border-border/30">
                 {selectedAccessType === 'vitalicio' && accessOptions.length > 1 && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2d4a5e] text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2d4a5e] text-foreground px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
                     {t('bestValue')}
                   </div>
                 )}
@@ -443,7 +443,7 @@ const PlanosArtes = () => {
                       className="w-24 h-24 object-cover rounded-lg border-2 border-border/50 mx-auto mb-3"
                     />
                   )}
-                  <CardTitle className="text-xl text-white">{selectedPack?.name}</CardTitle>
+                  <CardTitle className="text-xl text-foreground">{selectedPack?.name}</CardTitle>
                   {!isRenewal && (
                     <button
                       onClick={() => setSelectedPack(null)}

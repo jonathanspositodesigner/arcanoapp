@@ -262,7 +262,7 @@ const PartnerUploadMusicos = () => {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Nome da arte"
-                  className="bg-card border-pink-500/50 text-white"
+                  className="bg-card border-pink-500/50 text-foreground"
                   required
                 />
               </div>
@@ -271,7 +271,7 @@ const PartnerUploadMusicos = () => {
               <div className="space-y-2">
                 <Label className="text-foreground">Categoria *</Label>
                 <Select value={category} onValueChange={setCategory} required>
-                  <SelectTrigger className="bg-card border-pink-500/50 text-white">
+                  <SelectTrigger className="bg-card border-pink-500/50 text-foreground">
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-pink-500/50">
@@ -291,7 +291,7 @@ const PartnerUploadMusicos = () => {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Descrição opcional"
-                  className="bg-card border-pink-500/50 text-white min-h-[100px]"
+                  className="bg-card border-pink-500/50 text-foreground min-h-[100px]"
                 />
               </div>
 
@@ -302,7 +302,7 @@ const PartnerUploadMusicos = () => {
                   value={canvaLink}
                   onChange={(e) => setCanvaLink(e.target.value)}
                   placeholder="https://www.canva.com/..."
-                  className="bg-card border-pink-500/50 text-white"
+                  className="bg-card border-pink-500/50 text-foreground"
                 />
               </div>
 
@@ -313,14 +313,14 @@ const PartnerUploadMusicos = () => {
                   value={driveLink}
                   onChange={(e) => setDriveLink(e.target.value)}
                   placeholder="https://drive.google.com/..."
-                  className="bg-card border-pink-500/50 text-white"
+                  className="bg-card border-pink-500/50 text-foreground"
                 />
               </div>
 
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white"
+                className="w-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-foreground"
                 disabled={isSubmitting || isUploading}
               >
                 {isSubmitting || isUploading ? (

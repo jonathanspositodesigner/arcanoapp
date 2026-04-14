@@ -36,7 +36,7 @@ const SucessoArtesMusicos = () => {
         <CardContent className="pt-8 pb-8 px-6 text-center">
           <div className="relative mb-6">
             <div className="w-20 h-20 mx-auto bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
-              <CheckCircle className="w-10 h-10 text-white" />
+              <CheckCircle className="w-10 h-10 text-foreground" />
             </div>
             <Sparkles className="absolute -top-2 -right-2 w-6 h-6 text-yellow-500 animate-pulse" />
             <Sparkles className="absolute -bottom-1 -left-2 w-5 h-5 text-primary animate-pulse" style={{ animationDelay: '0.5s' }} />

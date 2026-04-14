@@ -31,7 +31,7 @@ const NoCreditsModal = ({ isOpen, onClose, reason }: NoCreditsModalProps) => {
           <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-gradient-to-r from-yellow-500/20 to-slate-400/20 flex items-center justify-center">
             <Coins className="w-8 h-8 text-yellow-500" />
           </div>
-          <DialogTitle className="text-2xl font-bold text-center text-white">
+          <DialogTitle className="text-2xl font-bold text-center text-foreground">
             {isNotLogged ? 'Faça login para continuar' : 'Ops, você não tem créditos!'}
           </DialogTitle>
           <DialogDescription className="text-center text-muted-foreground mt-2">

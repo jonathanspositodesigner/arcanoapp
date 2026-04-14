@@ -40,7 +40,7 @@ export const CreditsFAQSection = () => {
   return (
     <section className="py-16 px-4">
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-2xl md:text-3xl font-bold text-center text-white mb-10">
+        <h2 className="text-2xl md:text-3xl font-bold text-center text-foreground mb-10">
           Perguntas frequentes
         </h2>
 

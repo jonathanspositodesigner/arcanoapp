@@ -723,7 +723,7 @@ const AndroidMockup = ({ step }: { step: number }) => (
                 </div>
                 <div className="flex justify-end gap-3">
                   <button className="px-6 py-2 text-sm text-muted-foreground">Cancelar</button>
-                  <button className="px-6 py-2 text-sm bg-primary text-white rounded-full font-semibold relative">
+                  <button className="px-6 py-2 text-sm bg-primary text-foreground rounded-full font-semibold relative">
                     Instalar
                     {/* Pulse indicator */}
                     <span className="absolute -right-1 -top-1 flex h-3 w-3">
@@ -807,7 +807,7 @@ const DesktopMockup = ({ step, browser }: { step: number; browser: BrowserType }
             </div>
             <div className="flex justify-end gap-2">
               <button className="px-3 py-1.5 text-xs text-muted-foreground">Cancelar</button>
-              <button className="px-4 py-1.5 text-xs bg-primary text-white rounded font-semibold relative">
+              <button className="px-4 py-1.5 text-xs bg-primary text-foreground rounded font-semibold relative">
                 Instalar
                 {/* Pulse indicator */}
                 <span className="absolute -right-1 -top-1 flex h-2.5 w-2.5">
@@ -824,7 +824,7 @@ const DesktopMockup = ({ step, browser }: { step: number; browser: BrowserType }
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center animate-fade-in">
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 text-center animate-scale-in">
               <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Check className="h-8 w-8 text-white" />
+                <Check className="h-8 w-8 text-foreground" />
               </div>
               <p className="font-semibold text-lg">App Instalado!</p>
               <p className="text-xs text-muted-foreground mt-1">Procure o ícone na sua área de trabalho</p>

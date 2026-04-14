@@ -183,7 +183,7 @@ const PlanosArcanoCloner = () => {
             </FadeIn>
 
             {/* Headline */}
-            <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3 md:mb-4 leading-[1.2]">
+            <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-3 md:mb-4 leading-[1.2]">
               Crie ensaios fotográficos{" "}
               <br className="hidden md:block" />
               profissionais com IA{" "}
@@ -337,7 +337,7 @@ const PlanosArcanoCloner = () => {
               <BookOpen className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground text-sm font-semibold">BÔNUS 01</span>
             </div>
-            <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-white mb-2">
+            <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-foreground mb-2">
               +300 Referências <span className="text-muted-foreground">Profissionais</span>
             </h3>
             <p className="text-muted-foreground text-sm max-w-lg mx-auto">Biblioteca completa com fotos de referência prontas para usar na geração de imagens</p>
@@ -395,7 +395,7 @@ const PlanosArcanoCloner = () => {
               <Gift className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground text-sm font-semibold">BÔNUS 02</span>
             </div>
-            <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-white mb-2">
+            <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-foreground mb-2">
               Upscaler para <span className="text-muted-foreground">suas imagens</span>
             </h3>
             <p className="text-muted-foreground text-sm max-w-lg mx-auto">Melhore a qualidade de qualquer imagem com nosso upscaler de IA incluso</p>
@@ -490,13 +490,13 @@ const PlanosArcanoCloner = () => {
             <Card className="relative p-8 flex flex-col rounded-xl bg-background border-2 border-border/50 shadow-lg shadow-white/5">
               {/* Badge */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <Badge className="bg-gradient-to-r from-slate-500 to-slate-500 text-white px-4 py-1 text-sm font-bold rounded-full">
+                <Badge className="bg-gradient-to-r from-slate-500 to-slate-500 text-foreground px-4 py-1 text-sm font-bold rounded-full">
                   OFERTA ESPECIAL
                 </Badge>
               </div>
 
               <div className="text-center mb-6 mt-2">
-                <h3 className="text-xl font-bold text-white">Arcano Cloner</h3>
+                <h3 className="text-xl font-bold text-foreground">Arcano Cloner</h3>
                 <p className="text-sm text-muted-foreground mt-0.5">Gere ensaios fotográficos com IA</p>
               </div>
 
@@ -504,7 +504,7 @@ const PlanosArcanoCloner = () => {
                 <div className="text-muted-foreground text-sm line-through mb-1">R$ 97,00</div>
                 <div className="flex items-baseline justify-center gap-1">
                   <span className="text-muted-foreground text-lg">R$</span>
-                  <span className="text-5xl font-bold text-white">39,90</span>
+                  <span className="text-5xl font-bold text-foreground">39,90</span>
                 </div>
                 <p className="text-muted-foreground text-base mt-1">Pagamento único</p>
               </div>
@@ -518,7 +518,7 @@ const PlanosArcanoCloner = () => {
               </Button>
 
               <div className="flex flex-col items-center mb-6">
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-white bg-gradient-to-r from-slate-600 to-slate-500">
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-foreground bg-gradient-to-r from-slate-600 to-slate-500">
                   <Sparkles className="w-4 h-4" />
                   ~70 fotos incluídas
                 </span>
@@ -561,7 +561,7 @@ const PlanosArcanoCloner = () => {
             <div className="w-16 h-16 rounded-2xl bg-green-500/20 flex items-center justify-center mx-auto mb-6">
               <Shield className="h-8 w-8 text-green-400" />
             </div>
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-white mb-4">
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-foreground mb-4">
               Garantia incondicional de{" "}
               <span className="text-green-400">7 dias</span>
             </h2>

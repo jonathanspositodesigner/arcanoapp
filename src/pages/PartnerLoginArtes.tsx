@@ -62,7 +62,7 @@ const PartnerLoginArtes = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
           </Button>
-          <CardTitle className="text-2xl text-white">Área do Colaborador - Artes</CardTitle>
+          <CardTitle className="text-2xl text-foreground">Área do Colaborador - Artes</CardTitle>
           <CardDescription className="text-muted-foreground">
             Acesse sua conta de colaborador da Biblioteca de Artes
           </CardDescription>

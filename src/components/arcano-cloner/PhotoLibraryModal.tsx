@@ -164,9 +164,9 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   return (
   <>
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-[calc(100%-32px)] sm:w-full bg-background border border-slate-500/40 text-white max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-xl">
+      <DialogContent className="max-w-2xl w-[calc(100%-32px)] sm:w-full bg-background border border-slate-500/40 text-foreground max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-xl">
         <DialogHeader className="flex-shrink-0 pb-2">
-          <DialogTitle className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
+          <DialogTitle className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
             <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
             Biblioteca de Fotos
           </DialogTitle>
@@ -218,7 +218,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
             className={cn(
               "flex-1 h-8 sm:h-9 text-xs sm:text-sm",
               filter === 'masculino'
-                ? "bg-gradient-to-r from-slate-500 to-slate-700 text-white border-0"
+                ? "bg-gradient-to-r from-slate-500 to-slate-700 text-foreground border-0"
                 : "bg-transparent border-border text-muted-foreground hover:bg-accent0/20"
             )}
           >
@@ -232,7 +232,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
             className={cn(
               "flex-1 h-8 sm:h-9 text-xs sm:text-sm",
               filter === 'feminino'
-                ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white border-0"
+                ? "bg-gradient-to-r from-pink-600 to-rose-600 text-foreground border-0"
                 : "bg-transparent border-border text-muted-foreground hover:bg-accent0/20"
             )}
           >
@@ -249,7 +249,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
             placeholder="Buscar por palavra-chave..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-9 text-sm bg-accent0/10 border-border text-white placeholder:text-muted-foreground focus:border-slate-400"
+            className="pl-10 h-9 text-sm bg-accent0/10 border-border text-foreground placeholder:text-muted-foreground focus:border-slate-400"
           />
         </div>
 

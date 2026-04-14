@@ -95,7 +95,7 @@ const SaveCharacterDialog: React.FC<SaveCharacterDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-background border-border text-white sm:max-w-md">
+      <DialogContent className="bg-background border-border text-foreground sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-foreground">Salvar Avatar</DialogTitle>
           <DialogDescription className="text-muted-foreground">
@@ -115,7 +115,7 @@ const SaveCharacterDialog: React.FC<SaveCharacterDialogProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Guerreiro Medieval"
-              className="bg-accent border-border text-white placeholder:text-muted-foreground"
+              className="bg-accent border-border text-foreground placeholder:text-muted-foreground"
               maxLength={50}
               onKeyDown={(e) => e.key === 'Enter' && handleSave()}
             />
@@ -129,7 +129,7 @@ const SaveCharacterDialog: React.FC<SaveCharacterDialogProps> = ({
           <Button
             onClick={handleSave}
             disabled={!name.trim() || isSaving}
-            className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white"
+            className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground"
           >
             {isSaving ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />

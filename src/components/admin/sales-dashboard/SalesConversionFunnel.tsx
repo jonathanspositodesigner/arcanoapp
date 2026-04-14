@@ -114,7 +114,7 @@ export default function SalesConversionFunnel({
                 const pct = max > 0 ? ((step.value / max) * 100) : 0;
                 return (
                   <div key={step.label} className="flex-1 flex items-center justify-center">
-                    <span className="text-sm font-bold text-white drop-shadow-lg">
+                    <span className="text-sm font-bold text-foreground drop-shadow-lg">
                       {pct.toFixed(1)}%
                     </span>
                   </div>

@@ -41,7 +41,7 @@ function SimpleSignupForm({ defaultEmail, onSubmit, onBackToLogin, isLoading: fo
           value={formEmail}
           onChange={(e) => setFormEmail(e.target.value)}
           placeholder="seu@email.com"
-          className="mt-1 bg-background border-border text-white placeholder:text-muted-foreground"
+          className="mt-1 bg-background border-border text-foreground placeholder:text-muted-foreground"
           required
         />
       </div>
@@ -52,7 +52,7 @@ function SimpleSignupForm({ defaultEmail, onSubmit, onBackToLogin, isLoading: fo
           value={formName}
           onChange={(e) => setFormName(e.target.value)}
           placeholder="Seu nome"
-          className="mt-1 bg-background border-border text-white placeholder:text-muted-foreground"
+          className="mt-1 bg-background border-border text-foreground placeholder:text-muted-foreground"
         />
       </div>
       <div className="relative">
@@ -62,7 +62,7 @@ function SimpleSignupForm({ defaultEmail, onSubmit, onBackToLogin, isLoading: fo
           value={formPassword}
           onChange={(e) => setFormPassword(e.target.value)}
           placeholder="Mínimo 6 caracteres"
-          className="mt-1 pr-10 bg-background border-border text-white placeholder:text-muted-foreground"
+          className="mt-1 pr-10 bg-background border-border text-foreground placeholder:text-muted-foreground"
           required
           minLength={6}
         />
@@ -81,7 +81,7 @@ function SimpleSignupForm({ defaultEmail, onSubmit, onBackToLogin, isLoading: fo
           value={formConfirmPassword}
           onChange={(e) => setFormConfirmPassword(e.target.value)}
           placeholder="Confirme sua senha"
-          className="mt-1 bg-background border-border text-white placeholder:text-muted-foreground"
+          className="mt-1 bg-background border-border text-foreground placeholder:text-muted-foreground"
           required
         />
       </div>
@@ -469,13 +469,13 @@ export default function ArcanoClonerAuthModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-gradient-to-br from-[#1A0A2E] to-[#111113] border-border text-white p-0 max-w-md overflow-hidden [&>button]:text-muted-foreground [&>button]:hover:text-foreground">
+      <DialogContent className="bg-gradient-to-br from-[#1A0A2E] to-[#111113] border-border text-foreground p-0 max-w-md overflow-hidden [&>button]:text-muted-foreground [&>button]:hover:text-foreground">
         {/* Header */}
         <div className="bg-accent0/10 border-b border-border p-6 text-center">
           <div className="w-16 h-16 mx-auto rounded-full bg-accent0/20 flex items-center justify-center mb-3">
             <Gift className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h2 className="text-xl font-bold text-white">
+          <h2 className="text-xl font-bold text-foreground">
             Ganhe 300 créditos grátis!
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -541,7 +541,7 @@ export default function ArcanoClonerAuthModal({
                 <Mail className="w-8 h-8 text-green-400" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Confirme seu email para continuar</h3>
+                <h3 className="text-lg font-bold text-foreground">Confirme seu email para continuar</h3>
                 <p className="text-sm text-muted-foreground mt-2">
                   Enviamos um link de confirmação para <strong className="text-foreground">{verifiedEmail || email}</strong>
                 </p>

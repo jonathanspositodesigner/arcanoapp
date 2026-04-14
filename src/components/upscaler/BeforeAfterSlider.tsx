@@ -187,7 +187,7 @@ export const BeforeAfterSlider = ({
             }}
             className="absolute bottom-4 right-4 p-3 bg-black/70 hover:bg-black/90 rounded-full transition-all duration-300 hover:scale-110 border border-border z-10"
           >
-            <ZoomIn className="h-5 w-5 text-white" />
+            <ZoomIn className="h-5 w-5 text-foreground" />
           </button>
         )}
       </div>

@@ -638,7 +638,7 @@ const GeradorPersonagemTool: React.FC = () => {
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden flex flex-col">
         {/* Tool intro - full width centered */}
         <div className="text-center py-3">
-          <h1 className="text-2xl lg:text-3xl font-bold text-white">Gerador de Avatar</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Gerador de Avatar</h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-lg mx-auto">Crie avatares de alta fidelidade a partir das suas fotos. Envie 4 ângulos diferentes e a IA gera seu personagem.</p>
         </div>
 
@@ -749,7 +749,7 @@ const GeradorPersonagemTool: React.FC = () => {
               <div className="flex items-center gap-2.5 min-w-0">
                 <Sparkles className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <div className="text-left min-w-0">
-                  <p className="text-xs font-semibold text-white">Arcano Cloner</p>
+                  <p className="text-xs font-semibold text-foreground">Arcano Cloner</p>
                   <p className="text-[10px] text-muted-foreground leading-tight">Use seu avatar para gerar imagens</p>
                 </div>
               </div>
@@ -761,7 +761,7 @@ const GeradorPersonagemTool: React.FC = () => {
           <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
             <Card className="relative overflow-hidden bg-accent border-border flex-1 flex flex-col min-h-[250px] lg:min-h-0">
               <div className="px-3 py-2 border-b border-border flex items-center justify-between flex-shrink-0">
-                <h3 className="text-xs font-semibold text-white flex items-center gap-1.5">
+                <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                   <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />Resultado
                 </h3>
                 {viewedImage && (
@@ -839,16 +839,16 @@ const GeradorPersonagemTool: React.FC = () => {
               {/* Action Buttons */}
               {viewedImage && status === 'completed' && (
                 <div className="border-t border-border px-3 py-2 flex gap-2 flex-shrink-0">
-                  <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-border text-white hover:bg-accent0/90" onClick={handleReset}>
+                  <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-border text-foreground hover:bg-accent0/90" onClick={handleReset}>
                     <RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova
                   </Button>
-                  <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-500 hover:to-pink-500 text-white" onClick={() => setShowRefinePanel(true)}>
+                  <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-500 hover:to-pink-500 text-foreground" onClick={() => setShowRefinePanel(true)}>
                     <Wand2 className="w-3.5 h-3.5 mr-1.5" />Refinar
                   </Button>
-                  <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white" onClick={() => setShowSaveDialog(true)}>
+                  <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-foreground" onClick={() => setShowSaveDialog(true)}>
                     <Save className="w-3.5 h-3.5 mr-1.5" />Salvar
                   </Button>
-                  <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white" onClick={handleDownload}>
+                  <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-foreground" onClick={handleDownload}>
                     <Download className="w-3.5 h-3.5 mr-1.5" />Baixar HD
                   </Button>
                 </div>

@@ -579,7 +579,7 @@ const GerarVideoTool = () => {
         <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center p-6">
           <div className="max-w-md text-center space-y-4">
             <div className="text-6xl">🔒</div>
-            <h1 className="text-xl font-bold text-white">Recurso não disponível no seu plano</h1>
+            <h1 className="text-xl font-bold text-foreground">Recurso não disponível no seu plano</h1>
             <p className="text-muted-foreground text-sm">
               A geração de vídeos está disponível a partir do plano <strong className="text-muted-foreground">Pro</strong>.
             </p>
@@ -609,7 +609,7 @@ const GerarVideoTool = () => {
                 <ArrowLeft className="h-5 w-5" />
               </button>
               <div>
-                <h1 className="text-lg font-bold text-white flex items-center gap-2">
+                <h1 className="text-lg font-bold text-foreground flex items-center gap-2">
                   <Video className="h-5 w-5 text-muted-foreground" />
                   Gerar Vídeo
                 </h1>
@@ -699,7 +699,7 @@ const GerarVideoTool = () => {
             {/* When result is showing: Download + Novo buttons */}
             {resultUrl ? (
               <div className="flex gap-2 justify-center">
-                <Button onClick={handleDownload} size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-full px-5">
+                <Button onClick={handleDownload} size="sm" className="bg-green-600 hover:bg-green-700 text-foreground rounded-full px-5">
                   <Download className="h-4 w-4 mr-2" /> Baixar
                 </Button>
                 <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-slate-500/50 text-muted-foreground hover:bg-accent0/20 rounded-full px-5">
@@ -723,7 +723,7 @@ const GerarVideoTool = () => {
                             onClick={() => setStartFrame(null)} 
                             className="absolute top-1 right-1 bg-red-600 hover:bg-red-500/100 rounded-full p-0.5 transition-colors"
                           >
-                            <X className="h-3 w-3 text-white" />
+                            <X className="h-3 w-3 text-foreground" />
                           </button>
                         </div>
                       ) : (
@@ -757,7 +757,7 @@ const GerarVideoTool = () => {
                                 onClick={() => setEndFrame(null)} 
                                 className="absolute top-1 right-1 bg-red-600 hover:bg-red-500/100 rounded-full p-0.5 transition-colors"
                               >
-                                <X className="h-3 w-3 text-white" />
+                                <X className="h-3 w-3 text-foreground" />
                               </button>
                             </div>
                           ) : (
@@ -785,7 +785,7 @@ const GerarVideoTool = () => {
                       onChange={(e) => setPrompt(e.target.value)}
                       placeholder={generationMode === 'with_frames' ? "Descreva a transição entre os frames..." : "Descreva o vídeo que você quer gerar..."}
                       rows={1}
-                      className="w-full bg-accent border border-slate-500/25 rounded-xl px-3 py-2 text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none focus:border-border transition-colors"
+                      className="w-full bg-accent border border-slate-500/25 rounded-xl px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-border transition-colors"
                       style={{ minHeight: '36px', maxHeight: '80px' }}
                       disabled={isGenerating}
                       onInput={(e) => {

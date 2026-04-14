@@ -221,14 +221,14 @@ const ProfileSettings = () => {
           {t('back')}
         </Button>
 
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <User className="h-6 w-6 text-muted-foreground" />
           {t('profile.title')}
         </h1>
 
         {/* Profile Information */}
         <Card className="p-6 bg-background border-border">
-          <h2 className="text-lg font-semibold mb-4 text-white">{t('profile.personalInfo')}</h2>
+          <h2 className="text-lg font-semibold mb-4 text-foreground">{t('profile.personalInfo')}</h2>
           <form onSubmit={handleSaveProfile} className="space-y-4">
             {/* Avatar */}
             <div className="flex items-center gap-4">
@@ -244,7 +244,7 @@ const ProfileSettings = () => {
                     <User className="h-10 w-10 text-muted-foreground" />
                   )}
                 </div>
-                <label className="absolute -bottom-1 -right-1 bg-slate-600 text-white rounded-full p-1.5 cursor-pointer hover:bg-slate-700">
+                <label className="absolute -bottom-1 -right-1 bg-slate-600 text-foreground rounded-full p-1.5 cursor-pointer hover:bg-slate-700">
                   <Camera className="h-4 w-4" />
                   <input
                     type="file"
@@ -283,7 +283,7 @@ const ProfileSettings = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('signupModal.namePlaceholder')}
-                className="mt-2 bg-background border-border text-white placeholder:text-muted-foreground"
+                className="mt-2 bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
@@ -295,7 +295,7 @@ const ProfileSettings = () => {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="(00) 00000-0000"
-                className="mt-2 bg-background border-border text-white placeholder:text-muted-foreground"
+                className="mt-2 bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
@@ -307,7 +307,7 @@ const ProfileSettings = () => {
                 value={cpf}
                 onChange={(e) => setCpf(e.target.value)}
                 placeholder="000.000.000-00"
-                className="mt-2 bg-background border-border text-white placeholder:text-muted-foreground"
+                className="mt-2 bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
@@ -323,7 +323,7 @@ const ProfileSettings = () => {
                     value={addressLine}
                     onChange={(e) => setAddressLine(e.target.value)}
                     placeholder="Rua, número, complemento"
-                    className="mt-2 bg-background border-border text-white placeholder:text-muted-foreground"
+                    className="mt-2 bg-background border-border text-foreground placeholder:text-muted-foreground"
                   />
                 </div>
 
@@ -336,7 +336,7 @@ const ProfileSettings = () => {
                       value={addressZip}
                       onChange={(e) => setAddressZip(e.target.value)}
                       placeholder="00000-000"
-                      className="mt-2 bg-background border-border text-white placeholder:text-muted-foreground"
+                      className="mt-2 bg-background border-border text-foreground placeholder:text-muted-foreground"
                     />
                   </div>
                   <div>
@@ -347,7 +347,7 @@ const ProfileSettings = () => {
                       value={addressCity}
                       onChange={(e) => setAddressCity(e.target.value)}
                       placeholder="Sua cidade"
-                      className="mt-2 bg-background border-border text-white placeholder:text-muted-foreground"
+                      className="mt-2 bg-background border-border text-foreground placeholder:text-muted-foreground"
                     />
                   </div>
                 </div>
@@ -361,7 +361,7 @@ const ProfileSettings = () => {
                     onChange={(e) => setAddressState(e.target.value)}
                     placeholder="SP"
                     maxLength={2}
-                    className="mt-2 bg-background border-border text-white placeholder:text-muted-foreground w-24"
+                    className="mt-2 bg-background border-border text-foreground placeholder:text-muted-foreground w-24"
                   />
                 </div>
               </div>
@@ -374,7 +374,7 @@ const ProfileSettings = () => {
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder={t('profile.aboutYouPlaceholder')}
-                className="mt-2 bg-background border-border text-white placeholder:text-muted-foreground"
+                className="mt-2 bg-background border-border text-foreground placeholder:text-muted-foreground"
                 rows={3}
               />
             </div>
@@ -382,7 +382,7 @@ const ProfileSettings = () => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-slate-600 hover:bg-slate-700 text-white"
+              className="w-full bg-slate-600 hover:bg-slate-700 text-foreground"
             >
               <Save className="h-4 w-4 mr-2" />
               {isLoading ? t('saving') : t('profile.saveChanges')}
@@ -400,7 +400,7 @@ const ProfileSettings = () => {
 
         {/* Change Password */}
         <Card className="p-6 bg-background border-border">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
+          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-foreground">
             <Lock className="h-5 w-5 text-muted-foreground" />
             {t('changePassword')}
           </h2>
@@ -415,7 +415,7 @@ const ProfileSettings = () => {
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="bg-background border-border text-white placeholder:text-muted-foreground"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                 />
                 <button
                   type="button"
@@ -438,7 +438,7 @@ const ProfileSettings = () => {
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="bg-background border-border text-white placeholder:text-muted-foreground"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                 />
                 <button
                   type="button"
@@ -461,7 +461,7 @@ const ProfileSettings = () => {
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="bg-background border-border text-white placeholder:text-muted-foreground"
+                  className="bg-background border-border text-foreground placeholder:text-muted-foreground"
                 />
                 <button
                   type="button"
@@ -487,7 +487,7 @@ const ProfileSettings = () => {
         {/* Notification Settings - usa permission do browser como fonte de verdade */}
         {isSupported && (
           <Card className="p-6 bg-background border-border">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-foreground">
               <Bell className="h-5 w-5 text-muted-foreground" />
               {t('profile.notifications')}
             </h2>
@@ -530,7 +530,7 @@ const ProfileSettings = () => {
       <Dialog open={showDisableModal} onOpenChange={setShowDisableModal}>
         <DialogContent className="max-w-sm bg-background border-border">
           <DialogHeader>
-            <DialogTitle className="text-center flex items-center justify-center gap-2 text-white">
+            <DialogTitle className="text-center flex items-center justify-center gap-2 text-foreground">
               <BellOff className="h-5 w-5 text-red-500" />
               {t('disableNotifications.title')}
             </DialogTitle>
@@ -556,7 +556,7 @@ const ProfileSettings = () => {
             </ul>
 
             <Button
-              className="w-full bg-green-600 hover:bg-green-700 text-white mb-3"
+              className="w-full bg-green-600 hover:bg-green-700 text-foreground mb-3"
               onClick={() => setShowDisableModal(false)}
             >
               {t('disableNotifications.keepBenefits')}

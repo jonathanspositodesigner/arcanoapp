@@ -97,7 +97,7 @@ const ChangePasswordArtes = () => {
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-white animate-spin" />
+        <Loader2 className="h-8 w-8 text-foreground animate-spin" />
       </div>
     );
   }
@@ -109,9 +109,9 @@ const ChangePasswordArtes = () => {
         <Card className="w-full max-w-md bg-card/80 border-border/30">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-[#2d4a5e] rounded-full flex items-center justify-center mb-4">
-              <Mail className="h-6 w-6 text-white" />
+              <Mail className="h-6 w-6 text-foreground" />
             </div>
-            <CardTitle className="text-2xl text-white">Primeiro Acesso</CardTitle>
+            <CardTitle className="text-2xl text-foreground">Primeiro Acesso</CardTitle>
             <CardDescription className="text-muted-foreground">
               Enviamos um link para criar sua senha para:
             </CardDescription>
@@ -128,7 +128,7 @@ const ChangePasswordArtes = () => {
               <Button
                 onClick={handleRefreshSession}
                 variant="outline"
-                className="w-full border-border/50 text-white hover:bg-[#2d4a5e]/30"
+                className="w-full border-border/50 text-foreground hover:bg-[#2d4a5e]/30"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Já cliquei no link
@@ -219,9 +219,9 @@ const ChangePasswordArtes = () => {
       <Card className="w-full max-w-md bg-card/80 border-border/30">
         <CardHeader className="text-center">
           <div className="mx-auto w-12 h-12 bg-[#2d4a5e] rounded-full flex items-center justify-center mb-4">
-            <Lock className="h-6 w-6 text-white" />
+            <Lock className="h-6 w-6 text-foreground" />
           </div>
-          <CardTitle className="text-2xl text-white">{t('changePassword')}</CardTitle>
+          <CardTitle className="text-2xl text-foreground">{t('changePassword')}</CardTitle>
           <CardDescription className="text-muted-foreground">
             {t('changePasswordDescription') || 'Por segurança, crie uma nova senha para sua conta'}
           </CardDescription>
@@ -234,7 +234,7 @@ const ChangePasswordArtes = () => {
                 placeholder={t('newPassword')}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-card border-border/50 text-white pr-10"
+                className="bg-card border-border/50 text-foreground pr-10"
                 required
               />
               <button
@@ -251,7 +251,7 @@ const ChangePasswordArtes = () => {
                 placeholder={t('confirmNewPassword')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="bg-card border-border/50 text-white pr-10"
+                className="bg-card border-border/50 text-foreground pr-10"
                 required
               />
               <button
@@ -269,7 +269,7 @@ const ChangePasswordArtes = () => {
 
             <Button
               type="submit"
-              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
               disabled={isLoading}
             >
               {isLoading ? t('changing') : t('changePassword')}

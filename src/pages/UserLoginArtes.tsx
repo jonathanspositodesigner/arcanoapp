@@ -62,7 +62,7 @@ const UserLoginArtes = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t('back')}
           </Button>
-          <CardTitle className="text-2xl text-white">
+          <CardTitle className="text-2xl text-foreground">
             {t('loginCard.title')}
           </CardTitle>
           <CardDescription className="text-muted-foreground">

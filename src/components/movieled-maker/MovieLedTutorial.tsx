@@ -186,7 +186,7 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
         <div className="absolute inset-0 bg-black/80 pointer-events-auto" onClick={finishTutorial} />
         <div className="relative z-10 bg-card border border-border rounded-2xl p-6 shadow-2xl shadow-black/40 max-w-xs w-full pointer-events-auto animate-scale-in text-center">
           <div className="text-4xl mb-3">🎬</div>
-          <h2 className="text-lg font-bold text-white mb-1">Primeira vez aqui?</h2>
+          <h2 className="text-lg font-bold text-foreground mb-1">Primeira vez aqui?</h2>
           <p className="text-xs text-muted-foreground mb-5">Aprenda a usar em 5 passos rápidos.</p>
 
           <Button
@@ -309,7 +309,7 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
               {step.emoji}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-bold text-white mb-0.5 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-foreground mb-0.5 flex items-center gap-2">
                 Passo {step.step}: {step.title}
                 {completedSteps.has(currentStep) && <CheckCircle2 className="w-4 h-4 text-green-400" />}
               </h3>

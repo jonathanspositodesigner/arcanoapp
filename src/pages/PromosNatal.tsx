@@ -294,7 +294,7 @@ const PromosNatal = () => {
         {/* Promo Banner */}
         <div className="text-center mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
-            <div className="inline-flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-lg font-bold shadow-lg shadow-red-500/20">
+            <div className="inline-flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-foreground px-3 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-lg font-bold shadow-lg shadow-red-500/20">
               <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
               <span className="hidden sm:inline">{promoName}</span>
               <span className="sm:hidden">{t('promo.yearEndPromo')}</span>
@@ -425,7 +425,7 @@ const PromosNatal = () => {
                     }`}
                   >
                     {option.highlighted && (
-                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap shadow-lg">
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-red-600 to-red-500 text-foreground px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap shadow-lg">
                         🔥 {t('bestValue')}
                       </div>
                     )}

@@ -32,9 +32,9 @@ const UpscalerSelectionPage = () => {
         {/* Hero Section */}
         <div className="text-center mb-6 sm:mb-12">
           <div className="inline-flex items-center justify-center w-12 h-12 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-3 sm:mb-6 shadow-lg shadow-slate-500/20">
-            <Sparkles className="w-6 h-6 sm:w-10 sm:h-10 text-white" />
+            <Sparkles className="w-6 h-6 sm:w-10 sm:h-10 text-foreground" />
           </div>
-          <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-4">
+          <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-4">
             Upscaler Arcano V3
           </h1>
           <p className="hidden sm:block text-muted-foreground text-lg max-w-xl mx-auto">
@@ -55,13 +55,13 @@ const UpscalerSelectionPage = () => {
             {/* Icon */}
             <div className="relative mb-3 sm:mb-6">
               <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-blue-500 to-slate-500 shadow-lg shadow-white/5 group-hover:shadow-gray-500 transition-shadow">
-                <Image className="w-5 h-5 sm:w-8 sm:h-8 text-white" />
+                <Image className="w-5 h-5 sm:w-8 sm:h-8 text-foreground" />
               </div>
             </div>
 
             {/* Content */}
             <div className="relative">
-              <h2 className="text-lg sm:text-2xl font-bold text-white mb-1.5 sm:mb-3 group-hover:text-muted-foreground transition-colors">
+              <h2 className="text-lg sm:text-2xl font-bold text-foreground mb-1.5 sm:mb-3 group-hover:text-muted-foreground transition-colors">
                 Upscaler de Imagem
               </h2>
               <p className="text-muted-foreground mb-3 sm:mb-6 leading-relaxed text-sm sm:text-base">
@@ -107,13 +107,13 @@ const UpscalerSelectionPage = () => {
             {/* Icon */}
             <div className="relative mb-3 sm:mb-6">
               <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-slate-500 to-pink-600 shadow-lg shadow-white/5 group-hover:shadow-slate-500/20 transition-shadow">
-                <Video className="w-5 h-5 sm:w-8 sm:h-8 text-white" />
+                <Video className="w-5 h-5 sm:w-8 sm:h-8 text-foreground" />
               </div>
             </div>
 
             {/* Content */}
             <div className="relative">
-              <h2 className="text-lg sm:text-2xl font-bold text-white mb-1.5 sm:mb-3 group-hover:text-muted-foreground transition-colors">
+              <h2 className="text-lg sm:text-2xl font-bold text-foreground mb-1.5 sm:mb-3 group-hover:text-muted-foreground transition-colors">
                 Upscaler de Vídeo
               </h2>
               <p className="text-muted-foreground mb-3 sm:mb-6 leading-relaxed text-sm sm:text-base">

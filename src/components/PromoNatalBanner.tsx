@@ -47,7 +47,7 @@ const PromoNatalBanner = () => {
   const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-red-700 via-red-600 to-red-700 text-white py-1.5 md:py-2 px-2 sm:px-4 shadow-lg overflow-hidden">
+    <div className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-red-700 via-red-600 to-red-700 text-foreground py-1.5 md:py-2 px-2 sm:px-4 shadow-lg overflow-hidden">
       {/* Shimmer effect */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_3s_infinite]" />
       

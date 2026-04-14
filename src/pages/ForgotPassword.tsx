@@ -41,7 +41,7 @@ const ForgotPassword = () => {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md p-8 bg-background border-border text-center">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white mb-4">
+          <h1 className="text-2xl font-bold text-foreground mb-4">
             {t('emailSent.title')}
           </h1>
           <p className="text-muted-foreground mb-6">
@@ -75,7 +75,7 @@ const ForgotPassword = () => {
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Mail className="h-8 w-8 text-muted-foreground" />
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-bold text-foreground">
               {t('recoverPassword')}
             </h1>
           </div>
@@ -93,7 +93,7 @@ const ForgotPassword = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="seu-email@exemplo.com"
-              className="mt-2 bg-background border-border text-white placeholder:text-muted-foreground"
+              className="mt-2 bg-background border-border text-foreground placeholder:text-muted-foreground"
               required
             />
           </div>
@@ -101,7 +101,7 @@ const ForgotPassword = () => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 text-white"
+            className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 text-foreground"
           >
             {isLoading ? t('sending') : t('sendRecoveryLink')}
           </Button>

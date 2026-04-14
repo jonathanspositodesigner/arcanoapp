@@ -99,7 +99,7 @@ const FullscreenModal = ({
         onClick={onClose}
         className="absolute top-4 right-4 z-10 p-3 bg-accent hover:bg-white/20 rounded-full transition-colors"
       >
-        <X className="h-6 w-6 text-white" />
+        <X className="h-6 w-6 text-foreground" />
       </button>
       
       <div 
@@ -161,7 +161,7 @@ const CTAButton = ({ onClick, isPremium, t, loading }: { onClick: () => void; is
   <Button
     onClick={onClick}
     disabled={loading}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-white shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20 disabled:opacity-70 disabled:cursor-wait"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20 disabled:opacity-70 disabled:cursor-wait"
   >
     {loading ? 'Gerando checkout...' : t('tools:upscaler.cta')}
     {!loading && <ArrowRight className="h-5 w-5 ml-2" />}
@@ -371,7 +371,7 @@ const PlanosUpscalerArcano69v2 = () => {
             <div className="flex flex-col items-center text-center">
               {/* H1 sem FadeIn para ser visível imediatamente (LCP) */}
               <div className="w-full max-w-[95vw] md:max-w-[60vw]">
-                <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
+                <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-foreground mb-4 md:mb-6 leading-tight tracking-wide">
                   {t('tools:upscaler.hero.title1')}{' '}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
                     {t('tools:upscaler.hero.title2')}
@@ -476,7 +476,7 @@ const PlanosUpscalerArcano69v2 = () => {
               </div>
               
               <AnimatedSection as="div" delay={400}>
-                <p className="text-center text-xl md:text-2xl text-white mt-10 md:mt-12">
+                <p className="text-center text-xl md:text-2xl text-foreground mt-10 md:mt-12">
                   {t('tools:upscaler.pain.solution')}
                 </p>
               </AnimatedSection>
@@ -508,7 +508,7 @@ const PlanosUpscalerArcano69v2 = () => {
                       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center mx-auto mb-6">
                         <IconComponent className="h-8 w-8 text-muted-foreground" />
                       </div>
-                      <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
+                      <h3 className="text-xl font-semibold text-foreground mb-3">{item.title}</h3>
                       <p className="text-muted-foreground flex-1">{item.description}</p>
                     </div>
                   );
@@ -542,7 +542,7 @@ const PlanosUpscalerArcano69v2 = () => {
                       <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
                         <IconComponent className="h-10 w-10 text-muted-foreground" />
                       </div>
-                      <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
+                      <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
                       <p className="text-muted-foreground max-w-[180px]">{step.description}</p>
                     </div>
                   );
@@ -560,7 +560,7 @@ const PlanosUpscalerArcano69v2 = () => {
               <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-border rounded-3xl overflow-hidden shadow-2xl shadow-white/5">
                 <CardContent className="p-5 md:p-8 text-center">
                   {/* Badge de desconto */}
-                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-sm md:text-lg font-bold mb-4 md:mb-6">
+                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-foreground border-0 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-sm md:text-lg font-bold mb-4 md:mb-6">
                     🔥 30% OFF
                   </Badge>
 
@@ -571,14 +571,14 @@ const PlanosUpscalerArcano69v2 = () => {
                     </div>
                   )}
 
-                  <h2 className="font-bebas text-2xl md:text-3xl lg:text-4xl text-white mb-4 md:mb-6 tracking-wide">
+                  <h2 className="font-bebas text-2xl md:text-3xl lg:text-4xl text-foreground mb-4 md:mb-6 tracking-wide">
                     {t('tools:upscaler.finalCTA.title')} <span className="text-muted-foreground">{t('tools:upscaler.finalCTA.subtitle')}</span>
                   </h2>
 
                   {/* Preços */}
                   <div className="mb-5 md:mb-6">
                     <span className="text-white/40 text-lg md:text-xl line-through block mb-1">{formatPrice(originalPrice)}</span>
-                    <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-2">
+                    <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-2">
                       {formatPrice(price)}
                     </div>
                     <p className="text-muted-foreground text-base md:text-lg">

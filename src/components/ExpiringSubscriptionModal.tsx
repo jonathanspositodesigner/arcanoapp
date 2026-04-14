@@ -72,7 +72,7 @@ const ExpiringSubscriptionModal = ({ isOpen, onClose, expiringStatus, planType }
             <>
               <Button
                 onClick={handleRenew}
-                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
+                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-foreground"
               >
                 {t('expiring.renewNow', 'Renovar Agora')}
               </Button>

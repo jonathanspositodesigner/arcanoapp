@@ -468,7 +468,7 @@ export default function Seedance2() {
         <div className="mx-auto flex w-full max-w-[1400px] flex-1 min-h-0 flex-col px-2 sm:px-4 pt-3 sm:pt-4 pb-2 sm:pb-4 overflow-y-auto">
           <div className="mb-2 sm:mb-3 flex shrink-0 flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <h1 className="text-lg sm:text-xl font-bold text-white">Seedance 2.0</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-foreground">Seedance 2.0</h1>
               <button
                 onClick={() => setShowTutorial(true)}
                 className="flex items-center gap-1 rounded-md border border-border bg-accent0/10 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-muted-foreground hover:bg-accent0/20 transition-colors"
@@ -582,21 +582,21 @@ export default function Seedance2() {
                   {libraryItems.some(li => li.id === previewGen.id) && (
                     <button
                       onClick={() => handleUseLibraryItem(previewGen)}
-                      className="rounded-full bg-slate-600/80 px-4 py-2 text-sm font-medium text-white hover:bg-accent0 transition-colors"
+                      className="rounded-full bg-slate-600/80 px-4 py-2 text-sm font-medium text-foreground hover:bg-accent0 transition-colors"
                     >
                       Usar modelo
                     </button>
                   )}
                   <button
                     onClick={() => previewGen.videoUrl && handleDownloadVideo(previewGen.videoUrl, previewGen.prompt)}
-                    className="rounded-full bg-accent p-2 text-white hover:bg-white/20 transition-colors"
+                    className="rounded-full bg-accent p-2 text-foreground hover:bg-white/20 transition-colors"
                     title="Baixar vídeo"
                   >
                     <Download className="h-5 w-5" />
                   </button>
                   <button
                     onClick={() => setPreviewGen(null)}
-                    className="rounded-full bg-accent p-2 text-white hover:bg-white/20 transition-colors"
+                    className="rounded-full bg-accent p-2 text-foreground hover:bg-white/20 transition-colors"
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -685,7 +685,7 @@ export default function Seedance2() {
                   disabled={!canGenerate() || uploading}
                   className={`group relative flex h-[44px] items-center justify-center gap-2 overflow-hidden rounded-xl px-4 text-sm font-semibold transition-all duration-300 ${
                     canGenerate() && !uploading
-                      ? "bg-gradient-to-r from-slate-600 to-slate-400 text-white shadow-lg shadow-slate-500/20 active:scale-[0.98]"
+                      ? "bg-gradient-to-r from-slate-600 to-slate-400 text-foreground shadow-lg shadow-slate-500/20 active:scale-[0.98]"
                       : "cursor-not-allowed bg-accent text-muted-foreground"
                   }`}
                 >
@@ -710,7 +710,7 @@ export default function Seedance2() {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
                   placeholder="Descreva o vídeo que deseja gerar..."
-                  className="min-h-[60px] max-h-[100px] resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white outline-none placeholder:text-muted-foreground focus:border-slate-500/40"
+                  className="min-h-[60px] max-h-[100px] resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-slate-500/40"
                   rows={2}
                 />
                 <span className="text-right text-[10px] text-muted-foreground -mt-1">{prompt.length}/2000</span>
@@ -772,7 +772,7 @@ export default function Seedance2() {
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
                     placeholder="Descreva o vídeo que deseja gerar..."
-                    className="min-h-[80px] max-h-[160px] min-w-0 resize-y rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none transition-all placeholder:text-muted-foreground focus:border-slate-500/40 focus:min-h-[100px]"
+                    className="min-h-[80px] max-h-[160px] min-w-0 resize-y rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-slate-500/40 focus:min-h-[100px]"
                     rows={3}
                   />
                   <div className="flex flex-col gap-2">
@@ -781,7 +781,7 @@ export default function Seedance2() {
                       disabled={!canGenerate() || uploading}
                       className={`group relative flex h-[48px] items-center justify-center gap-2.5 overflow-hidden rounded-xl px-5 text-sm font-semibold transition-all duration-300 ${
                         canGenerate() && !uploading
-                          ? "bg-gradient-to-r from-slate-600 to-slate-400 text-white shadow-lg shadow-slate-500/20 hover:shadow-gray-500 hover:scale-[1.02] active:scale-[0.98]"
+                          ? "bg-gradient-to-r from-slate-600 to-slate-400 text-foreground shadow-lg shadow-slate-500/20 hover:shadow-gray-500 hover:scale-[1.02] active:scale-[0.98]"
                           : "cursor-not-allowed bg-accent text-muted-foreground"
                       }`}
                     >
@@ -889,13 +889,13 @@ export default function Seedance2() {
                   <select
                     value={ratio}
                     onChange={(e) => setRatio(e.target.value as Ratio)}
-                    className="hidden sm:block rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white outline-none hover:border-border cursor-pointer [&>option]:bg-black [&>option]:text-white"
+                    className="hidden sm:block rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-foreground outline-none hover:border-border cursor-pointer [&>option]:bg-black [&>option]:text-white"
                   >
                     {RATIOS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                   </select>
                   <button
                     onClick={() => setShowRatioModal(true)}
-                    className="sm:hidden rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white"
+                    className="sm:hidden rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-foreground"
                   >
                     {RATIOS.find((r) => r.value === ratio)?.label || ratio}
                   </button>
@@ -973,9 +973,9 @@ export default function Seedance2() {
       {showFaceWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowFaceWarning(null)}>
           <div className="mx-4 w-full max-w-sm rounded-2xl border border-border bg-background p-5" onClick={(e) => e.stopPropagation()}>
-            <p className="mb-2 text-sm font-semibold text-white">⚠️ Atenção</p>
+            <p className="mb-2 text-sm font-semibold text-foreground">⚠️ Atenção</p>
             <p className="mb-1 text-xs leading-relaxed text-muted-foreground">
-              O Seedance 2 <span className="font-medium text-white">não aceita imagens com rostos reais</span> de pessoas.
+              O Seedance 2 <span className="font-medium text-foreground">não aceita imagens com rostos reais</span> de pessoas.
             </p>
             <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
               Se quiser adicionar um rosto, crie um <span className="font-medium text-muted-foreground">Personagem</span> usando o botão abaixo do prompt.
@@ -989,7 +989,7 @@ export default function Seedance2() {
               </button>
               <button
                 onClick={confirmFilePicker}
-                className="flex-1 rounded-xl bg-slate-600/80 py-2 text-xs font-medium text-white hover:bg-accent0 transition-colors"
+                className="flex-1 rounded-xl bg-slate-600/80 py-2 text-xs font-medium text-foreground hover:bg-accent0 transition-colors"
               >
                 Entendi
               </button>
@@ -1068,7 +1068,7 @@ function VideoCard({ gen, onPreview, onDownload, onUse }: { gen: Generation; onP
           {onUse && (
             <button
               onClick={(e) => { e.stopPropagation(); onUse(gen); }}
-              className="absolute bottom-2 left-2 right-2 z-10 rounded-lg bg-slate-600/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-accent0"
+              className="absolute bottom-2 left-2 right-2 z-10 rounded-lg bg-slate-600/80 px-2 py-1 text-[10px] font-medium text-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-accent0"
             >
               Usar modelo
             </button>

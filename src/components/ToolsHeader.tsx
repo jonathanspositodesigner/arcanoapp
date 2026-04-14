@@ -94,10 +94,10 @@ const ToolsHeader = ({
           {showLogo ? (
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
               </div>
               {title && (
-                <h1 className="text-base sm:text-xl font-bold text-white hidden sm:block">
+                <h1 className="text-base sm:text-xl font-bold text-foreground hidden sm:block">
                   {title}
                 </h1>
               )}
@@ -183,7 +183,7 @@ const ToolsHeader = ({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-56 bg-background border-border text-white"
+                  className="w-56 bg-background border-border text-foreground"
                 >
                   {/* User Info */}
                   <DropdownMenuLabel className="text-muted-foreground">

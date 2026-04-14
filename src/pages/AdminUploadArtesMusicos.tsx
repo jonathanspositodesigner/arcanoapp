@@ -452,7 +452,7 @@ const AdminUploadArtesMusicos = () => {
                         className="w-full h-32 object-cover rounded-lg hover:ring-2 hover:ring-slate-500 transition-all" 
                       />
                     )}
-                    <div className={`absolute top-2 left-2 text-[10px] px-1.5 py-0.5 rounded ${media.isVideo ? 'bg-accent0' : 'bg-blue-500'} text-white flex items-center gap-1`}>
+                    <div className={`absolute top-2 left-2 text-[10px] px-1.5 py-0.5 rounded ${media.isVideo ? 'bg-accent0' : 'bg-blue-500'} text-foreground flex items-center gap-1`}>
                       {media.isVideo ? <Video className="h-3 w-3" /> : <Image className="h-3 w-3" />}
                       {media.isVideo ? 'Vídeo' : 'Img'}
                     </div>
@@ -465,7 +465,7 @@ const AdminUploadArtesMusicos = () => {
                     >
                       <X className="h-4 w-4" />
                     </button>
-                    <div className={`absolute bottom-2 left-2 right-2 text-xs ${isCurrentItemComplete(media) ? 'bg-green-500' : 'bg-yellow-500'} text-white px-2 py-1 rounded text-center`}>
+                    <div className={`absolute bottom-2 left-2 right-2 text-xs ${isCurrentItemComplete(media) ? 'bg-green-500' : 'bg-yellow-500'} text-foreground px-2 py-1 rounded text-center`}>
                       {isCurrentItemComplete(media) ? 'Completo' : 'Pendente'}
                     </div>
                   </div>

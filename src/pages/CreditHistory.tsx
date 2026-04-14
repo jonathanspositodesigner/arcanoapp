@@ -87,7 +87,7 @@ const CreditHistory = () => {
           Voltar
         </Button>
 
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <History className="h-6 w-6 text-muted-foreground" />
           Histórico de Créditos
         </h1>
@@ -121,7 +121,7 @@ const CreditHistory = () => {
 
         {/* Transaction List */}
         <Card className="p-6 bg-background border-border">
-          <h2 className="text-lg font-semibold text-white mb-4">Todas as Transações</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">Todas as Transações</h2>
 
           {loading ? (
             <div className="flex items-center justify-center py-8">
@@ -145,7 +145,7 @@ const CreditHistory = () => {
                       <TrendingUp className="h-5 w-5 text-green-400" />
                     )}
                     <div>
-                      <p className="text-sm text-white">
+                      <p className="text-sm text-foreground">
                         {(tx.description?.includes('Pagar.me') || tx.description?.includes('Pagarme'))
                           ? tx.description.replace(/Compra\s+Pagar\.?me/i, 'Compra de créditos avulsos').replace(/Pagarme/i, 'créditos avulsos')
                           : tx.description || (tx.transaction_type === 'consumption' ? 'Uso do Upscaler' : 'Recarga de créditos')}

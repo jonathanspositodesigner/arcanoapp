@@ -705,7 +705,7 @@ const AdminPackPurchases = () => {
             if (!open) resetForm();
           }}>
             <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+              <Button className="bg-gradient-to-r from-amber-500 to-orange-500 text-foreground">
                 <Plus className="h-4 w-4 mr-2" />
                 Cadastrar Cliente
               </Button>

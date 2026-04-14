@@ -55,9 +55,9 @@ const PoseLibraryModal: React.FC<PoseLibraryModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-background border-border text-white max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-2xl bg-background border-border text-foreground max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
+          <DialogTitle className="text-xl font-bold text-foreground flex items-center gap-2">
             <Users className="w-5 h-5 text-muted-foreground" />
             Biblioteca de Poses de Referência
           </DialogTitle>
@@ -72,7 +72,7 @@ const PoseLibraryModal: React.FC<PoseLibraryModalProps> = ({
             className={cn(
               "flex-1",
               filter === 'homem'
-                ? "bg-gradient-to-r from-slate-500 to-slate-700 text-white border-0"
+                ? "bg-gradient-to-r from-slate-500 to-slate-700 text-foreground border-0"
                 : "bg-transparent border-border text-muted-foreground hover:bg-accent0/20"
             )}
           >
@@ -86,7 +86,7 @@ const PoseLibraryModal: React.FC<PoseLibraryModalProps> = ({
             className={cn(
               "flex-1",
               filter === 'mulher'
-                ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white border-0"
+                ? "bg-gradient-to-r from-pink-600 to-rose-600 text-foreground border-0"
                 : "bg-transparent border-border text-muted-foreground hover:bg-accent0/20"
             )}
           >

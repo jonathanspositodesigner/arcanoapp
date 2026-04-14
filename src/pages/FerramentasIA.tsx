@@ -270,7 +270,7 @@ const FerramentasIA = () => {
           <div className="container mx-auto px-4 py-3">
             <Button
               onClick={() => navigate('/login-artes?redirect=/ferramentas-ia')}
-              className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
+              className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-foreground"
               size="sm"
             >
               <UserCheck className="w-4 h-4 mr-2" />
@@ -286,7 +286,7 @@ const FerramentasIA = () => {
           <div className="container mx-auto px-4 py-3">
             <Button
               onClick={() => navigate('/ferramentas-ia-aplicativo')}
-              className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white shadow-lg"
+              className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-foreground shadow-lg"
               size="sm"
             >
               <Smartphone className="w-4 h-4 mr-2" />
@@ -305,7 +305,7 @@ const FerramentasIA = () => {
         {/* Suas Ferramentas */}
         {toolsWithAccess.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-400" />
               {t('ferramentas.yourTools')}
             </h2>
@@ -318,7 +318,7 @@ const FerramentasIA = () => {
         {/* Disponíveis para Aquisição */}
         {toolsWithoutAccess.length > 0 && (
           <section>
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-muted-foreground" />
               {t('ferramentas.availableForPurchase')}
             </h2>

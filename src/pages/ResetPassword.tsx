@@ -159,7 +159,7 @@ const ResetPassword = () => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
+            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-foreground"
           >
             {isLoading ? t('saving') : t('saveNewPassword')}
           </Button>

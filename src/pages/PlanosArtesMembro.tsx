@@ -269,7 +269,7 @@ const PlanosArtesMembro = () => {
             <Crown className="h-5 w-5 mr-2" />
             {t('memberDiscountLabel')}
           </Badge>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             {selectedPack 
               ? t('acquirePack', { pack: selectedPack.name })
               : t('chooseNewPack')
@@ -289,7 +289,7 @@ const PlanosArtesMembro = () => {
             {availablePacks.length === 0 ? (
               <div className="col-span-full text-center py-12">
                 <Crown className="h-16 w-16 text-slate-400 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-white mb-2">
+                <h3 className="text-xl font-bold text-foreground mb-2">
                   {t('youOwnAllPacks')}
                 </h3>
                 <p className="text-muted-foreground mb-4">
@@ -339,7 +339,7 @@ const PlanosArtesMembro = () => {
             <div className="max-w-lg mx-auto">
               <Card className="relative bg-card/80 border-border/30">
                 {selectedAccessType === 'vitalicio' && accessOptions.length > 1 && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent0 text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent0 text-foreground px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
                     {t('bestValue')}
                   </div>
                 )}
@@ -351,7 +351,7 @@ const PlanosArtesMembro = () => {
                       className="w-24 h-24 object-cover rounded-lg border-2 border-slate-500/50 mx-auto mb-3"
                     />
                   )}
-                  <CardTitle className="text-xl text-white">{selectedPack.name}</CardTitle>
+                  <CardTitle className="text-xl text-foreground">{selectedPack.name}</CardTitle>
                   <button
                     onClick={() => setSelectedPack(null)}
                     className="text-white/40 hover:text-muted-foreground text-xs underline underline-offset-2 transition-colors mt-1"

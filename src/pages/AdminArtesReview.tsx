@@ -189,7 +189,7 @@ const AdminArtesReview = () => {
                       <Badge variant="destructive"><Trash2 className="h-3 w-3 mr-1" />Exclusão Solicitada</Badge>
                     )}
                     {status === "approved" && <Badge className="bg-green-500">Aprovado</Badge>}
-                    {status === "pending" && <Badge variant="secondary" className="bg-yellow-500 text-white">Pendente</Badge>}
+                    {status === "pending" && <Badge variant="secondary" className="bg-yellow-500 text-foreground">Pendente</Badge>}
                     {status === "rejected" && <Badge variant="destructive" className="bg-red-600"><XCircle className="h-3 w-3 mr-1" />Recusado</Badge>}
                   </div>
                 </div>

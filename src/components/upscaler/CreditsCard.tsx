@@ -74,7 +74,7 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown, isUnli
 
   return (
     <Card className="p-6 bg-background border-border">
-      <h2 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
+      <h2 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2">
         <Coins className="h-5 w-5 text-yellow-400" />
         Créditos de IA
       </h2>
@@ -131,7 +131,7 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown, isUnli
                   <TrendingUp className="h-4 w-4 text-green-400" />
                 )}
                 <div>
-                  <p className="text-sm text-white">
+                  <p className="text-sm text-foreground">
                     {latestTransaction.description || (latestTransaction.transaction_type === 'consumption' ? 'Uso do Upscaler' : 'Recarga de créditos')}
                   </p>
                   <p className="text-xs text-muted-foreground">

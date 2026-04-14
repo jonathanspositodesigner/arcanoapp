@@ -37,7 +37,7 @@ const Seedance2TutorialModal = ({ open, onClose }: Seedance2TutorialModalProps) 
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
       <DialogContent className="sm:max-w-2xl p-0 gap-0 bg-[#0d0d1a] border-border overflow-hidden max-w-[calc(100%-2rem)] rounded-2xl">
         <div className="p-4 sm:p-6">
-          <h2 className="text-lg sm:text-xl font-bold text-white mb-1">Tutorial — Seedance 2.0</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-foreground mb-1">Tutorial — Seedance 2.0</h2>
           <p className="text-sm text-muted-foreground mb-4">Aprenda a usar a ferramenta assistindo o vídeo abaixo:</p>
           <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-black">
             {playing ? (

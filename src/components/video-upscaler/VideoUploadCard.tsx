@@ -262,7 +262,7 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
       )}>
         {/* Header */}
         <div className="px-2 py-1 border-b border-border">
-          <h3 className="text-[10px] font-semibold text-white flex items-center gap-1">
+          <h3 className="text-[10px] font-semibold text-foreground flex items-center gap-1">
             <Video className="w-3 h-3 text-muted-foreground" />
             {title}
           </h3>
@@ -316,7 +316,7 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
                 disabled={disabled}
                 className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500/100 flex items-center justify-center transition-colors"
               >
-                <X className="w-3 h-3 text-white" />
+                <X className="w-3 h-3 text-foreground" />
               </button>
             </>
           ) : (

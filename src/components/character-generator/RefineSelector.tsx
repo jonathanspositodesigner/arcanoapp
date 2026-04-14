@@ -31,7 +31,7 @@ const RefineSelector: React.FC<RefineSelectorProps> = ({
   return (
     <div className="bg-accent border border-border rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-white">Escolha as imagens que quer trocar</p>
+        <p className="text-xs font-semibold text-foreground">Escolha as imagens que quer trocar</p>
         <Button
           variant="ghost"
           size="icon"
@@ -56,7 +56,7 @@ const RefineSelector: React.FC<RefineSelectorProps> = ({
               className={`
                 h-10 rounded-lg text-sm font-bold transition-all
                 ${isSelected
-                  ? 'bg-slate-600 text-white border-2 border-border shadow-lg shadow-slate-500/20'
+                  ? 'bg-slate-600 text-foreground border-2 border-border shadow-lg shadow-slate-500/20'
                   : 'bg-slate-800/50 text-muted-foreground border border-border hover:bg-slate-700/50 hover:text-foreground'
                 }
                 disabled:opacity-50 disabled:cursor-not-allowed

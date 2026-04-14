@@ -201,7 +201,7 @@ const UpscalerArcanoV1 = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-lg md:text-3xl font-bold text-white">
+            <h1 className="text-lg md:text-3xl font-bold text-foreground">
               Upscaler Arcano v1.0
             </h1>
             <p className="text-muted-foreground text-sm md:text-base">
@@ -213,7 +213,7 @@ const UpscalerArcanoV1 = () => {
         {/* Master's Journey Progress Bar */}
         <div className="mb-6 p-4 bg-background/50 border border-border rounded-lg">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-white flex items-center gap-2">
+            <span className="text-sm font-medium text-foreground flex items-center gap-2">
               <Trophy className="h-4 w-4 text-yellow-500" />
               {t('toolLessons.mastersJourney')}
             </span>
@@ -276,7 +276,7 @@ const UpscalerArcanoV1 = () => {
                     onClick={() => window.open(TOOL_LINK, '_blank')}
                     className={`w-full h-12 text-base font-semibold transition-all duration-500 ${
                       isToolUnlocked 
-                        ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white shadow-lg shadow-orange-500/30' 
+                        ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-foreground shadow-lg shadow-orange-500/30' 
                         : 'bg-zinc-700 text-zinc-300 border border-zinc-600 cursor-not-allowed'
                     }`}
                   >
@@ -317,7 +317,7 @@ const UpscalerArcanoV1 = () => {
               <>
                 {/* Lesson Info - ABOVE video */}
                 <Card className="p-4 bg-background/50 border-border">
-                  <h2 className="text-base md:text-xl font-bold mb-2 flex items-center gap-2 flex-wrap text-white">
+                  <h2 className="text-base md:text-xl font-bold mb-2 flex items-center gap-2 flex-wrap text-foreground">
                     <Play className="h-5 w-5 text-muted-foreground" />
                     {t(currentLesson.titleKey)}
                     {watchedLessons.includes(selectedLesson + 1) && (
@@ -368,7 +368,7 @@ const UpscalerArcanoV1 = () => {
                             ? handleToolButtonClick(button.url)
                             : handleRegularButtonClick(button.url)
                         }
-                        className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
+                        className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-foreground"
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
                         {t(button.labelKey)}
@@ -382,7 +382,7 @@ const UpscalerArcanoV1 = () => {
 
           {/* Lesson List */}
           <div className="space-y-2">
-            <h3 className="font-semibold text-lg mb-4 text-white">{t('toolLessons.lessons')}</h3>
+            <h3 className="font-semibold text-lg mb-4 text-foreground">{t('toolLessons.lessons')}</h3>
             {lessons.map((lesson, index) => (
               <Card
                 key={index}
@@ -470,7 +470,7 @@ const UpscalerArcanoV1 = () => {
           <AlertDialogFooter className="flex flex-col gap-2 mt-4 sm:flex-row">
             <AlertDialogCancel 
               onClick={handleContinueWatching}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white border-0 order-1 sm:order-1"
+              className="flex-1 bg-slate-600 hover:bg-slate-700 text-foreground border-0 order-1 sm:order-1"
             >
               {t('toolLessons.continueWatching')}
             </AlertDialogCancel>

@@ -52,7 +52,7 @@ const AguardandoPagamentoMusicos = () => {
       <Card className="w-full max-w-lg relative z-10 border-primary/20 shadow-xl">
         <CardContent className="pt-8 pb-8 px-6 text-center">
           <div className="w-16 h-16 mx-auto bg-gradient-to-br from-amber-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg shadow-amber-500/30 mb-6">
-            <Clock className="w-8 h-8 text-white" />
+            <Clock className="w-8 h-8 text-foreground" />
           </div>
 
           <h1 className="text-2xl font-bold text-foreground mb-2">{t('pendingMusicos.title')}</h1>

@@ -83,10 +83,10 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
             {({ zoomIn, zoomOut }) => (
               <>
                 <div className="absolute top-2 right-2 z-10 flex gap-1">
-                  <button onClick={() => zoomIn()} className="bg-black/60 text-white p-1.5 rounded-lg hover:bg-black/80">
+                  <button onClick={() => zoomIn()} className="bg-black/60 text-foreground p-1.5 rounded-lg hover:bg-black/80">
                     <ZoomIn className="w-4 h-4" />
                   </button>
-                  <button onClick={() => zoomOut()} className="bg-black/60 text-white p-1.5 rounded-lg hover:bg-black/80">
+                  <button onClick={() => zoomOut()} className="bg-black/60 text-foreground p-1.5 rounded-lg hover:bg-black/80">
                     <ZoomOut className="w-4 h-4" />
                   </button>
                 </div>
@@ -153,7 +153,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
       <div className="grid grid-cols-2 gap-3 mb-4">
         {/* User image */}
         <div className="space-y-2">
-          <p className="text-[10px] font-semibold text-white flex items-center gap-1.5">
+          <p className="text-[10px] font-semibold text-foreground flex items-center gap-1.5">
             <Upload className="w-3 h-3 text-muted-foreground" />
             Sua Foto
           </p>
@@ -175,7 +175,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
 
         {/* Reference image */}
         <div className="space-y-2">
-          <p className="text-[10px] font-semibold text-white flex items-center gap-1.5">
+          <p className="text-[10px] font-semibold text-foreground flex items-center gap-1.5">
             <ImageIcon className="w-3 h-3 text-muted-foreground" />
             Referência
           </p>

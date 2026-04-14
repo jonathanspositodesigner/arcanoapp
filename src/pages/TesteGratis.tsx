@@ -202,7 +202,7 @@ const TesteGratis = () => {
 
       {/* Logo */}
       <div className="relative z-10 mb-8">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Sparkles className="w-6 h-6 text-muted-foreground" />
           ArcanoApp
         </h1>
@@ -216,9 +216,9 @@ const TesteGratis = () => {
           <>
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4 shadow-lg shadow-slate-500/20">
-                <Gift className="w-8 h-8 text-white" />
+                <Gift className="w-8 h-8 text-foreground" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Teste Grátis</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Teste Grátis</h2>
               <p className="text-muted-foreground text-sm">Ganhe 180 créditos para usar nas Ferramentas de IA</p>
               <p className="text-muted-foreground/80 text-xs mt-1">⏳ Créditos válidos por 24 horas</p>
             </div>
@@ -231,7 +231,7 @@ const TesteGratis = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
-                  className="pl-10 h-12 bg-background border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
+                  className="pl-10 h-12 bg-background border-2 border-slate-600/50 text-foreground placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                 />
               </div>
               <Button
@@ -254,9 +254,9 @@ const TesteGratis = () => {
           <>
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4 shadow-lg shadow-slate-500/20">
-                <Lock className="w-8 h-8 text-white" />
+                <Lock className="w-8 h-8 text-foreground" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Faça Login</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Faça Login</h2>
               <p className="text-muted-foreground text-sm">Digite sua senha para resgatar seus 180 créditos</p>
             </div>
             <form onSubmit={handleLogin} className="space-y-4">
@@ -282,7 +282,7 @@ const TesteGratis = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
-                    className="pl-10 pr-10 h-12 bg-background border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
+                    className="pl-10 pr-10 h-12 bg-background border-2 border-slate-600/50 text-foreground placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -312,9 +312,9 @@ const TesteGratis = () => {
           <>
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4 shadow-lg shadow-slate-500/20">
-                <User className="w-8 h-8 text-white" />
+                <User className="w-8 h-8 text-foreground" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Crie sua Conta</h2>
+              <h2 className="text-2xl font-bold text-foreground mb-2">Crie sua Conta</h2>
               <p className="text-muted-foreground text-sm">Cadastre-se para ganhar 180 créditos grátis</p>
               <p className="text-muted-foreground/80 text-xs mt-1">⏳ Créditos válidos por 24 horas</p>
             </div>
@@ -329,7 +329,7 @@ const TesteGratis = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     disabled={loading}
-                    className="pl-10 h-12 bg-background border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
+                    className="pl-10 h-12 bg-background border-2 border-slate-600/50 text-foreground placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                   />
                 </div>
               </div>
@@ -355,7 +355,7 @@ const TesteGratis = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
-                    className="pl-10 pr-10 h-12 bg-background border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
+                    className="pl-10 pr-10 h-12 bg-background border-2 border-slate-600/50 text-foreground placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -386,7 +386,7 @@ const TesteGratis = () => {
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 mb-4">
               <XCircle className="w-10 h-10 text-red-400" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Promoção já resgatada</h2>
+            <h2 className="text-xl font-bold text-foreground mb-2">Promoção já resgatada</h2>
             <p className="text-red-400 text-sm mb-6">Você já resgatou uma promoção anteriormente.</p>
             <Button
               onClick={() => navigate('/ferramentas-ia-aplicativo')}
@@ -402,7 +402,7 @@ const TesteGratis = () => {
         {pageState === 'claiming' && (
           <div className="text-center py-8">
             <Loader2 className="w-12 h-12 text-muted-foreground animate-spin mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">Resgatando créditos...</h2>
+            <h2 className="text-xl font-bold text-foreground mb-2">Resgatando créditos...</h2>
             <p className="text-muted-foreground text-sm">Aguarde um momento</p>
           </div>
         )}
@@ -411,9 +411,9 @@ const TesteGratis = () => {
         {pageState === 'success' && (
           <div className="text-center py-4">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 mb-4 shadow-lg shadow-green-500/30">
-              <CheckCircle className="w-10 h-10 text-white" />
+              <CheckCircle className="w-10 h-10 text-foreground" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Parabéns! 🎉</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Parabéns! 🎉</h2>
             <p className="text-green-400 text-lg font-semibold mb-2">180 créditos adicionados!</p>
             <p className="text-muted-foreground text-sm mb-6">Redirecionando para as Ferramentas de IA...</p>
             <Loader2 className="w-6 h-6 text-muted-foreground animate-spin mx-auto" />
@@ -424,9 +424,9 @@ const TesteGratis = () => {
         {pageState === 'email_sent' && (
           <div className="text-center py-4">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-slate-500 to-slate-700 mb-4 shadow-lg shadow-blue-500/30">
-              <Mail className="w-10 h-10 text-white" />
+              <Mail className="w-10 h-10 text-foreground" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Verifique seu Email</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Verifique seu Email</h2>
             <p className="text-muted-foreground text-sm mb-2">
               Enviamos um link de confirmação para:
             </p>
@@ -437,7 +437,7 @@ const TesteGratis = () => {
             <Button
               onClick={() => { setPageState('email'); setPassword(''); setName(''); }}
               variant="outline"
-              className="w-full h-10 border-slate-500/50 bg-accent text-white hover:bg-slate-800/70"
+              className="w-full h-10 border-slate-500/50 bg-accent text-foreground hover:bg-slate-800/70"
             >
               Voltar para o início
             </Button>

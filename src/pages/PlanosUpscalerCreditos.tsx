@@ -100,7 +100,7 @@ const FullscreenModal = ({
         onClick={onClose}
         className="absolute top-4 right-4 z-10 p-3 bg-accent hover:bg-white/20 rounded-full transition-colors"
       >
-        <X className="h-6 w-6 text-white" />
+        <X className="h-6 w-6 text-foreground" />
       </button>
       
       <div 
@@ -161,7 +161,7 @@ const FullscreenModal = ({
 const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
   <Button
     onClick={onClick}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-white shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20"
   >
     {t('tools:upscaler.cta')}
     <ArrowRight className="h-5 w-5 ml-2" />
@@ -451,7 +451,7 @@ const PlanosUpscalerCreditos = () => {
               </FadeIn>
 
               {/* Título principal */}
-              <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3 md:mb-4 leading-[1.25]">
+              <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-3 md:mb-4 leading-[1.25]">
                 {t('tools:upscaler.hero.title1')}{' '}
                 <br className="hidden md:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
@@ -569,7 +569,7 @@ const PlanosUpscalerCreditos = () => {
               </div>
               
               <AnimatedSection as="div" delay={400}>
-                <p className="text-center text-xl md:text-2xl text-white mt-10 md:mt-12">
+                <p className="text-center text-xl md:text-2xl text-foreground mt-10 md:mt-12">
                   {t('tools:upscaler.pain.solution')}
                 </p>
               </AnimatedSection>
@@ -601,7 +601,7 @@ const PlanosUpscalerCreditos = () => {
                       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center mx-auto mb-6">
                         <IconComponent className="h-8 w-8 text-muted-foreground" />
                       </div>
-                      <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
+                      <h3 className="text-xl font-semibold text-foreground mb-3">{item.title}</h3>
                       <p className="text-muted-foreground flex-1">{item.description}</p>
                     </div>
                   );
@@ -635,7 +635,7 @@ const PlanosUpscalerCreditos = () => {
                       <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
                         <IconComponent className="h-10 w-10 text-muted-foreground" />
                       </div>
-                      <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
+                      <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
                       <p className="text-muted-foreground max-w-[180px]">{step.description}</p>
                     </div>
                   );
@@ -692,13 +692,13 @@ const PlanosUpscalerCreditos = () => {
                 <div className="flex flex-col h-full w-full">
                   <Card className="relative p-8 flex flex-col rounded-xl bg-background border border-border w-full h-full">
                     <div className="text-center mb-5 min-h-[68px] flex flex-col items-center justify-center">
-                      <h3 className="text-xl font-bold text-white">Starter</h3>
+                      <h3 className="text-xl font-bold text-foreground">Starter</h3>
                       <p className="text-sm text-muted-foreground mt-0.5">Pra quem quer testar sem compromisso!</p>
                     </div>
                     <div className="text-center mb-4 h-[98px] flex flex-col justify-center">
                       <div className="flex items-baseline justify-center gap-1">
                         <span className="text-muted-foreground text-lg">R$</span>
-                        <span className="text-5xl font-bold text-white">29,90</span>
+                        <span className="text-5xl font-bold text-foreground">29,90</span>
                       </div>
                       <p className="text-muted-foreground text-base mt-1">Pagamento único</p>
                     </div>
@@ -709,7 +709,7 @@ const PlanosUpscalerCreditos = () => {
                       Comprar
                     </Button>
                     <div className="flex flex-col items-center mb-6 h-[57px]">
-                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-white bg-gradient-to-r from-slate-600 to-blue-500">
+                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-foreground bg-gradient-to-r from-slate-600 to-blue-500">
                         <Sparkles className="w-4 h-4" />
                         30 upscalers
                       </span>
@@ -769,14 +769,14 @@ const PlanosUpscalerCreditos = () => {
                       MAIS VENDIDO
                     </Badge>
                     <div className="text-center mb-5 min-h-[68px] flex flex-col items-center justify-center">
-                      <h3 className="text-xl font-bold text-white">Pro</h3>
+                      <h3 className="text-xl font-bold text-foreground">Pro</h3>
                       <p className="text-sm text-muted-foreground mt-0.5">Dobro de créditos por + R$10</p>
                     </div>
                     <div className="text-center mb-4 h-[98px] flex flex-col justify-center">
                       <p className="text-muted-foreground line-through text-sm">R$69,90</p>
                       <div className="flex items-baseline justify-center gap-1">
                         <span className="text-muted-foreground text-lg">R$</span>
-                        <span className="text-5xl font-bold text-white">39,90</span>
+                        <span className="text-5xl font-bold text-foreground">39,90</span>
                       </div>
                       <p className="text-muted-foreground text-base mt-1">Pagamento único</p>
                     </div>
@@ -787,7 +787,7 @@ const PlanosUpscalerCreditos = () => {
                       Comprar
                     </Button>
                     <div className="flex flex-col items-center mb-6 h-[57px]">
-                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-white bg-gradient-to-r from-slate-600 to-blue-500">
+                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-foreground bg-gradient-to-r from-slate-600 to-blue-500">
                         <Sparkles className="w-4 h-4" />
                         70 upscalers
                       </span>
@@ -843,18 +843,18 @@ const PlanosUpscalerCreditos = () => {
                 {/* Studio - MELHOR CUSTO/BENEFÍCIO */}
                 <div className="flex flex-col h-full w-full">
                   <Card className="relative p-8 flex flex-col rounded-xl bg-background border-2 border-slate-500 shadow-lg shadow-slate-500/20 w-full h-full">
-                    <Badge className="absolute -top-3.5 left-1/2 -translate-x-1/2 border-0 text-sm whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-white px-5 py-1.5">
+                    <Badge className="absolute -top-3.5 left-1/2 -translate-x-1/2 border-0 text-sm whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-foreground px-5 py-1.5">
                       MELHOR CUSTO/BENEFÍCIO
                     </Badge>
                     <div className="text-center mb-5 min-h-[68px] flex flex-col items-center justify-center">
-                      <h3 className="text-xl font-bold text-white">Studio</h3>
+                      <h3 className="text-xl font-bold text-foreground">Studio</h3>
                       <p className="text-sm text-muted-foreground mt-0.5">Para profissionais que usam muito no dia a dia</p>
                     </div>
                     <div className="text-center mb-4 h-[98px] flex flex-col justify-center">
                       <p className="text-muted-foreground line-through text-sm">R$249,90</p>
                       <div className="flex items-baseline justify-center gap-1">
                         <span className="text-muted-foreground text-lg">R$</span>
-                        <span className="text-5xl font-bold text-white">99,90</span>
+                        <span className="text-5xl font-bold text-foreground">99,90</span>
                       </div>
                       <p className="text-muted-foreground text-base mt-1">Pagamento único</p>
                     </div>
@@ -865,7 +865,7 @@ const PlanosUpscalerCreditos = () => {
                       Comprar
                     </Button>
                     <div className="flex flex-col items-center mb-6 h-[57px]">
-                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-white bg-gradient-to-r from-slate-600 to-blue-500">
+                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-foreground bg-gradient-to-r from-slate-600 to-blue-500">
                         <Sparkles className="w-4 h-4" />
                         200 upscalers
                       </span>

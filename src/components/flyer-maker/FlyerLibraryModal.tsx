@@ -106,9 +106,9 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-[calc(100%-32px)] sm:w-full bg-background border border-slate-500/40 text-white max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-xl">
+      <DialogContent className="max-w-2xl w-[calc(100%-32px)] sm:w-full bg-background border border-slate-500/40 text-foreground max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-xl">
         <DialogHeader className="flex-shrink-0 pb-2">
-          <DialogTitle className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
+          <DialogTitle className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
             <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
             Biblioteca de Flyers
           </DialogTitle>
@@ -139,7 +139,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
             placeholder="buscar por nome ou categoria..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-9 text-sm bg-accent0/10 border-border text-white placeholder:text-muted-foreground focus:border-slate-400"
+            className="pl-10 h-9 text-sm bg-accent0/10 border-border text-foreground placeholder:text-muted-foreground focus:border-slate-400"
           />
         </div>
 

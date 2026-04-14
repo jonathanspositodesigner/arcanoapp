@@ -532,7 +532,7 @@ const GerarImagemTool = () => {
         <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center p-6">
           <div className="max-w-md text-center space-y-4">
             <div className="text-6xl">🔒</div>
-            <h1 className="text-xl font-bold text-white">Recurso não disponível no seu plano</h1>
+            <h1 className="text-xl font-bold text-foreground">Recurso não disponível no seu plano</h1>
             <p className="text-muted-foreground text-sm">
               A geração de imagens está disponível a partir do plano <strong className="text-muted-foreground">Pro</strong>.
             </p>
@@ -556,7 +556,7 @@ const GerarImagemTool = () => {
                 <ArrowLeft className="h-5 w-5" />
               </button>
               <div>
-                <h1 className="text-lg font-bold text-white flex items-center gap-2">
+                <h1 className="text-lg font-bold text-foreground flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-muted-foreground" />
                   Gerar Imagem
                 </h1>
@@ -655,7 +655,7 @@ const GerarImagemTool = () => {
                       onClick={() => removeReferenceImage(idx)}
                       className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-600 hover:bg-red-500/100 rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
                     >
-                      <X className="h-3 w-3 text-white" />
+                      <X className="h-3 w-3 text-foreground" />
                     </button>
                   </div>
                 ))}
@@ -688,7 +688,7 @@ const GerarImagemTool = () => {
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Descreva a imagem que você quer gerar..."
                 rows={2}
-                className="flex-1 bg-accent border border-slate-500/25 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none focus:border-border transition-colors [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                className="flex-1 bg-accent border border-slate-500/25 rounded-xl px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:border-border transition-colors [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                 style={{ minHeight: '56px', maxHeight: '100px', overflow: 'auto' }}
                 disabled={isProcessing}
                 onInput={(e) => {
@@ -784,7 +784,7 @@ const GerarImagemTool = () => {
 
               {resultUrl && (
                 <>
-                  <button onClick={handleDownload} className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-green-600/80 border border-green-500/40 text-xs text-white hover:bg-green-600 transition-colors">
+                  <button onClick={handleDownload} className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-green-600/80 border border-green-500/40 text-xs text-foreground hover:bg-green-600 transition-colors">
                     <Download className="h-3 w-3" />
                     <span className="font-medium">Baixar</span>
                   </button>

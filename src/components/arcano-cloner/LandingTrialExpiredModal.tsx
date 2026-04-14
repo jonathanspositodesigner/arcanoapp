@@ -55,12 +55,12 @@ export const LandingTrialExpiredModal = ({ userId, balance }: LandingTrialExpire
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="bg-background border-border text-white max-w-md">
+      <DialogContent className="bg-background border-border text-foreground max-w-md">
         <div className="text-center py-4">
           <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto mb-4">
             <Sparkles className="w-8 h-8 text-muted-foreground" />
           </div>
-          <DialogTitle className="text-xl font-bold text-white mb-3">
+          <DialogTitle className="text-xl font-bold text-foreground mb-3">
             Seu teste grátis foi concluído!
           </DialogTitle>
           <DialogDescription className="text-muted-foreground text-sm leading-relaxed mb-6">

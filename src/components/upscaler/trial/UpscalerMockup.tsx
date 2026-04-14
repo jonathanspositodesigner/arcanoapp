@@ -121,7 +121,7 @@ export default function UpscalerMockup({
       {/* Header */}
       <div className="px-6 py-4 border-b border-border flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
-          <Wand2 className="w-4 h-4 text-white" />
+          <Wand2 className="w-4 h-4 text-foreground" />
         </div>
         <span className="text-foreground font-semibold text-lg">Upscaler Arcano</span>
         <div className="ml-auto flex gap-2">
@@ -253,7 +253,7 @@ export default function UpscalerMockup({
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-xs font-medium text-white">Nível de Detalhes</span>
+                <span className="text-xs font-medium text-foreground">Nível de Detalhes</span>
               </div>
               <span className="text-xs text-muted-foreground font-mono">{Math.round(comidaDetailLevel * 100)}%</span>
             </div>
@@ -398,7 +398,7 @@ export default function UpscalerMockup({
           <div className="flex flex-col items-center justify-center gap-4 h-64 rounded-xl border-2 border-border/20 bg-black/30">
             <Loader2 className="w-12 h-12 text-muted-foreground animate-spin" />
             <div className="text-center">
-              <p className="text-lg font-medium text-white">
+              <p className="text-lg font-medium text-foreground">
                 {status === 'uploading' ? 'Enviando imagem...' : 'Processando...'}
               </p>
               <p className="text-sm text-muted-foreground">

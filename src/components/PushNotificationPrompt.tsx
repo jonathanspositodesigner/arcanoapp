@@ -72,7 +72,7 @@ const PushNotificationPrompt = () => {
               <Bell className="w-10 h-10 text-primary animate-bounce" />
             </div>
             <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+              <Sparkles className="w-4 h-4 text-foreground" />
             </div>
           </div>
 

@@ -162,7 +162,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
       onClick={onClick}
       title={title}
       className={`p-1.5 rounded hover:bg-accent transition-colors ${
-        active ? "bg-white/20 text-white" : "text-muted-foreground hover:text-foreground"
+        active ? "bg-white/20 text-foreground" : "text-muted-foreground hover:text-foreground"
       }`}
     >
       {children}

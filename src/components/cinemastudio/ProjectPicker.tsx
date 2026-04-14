@@ -157,12 +157,12 @@ const ProjectPicker: React.FC<Props> = ({
                         }}
                         onBlur={() => handleRenameSubmit(project.id)}
                         onClick={(e) => e.stopPropagation()}
-                        className="h-6 text-xs bg-black/60 border-border text-white px-1.5"
+                        className="h-6 text-xs bg-black/60 border-border text-foreground px-1.5"
                         autoFocus
                       />
                     ) : (
                       <>
-                        <p className="text-xs sm:text-sm font-semibold text-white truncate">{project.name}</p>
+                        <p className="text-xs sm:text-sm font-semibold text-foreground truncate">{project.name}</p>
                         <p className="text-[10px] text-muted-foreground mt-0.5">{formatDate(project.updatedAt)}</p>
                       </>
                     )}
@@ -234,7 +234,7 @@ const ProjectPicker: React.FC<Props> = ({
                     setDeleteTarget(null);
                   }
                 }}
-                className="bg-red-600/80 hover:bg-red-600 text-white border-0"
+                className="bg-red-600/80 hover:bg-red-600 text-foreground border-0"
               >
                 Excluir
               </AlertDialogAction>

@@ -189,7 +189,7 @@ const LandingPricingSection = () => {
                   </Badge>
                 )}
                 {plan.hasCountdown && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-white px-4 py-1">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-foreground px-4 py-1">
                     MELHOR CUSTO/BENEFÍCIO
                   </Badge>
                 )}
@@ -206,14 +206,14 @@ const LandingPricingSection = () => {
                 </div>
 
                 <div className="text-center mb-4 lg:mb-5 min-h-[36px] flex items-center justify-center">
-                  <h3 className="text-lg lg:text-xl font-bold text-white">{plan.name}</h3>
+                  <h3 className="text-lg lg:text-xl font-bold text-foreground">{plan.name}</h3>
                 </div>
 
                 {/* Price */}
                 <div className="text-center mb-5 lg:mb-6">
                   <div className="flex items-baseline justify-center gap-0.5">
                     <span className="text-muted-foreground text-base lg:text-lg">R$</span>
-                    <span className="text-4xl lg:text-5xl font-bold text-white">{plan.price}</span>
+                    <span className="text-4xl lg:text-5xl font-bold text-foreground">{plan.price}</span>
                   </div>
                 </div>
 
@@ -235,7 +235,7 @@ const LandingPricingSection = () => {
 
                 {/* Images badge (highlighted) */}
                 <div className="flex flex-col items-center mb-5 lg:mb-6 mt-3 gap-1.5">
-                  <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs lg:text-sm font-bold text-white bg-gradient-to-r from-slate-600 to-blue-500">
+                  <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs lg:text-sm font-bold text-foreground bg-gradient-to-r from-slate-600 to-blue-500">
                     <Sparkles className="w-3.5 h-3.5" />
                     {plan.credits}
                   </span>
@@ -262,7 +262,7 @@ const LandingPricingSection = () => {
 
         {/* Acesso Imediato + Trust Badges */}
         <div className="mt-12 text-center">
-          <h3 className="font-space-grotesk font-extrabold text-3xl md:text-4xl lg:text-5xl text-white tracking-tight mb-6">
+          <h3 className="font-space-grotesk font-extrabold text-3xl md:text-4xl lg:text-5xl text-foreground tracking-tight mb-6">
             ACESSO <span className="text-muted-foreground">IMEDIATO</span>
           </h3>
           <div className="max-w-4xl mx-auto rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 sm:px-8 py-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 sm:gap-4">

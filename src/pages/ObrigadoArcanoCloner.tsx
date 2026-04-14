@@ -55,7 +55,7 @@ const ObrigadoArcanoCloner = () => {
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
             Obrigado pela sua compra! 🎉
           </h1>
 
@@ -72,7 +72,7 @@ const ObrigadoArcanoCloner = () => {
           {/* CTA Button */}
           <button
             onClick={() => navigate("/ferramentas-ia-aplicativo")}
-            className="w-full max-w-sm py-4 px-8 rounded-2xl font-bold text-lg text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 transition-all duration-300 shadow-[0_0_30px_rgba(34,197,94,0.4)] hover:shadow-[0_0_40px_rgba(34,197,94,0.6)] hover:scale-[1.02] active:scale-[0.98] mb-4"
+            className="w-full max-w-sm py-4 px-8 rounded-2xl font-bold text-lg text-foreground bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 transition-all duration-300 shadow-[0_0_30px_rgba(34,197,94,0.4)] hover:shadow-[0_0_40px_rgba(34,197,94,0.6)] hover:scale-[1.02] active:scale-[0.98] mb-4"
           >
             Acessar minha compra
           </button>

@@ -125,7 +125,7 @@ const PromptsFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-gradient-primary rounded-full">
-                <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Enviar Arquivo</h2>
               <p className="text-muted-foreground hidden sm:block">Faça upload de novos arquivos</p>
@@ -144,7 +144,7 @@ const PromptsFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-green-500 rounded-full">
-                <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Analisar Arquivos</h2>
               <p className="text-muted-foreground hidden sm:block">Aprove ou rejeite contribuições</p>
@@ -163,7 +163,7 @@ const PromptsFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-blue-500 rounded-full">
-                <Settings className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                <Settings className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Imagens</h2>
               <p className="text-muted-foreground hidden sm:block">Edite ou exclua arquivos publicados</p>
@@ -182,7 +182,7 @@ const PromptsFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-gradient-to-r from-slate-500 to-pink-500 rounded-full">
-                <LayoutDashboard className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                <LayoutDashboard className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Premium</h2>
               <p className="text-muted-foreground hidden sm:block">Dashboard de assinaturas</p>
@@ -201,7 +201,7 @@ const PromptsFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-teal-500 rounded-full">
-                <FolderOpen className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                <FolderOpen className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Coleções</h2>
               <p className="text-muted-foreground hidden sm:block">Crie coleções compartilháveis</p>
@@ -220,7 +220,7 @@ const PromptsFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-white/20 rounded-full">
-                <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Categorias</h2>
               <p className="text-muted-foreground hidden sm:block">Gerencie as categorias</p>
@@ -239,7 +239,7 @@ const PromptsFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-gradient-to-r from-red-500 to-rose-600 rounded-full">
-                <ShieldCheck className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                <ShieldCheck className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Administradores</h2>
               <p className="text-muted-foreground hidden sm:block">Gerencie contas de admin</p>

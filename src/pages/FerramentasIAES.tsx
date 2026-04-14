@@ -173,9 +173,9 @@ const FerramentasIAES = () => {
         <div className="container mx-auto px-4 py-3 flex items-center justify-center">
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
             </div>
-            <h1 className="text-base sm:text-xl font-bold text-white">
+            <h1 className="text-base sm:text-xl font-bold text-foreground">
               {t('ferramentas.title')}
             </h1>
           </div>
@@ -189,7 +189,7 @@ const FerramentasIAES = () => {
             <div className="flex gap-2">
               <Button
                 onClick={() => navigate('/login-artes?redirect=/ferramentas-ia-es')}
-                className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
+                className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-foreground"
                 size="sm"
               >
                 <UserCheck className="w-4 h-4 mr-2" />
@@ -218,7 +218,7 @@ const FerramentasIAES = () => {
         {/* Suas Ferramentas */}
         {toolsWithAccess.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-green-400" />
               {t('ferramentas.yourTools')}
             </h2>
@@ -231,7 +231,7 @@ const FerramentasIAES = () => {
         {/* Disponíveis para Aquisição */}
         {toolsWithoutAccess.length > 0 && (
           <section>
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-muted-foreground" />
               {t('ferramentas.availableForPurchase')}
             </h2>

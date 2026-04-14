@@ -362,7 +362,7 @@ export default function UpscalerTrialSection() {
                 {phase === "locked" ? (
                   <>
                     <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
-                      <Sparkles className="w-10 h-10 text-white" />
+                      <Sparkles className="w-10 h-10 text-foreground" />
                     </div>
                     <Button
                       size="lg"
@@ -377,7 +377,7 @@ export default function UpscalerTrialSection() {
                 ) : (
                   <div className="text-center px-6 max-w-md">
                     <div className="text-4xl mb-4">🏆</div>
-                    <h3 className="text-2xl font-bold text-white mb-3">Teste Concluído!</h3>
+                    <h3 className="text-2xl font-bold text-foreground mb-3">Teste Concluído!</h3>
                     <p className="text-muted-foreground/80 mb-6">
                       Você viu o poder do Upscaler Arcano. Garanta acesso completo e ilimitado para transformar todas as suas imagens!
                     </p>

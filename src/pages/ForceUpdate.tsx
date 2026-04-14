@@ -113,7 +113,7 @@ const ForceUpdate = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center text-white p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center text-foreground p-4">
       {status === 'cleaning' && (
         <>
           <RefreshCw className="w-16 h-16 text-slate-400 animate-spin mb-4" />

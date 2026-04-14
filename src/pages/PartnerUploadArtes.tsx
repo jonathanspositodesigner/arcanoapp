@@ -287,7 +287,7 @@ const PartnerUploadArtes = () => {
 
         <Card className="bg-card/80 border-border/30">
           <CardContent className="p-6">
-            <h1 className="text-2xl font-bold text-white mb-6 text-center">
+            <h1 className="text-2xl font-bold text-foreground mb-6 text-center">
               Enviar Novas Artes
             </h1>
 
@@ -353,7 +353,7 @@ const PartnerUploadArtes = () => {
                         className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1"
                         onClick={() => removeMedia(index)}
                       >
-                        <X className="h-3 w-3 text-white" />
+                        <X className="h-3 w-3 text-foreground" />
                       </button>
                     </div>
                   ))}
@@ -366,7 +366,7 @@ const PartnerUploadArtes = () => {
 
       {/* Edit Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="bg-card border-border/30 text-white max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border/30 text-foreground max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               Detalhes da Arte ({currentIndex + 1}/{mediaFiles.length})
@@ -403,7 +403,7 @@ const PartnerUploadArtes = () => {
                   value={currentMedia.title}
                   onChange={(e) => updateMediaData(currentIndex, "title", e.target.value)}
                   placeholder="Nome da arte"
-                  className="bg-card border-border/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
 
@@ -413,7 +413,7 @@ const PartnerUploadArtes = () => {
                   value={currentMedia.category}
                   onValueChange={(value) => updateMediaData(currentIndex, "category", value)}
                 >
-                  <SelectTrigger className="bg-card border-border/50 text-white">
+                  <SelectTrigger className="bg-card border-border/50 text-foreground">
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border/50 z-50">
@@ -432,7 +432,7 @@ const PartnerUploadArtes = () => {
                   value={currentMedia.pack}
                   onValueChange={(value) => updateMediaData(currentIndex, "pack", value)}
                 >
-                  <SelectTrigger className="bg-card border-border/50 text-white">
+                  <SelectTrigger className="bg-card border-border/50 text-foreground">
                     <SelectValue placeholder="Selecione o pack" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border/50 z-50">
@@ -451,7 +451,7 @@ const PartnerUploadArtes = () => {
                   value={currentMedia.description}
                   onChange={(e) => updateMediaData(currentIndex, "description", e.target.value)}
                   placeholder="Descrição opcional da arte"
-                  className="bg-card border-border/50 text-white min-h-[80px]"
+                  className="bg-card border-border/50 text-foreground min-h-[80px]"
                 />
               </div>
 
@@ -461,7 +461,7 @@ const PartnerUploadArtes = () => {
                   value={currentMedia.canvaLink}
                   onChange={(e) => updateMediaData(currentIndex, "canvaLink", e.target.value)}
                   placeholder="https://www.canva.com/..."
-                  className="bg-card border-border/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                   required
                 />
               </div>
@@ -472,7 +472,7 @@ const PartnerUploadArtes = () => {
                   value={currentMedia.driveLink}
                   onChange={(e) => updateMediaData(currentIndex, "driveLink", e.target.value)}
                   placeholder="https://drive.google.com/..."
-                  className="bg-card border-border/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
 
@@ -490,7 +490,7 @@ const PartnerUploadArtes = () => {
 
                 {currentIndex < mediaFiles.length - 1 ? (
                   <Button
-                    className="bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+                    className="bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
                     onClick={goToNext}
                   >
                     Próximo
@@ -498,7 +498,7 @@ const PartnerUploadArtes = () => {
                   </Button>
                 ) : (
                   <Button
-                    className="bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+                    className="bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
                     onClick={handleSubmitAll}
                     disabled={!allFieldsFilled || isSubmitting}
                   >
@@ -513,7 +513,7 @@ const PartnerUploadArtes = () => {
 
       {/* Success Modal */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="bg-card border-border/30 text-white">
+        <DialogContent className="bg-card border-border/30 text-foreground">
           <div className="text-center py-6">
             <CheckCircle className="h-16 w-16 mx-auto text-green-500 mb-4" />
             <h2 className="text-xl font-bold mb-2">Artes Enviadas!</h2>
@@ -531,7 +531,7 @@ const PartnerUploadArtes = () => {
                 Enviar mais
               </Button>
               <Button
-                className="flex-1 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+                className="flex-1 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
                 onClick={() => navigate("/parceiro-dashboard-artes")}
               >
                 Ver Dashboard

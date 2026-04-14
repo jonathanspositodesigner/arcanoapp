@@ -343,7 +343,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                     }}
                     className="absolute top-2 right-2 p-1 rounded-full bg-black/60 hover:bg-black/80"
                   >
-                    <X className="w-3 h-3 text-white" />
+                    <X className="w-3 h-3 text-foreground" />
                   </button>
                 </div>
               ) : (
@@ -390,7 +390,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-lg font-bold text-white">{progress}%</span>
+                <span className="text-lg font-bold text-foreground">{progress}%</span>
               </div>
             </div>
             <div className="text-center">

@@ -383,7 +383,7 @@ const AdminCollections = () => {
                       muted
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                      <Play className="h-6 w-6 text-white" fill="currentColor" />
+                      <Play className="h-6 w-6 text-foreground" fill="currentColor" />
                     </div>
                   </div>
                 ) : (
@@ -397,14 +397,14 @@ const AdminCollections = () => {
                 
                 {isSelected && (
                   <div className="absolute inset-0 bg-primary/30 flex items-center justify-center">
-                    <Check className="h-8 w-8 text-white" />
+                    <Check className="h-8 w-8 text-foreground" />
                   </div>
                 )}
                 
                 {/* Premium badge */}
                 <div className="absolute top-1 left-1">
                   {prompt.isPremium ? (
-                    <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-[8px] px-1 py-0">
+                    <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-foreground border-0 text-[8px] px-1 py-0">
                       <Star className="h-2 w-2 mr-0.5" fill="currentColor" />
                       Premium
                     </Badge>

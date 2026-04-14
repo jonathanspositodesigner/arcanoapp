@@ -146,7 +146,7 @@ const ClonerDemoAnimation: React.FC = () => {
             <div className={cn(
               'relative w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500',
               step === i
-                ? 'bg-gradient-to-br from-slate-500 to-slate-500 text-white shadow-lg shadow-slate-500/20 scale-110'
+                ? 'bg-gradient-to-br from-slate-500 to-slate-500 text-foreground shadow-lg shadow-slate-500/20 scale-110'
                 : step > i
                 ? 'bg-accent text-muted-foreground border border-border'
                 : 'bg-accent text-white/30 border border-border'
@@ -346,7 +346,7 @@ const ClonerDemoAnimation: React.FC = () => {
                        className={cn(
                          'flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-lg border text-center transition-all duration-300',
                          selectedRatio === opt.value
-                           ? 'bg-gradient-to-r from-slate-600 to-slate-500 border-border text-white scale-105'
+                           ? 'bg-gradient-to-r from-slate-600 to-slate-500 border-border text-foreground scale-105'
                            : 'bg-accent border-border text-muted-foreground'
                        )}
                      >
@@ -378,7 +378,7 @@ const ClonerDemoAnimation: React.FC = () => {
               <button
                 ref={genBtnRef}
                 className={cn(
-                  'w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-200',
+                  'w-full py-3 rounded-xl font-bold text-sm text-foreground transition-all duration-200',
                   'bg-gradient-to-r from-slate-600 to-slate-500 shadow-lg shadow-slate-500/20',
                   step === 3 && buttonClicked ? 'scale-95 brightness-110' : 'scale-100',
                 )}
@@ -449,7 +449,7 @@ const ClonerDemoAnimation: React.FC = () => {
 
             {/* Top badge */}
             <div className="mb-5 bg-accent0 rounded-full px-3 py-1.5 flex items-center gap-1.5 shadow-lg shadow-slate-500/30 animate-bounce">
-              <Sparkles className="w-3.5 h-3.5 text-white" />
+              <Sparkles className="w-3.5 h-3.5 text-foreground" />
               <span className="text-xs text-foreground font-bold">Pronto! ✓</span>
             </div>
 
@@ -462,7 +462,7 @@ const ClonerDemoAnimation: React.FC = () => {
                 </svg>
               </div>
               <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-accent0 border-2 border-[#111113] flex items-center justify-center">
-                <Check className="w-4 h-4 text-white" />
+                <Check className="w-4 h-4 text-foreground" />
               </div>
             </div>
 

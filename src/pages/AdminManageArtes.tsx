@@ -519,12 +519,12 @@ const AdminManageArtes = () => {
                   )}
                   <div className="absolute top-2 right-2 flex gap-1">
                     {isBroken && (
-                      <Badge className="bg-destructive text-white border-0">
+                      <Badge className="bg-destructive text-foreground border-0">
                         <AlertTriangle className="h-3 w-3 mr-1" />Quebrada
                       </Badge>
                     )}
                     {arte.is_premium && (
-                      <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
+                      <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-foreground border-0">
                         <Star className="h-3 w-3 mr-1" fill="currentColor" />Premium
                       </Badge>
                     )}

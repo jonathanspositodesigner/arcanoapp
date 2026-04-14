@@ -102,7 +102,7 @@ export const FullscreenModal = ({
         onClick={onClose}
         className="absolute top-4 right-4 z-10 p-3 bg-accent hover:bg-white/20 rounded-full transition-colors"
       >
-        <X className="h-6 w-6 text-white" />
+        <X className="h-6 w-6 text-foreground" />
       </button>
       
       <div 

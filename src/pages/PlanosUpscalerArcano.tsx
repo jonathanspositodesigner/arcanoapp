@@ -105,7 +105,7 @@ const FakePurchaseNotifications = () => {
         isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
       }`}
     >
-      <div className="flex items-center gap-3 bg-emerald-600 text-white rounded-xl px-4 py-3 shadow-lg shadow-emerald-900/40 border border-emerald-400/20">
+      <div className="flex items-center gap-3 bg-emerald-600 text-foreground rounded-xl px-4 py-3 shadow-lg shadow-emerald-900/40 border border-emerald-400/20">
         <ShoppingCart className="h-4 w-4 shrink-0" />
         <span className="text-xs font-medium leading-tight">{notification.name} acabou de comprar!</span>
         <button onClick={() => setIsVisible(false)} className="shrink-0 ml-1 hover:bg-accent rounded p-0.5">
@@ -153,7 +153,7 @@ const StickyFooterBar = () => {
 const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
   <Button
     onClick={onClick}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-white shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20"
   >
     {t('tools:upscaler.cta')}
     <ArrowRight className="h-5 w-5 ml-2" />
@@ -576,7 +576,7 @@ const PlanosUpscalerArcano = () => {
               </FadeIn>
 
               {/* Título principal */}
-              <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3 md:mb-4 leading-[1.25]">
+              <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-3 md:mb-4 leading-[1.25]">
                 {t('tools:upscaler.hero.title1')}{' '}
                 <br className="hidden md:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
@@ -660,7 +660,7 @@ const PlanosUpscalerArcano = () => {
                       <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
                         <IconComponent className="h-10 w-10 text-muted-foreground" />
                       </div>
-                      <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
+                      <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
                       <p className="text-muted-foreground max-w-[180px]">{step.description}</p>
                     </div>
                   );
@@ -698,7 +698,7 @@ const PlanosUpscalerArcano = () => {
                       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center mx-auto mb-6">
                         <IconComponent className="h-8 w-8 text-muted-foreground" />
                       </div>
-                      <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
+                      <h3 className="text-xl font-semibold text-foreground mb-3">{item.title}</h3>
                       <p className="text-muted-foreground flex-1">{item.description}</p>
                     </div>
                   );
@@ -774,7 +774,7 @@ const PlanosUpscalerArcano = () => {
                     </Badge>
                   )}
                   {plan.bestValue && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-white px-4 py-1">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-foreground px-4 py-1">
                       MELHOR CUSTO/BENEFÍCIO
                     </Badge>
                   )}
@@ -798,14 +798,14 @@ const PlanosUpscalerArcano = () => {
                     </div>
 
                     <div className="text-center mb-4 lg:mb-5 min-h-[36px] flex items-center justify-center">
-                      <h3 className="text-lg lg:text-xl font-bold text-white">{plan.name}</h3>
+                      <h3 className="text-lg lg:text-xl font-bold text-foreground">{plan.name}</h3>
                     </div>
 
                     <div className="text-center mb-5 lg:mb-6">
                       <span className="text-white/40 text-sm line-through">R$ {plan.originalPrice}</span>
                       <div className="flex items-baseline justify-center gap-0.5">
                         <span className="text-muted-foreground text-base lg:text-lg">R$</span>
-                        <span className="text-4xl lg:text-5xl font-bold text-white">{plan.price}</span>
+                        <span className="text-4xl lg:text-5xl font-bold text-foreground">{plan.price}</span>
                       </div>
                     </div>
 
@@ -829,7 +829,7 @@ const PlanosUpscalerArcano = () => {
                     )}
 
                     <div className="flex flex-col items-center mb-5 lg:mb-6 mt-3 gap-1.5">
-                      <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs lg:text-sm font-bold text-white bg-gradient-to-r from-slate-600 to-blue-500">
+                      <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs lg:text-sm font-bold text-foreground bg-gradient-to-r from-slate-600 to-blue-500">
                         <Sparkles className="w-3.5 h-3.5" />
                         {plan.credits}
                       </span>
@@ -926,7 +926,7 @@ const PlanosUpscalerArcano = () => {
                 <div className="w-16 h-16 rounded-2xl bg-green-500/20 flex items-center justify-center mx-auto mb-6">
                   <Shield className="h-8 w-8 text-green-400" />
                 </div>
-                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-white mb-4">
+                <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-foreground mb-4">
                   Garantia incondicional de{" "}
                   <span className="text-green-400">7 dias</span>
                 </h2>
@@ -958,7 +958,7 @@ const PlanosUpscalerArcano = () => {
           <div className="flex justify-center px-4 md:px-6 pt-6 pb-14 md:pb-12">
             <Button
               onClick={() => document.getElementById("planos")?.scrollIntoView({ behavior: "smooth" })}
-              className="w-full max-w-[90%] md:max-w-md h-auto px-5 md:px-8 py-4 md:py-6 text-sm sm:text-base md:text-lg leading-snug text-center whitespace-normal break-words font-bold rounded-2xl md:rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-white shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20 active:scale-95"
+              className="w-full max-w-[90%] md:max-w-md h-auto px-5 md:px-8 py-4 md:py-6 text-sm sm:text-base md:text-lg leading-snug text-center whitespace-normal break-words font-bold rounded-2xl md:rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20 active:scale-95"
             >
               🚀 Quero melhorar minhas imagens agora
             </Button>

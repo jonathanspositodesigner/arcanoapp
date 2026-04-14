@@ -152,7 +152,7 @@ const ChangePassword = () => {
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Lock className="h-8 w-8 text-muted-foreground" />
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-bold text-foreground">
               {isFirstAccessWithoutSession ? "Primeiro Acesso" : t("createNewPassword")}
             </h1>
           </div>
@@ -183,7 +183,7 @@ const ChangePassword = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="bg-background border-border text-white placeholder:text-muted-foreground"
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
               <button
                 type="button"
@@ -208,7 +208,7 @@ const ChangePassword = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="bg-background border-border text-white placeholder:text-muted-foreground"
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
               <button
                 type="button"
@@ -223,7 +223,7 @@ const ChangePassword = () => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 text-white"
+            className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 text-foreground"
           >
             {isLoading
               ? "Salvando..."

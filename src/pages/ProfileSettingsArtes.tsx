@@ -202,7 +202,7 @@ const ProfileSettingsArtes = () => {
               <Input
                 value={profile.name}
                 onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                className="bg-card border-border/50 text-white"
+                className="bg-card border-border/50 text-foreground"
                 placeholder={t('common:profile.namePlaceholder')}
               />
             </div>
@@ -212,7 +212,7 @@ const ProfileSettingsArtes = () => {
               <Input
                 value={profile.phone}
                 onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                className="bg-card border-border/50 text-white"
+                className="bg-card border-border/50 text-foreground"
                 placeholder={t('common:profile.phonePlaceholder')}
               />
             </div>
@@ -222,13 +222,13 @@ const ProfileSettingsArtes = () => {
               <Textarea
                 value={profile.bio}
                 onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                className="bg-card border-border/50 text-white min-h-[80px]"
+                className="bg-card border-border/50 text-foreground min-h-[80px]"
                 placeholder={t('common:profile.bioPlaceholder')}
               />
             </div>
 
             <Button
-              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
               onClick={handleSaveProfile}
               disabled={isSaving}
             >
@@ -253,7 +253,7 @@ const ProfileSettingsArtes = () => {
                       placeholder={t('common:profile.currentPassword')}
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
-                      className="bg-card border-border/50 text-white pr-10"
+                      className="bg-card border-border/50 text-foreground pr-10"
                     />
                     <button
                       type="button"
@@ -269,7 +269,7 @@ const ProfileSettingsArtes = () => {
                       placeholder={t('common:profile.newPassword')}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="bg-card border-border/50 text-white pr-10"
+                      className="bg-card border-border/50 text-foreground pr-10"
                     />
                     <button
                       type="button"
@@ -280,7 +280,7 @@ const ProfileSettingsArtes = () => {
                     </button>
                   </div>
                   <Button
-                    className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+                    className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
                     onClick={handleChangePassword}
                     disabled={isSaving || !currentPassword || !newPassword}
                   >
@@ -346,7 +346,7 @@ const ProfileSettingsArtes = () => {
             </ul>
 
             <Button
-              className="w-full bg-green-600 hover:bg-green-700 text-white mb-3"
+              className="w-full bg-green-600 hover:bg-green-700 text-foreground mb-3"
               onClick={() => setShowDisableModal(false)}
             >
               {t('common:notifications.keepBenefits')}

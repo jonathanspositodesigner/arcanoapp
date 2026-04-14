@@ -834,7 +834,7 @@ const ArcanoClonerTool: React.FC = () => {
             >
               {/* Title */}
               <div>
-                <h1 className="text-xl font-bold text-white">Arcano Cloner</h1>
+                <h1 className="text-xl font-bold text-foreground">Arcano Cloner</h1>
                 <p className="text-xs text-muted-foreground mt-1">Transforme sua foto usando qualquer imagem como referência. A IA clona o estilo, pose e cenário na sua pessoa.</p>
               </div>
 
@@ -1064,11 +1064,11 @@ const ArcanoClonerTool: React.FC = () => {
                       <div className="relative w-full h-full">
                         <div className="hidden sm:flex absolute top-4 left-1/2 -translate-x-1/2 z-30 items-center gap-1 bg-black/80 rounded-full px-2 py-1">
                           <button onClick={() => zoomOut(0.5)} className="p-1.5 hover:bg-white/20 rounded-full transition-colors">
-                            <ZoomOut className="w-4 h-4 text-white" />
+                            <ZoomOut className="w-4 h-4 text-foreground" />
                           </button>
-                          <span className="text-xs font-mono min-w-[3rem] text-center text-white">{Math.round(zoomLevel * 100)}%</span>
+                          <span className="text-xs font-mono min-w-[3rem] text-center text-foreground">{Math.round(zoomLevel * 100)}%</span>
                           <button onClick={() => zoomIn(0.5)} className="p-1.5 hover:bg-white/20 rounded-full transition-colors">
-                            <ZoomIn className="w-4 h-4 text-white" />
+                            <ZoomIn className="w-4 h-4 text-foreground" />
                           </button>
                         </div>
                         <TransformComponent
@@ -1100,7 +1100,7 @@ const ArcanoClonerTool: React.FC = () => {
                   <div className="flex flex-col items-center justify-center gap-4">
                     <Loader2 className="w-12 h-12 text-muted-foreground animate-spin" />
                     <div className="text-center">
-                      <p className="text-lg font-medium text-white">
+                      <p className="text-lg font-medium text-foreground">
                         {currentQueueMessage.emoji} {currentQueueMessage.text}
                       </p>
                       {status === 'waiting' && queuePosition > 0 && (
@@ -1130,7 +1130,7 @@ const ArcanoClonerTool: React.FC = () => {
                       <ImageIcon className="w-10 h-10 text-muted-foreground" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-white">Arcano Cloner</h2>
+                      <h2 className="text-lg font-bold text-foreground">Arcano Cloner</h2>
                       <p className="text-sm text-muted-foreground mt-1 max-w-sm">
                         Envie as imagens e clique em "Gerar Imagem"
                       </p>
@@ -1219,7 +1219,7 @@ const ArcanoClonerTool: React.FC = () => {
               <div className="flex gap-2">
                 <div className="flex-1 flex items-center gap-2">
                   <Loader2 className="w-4 h-4 text-muted-foreground animate-spin flex-shrink-0" />
-                  <p className="text-xs text-white truncate">
+                  <p className="text-xs text-foreground truncate">
                     {status === 'waiting' ? `Fila #${queuePosition}` : `${Math.round(progress)}%`}
                   </p>
                 </div>

@@ -134,7 +134,7 @@ const FerramentaIAArtes = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
             <div>
-              <h1 className="text-xl font-bold text-white">
+              <h1 className="text-xl font-bold text-foreground">
                 {ferramenta?.name || t('tools.aiTool')}
               </h1>
             </div>
@@ -145,7 +145,7 @@ const FerramentaIAArtes = () => {
           <Card className="max-w-2xl mx-auto bg-background/50 border-border">
             <CardContent className="p-8 text-center">
               <Lock className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-white mb-2">
+              <h2 className="text-xl font-semibold text-foreground mb-2">
                 {t('tools.restrictedAccess')}
               </h2>
               <p className="text-muted-foreground mb-6">
@@ -182,7 +182,7 @@ const FerramentaIAArtes = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-xl font-bold text-white">
+            <h1 className="text-xl font-bold text-foreground">
               {title}
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -198,7 +198,7 @@ const FerramentaIAArtes = () => {
           <Card className="max-w-2xl mx-auto bg-background/50 border-border">
             <CardContent className="p-8 text-center">
               <Play className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-white mb-2">
+              <h2 className="text-xl font-semibold text-foreground mb-2">
                 {t('tools.comingSoon')}
               </h2>
               <p className="text-muted-foreground">
@@ -211,7 +211,7 @@ const FerramentaIAArtes = () => {
             {lessons.map((lesson, index) => (
               <Card key={index} className="bg-background/50 border-border">
                 <CardHeader>
-                  <CardTitle className="text-lg text-white">{lesson.title}</CardTitle>
+                  <CardTitle className="text-lg text-foreground">{lesson.title}</CardTitle>
                   {lesson.description && (
                     <p className="text-muted-foreground text-sm mt-1">{lesson.description}</p>
                   )}

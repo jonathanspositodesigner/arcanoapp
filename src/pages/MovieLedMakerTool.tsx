@@ -545,7 +545,7 @@ const MovieLedMakerTool = () => {
             >
               {/* Title */}
               <div>
-                <h1 className="text-xl font-bold text-white flex items-center gap-2">
+                <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
                   <Video className="h-5 w-5 text-muted-foreground" />
                   MovieLed Maker
                 </h1>
@@ -554,7 +554,7 @@ const MovieLedMakerTool = () => {
 
               {/* Reference Image */}
               <div>
-                <span className="text-sm font-medium text-white mb-2 block flex items-center gap-1.5">
+                <span className="text-sm font-medium text-foreground mb-2 block flex items-center gap-1.5">
                   <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
                   Telão de Referência
                 </span>
@@ -603,7 +603,7 @@ const MovieLedMakerTool = () => {
 
               {/* Text Input */}
               <div>
-                <span className="text-sm font-medium text-white mb-2 block flex items-center gap-1.5">
+                <span className="text-sm font-medium text-foreground mb-2 block flex items-center gap-1.5">
                   <Type className="h-3.5 w-3.5 text-muted-foreground" />
                   Nome no Telão
                 </span>
@@ -613,7 +613,7 @@ const MovieLedMakerTool = () => {
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Ex: DJ MARCOS"
                     disabled={isProcessing}
-                    className="bg-black/40 border-border text-white placeholder:text-muted-foreground text-sm flex-1"
+                    className="bg-black/40 border-border text-foreground placeholder:text-muted-foreground text-sm flex-1"
                     maxLength={50}
                   />
                   <button
@@ -622,7 +622,7 @@ const MovieLedMakerTool = () => {
                     disabled={!inputText.trim() || isProcessing}
                     className="flex items-center justify-center w-10 h-10 rounded-md bg-green-600 hover:bg-green-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
                   >
-                    <Check className="w-4 h-4 text-white" />
+                    <Check className="w-4 h-4 text-foreground" />
                   </button>
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-1">{inputText.length}/50 caracteres</p>
@@ -633,7 +633,7 @@ const MovieLedMakerTool = () => {
                 <>
                   {/* Engine Selector */}
                   <div>
-                    <span className="text-sm font-medium text-white mb-2 block">Motor</span>
+                    <span className="text-sm font-medium text-foreground mb-2 block">Motor</span>
                     <div className="grid grid-cols-2 gap-0 bg-black/40 border border-border rounded-lg p-1" data-tutorial-movieled="engine">
                       {ENGINES.map(engine => (
                         <button
@@ -750,7 +750,7 @@ const MovieLedMakerTool = () => {
                     </div>
                     <div>
                       <p className="text-xl font-bold text-yellow-300">🔥 Na fila!</p>
-                      <p className="text-3xl font-bold text-white mt-2">Posição {queuePosition}</p>
+                      <p className="text-3xl font-bold text-foreground mt-2">Posição {queuePosition}</p>
                       <p className="text-sm text-muted-foreground mt-2">Aguarde, já já é sua vez!</p>
                     </div>
                     <Button
@@ -775,7 +775,7 @@ const MovieLedMakerTool = () => {
                   <div className="flex flex-col items-center justify-center gap-4">
                     <Loader2 className="w-12 h-12 text-muted-foreground animate-spin" />
                     <div className="text-center">
-                      <p className="text-lg font-medium text-white">
+                      <p className="text-lg font-medium text-foreground">
                         {status === 'uploading' ? 'Enviando imagem...' : 'Gerando movie para telão...'}
                       </p>
                       <p className="text-sm text-muted-foreground">
@@ -805,7 +805,7 @@ const MovieLedMakerTool = () => {
                       <Video className="w-10 h-10 text-muted-foreground" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-white">MovieLed Maker</h2>
+                      <h2 className="text-lg font-bold text-foreground">MovieLed Maker</h2>
                       <p className="text-sm text-muted-foreground mt-1 max-w-sm">
                         Selecione um telão da biblioteca ou envie sua imagem, digite o nome e gere seu movie para telão de LED!
                       </p>
@@ -897,7 +897,7 @@ const MovieLedMakerTool = () => {
               <div className="flex gap-2">
                 <div className="flex-1 flex items-center gap-2">
                   <Loader2 className="w-4 h-4 text-muted-foreground animate-spin flex-shrink-0" />
-                  <p className="text-xs text-white truncate">
+                  <p className="text-xs text-foreground truncate">
                     {isQueued ? `Fila #${queuePosition}` : 'Gerando movie...'}
                   </p>
                 </div>

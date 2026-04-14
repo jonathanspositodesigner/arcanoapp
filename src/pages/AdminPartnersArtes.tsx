@@ -228,19 +228,19 @@ const AdminPartnersArtes = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
           </Button>
-          <h1 className="text-xl md:text-2xl font-bold text-white">
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">
             Gerenciar Colaboradores de Artes
           </h1>
         </div>
 
         <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
           <DialogTrigger asChild>
-            <Button className="w-full mb-6 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white">
+            <Button className="w-full mb-6 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground">
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Colaborador
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-card border-border/30 text-white">
+          <DialogContent className="bg-card border-border/30 text-foreground">
             <DialogHeader>
               <DialogTitle>Novo Colaborador de Artes</DialogTitle>
             </DialogHeader>
@@ -250,7 +250,7 @@ const AdminPartnersArtes = () => {
                 <Input
                   value={newPartner.name}
                   onChange={(e) => setNewPartner({ ...newPartner, name: e.target.value })}
-                  className="bg-card border-border/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
               <div>
@@ -259,7 +259,7 @@ const AdminPartnersArtes = () => {
                   type="email"
                   value={newPartner.email}
                   onChange={(e) => setNewPartner({ ...newPartner, email: e.target.value })}
-                  className="bg-card border-border/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
               <div>
@@ -267,7 +267,7 @@ const AdminPartnersArtes = () => {
                 <Input
                   value={newPartner.phone}
                   onChange={(e) => setNewPartner({ ...newPartner, phone: e.target.value })}
-                  className="bg-card border-border/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
               <div>
@@ -275,11 +275,11 @@ const AdminPartnersArtes = () => {
                 <Input
                   value={newPartner.company}
                   onChange={(e) => setNewPartner({ ...newPartner, company: e.target.value })}
-                  className="bg-card border-border/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
               <Button
-                className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+                className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
                 onClick={handleAddPartner}
               >
                 Criar Colaborador
@@ -352,7 +352,7 @@ const AdminPartnersArtes = () => {
 
       {/* Edit Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="bg-card border-border/30 text-white">
+        <DialogContent className="bg-card border-border/30 text-foreground">
           <DialogHeader>
             <DialogTitle>Editar Colaborador</DialogTitle>
           </DialogHeader>
@@ -363,7 +363,7 @@ const AdminPartnersArtes = () => {
                 <Input
                   value={editingPartner.name}
                   onChange={(e) => setEditingPartner({ ...editingPartner, name: e.target.value })}
-                  className="bg-card border-border/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
               <div>
@@ -379,7 +379,7 @@ const AdminPartnersArtes = () => {
                 <Input
                   value={editingPartner.phone || ""}
                   onChange={(e) => setEditingPartner({ ...editingPartner, phone: e.target.value })}
-                  className="bg-card border-border/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
               <div>
@@ -387,11 +387,11 @@ const AdminPartnersArtes = () => {
                 <Input
                   value={editingPartner.company || ""}
                   onChange={(e) => setEditingPartner({ ...editingPartner, company: e.target.value })}
-                  className="bg-card border-border/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
               <Button
-                className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+                className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
                 onClick={handleUpdatePartner}
               >
                 Salvar
@@ -403,7 +403,7 @@ const AdminPartnersArtes = () => {
 
       {/* Success Modal */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="bg-card border-border/30 text-white">
+        <DialogContent className="bg-card border-border/30 text-foreground">
           <DialogHeader>
             <DialogTitle>Colaborador Criado!</DialogTitle>
           </DialogHeader>
@@ -438,7 +438,7 @@ const AdminPartnersArtes = () => {
               </div>
             </div>
             <Button
-              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
               onClick={() => setShowSuccessModal(false)}
             >
               Fechar

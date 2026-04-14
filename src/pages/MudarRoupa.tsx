@@ -72,7 +72,7 @@ const MudarRoupa = () => {
         <div className="space-y-8">
           {lessons.map((lesson, index) => (
             <Card key={index} className="p-4 md:p-6 bg-background/50 border-border">
-              <h2 className="text-lg md:text-xl font-semibold text-white mb-4 flex items-center gap-2">
+              <h2 className="text-lg md:text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Play className="h-5 w-5 text-muted-foreground" />
                 {t(lesson.titleKey)}
               </h2>
@@ -95,7 +95,7 @@ const MudarRoupa = () => {
                     <Button
                       key={btnIndex}
                       onClick={() => window.open(button.url, "_blank")}
-                      className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
+                      className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-foreground"
                     >
                       <ExternalLink className="h-4 w-4 mr-2" />
                       {t(button.labelKey)}

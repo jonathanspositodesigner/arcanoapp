@@ -413,19 +413,19 @@ const AdminManageArtesMusicos = () => {
                     <SecureImage src={arte.image_url} alt={arte.title} className="w-full h-48 object-cover" isPremium={arte.is_premium || false} />
                   )}
                   <div className="absolute top-2 left-2">
-                    <Badge className={isVideo ? "bg-accent0 text-white border-0" : "bg-blue-500 text-white border-0"}>
+                    <Badge className={isVideo ? "bg-accent0 text-foreground border-0" : "bg-blue-500 text-foreground border-0"}>
                       {isVideo ? <Video className="h-3 w-3 mr-1" /> : <Image className="h-3 w-3 mr-1" />}
                       {isVideo ? 'Vídeo' : 'Imagem'}
                     </Badge>
                   </div>
                   <div className="absolute top-2 right-2 flex gap-1">
                     {arte.is_ai_generated && (
-                      <Badge className="bg-accent0 text-white border-0">
+                      <Badge className="bg-accent0 text-foreground border-0">
                         <Sparkles className="h-3 w-3 mr-1" />IA
                       </Badge>
                     )}
                     {arte.is_premium && (
-                      <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
+                      <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-foreground border-0">
                         <Star className="h-3 w-3 mr-1" fill="currentColor" />Premium
                       </Badge>
                     )}

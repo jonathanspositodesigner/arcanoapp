@@ -450,7 +450,7 @@ const VideoUpscalerTool: React.FC = () => {
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden flex flex-col">
         {/* Tool intro - full width centered */}
         <div className="text-center py-3">
-          <h1 className="text-2xl lg:text-3xl font-bold text-white">Video Upscaler</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Video Upscaler</h1>
           <p className="text-sm text-muted-foreground mt-1 max-w-lg mx-auto">Aumente a qualidade dos seus vídeos com IA. Transforme vídeos em alta resolução mantendo a fluidez.</p>
         </div>
 
@@ -470,7 +470,7 @@ const VideoUpscalerTool: React.FC = () => {
 
             {/* Specifications Info */}
             <Card className="bg-accent border-border p-3">
-              <h4 className="text-xs font-semibold text-white mb-2">Especificações</h4>
+              <h4 className="text-xs font-semibold text-foreground mb-2">Especificações</h4>
               <ul className="text-[10px] text-muted-foreground space-y-1">
                 <li>• Resolução máxima: 1280px</li>
                 <li>• Duração máxima: 10 segundos</li>
@@ -546,7 +546,7 @@ const VideoUpscalerTool: React.FC = () => {
             <Card className="relative overflow-hidden bg-accent border-border flex-1 flex flex-col min-h-[250px] lg:min-h-0">
               {/* Header */}
               <div className="px-3 py-2 border-b border-border flex items-center justify-between flex-shrink-0">
-                <h3 className="text-xs font-semibold text-white flex items-center gap-1.5">
+                <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                   <Video className="w-3.5 h-3.5 text-muted-foreground" />
                   Resultado
                 </h3>
@@ -643,7 +643,7 @@ const VideoUpscalerTool: React.FC = () => {
                   </Button>
                   <Button
                     size="sm"
-                    className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white"
+                    className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-foreground"
                     onClick={handleDownload}
                   >
                     <Download className="w-3.5 h-3.5 mr-1.5" />

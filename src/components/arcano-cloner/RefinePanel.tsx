@@ -55,7 +55,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
         value={prompt}
         onChange={(e) => onPromptChange(e.target.value)}
         placeholder="Escreva aqui o que vc quer modificar na imagem"
-        className="min-h-[70px] text-xs bg-accent border-border text-white placeholder:text-muted-foreground resize-none"
+        className="min-h-[70px] text-xs bg-accent border-border text-foreground placeholder:text-muted-foreground resize-none"
         disabled={isRefining || disabled}
       />
 
@@ -69,7 +69,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
               onClick={() => onReferenceChange(null, null)}
               className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5"
             >
-              <X className="w-3 h-3 text-white" />
+              <X className="w-3 h-3 text-foreground" />
             </button>
           </div>
         ) : (
@@ -105,7 +105,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
         </Button>
         <Button
           size="sm"
-          className="flex-1 h-8 text-xs bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white"
+          className="flex-1 h-8 text-xs bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground"
           onClick={onSubmit}
           disabled={isRefining || !prompt.trim() || disabled}
         >

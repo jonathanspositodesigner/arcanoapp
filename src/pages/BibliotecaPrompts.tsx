@@ -430,13 +430,13 @@ const BibliotecaPrompts = () => {
 
   const getBadgeContent = (item: PromptItem) => {
     return <div className="flex flex-wrap gap-1">
-      {item.isPremium ? <Badge className="bg-gradient-to-r from-slate-600 to-blue-500 text-white border-0 text-[10px] sm:text-xs">
+      {item.isPremium ? <Badge className="bg-gradient-to-r from-slate-600 to-blue-500 text-foreground border-0 text-[10px] sm:text-xs">
         <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" fill="currentColor" />
         {t('badges.premium')}
       </Badge> : <Badge variant="outline" className="border-green-500 text-green-400 text-[10px] sm:text-xs">
         {t('badges.free')}
       </Badge>}
-      {item.tutorialUrl && <Badge className="bg-red-600 text-white border-0 text-[10px] sm:text-xs">
+      {item.tutorialUrl && <Badge className="bg-red-600 text-foreground border-0 text-[10px] sm:text-xs">
         <Youtube className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
         {t('badges.tutorial')}
       </Badge>}
@@ -451,7 +451,7 @@ const BibliotecaPrompts = () => {
       {/* Main Content */}
       <div className="p-4 sm:p-6 lg:p-8 bg-background pb-24 lg:pb-8 overflow-x-hidden max-w-full">
         {/* Mobile Install App Button */}
-        <Button onClick={() => navigate("/install-app")} variant="outline" className="w-full bg-accent border-border text-white hover:bg-accent0/30 font-semibold mb-4 lg:hidden">
+        <Button onClick={() => navigate("/install-app")} variant="outline" className="w-full bg-accent border-border text-foreground hover:bg-accent0/30 font-semibold mb-4 lg:hidden">
           <Smartphone className="h-4 w-4 mr-2" />
           {t('sidebar.installApp')}
         </Button>
@@ -466,11 +466,11 @@ const BibliotecaPrompts = () => {
 
           {/* Content Type Tabs */}
           <div className="flex gap-2 mb-3">
-            <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => { setContentType("exclusive"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "exclusive" ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-accent hover:bg-accent0/20 border-border text-muted-foreground"}`}>
+            <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => { setContentType("exclusive"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "exclusive" ? "bg-slate-600 hover:bg-slate-700 text-foreground" : "bg-accent hover:bg-accent0/20 border-border text-muted-foreground"}`}>
               <Star className="h-3.5 w-3.5 mr-1.5" />
               {t('library.exclusiveFiles')}
             </Button>
-            <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => { setContentType("community"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "community" ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-accent hover:bg-accent0/20 border-border text-muted-foreground"}`}>
+            <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => { setContentType("community"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "community" ? "bg-slate-600 hover:bg-slate-700 text-foreground" : "bg-accent hover:bg-accent0/20 border-border text-muted-foreground"}`}>
               <Users className="h-3.5 w-3.5 mr-1.5" />
               {t('library.community')}
             </Button>
@@ -492,7 +492,7 @@ const BibliotecaPrompts = () => {
                     onClick={() => handleCategorySelect(cat)}
                     className={`text-xs cursor-pointer ${
                       selectedCategory === cat
-                        ? "bg-slate-600 text-white"
+                        ? "bg-slate-600 text-foreground"
                         : "text-muted-foreground hover:bg-accent0/20"
                     }`}
                   >
@@ -506,7 +506,7 @@ const BibliotecaPrompts = () => {
               variant="outline"
               size="sm"
               onClick={() => handleCategorySelect("Seedance 2")}
-              className={`text-xs font-bold border-0 text-white ${
+              className={`text-xs font-bold border-0 text-foreground ${
                 selectedCategory === "Seedance 2"
                   ? "bg-gradient-to-r from-green-600 to-green-500 shadow-lg shadow-green-500/30"
                   : "bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400"
@@ -528,7 +528,7 @@ const BibliotecaPrompts = () => {
               placeholder="Buscar por palavra-chave..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-9 text-sm bg-accent0/10 border-border text-white placeholder:text-muted-foreground focus:border-slate-400"
+              className="pl-10 h-9 text-sm bg-accent0/10 border-border text-foreground placeholder:text-muted-foreground focus:border-slate-400"
             />
           </div>
         </div>
@@ -564,7 +564,7 @@ const BibliotecaPrompts = () => {
                 {/* Premium lock icon (always visible) */}
                 {item.isPremium && !isPremium && (
                   <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1.5 z-10">
-                    <Lock className="h-3.5 w-3.5 text-white" />
+                    <Lock className="h-3.5 w-3.5 text-foreground" />
                   </div>
                 )}
 
@@ -585,15 +585,15 @@ const BibliotecaPrompts = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-1.5 sm:p-3
                   max-sm:active:opacity-100">
                   {/* Title + badges */}
-                  <h3 className="font-bold text-[9px] sm:text-sm text-white line-clamp-1 sm:line-clamp-2 mb-1">{item.title}</h3>
+                  <h3 className="font-bold text-[9px] sm:text-sm text-foreground line-clamp-1 sm:line-clamp-2 mb-1">{item.title}</h3>
                   <div className="flex flex-wrap gap-0.5 sm:gap-1 mb-1 sm:mb-2">
                     {item.isPremium ? (
-                      <Badge className="bg-slate-600/90 text-white border-0 text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0 leading-tight">
+                      <Badge className="bg-slate-600/90 text-foreground border-0 text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0 leading-tight">
                         <Star className="h-2 w-2 sm:h-2.5 sm:w-2.5 mr-0.5" fill="currentColor" />
                         Pro
                       </Badge>
                     ) : (
-                      <Badge className="bg-green-600/80 text-white border-0 text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0 leading-tight">
+                      <Badge className="bg-green-600/80 text-foreground border-0 text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0 leading-tight">
                         Free
                       </Badge>
                     )}
@@ -603,7 +603,7 @@ const BibliotecaPrompts = () => {
                     <Button
                       onClick={(e) => { e.stopPropagation(); canAccess ? copyToClipboard(item) : handleItemClick(item); }}
                       size="sm"
-                      className="flex-1 h-5 sm:h-7 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-slate-600 hover:bg-slate-700 text-white min-w-0"
+                      className="flex-1 h-5 sm:h-7 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-slate-600 hover:bg-slate-700 text-foreground min-w-0"
                     >
                       <Copy className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
                       <span className="truncate">Copiar</span>
@@ -612,7 +612,7 @@ const BibliotecaPrompts = () => {
                       onClick={(e) => { e.stopPropagation(); handleItemClick(item); }}
                       variant="outline"
                       size="sm"
-                      className="h-5 sm:h-7 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-accent border-border text-white hover:bg-white/20 min-w-0"
+                      className="h-5 sm:h-7 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-accent border-border text-foreground hover:bg-white/20 min-w-0"
                     >
                       <span className="truncate">Ver</span>
                     </Button>
@@ -630,7 +630,7 @@ const BibliotecaPrompts = () => {
                         }
                       }}
                       size="sm"
-                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1 sm:px-3 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-white min-w-0"
+                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1 sm:px-3 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-foreground min-w-0"
                     >
                       <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
                       <span className="truncate">Gerar foto</span>
@@ -660,7 +660,7 @@ const BibliotecaPrompts = () => {
                         }
                       }}
                       size="sm"
-                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600 text-white min-w-0"
+                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600 text-foreground min-w-0"
                     >
                       <Video className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
                       <span className="truncate">Gerar movie</span>
@@ -669,7 +669,7 @@ const BibliotecaPrompts = () => {
                   {item.category === 'Seedance 2' && (
                     <Button
                       size="sm"
-                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400 text-white min-w-0 shadow-lg shadow-green-500/30 font-bold border-0"
+                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400 text-foreground min-w-0 shadow-lg shadow-green-500/30 font-bold border-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate('/seedance2', { state: { 
@@ -706,10 +706,10 @@ const BibliotecaPrompts = () => {
 
       {/* Modals */}
       <Dialog open={showPremiumModal} onOpenChange={handleClosePremiumModal}>
-        <DialogContent className="max-w-lg bg-background border-border text-white">
+        <DialogContent className="max-w-lg bg-background border-border text-foreground">
           <div className="text-center p-6">
             <div className="w-20 h-20 mx-auto bg-gradient-to-r from-slate-600 to-blue-500 rounded-full flex items-center justify-center mb-4">
-              <Star className="h-10 w-10 text-white" fill="currentColor" />
+              <Star className="h-10 w-10 text-foreground" fill="currentColor" />
             </div>
             <h2 className="text-2xl font-bold mb-2">{t('premiumModal.title')}</h2>
             <p className="text-muted-foreground mb-6">{t('premiumModal.description')}</p>
@@ -721,11 +721,11 @@ const BibliotecaPrompts = () => {
                   <SecureImage src={premiumModalItem.imageUrl} alt={premiumModalItem.title} isPremium={false} className="w-full h-48 object-cover opacity-50" />
                 )}
                 <div className="p-3 bg-background">
-                  <p className="font-semibold text-white">{premiumModalItem.title}</p>
+                  <p className="font-semibold text-foreground">{premiumModalItem.title}</p>
                 </div>
               </div>
             )}
-            <Button onClick={() => navigate("/planos-2")} className="w-full bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-500 hover:to-blue-400 text-white py-6 text-lg">
+            <Button onClick={() => navigate("/planos-2")} className="w-full bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-500 hover:to-blue-400 text-foreground py-6 text-lg">
               <Star className="h-5 w-5 mr-2" fill="currentColor" />
               {t('premiumModal.becomePremium')}
             </Button>
@@ -734,12 +734,12 @@ const BibliotecaPrompts = () => {
       </Dialog>
 
       <Dialog open={!!selectedPrompt} onOpenChange={() => handleCloseModal()}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-background border-border text-white">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-background border-border text-foreground">
           {selectedPrompt && (
             <div className="space-y-6">
               <div className="flex justify-between items-start">
                 <div>
-                  <h2 className="text-2xl font-bold text-white">{selectedPrompt.title}</h2>
+                  <h2 className="text-2xl font-bold text-foreground">{selectedPrompt.title}</h2>
                   <div className="mt-2">{getBadgeContent(selectedPrompt)}</div>
                 </div>
                 <Button variant="ghost" size="icon" onClick={handleCloseModal} className="text-muted-foreground hover:text-foreground hover:bg-accent0/20">
@@ -764,7 +764,7 @@ const BibliotecaPrompts = () => {
                 </div>
               )}
               <div className="flex flex-wrap gap-3">
-                <Button onClick={() => copyToClipboard(selectedPrompt)} className="flex-1 bg-slate-600 hover:bg-slate-700 text-white">
+                <Button onClick={() => copyToClipboard(selectedPrompt)} className="flex-1 bg-slate-600 hover:bg-slate-700 text-foreground">
                   <Copy className="h-4 w-4 mr-2" />
                   {t('modal.copyPrompt')}
                 </Button>
@@ -773,7 +773,7 @@ const BibliotecaPrompts = () => {
                   {t('modal.download')}
                 </Button>
                 {selectedPrompt.tutorialUrl && (
-                  <Button onClick={() => openTutorial(selectedPrompt.tutorialUrl!)} className="bg-red-600 hover:bg-red-700 text-white">
+                  <Button onClick={() => openTutorial(selectedPrompt.tutorialUrl!)} className="bg-red-600 hover:bg-red-700 text-foreground">
                     <Play className="h-4 w-4 mr-2" />
                     {t('modal.watchTutorial')}
                   </Button>
@@ -808,7 +808,7 @@ const BibliotecaPrompts = () => {
                         prefillThumbnail: selectedPrompt.thumbnailUrl || selectedPrompt.imageUrl
                       } });
                     }}
-                    className="w-full bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400 text-white shadow-lg shadow-green-500/30 font-bold border-0"
+                    className="w-full bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400 text-foreground shadow-lg shadow-green-500/30 font-bold border-0"
                   >
                     <Sparkles className="h-4 w-4 mr-2" />
                     Gerar sua versão
@@ -849,7 +849,7 @@ const BibliotecaPrompts = () => {
       </Dialog>
 
       <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
-        <DialogContent className="max-w-md bg-background border-border text-white">
+        <DialogContent className="max-w-md bg-background border-border text-foreground">
           <div className="text-center p-6">
             <div className="w-20 h-20 mx-auto bg-orange-500/20 rounded-full flex items-center justify-center mb-4">
               <AlertTriangle className="h-10 w-10 text-orange-500" />
@@ -858,7 +858,7 @@ const BibliotecaPrompts = () => {
             <p className="text-muted-foreground mb-6">
               {t('limitModal.description', { limit: planType === 'arcano_basico' ? 10 : 24 })}
             </p>
-            <Button onClick={() => { setShowLimitModal(false); navigate("/planos-2"); }} className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 text-white py-6">
+            <Button onClick={() => { setShowLimitModal(false); navigate("/planos-2"); }} className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 text-foreground py-6">
               {t('limitModal.upgrade')}
             </Button>
           </div>

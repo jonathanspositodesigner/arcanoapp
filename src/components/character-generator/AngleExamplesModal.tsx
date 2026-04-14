@@ -32,7 +32,7 @@ const AngleExamplesModal: React.FC<AngleExamplesModalProps> = ({ open, onOpenCha
               <div className="rounded-lg overflow-hidden border border-border aspect-square w-full">
                 <img src={ex.image} alt={ex.label} className="w-full h-full object-cover" />
               </div>
-              <p className="text-[11px] font-bold text-white uppercase tracking-wider">{ex.label}</p>
+              <p className="text-[11px] font-bold text-foreground uppercase tracking-wider">{ex.label}</p>
               <p className="text-[9px] text-muted-foreground text-center leading-tight">{ex.description}</p>
             </div>
           ))}

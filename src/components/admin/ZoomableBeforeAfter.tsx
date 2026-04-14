@@ -90,17 +90,17 @@ export const ZoomableBeforeAfter = ({ beforeImage, afterImage, onFullscreenClick
           <>
             {/* Zoom controls */}
             <div className="absolute top-3 right-3 z-20 flex gap-1.5">
-              <button onClick={() => zoomIn()} className="p-2 bg-black/70 hover:bg-black/90 rounded-lg text-white transition-colors">
+              <button onClick={() => zoomIn()} className="p-2 bg-black/70 hover:bg-black/90 rounded-lg text-foreground transition-colors">
                 <ZoomIn className="h-4 w-4" />
               </button>
-              <button onClick={() => zoomOut()} className="p-2 bg-black/70 hover:bg-black/90 rounded-lg text-white transition-colors">
+              <button onClick={() => zoomOut()} className="p-2 bg-black/70 hover:bg-black/90 rounded-lg text-foreground transition-colors">
                 <ZoomOut className="h-4 w-4" />
               </button>
-              <button onClick={() => resetTransform()} className="p-2 bg-black/70 hover:bg-black/90 rounded-lg text-white transition-colors text-xs font-bold">
+              <button onClick={() => resetTransform()} className="p-2 bg-black/70 hover:bg-black/90 rounded-lg text-foreground transition-colors text-xs font-bold">
                 1:1
               </button>
               {onFullscreenClick && (
-                <button onClick={onFullscreenClick} className="p-2 bg-black/70 hover:bg-black/90 rounded-lg text-white transition-colors">
+                <button onClick={onFullscreenClick} className="p-2 bg-black/70 hover:bg-black/90 rounded-lg text-foreground transition-colors">
                   <Maximize2 className="h-4 w-4" />
                 </button>
               )}

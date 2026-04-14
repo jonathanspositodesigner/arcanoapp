@@ -63,7 +63,7 @@ const UserLoginArtesMusicos = () => {
           </Button>
           <div className="flex items-center justify-center gap-2 mb-2">
             <Music className="h-6 w-6 text-muted-foreground" />
-            <CardTitle className="text-2xl text-white">{t('loginCard.titleMusicos')}</CardTitle>
+            <CardTitle className="text-2xl text-foreground">{t('loginCard.titleMusicos')}</CardTitle>
           </div>
           <CardDescription className="text-muted-foreground">{t('loginCard.descriptionMusicos')}</CardDescription>
         </CardHeader>

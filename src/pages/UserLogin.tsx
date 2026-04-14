@@ -94,7 +94,7 @@ const UserLogin = () => {
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Star className="h-8 w-8 text-yellow-500" fill="currentColor" />
-            <h1 className="text-3xl font-bold text-white">
+            <h1 className="text-3xl font-bold text-foreground">
               {t('premiumArea')}
             </h1>
           </div>

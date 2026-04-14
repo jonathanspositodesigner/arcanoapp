@@ -86,7 +86,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="bg-background border-border text-white max-w-md">
+      <DialogContent className="bg-background border-border text-foreground max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-center">
             {step === "form" ? "🎁 Libere 1 Teste Grátis" : "🔑 Digite o Código"}
@@ -106,7 +106,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
                 placeholder="Seu nome completo"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="bg-accent border-border text-white placeholder:text-muted-foreground"
+                className="bg-accent border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
@@ -118,7 +118,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
                 placeholder="seu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-accent border-border text-white placeholder:text-muted-foreground"
+                className="bg-accent border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 

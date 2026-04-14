@@ -339,7 +339,7 @@ const RemoverFundoTool: React.FC = () => {
 
         <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden flex flex-col">
           <div className="text-center py-3">
-            <h1 className="text-2xl lg:text-3xl font-bold text-white">Remover Fundo</h1>
+            <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Remover Fundo</h1>
             <p className="text-sm text-muted-foreground mt-1 max-w-lg mx-auto">Remova o fundo de qualquer imagem automaticamente com IA. Resultado em PNG transparente.</p>
           </div>
 
@@ -347,13 +347,13 @@ const RemoverFundoTool: React.FC = () => {
             {/* Left Side - Input */}
             <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
               <Card className="bg-accent border-border p-3">
-                <h3 className="text-xs font-semibold text-white mb-2 flex items-center gap-1.5">
+                <h3 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
                   <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" /> Sua Imagem
                 </h3>
                 {inputImage ? (
                   <div className="relative">
                     <img src={inputImage} alt="Input" className="w-full rounded-lg max-h-48 object-contain bg-black/30" />
-                    <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 bg-black/50 hover:bg-black/70 text-white" onClick={() => { setInputImage(null); setInputFile(null); setOutputImage(null); }}>
+                    <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 bg-black/50 hover:bg-black/70 text-foreground" onClick={() => { setInputImage(null); setInputFile(null); setOutputImage(null); }}>
                       <XCircle className="w-4 h-4" />
                     </Button>
                   </div>
@@ -396,7 +396,7 @@ const RemoverFundoTool: React.FC = () => {
             <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
               <Card className="relative overflow-hidden bg-accent border-border flex-1 flex flex-col min-h-[250px] lg:min-h-0">
                 <div className="px-3 py-2 border-b border-border flex items-center justify-between flex-shrink-0">
-                  <h3 className="text-xs font-semibold text-white flex items-center gap-1.5"><ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />Resultado</h3>
+                  <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5"><ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />Resultado</h3>
                   {outputImage && (
                     <div className="flex items-center gap-1">
                       <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground hover:bg-accent0/20" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-3.5 h-3.5" /></Button>
@@ -438,8 +438,8 @@ const RemoverFundoTool: React.FC = () => {
 
                 {outputImage && status === 'completed' && (
                   <div className="absolute bottom-3 left-3 right-3 flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-border text-white hover:bg-accent0/90" onClick={handleReset}><RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova Imagem</Button>
-                    <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white" onClick={handleDownload}><Download className="w-3.5 h-3.5 mr-1.5" />Baixar PNG</Button>
+                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-border text-foreground hover:bg-accent0/90" onClick={handleReset}><RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova Imagem</Button>
+                    <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-foreground" onClick={handleDownload}><Download className="w-3.5 h-3.5 mr-1.5" />Baixar PNG</Button>
                   </div>
                 )}
               </Card>

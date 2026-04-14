@@ -492,7 +492,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
               <button
                 onClick={handleOneClickBuy}
                 disabled={oneClickLoading || !selectedCardId || isOneClickSubmitting}
-                className={`w-full mt-4 py-4 text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
+                className={`w-full mt-4 py-4 text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-foreground shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
               >
                 {oneClickLoading ? (
                   'Processando...'
@@ -548,7 +548,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     placeholder="Seu nome completo"
                     value={name}
                     onChange={(e) => { setName(e.target.value); setNameError(''); }}
-                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                   />
                   {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
                 </div>
@@ -562,7 +562,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
                     disabled={!!userEmail}
-                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed`}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed`}
                   />
                   {emailError && <p className="text-red-400 text-xs mt-1">{emailError}</p>}
                 </div>
@@ -576,7 +576,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                       placeholder="Digite novamente seu email"
                       value={emailConfirm}
                       onChange={(e) => { setEmailConfirm(e.target.value); setEmailConfirmError(''); }}
-                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                     />
                     {emailConfirmError && <p className="text-red-400 text-xs mt-1">{emailConfirmError}</p>}
                   </div>
@@ -591,7 +591,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     placeholder="(11) 99999-9999"
                     value={phone}
                     onChange={(e) => { setPhone(formatPhone(e.target.value)); setPhoneError(''); }}
-                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                   />
                   {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
                 </div>
@@ -605,7 +605,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     placeholder="000.000.000-00"
                     value={cpf}
                     onChange={(e) => { setCpf(formatCpf(e.target.value)); setCpfError(''); }}
-                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                   />
                   {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
                 </div>
@@ -626,7 +626,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                           setAddressError('');
                           if (formatted.replace(/\D/g, '').length === 8) handleCepLookup(formatted);
                         }}
-                        className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                        className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                       />
                     </div>
                     <div>
@@ -635,7 +635,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                         placeholder="Número"
                         value={number}
                         onChange={(e) => { setNumber(e.target.value); setAddressError(''); }}
-                        className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                        className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                       />
                     </div>
                   </div>
@@ -645,7 +645,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     value={street}
                     onChange={(e) => { setStreet(e.target.value); setAddressError(''); }}
                     disabled={cepLoading}
-                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
                   />
                   <input
                     type="text"
@@ -653,7 +653,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     value={neighborhood}
                     onChange={(e) => { setNeighborhood(e.target.value); setAddressError(''); }}
                     disabled={cepLoading}
-                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
                   />
                   <div className="grid grid-cols-2 gap-2">
                     <input
@@ -662,7 +662,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                       value={city}
                       onChange={(e) => { setCity(e.target.value); setAddressError(''); }}
                       disabled={cepLoading}
-                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
                     />
                     <input
                       type="text"
@@ -671,7 +671,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                       value={addressState}
                       onChange={(e) => { setAddressState(e.target.value.toUpperCase()); setAddressError(''); }}
                       disabled={cepLoading}
-                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
                     />
                   </div>
                   {addressError && <p className="text-red-400 text-xs mt-1">{addressError}</p>}
@@ -720,7 +720,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
               <button
                 onClick={handleSubmit}
                 disabled={loading || isFormSubmitting}
-                className={`w-full mt-4 md:mt-6 py-3 md:py-4 text-sm md:text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
+                className={`w-full mt-4 md:mt-6 py-3 md:py-4 text-sm md:text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-foreground shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
               >
                 {loading ? 'Gerando checkout...' : 'Finalizar e Pagar'}
                 {!loading && <ArrowRight className="h-5 w-5" />}
@@ -743,7 +743,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
       {/* Modal de resultado da compra 1-clique */}
       <Dialog open={oneClickResult !== null} onOpenChange={() => {}}>
-        <DialogContent className="bg-card border-border text-white max-w-sm" onPointerDownOutside={(e) => e.preventDefault()}>
+        <DialogContent className="bg-card border-border text-foreground max-w-sm" onPointerDownOutside={(e) => e.preventDefault()}>
           <DialogTitle className="sr-only">
             {oneClickResult === 'approved' ? 'Compra aprovada' : 'Compra recusada'}
           </DialogTitle>
@@ -758,7 +758,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     setOneClickResult(null);
                     onClose();
                   }}
-                  className="w-full py-3 font-bold rounded-full bg-green-500 hover:bg-green-600 text-white transition-colors"
+                  className="w-full py-3 font-bold rounded-full bg-green-500 hover:bg-green-600 text-foreground transition-colors"
                 >
                   Entendi
                 </button>
@@ -770,7 +770,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                 <p className="text-sm text-muted-foreground text-center">Não foi possível processar o pagamento com este cartão.</p>
                 <button
                   onClick={() => setOneClickResult(null)}
-                  className="w-full py-3 font-bold rounded-full bg-accent hover:bg-white/20 text-white transition-colors"
+                  className="w-full py-3 font-bold rounded-full bg-accent hover:bg-white/20 text-foreground transition-colors"
                 >
                   Escolher outro meio de pagamento
                 </button>

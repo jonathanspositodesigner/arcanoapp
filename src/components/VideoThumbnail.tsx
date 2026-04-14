@@ -55,7 +55,7 @@ export const VideoThumbnail = memo(({
       {/* Centered play button */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="bg-black/60 rounded-full p-4 group-hover:bg-black/80 group-hover:scale-110 transition-all duration-300 shadow-lg">
-          <Play className="h-8 w-8 text-white" fill="white" />
+          <Play className="h-8 w-8 text-foreground" fill="white" />
         </div>
       </div>
       

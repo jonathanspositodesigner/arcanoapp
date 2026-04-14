@@ -246,7 +246,7 @@ const PartnerDashboardMusicos = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>
-            <h1 className="text-xl md:text-2xl font-bold text-white">
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">
               Olá, {partner?.name}!
             </h1>
           </div>
@@ -284,7 +284,7 @@ const PartnerDashboardMusicos = () => {
 
         {/* Upload Button */}
         <Button
-          className="w-full mb-6 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white"
+          className="w-full mb-6 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-foreground"
           onClick={() => navigate("/parceiro-upload-musicos")}
         >
           <Upload className="h-4 w-4 mr-2" />
@@ -303,7 +303,7 @@ const PartnerDashboardMusicos = () => {
               key={filter.key}
               variant={activeFilter === filter.key ? "default" : "outline"}
               className={activeFilter === filter.key 
-                ? "bg-gradient-to-r from-pink-500 to-rose-600 text-white" 
+                ? "bg-gradient-to-r from-pink-500 to-rose-600 text-foreground" 
                 : "border-pink-500/50 text-muted-foreground"}
               onClick={() => setActiveFilter(filter.key as FilterType)}
             >
@@ -394,7 +394,7 @@ const PartnerDashboardMusicos = () => {
 
       {/* Edit Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="bg-card border-pink-500/30 text-white">
+        <DialogContent className="bg-card border-pink-500/30 text-foreground">
           <DialogHeader>
             <DialogTitle>Editar Arte</DialogTitle>
           </DialogHeader>
@@ -410,13 +410,13 @@ const PartnerDashboardMusicos = () => {
               <Input
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="bg-card border-pink-500/50 text-white"
+                className="bg-card border-pink-500/50 text-foreground"
               />
             </div>
             <div>
               <label className="text-sm text-muted-foreground">Categoria</label>
               <Select value={editCategory} onValueChange={setEditCategory}>
-                <SelectTrigger className="bg-card border-pink-500/50 text-white">
+                <SelectTrigger className="bg-card border-pink-500/50 text-foreground">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-card border-pink-500/50">
@@ -433,7 +433,7 @@ const PartnerDashboardMusicos = () => {
               <Textarea
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
-                className="bg-card border-pink-500/50 text-white min-h-[100px]"
+                className="bg-card border-pink-500/50 text-foreground min-h-[100px]"
               />
             </div>
             <div className="flex gap-2">
@@ -445,7 +445,7 @@ const PartnerDashboardMusicos = () => {
                 Cancelar
               </Button>
               <Button
-                className="flex-1 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white"
+                className="flex-1 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-foreground"
                 onClick={handleSaveEdit}
               >
                 Salvar

@@ -47,7 +47,7 @@ const ForgotPasswordArtes = () => {
             <div className="mx-auto w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4">
               <Mail className="h-8 w-8 text-green-400" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">
+            <h2 className="text-xl font-bold text-foreground mb-2">
               {t('emailSent.title')}
             </h2>
             <p className="text-muted-foreground mb-6">
@@ -78,7 +78,7 @@ const ForgotPasswordArtes = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t('back')}
           </Button>
-          <CardTitle className="text-2xl text-white">{t('resetPassword')}</CardTitle>
+          <CardTitle className="text-2xl text-foreground">{t('resetPassword')}</CardTitle>
           <CardDescription className="text-muted-foreground">
             {t('forgotPasswordCard.description')}
           </CardDescription>
@@ -90,13 +90,13 @@ const ForgotPasswordArtes = () => {
               placeholder={t('forgotPasswordCard.emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="bg-card border-border/50 text-white"
+              className="bg-card border-border/50 text-foreground"
               required
             />
 
             <Button
               type="submit"
-              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
               disabled={isLoading}
             >
               {isLoading ? t('sending') : t('sendRecoveryEmail')}

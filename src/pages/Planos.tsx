@@ -280,18 +280,18 @@ const Planos = () => {
             return (
             <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-background w-full ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === currentPlans.length - 1 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-slate-500 shadow-lg shadow-slate-500/20" : "border border-border"}`}>
               {isBestSeller && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-slate-600 to-pink-600 text-white px-4 py-1">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-slate-600 to-pink-600 text-foreground px-4 py-1">
                   {t('planos.bestSeller')}
                 </Badge>
               )}
               {(plan.promo || plan.popular) && !isBestSeller && (
-                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap ${plan.promo ? "bg-orange-500 text-white" : "bg-green-500 text-white"}`}>
+                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap ${plan.promo ? "bg-orange-500 text-foreground" : "bg-green-500 text-foreground"}`}>
                   {plan.promo ? t('planos.launchPromo') : t('planos.popular')}
                 </Badge>
               )}
 
               <div className="text-center mb-4 min-h-[40px] flex items-center justify-center">
-                <h2 className="text-xl font-bold text-white">{plan.name}</h2>
+                <h2 className="text-xl font-bold text-foreground">{plan.name}</h2>
               </div>
 
               <div className="text-center mb-2 lg:mb-6 min-h-[80px]">
@@ -302,7 +302,7 @@ const Planos = () => {
                 )}
                 <div className="flex items-baseline justify-center gap-1">
                   <span className="text-muted-foreground text-lg">R$</span>
-                  <span className="text-4xl font-bold text-white">{plan.price}</span>
+                  <span className="text-4xl font-bold text-foreground">{plan.price}</span>
                   <span className="text-muted-foreground">{t('planos.perMonth')}</span>
                 </div>
                 {billingPeriod === "anual" && (plan as any).yearlyTotal && (
@@ -319,7 +319,7 @@ const Planos = () => {
 
               <Button 
                 onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
-                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 text-foreground font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-accent hover:bg-accent text-muted-foreground"}`}
+                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 text-foreground font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-foreground" : "bg-accent hover:bg-accent text-muted-foreground"}`}
               >
                 {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>
@@ -404,12 +404,12 @@ const Planos = () => {
             <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-accent0/20 flex items-center justify-center">
               <Clock className="w-8 h-8 text-muted-foreground" />
             </div>
-            <DialogTitle className="text-2xl font-bold text-center text-white">{t('planos.comingSoon.title')}</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-center text-foreground">{t('planos.comingSoon.title')}</DialogTitle>
             <DialogDescription className="text-center text-muted-foreground">
               {t('planos.comingSoon.description')}
             </DialogDescription>
           </DialogHeader>
-          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-slate-600 hover:bg-slate-700 text-white">
+          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-slate-600 hover:bg-slate-700 text-foreground">
             {t('planos.comingSoon.understood')}
           </Button>
         </DialogContent>

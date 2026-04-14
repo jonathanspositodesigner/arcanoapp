@@ -115,7 +115,7 @@ const TutorialArtes = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-xl font-bold text-white">
+            <h1 className="text-xl font-bold text-foreground">
               {title}
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -131,7 +131,7 @@ const TutorialArtes = () => {
           <Card className="max-w-2xl mx-auto bg-background/50 border-border">
             <CardContent className="p-8 text-center">
               <Play className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-white mb-2">
+              <h2 className="text-xl font-semibold text-foreground mb-2">
                 {t('tutorial.contentComingSoon')}
               </h2>
               <p className="text-muted-foreground">
@@ -144,7 +144,7 @@ const TutorialArtes = () => {
             {lessons.map((lesson, index) => (
               <Card key={index} className="bg-background/50 border-border">
                 <CardHeader>
-                  <CardTitle className="text-lg text-white">{lesson.title}</CardTitle>
+                  <CardTitle className="text-lg text-foreground">{lesson.title}</CardTitle>
                   {lesson.description && (
                     <p className="text-muted-foreground text-sm mt-1">{lesson.description}</p>
                   )}
@@ -165,7 +165,7 @@ const TutorialArtes = () => {
                         <Button
                           key={btnIndex}
                           onClick={() => window.open(button.url, "_blank")}
-                          className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white"
+                          className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-foreground"
                         >
                           <ExternalLink className="h-4 w-4 mr-2" />
                           {button.text}

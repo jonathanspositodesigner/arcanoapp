@@ -349,7 +349,7 @@ const ToolVersionLessons = () => {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold text-white">{toolName}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{toolName}</h1>
           <p className="text-muted-foreground">{t('versionSelect.loginRequired')}</p>
           <Button onClick={() => navigate(loginPath)} className="bg-gradient-to-r from-slate-600 to-blue-500">
             {t('ferramentas.login')}
@@ -376,7 +376,7 @@ const ToolVersionLessons = () => {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold text-white">{toolName}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{toolName}</h1>
           <p className="text-muted-foreground">{t('versionSelect.noAccess')}</p>
           <Button onClick={() => navigate(plansPath)} className="bg-gradient-to-r from-slate-600 to-blue-500">
             {t('ferramentas.seePlans')}
@@ -396,7 +396,7 @@ const ToolVersionLessons = () => {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold text-white">{t('toolLessons.versionNotFound')}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('toolLessons.versionNotFound')}</h1>
           <p className="text-muted-foreground">{t('toolLessons.versionNotFoundDesc')}</p>
           <Button onClick={() => navigate(toolSelectPath)} className="bg-gradient-to-r from-slate-600 to-blue-500">
             {t('upscaler.back')}
@@ -426,13 +426,13 @@ const ToolVersionLessons = () => {
                 <ArrowLeft className="h-4 w-4" />
                 <span className="hidden sm:inline">Voltar para Home</span>
               </Button>
-              <h1 className="text-sm md:text-base font-bold text-white absolute left-1/2 -translate-x-1/2">
+              <h1 className="text-sm md:text-base font-bold text-foreground absolute left-1/2 -translate-x-1/2">
                 {toolName || 'Upscaler Arcano'}
               </h1>
               <Button
                 size="sm"
                 onClick={() => navigate(user ? '/minha-conta' : '/auth')}
-                className="bg-slate-600 hover:bg-slate-700 text-white border-0"
+                className="bg-slate-600 hover:bg-slate-700 text-foreground border-0"
               >
                 {user ? 'Minha Conta' : 'Login'}
               </Button>
@@ -461,7 +461,7 @@ const ToolVersionLessons = () => {
         {toolSlug === 'upscaller-arcano' && lessons.length >= 1 && (
           <div className="mb-6 p-4 bg-background/50 border border-border rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-white flex items-center gap-2">
+              <span className="text-sm font-medium text-foreground flex items-center gap-2">
                 <Trophy className="h-4 w-4 text-yellow-500" />
                 {t('toolLessons.mastersJourney')}
               </span>
@@ -523,7 +523,7 @@ const ToolVersionLessons = () => {
                   <div>
                     <Button
                       onClick={() => window.open(toolLink, '_blank')}
-                      className="w-full h-12 text-base font-semibold transition-all duration-500 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white shadow-lg shadow-orange-500/30"
+                      className="w-full h-12 text-base font-semibold transition-all duration-500 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-foreground shadow-lg shadow-orange-500/30"
                     >
                       <Unlock className="h-5 w-5 mr-2" />
                       {t('toolLessons.accessTool')}
@@ -552,7 +552,7 @@ const ToolVersionLessons = () => {
               <>
                 {/* Lesson Info - ABOVE video */}
                 <Card className="p-4 bg-background/50 border-border">
-                  <h2 className="text-base md:text-xl font-bold mb-2 flex items-center gap-2 flex-wrap text-white">
+                  <h2 className="text-base md:text-xl font-bold mb-2 flex items-center gap-2 flex-wrap text-foreground">
                     <Play className="h-5 w-5 text-muted-foreground" />
                     {currentLesson.title}
                     {watchedLessons.includes(selectedLesson + 1) && (
@@ -637,7 +637,7 @@ const ToolVersionLessons = () => {
 
           {/* Lesson List */}
           <div className="space-y-2">
-            <h3 className="font-semibold text-lg mb-4 text-white">{t('toolLessons.lessons')}</h3>
+            <h3 className="font-semibold text-lg mb-4 text-foreground">{t('toolLessons.lessons')}</h3>
             {lessons.map((lesson, index) => (
               <Card
                 key={index}
@@ -732,7 +732,7 @@ const ToolVersionLessons = () => {
           <AlertDialogFooter className="flex flex-col gap-2 mt-4 sm:flex-row">
             <AlertDialogCancel 
               onClick={handleContinueWatching}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white border-0 order-1 sm:order-1"
+              className="flex-1 bg-slate-600 hover:bg-slate-700 text-foreground border-0 order-1 sm:order-1"
             >
               {t('toolLessons.continueWatching')}
             </AlertDialogCancel>

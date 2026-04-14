@@ -103,7 +103,7 @@ const PlanosForjaSelos3D = () => {
         </FadeIn>
 
         <AnimatedSection animation="fade-up" delay={100} className="text-center mb-8" as="div">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
             {t("forja3D.title")}
           </h1>
           <p className="text-muted-foreground">
@@ -134,7 +134,7 @@ const PlanosForjaSelos3D = () => {
         ) : (
           <AnimatedSection animation="scale" delay={200} as="div">
             <Card className="relative bg-card/80 border-2 border-slate-500/50 ring-2 ring-slate-500/20">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-medium">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-500 to-pink-500 text-foreground px-4 py-1 rounded-full text-sm font-medium">
                 {t("forja3D.lifetimeAccess")}
               </div>
 
@@ -159,7 +159,7 @@ const PlanosForjaSelos3D = () => {
 
               <CardContent className="space-y-6">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-white mb-1">
+                  <div className="text-4xl font-bold text-foreground mb-1">
                     {formatPrice(price)}
                   </div>
                   <p className="text-muted-foreground text-sm">{t("forja3D.oneTimePayment")}</p>
@@ -181,7 +181,7 @@ const PlanosForjaSelos3D = () => {
 
                 <Button
                   onClick={handlePurchase}
-                  className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-slate-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-white shadow-lg shadow-slate-500/20 hover-lift"
+                  className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-slate-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-foreground shadow-lg shadow-slate-500/20 hover-lift"
                 >
                   {t("forja3D.buyNow")}
                 </Button>
