@@ -458,3 +458,12 @@ All colors MUST be HSL.
   animation-duration: 25s !important;
   will-change: transform;
 }
+
+/* Hide scrollbar for horizontal scroll areas */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
