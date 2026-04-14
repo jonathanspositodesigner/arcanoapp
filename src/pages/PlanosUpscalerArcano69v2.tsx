@@ -151,8 +151,8 @@ const FullscreenModal = ({
         >
           <div className="absolute left-1/2 -translate-x-1/2 bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center">
             <div className="flex gap-0.5">
-              <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
-              <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
+              <div className="w-0.5 h-6 bg-border rounded-full" />
+              <div className="w-0.5 h-6 bg-border rounded-full" />
             </div>
           </div>
         </div>
@@ -587,7 +587,7 @@ const HeroCarousel = ({ isMobile, locale, label }: { isMobile: boolean; locale: 
           <button
             key={i}
             onClick={() => setCurrentSlide(i)}
-            className={`w-2 h-2 rounded-full transition-all ${i === currentSlide ? 'bg-slate-400 w-5' : 'bg-white/30 hover:bg-accent0'}`}
+            className={`w-2 h-2 rounded-full transition-all ${i === currentSlide ? 'bg-muted-foreground w-5' : 'bg-white/30 hover:bg-accent0'}`}
             aria-label={`Slide ${i + 1}`}
           />
         ))}

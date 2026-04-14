@@ -350,8 +350,8 @@ export default function UpscalerMockup({
                       >
                         <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-xl flex items-center justify-center">
                           <div className="flex gap-0.5">
-                            <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
-                            <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                            <div className="w-0.5 h-4 bg-border rounded-full" />
+                            <div className="w-0.5 h-4 bg-border rounded-full" />
                           </div>
                         </div>
                       </div>

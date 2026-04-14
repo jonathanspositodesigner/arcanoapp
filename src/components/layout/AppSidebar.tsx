@@ -37,7 +37,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
     { name: "Pose Changer", path: "/pose-changer-tool", badge: null, badgeColor: null, disabled: false },
     { name: "Veste AI", path: "/veste-ai-tool", badge: null, badgeColor: null, disabled: false },
     { name: "MovieLed Maker", path: "/movieled-maker", badge: "Novo", badgeColor: "bg-green-500/30", textColor: "text-green-300", disabled: false },
-    { name: "Forja de Selos 3D", path: "#", badge: "Em breve", badgeColor: "bg-slate-400/30", textColor: "text-muted-foreground", disabled: true },
+    { name: "Forja de Selos 3D", path: "#", badge: "Em breve", badgeColor: "bg-muted/30", textColor: "text-muted-foreground", disabled: true },
   ];
 
   const handleLogout = async () => {

@@ -924,7 +924,7 @@ export default function Seedance2() {
                     type="range" min={4} max={15} step={1}
                     value={parseInt(duration)}
                     onChange={(e) => setDuration(e.target.value)}
-                    className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-accent accent-slate-500 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-slate-400"
+                    className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-accent accent-slate-500 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-muted-foreground"
                   />
                   <span className="min-w-[24px] text-center text-[11px] font-medium text-muted-foreground">{duration}s</span>
                 </div>

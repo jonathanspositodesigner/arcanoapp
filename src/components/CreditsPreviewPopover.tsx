@@ -64,7 +64,7 @@ const CreditsPreviewPopover = ({
         <button type="button" className="focus:outline-none">
           <Badge 
             variant="outline" 
-            className={`cursor-pointer hover:bg-slate-800/50 transition-all duration-300 ${
+            className={`cursor-pointer hover:bg-muted/50 transition-all duration-300 ${
               isDesktop 
                 ? "bg-accent border-border text-muted-foreground flex items-center gap-1.5 px-2.5 py-1"
                 : "bg-accent border-border text-muted-foreground text-xs px-2 py-0.5 flex items-center gap-1"

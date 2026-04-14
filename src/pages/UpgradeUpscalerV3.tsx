@@ -317,7 +317,7 @@ const TestimonialsGallery = () => {
               <button
                 key={i}
                 onClick={(e) => { e.stopPropagation(); setLightboxIndex(i); }}
-                className={`w-2 h-2 rounded-full transition-all ${i === lightboxIndex ? 'bg-slate-400 w-6' : 'bg-white/30 hover:bg-accent0'}`}
+                className={`w-2 h-2 rounded-full transition-all ${i === lightboxIndex ? 'bg-muted-foreground w-6' : 'bg-white/30 hover:bg-accent0'}`}
               />
             ))}
           </div>

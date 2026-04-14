@@ -139,8 +139,8 @@ const FullscreenModal = ({
         >
           <div className="absolute left-1/2 -translate-x-1/2 bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center">
             <div className="flex gap-0.5">
-              <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
-              <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
+              <div className="w-0.5 h-6 bg-border rounded-full" />
+              <div className="w-0.5 h-6 bg-border rounded-full" />
             </div>
           </div>
         </div>

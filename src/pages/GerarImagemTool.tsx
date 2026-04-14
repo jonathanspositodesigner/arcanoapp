@@ -788,7 +788,7 @@ const GerarImagemTool = () => {
                     <Download className="h-3 w-3" />
                     <span className="font-medium">Baixar</span>
                   </button>
-                  <button onClick={handleNewGeneration} className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-accent border border-slate-500/25 text-xs text-muted-foreground hover:bg-slate-800/50 transition-colors">
+                  <button onClick={handleNewGeneration} className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-accent border border-slate-500/25 text-xs text-muted-foreground hover:bg-muted/50 transition-colors">
                     <Sparkles className="h-3 w-3" />
                     <span className="font-medium">Nova</span>
                   </button>

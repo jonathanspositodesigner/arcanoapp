@@ -403,7 +403,7 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
             <div className="absolute inset-0 bg-muted">
               <div className="absolute bottom-0 left-0 right-0 bg-accent dark:bg-gray-800 rounded-t-xl animate-slide-up">
                 {/* Drag Handle */}
-                <div className="w-10 h-1 bg-gray-400 rounded-full mx-auto mt-2" />
+                <div className="w-10 h-1 bg-border rounded-full mx-auto mt-2" />
                 
                 {/* Site Info Header */}
                 <div className="flex items-center gap-3 p-3 border-b border-gray-200 dark:border-gray-700">
@@ -473,7 +473,7 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
             <div className="absolute inset-0 bg-muted">
               <div className="absolute bottom-0 left-0 right-0 bg-accent dark:bg-gray-800 rounded-t-xl animate-fade-in">
                 {/* Drag Handle */}
-                <div className="w-10 h-1 bg-gray-400 rounded-full mx-auto mt-2" />
+                <div className="w-10 h-1 bg-border rounded-full mx-auto mt-2" />
                 
                 {/* Site Info Header */}
                 <div className="flex items-center gap-3 p-3 border-b border-gray-200 dark:border-gray-700">
@@ -740,7 +740,7 @@ const AndroidMockup = ({ step }: { step: number }) => (
         {/* Android Navigation Bar */}
         <div className="h-10 bg-accent dark:bg-gray-800 flex items-center justify-center gap-16">
           <div className="w-4 h-4 border-2 border-gray-400 rounded" />
-          <div className="w-4 h-4 bg-gray-400 rounded-full" />
+          <div className="w-4 h-4 bg-border rounded-full" />
           <div className="w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[10px] border-r-gray-400" />
         </div>
       </div>

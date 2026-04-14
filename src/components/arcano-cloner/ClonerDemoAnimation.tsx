@@ -234,7 +234,7 @@ const ClonerDemoAnimation: React.FC = () => {
                          faceVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
                        )}>
                          {/* Face silhouette skeleton */}
-                         <div className="flex-1 flex items-center justify-center bg-slate-800/30">
+                         <div className="flex-1 flex items-center justify-center bg-muted/30">
                            <div className="relative flex flex-col items-center gap-1.5">
                              {/* Head circle */}
                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500/50 to-slate-400/40 border border-border flex items-center justify-center">
@@ -278,7 +278,7 @@ const ClonerDemoAnimation: React.FC = () => {
                          <div className="grid grid-cols-3 gap-1 h-full">
                            {[0,1,2,3,4,5].map(n => (
                              <div key={n} className={cn(
-                               'rounded bg-slate-700/40 border border-border flex items-center justify-center transition-all duration-300',
+                               'rounded bg-muted/40 border border-border flex items-center justify-center transition-all duration-300',
                                n === 4 ? 'border-border bg-accent scale-105' : ''
                              )}>
                                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-gray-400/40">
@@ -295,13 +295,13 @@ const ClonerDemoAnimation: React.FC = () => {
                          'absolute inset-0 flex flex-col transition-all duration-700',
                          refVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
                        )}>
-                         <div className="flex-1 flex items-center justify-center bg-slate-800/30">
+                         <div className="flex-1 flex items-center justify-center bg-muted/30">
                            <div className="relative flex flex-col items-center gap-1.5">
                              {/* Landscape/photo icon skeleton */}
                              <div className="w-12 h-9 rounded-lg bg-gradient-to-br from-slate-500/40 to-slate-400/30 border border-border flex items-center justify-center overflow-hidden">
                                {/* Simulated sky/ground */}
-                               <div className="w-full h-1/2 bg-slate-600/30" />
-                               <div className="absolute bottom-0 w-full h-1/2 bg-slate-800/30" />
+                               <div className="w-full h-1/2 bg-muted/30" />
+                               <div className="absolute bottom-0 w-full h-1/2 bg-muted/30" />
                                <svg viewBox="0 0 24 24" className="absolute w-6 h-6 fill-gray-400">
                                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
                                </svg>

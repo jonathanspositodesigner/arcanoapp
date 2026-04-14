@@ -160,8 +160,8 @@ export const BeforeAfterSlider = ({
               : 'bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-8 h-8'
           }`}>
             <div className={`flex ${compact ? 'gap-[1px]' : 'gap-[1px]'}`}>
-              <div className={`bg-gray-400 rounded-full ${compact ? 'w-[1px] h-2' : 'w-[1px] h-3'}`} />
-              <div className={`bg-gray-400 rounded-full ${compact ? 'w-[1px] h-2' : 'w-[1px] h-3'}`} />
+              <div className={`bg-border rounded-full ${compact ? 'w-[1px] h-2' : 'w-[1px] h-3'}`} />
+              <div className={`bg-border rounded-full ${compact ? 'w-[1px] h-2' : 'w-[1px] h-3'}`} />
             </div>
           </div>
         </div>

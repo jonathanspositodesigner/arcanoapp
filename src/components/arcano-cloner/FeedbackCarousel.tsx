@@ -233,7 +233,7 @@ const MobileFeedbackCarousel = () => {
               onClick={() => goTo(index)}
               className={`w-2 h-2 rounded-full transition-all duration-300 ${
                 index === currentIndex
-                  ? "bg-slate-400 w-5"
+                  ? "bg-muted-foreground w-5"
                   : "bg-white/20 hover:bg-white/40"
               }`}
             />

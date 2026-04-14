@@ -1280,8 +1280,8 @@ const UpscalerArcanoTool: React.FC = () => {
                                 style={{ touchAction: 'none' }}
                               >
                                 <div className="flex gap-0.5">
-                                  <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
-                                  <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                                  <div className="w-0.5 h-4 bg-border rounded-full" />
+                                  <div className="w-0.5 h-4 bg-border rounded-full" />
                                 </div>
                               </div>
                             </div>
@@ -1386,8 +1386,8 @@ const UpscalerArcanoTool: React.FC = () => {
                     >
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center">
                         <div className="flex gap-[1px]">
-                          <div className="w-[1px] h-3 bg-gray-400 rounded-full" />
-                          <div className="w-[1px] h-3 bg-gray-400 rounded-full" />
+                          <div className="w-[1px] h-3 bg-border rounded-full" />
+                          <div className="w-[1px] h-3 bg-border rounded-full" />
                         </div>
                       </div>
                     </div>

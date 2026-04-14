@@ -847,7 +847,7 @@ const GerarVideoTool = () => {
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent border border-slate-500/25 text-[10px] text-muted-foreground hover:bg-slate-800/50 transition-colors">
+                      <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent border border-slate-500/25 text-[10px] text-muted-foreground hover:bg-muted/50 transition-colors">
                         <span className="font-medium">{currentModel.name}</span>
                         <ChevronDown className="h-3 w-3 text-muted-foreground" />
                       </button>
@@ -879,7 +879,7 @@ const GerarVideoTool = () => {
                   {(isVeoModel || isGeminiLite) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent border border-slate-500/25 text-[10px] text-muted-foreground hover:bg-slate-800/50 transition-colors">
+                        <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent border border-slate-500/25 text-[10px] text-muted-foreground hover:bg-muted/50 transition-colors">
                           <span className="font-medium">{ASPECT_RATIO_LABELS[aspectRatio] || aspectRatio}</span>
                           <ChevronDown className="h-3 w-3 text-muted-foreground" />
                         </button>
@@ -904,8 +904,8 @@ const GerarVideoTool = () => {
                       disabled={isGenerating}
                       className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[10px] font-medium transition-colors ${
                         generateAudio
-                          ? 'bg-slate-600/30 border-border/50 text-muted-foreground'
-                          : 'bg-accent border-slate-500/25 text-muted-foreground hover:text-muted-foreground hover:bg-slate-800/50'
+                          ? 'bg-muted/30 border-border/50 text-muted-foreground'
+                          : 'bg-accent border-slate-500/25 text-muted-foreground hover:text-muted-foreground hover:bg-muted/50'
                       } disabled:opacity-40 disabled:cursor-not-allowed`}
                       title={generateAudio ? 'Desativar áudio' : 'Ativar áudio (custo extra)'}
                     >
