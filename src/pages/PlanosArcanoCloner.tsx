@@ -172,18 +172,18 @@ const PlanosArcanoCloner = () => {
           <div className="mt-auto flex flex-col items-center">
             {/* Social proof badge */}
             <FadeIn duration={600}>
-              <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-5 md:mb-6">
+              <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-border rounded-full px-4 py-2 mb-5 md:mb-6">
                 <div className="flex -space-x-2">
                   <img src="/images/social-proof-1.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                   <img src="/images/social-proof-2.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                   <img src="/images/social-proof-3.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                 </div>
-                <span className="text-white/80 text-xs font-medium">+5.000 pessoas já estão usando</span>
+                <span className="text-foreground text-xs font-medium">+5.000 pessoas já estão usando</span>
               </div>
             </FadeIn>
 
             {/* Headline */}
-            <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3 md:mb-4 leading-[1.2]">
+            <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-3 md:mb-4 leading-[1.2]">
               Crie ensaios fotográficos{" "}
               <br className="hidden md:block" />
               profissionais com IA{" "}
@@ -195,25 +195,25 @@ const PlanosArcanoCloner = () => {
 
             {/* Subtitle */}
             <FadeIn duration={700}>
-              <p className="text-sm md:text-base text-white/60 mb-6 md:mb-8 max-w-lg leading-relaxed mx-auto">
+              <p className="text-sm md:text-base text-muted-foreground mb-6 md:mb-8 max-w-lg leading-relaxed mx-auto">
                 Basta subir sua foto e escolher a referência.{" "}
-                <span className="text-gray-400 font-semibold">Resultado pronto em segundos.</span>
+                <span className="text-muted-foreground font-semibold">Resultado pronto em segundos.</span>
               </p>
             </FadeIn>
 
             {/* Trust badges */}
             <FadeIn duration={700}>
               <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10">
-                <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                  <Sparkles className="h-3.5 w-3.5 text-gray-400" />
+                <div className="flex items-center gap-1.5 text-muted-foreground text-xs px-3 py-1">
+                  <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
                   <span>Sem prompt</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                  <Clock className="h-3.5 w-3.5 text-gray-400" />
+                <div className="flex items-center gap-1.5 text-muted-foreground text-xs px-3 py-1">
+                  <Clock className="h-3.5 w-3.5 text-muted-foreground" />
                   <span>Pronto em segundos</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                  <MousePointerClick className="h-3.5 w-3.5 text-gray-400" />
+                <div className="flex items-center gap-1.5 text-muted-foreground text-xs px-3 py-1">
+                  <MousePointerClick className="h-3.5 w-3.5 text-muted-foreground" />
                   <span>Fácil de usar</span>
                 </div>
               </div>
@@ -227,7 +227,7 @@ const PlanosArcanoCloner = () => {
       <AnimatedSection className="px-3 md:px-4 pt-4 pb-10 md:py-20 bg-black/30">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" className="text-center" delay={100}>
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-2 md:mb-12">
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-2 md:mb-12">
               Chega de...
             </h2>
           </AnimatedSection>
@@ -235,22 +235,22 @@ const PlanosArcanoCloner = () => {
             {painPoints.map((pain, index) => {
               const IconComp = pain.icon;
               return (
-                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full">
-                  <div className="w-12 h-12 rounded-2xl bg-white/50/10 border border-white/10 flex items-center justify-center mb-4 shrink-0">
-                    <IconComp className="h-6 w-6 text-gray-400" />
+                <div key={index} className="bg-accent border border-border rounded-3xl p-6 md:p-8 text-center hover:border-border transition-all duration-300 flex flex-col items-center justify-center h-full">
+                  <div className="w-12 h-12 rounded-2xl bg-accent0/10 border border-border flex items-center justify-center mb-4 shrink-0">
+                    <IconComp className="h-6 w-6 text-muted-foreground" />
                   </div>
-                  <p className="text-white/80 text-base md:text-lg">{pain.text}</p>
+                  <p className="text-foreground text-base md:text-lg">{pain.text}</p>
                 </div>
               );
             })}
           </StaggeredAnimation>
           <AnimatedSection as="div" delay={400}>
-            <div className="mt-10 md:mt-12 bg-gradient-to-r from-slate-500/10 to-slate-500/10 border border-white/10 rounded-3xl p-8 text-center">
-              <Sparkles className="h-8 w-8 text-gray-400 mx-auto mb-4" />
-              <p className="text-xl md:text-2xl text-white font-semibold">
+            <div className="mt-10 md:mt-12 bg-gradient-to-r from-slate-500/10 to-slate-500/10 border border-border rounded-3xl p-8 text-center">
+              <Sparkles className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
+              <p className="text-xl md:text-2xl text-foreground font-semibold">
                 Com o Arcano Cloner você resolve tudo isso
               </p>
-              <p className="text-white/60 mt-2">Sem estúdio. Sem fotógrafo. Sem prompt. Sem complicação.</p>
+              <p className="text-muted-foreground mt-2">Sem estúdio. Sem fotógrafo. Sem prompt. Sem complicação.</p>
             </div>
           </AnimatedSection>
         </div>
@@ -263,11 +263,11 @@ const PlanosArcanoCloner = () => {
       <AnimatedSection className="px-4 py-16 md:py-20">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
               Veja o que o Arcano Cloner é{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">capaz de fazer</span>
             </h2>
-            <p className="text-white/50 text-center text-sm mb-10">Todas as imagens abaixo foram geradas com a ferramenta</p>
+            <p className="text-muted-foreground text-center text-sm mb-10">Todas as imagens abaixo foram geradas com a ferramenta</p>
           </AnimatedSection>
 
           <Suspense fallback={<div className="min-h-[300px]" />}>
@@ -275,20 +275,20 @@ const PlanosArcanoCloner = () => {
           </Suspense>
 
           <div className="mt-10 flex flex-nowrap justify-center gap-2">
-            <div className="inline-flex items-center gap-1.5 bg-white/50/10 border border-white/10 rounded-full px-3 py-1.5 shrink-0">
-              <Zap className="h-3 w-3 text-gray-400 shrink-0" />
-              <span className="text-gray-300 text-[11px] font-medium whitespace-nowrap">Motor de IA</span>
+            <div className="inline-flex items-center gap-1.5 bg-accent0/10 border border-border rounded-full px-3 py-1.5 shrink-0">
+              <Zap className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground text-[11px] font-medium whitespace-nowrap">Motor de IA</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 bg-white/50/10 border border-white/10 rounded-full px-3 py-1.5 shrink-0">
-              <MousePointerClick className="h-3 w-3 text-gray-400 shrink-0" />
-              <span className="text-gray-300 text-[11px] font-medium whitespace-nowrap">Sem Prompt</span>
+            <div className="inline-flex items-center gap-1.5 bg-accent0/10 border border-border rounded-full px-3 py-1.5 shrink-0">
+              <MousePointerClick className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground text-[11px] font-medium whitespace-nowrap">Sem Prompt</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 bg-white/50/10 border border-white/10 rounded-full px-3 py-1.5 shrink-0">
-              <Clock className="h-3 w-3 text-gray-400 shrink-0" />
-              <span className="text-gray-300 text-[11px] font-medium whitespace-nowrap">Em Segundos</span>
+            <div className="inline-flex items-center gap-1.5 bg-accent0/10 border border-border rounded-full px-3 py-1.5 shrink-0">
+              <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground text-[11px] font-medium whitespace-nowrap">Em Segundos</span>
             </div>
           </div>
-          <p className="text-white/50 text-center text-sm mt-4 max-w-xl mx-auto">
+          <p className="text-muted-foreground text-center text-sm mt-4 max-w-xl mx-auto">
             Tecnologia de ponta que garante resultados fotorrealistas em poucos segundos. Qualidade profissional sem precisar de nenhum conhecimento técnico.
           </p>
         </div>
@@ -300,11 +300,11 @@ const PlanosArcanoCloner = () => {
       <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
               Simples assim.{" "}
-              <span className="text-gray-400">Sem prompt. Sem complicação.</span>
+              <span className="text-muted-foreground">Sem prompt. Sem complicação.</span>
             </h2>
-            <p className="text-white/50 text-center text-sm mb-12">4 passos e seu ensaio está pronto</p>
+            <p className="text-muted-foreground text-center text-sm mb-12">4 passos e seu ensaio está pronto</p>
           </AnimatedSection>
 
           <Suspense fallback={<div className="min-h-[400px]" />}>
@@ -321,10 +321,10 @@ const PlanosArcanoCloner = () => {
       <AnimatedSection className="px-4 pt-16 md:pt-20 pb-6 bg-black/30">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
-              E tem <span className="text-gray-400">bônus</span> 🎁
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
+              E tem <span className="text-muted-foreground">bônus</span> 🎁
             </h2>
-            <p className="text-white/50 text-center text-sm mb-2">Ao adquirir o Arcano Cloner, você leva de bônus:</p>
+            <p className="text-muted-foreground text-center text-sm mb-2">Ao adquirir o Arcano Cloner, você leva de bônus:</p>
           </AnimatedSection>
         </div>
       </AnimatedSection>
@@ -333,14 +333,14 @@ const PlanosArcanoCloner = () => {
       <AnimatedSection className="px-4 py-10 md:py-14 bg-black/30">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-white/50/10 border border-white/10 rounded-full px-4 py-1.5 mb-4">
-              <BookOpen className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-300 text-sm font-semibold">BÔNUS 01</span>
+            <div className="inline-flex items-center gap-2 bg-accent0/10 border border-border rounded-full px-4 py-1.5 mb-4">
+              <BookOpen className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground text-sm font-semibold">BÔNUS 01</span>
             </div>
-            <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-white mb-2">
-              +300 Referências <span className="text-gray-400">Profissionais</span>
+            <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-foreground mb-2">
+              +300 Referências <span className="text-muted-foreground">Profissionais</span>
             </h3>
-            <p className="text-white/50 text-sm max-w-lg mx-auto">Biblioteca completa com fotos de referência prontas para usar na geração de imagens</p>
+            <p className="text-muted-foreground text-sm max-w-lg mx-auto">Biblioteca completa com fotos de referência prontas para usar na geração de imagens</p>
           </div>
 
           {/* Infinite marquee carousel - left direction */}
@@ -351,7 +351,7 @@ const PlanosArcanoCloner = () => {
               {[...Array.from({ length: 8 }, (_, i) => i), ...Array.from({ length: 8 }, (_, i) => i)].map((i, idx) => (
                 <div
                   key={idx}
-                  className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-white/10 overflow-hidden"
+                  className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-border overflow-hidden"
                 >
                   <img
                     src={`/images/refs/ref-${i + 1}.jpg`}
@@ -372,7 +372,7 @@ const PlanosArcanoCloner = () => {
               {[...Array.from({ length: 8 }, (_, i) => i), ...Array.from({ length: 8 }, (_, i) => i)].map((i, idx) => (
                 <div
                   key={idx}
-                  className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-white/10 overflow-hidden"
+                  className="w-[196px] md:w-[180px] shrink-0 aspect-[3/4] rounded-2xl border border-border overflow-hidden"
                 >
                   <img
                     src={`/images/refs/ref-${((i + 4) % 8) + 1}.jpg`}
@@ -391,14 +391,14 @@ const PlanosArcanoCloner = () => {
       <AnimatedSection className="px-4 py-10 md:py-14 pb-16 md:pb-20 bg-black/30">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-white/50/10 border border-white/10 rounded-full px-4 py-1.5 mb-4">
-              <Gift className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-300 text-sm font-semibold">BÔNUS 02</span>
+            <div className="inline-flex items-center gap-2 bg-accent0/10 border border-border rounded-full px-4 py-1.5 mb-4">
+              <Gift className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground text-sm font-semibold">BÔNUS 02</span>
             </div>
-            <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-white mb-2">
-              Upscaler para <span className="text-gray-400">suas imagens</span>
+            <h3 className="font-space-grotesk font-bold text-xl md:text-2xl text-foreground mb-2">
+              Upscaler para <span className="text-muted-foreground">suas imagens</span>
             </h3>
-            <p className="text-white/50 text-sm max-w-lg mx-auto">Melhore a qualidade de qualquer imagem com nosso upscaler de IA incluso</p>
+            <p className="text-muted-foreground text-sm max-w-lg mx-auto">Melhore a qualidade de qualquer imagem com nosso upscaler de IA incluso</p>
           </div>
 
           <Suspense fallback={<div className="min-h-[300px]" />}>
@@ -417,12 +417,12 @@ const PlanosArcanoCloner = () => {
       <AnimatedSection className="px-4 py-16 md:py-20">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
               Quem já está{" "}
-              <span className="text-gray-400">lucrando e se destacando</span>{" "}
+              <span className="text-muted-foreground">lucrando e se destacando</span>{" "}
               com o Arcano Cloner
             </h2>
-            <p className="text-white/50 text-center text-sm mb-12">
+            <p className="text-muted-foreground text-center text-sm mb-12">
               Se você se encaixa em pelo menos um desses perfis, o Arcano Cloner foi feito pra você
             </p>
           </AnimatedSection>
@@ -438,12 +438,12 @@ const PlanosArcanoCloner = () => {
             ].map((item, index) => {
               const IconComp = item.icon;
               return (
-                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col items-center text-center h-full">
-                  <div className="w-14 h-14 rounded-2xl bg-white/50/10 flex items-center justify-center mb-4">
-                    <IconComp className="w-7 h-7 text-gray-400" />
+                <div key={index} className="bg-accent border border-border rounded-3xl p-6 flex flex-col items-center text-center h-full">
+                  <div className="w-14 h-14 rounded-2xl bg-accent0/10 flex items-center justify-center mb-4">
+                    <IconComp className="w-7 h-7 text-muted-foreground" />
                   </div>
-                  <h3 className="text-white font-semibold text-lg mb-2">{item.title}</h3>
-                  <p className="text-white/60 text-sm leading-relaxed">{item.text}</p>
+                  <h3 className="text-foreground font-semibold text-lg mb-2">{item.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed">{item.text}</p>
                 </div>
               );
             })}
@@ -459,15 +459,15 @@ const PlanosArcanoCloner = () => {
         <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30" animation="scale">
           <div className="max-w-xl mx-auto">
             <div className="text-center mb-6">
-              <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-2">
-                Tudo isso por <span className="text-gray-400">apenas</span>
+              <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-2">
+                Tudo isso por <span className="text-muted-foreground">apenas</span>
               </h2>
-              <p className="text-white/60 text-sm">Pagamento único — sem mensalidade</p>
+              <p className="text-muted-foreground text-sm">Pagamento único — sem mensalidade</p>
             </div>
 
             {/* Countdown */}
             <div className="flex items-center justify-center gap-2 mb-8">
-              <span className="text-gray-300 text-sm">Essa oferta expira em</span>
+              <span className="text-muted-foreground text-sm">Essa oferta expira em</span>
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3 text-red-500" />
                 <div className="flex items-center gap-0.5">
@@ -487,49 +487,49 @@ const PlanosArcanoCloner = () => {
             </div>
 
             {/* Single pricing card */}
-            <Card className="relative p-8 flex flex-col rounded-xl bg-[#111113] border-2 border-white/15/50 shadow-lg shadow-white/5">
+            <Card className="relative p-8 flex flex-col rounded-xl bg-background border-2 border-border/50 shadow-lg shadow-white/5">
               {/* Badge */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <Badge className="bg-gradient-to-r from-slate-500 to-slate-500 text-white px-4 py-1 text-sm font-bold rounded-full">
+                <Badge className="bg-gradient-to-r from-slate-500 to-slate-500 text-foreground px-4 py-1 text-sm font-bold rounded-full">
                   OFERTA ESPECIAL
                 </Badge>
               </div>
 
               <div className="text-center mb-6 mt-2">
-                <h3 className="text-xl font-bold text-white">Arcano Cloner</h3>
-                <p className="text-sm text-gray-400 mt-0.5">Gere ensaios fotográficos com IA</p>
+                <h3 className="text-xl font-bold text-foreground">Arcano Cloner</h3>
+                <p className="text-sm text-muted-foreground mt-0.5">Gere ensaios fotográficos com IA</p>
               </div>
 
               <div className="text-center mb-6">
-                <div className="text-gray-400 text-sm line-through mb-1">R$ 97,00</div>
+                <div className="text-muted-foreground text-sm line-through mb-1">R$ 97,00</div>
                 <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-gray-400 text-lg">R$</span>
-                  <span className="text-5xl font-bold text-white">39,90</span>
+                  <span className="text-muted-foreground text-lg">R$</span>
+                  <span className="text-5xl font-bold text-foreground">39,90</span>
                 </div>
-                <p className="text-gray-400 text-base mt-1">Pagamento único</p>
+                <p className="text-muted-foreground text-base mt-1">Pagamento único</p>
               </div>
 
               <Button
                 onClick={handlePurchase}
-                className="w-full mb-6 text-lg h-14 bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-white font-bold rounded-full shadow-xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02]"
+                className="w-full mb-6 text-lg h-14 bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground font-bold rounded-full shadow-xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02]"
               >
                 COMPRAR AGORA
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
 
               <div className="flex flex-col items-center mb-6">
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-white bg-gradient-to-r from-slate-600 to-slate-500">
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-foreground bg-gradient-to-r from-slate-600 to-slate-500">
                   <Sparkles className="w-4 h-4" />
                   ~70 fotos incluídas
                 </span>
-                <span className="text-sm text-gray-400 mt-1">4.200 créditos</span>
+                <span className="text-sm text-muted-foreground mt-1">4.200 créditos</span>
               </div>
 
               <ul className="space-y-3">
                 {includedItems.map((item, index) => (
                   <li key={index} className="flex items-start gap-2.5 text-base">
-                    <Check className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
-                    <span className="text-gray-300">{item}</span>
+                    <Check className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">{item}</span>
                   </li>
                 ))}
               </ul>
@@ -537,16 +537,16 @@ const PlanosArcanoCloner = () => {
 
             {/* Trust badges */}
             <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
-              <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
+              <span className="flex items-center gap-1.5 bg-accent text-muted-foreground text-xs px-3 py-1.5 rounded-full border border-border">
                 <Shield className="h-3 w-3 text-green-400" />
                 Pagamento seguro
               </span>
-              <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
+              <span className="flex items-center gap-1.5 bg-accent text-muted-foreground text-xs px-3 py-1.5 rounded-full border border-border">
                 <Zap className="h-3 w-3 text-yellow-400" />
                 Acesso imediato
               </span>
-              <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
-                <Shield className="h-3 w-3 text-gray-400" />
+              <span className="flex items-center gap-1.5 bg-accent text-muted-foreground text-xs px-3 py-1.5 rounded-full border border-border">
+                <Shield className="h-3 w-3 text-muted-foreground" />
                 7 dias de garantia
               </span>
             </div>
@@ -561,11 +561,11 @@ const PlanosArcanoCloner = () => {
             <div className="w-16 h-16 rounded-2xl bg-green-500/20 flex items-center justify-center mx-auto mb-6">
               <Shield className="h-8 w-8 text-green-400" />
             </div>
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-white mb-4">
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-foreground mb-4">
               Garantia incondicional de{" "}
               <span className="text-green-400">7 dias</span>
             </h2>
-            <p className="text-white/60 max-w-md mx-auto">
+            <p className="text-muted-foreground max-w-md mx-auto">
               Se dentro de 7 dias você não gostar do Arcano Cloner por qualquer motivo, basta nos enviar uma mensagem e devolveremos 100% do seu dinheiro. Sem perguntas, sem burocracia.
             </p>
           </div>
@@ -579,9 +579,9 @@ const PlanosArcanoCloner = () => {
       <AnimatedSection className="px-4 py-16 md:py-20">
         <div className="max-w-2xl mx-auto">
           <AnimatedSection as="div" delay={100}>
-            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-12">
+            <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-12">
               Perguntas{" "}
-              <span className="text-gray-400">frequentes</span>
+              <span className="text-muted-foreground">frequentes</span>
             </h2>
           </AnimatedSection>
 
@@ -591,12 +591,12 @@ const PlanosArcanoCloner = () => {
                 <AccordionItem
                   key={index}
                   value={`item-${index}`}
-                  className="bg-white/5 border border-white/10 rounded-2xl px-6 data-[state=open]:border-white/10"
+                  className="bg-accent border border-border rounded-2xl px-6 data-[state=open]:border-border"
                 >
-                  <AccordionTrigger className="text-white text-left text-lg font-medium py-5 hover:no-underline">
+                  <AccordionTrigger className="text-foreground text-left text-lg font-medium py-5 hover:no-underline">
                     {item.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-white/70 pb-5">
+                  <AccordionContent className="text-muted-foreground pb-5">
                     {item.answer}
                   </AccordionContent>
                 </AccordionItem>
@@ -608,7 +608,7 @@ const PlanosArcanoCloner = () => {
       </LazySection>
 
       {/* ==================== FOOTER ==================== */}
-      <footer className="border-t border-white/10 py-8 px-4">
+      <footer className="border-t border-border py-8 px-4">
         <div className="max-w-5xl mx-auto flex flex-col items-center gap-4">
           <img src={logoHorizontal} alt="ArcanoApp" className="h-7 w-auto opacity-70" />
           <p className="text-white/40 text-xs">© 2026 Arcano App. Todos os direitos reservados.</p>

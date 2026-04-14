@@ -76,17 +76,17 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'upscaller-arcano-vitalicio', modalTitle, colorScheme = 'fuchsia' }: PreCheckoutModalProps) => {
   const isOrange = colorScheme === 'orange';
-  const accentBorder = isOrange ? 'border-[#EF672C]' : 'border-white/15';
-  const accentBorderLight = isOrange ? 'border-[#EF672C]/30' : 'border-white/10';
-  const accentBg = isOrange ? 'bg-[#EF672C]/10' : 'bg-white/50/10';
-  const accentText = isOrange ? 'text-[#EF672C]' : 'text-gray-400';
-  const accentTextLight = isOrange ? 'text-[#EF672C]/80' : 'text-gray-300';
+  const accentBorder = isOrange ? 'border-[#EF672C]' : 'border-border';
+  const accentBorderLight = isOrange ? 'border-[#EF672C]/30' : 'border-border';
+  const accentBg = isOrange ? 'bg-[#EF672C]/10' : 'bg-accent0/10';
+  const accentText = isOrange ? 'text-[#EF672C]' : 'text-muted-foreground';
+  const accentTextLight = isOrange ? 'text-[#EF672C]/80' : 'text-muted-foreground';
   const btnGradient = isOrange ? 'from-[#EF672C] to-[#f65928]' : 'from-slate-500 to-slate-500';
   const btnGradientHover = isOrange ? 'hover:from-[#d55a24] hover:to-[#e04e1f]' : 'hover:from-slate-600 hover:to-slate-600';
   const btnShadow = isOrange ? 'shadow-[#EF672C]/25' : 'shadow-slate-500/20';
   const modalBg = isOrange ? 'from-[#1a0a0a] to-[#150a05]' : 'from-[#1a0f25] to-[#150a1a]';
   const modalShadow = isOrange ? 'shadow-[#EF672C]/10' : 'shadow-white/5';
-  const focusBorder = isOrange ? 'focus:border-[#EF672C]/50 focus:ring-[#EF672C]/20' : 'focus:border-white/15/50 focus:ring-slate-500/20';
+  const focusBorder = isOrange ? 'focus:border-[#EF672C]/50 focus:ring-[#EF672C]/20' : 'focus:border-border/50 focus:ring-slate-500/20';
   const titleText = modalTitle || 'Finalizar Compra';
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -430,26 +430,26 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close */}
-          <button onClick={onClose} className="absolute top-3 right-3 md:top-4 md:right-4 p-1.5 md:p-2 text-white/50 hover:text-white transition-colors z-10">
+          <button onClick={onClose} className="absolute top-3 right-3 md:top-4 md:right-4 p-1.5 md:p-2 text-muted-foreground hover:text-foreground transition-colors z-10">
             <X className="h-4 w-4 md:h-5 md:w-5" />
           </button>
 
           {/* Title */}
-          <h3 className="font-bebas text-xl md:text-3xl text-white text-center mb-0.5 md:mb-1 tracking-wide">
+          <h3 className="font-bebas text-xl md:text-3xl text-foreground text-center mb-0.5 md:mb-1 tracking-wide">
             {titleText.includes(' ') ? (
               <>{titleText.split(' ').slice(0, -1).join(' ')} <span className={accentText}>{titleText.split(' ').slice(-1)}</span></>
             ) : (
               <span className={accentText}>{titleText}</span>
             )}
           </h3>
-          <p className="text-white/50 text-xs md:text-sm text-center mb-3 md:mb-6">
+          <p className="text-muted-foreground text-xs md:text-sm text-center mb-3 md:mb-6">
             {showOneClick ? 'Compre de forma rápida e segura' : 'Preencha seus dados para continuar'}
           </p>
 
           {/* ===== ONE-CLICK BUY SECTION ===== */}
           {showOneClick && (
             <div className="space-y-4">
-              <label className="text-white/70 text-sm mb-2 block">💳 Cartão salvo</label>
+              <label className="text-muted-foreground text-sm mb-2 block">💳 Cartão salvo</label>
               <div className="space-y-2">
                 {savedCards.map((card) => (
                   <div
@@ -458,16 +458,16 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                       selectedCardId === card.id
                         ? `${accentBorder} ${accentBg}`
-                        : 'border-white/15 bg-white/5 hover:border-white/30'
+                        : 'border-border bg-accent hover:border-white/30'
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <CreditCard className={`h-5 w-5 ${accentText}`} />
                       <div>
-                        <span className="text-white text-sm font-medium">
+                        <span className="text-foreground text-sm font-medium">
                           •••• {card.card_last_four}
                         </span>
-                        <span className="text-white/50 text-xs ml-2">
+                        <span className="text-muted-foreground text-xs ml-2">
                           {brandDisplay[card.card_brand] || card.card_brand}
                         </span>
                       </div>
@@ -492,7 +492,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
               <button
                 onClick={handleOneClickBuy}
                 disabled={oneClickLoading || !selectedCardId || isOneClickSubmitting}
-                className={`w-full mt-4 py-4 text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
+                className={`w-full mt-4 py-4 text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-foreground shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
               >
                 {oneClickLoading ? (
                   'Processando...'
@@ -506,15 +506,15 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
               {/* Divider */}
               <div className="flex items-center gap-3 my-4">
-                <div className="flex-1 h-px bg-white/10" />
+                <div className="flex-1 h-px bg-accent" />
                 <span className="text-white/30 text-xs">ou</span>
-                <div className="flex-1 h-px bg-white/10" />
+                <div className="flex-1 h-px bg-accent" />
               </div>
 
               {/* Switch to full form */}
               <button
                 onClick={() => setShowFullForm(true)}
-                className="w-full text-center text-white/50 hover:text-white text-sm transition-colors py-2"
+                className="w-full text-center text-muted-foreground hover:text-foreground text-sm transition-colors py-2"
               >
                 Usar outro método de pagamento →
               </button>
@@ -542,27 +542,27 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
               <div className="space-y-2.5 md:space-y-4">
                 {/* Nome — exibido para PIX e Cartão */}
                 <div>
-                  <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Nome completo</label>
+                  <label className="text-muted-foreground text-xs md:text-sm mb-1 md:mb-1.5 block">Nome completo</label>
                   <input
                     type="text"
                     placeholder="Seu nome completo"
                     value={name}
                     onChange={(e) => { setName(e.target.value); setNameError(''); }}
-                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                   />
                   {nameError && <p className="text-red-400 text-xs mt-1">{nameError}</p>}
                 </div>
 
                 {/* Email */}
                 <div>
-                  <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Email</label>
+                  <label className="text-muted-foreground text-xs md:text-sm mb-1 md:mb-1.5 block">Email</label>
                   <input
                     type="email"
                     placeholder="seu@email.com"
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
                     disabled={!!userEmail}
-                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed`}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60 disabled:cursor-not-allowed`}
                   />
                   {emailError && <p className="text-red-400 text-xs mt-1">{emailError}</p>}
                 </div>
@@ -570,13 +570,13 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                 {/* Email Confirm */}
                 {!userEmail && (
                   <div>
-                    <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Confirme seu email</label>
+                    <label className="text-muted-foreground text-xs md:text-sm mb-1 md:mb-1.5 block">Confirme seu email</label>
                     <input
                       type="email"
                       placeholder="Digite novamente seu email"
                       value={emailConfirm}
                       onChange={(e) => { setEmailConfirm(e.target.value); setEmailConfirmError(''); }}
-                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                     />
                     {emailConfirmError && <p className="text-red-400 text-xs mt-1">{emailConfirmError}</p>}
                   </div>
@@ -584,35 +584,35 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
                 {/* Celular */}
                 <div>
-                  <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Celular (com DDD)</label>
+                  <label className="text-muted-foreground text-xs md:text-sm mb-1 md:mb-1.5 block">Celular (com DDD)</label>
                   <input
                     type="tel"
                     inputMode="numeric"
                     placeholder="(11) 99999-9999"
                     value={phone}
                     onChange={(e) => { setPhone(formatPhone(e.target.value)); setPhoneError(''); }}
-                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                   />
                   {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
                 </div>
 
                 {/* CPF */}
                 <div>
-                  <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">CPF</label>
+                  <label className="text-muted-foreground text-xs md:text-sm mb-1 md:mb-1.5 block">CPF</label>
                   <input
                     type="tel"
                     inputMode="numeric"
                     placeholder="000.000.000-00"
                     value={cpf}
                     onChange={(e) => { setCpf(formatCpf(e.target.value)); setCpfError(''); }}
-                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                   />
                   {cpfError && <p className="text-red-400 text-xs mt-1">{cpfError}</p>}
                 </div>
 
                 {/* Endereço */}
                 <div className="space-y-2.5">
-                  <label className="text-white/70 text-xs md:text-sm mb-1 md:mb-1.5 block">Endereço</label>
+                  <label className="text-muted-foreground text-xs md:text-sm mb-1 md:mb-1.5 block">Endereço</label>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <input
@@ -626,7 +626,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                           setAddressError('');
                           if (formatted.replace(/\D/g, '').length === 8) handleCepLookup(formatted);
                         }}
-                        className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                        className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                       />
                     </div>
                     <div>
@@ -635,7 +635,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                         placeholder="Número"
                         value={number}
                         onChange={(e) => { setNumber(e.target.value); setAddressError(''); }}
-                        className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
+                        className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all`}
                       />
                     </div>
                   </div>
@@ -645,7 +645,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     value={street}
                     onChange={(e) => { setStreet(e.target.value); setAddressError(''); }}
                     disabled={cepLoading}
-                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
                   />
                   <input
                     type="text"
@@ -653,7 +653,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     value={neighborhood}
                     onChange={(e) => { setNeighborhood(e.target.value); setAddressError(''); }}
                     disabled={cepLoading}
-                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                    className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
                   />
                   <div className="grid grid-cols-2 gap-2">
                     <input
@@ -662,7 +662,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                       value={city}
                       onChange={(e) => { setCity(e.target.value); setAddressError(''); }}
                       disabled={cepLoading}
-                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
                     />
                     <input
                       type="text"
@@ -671,7 +671,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                       value={addressState}
                       onChange={(e) => { setAddressState(e.target.value.toUpperCase()); setAddressError(''); }}
                       disabled={cepLoading}
-                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
+                      className={`w-full px-3 md:px-4 py-2.5 md:py-3 rounded-xl bg-accent border border-border text-foreground placeholder-white/30 text-sm focus:outline-none ${focusBorder} focus:ring-2 transition-all disabled:opacity-60`}
                     />
                   </div>
                   {addressError && <p className="text-red-400 text-xs mt-1">{addressError}</p>}
@@ -679,7 +679,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
 
                 <div>
-                  <label className="text-white/70 text-xs md:text-sm mb-1.5 md:mb-2 block">Forma de pagamento</label>
+                  <label className="text-muted-foreground text-xs md:text-sm mb-1.5 md:mb-2 block">Forma de pagamento</label>
                   <div className="grid grid-cols-2 gap-2 md:gap-3">
                     <button
                       type="button"
@@ -687,7 +687,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                       className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 ${
                         paymentMethod === 'PIX'
                           ? `${accentBorder} ${accentBg} text-white`
-                          : 'border-white/15 bg-white/5 text-white/60 hover:border-white/30'
+                          : 'border-border bg-accent text-muted-foreground hover:border-white/30'
                       }`}
                     >
                       <QrCode className="h-5 w-5 md:h-6 md:w-6" />
@@ -703,7 +703,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                       className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 ${
                         paymentMethod === 'CREDIT_CARD'
                           ? `${accentBorder} ${accentBg} text-white`
-                          : 'border-white/15 bg-white/5 text-white/60 hover:border-white/30'
+                          : 'border-border bg-accent text-muted-foreground hover:border-white/30'
                       }`}
                     >
                       <CreditCard className="h-5 w-5 md:h-6 md:w-6" />
@@ -720,7 +720,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
               <button
                 onClick={handleSubmit}
                 disabled={loading || isFormSubmitting}
-                className={`w-full mt-4 md:mt-6 py-3 md:py-4 text-sm md:text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-white shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
+                className={`w-full mt-4 md:mt-6 py-3 md:py-4 text-sm md:text-base font-bold rounded-full bg-gradient-to-r ${btnGradient} ${btnGradientHover} text-foreground shadow-xl ${btnShadow} transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2`}
               >
                 {loading ? 'Gerando checkout...' : 'Finalizar e Pagar'}
                 {!loading && <ArrowRight className="h-5 w-5" />}
@@ -743,7 +743,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
 
       {/* Modal de resultado da compra 1-clique */}
       <Dialog open={oneClickResult !== null} onOpenChange={() => {}}>
-        <DialogContent className="bg-[#1a1a2e] border-white/10 text-white max-w-sm" onPointerDownOutside={(e) => e.preventDefault()}>
+        <DialogContent className="bg-card border-border text-foreground max-w-sm" onPointerDownOutside={(e) => e.preventDefault()}>
           <DialogTitle className="sr-only">
             {oneClickResult === 'approved' ? 'Compra aprovada' : 'Compra recusada'}
           </DialogTitle>
@@ -752,13 +752,13 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
               <>
                 <CheckCircle2 className="h-16 w-16 text-green-400" />
                 <h3 className="text-xl font-bold">Compra aprovada!</h3>
-                <p className="text-sm text-white/60 text-center">Seu pagamento foi processado com sucesso.</p>
+                <p className="text-sm text-muted-foreground text-center">Seu pagamento foi processado com sucesso.</p>
                 <button
                   onClick={() => {
                     setOneClickResult(null);
                     onClose();
                   }}
-                  className="w-full py-3 font-bold rounded-full bg-green-500 hover:bg-green-600 text-white transition-colors"
+                  className="w-full py-3 font-bold rounded-full bg-green-500 hover:bg-green-600 text-foreground transition-colors"
                 >
                   Entendi
                 </button>
@@ -767,10 +767,10 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
               <>
                 <XCircle className="h-16 w-16 text-red-400" />
                 <h3 className="text-xl font-bold">Compra recusada</h3>
-                <p className="text-sm text-white/60 text-center">Não foi possível processar o pagamento com este cartão.</p>
+                <p className="text-sm text-muted-foreground text-center">Não foi possível processar o pagamento com este cartão.</p>
                 <button
                   onClick={() => setOneClickResult(null)}
-                  className="w-full py-3 font-bold rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                  className="w-full py-3 font-bold rounded-full bg-accent hover:bg-white/20 text-foreground transition-colors"
                 >
                   Escolher outro meio de pagamento
                 </button>

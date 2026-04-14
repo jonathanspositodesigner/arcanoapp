@@ -322,7 +322,7 @@ const AdminCommunityReview = () => {
                           <Badge className="bg-green-500">Aprovado</Badge>
                         )}
                         {status === "pending" && (
-                          <Badge variant="secondary" className="bg-yellow-500 text-white">
+                          <Badge variant="secondary" className="bg-yellow-500 text-foreground">
                             Pendente
                           </Badge>
                         )}
@@ -349,7 +349,7 @@ const AdminCommunityReview = () => {
                           </Button>
                         )}
                         {(status === "pending" || status === "approved") && (
-                          <Button onClick={() => handleRejectPartner(prompt.id)} variant="outline" className="flex-1 text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-white">
+                          <Button onClick={() => handleRejectPartner(prompt.id)} variant="outline" className="flex-1 text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-foreground">
                             <XCircle className="h-4 w-4 mr-2" />Recusar
                           </Button>
                         )}

@@ -84,7 +84,7 @@ export const HeroBeforeAfterSlider = ({
     <div className="space-y-3">
       <div 
         ref={containerRef}
-        className="relative w-full aspect-[3/4] md:aspect-[4/3] rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-white/5"
+        className="relative w-full aspect-[3/4] md:aspect-[4/3] rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-border shadow-2xl shadow-white/5"
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
@@ -150,14 +150,14 @@ export const HeroBeforeAfterSlider = ({
         </div>
 
         {/* Labels */}
-        <div className="absolute top-3 left-3 bg-black/60 text-white/80 text-[10px] font-medium px-2.5 py-1 rounded-full">
+        <div className="absolute top-3 left-3 bg-black/60 text-foreground text-[10px] font-medium px-2.5 py-1 rounded-full">
           {t('tools:upscaler.beforeAfter.before')}
         </div>
-        <div className="absolute top-3 right-3 bg-white/15 text-white/80 text-[10px] font-medium px-2.5 py-1 rounded-full">
+        <div className="absolute top-3 right-3 bg-white/15 text-foreground text-[10px] font-medium px-2.5 py-1 rounded-full">
           {t('tools:upscaler.beforeAfter.after')}
         </div>
       </div>
-      {label && <p className="text-center text-white/60 text-sm">{label}</p>}
+      {label && <p className="text-center text-muted-foreground text-sm">{label}</p>}
     </div>
   );
 };

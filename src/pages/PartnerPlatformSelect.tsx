@@ -181,7 +181,7 @@ const PartnerPlatformSelect = () => {
                   <div className={`h-2 bg-gradient-to-r ${config.color}`} />
                   <CardHeader className="pb-2">
                     <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${config.color} flex items-center justify-center mb-3`}>
-                      <IconComponent className="h-6 w-6 text-white" />
+                      <IconComponent className="h-6 w-6 text-foreground" />
                     </div>
                     <CardTitle className="text-xl">{config.title}</CardTitle>
                     <CardDescription>{config.description}</CardDescription>

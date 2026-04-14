@@ -302,9 +302,9 @@ export const ScrollIndicator = ({ className = '', text = 'Role para ver mais' }:
 
   return (
     <div className={`flex flex-col items-center gap-2 transition-opacity duration-500 ${className}`}>
-      <span className="text-sm text-white/50">{text}</span>
+      <span className="text-sm text-muted-foreground">{text}</span>
       <div className="w-6 h-10 rounded-full border-2 border-white/30 flex justify-center pt-2">
-        <div className="w-1.5 h-3 bg-white/50 rounded-full animate-scrollDown" />
+        <div className="w-1.5 h-3 bg-accent0 rounded-full animate-scrollDown" />
       </div>
     </div>
   );

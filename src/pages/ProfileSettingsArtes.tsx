@@ -172,7 +172,7 @@ const ProfileSettingsArtes = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="text-white">{t('common:loading')}</div>
+        <div className="text-foreground">{t('common:loading')}</div>
       </div>
     );
   }
@@ -182,53 +182,53 @@ const ProfileSettingsArtes = () => {
       <div className="max-w-lg mx-auto">
         <Button
           variant="ghost"
-          className="text-white/70 hover:text-white mb-6"
+          className="text-muted-foreground hover:text-foreground mb-6"
           onClick={() => navigate(fromMusicos ? "/biblioteca-artes-musicos" : "/biblioteca-artes")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           {fromMusicos ? t('common:profile.backToMusiciansLibrary') : t('common:profile.backToLibrary')}
         </Button>
 
-        <Card className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
+        <Card className="bg-card/80 border-border/30">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="text-foreground flex items-center gap-2">
               <User className="h-5 w-5" />
               {t('common:profile.title')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm text-white/60">{t('common:profile.name')}</label>
+              <label className="text-sm text-muted-foreground">{t('common:profile.name')}</label>
               <Input
                 value={profile.name}
                 onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+                className="bg-card border-border/50 text-foreground"
                 placeholder={t('common:profile.namePlaceholder')}
               />
             </div>
 
             <div>
-              <label className="text-sm text-white/60">{t('common:profile.phone')}</label>
+              <label className="text-sm text-muted-foreground">{t('common:profile.phone')}</label>
               <Input
                 value={profile.phone}
                 onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+                className="bg-card border-border/50 text-foreground"
                 placeholder={t('common:profile.phonePlaceholder')}
               />
             </div>
 
             <div>
-              <label className="text-sm text-white/60">{t('common:profile.bio')}</label>
+              <label className="text-sm text-muted-foreground">{t('common:profile.bio')}</label>
               <Textarea
                 value={profile.bio}
                 onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white min-h-[80px]"
+                className="bg-card border-border/50 text-foreground min-h-[80px]"
                 placeholder={t('common:profile.bioPlaceholder')}
               />
             </div>
 
             <Button
-              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
               onClick={handleSaveProfile}
               disabled={isSaving}
             >
@@ -236,7 +236,7 @@ const ProfileSettingsArtes = () => {
             </Button>
 
             {/* Password Section */}
-            <div className="border-t border-[#2d4a5e]/30 pt-4 mt-4">
+            <div className="border-t border-border/30 pt-4 mt-4">
               <Button
                 variant="outline"
                 className="w-full border-amber-500/50 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 hover:text-amber-300 hover:border-amber-400"
@@ -253,12 +253,12 @@ const ProfileSettingsArtes = () => {
                       placeholder={t('common:profile.currentPassword')}
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
-                      className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white pr-10"
+                      className="bg-card border-border/50 text-foreground pr-10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -269,18 +269,18 @@ const ProfileSettingsArtes = () => {
                       placeholder={t('common:profile.newPassword')}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white pr-10"
+                      className="bg-card border-border/50 text-foreground pr-10"
                     />
                     <button
                       type="button"
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                   <Button
-                    className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+                    className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
                     onClick={handleChangePassword}
                     disabled={isSaving || !currentPassword || !newPassword}
                   >
@@ -292,12 +292,12 @@ const ProfileSettingsArtes = () => {
 
             {/* Notification Settings - usa permission do browser como fonte de verdade */}
             {isSupported && (
-              <div className="border-t border-[#2d4a5e]/30 pt-4 mt-4">
+              <div className="border-t border-border/30 pt-4 mt-4">
                 <p className="text-xs text-white/40 mb-2">{t('common:profile.notifications')}</p>
                 {hasPermission ? (
                   <button
                     onClick={() => setShowDisableModal(true)}
-                    className="text-xs text-white/40 hover:text-white/60 underline transition-colors"
+                    className="text-xs text-white/40 hover:text-muted-foreground underline transition-colors"
                   >
                     {t('common:profile.disableNotifications')}
                   </button>
@@ -318,19 +318,19 @@ const ProfileSettingsArtes = () => {
 
       {/* Disable Notifications Modal */}
       <Dialog open={showDisableModal} onOpenChange={setShowDisableModal}>
-        <DialogContent className="bg-[#1a1a2e] border-[#2d4a5e]/30 max-w-sm">
+        <DialogContent className="bg-card border-border/30 max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-white text-center flex items-center justify-center gap-2">
+            <DialogTitle className="text-foreground text-center flex items-center justify-center gap-2">
               <BellOff className="h-5 w-5 text-red-400" />
               {t('common:notifications.disableTitle')}
             </DialogTitle>
           </DialogHeader>
           
           <div className="py-4">
-            <p className="text-white/70 text-sm text-center mb-6">
+            <p className="text-muted-foreground text-sm text-center mb-6">
               {t('common:notifications.disableWarning')}
             </p>
-            <ul className="text-white/60 text-sm space-y-2 mb-6">
+            <ul className="text-muted-foreground text-sm space-y-2 mb-6">
               <li className="flex items-center gap-2">
                 <span className="text-amber-400">•</span>
                 {t('common:notifications.newContent')}
@@ -346,7 +346,7 @@ const ProfileSettingsArtes = () => {
             </ul>
 
             <Button
-              className="w-full bg-green-600 hover:bg-green-700 text-white mb-3"
+              className="w-full bg-green-600 hover:bg-green-700 text-foreground mb-3"
               onClick={() => setShowDisableModal(false)}
             >
               {t('common:notifications.keepBenefits')}
@@ -355,7 +355,7 @@ const ProfileSettingsArtes = () => {
             <button
               onClick={handleDisableNotifications}
               disabled={pushLoading}
-              className="w-full text-xs text-white/40 hover:text-white/60 underline transition-colors text-center py-2"
+              className="w-full text-xs text-white/40 hover:text-muted-foreground underline transition-colors text-center py-2"
             >
               {pushLoading ? t('common:notifications.disabling') : t('common:notifications.loseBenefits')}
             </button>

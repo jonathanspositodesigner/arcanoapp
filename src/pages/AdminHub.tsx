@@ -123,8 +123,8 @@ const AdminHub = () => {
       description: "Gerenciar artes para músicos, bandas e artistas",
       icon: Music,
       color: "from-slate-500 to-slate-400",
-      borderColor: "border-white/10",
-      hoverBorder: "hover:border-white/10/60",
+      borderColor: "border-border",
+      hoverBorder: "hover:border-border/60",
       path: "/admin-artes-musicos"
     },
     {
@@ -160,7 +160,7 @@ const AdminHub = () => {
                 >
                   <div className="flex flex-col items-center text-center space-y-2">
                     <div className={`p-2.5 bg-gradient-to-r ${platform.color} rounded-full`}>
-                      <platform.icon className="h-6 w-6 text-white" />
+                      <platform.icon className="h-6 w-6 text-foreground" />
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-foreground">{platform.title}</h3>

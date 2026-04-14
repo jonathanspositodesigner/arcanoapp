@@ -229,7 +229,7 @@ const IOSMockup = ({ step }: { step: number }) => (
     {/* iPhone Frame */}
     <div className="bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl">
       {/* Screen */}
-      <div className="bg-white/10 dark:bg-gray-800 rounded-[2rem] overflow-hidden">
+      <div className="bg-accent dark:bg-gray-800 rounded-[2rem] overflow-hidden">
         {/* Status Bar */}
         <div className="h-6 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
           <div className="w-20 h-4 bg-gray-900 rounded-full" />
@@ -238,9 +238,9 @@ const IOSMockup = ({ step }: { step: number }) => (
         {/* Safari Content */}
         <div className="h-[320px] bg-white dark:bg-gray-900 relative">
           {/* URL Bar */}
-          <div className="h-10 bg-white/10 dark:bg-gray-800 flex items-center px-3 gap-2">
+          <div className="h-10 bg-accent dark:bg-gray-800 flex items-center px-3 gap-2">
             <div className="flex-1 bg-white dark:bg-gray-700 rounded-lg h-7 flex items-center px-2">
-              <span className="text-[10px] text-gray-500 truncate">arcanoapp.voxvisual.com.br</span>
+              <span className="text-[10px] text-muted-foreground truncate">arcanoapp.voxvisual.com.br</span>
             </div>
           </div>
           
@@ -257,7 +257,7 @@ const IOSMockup = ({ step }: { step: number }) => (
               <div className="flex gap-4 overflow-x-auto pb-4 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex flex-col items-center gap-1 min-w-[60px]">
                   <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
-                    <span className="text-white text-lg">M</span>
+                    <span className="text-foreground text-lg">M</span>
                   </div>
                   <span className="text-[8px]">Mensagens</span>
                 </div>
@@ -267,7 +267,7 @@ const IOSMockup = ({ step }: { step: number }) => (
                 </div>
               </div>
               <div className="mt-3 space-y-2">
-                <div className="flex items-center gap-3 p-2 bg-white/5 dark:bg-gray-700 rounded-lg relative">
+                <div className="flex items-center gap-3 p-2 bg-accent dark:bg-gray-700 rounded-lg relative">
                   <Plus className="h-5 w-5 text-primary" />
                   <span className="text-sm font-medium">Adicionar à Tela de Início</span>
                   {/* Pulse indicator */}
@@ -280,7 +280,7 @@ const IOSMockup = ({ step }: { step: number }) => (
                 </div>
                 <div className="flex items-center gap-3 p-2">
                   <div className="h-5 w-5 bg-gray-300 rounded" />
-                  <span className="text-sm text-gray-500">Copiar</span>
+                  <span className="text-sm text-muted-foreground">Copiar</span>
                 </div>
               </div>
             </div>
@@ -292,15 +292,15 @@ const IOSMockup = ({ step }: { step: number }) => (
               <div className="bg-white dark:bg-gray-800 rounded-xl w-[90%] p-4 shadow-xl">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
-                    <span className="text-white font-bold">A</span>
+                    <span className="text-foreground font-bold">A</span>
                   </div>
                   <div>
                     <p className="font-semibold text-sm">ArcanoApp</p>
-                    <p className="text-[10px] text-gray-500">arcanoapp.voxvisual...</p>
+                    <p className="text-[10px] text-muted-foreground">arcanoapp.voxvisual...</p>
                   </div>
                 </div>
                 <div className="flex justify-end gap-2">
-                  <button className="px-4 py-2 text-sm text-gray-500">Cancelar</button>
+                  <button className="px-4 py-2 text-sm text-muted-foreground">Cancelar</button>
                   <button className="px-4 py-2 text-sm text-primary font-semibold relative">
                     Adicionar
                     {/* Pulse indicator */}
@@ -316,9 +316,9 @@ const IOSMockup = ({ step }: { step: number }) => (
         </div>
         
         {/* Safari Bottom Bar */}
-        <div className="h-12 bg-white/10 dark:bg-gray-800 flex items-center justify-around px-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="h-12 bg-accent dark:bg-gray-800 flex items-center justify-around px-4 border-t border-gray-200 dark:border-gray-700">
           <ChevronLeft className="h-5 w-5 text-primary" />
-          <ChevronRight className="h-5 w-5 text-gray-400" />
+          <ChevronRight className="h-5 w-5 text-muted-foreground" />
           <div className="relative">
             <Share className="h-5 w-5 text-primary" />
             {/* Pulse indicator for Step 1 */}
@@ -354,20 +354,20 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
       {/* Screen */}
       <div className="bg-white dark:bg-gray-900 rounded-[2rem] overflow-hidden">
         {/* Status Bar */}
-        <div className="h-6 bg-white/10 dark:bg-gray-800 flex items-center justify-between px-6">
-          <span className="text-[10px] text-gray-400 font-medium">9:41</span>
+        <div className="h-6 bg-accent dark:bg-gray-800 flex items-center justify-between px-6">
+          <span className="text-[10px] text-muted-foreground font-medium">9:41</span>
           <div className="flex items-center gap-1">
             <div className="w-4 h-2 bg-gray-600 rounded-sm" />
           </div>
         </div>
         
         {/* Chrome Top Bar with URL and Share */}
-        <div className="bg-white/10 dark:bg-gray-800 px-3 py-2 flex items-center gap-2">
+        <div className="bg-accent dark:bg-gray-800 px-3 py-2 flex items-center gap-2">
           <ChevronLeft className="h-5 w-5 text-blue-500 flex-shrink-0" />
           {/* URL Bar */}
           <div className="flex-1 bg-white dark:bg-gray-700 rounded-full h-8 flex items-center px-3 gap-2">
             <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0" />
-            <span className="text-[10px] text-gray-400 dark:text-gray-400 truncate">arcanoapp.voxvisual.com.br</span>
+            <span className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate">arcanoapp.voxvisual.com.br</span>
           </div>
           {/* Share Button - Highlighted on step 0 */}
           <div className="relative">
@@ -401,20 +401,20 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
           {/* iOS Share Sheet - Step 2 (scroll to find option) */}
           {step === 1 && (
             <div className="absolute inset-0 bg-black/40">
-              <div className="absolute bottom-0 left-0 right-0 bg-white/10 dark:bg-gray-800 rounded-t-xl animate-slide-up">
+              <div className="absolute bottom-0 left-0 right-0 bg-accent dark:bg-gray-800 rounded-t-xl animate-slide-up">
                 {/* Drag Handle */}
                 <div className="w-10 h-1 bg-gray-400 rounded-full mx-auto mt-2" />
                 
                 {/* Site Info Header */}
                 <div className="flex items-center gap-3 p-3 border-b border-gray-200 dark:border-gray-700">
                   <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-lg flex items-center justify-center">
-                    <span className="text-xs font-bold text-gray-400">A</span>
+                    <span className="text-xs font-bold text-muted-foreground">A</span>
                   </div>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-gray-100 dark:text-white">ArcanoApp</p>
-                    <p className="text-[10px] text-gray-500">arcanoapp.voxvisual.com.br</p>
+                    <p className="text-[10px] text-muted-foreground">arcanoapp.voxvisual.com.br</p>
                   </div>
-                  <X className="h-5 w-5 text-gray-400" />
+                  <X className="h-5 w-5 text-muted-foreground" />
                 </div>
                 
                 {/* Share Options - AirDrop, Messages, etc */}
@@ -422,21 +422,21 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
                   <div className="flex gap-3 overflow-x-auto pb-1">
                     <div className="flex flex-col items-center gap-1 min-w-[50px]">
                       <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-[10px]">📡</span>
+                        <span className="text-foreground text-[10px]">📡</span>
                       </div>
-                      <span className="text-[8px] text-gray-400">AirDrop</span>
+                      <span className="text-[8px] text-muted-foreground">AirDrop</span>
                     </div>
                     <div className="flex flex-col items-center gap-1 min-w-[50px]">
                       <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-[10px]">💬</span>
+                        <span className="text-foreground text-[10px]">💬</span>
                       </div>
-                      <span className="text-[8px] text-gray-400">Mensagens</span>
+                      <span className="text-[8px] text-muted-foreground">Mensagens</span>
                     </div>
                     <div className="flex flex-col items-center gap-1 min-w-[50px]">
                       <div className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center">
-                        <span className="text-white text-[10px]">✉️</span>
+                        <span className="text-foreground text-[10px]">✉️</span>
                       </div>
-                      <span className="text-[8px] text-gray-400">E-mail</span>
+                      <span className="text-[8px] text-muted-foreground">E-mail</span>
                     </div>
                   </div>
                 </div>
@@ -471,31 +471,31 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
           {/* iOS Share Sheet Scrolled - Step 3 (showing Add to Home Screen) */}
           {step === 2 && (
             <div className="absolute inset-0 bg-black/40">
-              <div className="absolute bottom-0 left-0 right-0 bg-white/10 dark:bg-gray-800 rounded-t-xl animate-fade-in">
+              <div className="absolute bottom-0 left-0 right-0 bg-accent dark:bg-gray-800 rounded-t-xl animate-fade-in">
                 {/* Drag Handle */}
                 <div className="w-10 h-1 bg-gray-400 rounded-full mx-auto mt-2" />
                 
                 {/* Site Info Header */}
                 <div className="flex items-center gap-3 p-3 border-b border-gray-200 dark:border-gray-700">
                   <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-lg flex items-center justify-center">
-                    <span className="text-xs font-bold text-gray-400">A</span>
+                    <span className="text-xs font-bold text-muted-foreground">A</span>
                   </div>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-gray-100 dark:text-white">ArcanoApp</p>
-                    <p className="text-[10px] text-gray-500">arcanoapp.voxvisual.com.br</p>
+                    <p className="text-[10px] text-muted-foreground">arcanoapp.voxvisual.com.br</p>
                   </div>
-                  <X className="h-5 w-5 text-gray-400" />
+                  <X className="h-5 w-5 text-muted-foreground" />
                 </div>
                 
                 {/* Options after scrolling */}
                 <div className="bg-white dark:bg-gray-700 rounded-lg mx-2 mt-2 mb-2">
                   <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-600">
                     <span className="text-xs text-gray-100 dark:text-white">Adicionar aos favoritos</span>
-                    <div className="w-4 h-4 text-gray-400">⭐</div>
+                    <div className="w-4 h-4 text-muted-foreground">⭐</div>
                   </div>
                   <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-600">
                     <span className="text-xs text-gray-100 dark:text-white">Buscar na página</span>
-                    <div className="w-4 h-4 text-gray-400">🔍</div>
+                    <div className="w-4 h-4 text-muted-foreground">🔍</div>
                   </div>
                 </div>
                 
@@ -515,7 +515,7 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
                 <div className="bg-white dark:bg-gray-700 rounded-lg mx-2 mb-3">
                   <div className="flex items-center justify-between px-3 py-2">
                     <span className="text-xs text-gray-100 dark:text-white">Imprimir</span>
-                    <div className="w-4 h-4 text-gray-400">🖨️</div>
+                    <div className="w-4 h-4 text-muted-foreground">🖨️</div>
                   </div>
                 </div>
               </div>
@@ -524,18 +524,18 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
         </div>
         
         {/* Chrome Bottom Navigation */}
-        <div className="h-12 bg-white/10 dark:bg-gray-800 flex items-center justify-around px-6 border-t border-gray-200 dark:border-gray-700">
-          <ChevronLeft className="h-5 w-5 text-gray-400" />
-          <ChevronRight className="h-5 w-5 text-gray-400" />
+        <div className="h-12 bg-accent dark:bg-gray-800 flex items-center justify-around px-6 border-t border-gray-200 dark:border-gray-700">
+          <ChevronLeft className="h-5 w-5 text-muted-foreground" />
+          <ChevronRight className="h-5 w-5 text-muted-foreground" />
           <div className="w-6 h-6 border-2 border-blue-500 rounded flex items-center justify-center">
             <span className="text-[10px] text-blue-500 font-bold">2</span>
           </div>
-          <MoreVertical className="h-5 w-5 text-gray-400" />
+          <MoreVertical className="h-5 w-5 text-muted-foreground" />
         </div>
         
         {/* Home Indicator */}
         <div className="h-5 bg-white dark:bg-gray-900 flex items-center justify-center">
-          <div className="w-32 h-1 bg-gray-900 dark:bg-white/10 rounded-full" />
+          <div className="w-32 h-1 bg-gray-900 dark:bg-accent rounded-full" />
         </div>
       </div>
     </div>
@@ -550,8 +550,8 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
       {/* Screen */}
       <div className="bg-white dark:bg-gray-900 rounded-[2rem] overflow-hidden">
         {/* Status Bar */}
-        <div className="h-6 bg-white/10 dark:bg-gray-800 flex items-center justify-between px-6">
-          <span className="text-[10px] text-gray-400 font-medium">9:41</span>
+        <div className="h-6 bg-accent dark:bg-gray-800 flex items-center justify-between px-6">
+          <span className="text-[10px] text-muted-foreground font-medium">9:41</span>
           <div className="flex items-center gap-1">
             <div className="w-4 h-2 bg-gray-600 rounded-sm" />
           </div>
@@ -561,7 +561,7 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
         <div className="bg-white dark:bg-gray-900 px-3 py-2 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
           <X className="h-5 w-5 text-gray-200 dark:text-white" />
           <div className="flex-1 text-center">
-            <p className="text-[10px] text-gray-400">arcanoapp.voxvisual.com.br</p>
+            <p className="text-[10px] text-muted-foreground">arcanoapp.voxvisual.com.br</p>
             <p className="text-[8px] text-pink-500">Instagram</p>
           </div>
           <div className="relative">
@@ -581,7 +581,7 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
         </div>
         
         {/* Content Area */}
-        <div className="h-[280px] bg-white/5 dark:bg-gray-800 relative">
+        <div className="h-[280px] bg-accent dark:bg-gray-800 relative">
           {/* Page Content Placeholder */}
           <div className="p-4 space-y-3">
             <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
@@ -594,9 +594,9 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
           {step === 1 && (
             <div className="absolute top-0 right-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 animate-scale-in w-48">
               <div className="py-1">
-                <div className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 dark:hover:bg-gray-700">
-                  <Share className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm text-gray-400 dark:text-gray-300">Compartilhar</span>
+                <div className="flex items-center gap-3 px-4 py-3 hover:bg-accent dark:hover:bg-gray-700">
+                  <Share className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground dark:text-muted-foreground">Compartilhar</span>
                 </div>
                 <div className="flex items-center gap-3 px-4 py-3 bg-primary/10 relative">
                   <ExternalLink className="h-4 w-4 text-primary" />
@@ -606,9 +606,9 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
                     <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
                   </span>
                 </div>
-                <div className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 dark:hover:bg-gray-700">
-                  <Plus className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm text-gray-400 dark:text-gray-300">Copiar link</span>
+                <div className="flex items-center gap-3 px-4 py-3 hover:bg-accent dark:hover:bg-gray-700">
+                  <Plus className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground dark:text-muted-foreground">Copiar link</span>
                 </div>
               </div>
             </div>
@@ -622,7 +622,7 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
                   <Check className="h-8 w-8 text-green-400" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">Abrindo no navegador...</h3>
-                <p className="text-sm text-gray-500 mb-4">O site abrirá no Safari ou Chrome.<br/>Siga o tutorial normal para instalar.</p>
+                <p className="text-sm text-muted-foreground mb-4">O site abrirá no Safari ou Chrome.<br/>Siga o tutorial normal para instalar.</p>
                 <div className="flex gap-2 justify-center">
                   <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-medium">Safari</span>
                   <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium">Chrome</span>
@@ -634,15 +634,15 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
         
         {/* Bottom Navigation (Instagram style) */}
         <div className="h-12 bg-white dark:bg-gray-900 flex items-center justify-around px-6 border-t border-gray-200 dark:border-gray-700">
-          <ChevronLeft className="h-5 w-5 text-gray-400" />
-          <ChevronRight className="h-5 w-5 text-gray-400" />
-          <Share className="h-5 w-5 text-gray-400" />
+          <ChevronLeft className="h-5 w-5 text-muted-foreground" />
+          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          <Share className="h-5 w-5 text-muted-foreground" />
           <div className="w-5 h-5 rounded-full bg-gradient-to-br from-pink-500 to-yellow-500" />
         </div>
         
         {/* Home Indicator */}
         <div className="h-5 bg-white dark:bg-gray-900 flex items-center justify-center">
-          <div className="w-32 h-1 bg-gray-900 dark:bg-white/10 rounded-full" />
+          <div className="w-32 h-1 bg-gray-900 dark:bg-accent rounded-full" />
         </div>
       </div>
     </div>
@@ -655,14 +655,14 @@ const AndroidMockup = ({ step }: { step: number }) => (
     {/* Android Frame */}
     <div className="bg-gray-900 rounded-[1.5rem] p-1.5 shadow-2xl">
       {/* Screen */}
-      <div className="bg-white/10 dark:bg-gray-800 rounded-[1.25rem] overflow-hidden">
+      <div className="bg-accent dark:bg-gray-800 rounded-[1.25rem] overflow-hidden">
         {/* Chrome Tab Bar */}
         <div className="h-10 bg-gray-200 dark:bg-gray-700 flex items-center px-2 gap-2">
           <div className="flex-1 bg-white dark:bg-gray-600 rounded-full h-7 flex items-center px-3">
-            <span className="text-[10px] text-gray-500 truncate">arcanoapp.voxvisual.com.br</span>
+            <span className="text-[10px] text-muted-foreground truncate">arcanoapp.voxvisual.com.br</span>
           </div>
           <div className="relative">
-            <MoreVertical className="h-5 w-5 text-gray-400 dark:text-gray-300" />
+            <MoreVertical className="h-5 w-5 text-muted-foreground dark:text-muted-foreground" />
             {/* Pulse indicator for Step 1 */}
             {step === 0 && (
               <>
@@ -691,9 +691,9 @@ const AndroidMockup = ({ step }: { step: number }) => (
           {step === 1 && (
             <div className="absolute top-0 right-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl w-48 animate-slide-down">
               <div className="py-2">
-                <div className="px-4 py-2 text-sm text-gray-500">Nova guia</div>
-                <div className="px-4 py-2 text-sm text-gray-500">Nova guia anônima</div>
-                <div className="px-4 py-2 text-sm text-gray-500">Favoritos</div>
+                <div className="px-4 py-2 text-sm text-muted-foreground">Nova guia</div>
+                <div className="px-4 py-2 text-sm text-muted-foreground">Nova guia anônima</div>
+                <div className="px-4 py-2 text-sm text-muted-foreground">Favoritos</div>
                 <div className="px-4 py-2 text-sm font-medium relative bg-primary/10 text-primary flex items-center gap-2">
                   <Download className="h-4 w-4" />
                   Instalar app
@@ -703,7 +703,7 @@ const AndroidMockup = ({ step }: { step: number }) => (
                     <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
                   </span>
                 </div>
-                <div className="px-4 py-2 text-sm text-gray-500">Downloads</div>
+                <div className="px-4 py-2 text-sm text-muted-foreground">Downloads</div>
               </div>
             </div>
           )}
@@ -714,16 +714,16 @@ const AndroidMockup = ({ step }: { step: number }) => (
               <div className="bg-white dark:bg-gray-800 rounded-t-2xl w-full p-4 shadow-xl animate-slide-up">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
-                    <span className="text-white font-bold">A</span>
+                    <span className="text-foreground font-bold">A</span>
                   </div>
                   <div>
                     <p className="font-semibold">Instalar ArcanoApp?</p>
-                    <p className="text-xs text-gray-500">arcanoapp.voxvisual.com.br</p>
+                    <p className="text-xs text-muted-foreground">arcanoapp.voxvisual.com.br</p>
                   </div>
                 </div>
                 <div className="flex justify-end gap-3">
-                  <button className="px-6 py-2 text-sm text-gray-500">Cancelar</button>
-                  <button className="px-6 py-2 text-sm bg-primary text-white rounded-full font-semibold relative">
+                  <button className="px-6 py-2 text-sm text-muted-foreground">Cancelar</button>
+                  <button className="px-6 py-2 text-sm bg-primary text-foreground rounded-full font-semibold relative">
                     Instalar
                     {/* Pulse indicator */}
                     <span className="absolute -right-1 -top-1 flex h-3 w-3">
@@ -738,7 +738,7 @@ const AndroidMockup = ({ step }: { step: number }) => (
         </div>
         
         {/* Android Navigation Bar */}
-        <div className="h-10 bg-white/10 dark:bg-gray-800 flex items-center justify-center gap-16">
+        <div className="h-10 bg-accent dark:bg-gray-800 flex items-center justify-center gap-16">
           <div className="w-4 h-4 border-2 border-gray-400 rounded" />
           <div className="w-4 h-4 bg-gray-400 rounded-full" />
           <div className="w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[10px] border-r-gray-400" />
@@ -761,11 +761,11 @@ const DesktopMockup = ({ step, browser }: { step: number; browser: BrowserType }
           <div className="w-3 h-3 bg-green-500 rounded-full" />
         </div>
         <div className="flex-1 flex items-center justify-center">
-          <div className="bg-white dark:bg-white/50 rounded-md h-5 w-64 flex items-center px-2 gap-2">
+          <div className="bg-white dark:bg-accent0 rounded-md h-5 w-64 flex items-center px-2 gap-2">
             <div className="w-3 h-3 bg-green-500 rounded-full" />
-            <span className="text-[10px] text-gray-500 dark:text-gray-300">arcanoapp.voxvisual.com.br</span>
+            <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">arcanoapp.voxvisual.com.br</span>
             <div className="ml-auto relative">
-              <Download className="h-3 w-3 text-gray-400" />
+              <Download className="h-3 w-3 text-muted-foreground" />
               {/* Pulse indicator for Step 1 */}
               {step === 0 && (
                 <>
@@ -782,7 +782,7 @@ const DesktopMockup = ({ step, browser }: { step: number; browser: BrowserType }
             </div>
           </div>
         </div>
-        <MoreVertical className="h-4 w-4 text-gray-500" />
+        <MoreVertical className="h-4 w-4 text-muted-foreground" />
       </div>
       
       {/* Browser Content */}
@@ -798,16 +798,16 @@ const DesktopMockup = ({ step, browser }: { step: number; browser: BrowserType }
           <div className="absolute top-4 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-xl w-64 p-4 animate-scale-in border border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">A</span>
+                <span className="text-foreground font-bold text-sm">A</span>
               </div>
               <div>
                 <p className="font-semibold text-sm">Instalar ArcanoApp?</p>
-                <p className="text-[10px] text-gray-500">arcanoapp.voxvisual.com.br</p>
+                <p className="text-[10px] text-muted-foreground">arcanoapp.voxvisual.com.br</p>
               </div>
             </div>
             <div className="flex justify-end gap-2">
-              <button className="px-3 py-1.5 text-xs text-gray-500">Cancelar</button>
-              <button className="px-4 py-1.5 text-xs bg-primary text-white rounded font-semibold relative">
+              <button className="px-3 py-1.5 text-xs text-muted-foreground">Cancelar</button>
+              <button className="px-4 py-1.5 text-xs bg-primary text-foreground rounded font-semibold relative">
                 Instalar
                 {/* Pulse indicator */}
                 <span className="absolute -right-1 -top-1 flex h-2.5 w-2.5">
@@ -824,10 +824,10 @@ const DesktopMockup = ({ step, browser }: { step: number; browser: BrowserType }
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center animate-fade-in">
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 text-center animate-scale-in">
               <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Check className="h-8 w-8 text-white" />
+                <Check className="h-8 w-8 text-foreground" />
               </div>
               <p className="font-semibold text-lg">App Instalado!</p>
-              <p className="text-xs text-gray-500 mt-1">Procure o ícone na sua área de trabalho</p>
+              <p className="text-xs text-muted-foreground mt-1">Procure o ícone na sua área de trabalho</p>
             </div>
           </div>
         )}

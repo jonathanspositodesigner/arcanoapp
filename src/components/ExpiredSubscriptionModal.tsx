@@ -68,7 +68,7 @@ const ExpiredSubscriptionModal = ({ isOpen, onClose, planType }: ExpiredSubscrip
         <div className="flex flex-col gap-3 mt-4">
           <Button 
             onClick={handleRenew}
-            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white font-semibold"
+            className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-foreground font-semibold"
           >
             <Star className="h-4 w-4 mr-2" fill="currentColor" />
             {t('expiredModal.renewButton', { 

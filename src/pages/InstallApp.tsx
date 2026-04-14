@@ -64,7 +64,7 @@ const InstallApp = () => {
         {isInstalled ? (
           <Card className="p-8 text-center">
             <div className="p-4 bg-green-500 rounded-full w-fit mx-auto mb-4">
-              <Download className="h-8 w-8 text-white" />
+              <Download className="h-8 w-8 text-foreground" />
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
               {t('install.alreadyInstalled')}
@@ -79,7 +79,7 @@ const InstallApp = () => {
         ) : deferredPrompt ? (
           <Card className="p-8 text-center">
             <div className="p-4 bg-gradient-primary rounded-full w-fit mx-auto mb-4">
-              <Download className="h-8 w-8 text-white" />
+              <Download className="h-8 w-8 text-foreground" />
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
               {t('install.installNow')}

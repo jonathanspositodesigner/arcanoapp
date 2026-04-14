@@ -540,26 +540,26 @@ const MovieLedMakerTool = () => {
           
           {/* Left Panel - Controls */}
           <div className={`lg:col-span-2 ${isMobile ? 'overflow-visible' : 'min-h-0 overflow-hidden'}`}>
-            <div className={`bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-5 ${isMobile ? '' : 'overflow-y-auto h-full max-h-full'}`}
+            <div className={`bg-card border border-border rounded-2xl p-5 flex flex-col gap-5 ${isMobile ? '' : 'overflow-y-auto h-full max-h-full'}`}
               style={!isMobile ? { scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' } : undefined}
             >
               {/* Title */}
               <div>
-                <h1 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Video className="h-5 w-5 text-gray-400" />
+                <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+                  <Video className="h-5 w-5 text-muted-foreground" />
                   MovieLed Maker
                 </h1>
-                <p className="text-xs text-gray-400 mt-1">IA que gera movies para telão de LED com um clique.</p>
+                <p className="text-xs text-muted-foreground mt-1">IA que gera movies para telão de LED com um clique.</p>
               </div>
 
               {/* Reference Image */}
               <div>
-                <span className="text-sm font-medium text-white mb-2 block flex items-center gap-1.5">
-                  <ImageIcon className="h-3.5 w-3.5 text-gray-400" />
+                <span className="text-sm font-medium text-foreground mb-2 block flex items-center gap-1.5">
+                  <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
                   Telão de Referência
                 </span>
                 {(selectedLibraryItem || uploadedImage) ? (
-                  <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black/30" data-tutorial-movieled="reference">
+                  <div className="relative rounded-xl overflow-hidden border border-border bg-black/30" data-tutorial-movieled="reference">
                     <img
                       src={getEffectiveImageUrl() || ''}
                       alt="Telão de referência"
@@ -569,7 +569,7 @@ const MovieLedMakerTool = () => {
                       <button
                         onClick={() => setShowLibrary(true)}
                         disabled={isProcessing}
-                        className="flex-1 h-7 text-[10px] rounded-lg bg-white/10 backdrop-blur-sm text-gray-200 hover:bg-white/20 transition-colors flex items-center justify-center gap-1"
+                        className="flex-1 h-7 text-[10px] rounded-lg bg-accent backdrop-blur-sm text-gray-200 hover:bg-white/20 transition-colors flex items-center justify-center gap-1"
                       >
                         <ImageIcon className="w-3 h-3" />
                         Trocar
@@ -577,7 +577,7 @@ const MovieLedMakerTool = () => {
                       <button
                         onClick={() => { setSelectedLibraryItem(null); setUploadedImage(null); setUploadedFileName(''); }}
                         disabled={isProcessing}
-                        className="h-7 w-7 rounded-lg bg-white/10 backdrop-blur-sm text-gray-200 hover:bg-red-500/100/40 transition-colors flex items-center justify-center"
+                        className="h-7 w-7 rounded-lg bg-accent backdrop-blur-sm text-gray-200 hover:bg-red-500/100/40 transition-colors flex items-center justify-center"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -588,14 +588,14 @@ const MovieLedMakerTool = () => {
                     onClick={() => setShowLibrary(true)}
                     disabled={isProcessing}
                     data-tutorial-movieled="reference"
-                    className="w-full h-[100px] lg:h-[120px] rounded-xl border border-dashed border-white/15 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/25 transition-all flex flex-col items-center justify-center gap-2 group"
+                    className="w-full h-[100px] lg:h-[120px] rounded-xl border border-dashed border-border bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/25 transition-all flex flex-col items-center justify-center gap-2 group"
                   >
-                    <div className="w-9 h-9 rounded-lg bg-white/50/10 border border-white/15/20 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                      <Plus className="w-4 h-4 text-gray-400" />
+                    <div className="w-9 h-9 rounded-lg bg-accent0/10 border border-border/20 flex items-center justify-center group-hover:bg-accent transition-colors">
+                      <Plus className="w-4 h-4 text-muted-foreground" />
                     </div>
                     <div className="text-center">
-                      <p className="text-[11px] text-gray-300 font-medium">Escolher Telão</p>
-                      <p className="text-[9px] text-gray-500">Da biblioteca ou envie sua imagem</p>
+                      <p className="text-[11px] text-muted-foreground font-medium">Escolher Telão</p>
+                      <p className="text-[9px] text-muted-foreground">Da biblioteca ou envie sua imagem</p>
                     </div>
                   </button>
                 )}
@@ -603,8 +603,8 @@ const MovieLedMakerTool = () => {
 
               {/* Text Input */}
               <div>
-                <span className="text-sm font-medium text-white mb-2 block flex items-center gap-1.5">
-                  <Type className="h-3.5 w-3.5 text-gray-400" />
+                <span className="text-sm font-medium text-foreground mb-2 block flex items-center gap-1.5">
+                  <Type className="h-3.5 w-3.5 text-muted-foreground" />
                   Nome no Telão
                 </span>
                 <div className="flex gap-2" data-tutorial-movieled="text-input">
@@ -613,7 +613,7 @@ const MovieLedMakerTool = () => {
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Ex: DJ MARCOS"
                     disabled={isProcessing}
-                    className="bg-black/40 border-white/10 text-white placeholder:text-gray-500 text-sm flex-1"
+                    className="bg-black/40 border-border text-foreground placeholder:text-muted-foreground text-sm flex-1"
                     maxLength={50}
                   />
                   <button
@@ -622,10 +622,10 @@ const MovieLedMakerTool = () => {
                     disabled={!inputText.trim() || isProcessing}
                     className="flex items-center justify-center w-10 h-10 rounded-md bg-green-600 hover:bg-green-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
                   >
-                    <Check className="w-4 h-4 text-white" />
+                    <Check className="w-4 h-4 text-foreground" />
                   </button>
                 </div>
-                <p className="text-[10px] text-gray-500 mt-1">{inputText.length}/50 caracteres</p>
+                <p className="text-[10px] text-muted-foreground mt-1">{inputText.length}/50 caracteres</p>
               </div>
 
               {/* DESKTOP ONLY: Engine + Generate + Actions */}
@@ -633,8 +633,8 @@ const MovieLedMakerTool = () => {
                 <>
                   {/* Engine Selector */}
                   <div>
-                    <span className="text-sm font-medium text-white mb-2 block">Motor</span>
-                    <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1" data-tutorial-movieled="engine">
+                    <span className="text-sm font-medium text-foreground mb-2 block">Motor</span>
+                    <div className="grid grid-cols-2 gap-0 bg-black/40 border border-border rounded-lg p-1" data-tutorial-movieled="engine">
                       {ENGINES.map(engine => (
                         <button
                           key={engine.id}
@@ -642,8 +642,8 @@ const MovieLedMakerTool = () => {
                           disabled={isProcessing}
                           className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                             selectedEngine === engine.id
-                              ? 'bg-white/10 text-white'
-                              : 'text-gray-400 hover:text-white'
+                              ? 'bg-accent text-white'
+                              : 'text-muted-foreground hover:text-foreground'
                           }`}
                         >
                           {engine.name}
@@ -651,10 +651,10 @@ const MovieLedMakerTool = () => {
                       ))}
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/8">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-white/8">
                         {currentEngine.duration} • {currentEngine.resolution}
                       </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/8 flex items-center gap-1">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-white/8 flex items-center gap-1">
                         <Clock className="h-2.5 w-2.5" />
                         {currentEngine.time}
                       </span>
@@ -699,7 +699,7 @@ const MovieLedMakerTool = () => {
                       </Button>
                       <Button
                         variant="outline"
-                        className="w-full py-3 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                        className="w-full py-3 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl"
                         onClick={handleNewGeneration}
                       >
                         <RotateCcw className="w-4 h-4 mr-2" />
@@ -717,7 +717,7 @@ const MovieLedMakerTool = () => {
                       </div>
                       <Button
                         variant="outline"
-                        className="w-full mt-2 py-2 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg"
+                        className="w-full mt-2 py-2 text-xs border-border text-muted-foreground hover:bg-accent rounded-lg"
                         onClick={handleNewGeneration}
                       >
                         <RotateCcw className="w-3.5 h-3.5 mr-1" />
@@ -732,7 +732,7 @@ const MovieLedMakerTool = () => {
 
           {/* Right Panel - Result */}
           <div className="lg:col-span-5 min-h-0 overflow-hidden">
-            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-[400px] h-full">
+            <div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col min-h-[400px] h-full">
               {/* Warning Banner */}
               {isProcessing && (
                 <div className="bg-amber-500/20 border-b border-amber-500/50 px-3 py-2 flex items-center gap-2">
@@ -750,8 +750,8 @@ const MovieLedMakerTool = () => {
                     </div>
                     <div>
                       <p className="text-xl font-bold text-yellow-300">🔥 Na fila!</p>
-                      <p className="text-3xl font-bold text-white mt-2">Posição {queuePosition}</p>
-                      <p className="text-sm text-gray-400 mt-2">Aguarde, já já é sua vez!</p>
+                      <p className="text-3xl font-bold text-foreground mt-2">Posição {queuePosition}</p>
+                      <p className="text-sm text-muted-foreground mt-2">Aguarde, já já é sua vez!</p>
                     </div>
                     <Button
                       variant="ghost" size="sm"
@@ -773,12 +773,12 @@ const MovieLedMakerTool = () => {
                   </div>
                 ) : (status === 'uploading' || status === 'processing') && !isQueued ? (
                   <div className="flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-gray-400 animate-spin" />
+                    <Loader2 className="w-12 h-12 text-muted-foreground animate-spin" />
                     <div className="text-center">
-                      <p className="text-lg font-medium text-white">
+                      <p className="text-lg font-medium text-foreground">
                         {status === 'uploading' ? 'Enviando imagem...' : 'Gerando movie para telão...'}
                       </p>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-muted-foreground">
                         Tempo estimado: {currentEngine.time}
                       </p>
                     </div>
@@ -801,12 +801,12 @@ const MovieLedMakerTool = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-white/15/20 flex items-center justify-center">
-                      <Video className="w-10 h-10 text-gray-400" />
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border/20 flex items-center justify-center">
+                      <Video className="w-10 h-10 text-muted-foreground" />
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-white">MovieLed Maker</h2>
-                      <p className="text-sm text-gray-400 mt-1 max-w-sm">
+                      <h2 className="text-lg font-bold text-foreground">MovieLed Maker</h2>
+                      <p className="text-sm text-muted-foreground mt-1 max-w-sm">
                         Selecione um telão da biblioteca ou envie sua imagem, digite o nome e gere seu movie para telão de LED!
                       </p>
                     </div>
@@ -820,22 +820,22 @@ const MovieLedMakerTool = () => {
 
       {/* MOBILE FIXED BOTTOM BAR */}
       {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#1a1a2e]/95 backdrop-blur-md border-t border-white/10 safe-area-pb">
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-t border-border safe-area-pb">
           
           {/* Expandable Configurações panel */}
           {showMobileConfig && !isProcessing && status !== 'completed' && status !== 'error' && (
-            <div className="px-4 pt-3 pb-2 space-y-3 border-b border-white/10 max-h-[50vh] overflow-y-auto">
+            <div className="px-4 pt-3 pb-2 space-y-3 border-b border-border max-h-[50vh] overflow-y-auto">
               {/* Engine Selector */}
               <div>
-                <span className="text-xs font-medium text-gray-400 mb-1.5 block">Motor</span>
-                <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1">
+                <span className="text-xs font-medium text-muted-foreground mb-1.5 block">Motor</span>
+                <div className="grid grid-cols-2 gap-0 bg-black/40 border border-border rounded-lg p-1">
                   {ENGINES.map(engine => (
                     <button
                       key={engine.id}
                       onClick={() => setSelectedEngine(engine.id)}
                       disabled={isProcessing}
                       className={`py-2 px-3 text-sm rounded-md transition-all font-medium ${
-                        selectedEngine === engine.id ? 'bg-white/10 text-white' : 'text-gray-400'
+                        selectedEngine === engine.id ? 'bg-accent text-white' : 'text-muted-foreground'
                       }`}
                     >
                       {engine.name}
@@ -843,10 +843,10 @@ const MovieLedMakerTool = () => {
                   ))}
                 </div>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/8">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-white/8">
                     {currentEngine.duration} • {currentEngine.resolution}
                   </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/8 flex items-center gap-1">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-white/8 flex items-center gap-1">
                     <Clock className="h-2.5 w-2.5" />
                     {currentEngine.time}
                   </span>
@@ -883,7 +883,7 @@ const MovieLedMakerTool = () => {
                 </Button>
                 <button
                   onClick={() => setShowMobileConfig(!showMobileConfig)}
-                  className="w-full flex items-center justify-center gap-2 py-2 text-xs text-gray-400 hover:text-white transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Settings className="w-3.5 h-3.5" />
                   Configurações
@@ -896,15 +896,15 @@ const MovieLedMakerTool = () => {
             {isProcessing && (
               <div className="flex gap-2">
                 <div className="flex-1 flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 text-gray-400 animate-spin flex-shrink-0" />
-                  <p className="text-xs text-white truncate">
+                  <Loader2 className="w-4 h-4 text-muted-foreground animate-spin flex-shrink-0" />
+                  <p className="text-xs text-foreground truncate">
                     {isQueued ? `Fila #${queuePosition}` : 'Gerando movie...'}
                   </p>
                 </div>
                 {isQueued && (
                   <Button
                     variant="outline"
-                    className="py-3 px-4 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg flex-shrink-0"
+                    className="py-3 px-4 text-xs border-border text-muted-foreground hover:bg-accent rounded-lg flex-shrink-0"
                     onClick={cancelQueue}
                   >
                     Sair
@@ -925,7 +925,7 @@ const MovieLedMakerTool = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="py-4 px-4 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                  className="py-4 px-4 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl"
                   onClick={handleNewGeneration}
                 >
                   <RotateCcw className="w-4 h-4" />
@@ -941,7 +941,7 @@ const MovieLedMakerTool = () => {
                 </div>
                 <Button
                   variant="outline"
-                  className="py-3 px-4 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg flex-shrink-0"
+                  className="py-3 px-4 text-xs border-border text-muted-foreground hover:bg-accent rounded-lg flex-shrink-0"
                   onClick={handleNewGeneration}
                 >
                   <RotateCcw className="w-3.5 h-3.5 mr-1" />

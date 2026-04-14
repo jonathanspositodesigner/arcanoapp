@@ -36,41 +36,41 @@ const StatsBar = () => {
 
   return (
     <div className="max-w-4xl mx-auto mb-10 px-2">
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm px-4 sm:px-6 py-4 flex flex-col items-center gap-4">
+      <div className="rounded-2xl border border-border bg-white/[0.03] backdrop-blur-sm px-4 sm:px-6 py-4 flex flex-col items-center gap-4">
         <div className="flex items-center gap-3 w-full justify-center">
           <div className="flex -space-x-2 shrink-0">
             {socialProofImages.map((src, i) => (
               <img key={i} src={src} alt="" width="32" height="32" decoding="async" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-black object-cover" />
             ))}
           </div>
-          <span className="text-white/80 text-xs sm:text-sm font-medium leading-tight">
+          <span className="text-foreground text-xs sm:text-sm font-medium leading-tight">
             Junte-se a + de 3200 criadores em todo o mundo.
           </span>
         </div>
         <div className="flex items-center justify-center gap-8 w-full">
           <div className="flex flex-col items-center gap-0.5">
-            <Image className="w-5 h-5 text-gray-400 mb-1" />
+            <Image className="w-5 h-5 text-muted-foreground mb-1" />
             <div className="flex items-center gap-1">
-              <span className="text-white font-bold text-base sm:text-lg">{animatedImages.displayValue.toLocaleString('pt-BR')}</span>
-              <span className="text-gray-400 text-lg font-bold">+</span>
+              <span className="text-foreground font-bold text-base sm:text-lg">{animatedImages.displayValue.toLocaleString('pt-BR')}</span>
+              <span className="text-muted-foreground text-lg font-bold">+</span>
             </div>
-            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium text-center">Imagens Geradas</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium text-center">Imagens Geradas</span>
           </div>
           <div className="flex flex-col items-center gap-0.5">
-            <Video className="w-5 h-5 text-gray-400 mb-1" />
+            <Video className="w-5 h-5 text-muted-foreground mb-1" />
             <div className="flex items-center gap-1">
-              <span className="text-white font-bold text-base sm:text-lg">{animatedVideos.displayValue.toLocaleString('pt-BR')}</span>
-              <span className="text-gray-400 text-lg font-bold">+</span>
+              <span className="text-foreground font-bold text-base sm:text-lg">{animatedVideos.displayValue.toLocaleString('pt-BR')}</span>
+              <span className="text-muted-foreground text-lg font-bold">+</span>
             </div>
-            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium text-center">Vídeos Gerados</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium text-center">Vídeos Gerados</span>
           </div>
           <div className="flex flex-col items-center gap-0.5">
             <Award className="w-5 h-5 text-yellow-500 mb-1" />
             <div className="flex items-center gap-0.5">
-              <span className="text-white font-bold text-base sm:text-lg">{animatedSatisfaction.displayValue}</span>
+              <span className="text-foreground font-bold text-base sm:text-lg">{animatedSatisfaction.displayValue}</span>
               <span className="text-yellow-500 text-lg font-bold">%</span>
             </div>
-            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium text-center">Satisfação</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium text-center">Satisfação</span>
           </div>
         </div>
       </div>
@@ -158,12 +158,12 @@ const LandingPricingSection = () => {
     <AnimatedSection className="px-4 py-16 md:py-20">
       <div className="max-w-7xl mx-auto">
         <AnimatedSection as="div" delay={100}>
-          <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
+          <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
             Comece agora mesmo a gerar suas próprias{" "}
-            <span className="text-gray-400">fotos profissionais!</span>
+            <span className="text-muted-foreground">fotos profissionais!</span>
           </h2>
-          <p className="text-white/50 text-center text-sm mb-8 max-w-xl mx-auto">
-            Sem <strong className="text-white/70">prompts complexos! Sem dificuldade!</strong> Escolha o melhor pacote para você iniciar
+          <p className="text-muted-foreground text-center text-sm mb-8 max-w-xl mx-auto">
+            Sem <strong className="text-muted-foreground">prompts complexos! Sem dificuldade!</strong> Escolha o melhor pacote para você iniciar
           </p>
         </AnimatedSection>
 
@@ -180,8 +180,8 @@ const LandingPricingSection = () => {
             <div key={plan.name} className="flex flex-col h-full w-full">
               <Card className={`relative flex flex-col rounded-2xl bg-white/[0.03] w-full h-full p-5 sm:p-6 lg:p-8 min-h-[420px] lg:min-h-[520px] ${
                 plan.bestSeller ? "border-2 border-lime-400 shadow-[0_0_40px_-8px_rgba(163,230,53,0.25)]" :
-                plan.hasCountdown ? "border-2 border-white/15 shadow-[0_0_40px_-8px_rgba(217,70,239,0.25)]" :
-                "border border-white/10 hover:border-white/20 transition-colors"
+                plan.hasCountdown ? "border-2 border-border shadow-[0_0_40px_-8px_rgba(217,70,239,0.25)]" :
+                "border border-border hover:border-border transition-colors"
               }`}>
                 {plan.bestSeller && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-4 py-1">
@@ -189,7 +189,7 @@ const LandingPricingSection = () => {
                   </Badge>
                 )}
                 {plan.hasCountdown && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-white px-4 py-1">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-foreground px-4 py-1">
                     MELHOR CUSTO/BENEFÍCIO
                   </Badge>
                 )}
@@ -201,19 +201,19 @@ const LandingPricingSection = () => {
                   ) : plan.hasCountdown ? (
                     <Flame className="w-8 h-8 lg:w-10 lg:h-10 text-slate-400" />
                   ) : (
-                    <Rocket className="w-8 h-8 lg:w-10 lg:h-10 text-white/60" />
+                    <Rocket className="w-8 h-8 lg:w-10 lg:h-10 text-muted-foreground" />
                   )}
                 </div>
 
                 <div className="text-center mb-4 lg:mb-5 min-h-[36px] flex items-center justify-center">
-                  <h3 className="text-lg lg:text-xl font-bold text-white">{plan.name}</h3>
+                  <h3 className="text-lg lg:text-xl font-bold text-foreground">{plan.name}</h3>
                 </div>
 
                 {/* Price */}
                 <div className="text-center mb-5 lg:mb-6">
                   <div className="flex items-baseline justify-center gap-0.5">
-                    <span className="text-gray-400 text-base lg:text-lg">R$</span>
-                    <span className="text-4xl lg:text-5xl font-bold text-white">{plan.price}</span>
+                    <span className="text-muted-foreground text-base lg:text-lg">R$</span>
+                    <span className="text-4xl lg:text-5xl font-bold text-foreground">{plan.price}</span>
                   </div>
                 </div>
 
@@ -223,19 +223,19 @@ const LandingPricingSection = () => {
                   disabled={isLoading}
                   className={`w-full mb-2 text-sm lg:text-base h-10 lg:h-12 ${
                     plan.bestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" :
-                    plan.hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-white font-semibold" :
-                    "bg-white/10 hover:bg-white/20 text-white/80"
+                    plan.hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-foreground font-semibold" :
+                    "bg-accent hover:bg-white/20 text-foreground"
                   }`}
                 >
                   Comprar agora
                 </Button>
                 {plan.tagline && (
-                  <p className="text-[10px] lg:text-[11px] text-gray-400 text-center mb-2 italic">{plan.tagline}</p>
+                  <p className="text-[10px] lg:text-[11px] text-muted-foreground text-center mb-2 italic">{plan.tagline}</p>
                 )}
 
                 {/* Images badge (highlighted) */}
                 <div className="flex flex-col items-center mb-5 lg:mb-6 mt-3 gap-1.5">
-                  <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs lg:text-sm font-bold text-white bg-gradient-to-r from-slate-600 to-blue-500">
+                  <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs lg:text-sm font-bold text-foreground bg-gradient-to-r from-slate-600 to-blue-500">
                     <Sparkles className="w-3.5 h-3.5" />
                     {plan.credits}
                   </span>
@@ -247,11 +247,11 @@ const LandingPricingSection = () => {
                   {plan.features.map((f, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs lg:text-sm">
                       {f.included ? (
-                        <Check className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-gray-400 shrink-0 mt-0.5" />
+                        <Check className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-muted-foreground shrink-0 mt-0.5" />
                       ) : (
                         <X className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-orange-500 shrink-0 mt-0.5" />
                       )}
-                      <span className={f.included ? "text-white/70" : "text-orange-500"}>{f.text}</span>
+                      <span className={f.included ? "text-muted-foreground" : "text-orange-500"}>{f.text}</span>
                     </li>
                   ))}
                 </ul>
@@ -262,33 +262,33 @@ const LandingPricingSection = () => {
 
         {/* Acesso Imediato + Trust Badges */}
         <div className="mt-12 text-center">
-          <h3 className="font-space-grotesk font-extrabold text-3xl md:text-4xl lg:text-5xl text-white tracking-tight mb-6">
-            ACESSO <span className="text-gray-400">IMEDIATO</span>
+          <h3 className="font-space-grotesk font-extrabold text-3xl md:text-4xl lg:text-5xl text-foreground tracking-tight mb-6">
+            ACESSO <span className="text-muted-foreground">IMEDIATO</span>
           </h3>
           <div className="max-w-4xl mx-auto rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 sm:px-8 py-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 sm:gap-4">
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <ShieldCheck className="w-5 h-5 text-gray-400 shrink-0" />
+              <ShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
               <div className="text-left">
-                <p className="text-white text-sm font-semibold leading-tight">Pagamento seguro</p>
-                <p className="text-white/50 text-xs">transmissão criptografada SSL</p>
+                <p className="text-foreground text-sm font-semibold leading-tight">Pagamento seguro</p>
+                <p className="text-muted-foreground text-xs">transmissão criptografada SSL</p>
               </div>
             </div>
-            <div className="hidden sm:block w-px h-8 bg-white/10" />
-            <div className="block sm:hidden w-full h-px bg-white/10" />
+            <div className="hidden sm:block w-px h-8 bg-accent" />
+            <div className="block sm:hidden w-full h-px bg-accent" />
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Zap className="w-5 h-5 text-gray-400 shrink-0" />
+              <Zap className="w-5 h-5 text-muted-foreground shrink-0" />
               <div className="text-left">
-                <p className="text-white text-sm font-semibold leading-tight">Pagamento instantâneo</p>
-                <p className="text-white/50 text-xs">Os pontos chegam instantaneamente.</p>
+                <p className="text-foreground text-sm font-semibold leading-tight">Pagamento instantâneo</p>
+                <p className="text-muted-foreground text-xs">Os pontos chegam instantaneamente.</p>
               </div>
             </div>
-            <div className="hidden sm:block w-px h-8 bg-white/10" />
-            <div className="block sm:hidden w-full h-px bg-white/10" />
+            <div className="hidden sm:block w-px h-8 bg-accent" />
+            <div className="block sm:hidden w-full h-px bg-accent" />
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Headset className="w-5 h-5 text-gray-400 shrink-0" />
+              <Headset className="w-5 h-5 text-muted-foreground shrink-0" />
               <div className="text-left">
-                <p className="text-white text-sm font-semibold leading-tight">Suporte 24/7</p>
-                <p className="text-white/50 text-xs">estamos aqui para ajudar</p>
+                <p className="text-foreground text-sm font-semibold leading-tight">Suporte 24/7</p>
+                <p className="text-muted-foreground text-xs">estamos aqui para ajudar</p>
               </div>
             </div>
           </div>

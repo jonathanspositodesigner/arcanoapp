@@ -113,13 +113,13 @@ const ForceUpdate = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center text-white p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center text-foreground p-4">
       {status === 'cleaning' && (
         <>
           <RefreshCw className="w-16 h-16 text-slate-400 animate-spin mb-4" />
           <h1 className="text-2xl font-bold mb-2">Atualizando...</h1>
-          <p className="text-gray-400 text-center mb-2">{step}</p>
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-muted-foreground text-center mb-2">{step}</p>
+          <p className="text-xs text-muted-foreground text-center">
             Limpando cache e baixando versão mais recente
           </p>
         </>
@@ -129,7 +129,7 @@ const ForceUpdate = () => {
         <>
           <CheckCircle className="w-16 h-16 text-green-500 mb-4" />
           <h1 className="text-2xl font-bold mb-2">Atualizado!</h1>
-          <p className="text-gray-400 text-center">{step}</p>
+          <p className="text-muted-foreground text-center">{step}</p>
         </>
       )}
       
@@ -137,8 +137,8 @@ const ForceUpdate = () => {
         <>
           <AlertTriangle className="w-16 h-16 text-yellow-500 mb-4" />
           <h1 className="text-2xl font-bold mb-2">Ops!</h1>
-          <p className="text-gray-400 text-center mb-2">{step}</p>
-          <p className="text-xs text-gray-500 text-center">
+          <p className="text-muted-foreground text-center mb-2">{step}</p>
+          <p className="text-xs text-muted-foreground text-center">
             Tentando recuperar automaticamente...
           </p>
         </>

@@ -266,7 +266,7 @@ const PartnerUploadArtes = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="text-white">Carregando...</div>
+        <div className="text-foreground">Carregando...</div>
       </div>
     );
   }
@@ -278,31 +278,31 @@ const PartnerUploadArtes = () => {
       <div className="max-w-2xl mx-auto">
         <Button
           variant="ghost"
-          className="text-white/70 hover:text-white mb-6"
+          className="text-muted-foreground hover:text-foreground mb-6"
           onClick={() => navigate("/parceiro-dashboard-artes")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar ao Dashboard
         </Button>
 
-        <Card className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
+        <Card className="bg-card/80 border-border/30">
           <CardContent className="p-6">
-            <h1 className="text-2xl font-bold text-white mb-6 text-center">
+            <h1 className="text-2xl font-bold text-foreground mb-6 text-center">
               Enviar Novas Artes
             </h1>
 
             {/* Upload Area */}
             <div
-              className="border-2 border-dashed border-[#2d4a5e]/50 rounded-xl p-8 text-center cursor-pointer hover:border-[#2d4a5e] transition-colors"
+              className="border-2 border-dashed border-border/50 rounded-xl p-8 text-center cursor-pointer hover:border-border transition-colors"
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="h-12 w-12 mx-auto text-[#2d4a5e] mb-4" />
-              <p className="text-white font-medium mb-2">
+              <p className="text-foreground font-medium mb-2">
                 Arraste imagens ou vídeos aqui ou clique para selecionar
               </p>
-              <p className="text-white/50 text-sm">
+              <p className="text-muted-foreground text-sm">
                 PNG, JPG, GIF, WebP, MP4, WebM (máximo 100MB)
               </p>
               <input
@@ -319,12 +319,12 @@ const PartnerUploadArtes = () => {
             {mediaFiles.length > 0 && !showModal && (
               <div className="mt-6">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-white/70 text-sm">
+                  <span className="text-muted-foreground text-sm">
                     {mediaFiles.length} arquivo(s) selecionado(s)
                   </span>
                   <Button
                     variant="outline"
-                    className="border-[#2d4a5e]/50 text-white/70"
+                    className="border-border/50 text-muted-foreground"
                     onClick={() => setShowModal(true)}
                   >
                     Editar detalhes
@@ -353,7 +353,7 @@ const PartnerUploadArtes = () => {
                         className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1"
                         onClick={() => removeMedia(index)}
                       >
-                        <X className="h-3 w-3 text-white" />
+                        <X className="h-3 w-3 text-foreground" />
                       </button>
                     </div>
                   ))}
@@ -366,7 +366,7 @@ const PartnerUploadArtes = () => {
 
       {/* Edit Modal */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="bg-[#1a1a2e] border-[#2d4a5e]/30 text-white max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-card border-border/30 text-foreground max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               Detalhes da Arte ({currentIndex + 1}/{mediaFiles.length})
@@ -398,27 +398,27 @@ const PartnerUploadArtes = () => {
 
               {/* Form Fields */}
               <div>
-                <label className="text-sm text-white/60">Título *</label>
+                <label className="text-sm text-muted-foreground">Título *</label>
                 <Input
                   value={currentMedia.title}
                   onChange={(e) => updateMediaData(currentIndex, "title", e.target.value)}
                   placeholder="Nome da arte"
-                  className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
 
               <div>
-                <label className="text-sm text-white/60">Categoria *</label>
+                <label className="text-sm text-muted-foreground">Categoria *</label>
                 <Select
                   value={currentMedia.category}
                   onValueChange={(value) => updateMediaData(currentIndex, "category", value)}
                 >
-                  <SelectTrigger className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white">
+                  <SelectTrigger className="bg-card border-border/50 text-foreground">
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a2e] border-[#2d4a5e]/50 z-50">
+                  <SelectContent className="bg-card border-border/50 z-50">
                     {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.name} className="text-white">
+                      <SelectItem key={cat.id} value={cat.name} className="text-foreground">
                         {cat.name}
                       </SelectItem>
                     ))}
@@ -427,17 +427,17 @@ const PartnerUploadArtes = () => {
               </div>
 
               <div>
-                <label className="text-sm text-white/60">Pack <span className="text-red-500">*</span></label>
+                <label className="text-sm text-muted-foreground">Pack <span className="text-red-500">*</span></label>
                 <Select
                   value={currentMedia.pack}
                   onValueChange={(value) => updateMediaData(currentIndex, "pack", value)}
                 >
-                  <SelectTrigger className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white">
+                  <SelectTrigger className="bg-card border-border/50 text-foreground">
                     <SelectValue placeholder="Selecione o pack" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a2e] border-[#2d4a5e]/50 z-50">
+                  <SelectContent className="bg-card border-border/50 z-50">
                     {packs.map((pack) => (
-                      <SelectItem key={pack.id} value={pack.name} className="text-white">
+                      <SelectItem key={pack.id} value={pack.name} className="text-foreground">
                         {pack.name}
                       </SelectItem>
                     ))}
@@ -446,33 +446,33 @@ const PartnerUploadArtes = () => {
               </div>
 
               <div>
-                <label className="text-sm text-white/60">Descrição</label>
+                <label className="text-sm text-muted-foreground">Descrição</label>
                 <Textarea
                   value={currentMedia.description}
                   onChange={(e) => updateMediaData(currentIndex, "description", e.target.value)}
                   placeholder="Descrição opcional da arte"
-                  className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white min-h-[80px]"
+                  className="bg-card border-border/50 text-foreground min-h-[80px]"
                 />
               </div>
 
               <div>
-                <label className="text-sm text-white/60">Link Canva <span className="text-red-500">*</span></label>
+                <label className="text-sm text-muted-foreground">Link Canva <span className="text-red-500">*</span></label>
                 <Input
                   value={currentMedia.canvaLink}
                   onChange={(e) => updateMediaData(currentIndex, "canvaLink", e.target.value)}
                   placeholder="https://www.canva.com/..."
-                  className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-sm text-white/60">Link Drive (opcional)</label>
+                <label className="text-sm text-muted-foreground">Link Drive (opcional)</label>
                 <Input
                   value={currentMedia.driveLink}
                   onChange={(e) => updateMediaData(currentIndex, "driveLink", e.target.value)}
                   placeholder="https://drive.google.com/..."
-                  className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
 
@@ -480,7 +480,7 @@ const PartnerUploadArtes = () => {
               <div className="flex items-center justify-between pt-4">
                 <Button
                   variant="outline"
-                  className="border-[#2d4a5e]/50 text-white/70"
+                  className="border-border/50 text-muted-foreground"
                   onClick={goToPrevious}
                   disabled={currentIndex === 0}
                 >
@@ -490,7 +490,7 @@ const PartnerUploadArtes = () => {
 
                 {currentIndex < mediaFiles.length - 1 ? (
                   <Button
-                    className="bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+                    className="bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
                     onClick={goToNext}
                   >
                     Próximo
@@ -498,7 +498,7 @@ const PartnerUploadArtes = () => {
                   </Button>
                 ) : (
                   <Button
-                    className="bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+                    className="bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
                     onClick={handleSubmitAll}
                     disabled={!allFieldsFilled || isSubmitting}
                   >
@@ -513,17 +513,17 @@ const PartnerUploadArtes = () => {
 
       {/* Success Modal */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="bg-[#1a1a2e] border-[#2d4a5e]/30 text-white">
+        <DialogContent className="bg-card border-border/30 text-foreground">
           <div className="text-center py-6">
             <CheckCircle className="h-16 w-16 mx-auto text-green-500 mb-4" />
             <h2 className="text-xl font-bold mb-2">Artes Enviadas!</h2>
-            <p className="text-white/60 mb-6">
+            <p className="text-muted-foreground mb-6">
               Suas artes foram enviadas e estão aguardando aprovação.
             </p>
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                className="flex-1 border-[#2d4a5e]/50 text-white/70"
+                className="flex-1 border-border/50 text-muted-foreground"
                 onClick={() => {
                   setShowSuccessModal(false);
                 }}
@@ -531,7 +531,7 @@ const PartnerUploadArtes = () => {
                 Enviar mais
               </Button>
               <Button
-                className="flex-1 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+                className="flex-1 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
                 onClick={() => navigate("/parceiro-dashboard-artes")}
               >
                 Ver Dashboard

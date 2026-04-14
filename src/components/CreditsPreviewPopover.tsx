@@ -66,8 +66,8 @@ const CreditsPreviewPopover = ({
             variant="outline" 
             className={`cursor-pointer hover:bg-slate-800/50 transition-all duration-300 ${
               isDesktop 
-                ? "bg-white/5 border-white/10 text-gray-300 flex items-center gap-1.5 px-2.5 py-1"
-                : "bg-white/5 border-white/10 text-gray-300 text-xs px-2 py-0.5 flex items-center gap-1"
+                ? "bg-accent border-border text-muted-foreground flex items-center gap-1.5 px-2.5 py-1"
+                : "bg-accent border-border text-muted-foreground text-xs px-2 py-0.5 flex items-center gap-1"
             } ${
               isUnlimited ? 'border-emerald-400/40 bg-emerald-900/30' :
               direction === 'up' ? 'border-green-400/60 bg-green-900/30' : 
@@ -79,7 +79,7 @@ const CreditsPreviewPopover = ({
             {isUnlimited ? (
               <>
                 <Infinity className={`${isDesktop ? "w-4 h-4" : "w-3.5 h-3.5"} text-emerald-400`} />
-                <span className="text-white/60 font-semibold">+</span>
+                <span className="text-muted-foreground font-semibold">+</span>
                 <Coins className={`${isDesktop ? "w-3.5 h-3.5" : "w-3 h-3"} text-yellow-400`} />
                 <span className={`${isDesktop ? "font-medium" : ""} transition-colors duration-300 ${animatedBalanceClass}`}>
                   {creditsLoading ? '...' : displayValue.toLocaleString('pt-BR')}
@@ -99,11 +99,11 @@ const CreditsPreviewPopover = ({
         </button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-64 p-3 bg-[#111113] border-white/10"
+        className="w-64 p-3 bg-background border-border"
         align="end"
       >
         <div className="space-y-3">
-          <p className="text-xs font-medium text-gray-300">Últimas transações</p>
+          <p className="text-xs font-medium text-muted-foreground">Últimas transações</p>
           
           {loading ? (
             <p className="text-xs text-muted-foreground text-center py-2">Carregando...</p>
@@ -114,20 +114,20 @@ const CreditsPreviewPopover = ({
               {transactions.map((tx) => (
                 <div 
                   key={tx.id} 
-                  className="flex items-center justify-between text-xs p-2 rounded bg-white/5"
+                  className="flex items-center justify-between text-xs p-2 rounded bg-accent"
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     {tx.amount > 0 ? (
                       <TrendingUp className="h-3 w-3 text-green-400 flex-shrink-0" />
                     ) : (
-                      <Zap className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                      <Zap className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                     )}
-                    <span className="text-gray-300 truncate">
+                    <span className="text-muted-foreground truncate">
                       {tx.description || tx.transaction_type}
                     </span>
                   </div>
                   <span className={`font-medium flex-shrink-0 ml-2 ${
-                    tx.amount > 0 ? "text-green-400" : "text-gray-400"
+                    tx.amount > 0 ? "text-green-400" : "text-muted-foreground"
                   }`}>
                     {tx.amount > 0 ? "+" : ""}{Math.abs(tx.amount)}
                   </span>
@@ -139,7 +139,7 @@ const CreditsPreviewPopover = ({
           <Button
             variant="ghost"
             size="sm"
-            className="w-full text-xs text-gray-300 hover:text-white hover:bg-white/50/20 h-7"
+            className="w-full text-xs text-muted-foreground hover:text-foreground hover:bg-accent0/20 h-7"
             onClick={() => {
               setOpen(false);
               navigate('/credit-history');

@@ -281,7 +281,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o && step !== 'generating') resetAndClose(); }}>
-      <DialogContent className="bg-[#141420] border-white/[0.08] max-w-[540px] w-[95vw] max-h-[90vh] overflow-y-auto p-4">
+      <DialogContent className="bg-background border-white/[0.08] max-w-[540px] w-[95vw] max-h-[90vh] overflow-y-auto p-4">
         <DialogHeader>
           <DialogTitle className="text-gray-200 text-sm">
             ✨ Criar Personagem ({currentCount}/20)
@@ -292,12 +292,12 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
           <div className="space-y-4 pt-2">
             {/* Good example */}
             <div className="space-y-2">
-              <p className="text-[11px] text-gray-300 font-medium">📸 Envie uma foto clara do rosto</p>
+              <p className="text-[11px] text-muted-foreground font-medium">📸 Envie uma foto clara do rosto</p>
               <div className="flex items-start gap-3">
                 <div className="w-28 h-28 rounded-lg overflow-hidden border-2 border-green-500/50 flex-shrink-0">
                   <img src={charGood} alt="Exemplo correto" className="w-full h-full object-cover" loading="lazy" />
                 </div>
-                <div className="text-[10px] text-gray-400 space-y-1">
+                <div className="text-[10px] text-muted-foreground space-y-1">
                   <p className="text-green-400 font-medium">✅ Foto ideal:</p>
                   <p>• Rosto de frente, bem centralizado</p>
                   <p>• Boa iluminação</p>
@@ -327,8 +327,8 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
               onClick={() => fileRef.current?.click()}
               className={`w-full aspect-[4/3] rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden ${
                 uploadedPreview 
-                  ? 'border-slate-500/50 bg-white/50/5'
-                  : 'border-white/10 bg-black/20 hover:border-white/20'
+                  ? 'border-slate-500/50 bg-accent0/5'
+                  : 'border-border bg-black/20 hover:border-border'
               }`}
             >
               {uploadedPreview ? (
@@ -343,14 +343,14 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                     }}
                     className="absolute top-2 right-2 p-1 rounded-full bg-black/60 hover:bg-black/80"
                   >
-                    <X className="w-3 h-3 text-white" />
+                    <X className="w-3 h-3 text-foreground" />
                   </button>
                 </div>
               ) : (
                 <>
-                  <Upload className="w-6 h-6 text-gray-400 mb-2" />
-                  <span className="text-[11px] text-gray-500">Clique para enviar sua foto</span>
-                  <span className="text-[9px] text-gray-400 mt-1">JPG, PNG ou WebP • Máx 10MB</span>
+                  <Upload className="w-6 h-6 text-muted-foreground mb-2" />
+                  <span className="text-[11px] text-muted-foreground">Clique para enviar sua foto</span>
+                  <span className="text-[9px] text-muted-foreground mt-1">JPG, PNG ou WebP • Máx 10MB</span>
                 </>
               )}
             </div>
@@ -366,7 +366,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
             <Button
               onClick={handleGenerate}
               disabled={!uploadedFile || currentCount >= 20}
-              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white text-[12px]"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground text-[12px]"
             >
               <span className="mr-1">✦</span>
               Gerar Personagem
@@ -390,14 +390,14 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                 />
               </svg>
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-lg font-bold text-white">{progress}%</span>
+                <span className="text-lg font-bold text-foreground">{progress}%</span>
               </div>
             </div>
             <div className="text-center">
-              <p className="text-sm text-gray-300 font-medium">Gerando personagem...</p>
-              <p className="text-[10px] text-gray-500 mt-1">Isso pode levar até 2 minutos</p>
+              <p className="text-sm text-muted-foreground font-medium">Gerando personagem...</p>
+              <p className="text-[10px] text-muted-foreground mt-1">Isso pode levar até 2 minutos</p>
             </div>
-            <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+            <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
           </div>
         )}
 
@@ -411,43 +411,43 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
             <div className="flex gap-3 justify-center">
               {thumbnailStorageUrl && (
                 <div className="text-center">
-                  <div className="w-24 h-24 rounded-lg overflow-hidden border border-white/10">
+                  <div className="w-24 h-24 rounded-lg overflow-hidden border border-border">
                     <img src={thumbnailStorageUrl} alt="Thumbnail" className="w-full h-full object-cover" />
                   </div>
-                  <p className="text-[9px] text-gray-500 mt-1">Thumbnail</p>
+                  <p className="text-[9px] text-muted-foreground mt-1">Thumbnail</p>
                 </div>
               )}
               {generatedImageUrl && (
                 <div className="text-center">
-                  <div className="w-24 h-24 rounded-lg overflow-hidden border border-white/10">
+                  <div className="w-24 h-24 rounded-lg overflow-hidden border border-border">
                     <img src={generatedImageUrl} alt="Referência" className="w-full h-full object-cover" />
                   </div>
-                  <p className="text-[9px] text-gray-500 mt-1">Referência IA</p>
+                  <p className="text-[9px] text-muted-foreground mt-1">Referência IA</p>
                 </div>
               )}
             </div>
 
             <div className="space-y-2">
-              <label className="text-[11px] text-gray-400 font-medium">Nome do personagem</label>
+              <label className="text-[11px] text-muted-foreground font-medium">Nome do personagem</label>
               <Input
                 value={characterName}
                 onChange={(e) => setCharacterName(e.target.value)}
                 placeholder="Ex: Meu Avatar Principal"
-                className="bg-black/20 border-white/[0.08] text-gray-300 text-[12px]"
+                className="bg-black/20 border-white/[0.08] text-muted-foreground text-[12px]"
                 maxLength={50}
                 onKeyDown={(e) => e.key === 'Enter' && handleSave()}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-[11px] text-gray-400 font-medium">Sexo do personagem</label>
+              <label className="text-[11px] text-muted-foreground font-medium">Sexo do personagem</label>
               <div className="flex gap-2">
                 <button
                   onClick={() => setGender('male')}
                   className={`flex-1 py-2 rounded-lg text-[12px] font-medium transition-all border ${
                     gender === 'male'
                       ? 'bg-blue-600/20 border-blue-500 text-blue-400'
-                      : 'bg-black/20 border-white/[0.08] text-gray-400 hover:border-white/20'
+                      : 'bg-black/20 border-white/[0.08] text-muted-foreground hover:border-border'
                   }`}
                 >
                   ♂ Masculino
@@ -457,7 +457,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                   className={`flex-1 py-2 rounded-lg text-[12px] font-medium transition-all border ${
                     gender === 'female'
                       ? 'bg-pink-600/20 border-pink-500 text-pink-400'
-                      : 'bg-black/20 border-white/[0.08] text-gray-400 hover:border-white/20'
+                      : 'bg-black/20 border-white/[0.08] text-muted-foreground hover:border-border'
                   }`}
                 >
                   ♀ Feminino
@@ -470,7 +470,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={resetAndClose}
-                className="flex-1 text-gray-400 text-[11px]"
+                className="flex-1 text-muted-foreground text-[11px]"
               >
                 Cancelar
               </Button>
@@ -478,7 +478,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                 size="sm"
                 onClick={handleSave}
                 disabled={!characterName.trim() || !gender || saving}
-                className="flex-1 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white text-[11px]"
+                className="flex-1 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground text-[11px]"
               >
                 {saving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
                 Salvar Personagem

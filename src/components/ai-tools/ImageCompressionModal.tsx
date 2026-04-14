@@ -54,27 +54,27 @@ const ImageCompressionModal: React.FC<ImageCompressionModalProps> = ({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="bg-[#111113] border-white/10 max-w-md">
+      <AlertDialogContent className="bg-popover border-border max-w-md">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-yellow-500/20 rounded-full">
               <ImageIcon className="w-6 h-6 text-yellow-400" />
             </div>
-            <AlertDialogTitle className="text-white text-lg">
+            <AlertDialogTitle className="text-foreground text-lg">
               📐 Imagem Muito Grande
             </AlertDialogTitle>
           </div>
-          <AlertDialogDescription className="text-gray-300/70 space-y-4">
-            <div className="bg-white/5 rounded-lg p-4 border border-white/10">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-300/60">Tamanho atual:</span>
+           <AlertDialogDescription className="text-muted-foreground space-y-4">
+             <div className="bg-accent rounded-lg p-4 border border-border">
+               <div className="flex items-center justify-between mb-2">
+                 <span className="text-sm text-muted-foreground">Tamanho atual:</span>
                 <span className="text-sm font-medium text-red-400">
                   {originalWidth} x {originalHeight} px
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-300/60">Limite máximo:</span>
-                <span className="text-sm font-medium text-gray-300">
+                 <span className="text-sm text-muted-foreground">Limite máximo:</span>
+                 <span className="text-sm font-medium text-foreground">
                   {MAX_AI_DIMENSION} x {MAX_AI_DIMENSION} px
                 </span>
               </div>
@@ -83,7 +83,7 @@ const ImageCompressionModal: React.FC<ImageCompressionModalProps> = ({
             <p className="text-sm">
               Deseja comprimir automaticamente para <strong className="text-green-400">{newWidth} x {newHeight} px</strong>?
             </p>
-            <p className="text-xs text-gray-300/60">
+            <p className="text-xs text-muted-foreground/60">
               A proporção será mantida. Compressão 100% no seu dispositivo.
             </p>
           </AlertDialogDescription>
@@ -92,7 +92,7 @@ const ImageCompressionModal: React.FC<ImageCompressionModalProps> = ({
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
           <AlertDialogCancel
             onClick={onClose}
-            className="border-white/10 text-gray-300 hover:bg-white/50/10 bg-transparent"
+            className="border-border text-muted-foreground hover:bg-accent bg-transparent"
           >
             Cancelar
           </AlertDialogCancel>
@@ -100,7 +100,7 @@ const ImageCompressionModal: React.FC<ImageCompressionModalProps> = ({
           <Button
             onClick={handleCompress}
             disabled={isCompressing}
-            className="bg-gradient-to-r from-slate-600 to-slate-500 hover:opacity-90 text-white flex items-center gap-2"
+            className="bg-gradient-to-r from-slate-600 to-slate-500 hover:opacity-90 text-primary-foreground flex items-center gap-2"
           >
             {isCompressing ? (
               <>

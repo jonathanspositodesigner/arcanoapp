@@ -45,9 +45,9 @@ const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
   disabled = false,
 }) => {
   return (
-    <div className="bg-white/5 border border-white/10 rounded-lg p-2">
-      <p className="text-[10px] font-semibold text-white mb-2 flex items-center gap-1.5">
-        <RectangleVertical className="w-3 h-3 text-gray-400" />
+    <div className="bg-accent border border-border rounded-lg p-2">
+      <p className="text-[10px] font-semibold text-foreground mb-2 flex items-center gap-1.5">
+        <RectangleVertical className="w-3 h-3 text-muted-foreground" />
         Proporção
       </p>
       
@@ -65,14 +65,14 @@ const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                 "flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-lg transition-all",
                 "border text-center",
                 isSelected
-                  ? "bg-gradient-to-r from-slate-600 to-slate-500 border-white/15 text-white"
-                  : "bg-white/5 border-white/10 text-gray-300 hover:bg-white/50/20 hover:text-white",
+                  ? "bg-gradient-to-r from-slate-600 to-slate-500 border-border text-foreground"
+                  : "bg-accent border-border text-muted-foreground hover:bg-accent0/20 hover:text-foreground",
                 disabled && "opacity-50 cursor-not-allowed"
               )}
             >
               <span className={cn(
                 "transition-colors",
-                isSelected ? "text-white" : "text-gray-400"
+                isSelected ? "text-white" : "text-muted-foreground"
               )}>
                 {option.icon}
               </span>

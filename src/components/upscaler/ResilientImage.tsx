@@ -204,14 +204,14 @@ export const ResilientImage = ({
       <div className={cn("relative w-full h-full", className)} style={style}>
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 rounded-lg">
           <div className="text-center p-6 space-y-4">
-            <div className="w-16 h-16 mx-auto rounded-full bg-white/10 flex items-center justify-center">
-              <ImageIcon className="w-8 h-8 text-white/60" />
+            <div className="w-16 h-16 mx-auto rounded-full bg-accent flex items-center justify-center">
+              <ImageIcon className="w-8 h-8 text-muted-foreground" />
             </div>
             <div className="space-y-1">
-              <p className="text-white font-medium">
+              <p className="text-foreground font-medium">
                 {locale === 'es' ? 'Vista previa no disponible' : 'Visualização indisponível'}
               </p>
-              <p className="text-white/60 text-sm">
+              <p className="text-muted-foreground text-sm">
                 {locale === 'es' ? '¡Tu imagen está lista!' : 'Sua imagem está pronta!'}
               </p>
             </div>
@@ -250,7 +250,7 @@ export const ResilientImage = ({
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10 rounded-lg">
           <div className="text-center space-y-2">
             <div className="w-8 h-8 mx-auto border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            <p className="text-white/80 text-xs">
+            <p className="text-foreground text-xs">
               {locale === 'es' ? 'Optimizando...' : 'Otimizando...'}
             </p>
           </div>

@@ -35,53 +35,53 @@ function SimpleSignupForm({ defaultEmail, onSubmit, onBackToLogin, isLoading: fo
   return (
     <form onSubmit={handleFormSubmit} className="space-y-3">
       <div>
-        <Label className="text-gray-300">Email</Label>
+        <Label className="text-muted-foreground">Email</Label>
         <Input
           type="email"
           value={formEmail}
           onChange={(e) => setFormEmail(e.target.value)}
           placeholder="seu@email.com"
-          className="mt-1 bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
+          className="mt-1 bg-background border-border text-foreground placeholder:text-muted-foreground"
           required
         />
       </div>
       <div>
-        <Label className="text-gray-300">Nome (opcional)</Label>
+        <Label className="text-muted-foreground">Nome (opcional)</Label>
         <Input
           type="text"
           value={formName}
           onChange={(e) => setFormName(e.target.value)}
           placeholder="Seu nome"
-          className="mt-1 bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
+          className="mt-1 bg-background border-border text-foreground placeholder:text-muted-foreground"
         />
       </div>
       <div className="relative">
-        <Label className="text-gray-300">Senha</Label>
+        <Label className="text-muted-foreground">Senha</Label>
         <Input
           type={showPwd ? "text" : "password"}
           value={formPassword}
           onChange={(e) => setFormPassword(e.target.value)}
           placeholder="Mínimo 6 caracteres"
-          className="mt-1 pr-10 bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
+          className="mt-1 pr-10 bg-background border-border text-foreground placeholder:text-muted-foreground"
           required
           minLength={6}
         />
         <button
           type="button"
           onClick={() => setShowPwd(!showPwd)}
-          className="absolute right-3 top-[calc(50%+4px)] text-gray-400 hover:text-white"
+          className="absolute right-3 top-[calc(50%+4px)] text-muted-foreground hover:text-foreground"
         >
           {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
       </div>
       <div>
-        <Label className="text-gray-300">Confirmar Senha</Label>
+        <Label className="text-muted-foreground">Confirmar Senha</Label>
         <Input
           type="password"
           value={formConfirmPassword}
           onChange={(e) => setFormConfirmPassword(e.target.value)}
           placeholder="Confirme sua senha"
-          className="mt-1 bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
+          className="mt-1 bg-background border-border text-foreground placeholder:text-muted-foreground"
           required
         />
       </div>
@@ -102,7 +102,7 @@ function SimpleSignupForm({ defaultEmail, onSubmit, onBackToLogin, isLoading: fo
       <Button
         type="submit"
         disabled={formLoading}
-        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-5"
+        className="w-full bg-green-600 hover:bg-green-700 text-foreground font-bold py-5"
       >
         {formLoading ? (
           <>
@@ -118,7 +118,7 @@ function SimpleSignupForm({ defaultEmail, onSubmit, onBackToLogin, isLoading: fo
         <button
           type="button"
           onClick={onBackToLogin}
-          className="text-gray-400 hover:text-white text-sm flex items-center justify-center gap-1 mx-auto"
+          className="text-muted-foreground hover:text-foreground text-sm flex items-center justify-center gap-1 mx-auto"
         >
           <ArrowLeft className="w-3 h-3" />
           Já tenho conta
@@ -469,19 +469,19 @@ export default function ArcanoClonerAuthModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-gradient-to-br from-[#1A0A2E] to-[#111113] border-white/10 text-white p-0 max-w-md overflow-hidden [&>button]:text-gray-300 [&>button]:hover:text-white">
+      <DialogContent className="bg-gradient-to-br from-[#1A0A2E] to-[#111113] border-border text-foreground p-0 max-w-md overflow-hidden [&>button]:text-muted-foreground [&>button]:hover:text-foreground">
         {/* Header */}
-        <div className="bg-white/50/10 border-b border-white/10 p-6 text-center">
-          <div className="w-16 h-16 mx-auto rounded-full bg-white/50/20 flex items-center justify-center mb-3">
-            <Gift className="w-8 h-8 text-gray-400" />
+        <div className="bg-accent0/10 border-b border-border p-6 text-center">
+          <div className="w-16 h-16 mx-auto rounded-full bg-accent0/20 flex items-center justify-center mb-3">
+            <Gift className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h2 className="text-xl font-bold text-white">
+          <h2 className="text-xl font-bold text-foreground">
             Ganhe 300 créditos grátis!
           </h2>
-          <p className="text-sm text-gray-300 mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             Faça login ou crie sua conta para começar
           </p>
-          <p className="text-xs text-gray-400/80 mt-1">
+          <p className="text-xs text-muted-foreground/80 mt-1">
             ⏳ Créditos válidos por 24 horas
           </p>
         </div>
@@ -541,14 +541,14 @@ export default function ArcanoClonerAuthModal({
                 <Mail className="w-8 h-8 text-green-400" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Confirme seu email para continuar</h3>
-                <p className="text-sm text-gray-300 mt-2">
-                  Enviamos um link de confirmação para <strong className="text-white">{verifiedEmail || email}</strong>
+                <h3 className="text-lg font-bold text-foreground">Confirme seu email para continuar</h3>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Enviamos um link de confirmação para <strong className="text-foreground">{verifiedEmail || email}</strong>
                 </p>
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="text-xs text-muted-foreground mt-2">
                   Verifique também a pasta de spam/lixo eletrônico. Sem confirmação do link, o login e o acesso ficam bloqueados.
                 </p>
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="text-xs text-muted-foreground mt-2">
                   Após confirmar no email, você será redirecionado automaticamente para a página de ferramentas.
                 </p>
               </div>
@@ -562,7 +562,7 @@ export default function ArcanoClonerAuthModal({
 
               <Button
                 variant="outline"
-                className="w-full border-white/10 text-gray-300 hover:bg-white/50/10"
+                className="w-full border-border text-muted-foreground hover:bg-accent0/10"
                 onClick={handleResendConfirmationEmail}
                 disabled={isResendingEmail || !pendingUserId}
               >
@@ -578,7 +578,7 @@ export default function ArcanoClonerAuthModal({
 
               <Button
                 variant="outline"
-                className="border-white/10 text-gray-300 hover:bg-white/50/10"
+                className="border-border text-muted-foreground hover:bg-accent0/10"
                 onClick={() => setStep('email')}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />

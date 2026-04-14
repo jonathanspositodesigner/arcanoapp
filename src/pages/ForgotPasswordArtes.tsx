@@ -42,20 +42,20 @@ const ForgotPasswordArtes = () => {
   if (emailSent) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
+        <Card className="w-full max-w-md bg-card/80 border-border/30">
           <CardContent className="p-8 text-center">
             <div className="mx-auto w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4">
               <Mail className="h-8 w-8 text-green-400" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">
+            <h2 className="text-xl font-bold text-foreground mb-2">
               {t('emailSent.title')}
             </h2>
-            <p className="text-white/60 mb-6">
+            <p className="text-muted-foreground mb-6">
               {t('emailSent.checkInboxInstructions')}
             </p>
             <Button
               variant="outline"
-              className="border-[#2d4a5e] text-[#2d4a5e]"
+              className="border-border text-[#2d4a5e]"
               onClick={() => navigate("/login-artes")}
             >
               {t('emailSent.backToLogin')}
@@ -68,18 +68,18 @@ const ForgotPasswordArtes = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
+      <Card className="w-full max-w-md bg-card/80 border-border/30">
         <CardHeader className="text-center">
           <Button
             variant="ghost"
-            className="absolute left-4 top-4 text-white/70 hover:text-white"
+            className="absolute left-4 top-4 text-muted-foreground hover:text-foreground"
             onClick={() => navigate("/login-artes")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             {t('back')}
           </Button>
-          <CardTitle className="text-2xl text-white">{t('resetPassword')}</CardTitle>
-          <CardDescription className="text-white/60">
+          <CardTitle className="text-2xl text-foreground">{t('resetPassword')}</CardTitle>
+          <CardDescription className="text-muted-foreground">
             {t('forgotPasswordCard.description')}
           </CardDescription>
         </CardHeader>
@@ -90,13 +90,13 @@ const ForgotPasswordArtes = () => {
               placeholder={t('forgotPasswordCard.emailPlaceholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+              className="bg-card border-border/50 text-foreground"
               required
             />
 
             <Button
               type="submit"
-              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
               disabled={isLoading}
             >
               {isLoading ? t('sending') : t('sendRecoveryEmail')}

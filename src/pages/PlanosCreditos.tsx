@@ -155,13 +155,13 @@ const PlanosCreditos = () => {
         {/* AI Tools Section */}
         <section className="text-center">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4">
-            <Sparkles className="w-7 h-7 text-white" />
+            <Sparkles className="w-7 h-7 text-foreground" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
             Ferramentas de IA Integradas
           </h2>
-          <p className="text-gray-300 max-w-lg mx-auto mb-8">
-            Tudo em forma de aplicativo — <span className="text-gray-400 font-medium">mais fácil e prático!</span>
+          <p className="text-muted-foreground max-w-lg mx-auto mb-8">
+            Tudo em forma de aplicativo — <span className="text-muted-foreground font-medium">mais fácil e prático!</span>
           </p>
 
           {/* Available Tools Grid */}
@@ -171,13 +171,13 @@ const PlanosCreditos = () => {
               return (
                 <Card 
                   key={tool.name}
-                  className="p-4 bg-[#111113] border-white/10 hover:border-white/15/40 transition-all duration-300"
+                  className="p-4 bg-background border-border hover:border-border/40 transition-all duration-300"
                 >
                   <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${tool.color} flex items-center justify-center mx-auto mb-3`}>
-                    <Icon className="w-5 h-5 text-white" />
+                    <Icon className="w-5 h-5 text-foreground" />
                   </div>
-                  <h3 className="text-white font-semibold text-sm mb-1">{tool.name}</h3>
-                  <p className="text-gray-400 text-xs leading-tight">{tool.description}</p>
+                  <h3 className="text-foreground font-semibold text-sm mb-1">{tool.name}</h3>
+                  <p className="text-muted-foreground text-xs leading-tight">{tool.description}</p>
                 </Card>
               );
             })}
@@ -186,8 +186,8 @@ const PlanosCreditos = () => {
           {/* Coming Soon Section */}
           <div className="max-w-3xl mx-auto">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Clock className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-400 font-medium text-sm">Em Breve</span>
+              <Clock className="w-4 h-4 text-muted-foreground" />
+              <span className="text-muted-foreground font-medium text-sm">Em Breve</span>
             </div>
             <div className="flex flex-wrap justify-center gap-2">
               {comingSoonTools.map((tool) => {
@@ -196,7 +196,7 @@ const PlanosCreditos = () => {
                   <Badge 
                     key={tool.name}
                     variant="outline" 
-                    className="bg-white/5 border-white/10 text-gray-300 py-1.5 px-3 gap-1.5"
+                    className="bg-accent border-border text-muted-foreground py-1.5 px-3 gap-1.5"
                   >
                     <Icon className="w-3.5 h-3.5" />
                     {tool.name}
@@ -214,15 +214,15 @@ const PlanosCreditos = () => {
         <section>
           <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4">
-              <Coins className="w-7 h-7 text-white" />
+              <Coins className="w-7 h-7 text-foreground" />
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
               Recarregue seus Créditos
             </h2>
-            <p className="text-gray-300 max-w-md sm:max-w-none mx-auto mb-2">
+            <p className="text-muted-foreground max-w-md sm:max-w-none mx-auto mb-2">
               Créditos <span className="text-green-400 font-semibold">vitalícios</span> que nunca expiram — use quando quiser!
             </p>
-            <p className="text-gray-400 font-medium text-sm mb-4">
+            <p className="text-muted-foreground font-medium text-sm mb-4">
               🎉 Promoção na primeira recarga de créditos!
             </p>
 
@@ -243,43 +243,43 @@ const PlanosCreditos = () => {
               return (
                 <Card 
                   key={plan.credits}
-                  className={`relative p-6 bg-[#111113] border-white/10 flex flex-col items-center text-center transition-all duration-300 hover:scale-[1.02] hover:border-white/15/40 ${
+                  className={`relative p-6 bg-background border-border flex flex-col items-center text-center transition-all duration-300 hover:scale-[1.02] hover:border-border/40 ${
                     plan.bestValue ? 'ring-2 ring-yellow-500/50 border-yellow-500/30' : ''
-                  } ${plan.popular ? 'ring-2 ring-white/20 border-white/10' : ''}`}
+                  } ${plan.popular ? 'ring-2 ring-white/20 border-border' : ''}`}
                 >
                   {/* Badges */}
                   {plan.bestValue && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 px-3 py-1 text-xs">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-foreground border-0 px-3 py-1 text-xs">
                       ⭐ MELHOR VALOR
                     </Badge>
                   )}
                   {plan.popular && !plan.bestValue && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-500 to-pink-500 text-white border-0 px-3 py-1 text-xs">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-500 to-pink-500 text-foreground border-0 px-3 py-1 text-xs">
                       🔥 POPULAR
                     </Badge>
                   )}
 
                   {/* Icon */}
                   <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${plan.color} flex items-center justify-center mb-3 mt-2`}>
-                    <Icon className="w-6 h-6 text-white" />
+                    <Icon className="w-6 h-6 text-foreground" />
                   </div>
 
                   {/* Credits */}
                   <div className="mb-1">
-                    <span className="text-2xl sm:text-3xl font-bold text-white">
+                    <span className="text-2xl sm:text-3xl font-bold text-foreground">
                       {plan.credits}
                     </span>
-                    <p className="text-gray-300 text-sm">créditos</p>
+                    <p className="text-muted-foreground text-sm">créditos</p>
                   </div>
 
                   {/* Description */}
-                  <p className="text-gray-400 text-sm mb-3">
+                  <p className="text-muted-foreground text-sm mb-3">
                     {plan.description}
                   </p>
 
                   {/* Savings Badge */}
                   {plan.savings && (
-                    <Badge className="bg-gradient-to-r from-slate-500/20 to-slate-400/20 border border-white/10 text-gray-300 text-xs mb-2 gap-1">
+                    <Badge className="bg-gradient-to-r from-slate-500/20 to-slate-400/20 border border-border text-muted-foreground text-xs mb-2 gap-1">
                       <Tag className="w-3 h-3" />
                       Economize {plan.savings}%
                     </Badge>
@@ -298,15 +298,15 @@ const PlanosCreditos = () => {
                         <span className="text-sm text-slate-400 line-through block mb-1">R$ {plan.originalPrice}</span>
                       )}
                       <div>
-                        <span className="text-sm text-gray-400">R$ </span>
-                        <span className="text-2xl font-bold text-white">{plan.price}</span>
+                        <span className="text-sm text-muted-foreground">R$ </span>
+                        <span className="text-2xl font-bold text-foreground">{plan.price}</span>
                       </div>
                     </div>
 
                     {/* CTA Button */}
                     <Button 
                       onClick={() => handlePurchase(plan.link)}
-                      className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5`}
+                      className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-foreground font-semibold py-5`}
                     >
                       Comprar Agora
                     </Button>
@@ -318,7 +318,7 @@ const PlanosCreditos = () => {
 
           {/* Info Section */}
           <div className="mt-10 text-center">
-            <p className="text-gray-400 text-sm max-w-lg mx-auto">
+            <p className="text-muted-foreground text-sm max-w-lg mx-auto">
               💡 Os créditos vitalícios são consumidos <strong>após</strong> os créditos mensais da sua assinatura, 
               garantindo que você aproveite ao máximo seu plano.
             </p>

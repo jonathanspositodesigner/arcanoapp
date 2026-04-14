@@ -22,45 +22,45 @@ const Promptverso = () => {
           <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-400 to-pink-400 bg-clip-text text-transparent px-2">
             {t('promptverso.title')}
           </h1>
-          <p className="text-base sm:text-xl text-gray-300 mx-auto text-center px-2">
+          <p className="text-base sm:text-xl text-muted-foreground mx-auto text-center px-2">
             {t('promptverso.subtitle')}
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-2">
-          <Button onClick={() => navigate("/biblioteca-prompts")} size="lg" className="bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 shadow-lg shadow-white/5 hover:scale-105 w-full sm:w-auto text-white">
+          <Button onClick={() => navigate("/biblioteca-prompts")} size="lg" className="bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 shadow-lg shadow-white/5 hover:scale-105 w-full sm:w-auto text-foreground">
             <Library className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
             {t('promptverso.accessPrompts')}
           </Button>
 
-          <Button onClick={() => navigate("/contribuir")} size="lg" variant="outline" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-slate-500 text-gray-300 hover:bg-white/50/20 hover:text-white w-full sm:w-auto">
+          <Button onClick={() => navigate("/contribuir")} size="lg" variant="outline" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-slate-500 text-muted-foreground hover:bg-accent0/20 hover:text-foreground w-full sm:w-auto">
             <Users className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
             {t('promptverso.contributeWithCommunity')}
           </Button>
 
-          <Button onClick={() => navigate("/install-app")} size="lg" variant="outline" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-slate-500/50 hover:border-white/15 text-gray-300 hover:bg-white/50/10 w-full sm:w-auto">
+          <Button onClick={() => navigate("/install-app")} size="lg" variant="outline" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-slate-500/50 hover:border-border text-muted-foreground hover:bg-accent0/10 w-full sm:w-auto">
             <Download className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
             {t('promptverso.installApp')}
           </Button>
         </div>
 
         {/* Seção separada - Biblioteca de Artes Arcanas */}
-        <div className="mt-10 sm:mt-14 pt-6 sm:pt-8 border-t border-white/10">
-          <Button onClick={() => setShowBAAModal(true)} size="lg" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 w-full sm:w-auto bg-[#111113] border-slate-500 text-gray-300 border-2 hover:text-white hover:bg-white/50/20">
+        <div className="mt-10 sm:mt-14 pt-6 sm:pt-8 border-t border-border">
+          <Button onClick={() => setShowBAAModal(true)} size="lg" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 w-full sm:w-auto bg-background border-slate-500 text-muted-foreground border-2 hover:text-foreground hover:bg-accent0/20">
             <img alt="" className="mr-2 h-6 sm:h-7 w-auto object-contain" src="/lovable-uploads/53db2877-63c8-4fb8-bbf3-4aa471ca6154.png" />
             {t('promptverso.accessArtesLibrary')}
           </Button>
-          <p className="text-gray-400 text-xs sm:text-sm mt-2">
+          <p className="text-muted-foreground text-xs sm:text-sm mt-2">
             {t('promptverso.artesEditableDesc')}
           </p>
         </div>
 
         <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-2 justify-center items-center">
-          <Button onClick={() => navigate("/admin-login")} variant="link" className="text-gray-400 hover:text-gray-300 text-sm sm:text-base">
+          <Button onClick={() => navigate("/admin-login")} variant="link" className="text-muted-foreground hover:text-muted-foreground text-sm sm:text-base">
             {t('promptverso.adminSubmission')}
           </Button>
           <span className="hidden sm:inline text-slate-400">•</span>
-          <Button onClick={() => navigate("/parceiro-login")} variant="link" className="text-gray-400 hover:text-gray-300 text-sm sm:text-base">
+          <Button onClick={() => navigate("/parceiro-login")} variant="link" className="text-muted-foreground hover:text-muted-foreground text-sm sm:text-base">
             {t('promptverso.partnerArea')}
           </Button>
         </div>
@@ -68,19 +68,19 @@ const Promptverso = () => {
 
       {/* Modal Biblioteca de Artes Arcanas */}
       <Dialog open={showBAAModal} onOpenChange={setShowBAAModal}>
-        <DialogContent className="sm:max-w-md bg-[#111113] border-white/10">
+        <DialogContent className="sm:max-w-md bg-background border-border">
           <DialogHeader>
-            <DialogTitle className="text-center flex flex-col items-center gap-3 text-white">
+            <DialogTitle className="text-center flex flex-col items-center gap-3 text-foreground">
               <img src={baaIcon} alt="Biblioteca de Artes Arcanas" className="h-16 w-auto" />
               {t('promptverso.modal.title')}
             </DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-3 mt-4">
-            <Button onClick={() => window.open("https://blibliotecadeartesarcanas.greenn.club/", "_blank")} className="bg-slate-600 hover:bg-slate-700 py-6 text-white">
+            <Button onClick={() => window.open("https://blibliotecadeartesarcanas.greenn.club/", "_blank")} className="bg-slate-600 hover:bg-slate-700 py-6 text-foreground">
               <ExternalLink className="mr-2 h-5 w-5" />
               {t('promptverso.modal.alreadyMember')}
             </Button>
-            <Button onClick={() => window.open("https://voxvisual.com.br/linksbio/", "_blank")} variant="outline" className="border-white/10 text-gray-300 hover:bg-white/50/20 hover:text-white py-6">
+            <Button onClick={() => window.open("https://voxvisual.com.br/linksbio/", "_blank")} variant="outline" className="border-border text-muted-foreground hover:bg-accent0/20 hover:text-foreground py-6">
               <ExternalLink className="mr-2 h-5 w-5" />
               {t('promptverso.modal.knowPacks')}
             </Button>

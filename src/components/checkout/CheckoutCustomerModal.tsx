@@ -79,48 +79,48 @@ export function CheckoutCustomerModal({ open, onClose, onConfirm, loading }: Che
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-md bg-[#1a1a2e] border-white/10 text-white">
+      <DialogContent className="sm:max-w-md bg-popover border-border text-popover-foreground">
         <DialogHeader>
-          <DialogTitle className="text-white text-lg">Dados para pagamento</DialogTitle>
-          <DialogDescription className="text-white/60">
+          <DialogTitle className="text-foreground text-lg">Dados para pagamento</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
             Preencha seus dados para prosseguir ao checkout.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 mt-2">
           <div className="space-y-1.5">
-            <Label htmlFor="checkout-name" className="text-white/80">Nome completo</Label>
+            <Label htmlFor="checkout-name" className="text-foreground">Nome completo</Label>
             <Input
               id="checkout-name"
               placeholder="Seu nome completo"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+              className="bg-input border-border text-foreground placeholder:text-muted-foreground"
             />
             {errors.name && <p className="text-red-400 text-xs">{errors.name}</p>}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="checkout-email" className="text-white/80">E-mail</Label>
+            <Label htmlFor="checkout-email" className="text-foreground">E-mail</Label>
             <Input
               id="checkout-email"
               type="email"
               placeholder="seu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+              className="bg-input border-border text-foreground placeholder:text-muted-foreground"
             />
             {errors.email && <p className="text-red-400 text-xs">{errors.email}</p>}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="checkout-cpf" className="text-white/80">CPF</Label>
+            <Label htmlFor="checkout-cpf" className="text-foreground">CPF</Label>
             <Input
               id="checkout-cpf"
               placeholder="000.000.000-00"
               value={cpf}
               onChange={(e) => setCpf(formatCPF(e.target.value))}
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+              className="bg-input border-border text-foreground placeholder:text-muted-foreground"
               maxLength={14}
             />
             {errors.cpf && <p className="text-red-400 text-xs">{errors.cpf}</p>}
@@ -129,7 +129,7 @@ export function CheckoutCustomerModal({ open, onClose, onConfirm, loading }: Che
           <Button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white h-12 text-base font-semibold"
+            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-primary-foreground h-12 text-base font-semibold"
           >
             {loading ? (
               <>

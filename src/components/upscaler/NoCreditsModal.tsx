@@ -26,15 +26,15 @@ const NoCreditsModal = ({ isOpen, onClose, reason }: NoCreditsModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-[#111113] border-white/10">
+      <DialogContent className="sm:max-w-md bg-background border-border">
         <DialogHeader className="text-center">
           <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-gradient-to-r from-yellow-500/20 to-slate-400/20 flex items-center justify-center">
             <Coins className="w-8 h-8 text-yellow-500" />
           </div>
-          <DialogTitle className="text-2xl font-bold text-center text-white">
+          <DialogTitle className="text-2xl font-bold text-center text-foreground">
             {isNotLogged ? 'Faça login para continuar' : 'Ops, você não tem créditos!'}
           </DialogTitle>
-          <DialogDescription className="text-center text-gray-300 mt-2">
+          <DialogDescription className="text-center text-muted-foreground mt-2">
             {isNotLogged 
               ? 'Você precisa estar logado para usar o Upscaler Arcano. Faça login ou crie sua conta para começar!'
               : 'Você precisa de créditos para usar o Upscaler Arcano. Recarregue agora e continue melhorando suas imagens!'
@@ -46,7 +46,7 @@ const NoCreditsModal = ({ isOpen, onClose, reason }: NoCreditsModalProps) => {
           {isNotLogged ? (
             <Button 
               onClick={handleLogin}
-              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:opacity-90 text-white font-semibold"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:opacity-90 text-foreground font-semibold"
             >
               <LogIn className="h-4 w-4 mr-2" />
               Fazer Login
@@ -54,7 +54,7 @@ const NoCreditsModal = ({ isOpen, onClose, reason }: NoCreditsModalProps) => {
           ) : (
             <Button 
               onClick={handleRecharge}
-              className="w-full bg-gradient-to-r from-yellow-500 to-slate-500 hover:opacity-90 text-white font-semibold"
+              className="w-full bg-gradient-to-r from-yellow-500 to-slate-500 hover:opacity-90 text-foreground font-semibold"
             >
               <Coins className="h-4 w-4 mr-2" />
               Recarregar Créditos
@@ -65,7 +65,7 @@ const NoCreditsModal = ({ isOpen, onClose, reason }: NoCreditsModalProps) => {
             <Button 
               onClick={handleRecharge}
               variant="outline"
-              className="w-full border-slate-500/50 text-gray-300 hover:bg-white/50/10"
+              className="w-full border-slate-500/50 text-muted-foreground hover:bg-accent0/10"
             >
               <Coins className="h-4 w-4 mr-2" />
               Ver Pacotes de Créditos

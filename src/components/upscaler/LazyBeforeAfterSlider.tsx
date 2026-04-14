@@ -83,16 +83,16 @@ export const LazyBeforeAfterSlider = ({
     <>
       {(!isInView || !imagesLoaded) && (
         <div 
-          className="rounded-xl overflow-hidden bg-white/5 relative"
+          className="rounded-xl overflow-hidden bg-accent relative"
           style={{ aspectRatio: aspectRatio || '4/3' }}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-pulse" />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-2">
+              <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center mx-auto mb-2">
                 <ZoomIn className="w-6 h-6 text-white/30" />
               </div>
-              <div className="h-3 w-24 bg-white/10 rounded mx-auto" />
+              <div className="h-3 w-24 bg-accent rounded mx-auto" />
             </div>
           </div>
           <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/20" />
@@ -123,9 +123,9 @@ export const LazyBeforeAfterSlider = ({
       {/* Glow effect on hover */}
       <div className="absolute inset-0 bg-gradient-to-r from-slate-500/20 to-slate-400/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       
-      <div className="relative bg-white/5 border border-white/10 rounded-3xl p-4 hover:border-white/10 transition-all duration-300 hover:transform hover:scale-[1.02]">
+      <div className="relative bg-accent border border-border rounded-3xl p-4 hover:border-border transition-all duration-300 hover:transform hover:scale-[1.02]">
         {badge && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-black/50 backdrop-blur-sm text-gray-400 border border-white/10 rounded-lg px-3 py-1 text-xs font-medium whitespace-nowrap">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-black/50 backdrop-blur-sm text-muted-foreground border border-border rounded-lg px-3 py-1 text-xs font-medium whitespace-nowrap">
             {badge}
           </div>
         )}

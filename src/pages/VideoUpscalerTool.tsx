@@ -450,8 +450,8 @@ const VideoUpscalerTool: React.FC = () => {
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden flex flex-col">
         {/* Tool intro - full width centered */}
         <div className="text-center py-3">
-          <h1 className="text-2xl lg:text-3xl font-bold text-white">Video Upscaler</h1>
-          <p className="text-sm text-gray-300 mt-1 max-w-lg mx-auto">Aumente a qualidade dos seus vídeos com IA. Transforme vídeos em alta resolução mantendo a fluidez.</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Video Upscaler</h1>
+          <p className="text-sm text-muted-foreground mt-1 max-w-lg mx-auto">Aumente a qualidade dos seus vídeos com IA. Transforme vídeos em alta resolução mantendo a fluidez.</p>
         </div>
 
         {/* Main Grid Layout */}
@@ -469,9 +469,9 @@ const VideoUpscalerTool: React.FC = () => {
             />
 
             {/* Specifications Info */}
-            <Card className="bg-white/5 border-white/10 p-3">
-              <h4 className="text-xs font-semibold text-white mb-2">Especificações</h4>
-              <ul className="text-[10px] text-gray-300 space-y-1">
+            <Card className="bg-accent border-border p-3">
+              <h4 className="text-xs font-semibold text-foreground mb-2">Especificações</h4>
+              <ul className="text-[10px] text-muted-foreground space-y-1">
                 <li>• Resolução máxima: 1280px</li>
                 <li>• Duração máxima: 10 segundos</li>
                 <li>• Formatos: MP4, WebM, MOV</li>
@@ -481,7 +481,7 @@ const VideoUpscalerTool: React.FC = () => {
             {/* Action Button */}
             <Button
               size="sm"
-              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-medium py-2 text-xs disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-medium py-2 text-xs disabled:opacity-50"
               disabled={!canProcess || isProcessing || isSubmitting}
               onClick={handleProcess}
             >
@@ -543,11 +543,11 @@ const VideoUpscalerTool: React.FC = () => {
 
           {/* Right Side - Result Viewer (5/7 on desktop ~72%) */}
           <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
-            <Card className="relative overflow-hidden bg-white/5 border-white/10 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
+            <Card className="relative overflow-hidden bg-accent border-border flex-1 flex flex-col min-h-[250px] lg:min-h-0">
               {/* Header */}
-              <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between flex-shrink-0">
-                <h3 className="text-xs font-semibold text-white flex items-center gap-1.5">
-                  <Video className="w-3.5 h-3.5 text-gray-400" />
+              <div className="px-3 py-2 border-b border-border flex items-center justify-between flex-shrink-0">
+                <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <Video className="w-3.5 h-3.5 text-muted-foreground" />
                   Resultado
                 </h3>
               </div>
@@ -566,27 +566,27 @@ const VideoUpscalerTool: React.FC = () => {
                 ) : isProcessing ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                     <div className="relative">
-                      <div className="w-14 h-14 rounded-full border-4 border-white/10 border-t-slate-500 animate-spin" />
-                      <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-gray-400" />
+                      <div className="w-14 h-14 rounded-full border-4 border-border border-t-slate-500 animate-spin" />
+                      <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-muted-foreground" />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm text-white font-medium flex items-center gap-2">
+                      <p className="text-sm text-foreground font-medium flex items-center gap-2">
                         <span>{currentQueueMessage.emoji}</span>
                         <span>{currentQueueMessage.text}</span>
                       </p>
                       {status === 'waiting' && queuePosition > 0 && (
-                        <p className="text-xs text-gray-300 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           Posição na fila: #{queuePosition}
                         </p>
                       )}
                       {status === 'processing' && (
-                        <p className="text-xs text-gray-300 mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                           {Math.round(progress)}% concluído
                         </p>
                       )}
                     </div>
                     {/* Progress bar */}
-                    <div className="w-36 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div className="w-36 h-1.5 bg-accent rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-slate-500 to-slate-400 transition-all duration-300"
                         style={{ width: `${progress}%` }}
@@ -605,7 +605,7 @@ const VideoUpscalerTool: React.FC = () => {
                       <Button
                         variant="link"
                         size="sm"
-                        className="text-xs text-gray-400"
+                        className="text-xs text-muted-foreground"
                         onClick={handleReset}
                       >
                         Tentar novamente
@@ -614,14 +614,14 @@ const VideoUpscalerTool: React.FC = () => {
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-white/50/10 border-2 border-dashed border-white/10 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-xl bg-accent0/10 border-2 border-dashed border-border flex items-center justify-center">
                       <Video className="w-8 h-8 text-slate-400/40" />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm text-gray-300">
+                      <p className="text-sm text-muted-foreground">
                         O resultado aparecerá aqui
                       </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         Envie o vídeo e clique em "Upscale"
                       </p>
                     </div>
@@ -635,7 +635,7 @@ const VideoUpscalerTool: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 h-8 text-xs bg-white/50/10 border-white/10 text-gray-300 hover:bg-white/50/20"
+                    className="flex-1 h-8 text-xs bg-accent0/10 border-border text-muted-foreground hover:bg-accent0/20"
                     onClick={handleReset}
                   >
                     <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
@@ -643,7 +643,7 @@ const VideoUpscalerTool: React.FC = () => {
                   </Button>
                   <Button
                     size="sm"
-                    className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white"
+                    className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-foreground"
                     onClick={handleDownload}
                   >
                     <Download className="w-3.5 h-3.5 mr-1.5" />

@@ -42,7 +42,7 @@ export const AnimatedCreditsDisplay = ({
     return (
       <div className={cn("flex items-center gap-1.5", className)}>
         {showCoin && <Coins className={cn(sizeClasses[size].coin, "text-yellow-400")} />}
-        <Loader2 className={cn(sizeClasses[size].coin, "animate-spin text-gray-400")} />
+        <Loader2 className={cn(sizeClasses[size].coin, "animate-spin text-muted-foreground")} />
       </div>
     );
   }
@@ -63,7 +63,7 @@ export const AnimatedCreditsDisplay = ({
   const renderUnlimitedValue = () => (
     <>
       <Infinity className={cn(sizeClasses[size].infinity, "text-emerald-400")} />
-      <span className="text-white/60 font-semibold">+</span>
+      <span className="text-muted-foreground font-semibold">+</span>
       {showCoin && <Coins className={cn(sizeClasses[size].coin, "text-yellow-400")} />}
       {renderBalance()}
     </>
@@ -82,8 +82,8 @@ export const AnimatedCreditsDisplay = ({
         className={cn(
           "font-medium flex items-center gap-1.5 transition-colors duration-200",
           isUnlimited 
-            ? "bg-emerald-600/80 text-white border border-emerald-400/30" 
-            : "bg-slate-600 text-white",
+            ? "bg-emerald-600/80 text-foreground border border-emerald-400/30" 
+            : "bg-slate-600 text-foreground",
           sizeClasses[size].badge,
           direction && "bg-opacity-90",
           className

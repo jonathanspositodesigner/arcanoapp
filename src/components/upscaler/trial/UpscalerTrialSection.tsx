@@ -342,10 +342,10 @@ export default function UpscalerTrialSection() {
   return (
     <div className="px-4 py-20 bg-black/30">
       <div className="max-w-4xl mx-auto">
-        <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-4">
-          Ainda na dúvida? <span className="text-gray-400">Faça um teste gratuito!</span>
+        <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-4">
+          Ainda na dúvida? <span className="text-muted-foreground">Faça um teste gratuito!</span>
         </h2>
-        <p className="text-gray-300/70 text-center mb-10 max-w-xl mx-auto">
+        <p className="text-muted-foreground/70 text-center mb-10 max-w-xl mx-auto">
           Experimente o poder do Upscaler Arcano agora mesmo. Sem cadastro, sem compromisso.
         </p>
 
@@ -362,28 +362,28 @@ export default function UpscalerTrialSection() {
                 {phase === "locked" ? (
                   <>
                     <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
-                      <Sparkles className="w-10 h-10 text-white" />
+                      <Sparkles className="w-10 h-10 text-foreground" />
                     </div>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-slate-500/20"
+                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-slate-500/20"
                       onClick={openSignup}
                     >
                       <Sparkles className="w-5 h-5 mr-2" />
                       Fazer Teste Grátis
                     </Button>
-                    <p className="text-gray-300/60 text-sm">1 upscale gratuito • Sem compromisso</p>
+                    <p className="text-muted-foreground/60 text-sm">1 upscale gratuito • Sem compromisso</p>
                   </>
                 ) : (
                   <div className="text-center px-6 max-w-md">
                     <div className="text-4xl mb-4">🏆</div>
-                    <h3 className="text-2xl font-bold text-white mb-3">Teste Concluído!</h3>
-                    <p className="text-gray-300/80 mb-6">
+                    <h3 className="text-2xl font-bold text-foreground mb-3">Teste Concluído!</h3>
+                    <p className="text-muted-foreground/80 mb-6">
                       Você viu o poder do Upscaler Arcano. Garanta acesso completo e ilimitado para transformar todas as suas imagens!
                     </p>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-slate-500/20"
+                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-slate-500/20"
                       onClick={scrollToPricing}
                     >
                       <ShoppingCart className="w-5 h-5 mr-2" />
@@ -420,7 +420,7 @@ export default function UpscalerTrialSection() {
                 <div className="text-center mt-4">
                   <Button
                     variant="outline"
-                    className="border-white/10 text-gray-300 hover:bg-white/50/10"
+                    className="border-border text-muted-foreground hover:bg-accent0/10"
                     onClick={handleNewUpload}
                   >
                     {usesRemaining > 0 

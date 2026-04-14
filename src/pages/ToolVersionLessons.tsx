@@ -339,7 +339,7 @@ const ToolVersionLessons = () => {
 
   if (loading || premiumLoading) {
     return (
-      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-500"></div>
       </div>
     );
@@ -347,10 +347,10 @@ const ToolVersionLessons = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#111113]">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold text-white">{toolName}</h1>
-          <p className="text-gray-300">{t('versionSelect.loginRequired')}</p>
+          <h1 className="text-2xl font-bold text-foreground">{toolName}</h1>
+          <p className="text-muted-foreground">{t('versionSelect.loginRequired')}</p>
           <Button onClick={() => navigate(loginPath)} className="bg-gradient-to-r from-slate-600 to-blue-500">
             {t('ferramentas.login')}
           </Button>
@@ -374,10 +374,10 @@ const ToolVersionLessons = () => {
 
   if (!hasAccess) {
     return (
-      <div className="min-h-screen bg-[#111113]">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold text-white">{toolName}</h1>
-          <p className="text-gray-300">{t('versionSelect.noAccess')}</p>
+          <h1 className="text-2xl font-bold text-foreground">{toolName}</h1>
+          <p className="text-muted-foreground">{t('versionSelect.noAccess')}</p>
           <Button onClick={() => navigate(plansPath)} className="bg-gradient-to-r from-slate-600 to-blue-500">
             {t('ferramentas.seePlans')}
           </Button>
@@ -394,10 +394,10 @@ const ToolVersionLessons = () => {
 
   if (!version) {
     return (
-      <div className="min-h-screen bg-[#111113]">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
-          <h1 className="text-2xl font-bold text-white">{t('toolLessons.versionNotFound')}</h1>
-          <p className="text-gray-300">{t('toolLessons.versionNotFoundDesc')}</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('toolLessons.versionNotFound')}</h1>
+          <p className="text-muted-foreground">{t('toolLessons.versionNotFoundDesc')}</p>
           <Button onClick={() => navigate(toolSelectPath)} className="bg-gradient-to-r from-slate-600 to-blue-500">
             {t('upscaler.back')}
           </Button>
@@ -413,26 +413,26 @@ const ToolVersionLessons = () => {
   const Wrapper = ({ children }: { children: ReactNode }) => {
     if (isStandalone) {
       return (
-        <div className="min-h-screen bg-[#111113] flex flex-col">
+        <div className="min-h-screen bg-background flex flex-col">
           {/* Header standalone */}
-          <header className="sticky top-0 z-50 bg-[#111113]/90 backdrop-blur-md border-b border-white/10">
+          <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border">
             <div className="container mx-auto px-4 max-w-6xl flex items-center justify-between h-14">
                 <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/')}
-                className="text-white hover:text-white hover:bg-white/50/20 gap-2"
+                className="text-foreground hover:text-foreground hover:bg-accent0/20 gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
                 <span className="hidden sm:inline">Voltar para Home</span>
               </Button>
-              <h1 className="text-sm md:text-base font-bold text-white absolute left-1/2 -translate-x-1/2">
+              <h1 className="text-sm md:text-base font-bold text-foreground absolute left-1/2 -translate-x-1/2">
                 {toolName || 'Upscaler Arcano'}
               </h1>
               <Button
                 size="sm"
                 onClick={() => navigate(user ? '/minha-conta' : '/auth')}
-                className="bg-slate-600 hover:bg-slate-700 text-white border-0"
+                className="bg-slate-600 hover:bg-slate-700 text-foreground border-0"
               >
                 {user ? 'Minha Conta' : 'Login'}
               </Button>
@@ -459,19 +459,19 @@ const ToolVersionLessons = () => {
 
         {/* Master's Journey Progress Bar - Only for upscaler tools */}
         {toolSlug === 'upscaller-arcano' && lessons.length >= 1 && (
-          <div className="mb-6 p-4 bg-[#111113]/50 border border-white/10 rounded-lg">
+          <div className="mb-6 p-4 bg-background/50 border border-border rounded-lg">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-white flex items-center gap-2">
+              <span className="text-sm font-medium text-foreground flex items-center gap-2">
                 <Trophy className="h-4 w-4 text-yellow-500" />
                 {t('toolLessons.mastersJourney')}
               </span>
-              <span className="text-xs text-gray-300">
+              <span className="text-xs text-muted-foreground">
                 {t('toolLessons.lessonsProgress', { current: progressCount })}
               </span>
             </div>
             
             {/* Progress Bar */}
-            <div className="h-3 bg-white/5 rounded-full overflow-hidden">
+            <div className="h-3 bg-accent rounded-full overflow-hidden">
               <div 
                 className="h-full bg-gradient-to-r from-slate-600 via-slate-500 to-gray-400 
                            transition-all duration-700 ease-out rounded-full"
@@ -523,7 +523,7 @@ const ToolVersionLessons = () => {
                   <div>
                     <Button
                       onClick={() => window.open(toolLink, '_blank')}
-                      className="w-full h-12 text-base font-semibold transition-all duration-500 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white shadow-lg shadow-orange-500/30"
+                      className="w-full h-12 text-base font-semibold transition-all duration-500 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-foreground shadow-lg shadow-orange-500/30"
                     >
                       <Unlock className="h-5 w-5 mr-2" />
                       {t('toolLessons.accessTool')}
@@ -531,8 +531,8 @@ const ToolVersionLessons = () => {
                     </Button>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="bg-[#111113] border-white/10 p-3 max-w-xs">
-                  <p className="text-sm text-gray-300">{tooltipMessage}</p>
+                <TooltipContent side="bottom" className="bg-background border-border p-3 max-w-xs">
+                  <p className="text-sm text-muted-foreground">{tooltipMessage}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -551,9 +551,9 @@ const ToolVersionLessons = () => {
             {currentLesson && (
               <>
                 {/* Lesson Info - ABOVE video */}
-                <Card className="p-4 bg-[#111113]/50 border-white/10">
-                  <h2 className="text-base md:text-xl font-bold mb-2 flex items-center gap-2 flex-wrap text-white">
-                    <Play className="h-5 w-5 text-gray-400" />
+                <Card className="p-4 bg-background/50 border-border">
+                  <h2 className="text-base md:text-xl font-bold mb-2 flex items-center gap-2 flex-wrap text-foreground">
+                    <Play className="h-5 w-5 text-muted-foreground" />
                     {currentLesson.title}
                     {watchedLessons.includes(selectedLesson + 1) && (
                       <span className="text-xs bg-green-500/20 text-green-500 px-2 py-0.5 rounded-full ml-2">
@@ -562,7 +562,7 @@ const ToolVersionLessons = () => {
                     )}
                   </h2>
                   {currentLesson.description && (
-                    <p className="text-gray-300">{currentLesson.description}</p>
+                    <p className="text-muted-foreground">{currentLesson.description}</p>
                   )}
                 </Card>
 
@@ -602,7 +602,7 @@ const ToolVersionLessons = () => {
                   className={`w-full sm:w-auto ${
                     watchedLessons.includes(selectedLesson + 1) 
                       ? 'bg-green-600 hover:bg-green-700 text-white' 
-                      : 'bg-white/5 border border-white/15 text-gray-300 hover:bg-green-600/20 hover:text-green-400 hover:border-green-500'
+                      : 'bg-accent border border-border text-muted-foreground hover:bg-green-600/20 hover:text-green-400 hover:border-green-500'
                   }`}
                 >
                   <Check className="h-4 w-4 mr-2" />
@@ -623,7 +623,7 @@ const ToolVersionLessons = () => {
                             ? handleToolButtonClick(button.url)
                             : handleRegularButtonClick(button.url)
                         }
-                        className="gap-2 bg-white/5 border border-white/15 text-gray-300 hover:bg-white/50/30 hover:text-white hover:border-white/15"
+                        className="gap-2 bg-accent border border-border text-muted-foreground hover:bg-accent0/30 hover:text-foreground hover:border-border"
                       >
                         <ExternalLink className="w-4 h-4" />
                         {button.text}
@@ -637,12 +637,12 @@ const ToolVersionLessons = () => {
 
           {/* Lesson List */}
           <div className="space-y-2">
-            <h3 className="font-semibold text-lg mb-4 text-white">{t('toolLessons.lessons')}</h3>
+            <h3 className="font-semibold text-lg mb-4 text-foreground">{t('toolLessons.lessons')}</h3>
             {lessons.map((lesson, index) => (
               <Card
                 key={index}
-                className={`p-3 cursor-pointer transition-all bg-[#111113]/50 border-white/10 hover:bg-white/50/10 ${
-                  selectedLesson === index ? 'border-white/15 bg-white/50/10' : ''
+                className={`p-3 cursor-pointer transition-all bg-background/50 border-border hover:bg-accent0/10 ${
+                  selectedLesson === index ? 'border-border bg-accent0/10' : ''
                 }`}
                 onClick={() => handleLessonClick(index)}
               >
@@ -653,7 +653,7 @@ const ToolVersionLessons = () => {
                       ? 'bg-green-500 text-white'
                       : selectedLesson === index 
                         ? 'bg-slate-600 text-white' 
-                        : 'bg-white/5 text-gray-400'
+                        : 'bg-accent text-muted-foreground'
                   }`}>
                     {watchedLessons.includes(index + 1) ? (
                       <Check className="h-4 w-4" />
@@ -665,7 +665,7 @@ const ToolVersionLessons = () => {
                   <div className="flex-1 min-w-0">
                     <p className={`font-medium truncate ${
                       watchedLessons.includes(index + 1) ? 'text-green-500' :
-                      selectedLesson === index ? 'text-gray-300' : 'text-gray-400'
+                      selectedLesson === index ? 'text-muted-foreground' : 'text-muted-foreground'
                     }`}>
                       {lesson.title || `${t('toolLessons.lesson')} ${index + 1}`}
                     </p>
@@ -685,9 +685,9 @@ const ToolVersionLessons = () => {
             {toolSlug === 'upscaller-arcano' && lessons.length >= 1 && (
               <div 
                 onClick={() => handleLessonClick(lessons.length - 1)}
-                className="mt-4 px-3 py-1.5 bg-white/50/20 border border-white/10 
-                           rounded-full cursor-pointer hover:bg-white/50/30 transition-all 
-                           inline-flex items-center gap-2 text-xs text-gray-300"
+                className="mt-4 px-3 py-1.5 bg-accent0/20 border border-border 
+                           rounded-full cursor-pointer hover:bg-accent0/30 transition-all 
+                           inline-flex items-center gap-2 text-xs text-muted-foreground"
               >
                 <AlertTriangle className="h-3 w-3" />
                 <span>{t('toolLessons.lightVersionAvailable')}</span>
@@ -732,7 +732,7 @@ const ToolVersionLessons = () => {
           <AlertDialogFooter className="flex flex-col gap-2 mt-4 sm:flex-row">
             <AlertDialogCancel 
               onClick={handleContinueWatching}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white border-0 order-1 sm:order-1"
+              className="flex-1 bg-slate-600 hover:bg-slate-700 text-foreground border-0 order-1 sm:order-1"
             >
               {t('toolLessons.continueWatching')}
             </AlertDialogCancel>

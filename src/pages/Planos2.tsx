@@ -374,14 +374,14 @@ const Planos2 = () => {
   const currentPlans = plans[billingPeriod];
   
   return (
-    <div className="min-h-screen bg-[#111113]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-        <Button variant="ghost" onClick={() => navigate('/biblioteca-prompts')} className="text-gray-300 hover:text-white hover:bg-white/50/20">
+        <Button variant="ghost" onClick={() => navigate('/biblioteca-prompts')} className="text-muted-foreground hover:text-foreground hover:bg-accent0/20">
           <ArrowLeft className="w-4 h-4 mr-2" />
           {t('planos.back')}
         </Button>
-        <Button variant="outline" onClick={() => navigate('/login')} className="gap-2 border-white/10 text-gray-300 hover:bg-white/50/20 hover:text-white">
+        <Button variant="outline" onClick={() => navigate('/login')} className="gap-2 border-border text-muted-foreground hover:bg-accent0/20 hover:text-foreground">
           <LogIn className="w-4 h-4" />
           {t('planos.alreadyPremium')}
         </Button>
@@ -395,7 +395,7 @@ const Planos2 = () => {
             {/* Left: Promo text */}
             <div className="flex items-center gap-2 animate-pulse">
               <span className="text-lg">🔥</span>
-              <span className="text-white font-bold tracking-wide text-sm md:text-base">
+              <span className="text-foreground font-bold tracking-wide text-sm md:text-base">
                 Promoção por tempo limitado!
               </span>
               <span className="text-lg">🔥</span>
@@ -407,15 +407,15 @@ const Planos2 = () => {
               <span className="text-red-300 text-xs sm:text-sm font-medium">Essa oferta expira em</span>
               <div className="flex items-center gap-1">
                 <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
-                  <span className="text-white font-mono font-bold text-sm">{countdown.hours}</span>
+                  <span className="text-foreground font-mono font-bold text-sm">{countdown.hours}</span>
                 </div>
                 <span className="text-red-400 font-bold text-sm">:</span>
                 <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
-                  <span className="text-white font-mono font-bold text-sm">{countdown.minutes}</span>
+                  <span className="text-foreground font-mono font-bold text-sm">{countdown.minutes}</span>
                 </div>
                 <span className="text-red-400 font-bold text-sm">:</span>
                 <div className="bg-red-900/60 border border-red-500/40 rounded-md px-2 py-1 min-w-[28px] text-center">
-                  <span className="text-white font-mono font-bold text-sm">{countdown.seconds}</span>
+                  <span className="text-foreground font-mono font-bold text-sm">{countdown.seconds}</span>
                 </div>
               </div>
             </div>
@@ -431,13 +431,13 @@ const Planos2 = () => {
 
           {/* Billing Toggle */}
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
-            <TabsList className="bg-[#111113] border border-white/10">
-              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white text-gray-300 px-6">
+            <TabsList className="bg-background border border-border">
+              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white text-muted-foreground px-6">
                 {t('planos.monthly')}
               </TabsTrigger>
-              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white text-gray-300 px-6 relative flex items-center gap-2">
+              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white text-muted-foreground px-6 relative flex items-center gap-2">
                 {t('planos.annualInstallments')}
-                <span className="bg-gradient-to-r from-slate-600 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-gradient-to-r from-slate-600 to-pink-500 text-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
                   52% OFF
                 </span>
               </TabsTrigger>
@@ -461,14 +461,14 @@ const Planos2 = () => {
             const isUnlimitedBadge = (plan as any).isUnlimitedBadge;
             return (
             <div key={plan.name} className="flex flex-col h-full w-full">
-              <Card className={`relative p-4 flex flex-col rounded-lg bg-[#111113] w-full h-full ${isUnlimitedBadge ? "border-2 border-yellow-400 shadow-lg shadow-yellow-400/30" : isBestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "border-2 border-slate-500 shadow-lg shadow-slate-500/20" : "border border-white/10"}`}>
+              <Card className={`relative p-4 flex flex-col rounded-lg bg-background w-full h-full ${isUnlimitedBadge ? "border-2 border-yellow-400 shadow-lg shadow-yellow-400/30" : isBestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "border-2 border-slate-500 shadow-lg shadow-slate-500/20" : "border border-border"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-3 py-0.5">
                   {t('planos.bestSeller')}
                 </Badge>
               )}
               {hasCountdown && !isUnlimitedBadge && (
-                <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-white px-3 py-0.5">
+                <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-foreground px-3 py-0.5">
                   MELHOR CUSTO/BENEFÍCIO
                 </Badge>
               )}
@@ -478,31 +478,31 @@ const Planos2 = () => {
                 </Badge>
               )}
               {(plan.promo || plan.popular) && !isBestSeller && !hasCountdown && !isUnlimitedBadge && (
-                <Badge className={`absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap ${plan.promo ? "bg-orange-500 text-white" : "bg-green-500 text-white"}`}>
+                <Badge className={`absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap ${plan.promo ? "bg-orange-500 text-foreground" : "bg-green-500 text-foreground"}`}>
                   {plan.promo ? t('planos.launchPromo') : t('planos.popular')}
                 </Badge>
               )}
 
               <div className="text-center mb-3 min-h-[32px] flex items-center justify-center">
-                <h2 className="text-base font-bold text-white">{plan.name}</h2>
+                <h2 className="text-base font-bold text-foreground">{plan.name}</h2>
               </div>
 
               {/* Price Section - fixed height */}
               <div className="text-center mb-2 h-[75px] flex flex-col justify-center">
                 {plan.originalPrice ? (
-                  <p className="text-gray-400 line-through text-xs">
+                  <p className="text-muted-foreground line-through text-xs">
                     R${plan.originalPrice}{t('planos.perMonth')}
                   </p>
                 ) : (
                   <p className="text-transparent text-xs">.</p>
                 )}
                 <div className="flex items-baseline justify-center gap-0.5">
-                  <span className="text-gray-400 text-sm">R$</span>
-                  <span className="text-3xl font-bold text-white">{plan.price}</span>
-                  <span className="text-gray-400 text-xs">{t('planos.perMonth')}</span>
+                  <span className="text-muted-foreground text-sm">R$</span>
+                  <span className="text-3xl font-bold text-foreground">{plan.price}</span>
+                  <span className="text-muted-foreground text-xs">{t('planos.perMonth')}</span>
                 </div>
                 {billingPeriod === "anual" && (plan as any).yearlyTotal ? (
-                  <p className="text-gray-400 text-xs mt-1">
+                  <p className="text-muted-foreground text-xs mt-1">
                     R${(plan as any).yearlyTotal}{t('planos.perYear')}
                   </p>
                 ) : (
@@ -546,12 +546,12 @@ const Planos2 = () => {
                         }
                       }}
                       disabled={isDisabled || isMPLoading}
-                      className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-white/50/20 border border-slate-500/40 text-gray-300 cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-white/10 text-gray-300"}`}
+                      className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-accent0/20 border border-slate-500/40 text-muted-foreground cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-foreground font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-foreground" : "bg-accent hover:bg-accent text-muted-foreground"}`}
                     >
                       {buttonText}
                     </Button>
                     {(plan as any).tagline && (
-                      <p className="text-[10px] text-gray-400 text-center mb-1 italic">{(plan as any).tagline}</p>
+                      <p className="text-[10px] text-muted-foreground text-center mb-1 italic">{(plan as any).tagline}</p>
                     )}
                   </>
                 );
@@ -562,24 +562,24 @@ const Planos2 = () => {
                 {billingPeriod === "anual" ? (
                   plan.name === "Starter" || plan.name === "Free" ? (
                     <div className="flex items-center justify-center gap-1.5 bg-gray-800/50 border border-gray-600/30 rounded-full px-3 py-1 whitespace-nowrap">
-                      <Tag className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                      <span className="text-[10px] text-gray-400">Sem diferença comparado ao mensal</span>
+                      <Tag className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                      <span className="text-[10px] text-muted-foreground">Sem diferença comparado ao mensal</span>
                     </div>
                   ) : (
                     <div className={`flex items-center justify-center gap-1.5 rounded-full px-3 py-1 whitespace-nowrap ${
                       plan.name === "Pro" ? "bg-yellow-900/30 border border-yellow-600/40" :
                       plan.name === "Ultimate" ? "bg-lime-900/30 border border-lime-500/40" :
-                      "bg-white/5 border border-slate-500/40"
+                      "bg-accent border border-slate-500/40"
                     }`}>
                       <Tag className={`w-3 h-3 flex-shrink-0 ${
                         plan.name === "Pro" ? "text-yellow-400" :
                         plan.name === "Ultimate" ? "text-lime-400" :
-                        "text-gray-400"
+                        "text-muted-foreground"
                       }`} />
                       <span className={`text-[10px] font-medium ${
                         plan.name === "Pro" ? "text-yellow-400" :
                         plan.name === "Ultimate" ? "text-lime-400" :
-                        "text-gray-400"
+                        "text-muted-foreground"
                       }`}>
                         Economize {(plan as any).savings} comparado ao mensal
                       </span>
@@ -590,7 +590,7 @@ const Planos2 = () => {
 
               {/* Badge de Créditos - fixed height */}
               <div className="flex flex-col items-center mb-4 h-[44px]">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white bg-gradient-to-r from-slate-600 to-blue-500">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-foreground bg-gradient-to-r from-slate-600 to-blue-500">
                   <Sparkles className="w-2.5 h-2.5" />
                   {(plan as any).credits}/mês
                   {String((plan as any).credits).toLowerCase().includes('ilimitado') && (
@@ -599,7 +599,7 @@ const Planos2 = () => {
                         <TooltipTrigger asChild>
                           <Info className="w-3 h-3 text-blue-200 cursor-pointer ml-0.5" />
                         </TooltipTrigger>
-                        <TooltipContent side="top" className="bg-[#111113] border-white/10 text-gray-300 text-xs max-w-[200px]">
+                        <TooltipContent side="top" className="bg-background border-border text-muted-foreground text-xs max-w-[200px]">
                           14.000 créditos para usar em ferramentas não ilimitadas por mês
                         </TooltipContent>
                       </Tooltip>
@@ -607,7 +607,7 @@ const Planos2 = () => {
                   )}
                 </span>
                 {(plan as any).images && (
-                  <span className="text-[9px] text-gray-400 mt-0.5">≈ {typeof (plan as any).images === 'string' ? (plan as any).images : `${(plan as any).images} imagens/mês`}</span>
+                  <span className="text-[9px] text-muted-foreground mt-0.5">≈ {typeof (plan as any).images === 'string' ? (plan as any).images : `${(plan as any).images} imagens/mês`}</span>
                 )}
               </div>
 
@@ -632,11 +632,11 @@ const Planos2 = () => {
                       }}
                     >
                       {feature.included ? (
-                        <Check className="w-3 h-3 text-gray-400 shrink-0 mt-0.5" />
+                        <Check className="w-3 h-3 text-muted-foreground shrink-0 mt-0.5" />
                       ) : (
                         <X className="w-3 h-3 text-orange-500 shrink-0 mt-0.5" />
                       )}
-                      <span className={`${feature.included ? "text-gray-300" : "text-orange-500"} flex items-center gap-1.5`}>
+                      <span className={`${feature.included ? "text-muted-foreground" : "text-orange-500"} flex items-center gap-1.5`}>
                         {(feature as any).iconType === 'video' && <Video className="w-3 h-3 shrink-0" />}
                         {(feature as any).iconType === 'image' && <ImageIcon className="w-3 h-3 shrink-0" />}
                         {feature.text}
@@ -647,13 +647,13 @@ const Planos2 = () => {
                         )}
                       </span>
                       {(feature as any).isAiTools && (
-                        <ChevronDown className={`w-3 h-3 shrink-0 mt-0.5 transition-transform duration-200 ${feature.included ? 'text-gray-400' : 'text-orange-500'} ${expandedAiTools[plan.name] ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={`w-3 h-3 shrink-0 mt-0.5 transition-transform duration-200 ${feature.included ? 'text-muted-foreground' : 'text-orange-500'} ${expandedAiTools[plan.name] ? 'rotate-180' : ''}`} />
                       )}
                     </div>
                     {(feature as any).isAiTools && expandedAiTools[plan.name] && (
                       <ul className="ml-5 mt-1 space-y-0.5">
                         {aiToolsList.map((tool, tIndex) => (
-                          <li key={tIndex} className={`text-[10px] ${tIndex === aiToolsList.length - 1 ? 'text-gray-400 italic' : 'text-gray-400'}`}>
+                          <li key={tIndex} className={`text-[10px] ${tIndex === aiToolsList.length - 1 ? 'text-muted-foreground italic' : 'text-muted-foreground'}`}>
                             • {tool}
                           </li>
                         ))}
@@ -664,13 +664,13 @@ const Planos2 = () => {
               </ul>
 
               {plan.name === "IA Unlimited" && (
-                <div className="mt-4 pt-3 border-t border-white/10">
-                  <p className="text-[10px] text-gray-400 mb-1.5 uppercase tracking-wide">
+                <div className="mt-4 pt-3 border-t border-border">
+                  <p className="text-[10px] text-muted-foreground mb-1.5 uppercase tracking-wide">
                     {t('planos.extraBenefits')}
                   </p>
                   <div className="flex items-center gap-1.5 text-xs">
-                    <Sparkles className="w-3 h-3 text-gray-400" />
-                    <span className="text-gray-300">{t('planos.allAIFeatures')}</span>
+                    <Sparkles className="w-3 h-3 text-muted-foreground" />
+                    <span className="text-muted-foreground">{t('planos.allAIFeatures')}</span>
                   </div>
                 </div>
               )}
@@ -685,12 +685,12 @@ const Planos2 = () => {
       <section className="mt-20 pb-20 px-4">
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4">
-            <Coins className="w-7 h-7 text-white" />
+            <Coins className="w-7 h-7 text-foreground" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
             Compre um pacote de créditos avulsos
           </h2>
-          <p className="text-gray-300 max-w-md mx-auto">
+          <p className="text-muted-foreground max-w-md mx-auto">
             Créditos <span className="text-green-400 font-semibold">vitalícios</span> que nunca expiram — use quando quiser!
           </p>
         </div>
@@ -705,31 +705,31 @@ const Planos2 = () => {
             return (
               <Card
                 key={plan.credits}
-                className={`relative p-6 bg-[#111113] border-white/10 flex flex-col items-center text-center transition-all duration-300 hover:scale-[1.02] hover:border-white/15/40 ${
+                className={`relative p-6 bg-background border-border flex flex-col items-center text-center transition-all duration-300 hover:scale-[1.02] hover:border-border/40 ${
                   plan.bestValue ? 'ring-2 ring-yellow-500/50 border-yellow-500/30' : ''
-                } ${plan.popular ? 'ring-2 ring-white/20 border-white/10' : ''}`}
+                } ${plan.popular ? 'ring-2 ring-white/20 border-border' : ''}`}
               >
                 {plan.bestValue && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 px-3 py-1 text-xs">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-foreground border-0 px-3 py-1 text-xs">
                     ⭐ MELHOR VALOR
                   </Badge>
                 )}
                 {plan.popular && !plan.bestValue && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-500 to-pink-500 text-white border-0 px-3 py-1 text-xs">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-500 to-pink-500 text-foreground border-0 px-3 py-1 text-xs">
                     🔥 POPULAR
                   </Badge>
                 )}
 
                 <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${plan.color} flex items-center justify-center mb-3 mt-2`}>
-                  <Icon className="w-6 h-6 text-white" />
+                  <Icon className="w-6 h-6 text-foreground" />
                 </div>
 
                 <div className="mb-1">
-                  <span className="text-2xl sm:text-3xl font-bold text-white">{plan.credits}</span>
-                  <p className="text-gray-300 text-sm">créditos</p>
+                  <span className="text-2xl sm:text-3xl font-bold text-foreground">{plan.credits}</span>
+                  <p className="text-muted-foreground text-sm">créditos</p>
                 </div>
 
-                <p className="text-gray-400 text-sm mb-3">{plan.description}</p>
+                <p className="text-muted-foreground text-sm mb-3">{plan.description}</p>
 
                 {plan.savings && (
                   <Badge className="bg-green-500/20 border border-green-500/40 text-green-400 font-semibold text-xs mb-2 gap-1">
@@ -748,14 +748,14 @@ const Planos2 = () => {
                       <span className="text-sm text-slate-400 line-through block mb-1">R$ {plan.originalPrice}</span>
                     )}
                     <div>
-                      <span className="text-sm text-gray-400">R$ </span>
-                      <span className="text-2xl font-bold text-white">{plan.price}</span>
+                      <span className="text-sm text-muted-foreground">R$ </span>
+                      <span className="text-2xl font-bold text-foreground">{plan.price}</span>
                     </div>
                   </div>
 
                   <Button
                     onClick={() => handleCreditPurchase(plan.slug)}
-                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5`}
+                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-foreground font-semibold py-5`}
                   >
                     Comprar Agora
                   </Button>
@@ -768,33 +768,33 @@ const Planos2 = () => {
         {/* Trust Badges */}
         <div className="max-w-4xl mx-auto mt-10 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 sm:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <ShieldCheck className="w-5 h-5 text-gray-400 shrink-0" />
+            <ShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
             <div>
-              <p className="text-white text-sm font-semibold leading-tight">Pagamento seguro</p>
-              <p className="text-white/50 text-xs">transmissão criptografada SSL</p>
+              <p className="text-foreground text-sm font-semibold leading-tight">Pagamento seguro</p>
+              <p className="text-muted-foreground text-xs">transmissão criptografada SSL</p>
             </div>
           </div>
-          <div className="hidden sm:block w-px h-8 bg-white/10" />
+          <div className="hidden sm:block w-px h-8 bg-accent" />
           <div className="flex items-center gap-3">
-            <Zap className="w-5 h-5 text-gray-400 shrink-0" />
+            <Zap className="w-5 h-5 text-muted-foreground shrink-0" />
             <div>
-              <p className="text-white text-sm font-semibold leading-tight">Pagamento instantâneo</p>
-              <p className="text-white/50 text-xs">Os pontos chegam instantaneamente.</p>
+              <p className="text-foreground text-sm font-semibold leading-tight">Pagamento instantâneo</p>
+              <p className="text-muted-foreground text-xs">Os pontos chegam instantaneamente.</p>
             </div>
           </div>
-          <div className="hidden sm:block w-px h-8 bg-white/10" />
+          <div className="hidden sm:block w-px h-8 bg-accent" />
           <div className="flex items-center gap-3">
-            <Headset className="w-5 h-5 text-gray-400 shrink-0" />
+            <Headset className="w-5 h-5 text-muted-foreground shrink-0" />
             <div>
-              <p className="text-white text-sm font-semibold leading-tight">Suporte 24 horas por dia, 7 dias por semana</p>
-              <p className="text-white/50 text-xs">Estamos à sua disposição a qualquer momento.</p>
+              <p className="text-foreground text-sm font-semibold leading-tight">Suporte 24 horas por dia, 7 dias por semana</p>
+              <p className="text-muted-foreground text-xs">Estamos à sua disposição a qualquer momento.</p>
             </div>
           </div>
         </div>
 
         <div className="mt-8 text-center">
-          <p className="text-gray-400 text-sm max-w-lg mx-auto">
-            💡 Os créditos vitalícios são consumidos <strong className="text-gray-300">após</strong> os créditos mensais da sua assinatura,
+          <p className="text-muted-foreground text-sm max-w-lg mx-auto">
+            💡 Os créditos vitalícios são consumidos <strong className="text-muted-foreground">após</strong> os créditos mensais da sua assinatura,
             garantindo que você aproveite ao máximo seu plano.
           </p>
         </div>
@@ -804,17 +804,17 @@ const Planos2 = () => {
 
       {/* Coming Soon Modal */}
       <Dialog open={showComingSoonModal} onOpenChange={setShowComingSoonModal}>
-        <DialogContent className="sm:max-w-md bg-[#111113] border-white/10">
+        <DialogContent className="sm:max-w-md bg-background border-border">
           <DialogHeader className="text-center">
-            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-white/50/20 flex items-center justify-center">
-              <Clock className="w-8 h-8 text-gray-400" />
+            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-accent0/20 flex items-center justify-center">
+              <Clock className="w-8 h-8 text-muted-foreground" />
             </div>
-            <DialogTitle className="text-2xl font-bold text-center text-white">{t('planos.comingSoon.title')}</DialogTitle>
-            <DialogDescription className="text-center text-gray-300">
+            <DialogTitle className="text-2xl font-bold text-center text-foreground">{t('planos.comingSoon.title')}</DialogTitle>
+            <DialogDescription className="text-center text-muted-foreground">
               {t('planos.comingSoon.description')}
             </DialogDescription>
           </DialogHeader>
-          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-slate-600 hover:bg-slate-700 text-white">
+          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-slate-600 hover:bg-slate-700 text-foreground">
             {t('planos.comingSoon.understood')}
           </Button>
         </DialogContent>

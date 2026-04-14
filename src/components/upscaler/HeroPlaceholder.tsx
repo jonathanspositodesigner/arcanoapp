@@ -9,7 +9,7 @@ interface HeroPlaceholderProps {
 export const HeroPlaceholder = ({ onReveal, buttonText, locale = "pt" }: HeroPlaceholderProps) => {
   return (
     <div 
-      className="relative w-full aspect-[3/4] md:aspect-[2/3] rounded-3xl overflow-hidden border-2 border-white/10 shadow-2xl shadow-white/5 cursor-pointer"
+      className="relative w-full aspect-[3/4] md:aspect-[2/3] rounded-3xl overflow-hidden border-2 border-border shadow-2xl shadow-white/5 cursor-pointer"
       onClick={onReveal}
     >
       {/* Imagem de preview como background */}
@@ -28,7 +28,7 @@ export const HeroPlaceholder = ({ onReveal, buttonText, locale = "pt" }: HeroPla
             e.stopPropagation();
             onReveal();
           }}
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-slate-500 to-slate-500 text-white font-semibold rounded-full shadow-xl shadow-slate-500/20 transition-transform animate-pulse hover:animate-none hover:scale-105"
+          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-slate-500 to-slate-500 text-foreground font-semibold rounded-full shadow-xl shadow-slate-500/20 transition-transform animate-pulse hover:animate-none hover:scale-105"
         >
           <Sparkles className="h-5 w-5" />
           {buttonText}

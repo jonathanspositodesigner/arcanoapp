@@ -110,9 +110,9 @@ const FullscreenModal = ({
     >
       <button 
         onClick={onClose}
-        className="absolute top-4 right-4 z-10 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+        className="absolute top-4 right-4 z-10 p-3 bg-accent hover:bg-white/20 rounded-full transition-colors"
       >
-        <X className="h-6 w-6 text-white" />
+        <X className="h-6 w-6 text-foreground" />
       </button>
       
       <div 
@@ -158,10 +158,10 @@ const FullscreenModal = ({
         </div>
 
         {/* Labels */}
-        <div className="absolute top-4 left-4 bg-black/80 text-white text-base font-semibold px-5 py-2.5 rounded-full">
+        <div className="absolute top-4 left-4 bg-black/80 text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
           {t('tools:upscaler.beforeAfter.before')}
         </div>
-        <div className="absolute top-4 right-4 bg-gradient-to-r from-slate-500 to-slate-500 text-white text-base font-semibold px-5 py-2.5 rounded-full">
+        <div className="absolute top-4 right-4 bg-gradient-to-r from-slate-500 to-slate-500 text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
           {t('tools:upscaler.beforeAfter.after')}
         </div>
       </div>
@@ -174,7 +174,7 @@ const CTAButton = ({ onClick, isPremium, t, loading }: { onClick: () => void; is
   <Button
     onClick={onClick}
     disabled={loading}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-white shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20 disabled:opacity-70 disabled:cursor-wait"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20 disabled:opacity-70 disabled:cursor-wait"
   >
     {loading ? 'Gerando checkout...' : t('tools:upscaler.cta')}
     {!loading && <ArrowRight className="h-5 w-5 ml-2" />}
@@ -184,16 +184,16 @@ const CTAButton = ({ onClick, isPremium, t, loading }: { onClick: () => void; is
 // Trust Badges Component
 const TrustBadges = ({ t }: { t: (key: string) => string }) => (
   <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
-    <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
+    <span className="flex items-center gap-1.5 bg-accent text-muted-foreground text-xs px-3 py-1.5 rounded-full border border-border">
       <Shield className="h-3 w-3 text-green-400" />
       {t('tools:upscaler.trustBadges.secure')}
     </span>
-    <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
+    <span className="flex items-center gap-1.5 bg-accent text-muted-foreground text-xs px-3 py-1.5 rounded-full border border-border">
       <Zap className="h-3 w-3 text-yellow-400" />
       {t('tools:upscaler.trustBadges.immediate')}
     </span>
-    <span className="flex items-center gap-1.5 bg-white/5 text-white/70 text-xs px-3 py-1.5 rounded-full border border-white/10">
-      <Infinity className="h-3 w-3 text-gray-400" />
+    <span className="flex items-center gap-1.5 bg-accent text-muted-foreground text-xs px-3 py-1.5 rounded-full border border-border">
+      <Infinity className="h-3 w-3 text-muted-foreground" />
       {t('tools:upscaler.trustBadges.lifetime')}
     </span>
   </div>
@@ -227,33 +227,33 @@ const PricingStatsBar = () => {
 
   return (
     <div className="max-w-4xl mx-auto mb-10 px-2">
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm px-4 sm:px-6 py-4 flex flex-col items-center gap-4">
+      <div className="rounded-2xl border border-border bg-white/[0.03] backdrop-blur-sm px-4 sm:px-6 py-4 flex flex-col items-center gap-4">
         <div className="flex items-center gap-3 w-full justify-center">
           <div className="flex -space-x-2 shrink-0">
             {socialProofImages.map((src, i) => (
               <img key={i} src={src} alt="" width="32" height="32" decoding="async" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-black object-cover" />
             ))}
           </div>
-          <span className="text-white/80 text-xs sm:text-sm font-medium leading-tight">
+          <span className="text-foreground text-xs sm:text-sm font-medium leading-tight">
             Junte-se a + de 3200 criadores em todo o mundo.
           </span>
         </div>
         <div className="flex items-center justify-center gap-8 w-full">
           <div className="flex flex-col items-center gap-0.5">
-            <Image className="w-5 h-5 text-gray-400 mb-1" />
+            <Image className="w-5 h-5 text-muted-foreground mb-1" />
             <div className="flex items-center gap-1">
-              <span className="text-white font-bold text-base sm:text-lg">{animatedImages.displayValue.toLocaleString('pt-BR')}</span>
-              <span className="text-gray-400 text-lg font-bold">+</span>
+              <span className="text-foreground font-bold text-base sm:text-lg">{animatedImages.displayValue.toLocaleString('pt-BR')}</span>
+              <span className="text-muted-foreground text-lg font-bold">+</span>
             </div>
-            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium text-center">Imagens Geradas</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium text-center">Imagens Geradas</span>
           </div>
           <div className="flex flex-col items-center gap-0.5">
             <Award className="w-5 h-5 text-yellow-500 mb-1" />
             <div className="flex items-center gap-0.5">
-              <span className="text-white font-bold text-base sm:text-lg">{animatedSatisfaction.displayValue}</span>
+              <span className="text-foreground font-bold text-base sm:text-lg">{animatedSatisfaction.displayValue}</span>
               <span className="text-yellow-500 text-lg font-bold">%</span>
             </div>
-            <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium text-center">Satisfação</span>
+            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium text-center">Satisfação</span>
           </div>
         </div>
       </div>
@@ -373,10 +373,10 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
     <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="scale">
       <div className="max-w-7xl mx-auto">
         <AnimatedSection as="div" delay={100}>
-          <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-3 tracking-wide">
-            {t('tools:upscaler.finalCTA.title')} <span className="text-gray-400">{t('tools:upscaler.finalCTA.subtitle')}</span>
+          <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-3 tracking-wide">
+            {t('tools:upscaler.finalCTA.title')} <span className="text-muted-foreground">{t('tools:upscaler.finalCTA.subtitle')}</span>
           </h2>
-          <p className="text-white/50 text-center text-sm mb-8 max-w-xl mx-auto">
+          <p className="text-muted-foreground text-center text-sm mb-8 max-w-xl mx-auto">
             Escolha o melhor pacote para você e comece agora
           </p>
         </AnimatedSection>
@@ -393,9 +393,9 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
             <div key={plan.name} className="flex flex-col h-full w-full">
               <Card className={`relative flex flex-col rounded-2xl bg-white/[0.03] w-full h-full p-5 sm:p-6 lg:p-7 min-h-[420px] lg:min-h-[520px] ${
                 plan.bestSeller ? "border-2 border-lime-400 shadow-[0_0_40px_-8px_rgba(163,230,53,0.25)]" :
-                plan.hasCountdown ? "border-2 border-white/15 shadow-[0_0_40px_-8px_rgba(217,70,239,0.25)]" :
+                plan.hasCountdown ? "border-2 border-border shadow-[0_0_40px_-8px_rgba(217,70,239,0.25)]" :
                 plan.isLifetime ? "border-2 border-amber-500 shadow-[0_0_40px_-8px_rgba(245,158,11,0.25)]" :
-                "border border-white/10 hover:border-white/20 transition-colors"
+                "border border-border hover:border-border transition-colors"
               }`}>
                 {plan.bestSeller && (
                   <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-4 py-1">
@@ -403,12 +403,12 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
                   </Badge>
                 )}
                 {plan.hasCountdown && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-white px-4 py-1">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-foreground px-4 py-1">
                     MELHOR CUSTO/BENEFÍCIO
                   </Badge>
                 )}
                 {plan.isLifetime && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold px-4 py-1">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-amber-500 to-orange-500 text-foreground font-semibold px-4 py-1">
                     ♾️ ACESSO VITALÍCIO
                   </Badge>
                 )}
@@ -422,19 +422,19 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
                   ) : plan.hasCountdown ? (
                     <Flame className="w-8 h-8 lg:w-10 lg:h-10 text-slate-400" />
                   ) : (
-                    <Rocket className="w-8 h-8 lg:w-10 lg:h-10 text-white/60" />
+                    <Rocket className="w-8 h-8 lg:w-10 lg:h-10 text-muted-foreground" />
                   )}
                 </div>
 
                 <div className="text-center mb-4 lg:mb-5 min-h-[36px] flex items-center justify-center">
-                  <h3 className="text-lg lg:text-xl font-bold text-white">{plan.name}</h3>
+                  <h3 className="text-lg lg:text-xl font-bold text-foreground">{plan.name}</h3>
                 </div>
 
                 {/* Price */}
                 <div className="text-center mb-5 lg:mb-6">
                   <div className="flex items-baseline justify-center gap-0.5">
-                    <span className="text-gray-400 text-base lg:text-lg">R$</span>
-                    <span className="text-4xl lg:text-5xl font-bold text-white">{plan.price}</span>
+                    <span className="text-muted-foreground text-base lg:text-lg">R$</span>
+                    <span className="text-4xl lg:text-5xl font-bold text-foreground">{plan.price}</span>
                   </div>
                 </div>
 
@@ -443,21 +443,21 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
                   onClick={() => handlePurchase(plan)}
                   disabled={false}
                   className={`w-full mb-2 text-sm lg:text-base h-10 lg:h-12 ${
-                    plan.isLifetime ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold" :
+                    plan.isLifetime ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-foreground font-semibold" :
                     plan.bestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" :
-                    plan.hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-white font-semibold" :
-                    "bg-white/10 hover:bg-white/20 text-white/80"
+                    plan.hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-foreground font-semibold" :
+                    "bg-accent hover:bg-white/20 text-foreground"
                   }`}
                 >
                   Comprar agora
                 </Button>
                 {plan.tagline && (
-                  <p className="text-[10px] lg:text-[11px] text-gray-400 text-center mb-2 italic">{plan.tagline}</p>
+                  <p className="text-[10px] lg:text-[11px] text-muted-foreground text-center mb-2 italic">{plan.tagline}</p>
                 )}
 
                 {/* Images badge */}
                 <div className="flex flex-col items-center mb-5 lg:mb-6 mt-3 gap-1.5">
-                  <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs lg:text-sm font-bold text-white ${
+                  <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs lg:text-sm font-bold text-foreground ${
                     plan.isLifetime ? "bg-gradient-to-r from-amber-500 to-orange-500" : "bg-gradient-to-r from-slate-600 to-blue-500"
                   }`}>
                     <Sparkles className="w-3.5 h-3.5" />
@@ -471,11 +471,11 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
                   {plan.features.map((f, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs lg:text-sm">
                       {f.included ? (
-                        <Check className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-gray-400 shrink-0 mt-0.5" />
+                        <Check className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-muted-foreground shrink-0 mt-0.5" />
                       ) : (
                         <X className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-orange-500 shrink-0 mt-0.5" />
                       )}
-                      <span className={f.included ? "text-white/70" : "text-orange-500"}>{f.text}</span>
+                      <span className={f.included ? "text-muted-foreground" : "text-orange-500"}>{f.text}</span>
                     </li>
                   ))}
                 </ul>
@@ -486,33 +486,33 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
 
         {/* Acesso Imediato + Trust Badges */}
         <div className="mt-12 text-center">
-          <h3 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white tracking-tight mb-6">
-            ACESSO <span className="text-gray-400">IMEDIATO</span>
+          <h3 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground tracking-tight mb-6">
+            ACESSO <span className="text-muted-foreground">IMEDIATO</span>
           </h3>
           <div className="max-w-4xl mx-auto rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 sm:px-8 py-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 sm:gap-4">
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <ShieldCheck className="w-5 h-5 text-gray-400 shrink-0" />
+              <ShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
               <div className="text-left">
-                <p className="text-white text-sm font-semibold leading-tight">Pagamento seguro</p>
-                <p className="text-white/50 text-xs">transmissão criptografada SSL</p>
+                <p className="text-foreground text-sm font-semibold leading-tight">Pagamento seguro</p>
+                <p className="text-muted-foreground text-xs">transmissão criptografada SSL</p>
               </div>
             </div>
-            <div className="hidden sm:block w-px h-8 bg-white/10" />
-            <div className="block sm:hidden w-full h-px bg-white/10" />
+            <div className="hidden sm:block w-px h-8 bg-accent" />
+            <div className="block sm:hidden w-full h-px bg-accent" />
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Zap className="w-5 h-5 text-gray-400 shrink-0" />
+              <Zap className="w-5 h-5 text-muted-foreground shrink-0" />
               <div className="text-left">
-                <p className="text-white text-sm font-semibold leading-tight">Pagamento instantâneo</p>
-                <p className="text-white/50 text-xs">Os pontos chegam instantaneamente.</p>
+                <p className="text-foreground text-sm font-semibold leading-tight">Pagamento instantâneo</p>
+                <p className="text-muted-foreground text-xs">Os pontos chegam instantaneamente.</p>
               </div>
             </div>
-            <div className="hidden sm:block w-px h-8 bg-white/10" />
-            <div className="block sm:hidden w-full h-px bg-white/10" />
+            <div className="hidden sm:block w-px h-8 bg-accent" />
+            <div className="block sm:hidden w-full h-px bg-accent" />
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Headset className="w-5 h-5 text-gray-400 shrink-0" />
+              <Headset className="w-5 h-5 text-muted-foreground shrink-0" />
               <div className="text-left">
-                <p className="text-white text-sm font-semibold leading-tight">Suporte 24/7</p>
-                <p className="text-white/50 text-xs">estamos aqui para ajudar</p>
+                <p className="text-foreground text-sm font-semibold leading-tight">Suporte 24/7</p>
+                <p className="text-muted-foreground text-xs">estamos aqui para ajudar</p>
               </div>
             </div>
           </div>
@@ -569,14 +569,14 @@ const HeroCarousel = ({ isMobile, locale, label }: { isMobile: boolean; locale: 
       {/* Arrows */}
       <button
         onClick={() => goTo(-1)}
-        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 backdrop-blur-sm transition-colors"
+        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-foreground rounded-full p-1.5 backdrop-blur-sm transition-colors"
         aria-label="Anterior"
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
       <button
         onClick={() => goTo(1)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 backdrop-blur-sm transition-colors"
+        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-foreground rounded-full p-1.5 backdrop-blur-sm transition-colors"
         aria-label="Próximo"
       >
         <ChevronRight className="h-4 w-4" />
@@ -587,7 +587,7 @@ const HeroCarousel = ({ isMobile, locale, label }: { isMobile: boolean; locale: 
           <button
             key={i}
             onClick={() => setCurrentSlide(i)}
-            className={`w-2 h-2 rounded-full transition-all ${i === currentSlide ? 'bg-slate-400 w-5' : 'bg-white/30 hover:bg-white/50'}`}
+            className={`w-2 h-2 rounded-full transition-all ${i === currentSlide ? 'bg-slate-400 w-5' : 'bg-white/30 hover:bg-accent0'}`}
             aria-label={`Slide ${i + 1}`}
           />
         ))}
@@ -762,13 +762,13 @@ const PlanosUpscalerArcano69v2 = () => {
       {/* Se já tem acesso */}
       {hasAccess ? (
         <div className="max-w-lg mx-auto px-4 py-12">
-          <Card className="bg-[#1a0f25]/80 border-green-500/50 rounded-3xl">
+          <Card className="bg-background/80 border-green-500/50 rounded-3xl">
             <CardContent className="p-8 text-center">
-              <Badge className="bg-green-500 text-white text-lg px-6 py-3 rounded-full mb-6">
+              <Badge className="bg-green-500 text-foreground text-lg px-6 py-3 rounded-full mb-6">
                 <Check className="h-5 w-5 mr-2" />
                 {t('tools:upscaler.alreadyHaveAccess')}
               </Badge>
-              <p className="text-white/70 mb-6 text-lg">
+              <p className="text-muted-foreground mb-6 text-lg">
                 {t('tools:upscaler.alreadyHaveAccessDesc')}
               </p>
               <Button
@@ -788,18 +788,18 @@ const PlanosUpscalerArcano69v2 = () => {
               
               {/* Social proof badge */}
               <FadeIn delay={0} duration={400}>
-                <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/10 rounded-full px-4 py-2 mb-5 md:mb-6 scale-[0.84] md:scale-100 origin-center">
+                <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-border rounded-full px-4 py-2 mb-5 md:mb-6 scale-[0.84] md:scale-100 origin-center">
                   <div className="flex -space-x-2">
                     <img src="/images/social-proof-1.webp" alt="" width="24" height="24" loading="lazy" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                     <img src="/images/social-proof-2.webp" alt="" width="24" height="24" loading="lazy" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                     <img src="/images/social-proof-3.webp" alt="" width="24" height="24" loading="lazy" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                   </div>
-                  <span className="text-white/80 text-xs font-medium">+3.200 profissionais já estão usando</span>
+                  <span className="text-foreground text-xs font-medium">+3.200 profissionais já estão usando</span>
                 </div>
               </FadeIn>
 
               {/* Título principal */}
-              <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3 md:mb-4 leading-[1.25]">
+              <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-3 md:mb-4 leading-[1.25]">
                 {t('tools:upscaler.hero.title1')}{' '}
                 <br className="hidden md:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
@@ -809,8 +809,8 @@ const PlanosUpscalerArcano69v2 = () => {
 
               {/* Subtítulo */}
               <FadeIn delay={0} duration={400}>
-                <p className="text-xs md:text-sm text-white/60 mb-4 md:mb-6 max-w-lg leading-relaxed mx-auto">
-                  {t('tools:upscaler.hero.subtitle')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.hero.sharp')}</span>
+                <p className="text-xs md:text-sm text-muted-foreground mb-4 md:mb-6 max-w-lg leading-relaxed mx-auto">
+                  {t('tools:upscaler.hero.subtitle')} <span className="text-muted-foreground font-semibold">{t('tools:upscaler.hero.sharp')}</span>
                 </p>
               </FadeIn>
 
@@ -832,16 +832,16 @@ const PlanosUpscalerArcano69v2 = () => {
               {/* Feature badges */}
               <FadeIn delay={0} duration={400}>
                 <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10">
-                  <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                    <Infinity className="h-3.5 w-3.5 text-gray-400" />
+                  <div className="flex items-center gap-1.5 text-muted-foreground text-xs px-3 py-1">
+                    <Infinity className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>Acesso vitalício</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                    <MousePointerClick className="h-3.5 w-3.5 text-gray-400" />
+                  <div className="flex items-center gap-1.5 text-muted-foreground text-xs px-3 py-1">
+                    <MousePointerClick className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>Fácil de usar</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                    <Star className="h-3.5 w-3.5 text-gray-400" />
+                  <div className="flex items-center gap-1.5 text-muted-foreground text-xs px-3 py-1">
+                    <Star className="h-3.5 w-3.5 text-muted-foreground" />
                     <span>+5.000 imagens melhoradas</span>
                   </div>
                 </div>
@@ -858,7 +858,7 @@ const PlanosUpscalerArcano69v2 = () => {
           <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
             <div className="max-w-5xl mx-auto">
               <AnimatedSection as="div" className="text-center" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-8 md:mb-12 tracking-wide">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-8 md:mb-12 tracking-wide">
                   {t('tools:upscaler.pain.title')}
                 </h2>
               </AnimatedSection>
@@ -866,53 +866,53 @@ const PlanosUpscalerArcano69v2 = () => {
               {/* Grid responsivo: 1 coluna mobile, 2 tablet, 3 cards em cima + 2 centralizados embaixo no desktop */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 md:gap-6 items-stretch">
                 <AnimatedElement className="h-full lg:col-span-2" delay={0}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                  <div className="bg-accent border border-border rounded-3xl p-6 md:p-8 text-center hover:border-border transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                     <div className="text-4xl md:text-5xl mb-4 md:mb-6">📱</div>
-                    <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.phone')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.pain.bad')}</span>?
+                    <p className="text-foreground text-base md:text-lg">
+                      {t('tools:upscaler.pain.phone')} <span className="text-muted-foreground font-semibold">{t('tools:upscaler.pain.bad')}</span>?
                     </p>
                   </div>
                 </AnimatedElement>
 
                 <AnimatedElement className="h-full lg:col-span-2" delay={100}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                  <div className="bg-accent border border-border rounded-3xl p-6 md:p-8 text-center hover:border-border transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                     <div className="text-4xl md:text-5xl mb-4 md:mb-6">😤</div>
-                    <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.client')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.pain.lowQuality')}</span>?
+                    <p className="text-foreground text-base md:text-lg">
+                      {t('tools:upscaler.pain.client')} <span className="text-muted-foreground font-semibold">{t('tools:upscaler.pain.lowQuality')}</span>?
                     </p>
                   </div>
                 </AnimatedElement>
 
                 <AnimatedElement className="h-full lg:col-span-2" delay={200}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                  <div className="bg-accent border border-border rounded-3xl p-6 md:p-8 text-center hover:border-border transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                     <div className="text-4xl md:text-5xl mb-4 md:mb-6">📷</div>
-                    <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.aiGenerated')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.pain.notGood')}</span>?
+                    <p className="text-foreground text-base md:text-lg">
+                      {t('tools:upscaler.pain.aiGenerated')} <span className="text-muted-foreground font-semibold">{t('tools:upscaler.pain.notGood')}</span>?
                     </p>
                   </div>
                 </AnimatedElement>
 
                 <AnimatedElement className="h-full lg:col-span-2 lg:col-start-2" delay={300}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                  <div className="bg-accent border border-border rounded-3xl p-6 md:p-8 text-center hover:border-border transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                     <div className="text-4xl md:text-5xl mb-4 md:mb-6">🤖</div>
-                    <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.aiImage')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.pain.aiNotGood')}</span>?
+                    <p className="text-foreground text-base md:text-lg">
+                      {t('tools:upscaler.pain.aiImage')} <span className="text-muted-foreground font-semibold">{t('tools:upscaler.pain.aiNotGood')}</span>?
                     </p>
                   </div>
                 </AnimatedElement>
 
                 <AnimatedElement className="h-full lg:col-span-2 lg:col-start-4" delay={400}>
-                  <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
+                  <div className="bg-accent border border-border rounded-3xl p-6 md:p-8 text-center hover:border-border transition-all duration-300 flex flex-col items-center justify-center h-full lg:min-h-[200px]">
                     <div className="text-4xl md:text-5xl mb-4 md:mb-6">🎸</div>
-                    <p className="text-white/80 text-base md:text-lg">
-                      {t('tools:upscaler.pain.lostContract')} <span className="text-gray-400 font-semibold">{t('tools:upscaler.pain.noProPhotos')}</span>?
+                    <p className="text-foreground text-base md:text-lg">
+                      {t('tools:upscaler.pain.lostContract')} <span className="text-muted-foreground font-semibold">{t('tools:upscaler.pain.noProPhotos')}</span>?
                     </p>
                   </div>
                 </AnimatedElement>
               </div>
               
               <AnimatedSection as="div" delay={400}>
-                <p className="text-center text-xl md:text-2xl text-white mt-10 md:mt-12">
+                <p className="text-center text-xl md:text-2xl text-foreground mt-10 md:mt-12">
                   {t('tools:upscaler.pain.solution')}
                 </p>
               </AnimatedSection>
@@ -928,7 +928,7 @@ const PlanosUpscalerArcano69v2 = () => {
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">
                   {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">{t('tools:upscaler.targetAudience.titlePart2')}</span>
                 </h2>
               </AnimatedSection>
@@ -939,13 +939,13 @@ const PlanosUpscalerArcano69v2 = () => {
                   return (
                     <div 
                       key={index}
-                      className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-white/15/50 transition-all duration-300 hover:transform hover:scale-[1.02] h-full flex flex-col"
+                      className="bg-gradient-to-br from-white/10 to-white/5 border border-border rounded-3xl p-8 text-center hover:border-border/50 transition-all duration-300 hover:transform hover:scale-[1.02] h-full flex flex-col"
                     >
                       <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center mx-auto mb-6">
-                        <IconComponent className="h-8 w-8 text-gray-400" />
+                        <IconComponent className="h-8 w-8 text-muted-foreground" />
                       </div>
-                      <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
-                      <p className="text-white/60 flex-1">{item.description}</p>
+                      <h3 className="text-xl font-semibold text-foreground mb-3">{item.title}</h3>
+                      <p className="text-muted-foreground flex-1">{item.description}</p>
                     </div>
                   );
                 })}
@@ -957,8 +957,8 @@ const PlanosUpscalerArcano69v2 = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  {t('tools:upscaler.howItWorks.title')} <span className="text-gray-400">{t('tools:upscaler.howItWorks.subtitle')}</span>
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">
+                  {t('tools:upscaler.howItWorks.title')} <span className="text-muted-foreground">{t('tools:upscaler.howItWorks.subtitle')}</span>
                 </h2>
               </AnimatedSection>
               
@@ -972,14 +972,14 @@ const PlanosUpscalerArcano69v2 = () => {
                         <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-slate-500/50 to-transparent" />
                       )}
                       
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-foreground font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
                         {index + 1}
                       </div>
-                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-white/10 flex items-center justify-center mb-5">
-                        <IconComponent className="h-10 w-10 text-gray-400" />
+                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
+                        <IconComponent className="h-10 w-10 text-muted-foreground" />
                       </div>
-                      <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
-                      <p className="text-white/60 max-w-[180px]">{step.description}</p>
+                      <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
+                      <p className="text-muted-foreground max-w-[180px]">{step.description}</p>
                     </div>
                   );
                 })}
@@ -997,8 +997,8 @@ const PlanosUpscalerArcano69v2 = () => {
           <AnimatedSection className="px-4 py-20 bg-black/30">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  {t('tools:upscaler.benefits.title')} <span className="text-gray-400">{t('tools:upscaler.benefits.subtitle')}</span>?
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">
+                  {t('tools:upscaler.benefits.title')} <span className="text-muted-foreground">{t('tools:upscaler.benefits.subtitle')}</span>?
                 </h2>
               </AnimatedSection>
               
@@ -1008,10 +1008,10 @@ const PlanosUpscalerArcano69v2 = () => {
                   return (
                     <div 
                       key={index}
-                      className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-white/10 transition-all duration-300"
+                      className="flex items-center gap-4 bg-accent border border-border rounded-2xl p-5 hover:border-border transition-all duration-300"
                     >
                       <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center flex-shrink-0">
-                        <IconComponent className="h-6 w-6 text-gray-400" />
+                        <IconComponent className="h-6 w-6 text-muted-foreground" />
                       </div>
                       <span className="text-white/90 text-lg">{feature.text}</span>
                     </div>
@@ -1025,8 +1025,8 @@ const PlanosUpscalerArcano69v2 = () => {
           <AnimatedSection className="px-4 py-20">
             <div className="max-w-2xl mx-auto">
               <AnimatedSection as="div" delay={100}>
-                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  {t('tools:upscaler.faq.title')} <span className="text-gray-400">{t('tools:upscaler.faq.subtitle')}</span>
+                <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">
+                  {t('tools:upscaler.faq.title')} <span className="text-muted-foreground">{t('tools:upscaler.faq.subtitle')}</span>
                 </h2>
               </AnimatedSection>
               
@@ -1036,12 +1036,12 @@ const PlanosUpscalerArcano69v2 = () => {
                     <AccordionItem 
                       key={index} 
                       value={`item-${index}`}
-                      className="bg-white/5 border border-white/10 rounded-2xl px-6 data-[state=open]:border-white/10"
+                      className="bg-accent border border-border rounded-2xl px-6 data-[state=open]:border-border"
                     >
-                      <AccordionTrigger className="text-white text-left text-lg font-medium py-5 hover:no-underline">
+                      <AccordionTrigger className="text-foreground text-left text-lg font-medium py-5 hover:no-underline">
                         {item.question}
                       </AccordionTrigger>
-                      <AccordionContent className="text-white/70 pb-5">
+                      <AccordionContent className="text-muted-foreground pb-5">
                         {item.answer}
                       </AccordionContent>
                     </AccordionItem>

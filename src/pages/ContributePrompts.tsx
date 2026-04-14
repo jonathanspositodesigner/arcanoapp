@@ -221,77 +221,77 @@ const ContributePrompts = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#111113]">
+    <div className="min-h-screen bg-background">
       <div className="container max-w-4xl mx-auto py-8 px-4">
         <Button
           variant="ghost"
           onClick={goBack}
-          className="mb-6 text-gray-300 hover:text-white hover:bg-white/50/20"
+          className="mb-6 text-muted-foreground hover:text-foreground hover:bg-accent0/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('contribute.back')}
         </Button>
 
-        <Card className="p-4 sm:p-8 bg-[#111113] border-white/10">
+        <Card className="p-4 sm:p-8 bg-background border-border">
           <div className="mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-gray-400 to-pink-400 bg-clip-text text-transparent mb-2">
               {t('contribute.title')}
             </h1>
-            <p className="text-gray-300 text-base sm:text-lg">
+            <p className="text-muted-foreground text-base sm:text-lg">
               {t('contribute.subtitle')}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="contributorName" className="text-gray-300">{t('contribute.yourName')}</Label>
+              <Label htmlFor="contributorName" className="text-muted-foreground">{t('contribute.yourName')}</Label>
               <Input
                 id="contributorName"
                 value={contributorName}
                 onChange={(e) => setContributorName(e.target.value.slice(0, 20))}
                 placeholder={t('contribute.yourNamePlaceholder')}
                 maxLength={20}
-                className="mt-2 bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
+                className="mt-2 bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {contributorName.length}/20
               </p>
             </div>
 
             <div>
-              <Label htmlFor="title" className="text-gray-300">{t('contribute.fileTitle')}</Label>
+              <Label htmlFor="title" className="text-muted-foreground">{t('contribute.fileTitle')}</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t('contribute.fileTitlePlaceholder')}
-                className="mt-2 bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
+                className="mt-2 bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
             <div>
-              <Label htmlFor="category" className="text-gray-300">{t('contribute.category')}</Label>
+              <Label htmlFor="category" className="text-muted-foreground">{t('contribute.category')}</Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="mt-2 bg-[#111113] border-white/10 text-white">
+                <SelectTrigger className="mt-2 bg-background border-border text-foreground">
                   <SelectValue placeholder={t('contribute.selectCategory')} />
                 </SelectTrigger>
-                <SelectContent className="bg-[#111113] border-white/10">
+                <SelectContent className="bg-background border-border">
                   {categories.map(cat => (
-                    <SelectItem key={cat.id} value={cat.name} className="text-gray-300 hover:bg-white/50/20">{cat.name}</SelectItem>
+                    <SelectItem key={cat.id} value={cat.name} className="text-muted-foreground hover:bg-accent0/20">{cat.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="txtFile" className="text-gray-300">{t('contribute.loadFromTxt')}</Label>
+              <Label htmlFor="txtFile" className="text-muted-foreground">{t('contribute.loadFromTxt')}</Label>
               <div className="mt-2 flex items-center gap-3">
                 <label
                   htmlFor="txtFile"
-                  className="flex items-center gap-2 px-4 py-2 border border-white/10 rounded-lg cursor-pointer hover:border-white/15 transition-colors bg-[#111113]"
+                  className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg cursor-pointer hover:border-border transition-colors bg-background"
                 >
-                  <FileText className="h-5 w-5 text-gray-400" />
-                  <span className="text-sm text-gray-300">
+                  <FileText className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
                     {txtFileName || t('contribute.selectTxtFile')}
                   </span>
                 </label>
@@ -311,36 +311,36 @@ const ContributePrompts = () => {
                       setTxtFileName("");
                       setPrompt("");
                     }}
-                    className="text-gray-400 hover:text-white hover:bg-white/50/20"
+                    className="text-muted-foreground hover:text-foreground hover:bg-accent0/20"
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 )}
               </div>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {t('contribute.txtHint')}
               </p>
             </div>
 
             <div>
-              <Label htmlFor="prompt" className="text-gray-300">{t('contribute.prompt')}</Label>
+              <Label htmlFor="prompt" className="text-muted-foreground">{t('contribute.prompt')}</Label>
               <Textarea
                 id="prompt"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder={t('contribute.promptPlaceholder')}
-                className="mt-2 min-h-32 bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
+                className="mt-2 min-h-32 bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
             <div>
-              <Label htmlFor="media" className="text-gray-300">{t('contribute.referenceMedia')}</Label>
+              <Label htmlFor="media" className="text-muted-foreground">{t('contribute.referenceMedia')}</Label>
               <div className="mt-2">
                 <label
                   htmlFor="media"
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
-                  className="flex flex-col items-center justify-center w-full h-32 sm:h-48 border-2 border-dashed border-white/10 rounded-lg cursor-pointer hover:border-white/15 transition-colors bg-[#111113]"
+                  className="flex flex-col items-center justify-center w-full h-32 sm:h-48 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-border transition-colors bg-background"
                 >
                   {mediaPreview ? (
                     isVideo ? (
@@ -361,8 +361,8 @@ const ContributePrompts = () => {
                     )
                   ) : (
                     <div className="flex flex-col items-center">
-                      <Upload className="h-12 w-12 text-gray-400 mb-2" />
-                      <p className="text-sm text-gray-300">
+                      <Upload className="h-12 w-12 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground">
                         {t('contribute.dragOrClick')}
                       </p>
                     </div>
@@ -381,7 +381,7 @@ const ContributePrompts = () => {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 transition-opacity text-lg py-6 text-white"
+              className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 transition-opacity text-lg py-6 text-foreground"
             >
               {isSubmitting ? t('contribute.submitting') : t('contribute.submit')}
             </Button>

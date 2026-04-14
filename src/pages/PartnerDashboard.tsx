@@ -399,7 +399,7 @@ const PartnerDashboard = () => {
                       </Badge>
                     )}
                     {status === "pending" && (
-                      <Badge variant="secondary" className="bg-yellow-500 text-white">
+                      <Badge variant="secondary" className="bg-yellow-500 text-foreground">
                         <Clock className="h-3 w-3 mr-1" />
                         Pendente
                       </Badge>

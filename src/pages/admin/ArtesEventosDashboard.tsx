@@ -45,7 +45,7 @@ const ArtesEventosDashboard = () => {
           <Card
             className={`mb-6 overflow-hidden ${
               isActive
-                ? "bg-gradient-to-r from-red-600 via-green-600 to-red-600 text-white border-0"
+                ? "bg-gradient-to-r from-red-600 via-green-600 to-red-600 text-foreground border-0"
                 : "bg-muted/50 border-dashed border-2"
             }`}
           >
@@ -62,7 +62,7 @@ const ArtesEventosDashboard = () => {
                       </h2>
                       {isActive && <Sparkles className="h-5 w-5 text-yellow-300 animate-pulse" />}
                     </div>
-                    <p className={`${isActive ? "text-white/80" : "text-muted-foreground"}`}>
+                    <p className={`${isActive ? "text-foreground" : "text-muted-foreground"}`}>
                       {isActive ? (
                         <>
                           <span className="font-semibold">ATIVA!</span> Todos os visitantes veem {discountPercent}% OFF
@@ -74,17 +74,17 @@ const ArtesEventosDashboard = () => {
                     </p>
                     {isActive && (
                       <div className="flex gap-2 mt-2">
-                        <Badge className="bg-white/20 text-white border-0">
+                        <Badge className="bg-white/20 text-foreground border-0">
                           <Gift className="h-3 w-3 mr-1" />
                           {discountPercent}% OFF
                         </Badge>
-                        <Badge className="bg-white/20 text-white border-0">Página: /promos-natal</Badge>
+                        <Badge className="bg-white/20 text-foreground border-0">Página: /promos-natal</Badge>
                       </div>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  {toggling && <Loader2 className="h-5 w-5 animate-spin text-white" />}
+                  {toggling && <Loader2 className="h-5 w-5 animate-spin text-foreground" />}
                   <Switch
                     checked={isActive}
                     onCheckedChange={handleToggle}

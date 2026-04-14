@@ -140,38 +140,38 @@ const ChangePassword = () => {
 
   if (isCheckingSession) {
     return (
-      <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
-        <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 bg-[#111113] border-white/10">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-md p-8 bg-background border-border">
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Lock className="h-8 w-8 text-gray-400" />
-            <h1 className="text-2xl font-bold text-white">
+            <Lock className="h-8 w-8 text-muted-foreground" />
+            <h1 className="text-2xl font-bold text-foreground">
               {isFirstAccessWithoutSession ? "Primeiro Acesso" : t("createNewPassword")}
             </h1>
           </div>
 
           {isFirstAccessWithoutSession ? (
             <>
-              <p className="text-gray-300 mb-3">Cadastre sua senha agora para liberar seu acesso.</p>
-              <p className="text-white font-medium bg-white/50/20 py-2 px-4 rounded-lg inline-block mb-2">
+              <p className="text-muted-foreground mb-3">Cadastre sua senha agora para liberar seu acesso.</p>
+              <p className="text-foreground font-medium bg-accent0/20 py-2 px-4 rounded-lg inline-block mb-2">
                 {emailParam}
               </p>
             </>
           ) : (
-            <p className="text-gray-300">{t("createNewPasswordDescription")}</p>
+            <p className="text-muted-foreground">{t("createNewPasswordDescription")}</p>
           )}
         </div>
 
         <form onSubmit={handleChangePassword} className="space-y-6">
           <div>
-            <Label htmlFor="newPassword" className="text-gray-300">
+            <Label htmlFor="newPassword" className="text-muted-foreground">
               {t("newPassword")}
             </Label>
             <div className="relative mt-2">
@@ -183,12 +183,12 @@ const ChangePassword = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -196,7 +196,7 @@ const ChangePassword = () => {
           </div>
 
           <div>
-            <Label htmlFor="confirmPassword" className="text-gray-300">
+            <Label htmlFor="confirmPassword" className="text-muted-foreground">
               {t("confirmNewPassword")}
             </Label>
             <div className="relative mt-2">
@@ -208,12 +208,12 @@ const ChangePassword = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
+                className="bg-background border-border text-foreground placeholder:text-muted-foreground"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -223,7 +223,7 @@ const ChangePassword = () => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 text-white"
+            className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 text-foreground"
           >
             {isLoading
               ? "Salvando..."
@@ -237,7 +237,7 @@ const ChangePassword = () => {
               type="button"
               variant="ghost"
               onClick={() => navigate(-1)}
-              className="w-full text-gray-400/70 hover:text-gray-300"
+              className="w-full text-muted-foreground/70 hover:text-muted-foreground"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Usar outro email

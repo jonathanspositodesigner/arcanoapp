@@ -95,27 +95,27 @@ const SaveCharacterDialog: React.FC<SaveCharacterDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-[#111113] border-white/10 text-white sm:max-w-md">
+      <DialogContent className="bg-background border-border text-foreground sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-white">Salvar Avatar</DialogTitle>
-          <DialogDescription className="text-gray-300">
+          <DialogTitle className="text-foreground">Salvar Avatar</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
             Dê um nome para salvar este avatar na sua galeria.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
-          <div className="mx-auto w-32 h-32 rounded-lg overflow-hidden border border-white/10">
+          <div className="mx-auto w-32 h-32 rounded-lg overflow-hidden border border-border">
             <img src={imageUrl} alt="Avatar" className="w-full h-full object-cover" />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="character-name" className="text-gray-300 text-sm">Nome do Avatar</Label>
+            <Label htmlFor="character-name" className="text-muted-foreground text-sm">Nome do Avatar</Label>
             <Input
               id="character-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Guerreiro Medieval"
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-400"
+              className="bg-accent border-border text-foreground placeholder:text-muted-foreground"
               maxLength={50}
               onKeyDown={(e) => e.key === 'Enter' && handleSave()}
             />
@@ -123,13 +123,13 @@ const SaveCharacterDialog: React.FC<SaveCharacterDialogProps> = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} className="border-white/10 text-gray-300 hover:bg-white/5">
+          <Button variant="outline" onClick={onClose} className="border-border text-muted-foreground hover:bg-accent">
             Cancelar
           </Button>
           <Button
             onClick={handleSave}
             disabled={!name.trim() || isSaving}
-            className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white"
+            className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground"
           >
             {isSaving ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />

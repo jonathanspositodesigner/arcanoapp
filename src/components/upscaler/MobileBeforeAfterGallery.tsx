@@ -140,10 +140,10 @@ export const MobileBeforeAfterGallery = ({ items }: MobileBeforeAfterGalleryProp
         </div>
 
         {/* Labels */}
-        <div className="absolute top-3 left-3 bg-black/60 text-white/80 text-[10px] font-medium px-2.5 py-1 rounded-full z-10">
+        <div className="absolute top-3 left-3 bg-black/60 text-foreground text-[10px] font-medium px-2.5 py-1 rounded-full z-10">
           Antes
         </div>
-        <div className="absolute top-3 right-3 bg-white/15 text-white/80 text-[10px] font-medium px-2.5 py-1 rounded-full z-10">
+        <div className="absolute top-3 right-3 bg-white/15 text-foreground text-[10px] font-medium px-2.5 py-1 rounded-full z-10">
           Depois
         </div>
       </div>
@@ -152,7 +152,7 @@ export const MobileBeforeAfterGallery = ({ items }: MobileBeforeAfterGalleryProp
       {currentIndex > 0 && (
         <button
           onClick={goPrev}
-          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-white/20 active:scale-95 transition-transform"
+          className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-foreground border border-border active:scale-95 transition-transform"
           aria-label="Anterior"
         >
           <ChevronLeft className="w-5 h-5" />
@@ -161,7 +161,7 @@ export const MobileBeforeAfterGallery = ({ items }: MobileBeforeAfterGalleryProp
       {currentIndex < totalItems - 1 && (
         <button
           onClick={goNext}
-          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white border border-white/20 active:scale-95 transition-transform"
+          className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-foreground border border-border active:scale-95 transition-transform"
           aria-label="Próximo"
         >
           <ChevronRight className="w-5 h-5" />
@@ -176,7 +176,7 @@ export const MobileBeforeAfterGallery = ({ items }: MobileBeforeAfterGalleryProp
             onClick={() => { setCurrentIndex(i); setSliderPosition(50); }}
             className={`rounded-full transition-all duration-300 ${
               i === currentIndex
-                ? "w-8 h-2 bg-white/50"
+                ? "w-8 h-2 bg-accent0"
                 : "w-2 h-2 bg-white/30"
             }`}
             aria-label={`Slide ${i + 1}`}

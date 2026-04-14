@@ -19,7 +19,7 @@ const ReferenceSection: React.FC<Props> = ({ images, previews, onAdd, onRemove, 
           <div key={i} className="relative aspect-square rounded overflow-hidden border border-white/[0.06] group">
             <img src={url} alt="" className="w-full h-full object-cover" />
             {i === 0 && (
-              <span className="absolute top-0.5 left-0.5 bg-white/10 text-[8px] text-gray-300 px-1 py-0.5 rounded flex items-center gap-0.5">
+              <span className="absolute top-0.5 left-0.5 bg-accent text-[8px] text-muted-foreground px-1 py-0.5 rounded flex items-center gap-0.5">
                 <Film className="w-2 h-2" /> Principal
               </span>
             )}
@@ -27,7 +27,7 @@ const ReferenceSection: React.FC<Props> = ({ images, previews, onAdd, onRemove, 
               onClick={() => onRemove(i)}
               className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              <X className="w-2.5 h-2.5 text-gray-300" />
+              <X className="w-2.5 h-2.5 text-muted-foreground" />
             </button>
           </div>
         ))}
@@ -36,11 +36,11 @@ const ReferenceSection: React.FC<Props> = ({ images, previews, onAdd, onRemove, 
             onClick={() => inputRef.current?.click()}
             className="aspect-square rounded border border-dashed border-white/[0.08] flex items-center justify-center hover:bg-white/[0.02] transition-colors"
           >
-            <Plus className="w-3.5 h-3.5 text-gray-400" />
+            <Plus className="w-3.5 h-3.5 text-muted-foreground" />
           </button>
         )}
       </div>
-      <p className="text-[9px] text-gray-400">Máx. {maxImages} {maxImages === 1 ? 'imagem' : 'imagens'} · 10MB cada</p>
+      <p className="text-[9px] text-muted-foreground">Máx. {maxImages} {maxImages === 1 ? 'imagem' : 'imagens'} · 10MB cada</p>
       <input
         ref={inputRef}
         type="file"

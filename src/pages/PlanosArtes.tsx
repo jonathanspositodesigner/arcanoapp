@@ -289,7 +289,7 @@ const PlanosArtes = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2d4a5e]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-border"></div>
       </div>
     );
   }
@@ -303,7 +303,7 @@ const PlanosArtes = () => {
         <FadeIn delay={0}>
           <Button
             variant="ghost"
-            className="text-white/70 hover:text-white mb-6"
+            className="text-muted-foreground hover:text-foreground mb-6"
             onClick={() => navigate("/biblioteca-artes")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -313,18 +313,18 @@ const PlanosArtes = () => {
 
         <AnimatedSection animation="fade-up" className="text-center mb-8" as="div">
           {isRenewal && (
-            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-lg px-4 py-2 mb-4">
+            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-foreground text-lg px-4 py-2 mb-4">
               <Percent className="h-5 w-5 mr-2" />
               {t('renewal30Off')}
             </Badge>
           )}
           {hasNotificationDiscount && (
-            <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-lg px-4 py-2 mb-4 animate-pulse">
+            <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-foreground text-lg px-4 py-2 mb-4 animate-pulse">
               <Bell className="h-5 w-5 mr-2" />
               {notificationDiscountPercent}% OFF - {t('exclusiveDiscount')}
             </Badge>
           )}
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             {isRenewal 
               ? t('renewAccessTo', { pack: selectedPack?.name || "Pack" })
               : hasNotificationDiscount
@@ -334,7 +334,7 @@ const PlanosArtes = () => {
                   : t('choosePack')
             }
           </h1>
-          <p className="text-white/60 max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto">
             {isRenewal
               ? t('enjoy30Discount')
               : hasNotificationDiscount
@@ -350,22 +350,22 @@ const PlanosArtes = () => {
           <div className="space-y-8">
             {packItems.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-white mb-4">{t('packsOfArts')}</h2>
+                <h2 className="text-xl font-bold text-foreground mb-4">{t('packsOfArts')}</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {[...packItems].sort((a, b) => a.slug === 'pack-arcano-vol-4' ? -1 : b.slug === 'pack-arcano-vol-4' ? 1 : 0).map((pack) => (
                     <Card
                       key={pack.id}
-                      className={`bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all relative ${pack.slug === 'pack-arcano-vol-4' ? 'ring-2 ring-[#2d4a5e]/50' : ''}`}
+                      className={`bg-card/80 border-border/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all relative ${pack.slug === 'pack-arcano-vol-4' ? 'ring-2 ring-[#2d4a5e]/50' : ''}`}
                       onClick={() => setSelectedPack(pack)}
                     >
                       {pack.slug === 'pack-arcano-vol-4' && (
                         <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                          <Badge className="bg-[#2d4a5e] text-white text-[10px] px-1.5 py-0.5">Novo</Badge>
-                          <Badge className="bg-amber-500/90 text-white text-[10px] px-1.5 py-0.5 leading-tight">Atualizando</Badge>
+                          <Badge className="bg-[#2d4a5e] text-foreground text-[10px] px-1.5 py-0.5">Novo</Badge>
+                          <Badge className="bg-amber-500/90 text-foreground text-[10px] px-1.5 py-0.5 leading-tight">Atualizando</Badge>
                         </div>
                       )}
                       {pack.notification_discount_enabled && isNotificationEligible && (
-                        <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
+                        <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-foreground text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
                           <Bell className="h-3 w-3" />
                           {pack.notification_discount_percent || 20}% OFF
                         </div>
@@ -382,7 +382,7 @@ const PlanosArtes = () => {
                             <Star className="h-8 w-8 text-[#2d4a5e]" />
                           </div>
                         )}
-                        <h3 className="text-white font-medium text-center">{pack.name}</h3>
+                        <h3 className="text-foreground font-medium text-center">{pack.name}</h3>
                       </CardContent>
                     </Card>
                   ))}
@@ -392,16 +392,16 @@ const PlanosArtes = () => {
 
             {cursoItems.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-white mb-4">{t('courses')}</h2>
+                <h2 className="text-xl font-bold text-foreground mb-4">{t('courses')}</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {cursoItems.map((pack) => (
                     <Card
                       key={pack.id}
-                      className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all relative"
+                      className="bg-card/80 border-border/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all relative"
                       onClick={() => setSelectedPack(pack)}
                     >
                       {pack.notification_discount_enabled && isNotificationEligible && (
-                        <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
+                        <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-foreground text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
                           <Bell className="h-3 w-3" />
                           {pack.notification_discount_percent || 20}% OFF
                         </div>
@@ -418,7 +418,7 @@ const PlanosArtes = () => {
                             <Star className="h-8 w-8 text-[#2d4a5e]" />
                           </div>
                         )}
-                        <h3 className="text-white font-medium text-center">{pack.name}</h3>
+                        <h3 className="text-foreground font-medium text-center">{pack.name}</h3>
                       </CardContent>
                     </Card>
                   ))}
@@ -429,9 +429,9 @@ const PlanosArtes = () => {
         ) : (
           <>
             <div className="max-w-lg mx-auto">
-              <Card className="relative bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
+              <Card className="relative bg-card/80 border-border/30">
                 {selectedAccessType === 'vitalicio' && accessOptions.length > 1 && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2d4a5e] text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2d4a5e] text-foreground px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
                     {t('bestValue')}
                   </div>
                 )}
@@ -440,14 +440,14 @@ const PlanosArtes = () => {
                     <img
                       src={selectedPack.cover_url}
                       alt={selectedPack.name}
-                      className="w-24 h-24 object-cover rounded-lg border-2 border-[#2d4a5e]/50 mx-auto mb-3"
+                      className="w-24 h-24 object-cover rounded-lg border-2 border-border/50 mx-auto mb-3"
                     />
                   )}
-                  <CardTitle className="text-xl text-white">{selectedPack?.name}</CardTitle>
+                  <CardTitle className="text-xl text-foreground">{selectedPack?.name}</CardTitle>
                   {!isRenewal && (
                     <button
                       onClick={() => setSelectedPack(null)}
-                      className="text-white/40 hover:text-white/70 text-xs underline underline-offset-2 transition-colors mt-1"
+                      className="text-white/40 hover:text-muted-foreground text-xs underline underline-offset-2 transition-colors mt-1"
                     >
                       {t('buttons.chooseAnotherPack', { ns: 'library' })}
                     </button>
@@ -464,7 +464,7 @@ const PlanosArtes = () => {
                     <span className={`text-3xl font-bold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
                       {formatPrice(calculatePrice(selectedAccessType))}
                     </span>
-                    <span className="text-white/60 text-sm block mt-1">{t('oneTimePayment')}</span>
+                    <span className="text-muted-foreground text-sm block mt-1">{t('oneTimePayment')}</span>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -479,13 +479,13 @@ const PlanosArtes = () => {
                           key={option.type}
                           className={`flex items-center justify-between gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                             selectedAccessType === option.type
-                              ? `border-[#2d4a5e] ${isRenewal ? 'bg-green-500/10' : hasNotificationDiscount ? 'bg-amber-500/10' : 'bg-[#2d4a5e]/10'}`
-                              : 'border-[#2d4a5e]/30 hover:border-[#2d4a5e]/60'
+                              ? `border-border ${isRenewal ? 'bg-green-500/10' : hasNotificationDiscount ? 'bg-amber-500/10' : 'bg-[#2d4a5e]/10'}`
+                              : 'border-border/30 hover:border-border/60'
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            <RadioGroupItem value={option.type} className="border-[#2d4a5e] text-[#2d4a5e]" />
-                            <span className="text-white font-medium">{option.label}</span>
+                            <RadioGroupItem value={option.type} className="border-border text-[#2d4a5e]" />
+                            <span className="text-foreground font-medium">{option.label}</span>
                           </div>
                           <span className={`font-semibold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
                             {formatPrice(calculatePrice(option.type))}
@@ -499,7 +499,7 @@ const PlanosArtes = () => {
                     <>
                       <ul className="space-y-3 mb-6">
                         {selectedOption.features.map((feature) => (
-                          <li key={feature} className="flex items-start gap-2 text-white/80">
+                          <li key={feature} className="flex items-start gap-2 text-foreground">
                             <Check className="h-4 w-4 text-[#2d4a5e] mt-0.5 shrink-0" />
                             <span className="text-sm">{feature}</span>
                           </li>
@@ -508,10 +508,10 @@ const PlanosArtes = () => {
                       <Button
                         className={`w-full ${
                           isRenewal
-                            ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold shadow-lg shadow-green-500/30"
+                            ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-foreground font-bold shadow-lg shadow-green-500/30"
                             : hasNotificationDiscount
-                              ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-amber-500/30"
-                              : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold shadow-lg shadow-amber-500/30"
+                              ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-foreground font-bold shadow-lg shadow-amber-500/30"
+                              : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-foreground font-bold shadow-lg shadow-amber-500/30"
                         }`}
                         onClick={() => handleSelectOption(selectedAccessType)}
                         disabled={isCheckoutSubmitting}

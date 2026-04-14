@@ -638,8 +638,8 @@ const GeradorPersonagemTool: React.FC = () => {
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden flex flex-col">
         {/* Tool intro - full width centered */}
         <div className="text-center py-3">
-          <h1 className="text-2xl lg:text-3xl font-bold text-white">Gerador de Avatar</h1>
-          <p className="text-sm text-gray-300 mt-1 max-w-lg mx-auto">Crie avatares de alta fidelidade a partir das suas fotos. Envie 4 ângulos diferentes e a IA gera seu personagem.</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Gerador de Avatar</h1>
+          <p className="text-sm text-muted-foreground mt-1 max-w-lg mx-auto">Crie avatares de alta fidelidade a partir das suas fotos. Envie 4 ângulos diferentes e a IA gera seu personagem.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 flex-1 lg:min-h-0">
@@ -647,13 +647,13 @@ const GeradorPersonagemTool: React.FC = () => {
           {/* Left Side - Inputs */}
           <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
             {/* Instructions */}
-            <div className="bg-white/5 border border-white/10 rounded-lg p-3 mb-1">
+            <div className="bg-accent border border-border rounded-lg p-3 mb-1">
               <p className="text-xs text-gray-200 font-medium mb-0.5">📸 Envie 4 fotos do mesmo rosto</p>
-              <p className="text-[10px] text-gray-400 leading-relaxed">Para gerar um avatar com alta fidelidade.</p>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">Para gerar um avatar com alta fidelidade.</p>
             </div>
             <button
               type="button"
-              className="text-[10px] text-gray-400 hover:text-gray-300 underline font-medium mb-1 self-start"
+              className="text-[10px] text-muted-foreground hover:text-muted-foreground underline font-medium mb-1 self-start"
               onClick={() => setShowExamplesModal(true)}
             >
               Ver exemplo de fotos →
@@ -670,7 +670,7 @@ const GeradorPersonagemTool: React.FC = () => {
             {/* Action Button */}
             <Button
               size="sm"
-              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-medium py-2 text-xs disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-medium py-2 text-xs disabled:opacity-50"
               disabled={!canProcess || isProcessing || isSubmitting}
               onClick={handleProcess}
             >
@@ -744,33 +744,33 @@ const GeradorPersonagemTool: React.FC = () => {
             <button
               type="button"
               onClick={() => navigate('/arcano-cloner-tool')}
-              className="w-full flex items-center justify-between gap-2 bg-gradient-to-r from-slate-600/20 to-slate-500/20 border border-white/10 rounded-lg p-3 hover:from-slate-600/30 hover:to-slate-500/30 transition-all group"
+              className="w-full flex items-center justify-between gap-2 bg-gradient-to-r from-slate-600/20 to-slate-500/20 border border-border rounded-lg p-3 hover:from-slate-600/30 hover:to-slate-500/30 transition-all group"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <Sparkles className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <Sparkles className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <div className="text-left min-w-0">
-                  <p className="text-xs font-semibold text-white">Arcano Cloner</p>
-                  <p className="text-[10px] text-gray-400 leading-tight">Use seu avatar para gerar imagens</p>
+                  <p className="text-xs font-semibold text-foreground">Arcano Cloner</p>
+                  <p className="text-[10px] text-muted-foreground leading-tight">Use seu avatar para gerar imagens</p>
                 </div>
               </div>
-              <ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+              <ArrowRight className="w-4 h-4 text-muted-foreground flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
 
           {/* Right Side - Result Viewer */}
           <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
-            <Card className="relative overflow-hidden bg-white/5 border-white/10 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
-              <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between flex-shrink-0">
-                <h3 className="text-xs font-semibold text-white flex items-center gap-1.5">
-                  <ImageIcon className="w-3.5 h-3.5 text-gray-400" />Resultado
+            <Card className="relative overflow-hidden bg-accent border-border flex-1 flex flex-col min-h-[250px] lg:min-h-0">
+              <div className="px-3 py-2 border-b border-border flex items-center justify-between flex-shrink-0">
+                <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />Resultado
                 </h3>
                 {viewedImage && (
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-300 hover:text-white hover:bg-white/50/20" onClick={() => transformRef.current?.zoomOut(0.5)}>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground hover:bg-accent0/20" onClick={() => transformRef.current?.zoomOut(0.5)}>
                       <ZoomOut className="w-3.5 h-3.5" />
                     </Button>
-                    <span className="text-[10px] text-gray-300 w-8 text-center">{Math.round(zoomLevel * 100)}%</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-300 hover:text-white hover:bg-white/50/20" onClick={() => transformRef.current?.zoomIn(0.5)}>
+                    <span className="text-[10px] text-muted-foreground w-8 text-center">{Math.round(zoomLevel * 100)}%</span>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground hover:bg-accent0/20" onClick={() => transformRef.current?.zoomIn(0.5)}>
                       <ZoomIn className="w-3.5 h-3.5" />
                     </Button>
                   </div>
@@ -787,18 +787,18 @@ const GeradorPersonagemTool: React.FC = () => {
                 ) : isProcessing ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                     <div className="relative">
-                      <div className="w-14 h-14 rounded-full border-4 border-white/10 border-t-slate-400 animate-spin" />
-                      <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-gray-400" />
+                      <div className="w-14 h-14 rounded-full border-4 border-border border-t-slate-400 animate-spin" />
+                      <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-muted-foreground" />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm text-white font-medium flex items-center gap-2">
+                      <p className="text-sm text-foreground font-medium flex items-center gap-2">
                         <span>{currentQueueMessage.emoji}</span>
                         <span>{currentQueueMessage.text}</span>
                       </p>
-                      {status === 'waiting' && queuePosition > 0 && <p className="text-xs text-gray-300 mt-1">Posição na fila: #{queuePosition}</p>}
-                      {status === 'processing' && <p className="text-xs text-gray-300 mt-0.5">{Math.round(progress)}% concluído</p>}
+                      {status === 'waiting' && queuePosition > 0 && <p className="text-xs text-muted-foreground mt-1">Posição na fila: #{queuePosition}</p>}
+                      {status === 'processing' && <p className="text-xs text-muted-foreground mt-0.5">{Math.round(progress)}% concluído</p>}
                     </div>
-                    <div className="w-36 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div className="w-36 h-1.5 bg-accent rounded-full overflow-hidden">
                       <div className="h-full bg-gradient-to-r from-slate-500 to-slate-400 transition-all duration-300" style={{ width: `${progress}%` }} />
                     </div>
                   </div>
@@ -809,17 +809,17 @@ const GeradorPersonagemTool: React.FC = () => {
                     </div>
                     <div className="text-center">
                       <p className="text-sm text-red-300">Erro no processamento</p>
-                      <Button variant="link" size="sm" className="text-xs text-gray-400" onClick={handleReset}>Tentar novamente</Button>
+                      <Button variant="link" size="sm" className="text-xs text-muted-foreground" onClick={handleReset}>Tentar novamente</Button>
                     </div>
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-white/50/10 border-2 border-dashed border-white/10 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-xl bg-accent0/10 border-2 border-dashed border-border flex items-center justify-center">
                       <ImageIcon className="w-8 h-8 text-slate-400/40" />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm text-gray-300">O resultado aparecerá aqui</p>
-                      <p className="text-xs text-gray-400 mt-0.5">Envie as 4 fotos e clique em "Gerar Avatar"</p>
+                      <p className="text-sm text-muted-foreground">O resultado aparecerá aqui</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Envie as 4 fotos e clique em "Gerar Avatar"</p>
                     </div>
                   </div>
                 )}
@@ -827,7 +827,7 @@ const GeradorPersonagemTool: React.FC = () => {
 
               {/* Refinement History Carousel */}
               {refinementHistory.length > 1 && status === 'completed' && (
-                <div className="border-t border-white/10 flex-shrink-0">
+                <div className="border-t border-border flex-shrink-0">
                   <RefinementCarousel
                     history={refinementHistory}
                     selectedIndex={selectedHistoryIndex}
@@ -838,17 +838,17 @@ const GeradorPersonagemTool: React.FC = () => {
 
               {/* Action Buttons */}
               {viewedImage && status === 'completed' && (
-                <div className="border-t border-white/10 px-3 py-2 flex gap-2 flex-shrink-0">
-                  <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-white/15 text-white hover:bg-white/50/90" onClick={handleReset}>
+                <div className="border-t border-border px-3 py-2 flex gap-2 flex-shrink-0">
+                  <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-border text-foreground hover:bg-accent0/90" onClick={handleReset}>
                     <RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova
                   </Button>
-                  <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-500 hover:to-pink-500 text-white" onClick={() => setShowRefinePanel(true)}>
+                  <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-500 hover:to-pink-500 text-foreground" onClick={() => setShowRefinePanel(true)}>
                     <Wand2 className="w-3.5 h-3.5 mr-1.5" />Refinar
                   </Button>
-                  <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white" onClick={() => setShowSaveDialog(true)}>
+                  <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-foreground" onClick={() => setShowSaveDialog(true)}>
                     <Save className="w-3.5 h-3.5 mr-1.5" />Salvar
                   </Button>
-                  <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white" onClick={handleDownload}>
+                  <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-foreground" onClick={handleDownload}>
                     <Download className="w-3.5 h-3.5 mr-1.5" />Baixar HD
                   </Button>
                 </div>

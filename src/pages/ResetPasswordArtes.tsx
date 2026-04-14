@@ -108,13 +108,13 @@ const ResetPasswordArtes = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
+      <Card className="w-full max-w-md bg-card/80 border-border/30">
         <CardHeader className="text-center">
           <div className="mx-auto w-12 h-12 bg-[#2d4a5e] rounded-full flex items-center justify-center mb-4">
-            <Lock className="h-6 w-6 text-white" />
+            <Lock className="h-6 w-6 text-foreground" />
           </div>
-          <CardTitle className="text-2xl text-white">{t('newPasswordTitle')}</CardTitle>
-          <CardDescription className="text-white/60">
+          <CardTitle className="text-2xl text-foreground">{t('newPasswordTitle')}</CardTitle>
+          <CardDescription className="text-muted-foreground">
             {t('setNewPassword')}
           </CardDescription>
         </CardHeader>
@@ -126,13 +126,13 @@ const ResetPasswordArtes = () => {
                 placeholder={t('newPassword')}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white pr-10"
+                className="bg-card border-border/50 text-foreground pr-10"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -143,25 +143,25 @@ const ResetPasswordArtes = () => {
                 placeholder={t('confirmNewPassword')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white pr-10"
+                className="bg-card border-border/50 text-foreground pr-10"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
 
-            <p className="text-white/50 text-sm">
+            <p className="text-muted-foreground text-sm">
               {t('passwordHint')}
             </p>
 
             <Button
               type="submit"
-              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
               disabled={isLoading}
             >
               {isLoading ? t('saving') : t('saveNewPassword')}

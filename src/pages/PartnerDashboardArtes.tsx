@@ -201,7 +201,7 @@ const PartnerDashboardArtes = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="text-white">Carregando...</div>
+        <div className="text-foreground">Carregando...</div>
       </div>
     );
   }
@@ -214,19 +214,19 @@ const PartnerDashboardArtes = () => {
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
-              className="text-white/70 hover:text-white"
+              className="text-muted-foreground hover:text-foreground"
               onClick={() => navigate("/parceiro-plataformas")}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>
-            <h1 className="text-xl md:text-2xl font-bold text-white">
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">
               Olá, {partner?.name}!
             </h1>
           </div>
           <Button
             variant="ghost"
-            className="text-white/70 hover:text-white"
+            className="text-muted-foreground hover:text-foreground"
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4 mr-2" />
@@ -258,7 +258,7 @@ const PartnerDashboardArtes = () => {
 
         {/* Upload Button */}
         <Button
-          className="w-full mb-6 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+          className="w-full mb-6 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
           onClick={() => navigate("/parceiro-upload-artes")}
         >
           <Upload className="h-4 w-4 mr-2" />
@@ -277,8 +277,8 @@ const PartnerDashboardArtes = () => {
               key={filter.key}
               variant={activeFilter === filter.key ? "default" : "outline"}
               className={activeFilter === filter.key 
-                ? "bg-[#2d4a5e] text-white" 
-                : "border-[#2d4a5e]/50 text-white/70"}
+                ? "bg-[#2d4a5e] text-foreground" 
+                : "border-border/50 text-muted-foreground"}
               onClick={() => setActiveFilter(filter.key as FilterType)}
             >
               {filter.label}
@@ -288,8 +288,8 @@ const PartnerDashboardArtes = () => {
 
         {/* Artes Grid */}
         {filteredArtes.length === 0 ? (
-          <Card className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
-            <CardContent className="p-8 text-center text-white/60">
+          <Card className="bg-card/80 border-border/30">
+            <CardContent className="p-8 text-center text-muted-foreground">
               Nenhuma arte encontrada
             </CardContent>
           </Card>
@@ -298,7 +298,7 @@ const PartnerDashboardArtes = () => {
             {filteredArtes.map((arte) => {
               const status = getArteStatus(arte);
               return (
-                <Card key={arte.id} className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30 overflow-hidden">
+                <Card key={arte.id} className="bg-card/80 border-border/30 overflow-hidden">
                   <div className="aspect-square relative">
                     <SecureImage
                       src={`partner-artes/${arte.image_url}`}
@@ -307,7 +307,7 @@ const PartnerDashboardArtes = () => {
                       isPremium={true}
                     />
                     <div className="absolute top-2 right-2 flex gap-1">
-                      <Badge className="text-xs flex items-center gap-1 bg-[#1a1a2e]/80">
+                      <Badge className="text-xs flex items-center gap-1 bg-card/80">
                         <Copy className="h-3 w-3" />
                         {arte.bonus_clicks}
                       </Badge>
@@ -334,13 +334,13 @@ const PartnerDashboardArtes = () => {
                     )}
                   </div>
                   <CardContent className="p-3">
-                    <h3 className="text-white font-medium truncate">{arte.title}</h3>
-                    <p className="text-white/60 text-sm">{arte.category}</p>
+                    <h3 className="text-foreground font-medium truncate">{arte.title}</h3>
+                    <p className="text-muted-foreground text-sm">{arte.category}</p>
                     <div className="flex gap-2 mt-2">
                       <Button
                         size="sm"
                         variant="outline"
-                        className="flex-1 border-[#2d4a5e]/50 text-white/70 hover:text-white"
+                        className="flex-1 border-border/50 text-muted-foreground hover:text-foreground"
                         onClick={() => openEditModal(arte)}
                         disabled={arte.approved === true}
                       >
@@ -368,7 +368,7 @@ const PartnerDashboardArtes = () => {
 
       {/* Edit Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="bg-[#1a1a2e] border-[#2d4a5e]/30 text-white">
+        <DialogContent className="bg-card border-border/30 text-foreground">
           <DialogHeader>
             <DialogTitle>Editar Arte</DialogTitle>
           </DialogHeader>
@@ -380,22 +380,22 @@ const PartnerDashboardArtes = () => {
               </p>
             </div>
             <div>
-              <label className="text-sm text-white/60">Título</label>
+              <label className="text-sm text-muted-foreground">Título</label>
               <Input
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+                className="bg-card border-border/50 text-foreground"
               />
             </div>
             <div>
-              <label className="text-sm text-white/60">Categoria</label>
+              <label className="text-sm text-muted-foreground">Categoria</label>
               <Select value={editCategory} onValueChange={setEditCategory}>
-                <SelectTrigger className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white">
+                <SelectTrigger className="bg-card border-border/50 text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1a1a2e] border-[#2d4a5e]/50">
+                <SelectContent className="bg-card border-border/50">
                   {CATEGORIES.map((cat) => (
-                    <SelectItem key={cat.value} value={cat.value} className="text-white">
+                    <SelectItem key={cat.value} value={cat.value} className="text-foreground">
                       {cat.label}
                     </SelectItem>
                   ))}
@@ -403,23 +403,23 @@ const PartnerDashboardArtes = () => {
               </Select>
             </div>
             <div>
-              <label className="text-sm text-white/60">Descrição</label>
+              <label className="text-sm text-muted-foreground">Descrição</label>
               <Textarea
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
-                className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white min-h-[100px]"
+                className="bg-card border-border/50 text-foreground min-h-[100px]"
               />
             </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                className="flex-1 border-[#2d4a5e]/50 text-white/70"
+                className="flex-1 border-border/50 text-muted-foreground"
                 onClick={() => setShowEditModal(false)}
               >
                 Cancelar
               </Button>
               <Button
-                className="flex-1 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+                className="flex-1 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
                 onClick={handleSaveEdit}
               >
                 Salvar

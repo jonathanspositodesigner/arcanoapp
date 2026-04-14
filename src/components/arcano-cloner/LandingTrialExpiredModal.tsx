@@ -55,15 +55,15 @@ export const LandingTrialExpiredModal = ({ userId, balance }: LandingTrialExpire
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="bg-[#111113] border-white/10 text-white max-w-md">
+      <DialogContent className="bg-background border-border text-foreground max-w-md">
         <div className="text-center py-4">
-          <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-4">
-            <Sparkles className="w-8 h-8 text-gray-400" />
+          <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto mb-4">
+            <Sparkles className="w-8 h-8 text-muted-foreground" />
           </div>
-          <DialogTitle className="text-xl font-bold text-white mb-3">
+          <DialogTitle className="text-xl font-bold text-foreground mb-3">
             Seu teste grátis foi concluído!
           </DialogTitle>
-          <DialogDescription className="text-white/60 text-sm leading-relaxed mb-6">
+          <DialogDescription className="text-muted-foreground text-sm leading-relaxed mb-6">
             Gostou dos resultados? Adquira créditos para continuar usando todas as ferramentas de IA do Arcano App com qualidade profissional.
           </DialogDescription>
           <Button
@@ -71,14 +71,14 @@ export const LandingTrialExpiredModal = ({ userId, balance }: LandingTrialExpire
               setIsOpen(false);
               navigate("/planos-upscaler-creditos");
             }}
-            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold py-5 rounded-xl"
+            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold py-5 rounded-xl"
           >
             <ShoppingCart className="w-4 h-4 mr-2" />
             Comprar Créditos
           </Button>
           <button
             onClick={() => setIsOpen(false)}
-            className="mt-3 text-white/40 text-xs hover:text-white/60 transition-colors"
+            className="mt-3 text-white/40 text-xs hover:text-muted-foreground transition-colors"
           >
             Fechar
           </button>

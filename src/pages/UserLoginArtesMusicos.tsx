@@ -52,20 +52,20 @@ const UserLoginArtesMusicos = () => {
         </DialogContent>
       </Dialog>
 
-      <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-white/10">
+      <Card className="w-full max-w-md bg-card/80 border-border">
         <CardHeader className="text-center">
           <Button 
             variant="ghost" 
-            className="absolute left-4 top-4 text-white/70 hover:text-white" 
+            className="absolute left-4 top-4 text-muted-foreground hover:text-foreground" 
             onClick={() => navigate("/")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />{t('back')}
           </Button>
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Music className="h-6 w-6 text-gray-400" />
-            <CardTitle className="text-2xl text-white">{t('loginCard.titleMusicos')}</CardTitle>
+            <Music className="h-6 w-6 text-muted-foreground" />
+            <CardTitle className="text-2xl text-foreground">{t('loginCard.titleMusicos')}</CardTitle>
           </div>
-          <CardDescription className="text-white/60">{t('loginCard.descriptionMusicos')}</CardDescription>
+          <CardDescription className="text-muted-foreground">{t('loginCard.descriptionMusicos')}</CardDescription>
         </CardHeader>
         <CardContent>
           {auth.state.step === 'email' && (

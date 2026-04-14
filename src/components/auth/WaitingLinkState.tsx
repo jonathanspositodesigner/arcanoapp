@@ -10,7 +10,6 @@ interface WaitingLinkStateProps {
   onCheckSession?: () => Promise<void>;
   isLoading?: boolean;
   
-  // Labels (for i18n)
   labels?: {
     title?: string;
     description?: string;
@@ -21,54 +20,53 @@ interface WaitingLinkStateProps {
     resendCooldown?: string;
   };
   
-  // Styling variants
   variant?: 'default' | 'dark' | 'dark' | 'teal';
 }
 
 const variantStyles = {
   default: {
-    card: 'border',
+    card: 'border border-border bg-card',
     iconBg: 'bg-primary/10',
     icon: 'text-primary',
     title: 'text-foreground',
     email: 'text-primary font-medium',
     description: 'text-muted-foreground',
-    resendButton: '',
+    resendButton: 'bg-primary hover:bg-primary/90 text-primary-foreground',
     changeButton: 'text-muted-foreground hover:text-foreground',
   },
   dark: {
-    card: 'bg-[#1a1a2e]/80 border-[#2d4a5e]/30',
+    card: 'bg-card border border-border',
     iconBg: 'bg-amber-500/20',
     icon: 'text-amber-400',
-    title: 'text-white',
+    title: 'text-foreground',
     email: 'text-amber-400 font-medium',
-    description: 'text-white/60',
-    resendButton: 'bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white',
-    changeButton: 'text-white/60 hover:text-white',
+    description: 'text-muted-foreground',
+    resendButton: 'bg-primary hover:bg-primary/90 text-primary-foreground',
+    changeButton: 'text-muted-foreground hover:text-foreground',
   },
   purple: {
-    card: 'bg-[#111113] border-white/10',
-    iconBg: 'bg-white/50/20',
-    icon: 'text-gray-400',
-    title: 'text-white',
-    email: 'text-gray-400 font-medium',
-    description: 'text-gray-300',
-    resendButton: 'bg-slate-600 hover:bg-slate-700 text-white',
-    changeButton: 'text-gray-400 hover:text-white',
+    card: 'bg-card border border-border',
+    iconBg: 'bg-accent',
+    icon: 'text-muted-foreground',
+    title: 'text-foreground',
+    email: 'text-muted-foreground font-medium',
+    description: 'text-muted-foreground',
+    resendButton: 'bg-secondary hover:bg-secondary/80 text-secondary-foreground',
+    changeButton: 'text-muted-foreground hover:text-foreground',
   },
   teal: {
-    card: 'bg-[#1a1a2e]/80 border-white/10',
-    iconBg: 'bg-white/50/20',
-    icon: 'text-gray-400',
-    title: 'text-white',
-    email: 'text-gray-400 font-medium',
-    description: 'text-white/60',
-    resendButton: 'bg-slate-600 hover:bg-slate-700 text-white',
-    changeButton: 'text-white/60 hover:text-white',
+    card: 'bg-card border border-border',
+    iconBg: 'bg-accent',
+    icon: 'text-muted-foreground',
+    title: 'text-foreground',
+    email: 'text-muted-foreground font-medium',
+    description: 'text-muted-foreground',
+    resendButton: 'bg-secondary hover:bg-secondary/80 text-secondary-foreground',
+    changeButton: 'text-muted-foreground hover:text-foreground',
   },
 };
 
-const RESEND_COOLDOWN = 60; // seconds
+const RESEND_COOLDOWN = 60;
 
 export function WaitingLinkState({
   email,

@@ -466,11 +466,11 @@ const AdminManageBanners = () => {
                 <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
                 <div className="absolute inset-0 flex items-center">
                   <div className="px-3 max-w-[75%]">
-                    <h3 className="text-xs sm:text-sm font-bold text-white mb-1 line-clamp-2 leading-tight">
+                    <h3 className="text-xs sm:text-sm font-bold text-foreground mb-1 line-clamp-2 leading-tight">
                       {formData.title || "Título do Banner"}
                     </h3>
                     {formData.description && (
-                      <p className="text-[10px] text-white/80 mb-1 line-clamp-1">
+                      <p className="text-[10px] text-foreground mb-1 line-clamp-1">
                         {formData.description}
                       </p>
                     )}
@@ -497,11 +497,11 @@ const AdminManageBanners = () => {
                   <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
                   <div className="absolute inset-0 flex items-center">
                     <div className="px-3 max-w-[75%]">
-                      <h3 className="text-xs sm:text-sm font-bold text-white mb-1 line-clamp-2 leading-tight">
+                      <h3 className="text-xs sm:text-sm font-bold text-foreground mb-1 line-clamp-2 leading-tight">
                         {formData.title || "Título do Banner"}
                       </h3>
                       {formData.description && (
-                        <p className="text-[10px] text-white/80 mb-1 line-clamp-1">
+                        <p className="text-[10px] text-foreground mb-1 line-clamp-1">
                           {formData.description}
                         </p>
                       )}

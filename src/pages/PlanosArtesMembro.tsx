@@ -244,7 +244,7 @@ const PlanosArtesMembro = () => {
   if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2d4a5e]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-border"></div>
       </div>
     );
   }
@@ -257,7 +257,7 @@ const PlanosArtesMembro = () => {
       <div className="max-w-6xl mx-auto">
         <Button
           variant="ghost"
-          className="text-white/70 hover:text-white mb-6"
+          className="text-muted-foreground hover:text-foreground mb-6"
           onClick={() => navigate("/biblioteca-artes")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -265,17 +265,17 @@ const PlanosArtesMembro = () => {
         </Button>
 
         <div className="text-center mb-8">
-          <Badge className="bg-gradient-to-r from-slate-500 to-slate-400 text-white text-lg px-4 py-2 mb-4">
+          <Badge className="bg-gradient-to-r from-slate-500 to-slate-400 text-foreground text-lg px-4 py-2 mb-4">
             <Crown className="h-5 w-5 mr-2" />
             {t('memberDiscountLabel')}
           </Badge>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             {selectedPack 
               ? t('acquirePack', { pack: selectedPack.name })
               : t('chooseNewPack')
             }
           </h1>
-          <p className="text-white/60 max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto">
             {selectedPack 
               ? t('memberDiscountInfo')
               : t('selectPackMemberDiscount')
@@ -289,10 +289,10 @@ const PlanosArtesMembro = () => {
             {availablePacks.length === 0 ? (
               <div className="col-span-full text-center py-12">
                 <Crown className="h-16 w-16 text-slate-400 mx-auto mb-4" />
-                <h3 className="text-xl font-bold text-white mb-2">
+                <h3 className="text-xl font-bold text-foreground mb-2">
                   {t('youOwnAllPacks')}
                 </h3>
-                <p className="text-white/60 mb-4">
+                <p className="text-muted-foreground mb-4">
                   {t('congratsFullAccess')}
                 </p>
                 <Button onClick={() => navigate("/biblioteca-artes")}>
@@ -303,16 +303,16 @@ const PlanosArtesMembro = () => {
               [...availablePacks].sort((a, b) => a.slug === 'pack-arcano-vol-4' ? -1 : b.slug === 'pack-arcano-vol-4' ? 1 : 0).map((pack) => (
                 <Card
                   key={pack.id}
-                  className={`bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-slate-500 transition-all relative ${pack.slug === 'pack-arcano-vol-4' ? 'ring-2 ring-slate-500/50' : ''}`}
+                  className={`bg-card/80 border-border/30 cursor-pointer hover:ring-2 hover:ring-slate-500 transition-all relative ${pack.slug === 'pack-arcano-vol-4' ? 'ring-2 ring-slate-500/50' : ''}`}
                   onClick={() => setSelectedPack(pack)}
                 >
                   {pack.slug === 'pack-arcano-vol-4' && (
                     <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                      <Badge className="bg-white/50 text-white text-[10px] px-1.5 py-0.5">Novo</Badge>
-                      <Badge className="bg-amber-500/90 text-white text-[10px] px-1.5 py-0.5 leading-tight">Atualizando</Badge>
+                      <Badge className="bg-accent0 text-foreground text-[10px] px-1.5 py-0.5">Novo</Badge>
+                      <Badge className="bg-amber-500/90 text-foreground text-[10px] px-1.5 py-0.5 leading-tight">Atualizando</Badge>
                     </div>
                   )}
-                  <Badge className="absolute top-2 right-2 bg-white/50/20 text-gray-400 text-xs">
+                  <Badge className="absolute top-2 right-2 bg-accent0/20 text-muted-foreground text-xs">
                     -20%
                   </Badge>
                   <CardContent className="p-4">
@@ -327,7 +327,7 @@ const PlanosArtesMembro = () => {
                         <Star className="h-8 w-8 text-[#2d4a5e]" />
                       </div>
                     )}
-                    <h3 className="text-white font-medium text-center">{pack.name}</h3>
+                    <h3 className="text-foreground font-medium text-center">{pack.name}</h3>
                   </CardContent>
                 </Card>
               ))
@@ -337,9 +337,9 @@ const PlanosArtesMembro = () => {
           // Show access options for selected pack
           <>
             <div className="max-w-lg mx-auto">
-              <Card className="relative bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
+              <Card className="relative bg-card/80 border-border/30">
                 {selectedAccessType === 'vitalicio' && accessOptions.length > 1 && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white/50 text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent0 text-foreground px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
                     {t('bestValue')}
                   </div>
                 )}
@@ -351,22 +351,22 @@ const PlanosArtesMembro = () => {
                       className="w-24 h-24 object-cover rounded-lg border-2 border-slate-500/50 mx-auto mb-3"
                     />
                   )}
-                  <CardTitle className="text-xl text-white">{selectedPack.name}</CardTitle>
+                  <CardTitle className="text-xl text-foreground">{selectedPack.name}</CardTitle>
                   <button
                     onClick={() => setSelectedPack(null)}
-                    className="text-white/40 hover:text-white/70 text-xs underline underline-offset-2 transition-colors mt-1"
+                    className="text-white/40 hover:text-muted-foreground text-xs underline underline-offset-2 transition-colors mt-1"
                   >
                     {t('buttons.chooseAnotherPack', { ns: 'library' })}
                   </button>
                   <div className="mt-4">
                     <div className="flex items-center justify-center gap-2 mb-1">
                       <span className="text-white/40 line-through text-lg">{formatOriginalPrice(selectedAccessType)}</span>
-                      <Badge className="bg-white/50/20 text-gray-400 text-xs">-20%</Badge>
+                      <Badge className="bg-accent0/20 text-muted-foreground text-xs">-20%</Badge>
                     </div>
-                    <span className="text-3xl font-bold text-gray-400">
+                    <span className="text-3xl font-bold text-muted-foreground">
                       {formatPrice(calculatePrice(selectedAccessType))}
                     </span>
-                    <span className="text-white/60 text-sm block mt-1">{t('oneTimePayment')}</span>
+                    <span className="text-muted-foreground text-sm block mt-1">{t('oneTimePayment')}</span>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -381,15 +381,15 @@ const PlanosArtesMembro = () => {
                           key={option.type}
                           className={`flex items-center justify-between gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                             selectedAccessType === option.type
-                              ? 'border-slate-500 bg-white/50/10'
-                              : 'border-[#2d4a5e]/30 hover:border-[#2d4a5e]/60'
+                              ? 'border-slate-500 bg-accent0/10'
+                              : 'border-border/30 hover:border-border/60'
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            <RadioGroupItem value={option.type} className="border-white/15 text-gray-400" />
-                            <span className="text-white font-medium">{option.label}</span>
+                            <RadioGroupItem value={option.type} className="border-border text-muted-foreground" />
+                            <span className="text-foreground font-medium">{option.label}</span>
                           </div>
-                          <span className="text-gray-400 font-semibold">
+                          <span className="text-muted-foreground font-semibold">
                             {formatPrice(calculatePrice(option.type))}
                           </span>
                         </label>
@@ -401,14 +401,14 @@ const PlanosArtesMembro = () => {
                     <>
                       <ul className="space-y-3 mb-6">
                         {selectedOption.features.map((feature) => (
-                          <li key={feature} className="flex items-start gap-2 text-white/80">
-                            <Check className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
+                          <li key={feature} className="flex items-start gap-2 text-foreground">
+                            <Check className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                             <span className="text-sm">{feature}</span>
                           </li>
                         ))}
                       </ul>
                       <Button
-                        className="w-full bg-gradient-to-r from-slate-500 to-slate-400 hover:from-slate-600 hover:to-slate-500 text-white font-bold shadow-lg shadow-slate-500/20"
+                        className="w-full bg-gradient-to-r from-slate-500 to-slate-400 hover:from-slate-600 hover:to-slate-500 text-foreground font-bold shadow-lg shadow-slate-500/20"
                         onClick={() => handleSelectOption(selectedAccessType)}
                         disabled={isCheckoutSubmitting}
                       >

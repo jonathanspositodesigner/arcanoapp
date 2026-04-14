@@ -269,7 +269,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
             {/* Badges */}
             <div className="flex gap-2">
               {selectedItem.isPremium ? (
-                <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
+                <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-foreground border-0">
                   <Star className="h-3 w-3 mr-1" fill="currentColor" />
                   {t("badges.premium")}
                 </Badge>
@@ -317,7 +317,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                       onClose();
                       navigate('/arcano-cloner-tool', { state: { referenceImageUrl: selectedItem.imageUrl } });
                     }}
-                    className="w-full bg-gradient-to-r from-pink-500 to-slate-500 hover:opacity-90 text-white"
+                    className="w-full bg-gradient-to-r from-pink-500 to-slate-500 hover:opacity-90 text-foreground"
                   >
                     <Sparkles className="h-4 w-4 mr-2" />
                     Gerar sua foto
@@ -346,7 +346,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                 {!isVideoUrl(selectedItem.imageUrl) && (
                   <Button 
                     onClick={() => navigate('/planos-2')}
-                    className="w-full bg-gradient-to-r from-pink-500 to-slate-500 hover:opacity-90 text-white"
+                    className="w-full bg-gradient-to-r from-pink-500 to-slate-500 hover:opacity-90 text-foreground"
                   >
                     <Lock className="h-4 w-4 mr-2" />
                     Exclusivo Premium
@@ -395,7 +395,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                       playsInline
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                      <Play className="h-8 w-8 text-white" fill="currentColor" />
+                      <Play className="h-8 w-8 text-foreground" fill="currentColor" />
                     </div>
                   </div>
                 ) : (
@@ -413,7 +413,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                 {/* Badges */}
                 <div className="absolute top-2 left-2 flex gap-1 z-10">
                   {item.isPremium ? (
-                    <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-[10px]">
+                    <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-foreground border-0 text-[10px]">
                       <Star className="h-2.5 w-2.5 mr-0.5" fill="currentColor" />
                       {t("badges.premium")}
                     </Badge>
@@ -439,7 +439,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                     item.isPremium && !isPremium ? (
                       <Button
                         size="sm"
-                        className="w-full max-w-[140px] text-xs bg-gradient-to-r from-pink-500 to-slate-500 hover:opacity-90 text-white"
+                        className="w-full max-w-[140px] text-xs bg-gradient-to-r from-pink-500 to-slate-500 hover:opacity-90 text-foreground"
                         onClick={(e) => { e.stopPropagation(); navigate('/planos-2'); }}
                       >
                         <Lock className="h-3.5 w-3.5 mr-1.5" />
@@ -448,7 +448,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                     ) : (
                       <Button
                         size="sm"
-                        className="w-full max-w-[140px] text-xs bg-gradient-to-r from-pink-500 to-slate-500 hover:opacity-90 text-white"
+                        className="w-full max-w-[140px] text-xs bg-gradient-to-r from-pink-500 to-slate-500 hover:opacity-90 text-foreground"
                         onClick={(e) => { 
                           e.stopPropagation(); 
                           onClose();
@@ -464,7 +464,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
 
                 {/* Title */}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                  <p className="text-white text-xs font-medium truncate">{item.title}</p>
+                  <p className="text-foreground text-xs font-medium truncate">{item.title}</p>
                 </div>
               </div>
             ))}
@@ -473,7 +473,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
           {/* CTA Button */}
           <Button 
             onClick={goToLibrary} 
-            className="w-full mt-6 bg-gradient-primary hover:opacity-90 text-white font-semibold py-6"
+            className="w-full mt-6 bg-gradient-primary hover:opacity-90 text-foreground font-semibold py-6"
           >
             {t("collectionModal.seeMorePrompts")}
             <ArrowRight className="h-5 w-5 ml-2" />
@@ -486,7 +486,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
         <DialogContent className="max-w-3xl p-0 overflow-hidden bg-black">
           <button 
             onClick={() => setShowTutorialModal(false)} 
-            className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70 transition-colors"
+            className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-foreground hover:bg-black/70 transition-colors"
           >
             <X className="h-4 w-4" />
           </button>

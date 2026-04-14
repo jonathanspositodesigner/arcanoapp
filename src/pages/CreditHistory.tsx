@@ -68,7 +68,7 @@ const CreditHistory = () => {
 
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
       </div>
     );
@@ -81,23 +81,23 @@ const CreditHistory = () => {
         <Button
           variant="ghost"
           onClick={goBack}
-          className="mb-4 text-gray-300 hover:text-white hover:bg-white/50/20"
+          className="mb-4 text-muted-foreground hover:text-foreground hover:bg-accent0/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar
         </Button>
 
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <History className="h-6 w-6 text-gray-400" />
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <History className="h-6 w-6 text-muted-foreground" />
           Histórico de Créditos
         </h1>
 
         {/* Current Balance */}
-        <Card className="p-4 bg-[#111113] border-white/10">
+        <Card className="p-4 bg-background border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Coins className="h-5 w-5 text-yellow-400" />
-              <span className="text-gray-300">Saldo atual</span>
+              <span className="text-muted-foreground">Saldo atual</span>
             </div>
             <div className="flex items-center gap-2">
               <AnimatedCreditsDisplay 
@@ -110,25 +110,25 @@ const CreditHistory = () => {
               />
               <button
                 onClick={() => navigate('/planos-creditos')}
-                className="h-8 w-8 flex items-center justify-center rounded hover:bg-white/50/10"
+                className="h-8 w-8 flex items-center justify-center rounded hover:bg-accent0/10"
                 title="Comprar créditos"
               >
-                <PlusCircle className="w-5 h-5 text-gray-400" style={{ filter: 'drop-shadow(0 0 4px rgba(148, 163, 184, 0.5))' }} />
+                <PlusCircle className="w-5 h-5 text-muted-foreground" style={{ filter: 'drop-shadow(0 0 4px rgba(148, 163, 184, 0.5))' }} />
               </button>
             </div>
           </div>
         </Card>
 
         {/* Transaction List */}
-        <Card className="p-6 bg-[#111113] border-white/10">
-          <h2 className="text-lg font-semibold text-white mb-4">Todas as Transações</h2>
+        <Card className="p-6 bg-background border-border">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Todas as Transações</h2>
 
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : transactions.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-8">
+            <p className="text-sm text-muted-foreground text-center py-8">
               Nenhuma transação encontrada
             </p>
           ) : (
@@ -136,26 +136,26 @@ const CreditHistory = () => {
               {transactions.map((tx, index) => (
                 <div 
                   key={index} 
-                  className="flex items-center justify-between py-3 px-4 rounded-lg bg-white/5 hover:bg-white/5 transition-colors"
+                  className="flex items-center justify-between py-3 px-4 rounded-lg bg-accent hover:bg-accent transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     {tx.amount < 0 ? (
-                      <Zap className="h-5 w-5 text-gray-400" />
+                      <Zap className="h-5 w-5 text-muted-foreground" />
                     ) : (
                       <TrendingUp className="h-5 w-5 text-green-400" />
                     )}
                     <div>
-                      <p className="text-sm text-white">
+                      <p className="text-sm text-foreground">
                         {(tx.description?.includes('Pagar.me') || tx.description?.includes('Pagarme'))
                           ? tx.description.replace(/Compra\s+Pagar\.?me/i, 'Compra de créditos avulsos').replace(/Pagarme/i, 'créditos avulsos')
                           : tx.description || (tx.transaction_type === 'consumption' ? 'Uso do Upscaler' : 'Recarga de créditos')}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-muted-foreground">
                         {formatDate(tx.created_at)}
                       </p>
                     </div>
                   </div>
-                  <span className={`text-base font-medium ${tx.amount < 0 ? 'text-gray-400' : 'text-green-400'}`}>
+                  <span className={`text-base font-medium ${tx.amount < 0 ? 'text-muted-foreground' : 'text-green-400'}`}>
                     {tx.amount > 0 ? '+' : ''}{Math.abs(tx.amount).toLocaleString('pt-BR')}
                   </span>
                 </div>

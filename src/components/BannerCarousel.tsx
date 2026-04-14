@@ -214,11 +214,11 @@ const BannerCarousel = () => {
             {/* Content */}
             <div className="absolute inset-0 flex items-center">
               <div className="px-3 sm:px-8 lg:px-12 max-w-[75%] sm:max-w-xl">
-                <h3 className="text-sm sm:text-2xl lg:text-3xl font-bold text-white mb-1 sm:mb-2 line-clamp-2 leading-tight">
+                <h3 className="text-sm sm:text-2xl lg:text-3xl font-bold text-foreground mb-1 sm:mb-2 line-clamp-2 leading-tight">
                   {item.title}
                 </h3>
                 {(isVideoBanner(item) ? item.description : item.description) && (
-                  <p className="text-[10px] sm:text-sm lg:text-base text-white/80 mb-2 sm:mb-4 line-clamp-2 leading-snug">
+                  <p className="text-[10px] sm:text-sm lg:text-base text-foreground mb-2 sm:mb-4 line-clamp-2 leading-snug">
                     {isVideoBanner(item) ? item.description : item.description}
                   </p>
                 )}
@@ -233,7 +233,7 @@ const BannerCarousel = () => {
                   {isVideoBanner(item) && (
                     <button 
                       onClick={() => handleButtonClick(item.secondaryLink)}
-                      className="text-white/80 hover:text-white text-[10px] sm:text-sm underline underline-offset-2 transition-colors"
+                      className="text-foreground hover:text-foreground text-[10px] sm:text-sm underline underline-offset-2 transition-colors"
                     >
                       {item.secondaryText}
                     </button>
@@ -251,7 +251,7 @@ const BannerCarousel = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white h-7 w-7 sm:h-10 sm:w-10 rounded-full"
+            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-foreground h-7 w-7 sm:h-10 sm:w-10 rounded-full"
             onClick={prevSlide}
           >
             <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -259,7 +259,7 @@ const BannerCarousel = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white h-7 w-7 sm:h-10 sm:w-10 rounded-full"
+            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-foreground h-7 w-7 sm:h-10 sm:w-10 rounded-full"
             onClick={nextSlide}
           >
             <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -277,7 +277,7 @@ const BannerCarousel = () => {
               className={`h-1.5 sm:h-2 rounded-full transition-all ${
                 index === currentIndex 
                   ? 'w-3 sm:w-6 bg-white' 
-                  : 'w-1.5 sm:w-2 bg-white/50 hover:bg-white/70'
+                  : 'w-1.5 sm:w-2 bg-accent0 hover:bg-white/70'
               }`}
             />
           ))}

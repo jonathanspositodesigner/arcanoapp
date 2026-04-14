@@ -211,12 +211,12 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
     return (
       <>
         <div className="flex items-center gap-1.5 group/ctrl">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400 transition-colors group-hover/ctrl:text-gray-400">
+          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground transition-colors group-hover/ctrl:text-muted-foreground">
             Personagem
           </span>
           <button
             onClick={openModal}
-            className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] text-gray-300 transition-all duration-200 hover:border-white/10 hover:bg-white/[0.06] hover:scale-[1.04]"
+            className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] text-muted-foreground transition-all duration-200 hover:border-border hover:bg-white/[0.06] hover:scale-[1.04]"
           >
             {selectedCharacters.length > 0 ? (
               <div className="flex items-center gap-1">
@@ -225,16 +225,16 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
                     c.image_url ? (
                       <img key={c.id} src={c.image_url} alt="" className="w-4 h-4 rounded-full object-cover border border-[#0a0a18]" />
                     ) : (
-                      <div key={c.id} className="w-4 h-4 rounded-full bg-white/50/20 border border-[#0a0a18] flex items-center justify-center">
-                        <User className="w-2 h-2 text-gray-300" />
+                      <div key={c.id} className="w-4 h-4 rounded-full bg-accent0/20 border border-[#0a0a18] flex items-center justify-center">
+                        <User className="w-2 h-2 text-muted-foreground" />
                       </div>
                     )
                   ))}
                 </div>
-                <span className="text-gray-300">{selectedCharacters.length}/{maxCharacters}</span>
+                <span className="text-muted-foreground">{selectedCharacters.length}/{maxCharacters}</span>
               </div>
             ) : (
-              <span className="flex items-center gap-1 text-gray-500">
+              <span className="flex items-center gap-1 text-muted-foreground">
                 <User className="w-3 h-3" />
                 Nenhum
               </span>
@@ -243,9 +243,9 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
           {selectedCharacters.length > 0 && (
             <button
               onClick={() => onCharactersChange([])}
-              className="p-0.5 rounded hover:bg-white/10 transition-colors"
+              className="p-0.5 rounded hover:bg-accent transition-colors"
             >
-              <X className="w-3 h-3 text-gray-400 hover:text-gray-300" />
+              <X className="w-3 h-3 text-muted-foreground hover:text-muted-foreground" />
             </button>
           )}
         </div>
@@ -275,12 +275,12 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
                   <img src={char.image_url} alt="" className="w-7 h-7 rounded object-cover flex-shrink-0" />
                 ) : (
                   <div className="w-7 h-7 rounded bg-white/[0.04] flex items-center justify-center flex-shrink-0">
-                    <User className="w-3 h-3 text-gray-400" />
+                    <User className="w-3 h-3 text-muted-foreground" />
                   </div>
                 )}
-                <span className="text-[11px] text-gray-300 truncate flex-1">{char.name}</span>
-                <button onClick={() => removeChar(char.id)} className="p-0.5 hover:bg-white/10 rounded">
-                  <X className="w-3 h-3 text-gray-400" />
+                <span className="text-[11px] text-muted-foreground truncate flex-1">{char.name}</span>
+                <button onClick={() => removeChar(char.id)} className="p-0.5 hover:bg-accent rounded">
+                  <X className="w-3 h-3 text-muted-foreground" />
                 </button>
               </div>
             ))}
@@ -291,13 +291,13 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
           className="flex items-center gap-2 w-full p-2 rounded-md bg-black/20 border border-white/[0.06] hover:border-white/[0.12] transition-colors"
         >
           <div className="w-8 h-8 rounded bg-white/[0.04] flex items-center justify-center flex-shrink-0">
-            {selectedCharacters.length > 0 ? <Plus className="w-3.5 h-3.5 text-gray-400" /> : <User className="w-3.5 h-3.5 text-gray-400" />}
+            {selectedCharacters.length > 0 ? <Plus className="w-3.5 h-3.5 text-muted-foreground" /> : <User className="w-3.5 h-3.5 text-muted-foreground" />}
           </div>
           <div className="text-left min-w-0 flex-1">
-            <span className="text-[9px] text-gray-400 uppercase tracking-wider block">
+            <span className="text-[9px] text-muted-foreground uppercase tracking-wider block">
               Personagem ({selectedCharacters.length}/{maxCharacters})
             </span>
-            <span className="text-[11px] text-gray-300 truncate block">
+            <span className="text-[11px] text-muted-foreground truncate block">
               {selectedCharacters.length === 0 ? 'Selecionar...' : selectedCharacters.length < maxCharacters ? 'Adicionar mais...' : 'Limite atingido'}
             </span>
           </div>
@@ -319,7 +319,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
   function renderModal() {
     return (
       <Dialog open={modalOpen} onOpenChange={open => { if (!open) setModalOpen(false); }}>
-        <DialogContent className="bg-[#141420] border-white/[0.08] max-w-[520px] w-[95vw] max-h-[85vh] overflow-y-auto p-4">
+        <DialogContent className="bg-background border-white/[0.08] max-w-[520px] w-[95vw] max-h-[85vh] overflow-y-auto p-4">
           <DialogHeader>
             <DialogTitle className="text-gray-200 text-sm">
               {useSavedCharacters 
@@ -342,7 +342,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
                 onClick={() => { setModalOpen(false); setTimeout(() => setShowCreateCharacterModal(true), 150); }}
                 variant="outline"
                 size="sm"
-                className="w-full border-dashed border-white/[0.1] text-gray-400 text-[11px] hover:bg-white/[0.04]"
+                className="w-full border-dashed border-white/[0.1] text-muted-foreground text-[11px] hover:bg-white/[0.04]"
                 disabled={characters.length >= 20}
               >
                 <Plus className="w-3 h-3 mr-1" />
@@ -350,7 +350,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
               </Button>
 
               {selectedCharacters.length > 0 && (
-                <Button onClick={() => setModalOpen(false)} size="sm" className="w-full bg-white/50/20 hover:bg-white/50/30 text-gray-300 text-[11px]">
+                <Button onClick={() => setModalOpen(false)} size="sm" className="w-full bg-accent0/20 hover:bg-accent0/30 text-muted-foreground text-[11px]">
                   Confirmar seleção ({selectedCharacters.length})
                 </Button>
               )}
@@ -369,16 +369,16 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
                     <img src={newImagePreview} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <div className="text-center">
-                      <Plus className="w-5 h-5 text-gray-400 mx-auto mb-1" />
-                      <span className="text-[10px] text-gray-400">Adicionar imagem</span>
+                      <Plus className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
+                      <span className="text-[10px] text-muted-foreground">Adicionar imagem</span>
                     </div>
                   )}
                 </div>
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-                <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome" className="bg-black/20 border-white/[0.08] text-gray-300 text-[12px]" />
-                <Textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Descrição..." rows={3} className="bg-black/20 border-white/[0.08] text-gray-300 text-[12px] resize-none" />
+                <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome" className="bg-black/20 border-white/[0.08] text-muted-foreground text-[12px]" />
+                <Textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Descrição..." rows={3} className="bg-black/20 border-white/[0.08] text-muted-foreground text-[12px] resize-none" />
                 <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => { setShowCreate(false); resetForm(); }} className="flex-1 text-gray-400 text-[11px]">Cancelar</Button>
+                  <Button variant="ghost" size="sm" onClick={() => { setShowCreate(false); resetForm(); }} className="flex-1 text-muted-foreground text-[11px]">Cancelar</Button>
                   <Button size="sm" onClick={handleSave} disabled={saving || !newName.trim() || !newImage} className="flex-1 bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 text-[11px]">
                     {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Salvar'}
                   </Button>
@@ -386,13 +386,13 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
               </div>
             ) : (
               <div className="space-y-3 pt-2">
-                <Button onClick={() => setShowCreate(true)} variant="outline" size="sm" className="w-full border-dashed border-white/[0.1] text-gray-400 text-[11px] hover:bg-white/[0.04]">
+                <Button onClick={() => setShowCreate(true)} variant="outline" size="sm" className="w-full border-dashed border-white/[0.1] text-muted-foreground text-[11px] hover:bg-white/[0.04]">
                   <Plus className="w-3 h-3 mr-1" />
                   Criar novo personagem
                 </Button>
 
                 {selectedCharacters.length > 0 && (
-                  <Button onClick={() => setModalOpen(false)} size="sm" className="w-full bg-white/50/20 hover:bg-white/50/30 text-gray-300 text-[11px]">
+                  <Button onClick={() => setModalOpen(false)} size="sm" className="w-full bg-accent0/20 hover:bg-accent0/30 text-muted-foreground text-[11px]">
                     Confirmar seleção ({selectedCharacters.length})
                   </Button>
                 )}
@@ -410,13 +410,13 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
     if (loading) {
       return (
         <div className="py-8 flex justify-center">
-          <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
         </div>
       );
     }
     
     if (characters.length === 0) {
-      return <p className="text-[11px] text-gray-400 text-center py-6">Nenhum personagem salvo ainda.</p>;
+      return <p className="text-[11px] text-muted-foreground text-center py-6">Nenhum personagem salvo ainda.</p>;
     }
 
     return (
@@ -436,12 +436,12 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
                   <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <User className="w-5 h-5 text-gray-400" />
+                    <User className="w-5 h-5 text-muted-foreground" />
                   </div>
                 )}
                 {isSelected && (
-                  <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-white/50 flex items-center justify-center">
-                    <span className="text-[8px] text-white font-bold">✓</span>
+                  <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-accent0 flex items-center justify-center">
+                    <span className="text-[8px] text-foreground font-bold">✓</span>
                   </div>
                 )}
                 <button
@@ -452,7 +452,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
                 </button>
               </div>
               <div className="px-1 py-1 bg-black/40">
-                <span className="text-[9px] text-gray-300 font-medium block truncate text-center">{item.name}</span>
+                <span className="text-[9px] text-muted-foreground font-medium block truncate text-center">{item.name}</span>
               </div>
             </div>
           );
@@ -463,7 +463,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
               <div className="w-3 h-3 rounded-full border border-white/[0.08]" />
             </div>
             <div className="px-1 py-1 bg-black/20">
-              <span className="text-[9px] text-gray-400 block text-center">—</span>
+              <span className="text-[9px] text-muted-foreground block text-center">—</span>
             </div>
           </div>
         ))}

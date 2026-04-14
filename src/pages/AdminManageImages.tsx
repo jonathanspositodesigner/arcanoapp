@@ -839,7 +839,7 @@ const AdminManageImages = () => {
                         {/* Badge indicando se é thumbnail provisória (reference_images) */}
                         {hasRefButNoThumb && (
                           <div className="absolute top-2 left-2">
-                            <Badge className="bg-yellow-500/90 text-white text-xs">
+                            <Badge className="bg-yellow-500/90 text-foreground text-xs">
                               Imagem de referência
                             </Badge>
                           </div>
@@ -865,7 +865,7 @@ const AdminManageImages = () => {
                   {/* Badge de vídeo */}
                   {isVideo && (
                     <div className="absolute bottom-2 left-2">
-                      <Badge className="bg-black/70 text-white">
+                      <Badge className="bg-black/70 text-foreground">
                         <Play className="h-3 w-3 mr-1" fill="currentColor" />
                         Vídeo
                       </Badge>
@@ -874,7 +874,7 @@ const AdminManageImages = () => {
                   
                   <div className="absolute top-2 right-2 flex gap-1">
                     {prompt.is_premium && (
-                      <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
+                      <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-foreground border-0">
                         <Star className="h-3 w-3 mr-1" fill="currentColor" />
                         Premium
                       </Badge>

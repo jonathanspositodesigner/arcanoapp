@@ -94,7 +94,7 @@ const ChangePasswordArtesMusicos = () => {
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#2d1b4e] to-[#0f0f1a] flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
+        <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
       </div>
     );
   }
@@ -103,24 +103,24 @@ const ChangePasswordArtesMusicos = () => {
   if (sentParam === '1' && emailParam && !hasSession) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#2d1b4e] to-[#0f0f1a] flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-white/10">
+        <Card className="w-full max-w-md bg-card/80 border-border">
           <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-white/50/30 rounded-full flex items-center justify-center mb-4">
-              <Mail className="h-6 w-6 text-gray-400" />
+            <div className="mx-auto w-12 h-12 bg-accent0/30 rounded-full flex items-center justify-center mb-4">
+              <Mail className="h-6 w-6 text-muted-foreground" />
             </div>
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Music className="h-5 w-5 text-gray-400" />
+              <Music className="h-5 w-5 text-muted-foreground" />
             </div>
-            <CardTitle className="text-2xl text-white">Primeiro Acesso</CardTitle>
-            <CardDescription className="text-white/60">
+            <CardTitle className="text-2xl text-foreground">Primeiro Acesso</CardTitle>
+            <CardDescription className="text-muted-foreground">
               Enviamos um link para criar sua senha para:
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-white font-medium bg-white/50/20 py-2 px-4 rounded-lg text-center">
+            <p className="text-foreground font-medium bg-accent0/20 py-2 px-4 rounded-lg text-center">
               {emailParam}
             </p>
-            <p className="text-white/50 text-sm text-center">
+            <p className="text-muted-foreground text-sm text-center">
               Clique no link do email para voltar aqui e cadastrar sua senha.
             </p>
 
@@ -128,7 +128,7 @@ const ChangePasswordArtesMusicos = () => {
               <Button
                 onClick={handleRefreshSession}
                 variant="outline"
-                className="w-full border-white/10 text-white hover:bg-white/50/20"
+                className="w-full border-border text-foreground hover:bg-accent0/20"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Já cliquei no link
@@ -138,7 +138,7 @@ const ChangePasswordArtesMusicos = () => {
                 onClick={handleResendLink}
                 disabled={resendCooldown > 0 || isResending}
                 variant="ghost"
-                className="w-full text-white/60 hover:text-white"
+                className="w-full text-muted-foreground hover:text-foreground"
               >
                 {isResending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {resendCooldown > 0 
@@ -149,7 +149,7 @@ const ChangePasswordArtesMusicos = () => {
               <Button
                 onClick={() => navigate('/login-artes-musicos')}
                 variant="ghost"
-                className="w-full text-white/40 hover:text-white"
+                className="w-full text-white/40 hover:text-foreground"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Usar outro email
@@ -216,16 +216,16 @@ const ChangePasswordArtesMusicos = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#2d1b4e] to-[#0f0f1a] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-white/10">
+      <Card className="w-full max-w-md bg-card/80 border-border">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-white/50/30 rounded-full flex items-center justify-center mb-4">
-            <Lock className="h-6 w-6 text-gray-400" />
+          <div className="mx-auto w-12 h-12 bg-accent0/30 rounded-full flex items-center justify-center mb-4">
+            <Lock className="h-6 w-6 text-muted-foreground" />
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Music className="h-5 w-5 text-gray-400" />
+            <Music className="h-5 w-5 text-muted-foreground" />
           </div>
-          <CardTitle className="text-2xl text-white">Alterar Senha</CardTitle>
-          <CardDescription className="text-white/60">
+          <CardTitle className="text-2xl text-foreground">Alterar Senha</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Por segurança, altere sua senha antes de continuar
           </CardDescription>
         </CardHeader>
@@ -237,13 +237,13 @@ const ChangePasswordArtesMusicos = () => {
                 placeholder="Nova senha"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-[#0f0f1a] border-white/10 text-white pr-10"
+                className="bg-card border-border text-foreground pr-10"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -254,25 +254,25 @@ const ChangePasswordArtesMusicos = () => {
                 placeholder="Confirmar nova senha"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="bg-[#0f0f1a] border-white/10 text-white pr-10"
+                className="bg-card border-border text-foreground pr-10"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
 
-            <p className="text-white/50 text-sm">
+            <p className="text-muted-foreground text-sm">
               A senha deve ter pelo menos 6 caracteres
             </p>
 
             <Button
               type="submit"
-              className="w-full bg-slate-600 hover:bg-slate-700 text-white"
+              className="w-full bg-slate-600 hover:bg-slate-700 text-foreground"
               disabled={isLoading}
             >
               {isLoading ? "Alterando..." : "Alterar Senha"}

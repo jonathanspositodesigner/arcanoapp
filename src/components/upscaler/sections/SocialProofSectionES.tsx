@@ -64,11 +64,11 @@ export const SocialProofSectionES = ({ onZoomClick, isMobile = false }: SocialPr
     <AnimatedSection className="px-4 py-20">
       <div className="max-w-4xl mx-auto">
         <AnimatedSection as="div" delay={100}>
-          <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-2 tracking-wide leading-tight px-2">
-            {t('tools:upscaler.socialProof.title')} <span className="text-gray-400">{t('tools:upscaler.socialProof.result')}</span>
+          <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-2 tracking-wide leading-tight px-2">
+            {t('tools:upscaler.socialProof.title')} <span className="text-muted-foreground">{t('tools:upscaler.socialProof.result')}</span>
             <span className="block sm:inline"> {t('tools:upscaler.socialProof.subtitle')}</span>
           </h2>
-          <p className="text-white/60 text-center text-base sm:text-lg mb-8 md:mb-12 px-4">
+          <p className="text-muted-foreground text-center text-base sm:text-lg mb-8 md:mb-12 px-4">
             {t('tools:upscaler.socialProof.description')}
           </p>
         </AnimatedSection>
@@ -90,8 +90,8 @@ export const SocialProofSectionES = ({ onZoomClick, isMobile = false }: SocialPr
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="-left-4 h-10 w-10 bg-white/50 hover:bg-slate-600 border-none text-white shadow-lg shadow-slate-500/20" />
-            <CarouselNext className="-right-4 h-10 w-10 bg-white/50 hover:bg-slate-600 border-none text-white shadow-lg shadow-slate-500/20" />
+            <CarouselPrevious className="-left-4 h-10 w-10 bg-accent0 hover:bg-slate-600 border-none text-foreground shadow-lg shadow-slate-500/20" />
+            <CarouselNext className="-right-4 h-10 w-10 bg-accent0 hover:bg-slate-600 border-none text-foreground shadow-lg shadow-slate-500/20" />
           </Carousel>
         </div>
 

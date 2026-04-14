@@ -97,7 +97,7 @@ export const BeforeAfterSlider = ({
     <div className="space-y-3">
       <div 
         ref={containerRef}
-        className="relative w-full rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-white/10 shadow-2xl shadow-white/5"
+        className="relative w-full rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-border shadow-2xl shadow-white/5"
         onDragStart={(e) => e.preventDefault()}
         style={{ aspectRatio: getAspectRatio() }}
         onMouseDown={handleMouseDown}
@@ -167,12 +167,12 @@ export const BeforeAfterSlider = ({
         </div>
 
         {/* Labels */}
-        <div className={`absolute left-3 bg-black/60 text-white/80 font-medium rounded-full ${
+        <div className={`absolute left-3 bg-black/60 text-foreground font-medium rounded-full ${
           compact ? 'top-2 text-[8px] px-1.5 py-0.5' : 'top-3 text-[10px] px-2.5 py-1'
         }`}>
           {t('tools:upscaler.beforeAfter.before')}
         </div>
-        <div className={`absolute right-3 bg-white/15 text-white/80 font-medium rounded-full ${
+        <div className={`absolute right-3 bg-white/15 text-foreground font-medium rounded-full ${
           compact ? 'top-2 text-[8px] px-1.5 py-0.5' : 'top-3 text-[10px] px-2.5 py-1'
         }`}>
           {t('tools:upscaler.beforeAfter.after')}
@@ -185,13 +185,13 @@ export const BeforeAfterSlider = ({
               e.stopPropagation();
               onZoomClick();
             }}
-            className="absolute bottom-4 right-4 p-3 bg-black/70 hover:bg-black/90 rounded-full transition-all duration-300 hover:scale-110 border border-white/20 z-10"
+            className="absolute bottom-4 right-4 p-3 bg-black/70 hover:bg-black/90 rounded-full transition-all duration-300 hover:scale-110 border border-border z-10"
           >
-            <ZoomIn className="h-5 w-5 text-white" />
+            <ZoomIn className="h-5 w-5 text-foreground" />
           </button>
         )}
       </div>
-      {label && <p className="text-center text-white/60 text-sm">{label}</p>}
+      {label && <p className="text-center text-muted-foreground text-sm">{label}</p>}
     </div>
   );
 };

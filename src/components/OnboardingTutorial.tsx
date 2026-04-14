@@ -228,7 +228,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
       {/* Skip button - always on top and clickable */}
       <button
         onClick={handleSkip}
-        className="absolute top-3 right-3 z-[100] flex items-center gap-1 text-white/80 hover:text-white text-sm pointer-events-auto"
+        className="absolute top-3 right-3 z-[100] flex items-center gap-1 text-foreground hover:text-foreground text-sm pointer-events-auto"
       >
         <X className="h-4 w-4" />
         {t("onboarding.skip")}
@@ -239,8 +239,8 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
         <div className="absolute inset-0 flex flex-col p-4 pt-10 pb-6 pointer-events-auto overflow-y-auto" style={{ backgroundColor: overlayColor }}>
           {/* Welcome header */}
           <div className="text-center mb-4">
-            <h2 className="text-2xl font-bold text-white mb-1">{t("onboarding.welcome")}</h2>
-            <p className="text-white/70 text-sm">{t("onboarding.tutorialIntro")}</p>
+            <h2 className="text-2xl font-bold text-foreground mb-1">{t("onboarding.welcome")}</h2>
+            <p className="text-muted-foreground text-sm">{t("onboarding.tutorialIntro")}</p>
           </div>
           {/* Example card */}
           <div className="bg-card rounded-2xl overflow-hidden shadow-xl flex flex-col" style={{ height: '55vh', maxHeight: '400px' }}>
@@ -275,7 +275,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
               
               {/* Highlighted button */}
               <Button 
-                className="w-full bg-gradient-primary text-white font-semibold py-3 ring-4 ring-white/50 animate-pulse"
+                className="w-full bg-gradient-primary text-foreground font-semibold py-3 ring-4 ring-white/50 animate-pulse"
                 onClick={handleCopyPrompt}
                 data-tutorial-modal="copy-prompt"
               >
@@ -290,7 +290,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
             <div className="bg-card rounded-xl p-4 shadow-xl border border-border">
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0">
-                  <Copy className="h-5 w-5 text-white" />
+                  <Copy className="h-5 w-5 text-foreground" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
@@ -414,7 +414,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
               <Button
                 onClick={handleNext}
                 size="sm"
-                className="bg-gradient-primary text-white flex-shrink-0"
+                className="bg-gradient-primary text-foreground flex-shrink-0"
               >
                 {currentStep < tutorialSteps.length - 1 ? (
                   <ChevronRight className="h-4 w-4" />

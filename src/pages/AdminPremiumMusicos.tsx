@@ -355,7 +355,7 @@ const AdminPremiumMusicos = () => {
     return (
       <AdminLayoutPlatform platform="artes-musicos">
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white/10" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-border" />
         </div>
       </AdminLayoutPlatform>
     );
@@ -385,7 +385,7 @@ const AdminPremiumMusicos = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/50/20 rounded-full">
+              <div className="p-2 bg-accent0/20 rounded-full">
                 <Users className="h-5 w-5 text-slate-400" />
               </div>
               <div>

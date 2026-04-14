@@ -91,7 +91,7 @@ const TutorialArtes = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-500"></div>
       </div>
     );
@@ -102,23 +102,23 @@ const TutorialArtes = () => {
   const description = t('tutorial.learnWithTutorials');
 
   return (
-    <div className="min-h-screen bg-[#111113]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-[#111113] border-b border-white/10 p-4">
+      <header className="bg-background border-b border-border p-4">
         <div className="container mx-auto flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate("/biblioteca-artes")}
-            className="text-gray-300 hover:text-white hover:bg-white/50/20"
+            className="text-muted-foreground hover:text-foreground hover:bg-accent0/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-xl font-bold text-white">
+            <h1 className="text-xl font-bold text-foreground">
               {title}
             </h1>
-            <p className="text-sm text-gray-300">
+            <p className="text-sm text-muted-foreground">
               {description}
             </p>
           </div>
@@ -128,13 +128,13 @@ const TutorialArtes = () => {
       {/* Content */}
       <main className="container mx-auto p-4 md:p-6">
         {lessons.length === 0 ? (
-          <Card className="max-w-2xl mx-auto bg-[#111113]/50 border-white/10">
+          <Card className="max-w-2xl mx-auto bg-background/50 border-border">
             <CardContent className="p-8 text-center">
-              <Play className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-white mb-2">
+              <Play className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-foreground mb-2">
                 {t('tutorial.contentComingSoon')}
               </h2>
-              <p className="text-gray-300">
+              <p className="text-muted-foreground">
                 {t('tutorial.lessonsComingSoon')}
               </p>
             </CardContent>
@@ -142,11 +142,11 @@ const TutorialArtes = () => {
         ) : (
           <div className="space-y-6 max-w-4xl mx-auto">
             {lessons.map((lesson, index) => (
-              <Card key={index} className="bg-[#111113]/50 border-white/10">
+              <Card key={index} className="bg-background/50 border-border">
                 <CardHeader>
-                  <CardTitle className="text-lg text-white">{lesson.title}</CardTitle>
+                  <CardTitle className="text-lg text-foreground">{lesson.title}</CardTitle>
                   {lesson.description && (
-                    <p className="text-gray-300 text-sm mt-1">{lesson.description}</p>
+                    <p className="text-muted-foreground text-sm mt-1">{lesson.description}</p>
                   )}
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -165,7 +165,7 @@ const TutorialArtes = () => {
                         <Button
                           key={btnIndex}
                           onClick={() => window.open(button.url, "_blank")}
-                          className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white"
+                          className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-foreground"
                         >
                           <ExternalLink className="h-4 w-4 mr-2" />
                           {button.text}

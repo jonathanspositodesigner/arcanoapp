@@ -211,7 +211,7 @@ const AdminPartnersArtes = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="text-white">Carregando...</div>
+        <div className="text-foreground">Carregando...</div>
       </div>
     );
   }
@@ -222,64 +222,64 @@ const AdminPartnersArtes = () => {
         <div className="flex items-center justify-between mb-6">
           <Button
             variant="ghost"
-            className="text-white/70 hover:text-white"
+            className="text-muted-foreground hover:text-foreground"
             onClick={() => navigate("/admin-artes-eventos/ferramentas")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
           </Button>
-          <h1 className="text-xl md:text-2xl font-bold text-white">
+          <h1 className="text-xl md:text-2xl font-bold text-foreground">
             Gerenciar Colaboradores de Artes
           </h1>
         </div>
 
         <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
           <DialogTrigger asChild>
-            <Button className="w-full mb-6 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white">
+            <Button className="w-full mb-6 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground">
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Colaborador
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-[#1a1a2e] border-[#2d4a5e]/30 text-white">
+          <DialogContent className="bg-card border-border/30 text-foreground">
             <DialogHeader>
               <DialogTitle>Novo Colaborador de Artes</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="text-sm text-white/60">Nome *</label>
+                <label className="text-sm text-muted-foreground">Nome *</label>
                 <Input
                   value={newPartner.name}
                   onChange={(e) => setNewPartner({ ...newPartner, name: e.target.value })}
-                  className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
               <div>
-                <label className="text-sm text-white/60">Email *</label>
+                <label className="text-sm text-muted-foreground">Email *</label>
                 <Input
                   type="email"
                   value={newPartner.email}
                   onChange={(e) => setNewPartner({ ...newPartner, email: e.target.value })}
-                  className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
               <div>
-                <label className="text-sm text-white/60">Telefone</label>
+                <label className="text-sm text-muted-foreground">Telefone</label>
                 <Input
                   value={newPartner.phone}
                   onChange={(e) => setNewPartner({ ...newPartner, phone: e.target.value })}
-                  className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
               <div>
-                <label className="text-sm text-white/60">Empresa</label>
+                <label className="text-sm text-muted-foreground">Empresa</label>
                 <Input
                   value={newPartner.company}
                   onChange={(e) => setNewPartner({ ...newPartner, company: e.target.value })}
-                  className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
               <Button
-                className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+                className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
                 onClick={handleAddPartner}
               >
                 Criar Colaborador
@@ -291,24 +291,24 @@ const AdminPartnersArtes = () => {
         {/* Partners List */}
         <div className="space-y-4">
           {partners.length === 0 ? (
-            <Card className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
-              <CardContent className="p-8 text-center text-white/60">
+            <Card className="bg-card/80 border-border/30">
+              <CardContent className="p-8 text-center text-muted-foreground">
                 Nenhum colaborador cadastrado
               </CardContent>
             </Card>
           ) : (
             partners.map((partner) => (
-              <Card key={partner.id} className="bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
+              <Card key={partner.id} className="bg-card/80 border-border/30">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-white font-medium">{partner.name}</h3>
+                        <h3 className="text-foreground font-medium">{partner.name}</h3>
                         <Badge className={partner.is_active ? "bg-green-500" : "bg-red-500"}>
                           {partner.is_active ? "Ativo" : "Inativo"}
                         </Badge>
                       </div>
-                      <p className="text-white/60 text-sm">{partner.email}</p>
+                      <p className="text-muted-foreground text-sm">{partner.email}</p>
                       {partner.company && (
                         <p className="text-white/40 text-xs">{partner.company}</p>
                       )}
@@ -317,7 +317,7 @@ const AdminPartnersArtes = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-[#2d4a5e]/50 text-white/70"
+                        className="border-border/50 text-muted-foreground"
                         onClick={() => {
                           setEditingPartner(partner);
                           setShowEditModal(true);
@@ -328,7 +328,7 @@ const AdminPartnersArtes = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        className={`border-[#2d4a5e]/50 ${partner.is_active ? "text-yellow-400" : "text-green-400"}`}
+                        className={`border-border/50 ${partner.is_active ? "text-yellow-400" : "text-green-400"}`}
                         onClick={() => handleToggleActive(partner)}
                       >
                         <Power className="h-4 w-4" />
@@ -352,46 +352,46 @@ const AdminPartnersArtes = () => {
 
       {/* Edit Modal */}
       <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-        <DialogContent className="bg-[#1a1a2e] border-[#2d4a5e]/30 text-white">
+        <DialogContent className="bg-card border-border/30 text-foreground">
           <DialogHeader>
             <DialogTitle>Editar Colaborador</DialogTitle>
           </DialogHeader>
           {editingPartner && (
             <div className="space-y-4">
               <div>
-                <label className="text-sm text-white/60">Nome</label>
+                <label className="text-sm text-muted-foreground">Nome</label>
                 <Input
                   value={editingPartner.name}
                   onChange={(e) => setEditingPartner({ ...editingPartner, name: e.target.value })}
-                  className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
               <div>
-                <label className="text-sm text-white/60">Email (não editável)</label>
+                <label className="text-sm text-muted-foreground">Email (não editável)</label>
                 <Input
                   value={editingPartner.email}
                   disabled
-                  className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white/50"
+                  className="bg-card border-border/50 text-muted-foreground"
                 />
               </div>
               <div>
-                <label className="text-sm text-white/60">Telefone</label>
+                <label className="text-sm text-muted-foreground">Telefone</label>
                 <Input
                   value={editingPartner.phone || ""}
                   onChange={(e) => setEditingPartner({ ...editingPartner, phone: e.target.value })}
-                  className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
               <div>
-                <label className="text-sm text-white/60">Empresa</label>
+                <label className="text-sm text-muted-foreground">Empresa</label>
                 <Input
                   value={editingPartner.company || ""}
                   onChange={(e) => setEditingPartner({ ...editingPartner, company: e.target.value })}
-                  className="bg-[#0f0f1a] border-[#2d4a5e]/50 text-white"
+                  className="bg-card border-border/50 text-foreground"
                 />
               </div>
               <Button
-                className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+                className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
                 onClick={handleUpdatePartner}
               >
                 Salvar
@@ -403,17 +403,17 @@ const AdminPartnersArtes = () => {
 
       {/* Success Modal */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="bg-[#1a1a2e] border-[#2d4a5e]/30 text-white">
+        <DialogContent className="bg-card border-border/30 text-foreground">
           <DialogHeader>
             <DialogTitle>Colaborador Criado!</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-white/60">Compartilhe as credenciais com o colaborador:</p>
-            <div className="bg-[#0f0f1a] p-4 rounded-lg space-y-2">
+            <p className="text-muted-foreground">Compartilhe as credenciais com o colaborador:</p>
+            <div className="bg-card p-4 rounded-lg space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-white/60">Email:</span>
+                <span className="text-muted-foreground">Email:</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-white">{createdPartnerEmail}</span>
+                  <span className="text-foreground">{createdPartnerEmail}</span>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -424,9 +424,9 @@ const AdminPartnersArtes = () => {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-white/60">Senha:</span>
+                <span className="text-muted-foreground">Senha:</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-white font-mono">{generatedPassword}</span>
+                  <span className="text-foreground font-mono">{generatedPassword}</span>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -438,7 +438,7 @@ const AdminPartnersArtes = () => {
               </div>
             </div>
             <Button
-              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white"
+              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
               onClick={() => setShowSuccessModal(false)}
             >
               Fechar

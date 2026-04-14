@@ -21,10 +21,10 @@ const ArtesMusicosFerramentas = () => {
         </div>
 
         {/* Info Banner */}
-        <div className="p-4 bg-white/50/10 border border-white/10/20 rounded-lg mb-6">
+        <div className="p-4 bg-accent0/10 border border-border/20 rounded-lg mb-6">
           <div className="flex items-center gap-3">
             <Clock className="h-5 w-5 text-slate-400" />
-            <p className="text-sm text-gray-400 font-medium">
+            <p className="text-sm text-muted-foreground font-medium">
               As demais ferramentas estão em desenvolvimento. Em breve você poderá configurar tudo por aqui!
             </p>
           </div>
@@ -32,12 +32,12 @@ const ArtesMusicosFerramentas = () => {
 
         {/* Stats Cards - Disabled */}
         <div className="grid grid-cols-1 gap-4 mb-6">
-          <Card className="p-6 bg-gradient-to-r from-slate-500/10 to-slate-400/5 border-white/10/20 opacity-60 cursor-not-allowed relative">
-            <Badge className="absolute top-2 right-2 bg-white/50/20 text-gray-400 border-white/10">
+          <Card className="p-6 bg-gradient-to-r from-slate-500/10 to-slate-400/5 border-border/20 opacity-60 cursor-not-allowed relative">
+            <Badge className="absolute top-2 right-2 bg-accent0/20 text-muted-foreground border-border">
               Em breve
             </Badge>
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/50/20 rounded-full">
+              <div className="p-3 bg-accent0/20 rounded-full">
                 <Inbox className="h-8 w-8 text-slate-400" />
               </div>
               <div className="flex-1">
@@ -57,12 +57,12 @@ const ArtesMusicosFerramentas = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {/* Upload - ENABLED */}
           <Card 
-            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-white/10/50"
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-border/50"
             onClick={() => navigate("/admin-upload-artes-musicos")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-gradient-to-r from-slate-500 to-slate-400 rounded-full">
-                <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Enviar Arte</h2>
               <p className="text-muted-foreground hidden sm:block">Faça upload de novas artes</p>
@@ -70,12 +70,12 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card 
-            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-white/10/50"
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-border/50"
             onClick={() => navigate("/admin-artes-musicos/review")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-green-500 rounded-full">
-                <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Analisar Artes</h2>
               <p className="text-muted-foreground hidden sm:block">Aprove ou rejeite contribuições</p>
@@ -83,12 +83,12 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card 
-            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-white/10/50"
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-border/50"
             onClick={() => navigate("/admin-manage-artes-musicos")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-blue-500 rounded-full">
-                <Settings className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                <Settings className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Artes</h2>
               <p className="text-muted-foreground hidden sm:block">Edite ou exclua artes publicadas</p>
@@ -96,12 +96,12 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card className="p-3 sm:p-8 opacity-60 cursor-not-allowed relative">
-            <Badge className="absolute top-2 right-2 bg-white/50/20 text-gray-400 border-white/10 text-[10px] sm:text-xs">
+            <Badge className="absolute top-2 right-2 bg-accent0/20 text-muted-foreground border-border text-[10px] sm:text-xs">
               Em breve
             </Badge>
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-gradient-to-r from-slate-500 to-pink-500 rounded-full">
-                <Package className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                <Package className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Packs</h2>
               <p className="text-muted-foreground hidden sm:block">Configure packs e preços</p>
@@ -109,12 +109,12 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card 
-            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-white/10/50"
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-border/50"
             onClick={() => navigate("/admin-premium-musicos")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-teal-500 rounded-full">
-                <Users className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                <Users className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Clientes</h2>
               <p className="text-muted-foreground hidden sm:block">Gerencie clientes e acessos</p>
@@ -122,12 +122,12 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card 
-            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-white/10/50"
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-border/50"
             onClick={() => navigate("/admin-categories-musicos")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-white/20 rounded-full">
-                <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Categorias</h2>
               <p className="text-muted-foreground hidden sm:block">Gerencie categorias de artes</p>
@@ -135,12 +135,12 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card className="p-3 sm:p-8 opacity-60 cursor-not-allowed relative">
-            <Badge className="absolute top-2 right-2 bg-white/50/20 text-gray-400 border-white/10 text-[10px] sm:text-xs">
+            <Badge className="absolute top-2 right-2 bg-accent0/20 text-muted-foreground border-border text-[10px] sm:text-xs">
               Em breve
             </Badge>
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-rose-500 rounded-full">
-                <Image className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
+                <Image className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Banners</h2>
               <p className="text-muted-foreground hidden sm:block">Gerencie banners promocionais</p>

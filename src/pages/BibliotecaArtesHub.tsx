@@ -13,7 +13,7 @@ const BibliotecaArtesHub = () => {
       <img src={baaLogo} alt={t('artesHub.title')} className="h-20 sm:h-24 mb-6 drop-shadow-2xl" />
       
       {/* Título */}
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 text-center">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 text-center">
         {t('artesHub.title')}
       </h1>
       <p className="text-muted-foreground text-center mb-8 sm:mb-12 max-w-md">
@@ -29,7 +29,7 @@ const BibliotecaArtesHub = () => {
           
           {/* Icon */}
           <div className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-yellow-600 shadow-lg shadow-amber-500/30 group-hover:shadow-amber-400/50 transition-all">
-            <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+            <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-foreground" />
           </div>
           
           {/* Title */}
@@ -43,19 +43,19 @@ const BibliotecaArtesHub = () => {
           </p>
           
           {/* Button */}
-          <button className="relative z-10 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 text-white font-medium hover:from-amber-400 hover:to-yellow-500 transition-all shadow-md hover:shadow-lg">
+          <button className="relative z-10 px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-600 text-foreground font-medium hover:from-amber-400 hover:to-yellow-500 transition-all shadow-md hover:shadow-lg">
             {t('artesHub.access')}
           </button>
         </div>
 
         {/* Card - Músicos & Artistas */}
-        <div onClick={() => navigate("/biblioteca-artes-musicos")} className="group cursor-pointer relative overflow-hidden rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-2xl bg-gradient-to-br from-slate-950/40 to-white/5 border-2 border-white/10 hover:border-white/20">
+        <div onClick={() => navigate("/biblioteca-artes-musicos")} className="group cursor-pointer relative overflow-hidden rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center transition-all duration-300 hover:scale-105 hover:shadow-2xl bg-gradient-to-br from-slate-950/40 to-white/5 border-2 border-border hover:border-border">
           {/* Glow Effect */}
           <div className="absolute inset-0 bg-gradient-to-br from-slate-500/10 to-slate-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
           {/* Icon */}
           <div className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center rounded-full bg-gradient-to-br from-slate-500 to-slate-500 shadow-lg shadow-slate-500/20 group-hover:shadow-slate-400/20 transition-all">
-            <Music className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+            <Music className="w-10 h-10 sm:w-12 sm:h-12 text-foreground" />
           </div>
           
           {/* Title */}
@@ -64,19 +64,19 @@ const BibliotecaArtesHub = () => {
           </h2>
           
           {/* Description */}
-          <p className="relative z-10 text-sm sm:text-base text-gray-400 mb-4">
+          <p className="relative z-10 text-sm sm:text-base text-muted-foreground mb-4">
             {t('artesHub.musicosDescription')}
           </p>
           
           {/* Button */}
-          <button className="relative z-10 px-6 py-2.5 rounded-full bg-gradient-to-r from-slate-500 to-slate-500 text-white font-medium hover:from-slate-400 hover:to-slate-400 transition-all shadow-md hover:shadow-lg">
+          <button className="relative z-10 px-6 py-2.5 rounded-full bg-gradient-to-r from-slate-500 to-slate-500 text-foreground font-medium hover:from-slate-400 hover:to-slate-400 transition-all shadow-md hover:shadow-lg">
             {t('artesHub.access')}
           </button>
         </div>
       </div>
 
       {/* Link para voltar */}
-      <button onClick={() => navigate("/")} className="mt-8 text-sm text-muted-foreground hover:text-white transition-colors underline">
+      <button onClick={() => navigate("/")} className="mt-8 text-sm text-muted-foreground hover:text-foreground transition-colors underline">
         {t('artesHub.backToHome')}
       </button>
     </div>

@@ -153,21 +153,21 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
             <img src={selectedScenario.image_url} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
           ) : (
             <div className="w-8 h-8 rounded bg-white/[0.04] flex items-center justify-center flex-shrink-0">
-              <MapPin className="w-3.5 h-3.5 text-gray-400" />
+              <MapPin className="w-3.5 h-3.5 text-muted-foreground" />
             </div>
           )}
           <div className="text-left min-w-0 flex-1">
-            <span className="text-[9px] text-gray-400 uppercase tracking-wider block">Cenário</span>
-            <span className="text-[11px] text-gray-300 truncate block">
+            <span className="text-[9px] text-muted-foreground uppercase tracking-wider block">Cenário</span>
+            <span className="text-[11px] text-muted-foreground truncate block">
               {selectedScenario ? selectedScenario.name : 'Selecionar...'}
             </span>
           </div>
           {selectedScenario && (
             <button
               onClick={e => { e.stopPropagation(); setSelectedScenario(null); onScenarioChange?.(null); }}
-              className="p-0.5 hover:bg-white/10 rounded"
+              className="p-0.5 hover:bg-accent rounded"
             >
-              <X className="w-3 h-3 text-gray-400" />
+              <X className="w-3 h-3 text-muted-foreground" />
             </button>
           )}
         </button>
@@ -175,7 +175,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
 
       {/* Scenario Modal */}
       <Dialog open={scenarioModalOpen} onOpenChange={open => { if (!open) setScenarioModalOpen(false); }}>
-        <DialogContent className="bg-[#141420] border-white/[0.08] max-w-[520px] w-[95vw] max-h-[85vh] overflow-y-auto p-4">
+        <DialogContent className="bg-background border-white/[0.08] max-w-[520px] w-[95vw] max-h-[85vh] overflow-y-auto p-4">
           <DialogHeader>
             <DialogTitle className="text-gray-200 text-sm">🏔 Cenários</DialogTitle>
           </DialogHeader>
@@ -190,16 +190,16 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                   <img src={newImagePreview} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="text-center">
-                    <Plus className="w-5 h-5 text-gray-400 mx-auto mb-1" />
-                    <span className="text-[10px] text-gray-400">Adicionar imagem</span>
+                    <Plus className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
+                    <span className="text-[10px] text-muted-foreground">Adicionar imagem</span>
                   </div>
                 )}
               </div>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-              <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome" className="bg-black/20 border-white/[0.08] text-gray-300 text-[12px]" />
-              <Textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Descrição..." rows={3} className="bg-black/20 border-white/[0.08] text-gray-300 text-[12px] resize-none" />
+              <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome" className="bg-black/20 border-white/[0.08] text-muted-foreground text-[12px]" />
+              <Textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Descrição..." rows={3} className="bg-black/20 border-white/[0.08] text-muted-foreground text-[12px] resize-none" />
               <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={() => { setShowCreate(false); resetForm(); }} className="flex-1 text-gray-400 text-[11px]">Cancelar</Button>
+                <Button variant="ghost" size="sm" onClick={() => { setShowCreate(false); resetForm(); }} className="flex-1 text-muted-foreground text-[11px]">Cancelar</Button>
                 <Button size="sm" onClick={handleSaveScenario} disabled={saving || !newName.trim() || !newImage} className="flex-1 bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 text-[11px]">
                   {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Salvar'}
                 </Button>
@@ -207,15 +207,15 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
             </div>
           ) : (
             <div className="space-y-3 pt-2">
-              <Button onClick={() => setShowCreate(true)} variant="outline" size="sm" className="w-full border-dashed border-white/[0.1] text-gray-400 text-[11px] hover:bg-white/[0.04]">
+              <Button onClick={() => setShowCreate(true)} variant="outline" size="sm" className="w-full border-dashed border-white/[0.1] text-muted-foreground text-[11px] hover:bg-white/[0.04]">
                 <Plus className="w-3 h-3 mr-1" />
                 Criar novo cenário
               </Button>
 
               {loading ? (
-                <div className="py-8 flex justify-center"><Loader2 className="w-4 h-4 animate-spin text-gray-400" /></div>
+                <div className="py-8 flex justify-center"><Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /></div>
               ) : scenarios.length === 0 ? (
-                <p className="text-[11px] text-gray-400 text-center py-6">Nenhum cenário salvo ainda.</p>
+                <p className="text-[11px] text-muted-foreground text-center py-6">Nenhum cenário salvo ainda.</p>
               ) : (
                 <div className="grid grid-cols-4 gap-2">
                   {scenarios.map(item => {
@@ -233,12 +233,12 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                             <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                              <MapPin className="w-5 h-5 text-gray-400" />
+                              <MapPin className="w-5 h-5 text-muted-foreground" />
                             </div>
                           )}
                           {isSelected && (
-                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-white/50 flex items-center justify-center">
-                              <span className="text-[8px] text-white font-bold">✓</span>
+                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-accent0 flex items-center justify-center">
+                              <span className="text-[8px] text-foreground font-bold">✓</span>
                             </div>
                           )}
                           <button
@@ -249,7 +249,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                           </button>
                         </div>
                         <div className="px-1 py-1 bg-black/40">
-                          <span className="text-[9px] text-gray-300 font-medium block truncate text-center">{item.name}</span>
+                          <span className="text-[9px] text-muted-foreground font-medium block truncate text-center">{item.name}</span>
                         </div>
                       </div>
                     );
@@ -260,7 +260,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                         <div className="w-3 h-3 rounded-full border border-white/[0.08]" />
                       </div>
                       <div className="px-1 py-1 bg-black/20">
-                        <span className="text-[9px] text-gray-400 block text-center">—</span>
+                        <span className="text-[9px] text-muted-foreground block text-center">—</span>
                       </div>
                     </div>
                   ))}

@@ -45,8 +45,8 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2 p-3 bg-white/5 border border-white/10 rounded-lg">
-      <h4 className="text-xs font-semibold text-gray-300 flex items-center gap-1.5">
+    <div className="flex flex-col gap-2 p-3 bg-accent border border-border rounded-lg">
+      <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
         <Wand2 className="w-3.5 h-3.5" />
         {panelTitle}
       </h4>
@@ -55,28 +55,28 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
         value={prompt}
         onChange={(e) => onPromptChange(e.target.value)}
         placeholder="Escreva aqui o que vc quer modificar na imagem"
-        className="min-h-[70px] text-xs bg-white/5 border-white/10 text-white placeholder:text-gray-400 resize-none"
+        className="min-h-[70px] text-xs bg-accent border-border text-foreground placeholder:text-muted-foreground resize-none"
         disabled={isRefining || disabled}
       />
 
       {/* Optional reference image */}
       <div>
-        <label className="text-[10px] text-gray-300 mb-1 block">Imagem extra (opcional)</label>
+        <label className="text-[10px] text-muted-foreground mb-1 block">Imagem extra (opcional)</label>
         {referencePreview ? (
-          <div className="relative w-16 h-16 rounded-md overflow-hidden border border-white/10">
+          <div className="relative w-16 h-16 rounded-md overflow-hidden border border-border">
             <img src={referencePreview} alt="Ref" className="w-full h-full object-cover" />
             <button
               onClick={() => onReferenceChange(null, null)}
               className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5"
             >
-              <X className="w-3 h-3 text-white" />
+              <X className="w-3 h-3 text-foreground" />
             </button>
           </div>
         ) : (
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-[10px] border-white/10 text-gray-300 hover:bg-white/50/10"
+            className="h-7 text-[10px] border-border text-muted-foreground hover:bg-accent0/10"
             onClick={() => fileInputRef.current?.click()}
             disabled={isRefining || disabled}
           >
@@ -97,7 +97,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
         <Button
           variant="outline"
           size="sm"
-          className="flex-1 h-8 text-xs border-white/10 text-gray-300 hover:bg-white/50/10"
+          className="flex-1 h-8 text-xs border-border text-muted-foreground hover:bg-accent0/10"
           onClick={onCancel}
           disabled={isRefining}
         >
@@ -105,7 +105,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
         </Button>
         <Button
           size="sm"
-          className="flex-1 h-8 text-xs bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white"
+          className="flex-1 h-8 text-xs bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground"
           onClick={onSubmit}
           disabled={isRefining || !prompt.trim() || disabled}
         >

@@ -21,7 +21,7 @@ const SegmentedControl: React.FC<{
   suffix?: string;
 }> = ({ label, options, value, onChange, suffix = '' }) => (
   <div className="flex items-center gap-2">
-    <span className="text-[10px] text-gray-400 uppercase tracking-wider w-16 flex-shrink-0">{label}</span>
+    <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-16 flex-shrink-0">{label}</span>
     <div className="flex-1 flex bg-white/[0.02] rounded-md p-0.5 gap-0.5">
       {options.map(o => (
         <button
@@ -30,7 +30,7 @@ const SegmentedControl: React.FC<{
           className={`flex-1 py-1 text-[10px] rounded transition-all ${
             String(value) === String(o)
               ? 'bg-white/[0.08] text-gray-200 font-medium'
-              : 'text-gray-400 hover:text-gray-400'
+              : 'text-muted-foreground hover:text-muted-foreground'
           }`}
         >
           {o}{suffix}
@@ -75,12 +75,12 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings, mode 
         <>
           {/* Motor */}
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-400 uppercase tracking-wider w-16 flex-shrink-0">Motor</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-16 flex-shrink-0">Motor</span>
             <div className="flex-1 flex bg-white/[0.02] rounded-md p-0.5 gap-0.5">
               <button
                 onClick={() => updateSettings({ modelSpeed: 'fast' })}
                 className={`flex-1 py-1 text-[10px] rounded transition-all flex items-center justify-center gap-0.5 ${
-                  settings.modelSpeed === 'fast' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-gray-400 hover:text-gray-400'
+                  settings.modelSpeed === 'fast' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-muted-foreground hover:text-muted-foreground'
                 }`}
               >
                 Fast <Zap className="w-2.5 h-2.5" />
@@ -88,7 +88,7 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings, mode 
               <button
                 onClick={() => updateSettings({ modelSpeed: 'standard' })}
                 className={`flex-1 py-1 text-[10px] rounded transition-all ${
-                  settings.modelSpeed === 'standard' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-gray-400 hover:text-gray-400'
+                  settings.modelSpeed === 'standard' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-muted-foreground hover:text-muted-foreground'
                 }`}
               >
                 Standard
@@ -98,14 +98,14 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings, mode 
 
           {/* Rampa de velocidade */}
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-400 uppercase tracking-wider w-16 flex-shrink-0">Rampa</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-16 flex-shrink-0">Rampa</span>
             <Select value={settings.speedRamp} onValueChange={v => updateSettings({ speedRamp: v })}>
-              <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
+              <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-muted-foreground text-[11px] h-7">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-[#141420] border-white/[0.06]">
+              <SelectContent className="bg-background border-white/[0.06]">
                 {SPEED_RAMPS.map(s => (
-                  <SelectItem key={s} value={s} className="text-gray-300 text-[11px]">{s}</SelectItem>
+                  <SelectItem key={s} value={s} className="text-muted-foreground text-[11px]">{s}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -113,7 +113,7 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings, mode 
 
           {/* Áudio */}
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-400 uppercase tracking-wider w-16 flex-shrink-0">Áudio</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-16 flex-shrink-0">Áudio</span>
             <div className="flex-1 flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <Switch

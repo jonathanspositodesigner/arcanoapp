@@ -595,7 +595,7 @@ const WelcomeEmailsMonitor = () => {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="flex-1 border rounded-lg overflow-hidden bg-[#111113] min-h-[400px]">
+            <div className="flex-1 border rounded-lg overflow-hidden bg-background min-h-[400px]">
               {isLoadingContent ? (
                 <div className="p-8 text-center h-full flex flex-col items-center justify-center">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />

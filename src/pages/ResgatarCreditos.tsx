@@ -101,31 +101,31 @@ const ResgatarCreditos = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center p-4">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/50/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-white/50/10 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent0/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent0/10 rounded-full blur-3xl" />
       </div>
 
       {/* Logo */}
       <div className="relative z-10 mb-8">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-gray-400" />
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Sparkles className="w-6 h-6 text-muted-foreground" />
           ArcanoApp
         </h1>
       </div>
 
       {/* Main Card */}
-      <Card className="relative z-10 w-full max-w-md bg-[#1a1025] border-2 border-slate-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)] p-6 sm:p-8">
+      <Card className="relative z-10 w-full max-w-md bg-card border-2 border-slate-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)] p-6 sm:p-8">
         {status === 'idle' || status === 'checking' ? (
           <>
             {/* Header */}
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4 shadow-lg shadow-slate-500/20">
-                <Gift className="w-8 h-8 text-white" />
+                <Gift className="w-8 h-8 text-foreground" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
                 Resgate seus Créditos
               </h2>
-              <p className="text-gray-300 text-sm">
+              <p className="text-muted-foreground text-sm">
                 1.500 créditos mensais para usar nas Ferramentas de IA
               </p>
             </div>
@@ -133,21 +133,21 @@ const ResgatarCreditos = () => {
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   type="email"
                   placeholder="Digite o email da sua compra"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={status === 'checking'}
-                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-slate-500/20"
+                  className="pl-10 h-12 bg-background border-2 border-slate-600/50 text-foreground placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={status === 'checking'}
-                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-slate-500/20"
+                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold text-base shadow-lg shadow-slate-500/20"
               >
                 {status === 'checking' ? (
                   <>
@@ -164,7 +164,7 @@ const ResgatarCreditos = () => {
             </form>
 
             {/* Info */}
-            <p className="text-center text-gray-400 text-xs mt-4">
+            <p className="text-center text-muted-foreground text-xs mt-4">
               Disponível apenas para quem comprou o Upscaler Arcano Vitalício
             </p>
           </>
@@ -172,19 +172,19 @@ const ResgatarCreditos = () => {
           /* Success State */
           <div className="text-center py-4">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 mb-4 shadow-lg shadow-green-500/30">
-              <CheckCircle className="w-10 h-10 text-white" />
+              <CheckCircle className="w-10 h-10 text-foreground" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <h2 className="text-2xl font-bold text-foreground mb-2">
               Parabéns! 🎉
             </h2>
             <p className="text-green-400 text-lg font-semibold mb-2">
               {creditsAdded.toLocaleString('pt-BR')} créditos adicionados!
             </p>
-            <p className="text-gray-300 text-sm mb-6">
+            <p className="text-muted-foreground text-sm mb-6">
               Redirecionando para as Ferramentas de IA...
             </p>
             <div className="flex justify-center">
-              <Loader2 className="w-6 h-6 text-gray-400 animate-spin" />
+              <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
             </div>
           </div>
         ) : (
@@ -193,7 +193,7 @@ const ResgatarCreditos = () => {
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 mb-4">
               <XCircle className="w-10 h-10 text-red-400" />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">
+            <h2 className="text-xl font-bold text-foreground mb-2">
               {errorReason === 'already_claimed' ? 'Promoção já resgatada' : 'Não foi possível resgatar'}
             </h2>
             <p className="text-red-400 text-sm mb-6">
@@ -204,7 +204,7 @@ const ResgatarCreditos = () => {
               {errorReason === 'already_claimed' ? (
                 <Button
                   onClick={() => navigate('/ferramentas-ia-aplicativo')}
-                  className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold"
+                  className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold"
                 >
                   Ir para a ferramenta
                   <ArrowRight className="w-5 h-5 ml-2" />
@@ -213,7 +213,7 @@ const ResgatarCreditos = () => {
                 <>
                   <Button
                     onClick={handleViewPlans}
-                    className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold"
+                    className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold"
                   >
                     Ver Planos de Créditos
                     <ArrowRight className="w-5 h-5 ml-2" />
@@ -226,7 +226,7 @@ const ResgatarCreditos = () => {
                       setErrorReason(null);
                       setEmail('');
                     }}
-                    className="w-full h-10 border-slate-500/50 bg-white/5 text-white hover:bg-slate-800/70"
+                    className="w-full h-10 border-slate-500/50 bg-accent text-foreground hover:bg-slate-800/70"
                   >
                     Tentar outro email
                   </Button>
@@ -238,7 +238,7 @@ const ResgatarCreditos = () => {
       </Card>
 
       {/* Footer */}
-      <p className="relative z-10 text-gray-500 text-xs mt-8">
+      <p className="relative z-10 text-muted-foreground text-xs mt-8">
         © {new Date().getFullYear()} ArcanoApp
       </p>
     </div>

@@ -33,22 +33,22 @@ const NewProjectModal: React.FC<Props> = ({ isOpen, onClose, onCreate }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="bg-[#12121e] border-white/[0.06] text-gray-200 max-w-md">
+      <DialogContent className="bg-background border-white/[0.06] text-gray-200 max-w-md">
         <DialogHeader>
           <DialogTitle className="text-gray-100 text-lg">Novo Projeto</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div>
-            <label className="text-xs text-gray-400 mb-1.5 block">Nome do projeto</label>
+            <label className="text-xs text-muted-foreground mb-1.5 block">Nome do projeto</label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value.slice(0, 50))}
               placeholder="Ex: Clipe Vitor Hugo, Campanha Verão..."
-              className="bg-white/[0.04] border-white/[0.06] text-gray-200 placeholder:text-gray-400"
+              className="bg-white/[0.04] border-white/[0.06] text-gray-200 placeholder:text-muted-foreground"
               onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               autoFocus
             />
-            <span className="text-[10px] text-gray-400 mt-1 block text-right">{name.length}/50</span>
+            <span className="text-[10px] text-muted-foreground mt-1 block text-right">{name.length}/50</span>
           </div>
           <Button
             onClick={handleCreate}
@@ -59,7 +59,7 @@ const NewProjectModal: React.FC<Props> = ({ isOpen, onClose, onCreate }) => {
           </Button>
           <button
             onClick={onClose}
-            className="w-full text-center text-xs text-gray-500 hover:text-gray-400 transition-colors"
+            className="w-full text-center text-xs text-muted-foreground hover:text-muted-foreground transition-colors"
           >
             Cancelar
           </button>

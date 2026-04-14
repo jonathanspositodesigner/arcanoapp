@@ -189,7 +189,7 @@ const AdminArtesReview = () => {
                       <Badge variant="destructive"><Trash2 className="h-3 w-3 mr-1" />Exclusão Solicitada</Badge>
                     )}
                     {status === "approved" && <Badge className="bg-green-500">Aprovado</Badge>}
-                    {status === "pending" && <Badge variant="secondary" className="bg-yellow-500 text-white">Pendente</Badge>}
+                    {status === "pending" && <Badge variant="secondary" className="bg-yellow-500 text-foreground">Pendente</Badge>}
                     {status === "rejected" && <Badge variant="destructive" className="bg-red-600"><XCircle className="h-3 w-3 mr-1" />Recusado</Badge>}
                   </div>
                 </div>
@@ -209,7 +209,7 @@ const AdminArtesReview = () => {
                       </Button>
                     )}
                     {(status === "pending" || status === "approved") && (
-                      <Button onClick={() => handleRejectPartner(arte.id)} variant="outline" className="flex-1 text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-white">
+                      <Button onClick={() => handleRejectPartner(arte.id)} variant="outline" className="flex-1 text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-foreground">
                         <XCircle className="h-4 w-4 mr-2" />Recusar
                       </Button>
                     )}

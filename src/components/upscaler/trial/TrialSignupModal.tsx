@@ -86,7 +86,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="bg-[#111113] border-white/10 text-white max-w-md">
+      <DialogContent className="bg-background border-border text-foreground max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-center">
             {step === "form" ? "🎁 Libere 1 Teste Grátis" : "🔑 Digite o Código"}
@@ -95,35 +95,35 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
 
         {step === "form" ? (
           <div className="space-y-4 pt-2">
-            <p className="text-gray-300 text-sm text-center">
+            <p className="text-muted-foreground text-sm text-center">
               Preencha seus dados e receba um código de verificação no email para liberar 1 {toolName === 'cloner' ? 'geração gratuita' : 'upscale gratuito'}.
             </p>
 
             <div className="space-y-2">
-              <Label htmlFor="trial-name" className="text-gray-300">Nome Completo</Label>
+              <Label htmlFor="trial-name" className="text-muted-foreground">Nome Completo</Label>
               <Input
                 id="trial-name"
                 placeholder="Seu nome completo"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                className="bg-accent border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="trial-email" className="text-gray-300">Email</Label>
+              <Label htmlFor="trial-email" className="text-muted-foreground">Email</Label>
               <Input
                 id="trial-email"
                 type="email"
                 placeholder="seu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+                className="bg-accent border-border text-foreground placeholder:text-muted-foreground"
               />
             </div>
 
             <Button
-              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold"
               onClick={handleSendCode}
               disabled={loading}
             >
@@ -142,25 +142,25 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
           </div>
         ) : (
           <div className="space-y-4 pt-2">
-            <p className="text-gray-300 text-sm text-center">
-              Enviamos um código de 6 dígitos para <strong className="text-white">{email}</strong>
+            <p className="text-muted-foreground text-sm text-center">
+              Enviamos um código de 6 dígitos para <strong className="text-foreground">{email}</strong>
             </p>
 
             <div className="flex justify-center">
               <InputOTP maxLength={6} value={code} onChange={setCode}>
                 <InputOTPGroup>
-                  <InputOTPSlot index={0} className="bg-white/5 border-white/10 text-white text-lg w-12 h-12" />
-                  <InputOTPSlot index={1} className="bg-white/5 border-white/10 text-white text-lg w-12 h-12" />
-                  <InputOTPSlot index={2} className="bg-white/5 border-white/10 text-white text-lg w-12 h-12" />
-                  <InputOTPSlot index={3} className="bg-white/5 border-white/10 text-white text-lg w-12 h-12" />
-                  <InputOTPSlot index={4} className="bg-white/5 border-white/10 text-white text-lg w-12 h-12" />
-                  <InputOTPSlot index={5} className="bg-white/5 border-white/10 text-white text-lg w-12 h-12" />
+                  <InputOTPSlot index={0} className="bg-accent border-border text-foreground text-lg w-12 h-12" />
+                  <InputOTPSlot index={1} className="bg-accent border-border text-foreground text-lg w-12 h-12" />
+                  <InputOTPSlot index={2} className="bg-accent border-border text-foreground text-lg w-12 h-12" />
+                  <InputOTPSlot index={3} className="bg-accent border-border text-foreground text-lg w-12 h-12" />
+                  <InputOTPSlot index={4} className="bg-accent border-border text-foreground text-lg w-12 h-12" />
+                  <InputOTPSlot index={5} className="bg-accent border-border text-foreground text-lg w-12 h-12" />
                 </InputOTPGroup>
               </InputOTP>
             </div>
 
             <Button
-              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold"
               onClick={handleVerify}
               disabled={loading || code.length !== 6}
             >
@@ -176,7 +176,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
 
             <button
               onClick={() => { setStep("form"); setCode(""); }}
-              className="w-full text-sm text-gray-400 hover:text-gray-300 flex items-center justify-center gap-1"
+              className="w-full text-sm text-muted-foreground hover:text-muted-foreground flex items-center justify-center gap-1"
             >
               <ArrowLeft className="w-3 h-3" /> Voltar
             </button>

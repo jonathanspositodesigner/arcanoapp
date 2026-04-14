@@ -209,28 +209,28 @@ const PartnerUploadMusicos = () => {
       <div className="max-w-2xl mx-auto">
         <Button
           variant="ghost"
-          className="text-white/70 hover:text-white mb-6"
+          className="text-muted-foreground hover:text-foreground mb-6"
           onClick={() => navigate("/parceiro-dashboard-musicos")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar ao Dashboard
         </Button>
 
-        <Card className="bg-[#1a1a2e]/80 border-pink-500/30">
+        <Card className="bg-card/80 border-pink-500/30">
           <CardHeader>
-            <CardTitle className="text-white text-2xl">Enviar Nova Arte</CardTitle>
+            <CardTitle className="text-foreground text-2xl">Enviar Nova Arte</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Image Upload */}
               <div className="space-y-2">
-                <Label className="text-white">Imagem *</Label>
+                <Label className="text-foreground">Imagem *</Label>
                 <div
                   onClick={() => fileInputRef.current?.click()}
                   className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
                     ${previewUrl 
                       ? 'border-pink-500/50' 
-                      : 'border-white/20 hover:border-pink-500/50'
+                      : 'border-border hover:border-pink-500/50'
                     }`}
                 >
                   {previewUrl ? (
@@ -240,7 +240,7 @@ const PartnerUploadMusicos = () => {
                       className="max-h-64 mx-auto rounded-lg"
                     />
                   ) : (
-                    <div className="text-white/60">
+                    <div className="text-muted-foreground">
                       <ImageIcon className="h-12 w-12 mx-auto mb-2" />
                       <p>Clique para selecionar uma imagem</p>
                     </div>
@@ -257,26 +257,26 @@ const PartnerUploadMusicos = () => {
 
               {/* Title */}
               <div className="space-y-2">
-                <Label className="text-white">Título *</Label>
+                <Label className="text-foreground">Título *</Label>
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Nome da arte"
-                  className="bg-[#0f0f1a] border-pink-500/50 text-white"
+                  className="bg-card border-pink-500/50 text-foreground"
                   required
                 />
               </div>
 
               {/* Category */}
               <div className="space-y-2">
-                <Label className="text-white">Categoria *</Label>
+                <Label className="text-foreground">Categoria *</Label>
                 <Select value={category} onValueChange={setCategory} required>
-                  <SelectTrigger className="bg-[#0f0f1a] border-pink-500/50 text-white">
+                  <SelectTrigger className="bg-card border-pink-500/50 text-foreground">
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a2e] border-pink-500/50">
+                  <SelectContent className="bg-card border-pink-500/50">
                     {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.slug} className="text-white">
+                      <SelectItem key={cat.id} value={cat.slug} className="text-foreground">
                         {cat.name}
                       </SelectItem>
                     ))}
@@ -286,41 +286,41 @@ const PartnerUploadMusicos = () => {
 
               {/* Description */}
               <div className="space-y-2">
-                <Label className="text-white">Descrição</Label>
+                <Label className="text-foreground">Descrição</Label>
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Descrição opcional"
-                  className="bg-[#0f0f1a] border-pink-500/50 text-white min-h-[100px]"
+                  className="bg-card border-pink-500/50 text-foreground min-h-[100px]"
                 />
               </div>
 
               {/* Canva Link */}
               <div className="space-y-2">
-                <Label className="text-white">Link do Canva (opcional)</Label>
+                <Label className="text-foreground">Link do Canva (opcional)</Label>
                 <Input
                   value={canvaLink}
                   onChange={(e) => setCanvaLink(e.target.value)}
                   placeholder="https://www.canva.com/..."
-                  className="bg-[#0f0f1a] border-pink-500/50 text-white"
+                  className="bg-card border-pink-500/50 text-foreground"
                 />
               </div>
 
               {/* Drive Link */}
               <div className="space-y-2">
-                <Label className="text-white">Link do Drive (opcional)</Label>
+                <Label className="text-foreground">Link do Drive (opcional)</Label>
                 <Input
                   value={driveLink}
                   onChange={(e) => setDriveLink(e.target.value)}
                   placeholder="https://drive.google.com/..."
-                  className="bg-[#0f0f1a] border-pink-500/50 text-white"
+                  className="bg-card border-pink-500/50 text-foreground"
                 />
               </div>
 
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white"
+                className="w-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-foreground"
                 disabled={isSubmitting || isUploading}
               >
                 {isSubmitting || isUploading ? (

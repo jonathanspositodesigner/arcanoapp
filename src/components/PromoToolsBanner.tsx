@@ -33,15 +33,15 @@ const PromoToolsBanner = ({ onClose }: PromoToolsBannerProps) => {
       <div className="container mx-auto px-4 py-3 sm:py-2">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-4 relative pr-8 sm:pr-0">
           {/* Badge */}
-          <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/20 shrink-0">
-            <Tag className="w-3.5 h-3.5 text-white" />
-            <span className="text-xs font-bold text-white uppercase tracking-wide">
+          <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-2.5 py-1 rounded-full border border-border shrink-0">
+            <Tag className="w-3.5 h-3.5 text-foreground" />
+            <span className="text-xs font-bold text-foreground uppercase tracking-wide">
               Oferta Limitada
             </span>
           </div>
           
           {/* Promo text */}
-          <p className="text-white text-[11px] sm:text-sm font-medium text-center leading-tight">
+          <p className="text-foreground text-[11px] sm:text-sm font-medium text-center leading-tight">
             comece agora mesmo a usar nossas ferramentas de IA com{" "}
             <span className="font-bold text-yellow-200">30% de desconto</span>
           </p>
@@ -53,7 +53,7 @@ const PromoToolsBanner = ({ onClose }: PromoToolsBannerProps) => {
           className="absolute top-1/2 right-2 -translate-y-1/2 p-1 hover:bg-white/20 rounded-full transition-colors"
           aria-label="Fechar banner"
         >
-          <X className="w-4 h-4 text-white" />
+          <X className="w-4 h-4 text-foreground" />
         </button>
       </div>
     </div>

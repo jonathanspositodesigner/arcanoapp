@@ -93,14 +93,14 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
   return (
     <div className="flex flex-col gap-1.5">
       {/* Switch tabs */}
-      <div className="flex rounded-lg overflow-hidden border border-white/10 h-7">
+      <div className="flex rounded-lg overflow-hidden border border-border h-7">
         <button
           type="button"
           className={cn(
             'flex-1 flex items-center justify-center gap-1.5 text-[10px] font-medium transition-colors',
             mode === 'character'
               ? 'bg-slate-600 text-white'
-              : 'bg-white/5 text-gray-300 hover:bg-white/5'
+              : 'bg-accent text-muted-foreground hover:bg-accent'
           )}
           onClick={() => handleModeChange('character')}
           disabled={disabled}
@@ -114,7 +114,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
             'flex-1 flex items-center justify-center gap-1.5 text-[10px] font-medium transition-colors',
             mode === 'photo'
               ? 'bg-slate-600 text-white'
-              : 'bg-white/5 text-gray-300 hover:bg-white/5'
+              : 'bg-accent text-muted-foreground hover:bg-accent'
           )}
           onClick={() => handleModeChange('photo')}
           disabled={disabled}
@@ -126,19 +126,19 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
 
       {/* Content based on mode */}
       {mode === 'character' ? (
-        <Card className="bg-white/5 border-white/10 p-2">
+        <Card className="bg-accent border-border p-2">
           {isLoading ? (
             <div className="flex items-center justify-center py-6">
-              <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+              <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
             </div>
           ) : characters.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-4">
-              <p className="text-[10px] text-gray-400 text-center">
+              <p className="text-[10px] text-muted-foreground text-center">
                 Nenhum avatar salvo
               </p>
               <Button
                 size="sm"
-                className="h-7 text-[10px] bg-slate-600 hover:bg-white/50 text-white font-semibold border-0"
+                className="h-7 text-[10px] bg-slate-600 hover:bg-accent0 text-foreground font-semibold border-0"
                 onClick={() => navigate('/gerador-avatar')}
               >
                 <Plus className="w-3 h-3 mr-1" />
@@ -156,8 +156,8 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
                     className={cn(
                       'relative aspect-square rounded-md overflow-hidden border-2 transition-all',
                       selectedCharacterId === char.id
-                        ? 'border-white/15 ring-1 ring-white/20'
-                        : 'border-white/10 hover:border-white/15'
+                        ? 'border-border ring-1 ring-white/20'
+                        : 'border-border hover:border-border'
                     )}
                     onClick={() => handleSelectCharacter(char)}
                   >
@@ -171,21 +171,21 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
                         const parent = target.parentElement;
                         if (parent && !parent.querySelector('.avatar-fallback')) {
                           const fallback = document.createElement('div');
-                          fallback.className = 'avatar-fallback w-full h-full flex items-center justify-center bg-white/5 text-gray-300 text-[8px] text-center p-0.5';
+                          fallback.className = 'avatar-fallback w-full h-full flex items-center justify-center bg-accent text-muted-foreground text-[8px] text-center p-0.5';
                           fallback.textContent = char.name;
                           parent.appendChild(fallback);
                         }
                       }}
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-1 py-0.5">
-                      <p className="text-[8px] text-white truncate">{char.name}</p>
+                      <p className="text-[8px] text-foreground truncate">{char.name}</p>
                     </div>
                   </button>
                 ))}
               </div>
               <Button
                 size="sm"
-                className="w-full h-6 mt-1.5 text-[10px] bg-slate-600 hover:bg-white/50 text-white font-semibold border-0"
+                className="w-full h-6 mt-1.5 text-[10px] bg-slate-600 hover:bg-accent0 text-foreground font-semibold border-0"
                 onClick={() => navigate('/gerador-avatar')}
               >
                 <Plus className="w-3 h-3 mr-1" />
