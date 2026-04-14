@@ -726,7 +726,7 @@ const FlyerMakerTool: React.FC = () => {
                           onClick={() => setImageSize('3:4')}
                           className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                             imageSize === '3:4'
-                              ? 'bg-accent text-accent-foreground'
+                              ? 'bg-primary text-primary-foreground shadow-sm'
                               : 'text-muted-foreground hover:text-foreground'
                           }`}
                           disabled={isProcessing}
@@ -737,7 +737,7 @@ const FlyerMakerTool: React.FC = () => {
                           onClick={() => setImageSize('9:16')}
                           className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                             imageSize === '9:16'
-                              ? 'bg-accent text-accent-foreground'
+                              ? 'bg-primary text-primary-foreground shadow-sm'
                               : 'text-muted-foreground hover:text-foreground'
                           }`}
                           disabled={isProcessing}

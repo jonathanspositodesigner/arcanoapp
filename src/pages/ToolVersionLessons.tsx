@@ -652,7 +652,7 @@ const ToolVersionLessons = () => {
                     watchedLessons.includes(index + 1)
                       ? 'bg-green-500 text-white'
                       : selectedLesson === index 
-                        ? 'bg-accent text-accent-foreground' 
+                        ? 'bg-primary text-primary-foreground shadow-sm' 
                         : 'bg-accent text-muted-foreground'
                   }`}>
                     {watchedLessons.includes(index + 1) ? (
