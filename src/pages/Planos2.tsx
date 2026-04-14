@@ -732,7 +732,7 @@ const Planos2 = () => {
                 <p className="text-gray-400 text-sm mb-3">{plan.description}</p>
 
                 {plan.savings && (
-                  <Badge className="bg-gradient-to-r from-slate-500/20 to-slate-400/20 border border-white/10 text-gray-300 text-xs mb-2 gap-1">
+                  <Badge className="bg-green-500/20 border border-green-500/40 text-green-400 font-semibold text-xs mb-2 gap-1">
                     <Tag className="w-3 h-3" />
                     Economize {plan.savings}%
                   </Badge>
