@@ -40,9 +40,9 @@ interface EmailHtmlEditorProps {
 }
 
 const PRESET_COLORS = [
-  "#ffffff", "#e2d8f0", "#f5e27a", "#d4af37", "#c4b5fd", "#a78bfa",
+  "#ffffff", "#e2e8f0", "#f5e27a", "#d4af37", "#cbd5e1", "#94a3b8",
   "#fca5a5", "#9ca3af", "#4b5563", "#1e0a3c", "#0d0015", "#000000",
-  "#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#8b5cf6",
+  "#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#64748b",
 ];
 
 const FONT_SIZES = ["12px", "13px", "14px", "15px", "16px", "18px", "20px", "24px", "28px", "32px"];
@@ -88,7 +88,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
     editorProps: {
       attributes: {
         class: "prose prose-invert max-w-none min-h-[300px] p-4 focus:outline-none text-sm",
-        style: "color: #e2d8f0; background: #1e0a3c; border-radius: 0 0 8px 8px;",
+        style: "color: #e2e8f0; background: #1e0a3c; border-radius: 0 0 8px 8px;",
       },
     },
   });

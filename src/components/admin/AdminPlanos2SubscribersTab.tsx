@@ -73,7 +73,7 @@ const PLAN_LABELS: Record<string, string> = {
 const PLAN_COLORS: Record<string, string> = {
   free: "#6b7280",
   starter: "#3b82f6",
-  pro: "#8b5cf6",
+  pro: "#64748b",
   ultimate: "#f59e0b",
   unlimited: "#10b981",
 };
