@@ -673,8 +673,6 @@ const FlyerMakerTool: React.FC = () => {
                           return null;
                         })}
                       </div>
-                        )}
-                      </div>
                     </div>
 
                     {/* Logo */}
