@@ -12,7 +12,6 @@ interface LoginPasswordStepProps {
   forgotPasswordUrl: string;
   isLoading: boolean;
   
-  // Labels (for i18n)
   labels?: {
     password?: string;
     passwordPlaceholder?: string;
@@ -22,46 +21,45 @@ interface LoginPasswordStepProps {
     changeEmail?: string;
   };
   
-  // Styling variants
   variant?: 'default' | 'dark' | 'dark' | 'teal';
 }
 
 const variantStyles = {
   default: {
-    emailBox: 'bg-muted/50 border',
+    emailBox: 'bg-muted/50 border border-border',
     emailIcon: 'text-muted-foreground',
     emailText: 'text-foreground',
     changeBtn: 'text-primary',
-    input: '',
-    button: '',
+    input: 'bg-card border-border text-foreground placeholder:text-muted-foreground',
+    button: 'bg-primary hover:bg-primary/90 text-primary-foreground',
     forgotLink: 'text-primary hover:underline',
   },
   dark: {
-    emailBox: 'bg-[#2d4a5e]/20 border border-[#2d4a5e]/30',
+    emailBox: 'bg-secondary/50 border border-border',
     emailIcon: 'text-amber-400',
-    emailText: 'text-white/80',
+    emailText: 'text-foreground',
     changeBtn: 'text-amber-400 hover:text-amber-300',
-    input: 'bg-[#0f0f1a] border-[#2d4a5e]/50 text-white',
-    button: 'bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white',
-    forgotLink: 'text-[#2d4a5e] hover:underline',
+    input: 'bg-card border-border text-foreground placeholder:text-muted-foreground',
+    button: 'bg-primary hover:bg-primary/90 text-primary-foreground',
+    forgotLink: 'text-muted-foreground hover:underline',
   },
   purple: {
-    emailBox: 'bg-white/50/10 border border-white/10',
-    emailIcon: 'text-gray-400',
-    emailText: 'text-white',
-    changeBtn: 'text-gray-400 hover:text-gray-300',
-    input: 'bg-[#111113] border-white/10 text-white placeholder:text-gray-400',
-    button: 'bg-slate-600 hover:bg-slate-700 text-white',
-    forgotLink: 'text-gray-400 hover:text-gray-300 underline',
+    emailBox: 'bg-accent/50 border border-border',
+    emailIcon: 'text-muted-foreground',
+    emailText: 'text-foreground',
+    changeBtn: 'text-muted-foreground hover:text-foreground',
+    input: 'bg-card border-border text-foreground placeholder:text-muted-foreground',
+    button: 'bg-secondary hover:bg-secondary/80 text-secondary-foreground',
+    forgotLink: 'text-muted-foreground hover:text-foreground underline',
   },
   teal: {
-    emailBox: 'bg-white/50/10 border border-white/10/20',
-    emailIcon: 'text-gray-400',
-    emailText: 'text-white/80',
-    changeBtn: 'text-gray-400 hover:text-gray-300',
-    input: 'bg-[#0f0f1a] border-white/10 text-white',
-    button: 'bg-slate-600 hover:bg-slate-700 text-white',
-    forgotLink: 'text-gray-400 hover:text-gray-300 underline',
+    emailBox: 'bg-accent/50 border border-border',
+    emailIcon: 'text-muted-foreground',
+    emailText: 'text-foreground',
+    changeBtn: 'text-muted-foreground hover:text-foreground',
+    input: 'bg-card border-border text-foreground placeholder:text-muted-foreground',
+    button: 'bg-secondary hover:bg-secondary/80 text-secondary-foreground',
+    forgotLink: 'text-muted-foreground hover:text-foreground underline',
   },
 };
 

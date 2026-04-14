@@ -27,28 +27,28 @@ interface LoginEmailStepProps {
 
 const variantStyles = {
   default: {
-    input: '',
-    button: '',
+    input: 'bg-card border-border text-foreground placeholder:text-muted-foreground',
+    button: 'bg-primary hover:bg-primary/90 text-primary-foreground',
     signupButton: 'border-primary/50 text-primary hover:bg-primary/10',
     text: 'text-muted-foreground',
   },
   dark: {
-    input: 'bg-[#0f0f1a] border-[#2d4a5e]/50 text-white',
-    button: 'bg-[#2d4a5e] hover:bg-[#3d5a6e] text-white',
+    input: 'bg-card border-border text-foreground placeholder:text-muted-foreground',
+    button: 'bg-primary hover:bg-primary/90 text-primary-foreground',
     signupButton: 'border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/20',
-    text: 'text-white/60',
+    text: 'text-muted-foreground',
   },
   purple: {
-    input: 'bg-[#111113] border-white/10 text-white placeholder:text-gray-400',
-    button: 'bg-slate-600 hover:bg-slate-700 text-white',
+    input: 'bg-card border-border text-foreground placeholder:text-muted-foreground',
+    button: 'bg-secondary hover:bg-secondary/80 text-secondary-foreground',
     signupButton: 'border-green-500/50 text-green-400 hover:bg-green-500/20',
-    text: 'text-gray-300',
+    text: 'text-muted-foreground',
   },
   teal: {
-    input: 'bg-[#0f0f1a] border-white/10 text-white',
-    button: 'bg-slate-600 hover:bg-slate-700 text-white',
-    signupButton: 'border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300',
-    text: 'text-white/60',
+    input: 'bg-card border-border text-foreground placeholder:text-muted-foreground',
+    button: 'bg-secondary hover:bg-secondary/80 text-secondary-foreground',
+    signupButton: 'border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/20',
+    text: 'text-muted-foreground',
   },
 };
 
@@ -103,7 +103,7 @@ export function LoginEmailStep({
       </Button>
 
       {(labels.noAccountYet !== '' || labels.createAccount !== '') && (
-        <div className="text-center pt-4 border-t border-border/30">
+        <div className="text-center pt-4 border-t border-border">
           <p className={`text-sm mb-2 ${styles.text}`}>
             {labels.noAccountYet || 'Ainda não tem conta?'}
           </p>
