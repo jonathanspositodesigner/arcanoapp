@@ -54,6 +54,8 @@ const MovieLedMakerTool = () => {
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
   const { enqueueVideo: enqueueGemini, subscribeToJob: subscribeGemini, triggerProcessing } = useGeminiVideoQueue();
   const geminiChannelRef = useRef<ReturnType<typeof subscribeGemini> | null>(null);
+  const isMobile = useIsMobile();
+  const [showMobileConfig, setShowMobileConfig] = useState(false);
 
   const isTutorialTestUser = false; // Tutorial test mode disabled
 
