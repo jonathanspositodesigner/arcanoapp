@@ -17,23 +17,26 @@ export const StatsCards = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      // Fetch image stats
-      const { data } = await supabase.rpc('get_ai_tools_cost_averages');
-      if (data) {
-        const total = data.reduce((acc: number, tool: any) => acc + (tool.total_completed || 0), 0);
-        setTotalImages(total);
+      const { data: stats, error } = await supabase.rpc('get_platform_stats');
+
+      if (error) {
+        console.error('[StatsCards] Failed to fetch platform stats:', error);
+        setLoaded(true);
+        return;
       }
 
-      // Fetch platform stats (users + videos) via SECURITY DEFINER RPC
-      const { data: stats } = await supabase.rpc('get_platform_stats');
-      if (stats) {
-        const s = stats as any;
-        setTotalUsers(s.total_users || 0);
-        setTotalVideos(s.total_videos || 0);
-      }
+      const platformStats = (stats ?? {}) as {
+        total_users?: number;
+        total_videos?: number;
+        total_images?: number;
+      };
 
+      setTotalUsers(platformStats.total_users ?? 0);
+      setTotalVideos(platformStats.total_videos ?? 0);
+      setTotalImages(platformStats.total_images ?? 0);
       setLoaded(true);
     };
+
     fetchStats();
   }, []);
 
