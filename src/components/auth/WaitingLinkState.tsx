@@ -48,7 +48,7 @@ const variantStyles = {
   },
   purple: {
     card: 'bg-[#111113] border-white/10',
-    iconBg: 'bg-slate-500/20',
+    iconBg: 'bg-white/50/20',
     icon: 'text-gray-400',
     title: 'text-white',
     email: 'text-gray-400 font-medium',
@@ -58,7 +58,7 @@ const variantStyles = {
   },
   teal: {
     card: 'bg-[#1a1a2e]/80 border-white/10',
-    iconBg: 'bg-slate-500/20',
+    iconBg: 'bg-white/50/20',
     icon: 'text-gray-400',
     title: 'text-white',
     email: 'text-gray-400 font-medium',

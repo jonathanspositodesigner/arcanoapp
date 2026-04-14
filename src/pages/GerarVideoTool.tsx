@@ -588,7 +588,7 @@ const GerarVideoTool = () => {
             </p>
             <button
               onClick={goBack}
-              className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-slate-500 text-white text-sm font-medium transition-colors"
+              className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-white/50 text-white text-sm font-medium transition-colors"
             >
               Voltar
             </button>
@@ -677,7 +677,7 @@ const GerarVideoTool = () => {
                   <p className="text-red-400/60 text-xs mt-2">Seus créditos foram estornados automaticamente.</p>
                 </div>
               )}
-              <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-slate-500/50 text-gray-300 hover:bg-slate-500/20 rounded-full px-5">
+              <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-slate-500/50 text-gray-300 hover:bg-white/50/20 rounded-full px-5">
                 Tentar novamente
               </Button>
             </div>
@@ -702,7 +702,7 @@ const GerarVideoTool = () => {
                 <Button onClick={handleDownload} size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-full px-5">
                   <Download className="h-4 w-4 mr-2" /> Baixar
                 </Button>
-                <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-slate-500/50 text-gray-300 hover:bg-slate-500/20 rounded-full px-5">
+                <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-slate-500/50 text-gray-300 hover:bg-white/50/20 rounded-full px-5">
                   <Video className="h-4 w-4 mr-2" /> Gerar Novo
                 </Button>
               </div>
@@ -721,7 +721,7 @@ const GerarVideoTool = () => {
                           <img src={startFrame.preview} alt={isVeoModel ? 'Imagem de referência' : 'Primeiro frame'} className="w-full h-full object-cover" />
                           <button 
                             onClick={() => setStartFrame(null)} 
-                            className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
+                            className="absolute top-1 right-1 bg-red-600 hover:bg-red-500/100 rounded-full p-0.5 transition-colors"
                           >
                             <X className="h-3 w-3 text-white" />
                           </button>
@@ -755,7 +755,7 @@ const GerarVideoTool = () => {
                               <img src={endFrame.preview} alt="Último frame" className="w-full h-full object-cover" />
                               <button 
                                 onClick={() => setEndFrame(null)} 
-                                className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
+                                className="absolute top-1 right-1 bg-red-600 hover:bg-red-500/100 rounded-full p-0.5 transition-colors"
                               >
                                 <X className="h-3 w-3 text-white" />
                               </button>
@@ -857,7 +857,7 @@ const GerarVideoTool = () => {
                         <DropdownMenuItem
                           key={model.id}
                           onClick={() => setSelectedModel(model.id)}
-                          className={`text-xs ${selectedModel === model.id ? 'text-gray-300 bg-slate-500/10' : 'text-gray-300'}`}
+                          className={`text-xs ${selectedModel === model.id ? 'text-gray-300 bg-white/50/10' : 'text-gray-300'}`}
                         >
                           <div className="flex flex-col">
                             <span className="font-medium">{model.name}</span>
@@ -889,7 +889,7 @@ const GerarVideoTool = () => {
                           <DropdownMenuItem
                             key={ratio}
                             onClick={() => setAspectRatio(ratio)}
-                            className={`text-xs ${aspectRatio === ratio ? 'text-gray-300 bg-slate-500/10' : 'text-gray-300'}`}
+                            className={`text-xs ${aspectRatio === ratio ? 'text-gray-300 bg-white/50/10' : 'text-gray-300'}`}
                           >
                             {ASPECT_RATIO_LABELS[ratio]} ({ratio})
                           </DropdownMenuItem>

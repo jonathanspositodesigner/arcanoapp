@@ -65,7 +65,7 @@ const NoCreditsModal = ({ isOpen, onClose, reason }: NoCreditsModalProps) => {
             <Button 
               onClick={handleRecharge}
               variant="outline"
-              className="w-full border-slate-500/50 text-gray-300 hover:bg-slate-500/10"
+              className="w-full border-slate-500/50 text-gray-300 hover:bg-white/50/10"
             >
               <Coins className="h-4 w-4 mr-2" />
               Ver Pacotes de Créditos

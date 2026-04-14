@@ -451,7 +451,7 @@ const BibliotecaPrompts = () => {
       {/* Main Content */}
       <div className="p-4 sm:p-6 lg:p-8 bg-[#111113] pb-24 lg:pb-8 overflow-x-hidden max-w-full">
         {/* Mobile Install App Button */}
-        <Button onClick={() => navigate("/install-app")} variant="outline" className="w-full bg-white/5 border-white/15 text-white hover:bg-slate-500/30 font-semibold mb-4 lg:hidden">
+        <Button onClick={() => navigate("/install-app")} variant="outline" className="w-full bg-white/5 border-white/15 text-white hover:bg-white/50/30 font-semibold mb-4 lg:hidden">
           <Smartphone className="h-4 w-4 mr-2" />
           {t('sidebar.installApp')}
         </Button>
@@ -466,11 +466,11 @@ const BibliotecaPrompts = () => {
 
           {/* Content Type Tabs */}
           <div className="flex gap-2 mb-3">
-            <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => { setContentType("exclusive"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "exclusive" ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-slate-500/20 border-white/15 text-gray-300"}`}>
+            <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => { setContentType("exclusive"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "exclusive" ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-white/50/20 border-white/15 text-gray-300"}`}>
               <Star className="h-3.5 w-3.5 mr-1.5" />
               {t('library.exclusiveFiles')}
             </Button>
-            <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => { setContentType("community"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "community" ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-slate-500/20 border-white/15 text-gray-300"}`}>
+            <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => { setContentType("community"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "community" ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-white/50/20 border-white/15 text-gray-300"}`}>
               <Users className="h-3.5 w-3.5 mr-1.5" />
               {t('library.community')}
             </Button>
@@ -480,7 +480,7 @@ const BibliotecaPrompts = () => {
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="text-xs bg-white/5 hover:bg-slate-500/20 border-white/15 text-gray-300">
+                <Button variant="outline" size="sm" className="text-xs bg-white/5 hover:bg-white/50/20 border-white/15 text-gray-300">
                   {getCategoryDisplayName(selectedCategory)}
                   <ChevronDown className="h-3.5 w-3.5 ml-1.5" />
                 </Button>
@@ -493,7 +493,7 @@ const BibliotecaPrompts = () => {
                     className={`text-xs cursor-pointer ${
                       selectedCategory === cat
                         ? "bg-slate-600 text-white"
-                        : "text-gray-300 hover:bg-slate-500/20"
+                        : "text-gray-300 hover:bg-white/50/20"
                     }`}
                   >
                     {getCategoryDisplayName(cat)}
@@ -528,7 +528,7 @@ const BibliotecaPrompts = () => {
               placeholder="Buscar por palavra-chave..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-9 text-sm bg-slate-500/10 border-white/10 text-white placeholder:text-gray-500 focus:border-slate-400"
+              className="pl-10 h-9 text-sm bg-white/50/10 border-white/10 text-white placeholder:text-gray-500 focus:border-slate-400"
             />
           </div>
         </div>
@@ -693,11 +693,11 @@ const BibliotecaPrompts = () => {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-4 mt-8">
-            <Button variant="outline" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="bg-white/5 border-white/15 text-gray-200 hover:bg-slate-500/20 hover:text-white disabled:opacity-50">
+            <Button variant="outline" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="bg-white/5 border-white/15 text-gray-200 hover:bg-white/50/20 hover:text-white disabled:opacity-50">
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-gray-300">{currentPage} / {totalPages}</span>
-            <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="bg-white/5 border-white/15 text-gray-200 hover:bg-slate-500/20 hover:text-white disabled:opacity-50">
+            <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="bg-white/5 border-white/15 text-gray-200 hover:bg-white/50/20 hover:text-white disabled:opacity-50">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -742,7 +742,7 @@ const BibliotecaPrompts = () => {
                   <h2 className="text-2xl font-bold text-white">{selectedPrompt.title}</h2>
                   <div className="mt-2">{getBadgeContent(selectedPrompt)}</div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={handleCloseModal} className="text-gray-300 hover:text-white hover:bg-slate-500/20">
+                <Button variant="ghost" size="icon" onClick={handleCloseModal} className="text-gray-300 hover:text-white hover:bg-white/50/20">
                   <X className="h-5 w-5" />
                 </Button>
               </div>
@@ -768,7 +768,7 @@ const BibliotecaPrompts = () => {
                   <Copy className="h-4 w-4 mr-2" />
                   {t('modal.copyPrompt')}
                 </Button>
-                <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl)} variant="outline" className="bg-white/5 border-white/15 text-gray-200 hover:bg-slate-500/20 hover:text-white">
+                <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl)} variant="outline" className="bg-white/5 border-white/15 text-gray-200 hover:bg-white/50/20 hover:text-white">
                   <Download className="h-4 w-4 mr-2" />
                   {t('modal.download')}
                 </Button>

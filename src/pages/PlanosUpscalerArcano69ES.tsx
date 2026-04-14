@@ -511,7 +511,7 @@ const PlanosUpscalerArcano69ES = () => {
                   </div>
 
                   {/* Alerta de urgência */}
-                  <div className="bg-slate-500/10 border border-white/10 rounded-xl md:rounded-2xl p-2.5 md:p-3 mb-5 md:mb-6">
+                  <div className="bg-white/50/10 border border-white/10 rounded-xl md:rounded-2xl p-2.5 md:p-3 mb-5 md:mb-6">
                     <div className="flex items-center justify-center gap-2 text-gray-300 text-xs md:text-sm">
                       <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
                       <span className="font-medium">{t('tools:upscaler.finalCTA.limitedOffer')}</span>

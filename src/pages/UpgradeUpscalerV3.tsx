@@ -674,8 +674,8 @@ const UpgradeUpscalerV3 = () => {
           <AnimatedElement delay={200}>
             <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.03] border-2 border-white/10 rounded-3xl p-8 md:p-10 text-center relative overflow-hidden">
               {/* Glow effect */}
-              <div className="absolute -top-20 -right-20 w-40 h-40 bg-slate-500/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-slate-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -top-20 -right-20 w-40 h-40 bg-white/50/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-white/50/10 rounded-full blur-3xl pointer-events-none" />
 
               <div className="relative z-10">
                 {/* 50% OFF badge */}

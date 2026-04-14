@@ -371,7 +371,7 @@ const AdminPartners = () => {
         <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle className="text-center text-green-600">
+              <DialogTitle className="text-center text-green-400">
                 ✓ Parceiro cadastrado com sucesso!
               </DialogTitle>
             </DialogHeader>

@@ -274,7 +274,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                   {t("badges.premium")}
                 </Badge>
               ) : (
-                <Badge variant="outline" className="border-green-500 text-green-600">
+                <Badge variant="outline" className="border-green-500 text-green-400">
                   {t("badges.free")}
                 </Badge>
               )}
@@ -327,7 +327,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                   <Button 
                     onClick={() => openTutorial(selectedItem.tutorialUrl!)}
                     variant="outline" 
-                    className="w-full border-red-500 text-red-500 hover:bg-red-500/10"
+                    className="w-full border-red-500 text-red-500 hover:bg-red-500/100/10"
                   >
                     <Youtube className="h-4 w-4 mr-2" />
                     {t("collectionModal.watchTutorial")}
@@ -418,7 +418,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                       {t("badges.premium")}
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="border-green-500 text-green-600 text-[10px] bg-background/80">
+                    <Badge variant="outline" className="border-green-500 text-green-400 text-[10px] bg-background/80">
                       {t("badges.free")}
                     </Badge>
                   )}

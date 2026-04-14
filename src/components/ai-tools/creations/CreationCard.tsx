@@ -165,7 +165,7 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
               size="sm"
               onClick={handleDelete}
               disabled={isDeleting}
-              className="h-7 w-7 p-0 bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+              className="h-7 w-7 p-0 bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/100/20"
               title="Excluir"
             >
               <Trash2 className="w-3 h-3" />
@@ -175,7 +175,7 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
               size="sm"
               onClick={handleDownload}
               disabled={isDownloading || imageError}
-              className="h-7 text-xs bg-slate-500/10 border-white/10 text-gray-300 hover:bg-slate-500/20"
+              className="h-7 text-xs bg-white/50/10 border-white/10 text-gray-300 hover:bg-white/50/20"
             >
               <Download className="w-3 h-3 mr-1" />
               {isDownloading ? '...' : 'Baixar'}

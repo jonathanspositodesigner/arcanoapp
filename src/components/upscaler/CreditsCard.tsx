@@ -96,7 +96,7 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown, isUnli
       {hasBreakdown && !creditsLoading && (
         <div className="flex flex-wrap gap-2 mb-4 text-xs">
           {breakdown.monthly > 0 && (
-            <span className="px-2 py-1 rounded-full bg-slate-500/20 text-gray-300 border border-white/10">
+            <span className="px-2 py-1 rounded-full bg-white/50/20 text-gray-300 border border-white/10">
               📅 {breakdown.monthly.toLocaleString('pt-BR')} mensais
             </span>
           )}
@@ -147,7 +147,7 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown, isUnli
             <Button
               variant="ghost"
               onClick={() => navigate('/credit-history')}
-              className="w-full text-gray-300 hover:text-white hover:bg-slate-500/20 justify-between"
+              className="w-full text-gray-300 hover:text-white hover:bg-white/50/20 justify-between"
             >
               Ver todas as transações
               <ChevronRight className="h-4 w-4" />

@@ -50,7 +50,7 @@ const COLOR_MAP = {
   blue: 'bg-blue-500/30 text-blue-300',
   green: 'bg-green-500/30 text-green-300',
   orange: 'bg-orange-500/30 text-orange-300',
-   gray: 'bg-gray-500/30 text-gray-300',
+   gray: 'bg-white/50/30 text-gray-300',
 };
 
 // Fallback versions for backwards compatibility
@@ -239,7 +239,7 @@ const UpscalerArcanoVersionSelect = () => {
                  {/* Status Badge - top right */}
                  <div className="absolute top-4 right-4 flex flex-col gap-2">
                    {!hasVersionAccess && isV3 ? (
-                     <div className="flex items-center gap-1.5 bg-slate-500/20 backdrop-blur-sm text-gray-300 px-3 py-1 rounded-full text-xs font-medium">
+                     <div className="flex items-center gap-1.5 bg-white/50/20 backdrop-blur-sm text-gray-300 px-3 py-1 rounded-full text-xs font-medium">
                        <Sparkles className="h-3 w-3" />
                        Novidades
                      </div>
@@ -262,7 +262,7 @@ const UpscalerArcanoVersionSelect = () => {
 
                 {/* Version Badge - top left */}
                 <div className="absolute top-4 left-4">
-                  <div className={`px-4 py-1.5 rounded-full text-sm font-black shadow-lg bg-white text-slate-900`}>
+                  <div className={`px-4 py-1.5 rounded-full text-sm font-black shadow-lg bg-white text-black`}>
                     {getVersionName(version)}
                   </div>
                 </div>

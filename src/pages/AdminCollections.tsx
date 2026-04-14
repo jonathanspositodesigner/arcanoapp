@@ -409,7 +409,7 @@ const AdminCollections = () => {
                       Premium
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="border-green-500 text-green-600 text-[8px] px-1 py-0 bg-background/80">
+                    <Badge variant="outline" className="border-green-500 text-green-400 text-[8px] px-1 py-0 bg-background/80">
                       Grátis
                     </Badge>
                   )}

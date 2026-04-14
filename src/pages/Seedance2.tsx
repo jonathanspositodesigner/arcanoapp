@@ -471,7 +471,7 @@ export default function Seedance2() {
               <h1 className="text-lg sm:text-xl font-bold text-white">Seedance 2.0</h1>
               <button
                 onClick={() => setShowTutorial(true)}
-                className="flex items-center gap-1 rounded-md border border-white/10 bg-slate-500/10 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-gray-300 hover:bg-slate-500/20 transition-colors"
+                className="flex items-center gap-1 rounded-md border border-white/10 bg-white/50/10 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-gray-300 hover:bg-white/50/20 transition-colors"
               >
                 <Play className="h-3 w-3" />
                 Ver tutorial
@@ -481,7 +481,7 @@ export default function Seedance2() {
               <button
                 onClick={() => setGalleryTab("creations")}
                 className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
-                  galleryTab === "creations" ? "border-white/10 bg-slate-500/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                  galleryTab === "creations" ? "border-white/10 bg-white/50/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                 }`}
               >
                 Minhas Criações
@@ -489,7 +489,7 @@ export default function Seedance2() {
               <button
                 onClick={() => setGalleryTab("library")}
                 className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
-                  galleryTab === "library" ? "border-white/10 bg-slate-500/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                  galleryTab === "library" ? "border-white/10 bg-white/50/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                 }`}
               >
                 Biblioteca
@@ -524,8 +524,8 @@ export default function Seedance2() {
               <>
                 {galleryTab === "creations" && (
                   <div className="flex items-center gap-1.5 px-3 pt-2">
-                    <Clock className="h-3 w-3 text-gray-600" />
-                    <span className="text-[10px] text-gray-600">Vídeos armazenados por 24h</span>
+                    <Clock className="h-3 w-3 text-gray-400" />
+                    <span className="text-[10px] text-gray-400">Vídeos armazenados por 24h</span>
                   </div>
                 )}
                 {loadingCreations ? (
@@ -537,7 +537,7 @@ export default function Seedance2() {
                     <p className="text-sm text-gray-500">Você ainda não tem criações. Veja os modelos ou digite um prompt para começar.</p>
                     <button
                       onClick={() => setGalleryTab("library")}
-                      className="rounded-lg border border-white/10 bg-slate-500/10 px-4 py-1.5 text-xs font-medium text-gray-300 transition-all hover:bg-slate-500/20"
+                      className="rounded-lg border border-white/10 bg-white/50/10 px-4 py-1.5 text-xs font-medium text-gray-300 transition-all hover:bg-white/50/20"
                     >
                       Explorar modelos
                     </button>
@@ -582,7 +582,7 @@ export default function Seedance2() {
                   {libraryItems.some(li => li.id === previewGen.id) && (
                     <button
                       onClick={() => handleUseLibraryItem(previewGen)}
-                      className="rounded-full bg-slate-600/80 px-4 py-2 text-sm font-medium text-white hover:bg-slate-500 transition-colors"
+                      className="rounded-full bg-slate-600/80 px-4 py-2 text-sm font-medium text-white hover:bg-white/50 transition-colors"
                     >
                       Usar modelo
                     </button>
@@ -686,7 +686,7 @@ export default function Seedance2() {
                   className={`group relative flex h-[44px] items-center justify-center gap-2 overflow-hidden rounded-xl px-4 text-sm font-semibold transition-all duration-300 ${
                     canGenerate() && !uploading
                       ? "bg-gradient-to-r from-slate-600 to-slate-400 text-white shadow-lg shadow-slate-500/20 active:scale-[0.98]"
-                      : "cursor-not-allowed bg-white/5 text-gray-600"
+                      : "cursor-not-allowed bg-white/5 text-gray-400"
                   }`}
                 >
                   {uploading ? "Enviando..." : hasActiveJob ? (
@@ -710,21 +710,21 @@ export default function Seedance2() {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
                   placeholder="Descreva o vídeo que deseja gerar..."
-                  className="min-h-[60px] max-h-[100px] resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white outline-none placeholder:text-gray-600 focus:border-slate-500/40"
+                  className="min-h-[60px] max-h-[100px] resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white outline-none placeholder:text-gray-400 focus:border-slate-500/40"
                   rows={2}
                 />
-                <span className="text-right text-[10px] text-gray-600 -mt-1">{prompt.length}/2000</span>
+                <span className="text-right text-[10px] text-gray-400 -mt-1">{prompt.length}/2000</span>
 
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="flex items-center gap-1">
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Modo</span>
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Modo</span>
                     <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
                       {MODE_OPTIONS.map((option) => (
                         <button
                           key={option.value}
                           onClick={() => handleModeChange(option.value)}
                           className={`rounded-md border px-2 py-1 text-[10px] font-medium transition-all ${
-                            mode === option.value ? "border-white/10 bg-slate-500/20 text-gray-300" : "border-transparent text-gray-500"
+                            mode === option.value ? "border-white/10 bg-white/50/20 text-gray-300" : "border-transparent text-gray-500"
                           }`}
                         >
                           {option.label}
@@ -772,7 +772,7 @@ export default function Seedance2() {
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
                     placeholder="Descreva o vídeo que deseja gerar..."
-                    className="min-h-[80px] max-h-[160px] min-w-0 resize-y rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none transition-all placeholder:text-gray-600 focus:border-slate-500/40 focus:min-h-[100px]"
+                    className="min-h-[80px] max-h-[160px] min-w-0 resize-y rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none transition-all placeholder:text-gray-400 focus:border-slate-500/40 focus:min-h-[100px]"
                     rows={3}
                   />
                   <div className="flex flex-col gap-2">
@@ -782,7 +782,7 @@ export default function Seedance2() {
                       className={`group relative flex h-[48px] items-center justify-center gap-2.5 overflow-hidden rounded-xl px-5 text-sm font-semibold transition-all duration-300 ${
                         canGenerate() && !uploading
                           ? "bg-gradient-to-r from-slate-600 to-slate-400 text-white shadow-lg shadow-slate-500/20 hover:shadow-gray-500 hover:scale-[1.02] active:scale-[0.98]"
-                          : "cursor-not-allowed bg-white/5 text-gray-600"
+                          : "cursor-not-allowed bg-white/5 text-gray-400"
                       }`}
                     >
                       <span className="absolute inset-0 bg-gradient-to-r from-gray-400/0 via-white/10 to-gray-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
@@ -802,20 +802,20 @@ export default function Seedance2() {
                         </>
                       )}
                     </button>
-                    <span className="text-right text-[10px] text-gray-600">{prompt.length}/2000</span>
+                    <span className="text-right text-[10px] text-gray-400">{prompt.length}/2000</span>
                   </div>
                 </div>
 
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 pb-1">
                   <div className="flex items-center gap-1.5 group/ctrl">
-                    <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Modo</span>
+                    <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Modo</span>
                     <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
                       {MODE_OPTIONS.map((option) => (
                         <button
                           key={option.value}
                           onClick={() => handleModeChange(option.value)}
                           className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
-                            mode === option.value ? "border-white/10 bg-slate-500/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                            mode === option.value ? "border-white/10 bg-white/50/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                           }`}
                           title={option.desc}
                         >
@@ -866,14 +866,14 @@ export default function Seedance2() {
             {showSettings && (
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-white/[0.04] bg-white/[0.02] px-3 py-2 animate-in fade-in slide-in-from-top-1 duration-200">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Motor</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Motor</span>
                   <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
                     {(["standard", "fast"] as Speed[]).map((value) => (
                       <button
                         key={value}
                         onClick={() => setSpeed(value)}
                         className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
-                          speed === value ? "border-white/10 bg-slate-500/20 text-gray-300" : "border-transparent text-gray-500 hover:text-gray-300"
+                          speed === value ? "border-white/10 bg-white/50/20 text-gray-300" : "border-transparent text-gray-500 hover:text-gray-300"
                         }`}
                       >
                         {value === "standard" ? "Standard" : "Fast"}
@@ -885,7 +885,7 @@ export default function Seedance2() {
                 <div className="h-4 w-px bg-white/[0.06]" />
 
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Tamanho</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Tamanho</span>
                   <select
                     value={ratio}
                     onChange={(e) => setRatio(e.target.value as Ratio)}
@@ -902,14 +902,14 @@ export default function Seedance2() {
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Qualidade</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Qualidade</span>
                   <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
                     {(["480p", "720p"] as Quality[]).map((value) => (
                       <button
                         key={value}
                         onClick={() => setQuality(value)}
                         className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
-                          quality === value ? "border-white/10 bg-slate-500/20 text-gray-300" : "border-transparent text-gray-500 hover:text-gray-300"
+                          quality === value ? "border-white/10 bg-white/50/20 text-gray-300" : "border-transparent text-gray-500 hover:text-gray-300"
                         }`}
                       >
                         {value}
@@ -919,7 +919,7 @@ export default function Seedance2() {
                 </div>
 
                 <div className="flex items-center gap-2 min-w-[140px]">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Duração</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Duração</span>
                   <input
                     type="range" min={4} max={15} step={1}
                     value={parseInt(duration)}
@@ -932,7 +932,7 @@ export default function Seedance2() {
                 <div className="h-4 w-px bg-white/[0.06]" />
 
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600">Áudio</span>
+                  <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400">Áudio</span>
                   <button
                     onClick={() => setGenerateAudio(!generateAudio)}
                     className={`relative w-8 h-[18px] rounded-full transition-colors duration-200 ${generateAudio ? "bg-emerald-500" : "bg-white/10"}`}
@@ -957,7 +957,7 @@ export default function Seedance2() {
                   onClick={() => { setRatio(item.value); setShowRatioModal(false); }}
                   className={`rounded-xl border px-3 py-2.5 text-xs font-medium transition-all ${
                     ratio === item.value
-                      ? "border-slate-500/40 bg-slate-500/20 text-gray-300"
+                      ? "border-slate-500/40 bg-white/50/20 text-gray-300"
                       : "border-white/[0.08] bg-white/[0.04] text-gray-400 hover:bg-white/[0.08]"
                   }`}
                 >
@@ -989,7 +989,7 @@ export default function Seedance2() {
               </button>
               <button
                 onClick={confirmFilePicker}
-                className="flex-1 rounded-xl bg-slate-600/80 py-2 text-xs font-medium text-white hover:bg-slate-500 transition-colors"
+                className="flex-1 rounded-xl bg-slate-600/80 py-2 text-xs font-medium text-white hover:bg-white/50 transition-colors"
               >
                 Entendi
               </button>
@@ -1039,7 +1039,7 @@ function UploadSlot({
       onDragOver={(e) => e.preventDefault()}
       onDrop={onDrop}
       onClick={onClickUpload}
-      className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-white/10 bg-black/30 text-base text-gray-500 transition-all duration-200 hover:border-white/10 hover:bg-slate-500/5 hover:text-gray-400 hover:scale-105"
+      className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-white/10 bg-black/30 text-base text-gray-500 transition-all duration-200 hover:border-white/10 hover:bg-white/50/5 hover:text-gray-400 hover:scale-105"
       style={{ width: dimension, height: dimension }}
     >
       +
@@ -1068,7 +1068,7 @@ function VideoCard({ gen, onPreview, onDownload, onUse }: { gen: Generation; onP
           {onUse && (
             <button
               onClick={(e) => { e.stopPropagation(); onUse(gen); }}
-              className="absolute bottom-2 left-2 right-2 z-10 rounded-lg bg-slate-600/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-slate-500"
+              className="absolute bottom-2 left-2 right-2 z-10 rounded-lg bg-slate-600/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-white/50"
             >
               Usar modelo
             </button>

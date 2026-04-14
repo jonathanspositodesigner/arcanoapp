@@ -586,15 +586,15 @@ const AdminAIToolsUsageTab = () => {
     const type = userTypeMap[userId] || 'free';
     switch (type) {
       case 'free':
-        return <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">Free</Badge>;
+        return <Badge className="bg-white/50/20 text-gray-400 border-gray-500/30">Free</Badge>;
       case 'bought_credits':
         return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">Comprou Créditos</Badge>;
       case 'redeemed_credits':
         return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Resgate Créditos</Badge>;
       case 'free_trial':
-        return <Badge className="bg-slate-500/20 text-slate-400 border-slate-500/30">Trial Gratuito</Badge>;
+        return <Badge className="bg-white/50/20 text-slate-400 border-slate-500/30">Trial Gratuito</Badge>;
       case 'premium':
-        return <Badge className="bg-slate-500/20 text-gray-400 border-white/10">Premium</Badge>;
+        return <Badge className="bg-white/50/20 text-gray-400 border-white/10">Premium</Badge>;
       case 'premium_credits':
         return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Premium + Créditos</Badge>;
     }
@@ -673,7 +673,7 @@ const AdminAIToolsUsageTab = () => {
       'uploading_user_image': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
       'uploading_reference_image': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
       'creating_task': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-      'webhook_received': 'bg-slate-500/20 text-gray-400 border-white/10',
+      'webhook_received': 'bg-white/50/20 text-gray-400 border-white/10',
       'downloading_result': 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
       'consuming_credits': 'bg-red-500/20 text-red-400 border-red-500/30',
     };

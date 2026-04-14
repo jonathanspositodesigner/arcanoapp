@@ -196,7 +196,7 @@ const UpscalerArcanoV1 = () => {
             variant="ghost"
             size="icon"
             onClick={goBack}
-            className="shrink-0 text-gray-300 hover:text-white hover:bg-slate-500/20"
+            className="shrink-0 text-gray-300 hover:text-white hover:bg-white/50/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -386,8 +386,8 @@ const UpscalerArcanoV1 = () => {
             {lessons.map((lesson, index) => (
               <Card
                 key={index}
-                className={`p-3 cursor-pointer transition-all bg-[#111113]/50 border-white/10 hover:bg-slate-500/10 ${
-                  selectedLesson === index ? 'border-white/15 bg-slate-500/10' : ''
+                className={`p-3 cursor-pointer transition-all bg-[#111113]/50 border-white/10 hover:bg-white/50/10 ${
+                  selectedLesson === index ? 'border-white/15 bg-white/50/10' : ''
                 }`}
                 onClick={() => handleLessonClick(index)}
               >
@@ -429,8 +429,8 @@ const UpscalerArcanoV1 = () => {
             {/* Light Version Notice - Below lessons, above WhatsApp */}
             <div 
               onClick={() => handleLessonClick(lessons.length - 1)}
-              className="mt-4 px-3 py-1.5 bg-slate-500/20 border border-white/10 
-                         rounded-full cursor-pointer hover:bg-slate-500/30 transition-all 
+              className="mt-4 px-3 py-1.5 bg-white/50/20 border border-white/10 
+                         rounded-full cursor-pointer hover:bg-white/50/30 transition-all 
                          inline-flex items-center gap-2 text-xs text-gray-300"
             >
               <AlertTriangle className="h-3 w-3" />

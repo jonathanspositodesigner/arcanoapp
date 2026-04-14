@@ -36,11 +36,11 @@ const ReferenceSection: React.FC<Props> = ({ images, previews, onAdd, onRemove, 
             onClick={() => inputRef.current?.click()}
             className="aspect-square rounded border border-dashed border-white/[0.08] flex items-center justify-center hover:bg-white/[0.02] transition-colors"
           >
-            <Plus className="w-3.5 h-3.5 text-gray-700" />
+            <Plus className="w-3.5 h-3.5 text-gray-400" />
           </button>
         )}
       </div>
-      <p className="text-[9px] text-gray-700">Máx. {maxImages} {maxImages === 1 ? 'imagem' : 'imagens'} · 10MB cada</p>
+      <p className="text-[9px] text-gray-400">Máx. {maxImages} {maxImages === 1 ? 'imagem' : 'imagens'} · 10MB cada</p>
       <input
         ref={inputRef}
         type="file"

@@ -218,11 +218,11 @@ const Planos = () => {
     <div className="min-h-screen bg-[#111113]">
       {/* Header */}
       <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-        <Button variant="ghost" onClick={() => navigate('/biblioteca-prompts')} className="text-gray-300 hover:text-white hover:bg-slate-500/20">
+        <Button variant="ghost" onClick={() => navigate('/biblioteca-prompts')} className="text-gray-300 hover:text-white hover:bg-white/50/20">
           <ArrowLeft className="w-4 h-4 mr-2" />
           {t('planos.back')}
         </Button>
-        <Button variant="outline" onClick={() => navigate('/login')} className="gap-2 border-white/10 text-gray-300 hover:bg-slate-500/20 hover:text-white">
+        <Button variant="outline" onClick={() => navigate('/login')} className="gap-2 border-white/10 text-gray-300 hover:bg-white/50/20 hover:text-white">
           <LogIn className="w-4 h-4" />
           {t('planos.alreadyPremium')}
         </Button>
@@ -401,7 +401,7 @@ const Planos = () => {
       <Dialog open={showComingSoonModal} onOpenChange={setShowComingSoonModal}>
         <DialogContent className="sm:max-w-md bg-[#111113] border-white/10">
           <DialogHeader className="text-center">
-            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-slate-500/20 flex items-center justify-center">
+            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-white/50/20 flex items-center justify-center">
               <Clock className="w-8 h-8 text-gray-400" />
             </div>
             <DialogTitle className="text-2xl font-bold text-center text-white">{t('planos.comingSoon.title')}</DialogTitle>

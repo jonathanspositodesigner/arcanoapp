@@ -211,7 +211,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
     return (
       <>
         <div className="flex items-center gap-1.5 group/ctrl">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-gray-600 transition-colors group-hover/ctrl:text-gray-400">
+          <span className="text-[10px] font-medium uppercase tracking-wider text-gray-400 transition-colors group-hover/ctrl:text-gray-400">
             Personagem
           </span>
           <button
@@ -225,7 +225,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
                     c.image_url ? (
                       <img key={c.id} src={c.image_url} alt="" className="w-4 h-4 rounded-full object-cover border border-[#0a0a18]" />
                     ) : (
-                      <div key={c.id} className="w-4 h-4 rounded-full bg-slate-500/20 border border-[#0a0a18] flex items-center justify-center">
+                      <div key={c.id} className="w-4 h-4 rounded-full bg-white/50/20 border border-[#0a0a18] flex items-center justify-center">
                         <User className="w-2 h-2 text-gray-300" />
                       </div>
                     )
@@ -245,7 +245,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
               onClick={() => onCharactersChange([])}
               className="p-0.5 rounded hover:bg-white/10 transition-colors"
             >
-              <X className="w-3 h-3 text-gray-600 hover:text-gray-300" />
+              <X className="w-3 h-3 text-gray-400 hover:text-gray-300" />
             </button>
           )}
         </div>
@@ -275,12 +275,12 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
                   <img src={char.image_url} alt="" className="w-7 h-7 rounded object-cover flex-shrink-0" />
                 ) : (
                   <div className="w-7 h-7 rounded bg-white/[0.04] flex items-center justify-center flex-shrink-0">
-                    <User className="w-3 h-3 text-gray-600" />
+                    <User className="w-3 h-3 text-gray-400" />
                   </div>
                 )}
                 <span className="text-[11px] text-gray-300 truncate flex-1">{char.name}</span>
                 <button onClick={() => removeChar(char.id)} className="p-0.5 hover:bg-white/10 rounded">
-                  <X className="w-3 h-3 text-gray-600" />
+                  <X className="w-3 h-3 text-gray-400" />
                 </button>
               </div>
             ))}
@@ -291,10 +291,10 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
           className="flex items-center gap-2 w-full p-2 rounded-md bg-black/20 border border-white/[0.06] hover:border-white/[0.12] transition-colors"
         >
           <div className="w-8 h-8 rounded bg-white/[0.04] flex items-center justify-center flex-shrink-0">
-            {selectedCharacters.length > 0 ? <Plus className="w-3.5 h-3.5 text-gray-600" /> : <User className="w-3.5 h-3.5 text-gray-600" />}
+            {selectedCharacters.length > 0 ? <Plus className="w-3.5 h-3.5 text-gray-400" /> : <User className="w-3.5 h-3.5 text-gray-400" />}
           </div>
           <div className="text-left min-w-0 flex-1">
-            <span className="text-[9px] text-gray-600 uppercase tracking-wider block">
+            <span className="text-[9px] text-gray-400 uppercase tracking-wider block">
               Personagem ({selectedCharacters.length}/{maxCharacters})
             </span>
             <span className="text-[11px] text-gray-300 truncate block">
@@ -350,7 +350,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
               </Button>
 
               {selectedCharacters.length > 0 && (
-                <Button onClick={() => setModalOpen(false)} size="sm" className="w-full bg-slate-500/20 hover:bg-slate-500/30 text-gray-300 text-[11px]">
+                <Button onClick={() => setModalOpen(false)} size="sm" className="w-full bg-white/50/20 hover:bg-white/50/30 text-gray-300 text-[11px]">
                   Confirmar seleção ({selectedCharacters.length})
                 </Button>
               )}
@@ -369,8 +369,8 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
                     <img src={newImagePreview} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <div className="text-center">
-                      <Plus className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                      <span className="text-[10px] text-gray-600">Adicionar imagem</span>
+                      <Plus className="w-5 h-5 text-gray-400 mx-auto mb-1" />
+                      <span className="text-[10px] text-gray-400">Adicionar imagem</span>
                     </div>
                   )}
                 </div>
@@ -392,7 +392,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
                 </Button>
 
                 {selectedCharacters.length > 0 && (
-                  <Button onClick={() => setModalOpen(false)} size="sm" className="w-full bg-slate-500/20 hover:bg-slate-500/30 text-gray-300 text-[11px]">
+                  <Button onClick={() => setModalOpen(false)} size="sm" className="w-full bg-white/50/20 hover:bg-white/50/30 text-gray-300 text-[11px]">
                     Confirmar seleção ({selectedCharacters.length})
                   </Button>
                 )}
@@ -410,13 +410,13 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
     if (loading) {
       return (
         <div className="py-8 flex justify-center">
-          <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
+          <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
         </div>
       );
     }
     
     if (characters.length === 0) {
-      return <p className="text-[11px] text-gray-600 text-center py-6">Nenhum personagem salvo ainda.</p>;
+      return <p className="text-[11px] text-gray-400 text-center py-6">Nenhum personagem salvo ainda.</p>;
     }
 
     return (
@@ -436,11 +436,11 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
                   <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <User className="w-5 h-5 text-gray-600" />
+                    <User className="w-5 h-5 text-gray-400" />
                   </div>
                 )}
                 {isSelected && (
-                  <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-slate-500 flex items-center justify-center">
+                  <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-white/50 flex items-center justify-center">
                     <span className="text-[8px] text-white font-bold">✓</span>
                   </div>
                 )}
@@ -463,7 +463,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
               <div className="w-3 h-3 rounded-full border border-white/[0.08]" />
             </div>
             <div className="px-1 py-1 bg-black/20">
-              <span className="text-[9px] text-gray-700 block text-center">—</span>
+              <span className="text-[9px] text-gray-400 block text-center">—</span>
             </div>
           </div>
         ))}

@@ -95,7 +95,7 @@ const ObrigadoArcanoCloner = () => {
                 key={index}
                 className="bg-white/5 border border-white/10 rounded-2xl p-5 flex items-start gap-4 hover:bg-white/8 transition-colors"
               >
-                <div className="flex-shrink-0 w-10 h-10 bg-slate-500/15 rounded-xl flex items-center justify-center">
+                <div className="flex-shrink-0 w-10 h-10 bg-white/50/15 rounded-xl flex items-center justify-center">
                   {benefit.icon}
                 </div>
                 <div>

@@ -46,7 +46,7 @@ const variantStyles = {
     forgotLink: 'text-[#2d4a5e] hover:underline',
   },
   purple: {
-    emailBox: 'bg-slate-500/10 border border-white/10',
+    emailBox: 'bg-white/50/10 border border-white/10',
     emailIcon: 'text-gray-400',
     emailText: 'text-white',
     changeBtn: 'text-gray-400 hover:text-gray-300',
@@ -55,7 +55,7 @@ const variantStyles = {
     forgotLink: 'text-gray-400 hover:text-gray-300 underline',
   },
   teal: {
-    emailBox: 'bg-slate-500/10 border border-white/10/20',
+    emailBox: 'bg-white/50/10 border border-white/10/20',
     emailIcon: 'text-gray-400',
     emailText: 'text-white/80',
     changeBtn: 'text-gray-400 hover:text-gray-300',

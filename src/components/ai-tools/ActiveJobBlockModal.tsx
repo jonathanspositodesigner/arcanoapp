@@ -128,7 +128,7 @@ const ActiveJobBlockModal: React.FC<ActiveJobBlockModalProps> = ({
             <Button
               variant="outline"
               onClick={() => setShowConfirmation(false)}
-              className="border-white/10 text-gray-300 hover:bg-slate-500/10"
+              className="border-white/10 text-gray-300 hover:bg-white/50/10"
             >
               Não, aguardar conclusão
             </Button>

@@ -56,7 +56,7 @@ const MyCreationsModal: React.FC<MyCreationsModalProps> = ({ open, onClose }) =>
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="text-gray-300 hover:text-white hover:bg-slate-500/20"
+              className="text-gray-300 hover:text-white hover:bg-white/50/20"
             >
               <X className="w-5 h-5" />
             </Button>
@@ -81,8 +81,8 @@ const MyCreationsModal: React.FC<MyCreationsModalProps> = ({ open, onClose }) =>
                 className={cn(
                   "gap-2 transition-all",
                   mediaType === filter.value
-                    ? "bg-slate-500/30 border-slate-500/50 text-white"
-                    : "bg-transparent border-white/10 text-gray-300 hover:bg-slate-500/10"
+                    ? "bg-white/50/30 border-slate-500/50 text-white"
+                    : "bg-transparent border-white/10 text-gray-300 hover:bg-white/50/10"
                 )}
               >
                 {filter.icon}

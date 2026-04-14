@@ -384,7 +384,7 @@ const RemoverFundoTool: React.FC = () => {
               </Button>
 
               {status === 'waiting' && (
-                <Button variant="outline" size="sm" className="w-full text-xs border-red-500/30 text-red-300 hover:bg-red-500/10" onClick={handleCancelQueue}>
+                <Button variant="outline" size="sm" className="w-full text-xs border-red-500/30 text-red-300 hover:bg-red-500/100/10" onClick={handleCancelQueue}>
                   <XCircle className="w-3.5 h-3.5 mr-1.5" />Sair da Fila
                 </Button>
               )}
@@ -399,9 +399,9 @@ const RemoverFundoTool: React.FC = () => {
                   <h3 className="text-xs font-semibold text-white flex items-center gap-1.5"><ImageIcon className="w-3.5 h-3.5 text-gray-400" />Resultado</h3>
                   {outputImage && (
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-300 hover:text-white hover:bg-slate-500/20" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-3.5 h-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-300 hover:text-white hover:bg-white/50/20" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-3.5 h-3.5" /></Button>
                       <span className="text-[10px] text-gray-300 w-8 text-center">{Math.round(zoomLevel * 100)}%</span>
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-300 hover:text-white hover:bg-slate-500/20" onClick={() => transformRef.current?.zoomIn(0.5)}><ZoomIn className="w-3.5 h-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-300 hover:text-white hover:bg-white/50/20" onClick={() => transformRef.current?.zoomIn(0.5)}><ZoomIn className="w-3.5 h-3.5" /></Button>
                     </div>
                   )}
                 </div>
@@ -430,7 +430,7 @@ const RemoverFundoTool: React.FC = () => {
                     </div>
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                      <div className="w-16 h-16 rounded-xl bg-slate-500/10 border-2 border-dashed border-white/10 flex items-center justify-center"><ImageIcon className="w-8 h-8 text-slate-400/40" /></div>
+                      <div className="w-16 h-16 rounded-xl bg-white/50/10 border-2 border-dashed border-white/10 flex items-center justify-center"><ImageIcon className="w-8 h-8 text-slate-400/40" /></div>
                       <div className="text-center"><p className="text-sm text-gray-300">O resultado aparecerá aqui</p><p className="text-xs text-gray-400 mt-0.5">Envie uma imagem e clique em "Remover Fundo"</p></div>
                     </div>
                   )}
@@ -438,7 +438,7 @@ const RemoverFundoTool: React.FC = () => {
 
                 {outputImage && status === 'completed' && (
                   <div className="absolute bottom-3 left-3 right-3 flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-white/15 text-white hover:bg-slate-500/90" onClick={handleReset}><RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova Imagem</Button>
+                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-white/15 text-white hover:bg-white/50/90" onClick={handleReset}><RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova Imagem</Button>
                     <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white" onClick={handleDownload}><Download className="w-3.5 h-3.5 mr-1.5" />Baixar PNG</Button>
                   </div>
                 )}

@@ -204,9 +204,9 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
 
         {/* Separator */}
         <div className="flex items-center gap-2 mt-3 sm:mt-4 flex-shrink-0">
-          <div className="flex-1 h-px bg-slate-500/30" />
+          <div className="flex-1 h-px bg-white/50/30" />
           <span className="text-[10px] sm:text-xs text-gray-400/80">ou escolha da biblioteca</span>
-          <div className="flex-1 h-px bg-slate-500/30" />
+          <div className="flex-1 h-px bg-white/50/30" />
         </div>
 
         {/* Filter Tabs - More compact on mobile */}
@@ -219,7 +219,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
               "flex-1 h-8 sm:h-9 text-xs sm:text-sm",
               filter === 'masculino'
                 ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0"
-                : "bg-transparent border-white/10 text-gray-300 hover:bg-slate-500/20"
+                : "bg-transparent border-white/10 text-gray-300 hover:bg-white/50/20"
             )}
           >
             <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
@@ -233,7 +233,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
               "flex-1 h-8 sm:h-9 text-xs sm:text-sm",
               filter === 'feminino'
                 ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white border-0"
-                : "bg-transparent border-white/10 text-gray-300 hover:bg-slate-500/20"
+                : "bg-transparent border-white/10 text-gray-300 hover:bg-white/50/20"
             )}
           >
             <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
@@ -249,7 +249,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
             placeholder="Buscar por palavra-chave..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-9 text-sm bg-slate-500/10 border-white/10 text-white placeholder:text-gray-500 focus:border-slate-400"
+            className="pl-10 h-9 text-sm bg-white/50/10 border-white/10 text-white placeholder:text-gray-500 focus:border-slate-400"
           />
         </div>
 
@@ -292,7 +292,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
                     </div>
 
                     {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-slate-500/0 group-hover:bg-slate-500/10 transition-colors flex items-center justify-center">
+                    <div className="absolute inset-0 bg-white/50/0 group-hover:bg-white/50/10 transition-colors flex items-center justify-center">
                       <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-slate-600 px-3 py-1 rounded-full transition-opacity">
                         Selecionar
                       </span>
@@ -309,7 +309,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
                     size="sm"
                     onClick={handleLoadMore}
                     disabled={isLoading}
-                    className="bg-slate-500/10 border-white/10 text-gray-300 hover:bg-slate-500/20 text-xs h-8"
+                    className="bg-white/50/10 border-white/10 text-gray-300 hover:bg-white/50/20 text-xs h-8"
                   >
                     {isLoading ? (
                       <>

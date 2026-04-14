@@ -327,7 +327,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
               onClick={() => fileRef.current?.click()}
               className={`w-full aspect-[4/3] rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden ${
                 uploadedPreview 
-                  ? 'border-slate-500/50 bg-slate-500/5'
+                  ? 'border-slate-500/50 bg-white/50/5'
                   : 'border-white/10 bg-black/20 hover:border-white/20'
               }`}
             >
@@ -348,9 +348,9 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                 </div>
               ) : (
                 <>
-                  <Upload className="w-6 h-6 text-gray-600 mb-2" />
+                  <Upload className="w-6 h-6 text-gray-400 mb-2" />
                   <span className="text-[11px] text-gray-500">Clique para enviar sua foto</span>
-                  <span className="text-[9px] text-gray-600 mt-1">JPG, PNG ou WebP • Máx 10MB</span>
+                  <span className="text-[9px] text-gray-400 mt-1">JPG, PNG ou WebP • Máx 10MB</span>
                 </>
               )}
             </div>

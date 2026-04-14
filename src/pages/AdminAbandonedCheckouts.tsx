@@ -439,7 +439,7 @@ const AdminAbandonedCheckouts = () => {
       contacted_whatsapp: "bg-green-500/20 text-green-500 border-green-500/30",
       contacted_email: "bg-blue-500/20 text-blue-500 border-blue-500/30",
       converted: "bg-emerald-500/20 text-emerald-500 border-emerald-500/30",
-      ignored: "bg-gray-500/20 text-gray-500 border-gray-500/30"
+      ignored: "bg-white/50/20 text-gray-500 border-gray-500/30"
     };
     
     const labels: Record<string, string> = {
@@ -642,7 +642,7 @@ const AdminAbandonedCheckouts = () => {
                             size="icon"
                             variant="ghost"
                             onClick={() => openWhatsApp(checkout)}
-                            className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-500/10"
+                            className="h-8 w-8 text-green-500 hover:text-green-400 hover:bg-green-500/10"
                             title="Enviar WhatsApp"
                           >
                             <MessageCircle className="h-4 w-4" />
@@ -652,7 +652,7 @@ const AdminAbandonedCheckouts = () => {
                             size="icon"
                             variant="ghost"
                             onClick={() => openEmailModal(checkout)}
-                            className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10"
+                            className="h-8 w-8 text-blue-500 hover:text-blue-400 hover:bg-blue-500/10"
                             title="Enviar Email"
                           >
                             <Mail className="h-4 w-4" />
@@ -672,7 +672,7 @@ const AdminAbandonedCheckouts = () => {
                             size="icon"
                             variant="ghost"
                             onClick={() => updateStatus(checkout.id, 'ignored')}
-                            className="h-8 w-8 text-gray-500 hover:text-gray-600 hover:bg-gray-500/10"
+                            className="h-8 w-8 text-gray-500 hover:text-gray-400 hover:bg-white/50/10"
                             title="Ignorar"
                           >
                             <X className="h-4 w-4" />

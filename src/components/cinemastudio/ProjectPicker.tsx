@@ -113,9 +113,9 @@ const ProjectPicker: React.FC<Props> = ({
               >
                 {atLimit ? (
                   <>
-                    <Lock className="w-6 h-6 text-gray-600" />
-                    <span className="text-[11px] text-gray-600 font-medium">Limite atingido</span>
-                    <span className="text-[9px] text-gray-700">{projectCount}/{MAX_PROJECTS}</span>
+                    <Lock className="w-6 h-6 text-gray-400" />
+                    <span className="text-[11px] text-gray-400 font-medium">Limite atingido</span>
+                    <span className="text-[9px] text-gray-400">{projectCount}/{MAX_PROJECTS}</span>
                   </>
                 ) : (
                   <>
@@ -137,7 +137,7 @@ const ProjectPicker: React.FC<Props> = ({
                     <img src={project.coverUrl} className="w-full h-full object-cover" alt={project.name} />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-[#1a1a2e] to-[#12121e] flex items-center justify-center">
-                      <Film className="w-8 h-8 text-gray-700/50" />
+                      <Film className="w-8 h-8 text-gray-400/50" />
                     </div>
                   )}
 

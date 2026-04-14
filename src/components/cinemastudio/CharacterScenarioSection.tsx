@@ -153,11 +153,11 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
             <img src={selectedScenario.image_url} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
           ) : (
             <div className="w-8 h-8 rounded bg-white/[0.04] flex items-center justify-center flex-shrink-0">
-              <MapPin className="w-3.5 h-3.5 text-gray-600" />
+              <MapPin className="w-3.5 h-3.5 text-gray-400" />
             </div>
           )}
           <div className="text-left min-w-0 flex-1">
-            <span className="text-[9px] text-gray-600 uppercase tracking-wider block">Cenário</span>
+            <span className="text-[9px] text-gray-400 uppercase tracking-wider block">Cenário</span>
             <span className="text-[11px] text-gray-300 truncate block">
               {selectedScenario ? selectedScenario.name : 'Selecionar...'}
             </span>
@@ -167,7 +167,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
               onClick={e => { e.stopPropagation(); setSelectedScenario(null); onScenarioChange?.(null); }}
               className="p-0.5 hover:bg-white/10 rounded"
             >
-              <X className="w-3 h-3 text-gray-600" />
+              <X className="w-3 h-3 text-gray-400" />
             </button>
           )}
         </button>
@@ -190,8 +190,8 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                   <img src={newImagePreview} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="text-center">
-                    <Plus className="w-5 h-5 text-gray-600 mx-auto mb-1" />
-                    <span className="text-[10px] text-gray-600">Adicionar imagem</span>
+                    <Plus className="w-5 h-5 text-gray-400 mx-auto mb-1" />
+                    <span className="text-[10px] text-gray-400">Adicionar imagem</span>
                   </div>
                 )}
               </div>
@@ -213,9 +213,9 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
               </Button>
 
               {loading ? (
-                <div className="py-8 flex justify-center"><Loader2 className="w-4 h-4 animate-spin text-gray-600" /></div>
+                <div className="py-8 flex justify-center"><Loader2 className="w-4 h-4 animate-spin text-gray-400" /></div>
               ) : scenarios.length === 0 ? (
-                <p className="text-[11px] text-gray-600 text-center py-6">Nenhum cenário salvo ainda.</p>
+                <p className="text-[11px] text-gray-400 text-center py-6">Nenhum cenário salvo ainda.</p>
               ) : (
                 <div className="grid grid-cols-4 gap-2">
                   {scenarios.map(item => {
@@ -233,11 +233,11 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                             <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                              <MapPin className="w-5 h-5 text-gray-600" />
+                              <MapPin className="w-5 h-5 text-gray-400" />
                             </div>
                           )}
                           {isSelected && (
-                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-slate-500 flex items-center justify-center">
+                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-white/50 flex items-center justify-center">
                               <span className="text-[8px] text-white font-bold">✓</span>
                             </div>
                           )}
@@ -260,7 +260,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                         <div className="w-3 h-3 rounded-full border border-white/[0.08]" />
                       </div>
                       <div className="px-1 py-1 bg-black/20">
-                        <span className="text-[9px] text-gray-700 block text-center">—</span>
+                        <span className="text-[9px] text-gray-400 block text-center">—</span>
                       </div>
                     </div>
                   ))}

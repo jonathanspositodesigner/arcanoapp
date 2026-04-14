@@ -160,7 +160,7 @@ const ChangePassword = () => {
           {isFirstAccessWithoutSession ? (
             <>
               <p className="text-gray-300 mb-3">Cadastre sua senha agora para liberar seu acesso.</p>
-              <p className="text-white font-medium bg-slate-500/20 py-2 px-4 rounded-lg inline-block mb-2">
+              <p className="text-white font-medium bg-white/50/20 py-2 px-4 rounded-lg inline-block mb-2">
                 {emailParam}
               </p>
             </>

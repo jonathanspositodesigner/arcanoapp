@@ -377,11 +377,11 @@ const Planos2 = () => {
     <div className="min-h-screen bg-[#111113]">
       {/* Header */}
       <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-        <Button variant="ghost" onClick={() => navigate('/biblioteca-prompts')} className="text-gray-300 hover:text-white hover:bg-slate-500/20">
+        <Button variant="ghost" onClick={() => navigate('/biblioteca-prompts')} className="text-gray-300 hover:text-white hover:bg-white/50/20">
           <ArrowLeft className="w-4 h-4 mr-2" />
           {t('planos.back')}
         </Button>
-        <Button variant="outline" onClick={() => navigate('/login')} className="gap-2 border-white/10 text-gray-300 hover:bg-slate-500/20 hover:text-white">
+        <Button variant="outline" onClick={() => navigate('/login')} className="gap-2 border-white/10 text-gray-300 hover:bg-white/50/20 hover:text-white">
           <LogIn className="w-4 h-4" />
           {t('planos.alreadyPremium')}
         </Button>
@@ -546,7 +546,7 @@ const Planos2 = () => {
                         }
                       }}
                       disabled={isDisabled || isMPLoading}
-                      className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-slate-500/20 border border-slate-500/40 text-gray-300 cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-white/10 text-gray-300"}`}
+                      className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-white/50/20 border border-slate-500/40 text-gray-300 cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-white/10 text-gray-300"}`}
                     >
                       {buttonText}
                     </Button>
@@ -806,7 +806,7 @@ const Planos2 = () => {
       <Dialog open={showComingSoonModal} onOpenChange={setShowComingSoonModal}>
         <DialogContent className="sm:max-w-md bg-[#111113] border-white/10">
           <DialogHeader className="text-center">
-            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-slate-500/20 flex items-center justify-center">
+            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-white/50/20 flex items-center justify-center">
               <Clock className="w-8 h-8 text-gray-400" />
             </div>
             <DialogTitle className="text-2xl font-bold text-center text-white">{t('planos.comingSoon.title')}</DialogTitle>

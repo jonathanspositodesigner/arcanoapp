@@ -157,7 +157,7 @@ const AdminSimpleMetrics = () => {
           {/* Installations Card */}
           <Card className="p-6">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-slate-500/20 rounded-full">
+              <div className="p-3 bg-white/50/20 rounded-full">
                 <Smartphone className="h-8 w-8 text-slate-400" />
               </div>
               <div>
@@ -199,7 +199,7 @@ const AdminSimpleMetrics = () => {
                 <p className="text-sm text-muted-foreground">Primeiro Acesso</p>
                 <div className="flex gap-4 mt-1">
                   <div>
-                    <p className="text-xl font-bold text-green-600">{firstAccessStats.changed}</p>
+                    <p className="text-xl font-bold text-green-400">{firstAccessStats.changed}</p>
                     <p className="text-xs text-muted-foreground">Trocaram</p>
                   </div>
                   <div>
@@ -259,7 +259,7 @@ const AdminSimpleMetrics = () => {
                   <span className={`text-xs px-2 py-1 rounded-full ${
                     firstAccessModalView === 'pending' 
                       ? 'bg-amber-500/20 text-amber-600' 
-                      : 'bg-green-500/20 text-green-600'
+                      : 'bg-green-500/20 text-green-400'
                   }`}>
                     {firstAccessModalView === 'pending' ? 'Pendente' : 'Concluído'}
                   </span>

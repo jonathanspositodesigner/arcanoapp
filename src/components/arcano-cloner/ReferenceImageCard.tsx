@@ -39,7 +39,7 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
       <div
         className={cn(
           "relative min-h-[120px] h-[120px] lg:min-h-[160px] lg:h-[160px] transition-all",
-          !image && "cursor-pointer hover:bg-slate-500/10",
+          !image && "cursor-pointer hover:bg-white/50/10",
           disabled && "cursor-not-allowed"
         )}
         onClick={!image && !disabled ? onOpenLibrary : undefined}
@@ -60,7 +60,7 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
                 onClearImage();
               }}
               disabled={disabled}
-              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center transition-colors"
+              className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500/100 flex items-center justify-center transition-colors"
             >
               <X className="w-3 h-3 text-white" />
             </button>
@@ -85,7 +85,7 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
           <button
             onClick={onOpenLibrary}
             disabled={disabled}
-            className="w-full h-6 text-[10px] rounded-md bg-slate-500/10 border border-white/10 text-gray-300 hover:bg-slate-500/20 hover:text-white transition-colors flex items-center justify-center gap-1"
+            className="w-full h-6 text-[10px] rounded-md bg-white/50/10 border border-white/10 text-gray-300 hover:bg-white/50/20 hover:text-white transition-colors flex items-center justify-center gap-1"
           >
             <ImageIcon className="w-3 h-3" />
             Trocar Imagem

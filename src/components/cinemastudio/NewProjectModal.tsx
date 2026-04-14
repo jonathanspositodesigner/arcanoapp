@@ -44,11 +44,11 @@ const NewProjectModal: React.FC<Props> = ({ isOpen, onClose, onCreate }) => {
               value={name}
               onChange={(e) => setName(e.target.value.slice(0, 50))}
               placeholder="Ex: Clipe Vitor Hugo, Campanha Verão..."
-              className="bg-white/[0.04] border-white/[0.06] text-gray-200 placeholder:text-gray-600"
+              className="bg-white/[0.04] border-white/[0.06] text-gray-200 placeholder:text-gray-400"
               onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               autoFocus
             />
-            <span className="text-[10px] text-gray-600 mt-1 block text-right">{name.length}/50</span>
+            <span className="text-[10px] text-gray-400 mt-1 block text-right">{name.length}/50</span>
           </div>
           <Button
             onClick={handleCreate}

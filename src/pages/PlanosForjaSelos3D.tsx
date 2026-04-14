@@ -170,7 +170,7 @@ const PlanosForjaSelos3D = () => {
                     const IconComponent = feature.icon;
                     return (
                       <div key={index} className="flex items-center gap-3 text-white/80">
-                        <div className="w-6 h-6 rounded-full bg-slate-500/20 flex items-center justify-center flex-shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-white/50/20 flex items-center justify-center flex-shrink-0">
                           <IconComponent className="h-3.5 w-3.5 text-gray-400" />
                         </div>
                         <span className="text-sm">{feature.text}</span>

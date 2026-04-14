@@ -58,7 +58,7 @@ const BADGE_ICONS = [
 const BADGE_COLORS = [
   { value: 'yellow', label: 'Amarelo', className: 'bg-yellow-500/30 text-yellow-300' },
   { value: 'blue', label: 'Azul', className: 'bg-blue-500/30 text-blue-300' },
-  { value: 'purple', label: 'Roxo', className: 'bg-slate-500/30 text-gray-300' },
+  { value: 'purple', label: 'Roxo', className: 'bg-white/50/30 text-gray-300' },
   { value: 'green', label: 'Verde', className: 'bg-green-500/30 text-green-300' },
   { value: 'orange', label: 'Laranja', className: 'bg-orange-500/30 text-orange-300' },
 ];
@@ -626,7 +626,7 @@ const ToolVersionEditor = ({
                         disabled={!currentVersion.sales.enabled_6_meses}
                       />
                       {currentVersion.sales.price_6_meses && (
-                        <p className="text-xs text-green-600 mt-1">{formatPriceInput(String(currentVersion.sales.price_6_meses))}</p>
+                        <p className="text-xs text-green-400 mt-1">{formatPriceInput(String(currentVersion.sales.price_6_meses))}</p>
                       )}
                     </div>
                     <div>
@@ -747,7 +747,7 @@ const ToolVersionEditor = ({
 
               {/* Renovação */}
               <div className="border rounded-lg p-4 space-y-4 border-green-500/30 bg-green-500/5">
-                <Badge className="bg-green-500/20 text-green-600">🔄 30% OFF - Renovação</Badge>
+                <Badge className="bg-green-500/20 text-green-400">🔄 30% OFF - Renovação</Badge>
                 <div className="space-y-3">
                   {currentVersion.sales.enabled_6_meses && (
                     <div>
@@ -786,8 +786,8 @@ const ToolVersionEditor = ({
               </div>
 
               {/* Membros */}
-              <div className="border rounded-lg p-4 space-y-4 border-white/10 bg-slate-500/5">
-                <Badge className="bg-slate-500/20 text-slate-500">👑 20% OFF - Membros</Badge>
+              <div className="border rounded-lg p-4 space-y-4 border-white/10 bg-white/50/5">
+                <Badge className="bg-white/50/20 text-gray-400">👑 20% OFF - Membros</Badge>
                 <div className="space-y-3">
                   {currentVersion.sales.enabled_6_meses && (
                     <div>

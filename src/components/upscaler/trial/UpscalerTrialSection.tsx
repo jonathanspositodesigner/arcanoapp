@@ -420,7 +420,7 @@ export default function UpscalerTrialSection() {
                 <div className="text-center mt-4">
                   <Button
                     variant="outline"
-                    className="border-white/10 text-gray-300 hover:bg-slate-500/10"
+                    className="border-white/10 text-gray-300 hover:bg-white/50/10"
                     onClick={handleNewUpload}
                   >
                     {usesRemaining > 0 

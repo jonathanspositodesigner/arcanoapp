@@ -553,7 +553,7 @@ const PushNotificationsContent = () => {
                     </div>
                     <div className="flex flex-col items-end gap-1 ml-4">
                       <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-green-600">
+                        <Badge variant="secondary" className="text-green-400">
                           <CheckCircle className="h-3 w-3 mr-1" />
                           {log.sent_count}
                         </Badge>
@@ -701,7 +701,7 @@ const PushNotificationsContent = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => handleDeleteTemplate(template.id)}
-                        className="text-red-500 hover:text-red-600"
+                        className="text-red-500 hover:text-red-400"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -945,7 +945,7 @@ const PushNotificationsContent = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => handleDeleteSchedule(schedule.id)}
-                        className="text-red-500 hover:text-red-600"
+                        className="text-red-500 hover:text-red-400"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

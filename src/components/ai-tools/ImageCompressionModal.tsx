@@ -92,7 +92,7 @@ const ImageCompressionModal: React.FC<ImageCompressionModalProps> = ({
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
           <AlertDialogCancel
             onClick={onClose}
-            className="border-white/10 text-gray-300 hover:bg-slate-500/10 bg-transparent"
+            className="border-white/10 text-gray-300 hover:bg-white/50/10 bg-transparent"
           >
             Cancelar
           </AlertDialogCancel>

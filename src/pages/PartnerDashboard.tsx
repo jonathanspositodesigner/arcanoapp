@@ -290,7 +290,7 @@ const PartnerDashboard = () => {
           </Card>
           <Card className="p-4 bg-green-500/10 border-green-500/20">
             <div className="text-center">
-              <p className="text-3xl font-bold text-green-600">{stats.approved}</p>
+              <p className="text-3xl font-bold text-green-400">{stats.approved}</p>
               <p className="text-sm text-muted-foreground">Aprovados</p>
             </div>
           </Card>
@@ -302,7 +302,7 @@ const PartnerDashboard = () => {
           </Card>
           <Card className="p-4 bg-red-500/10 border-red-500/20">
             <div className="text-center">
-              <p className="text-3xl font-bold text-red-600">{stats.rejected}</p>
+              <p className="text-3xl font-bold text-red-400">{stats.rejected}</p>
               <p className="text-sm text-muted-foreground">Recusados</p>
             </div>
           </Card>
@@ -336,7 +336,7 @@ const PartnerDashboard = () => {
             variant={activeFilter === "approved" ? "default" : "outline"}
             onClick={() => setActiveFilter("approved")}
             size="sm"
-            className={activeFilter === "approved" ? "bg-green-600 hover:bg-green-700" : "text-green-600 border-green-600"}
+            className={activeFilter === "approved" ? "bg-green-600 hover:bg-green-700" : "text-green-400 border-green-600"}
           >
             <FileCheck className="h-4 w-4 mr-1" />
             Aprovados ({stats.approved})
@@ -354,7 +354,7 @@ const PartnerDashboard = () => {
             variant={activeFilter === "rejected" ? "default" : "outline"}
             onClick={() => setActiveFilter("rejected")}
             size="sm"
-            className={activeFilter === "rejected" ? "bg-red-600 hover:bg-red-700" : "text-red-600 border-red-600"}
+            className={activeFilter === "rejected" ? "bg-red-600 hover:bg-red-700" : "text-red-400 border-red-600"}
           >
             <XCircle className="h-4 w-4 mr-1" />
             Recusados ({stats.rejected})

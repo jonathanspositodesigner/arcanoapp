@@ -50,7 +50,7 @@ const ForgotPassword = () => {
           <Button
             onClick={() => navigate("/login")}
             variant="outline"
-            className="w-full border-white/10 text-gray-300 hover:bg-slate-500/20 hover:text-white"
+            className="w-full border-white/10 text-gray-300 hover:bg-white/50/20 hover:text-white"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t('emailSent.backToLogin')}
@@ -66,7 +66,7 @@ const ForgotPassword = () => {
         <Button
           variant="ghost"
           onClick={() => navigate("/login")}
-          className="mb-6 text-gray-300 hover:text-white hover:bg-slate-500/20"
+          className="mb-6 text-gray-300 hover:text-white hover:bg-white/50/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('back')}

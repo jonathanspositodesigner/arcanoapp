@@ -110,7 +110,7 @@ const TutorialArtes = () => {
             variant="ghost"
             size="icon"
             onClick={() => navigate("/biblioteca-artes")}
-            className="text-gray-300 hover:text-white hover:bg-slate-500/20"
+            className="text-gray-300 hover:text-white hover:bg-white/50/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

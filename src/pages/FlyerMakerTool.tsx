@@ -799,7 +799,7 @@ const FlyerMakerTool: React.FC = () => {
                     {status === 'waiting' && (
                       <Button
                         variant="outline"
-                        className="w-full py-3 text-sm border-red-500/30 text-red-300 hover:bg-red-500/10 rounded-xl"
+                        className="w-full py-3 text-sm border-red-500/30 text-red-300 hover:bg-red-500/100/10 rounded-xl"
                         onClick={handleCancelQueue}
                       >
                         <XCircle className="w-4 h-4 mr-2" /> Sair da Fila

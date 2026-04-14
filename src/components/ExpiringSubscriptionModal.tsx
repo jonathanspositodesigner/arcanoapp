@@ -45,7 +45,7 @@ const ExpiringSubscriptionModal = ({ isOpen, onClose, expiringStatus, planType }
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange-500/20">
             {isToday ? (
               <AlertTriangle className="h-6 w-6 text-orange-600" />
             ) : (

@@ -403,7 +403,7 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
 
             <div className="flex items-center justify-between text-xs">
               <span className="text-gray-300">0s</span>
-              <div className="flex items-center gap-2 bg-slate-500/20 px-3 py-1.5 rounded-full">
+              <div className="flex items-center gap-2 bg-white/50/20 px-3 py-1.5 rounded-full">
                 <span className="text-white font-medium">
                   {formatTime(range[0])} → {formatTime(range[1])}
                 </span>
@@ -425,7 +425,7 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
             <div className="px-2">
               <div className="w-full bg-white/5 rounded-full h-2">
                 <div 
-                  className="bg-slate-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-white/50 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -441,7 +441,7 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
               <Button
                 onClick={handleCancel}
                 variant="outline"
-                className="border-red-500/50 text-red-400 hover:bg-red-500/20"
+                className="border-red-500/50 text-red-400 hover:bg-red-500/100/20"
               >
                 <X className="w-4 h-4 mr-2" />
                 Cancelar

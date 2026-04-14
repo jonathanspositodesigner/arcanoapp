@@ -73,7 +73,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           {/* Home Button */}
           <button
             onClick={() => handleNavAndClose("/")}
-            className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-slate-500/20 transition-colors"
+            className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-white/50/20 transition-colors"
           >
             <Home className="h-3.5 w-3.5 mr-1.5" />
             Home
@@ -82,7 +82,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           <div className="border-t border-white/10" />
 
           {/* Install App Button */}
-          <Button onClick={() => handleNavAndClose("/install-app")} variant="outline" className="w-full h-auto py-2 px-2.5 bg-white/5 border-white/15 text-white hover:bg-slate-500/30 font-medium text-[11px] flex items-center justify-between">
+          <Button onClick={() => handleNavAndClose("/install-app")} variant="outline" className="w-full h-auto py-2 px-2.5 bg-white/5 border-white/15 text-white hover:bg-white/50/30 font-medium text-[11px] flex items-center justify-between">
             <span className="flex items-center">
               <Smartphone className="h-3 w-3 mr-1.5" />
               {t('sidebar.installApp')}
@@ -116,7 +116,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
                   {t('sidebar.becomePremium')}
                 </span>
               </Button>
-              <Button onClick={() => handleNavAndClose("/login")} variant="outline" className="w-full h-auto py-2 px-2.5 bg-white/5 border-white/15 text-white hover:bg-slate-500/30 font-medium text-[11px] flex items-center justify-between">
+              <Button onClick={() => handleNavAndClose("/login")} variant="outline" className="w-full h-auto py-2 px-2.5 bg-white/5 border-white/15 text-white hover:bg-white/50/30 font-medium text-[11px] flex items-center justify-between">
                 <span className="flex items-center">
                   <LogIn className="h-3 w-3 mr-1.5" />
                   {t('sidebar.makeLogin')}
@@ -146,7 +146,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
                   key={link.name}
                   onClick={() => !link.disabled && handleNavAndClose(link.path)}
                   disabled={link.disabled}
-                  className={`w-full flex items-center justify-between text-[11px] py-1.5 px-2.5 rounded-md transition-colors ${link.disabled ? 'text-gray-500 cursor-not-allowed' : 'text-gray-300 hover:text-white hover:bg-slate-500/20'}`}
+                  className={`w-full flex items-center justify-between text-[11px] py-1.5 px-2.5 rounded-md transition-colors ${link.disabled ? 'text-gray-500 cursor-not-allowed' : 'text-gray-300 hover:text-white hover:bg-white/50/20'}`}
                 >
                   <span>{link.name}</span>
                   {link.badge && (
@@ -156,7 +156,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
               ))}
               <button
                 onClick={() => handleNavAndClose("/ferramentas-ia-aplicativo")}
-                className="w-full flex items-center justify-center text-[11px] py-1.5 px-2.5 rounded-md text-gray-300 hover:text-white hover:bg-slate-500/20 transition-colors font-medium mt-1"
+                className="w-full flex items-center justify-center text-[11px] py-1.5 px-2.5 rounded-md text-gray-300 hover:text-white hover:bg-white/50/20 transition-colors font-medium mt-1"
               >
                 Ver todas →
               </button>
@@ -166,7 +166,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           {/* Seedance 2 */}
           <button
             onClick={() => handleNavAndClose("/seedance2")}
-            className="w-full flex items-center justify-between text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-slate-500/20 transition-colors"
+            className="w-full flex items-center justify-between text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-white/50/20 transition-colors"
           >
             <span className="flex items-center">
               <Video className="h-3.5 w-3.5 mr-1.5" />
@@ -178,7 +178,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           {/* Biblioteca de Prompts */}
           <button
             onClick={() => handleNavAndClose("/biblioteca-prompts")}
-            className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-slate-500/20 transition-colors"
+            className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-white/50/20 transition-colors"
           >
             <BookOpen className="h-3.5 w-3.5 mr-1.5" />
             PromptClub
@@ -187,14 +187,14 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           {/* Gerar Imagem e Gerar Vídeo */}
           <button
             onClick={() => handleNavAndClose("/gerar-imagem")}
-            className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-slate-500/20 transition-colors"
+            className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-white/50/20 transition-colors"
           >
             <ImagePlus className="h-3.5 w-3.5 mr-1.5" />
             Gerar Imagem
           </button>
           <button
             onClick={() => handleNavAndClose("/gerar-video")}
-            className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-slate-500/20 transition-colors"
+            className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-white/50/20 transition-colors"
           >
             <Video className="h-3.5 w-3.5 mr-1.5" />
             Gerar Vídeo
@@ -208,7 +208,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           {user && (
             <button
               onClick={() => handleNavAndClose("/credit-history")}
-              className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-slate-500/20 transition-colors"
+              className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-white/50/20 transition-colors"
             >
               <Coins className="h-3.5 w-3.5 mr-1.5" />
               Meus Créditos
@@ -219,7 +219,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           {user && (
             <button
               onClick={() => handleNavAndClose("/profile-settings")}
-              className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-slate-500/20 transition-colors"
+              className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-white/50/20 transition-colors"
             >
               <Settings className="h-3.5 w-3.5 mr-1.5" />
               Configurações
@@ -251,7 +251,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           <div className="pt-3 border-t border-white/10 mt-3">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center text-left text-[12px] font-medium text-red-400 hover:text-red-300 py-2 px-2.5 rounded-lg hover:bg-red-500/10 transition-colors"
+              className="w-full flex items-center text-left text-[12px] font-medium text-red-400 hover:text-red-300 py-2 px-2.5 rounded-lg hover:bg-red-500/100/10 transition-colors"
             >
               <LogOut className="h-3.5 w-3.5 mr-1.5" />
               Sair

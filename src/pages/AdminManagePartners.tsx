@@ -549,7 +549,7 @@ const AdminManagePartners = () => {
         <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle className="text-center text-green-600">
+              <DialogTitle className="text-center text-green-400">
                 ✓ Colaborador cadastrado com sucesso!
               </DialogTitle>
             </DialogHeader>

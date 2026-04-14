@@ -198,7 +198,7 @@ const FerramentasIAES = () => {
               <Button
                 onClick={() => navigate('/login-artes?redirect=/ferramentas-ia-es')}
                 variant="outline"
-                className="flex-1 border-white/10 text-gray-300 hover:bg-slate-500/20"
+                className="flex-1 border-white/10 text-gray-300 hover:bg-white/50/20"
                 size="sm"
               >
                 <LogIn className="w-4 h-4 mr-2" />

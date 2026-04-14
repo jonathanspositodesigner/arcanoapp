@@ -100,8 +100,8 @@ const ArtesMusicosMarketing = () => {
         <p className="text-muted-foreground mb-4">Ferramentas de divulgação e campanhas</p>
 
         {isReordering && (
-          <div className="mb-4 p-3 bg-slate-500/10 border border-white/10/20 rounded-lg text-center">
-            <p className="text-sm text-slate-500 font-medium">
+          <div className="mb-4 p-3 bg-white/50/10 border border-white/10/20 rounded-lg text-center">
+            <p className="text-sm text-gray-400 font-medium">
               🔄 Arraste os cards para reordenar
             </p>
           </div>
@@ -118,7 +118,7 @@ const ArtesMusicosMarketing = () => {
             {...getDragProps("push-notifications")}
           >
             {isReordering && (
-              <div className="absolute top-2 right-2 z-10 p-1 bg-slate-500/20 rounded-md">
+              <div className="absolute top-2 right-2 z-10 p-1 bg-white/50/20 rounded-md">
                 <GripVertical className="h-4 w-4 text-slate-400" />
               </div>
             )}
@@ -142,12 +142,12 @@ const ArtesMusicosMarketing = () => {
             {/* Push Notification Analytics */}
             <Card className="p-6 border-2 border-white/10 relative" {...getDragProps("push-analytics")}>
               {isReordering && (
-                <div className="absolute top-2 right-2 z-10 p-1 bg-slate-500/20 rounded-md">
+                <div className="absolute top-2 right-2 z-10 p-1 bg-white/50/20 rounded-md">
                   <GripVertical className="h-4 w-4 text-slate-400" />
                 </div>
               )}
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-slate-500/20 rounded-full">
+                <div className="p-2 bg-white/50/20 rounded-full">
                   <Bell className="h-6 w-6 text-slate-400" />
                 </div>
                 <div>
@@ -167,7 +167,7 @@ const ArtesMusicosMarketing = () => {
                   <CheckCircle className="h-5 w-5 mx-auto mb-2 text-green-500" />
                   <p className="text-3xl font-bold text-green-500">{pushCampaignStats.totalDelivered.toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground mt-1">Entregues</p>
-                  <p className="text-xs font-medium text-green-600">{pushCampaignStats.deliveryRate.toFixed(1)}%</p>
+                  <p className="text-xs font-medium text-green-400">{pushCampaignStats.deliveryRate.toFixed(1)}%</p>
                 </div>
                 
                 <div className="bg-red-500/10 rounded-lg p-4 text-center">

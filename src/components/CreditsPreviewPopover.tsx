@@ -139,7 +139,7 @@ const CreditsPreviewPopover = ({
           <Button
             variant="ghost"
             size="sm"
-            className="w-full text-xs text-gray-300 hover:text-white hover:bg-slate-500/20 h-7"
+            className="w-full text-xs text-gray-300 hover:text-white hover:bg-white/50/20 h-7"
             onClick={() => {
               setOpen(false);
               navigate('/credit-history');

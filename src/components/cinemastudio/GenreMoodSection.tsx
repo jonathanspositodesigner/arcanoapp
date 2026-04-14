@@ -15,7 +15,7 @@ const GenreMoodSection: React.FC<Props> = ({ settings, updateSettings }) => {
     <div className="space-y-2.5">
       {/* Gênero */}
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Gênero</span>
+        <span className="text-[10px] text-gray-400 uppercase tracking-wider w-14 flex-shrink-0">Gênero</span>
         <Select value={settings.genre} onValueChange={v => updateSettings({ genre: v })}>
           <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
             <SelectValue />
@@ -30,7 +30,7 @@ const GenreMoodSection: React.FC<Props> = ({ settings, updateSettings }) => {
 
       {/* Tom */}
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Tom</span>
+        <span className="text-[10px] text-gray-400 uppercase tracking-wider w-14 flex-shrink-0">Tom</span>
         <Select value={settings.mood || 'none'} onValueChange={v => updateSettings({ mood: v === 'none' ? '' : v })}>
           <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
             <SelectValue placeholder="Nenhum" />
@@ -46,7 +46,7 @@ const GenreMoodSection: React.FC<Props> = ({ settings, updateSettings }) => {
 
       {/* Colorização */}
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-gray-600 uppercase tracking-wider w-14 flex-shrink-0">Cor</span>
+        <span className="text-[10px] text-gray-400 uppercase tracking-wider w-14 flex-shrink-0">Cor</span>
         <Select value={settings.colorGrade} onValueChange={v => updateSettings({ colorGrade: v })}>
           <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-gray-300 text-[11px] h-7">
             <SelectValue />

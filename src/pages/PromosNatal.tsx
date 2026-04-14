@@ -264,7 +264,7 @@ const PromosNatal = () => {
 
   if (loading || promoLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-red-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#111113] via-[#111113] to-[#111113] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
       </div>
     );
@@ -273,18 +273,18 @@ const PromosNatal = () => {
   const accessOptions = getAccessOptions();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-white p-2 sm:p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#111113] via-[#111113] to-[#111113] p-2 sm:p-4 relative overflow-hidden">
       {/* Animated background effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-red-300/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-40 h-40 bg-rose-300/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-40 left-1/4 w-36 h-36 bg-red-200/40 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute top-20 left-10 w-32 h-32 bg-red-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-40 h-40 bg-red-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-40 left-1/4 w-36 h-36 bg-red-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
 
       <div className="max-w-6xl mx-auto relative z-10">
         <Button
           variant="ghost"
-          className="text-gray-700 hover:text-gray-900 hover:bg-white/50 mb-6"
+          className="text-gray-400 hover:text-gray-100 hover:bg-white/10 mb-6"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -294,7 +294,7 @@ const PromosNatal = () => {
         {/* Promo Banner */}
         <div className="text-center mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
-            <div className="inline-flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-lg font-bold shadow-lg shadow-red-200">
+            <div className="inline-flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-lg font-bold shadow-lg shadow-red-500/20">
               <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
               <span className="hidden sm:inline">{promoName}</span>
               <span className="sm:hidden">{t('promo.yearEndPromo')}</span>
@@ -313,13 +313,13 @@ const PromosNatal = () => {
             )}
           </div>
 
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 mt-2 sm:mt-4 px-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-100 mb-3 sm:mb-4 mt-2 sm:mt-4 px-2">
             {selectedPack 
               ? t('promo.discountOnPack', { percent: discountPercent, pack: selectedPack.name })
               : t('promo.choosePackWithDiscount', { percent: discountPercent })
             }
           </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-gray-400 max-w-2xl mx-auto">
             {t('promo.specialOfferDescription')}
           </p>
         </div>
@@ -328,12 +328,12 @@ const PromosNatal = () => {
           <div className="space-y-8">
             {packItems.length > 0 && (
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">{t('packsOfArts')}</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-100 mb-3 sm:mb-4">{t('packsOfArts')}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {packItems.map((pack) => (
                     <Card
                       key={pack.id}
-                      className="bg-white border-2 border-red-100 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
+                      className="bg-white/5 border border-red-500/20 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
                       onClick={() => setSelectedPack(pack)}
                     >
                       <div className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-2 py-1 rounded-full z-10 font-bold shadow-lg">
@@ -347,11 +347,11 @@ const PromosNatal = () => {
                             className="w-full aspect-square object-cover rounded-lg mb-3 group-hover:scale-105 transition-transform"
                           />
                         ) : (
-                          <div className="w-full aspect-square bg-red-100 rounded-lg mb-3 flex items-center justify-center">
+                          <div className="w-full aspect-square bg-red-500/20 rounded-lg mb-3 flex items-center justify-center">
                             <Gift className="h-8 w-8 text-red-500" />
                           </div>
                         )}
-                        <h3 className="text-gray-900 font-semibold text-center">{pack.name}</h3>
+                        <h3 className="text-gray-100 font-semibold text-center">{pack.name}</h3>
                       </CardContent>
                     </Card>
                   ))}
@@ -361,12 +361,12 @@ const PromosNatal = () => {
 
             {cursoItems.length > 0 && (
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">{t('courses')}</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-100 mb-3 sm:mb-4">{t('courses')}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {cursoItems.map((pack) => (
                     <Card
                       key={pack.id}
-                      className="bg-white border-2 border-red-100 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
+                      className="bg-white/5 border border-red-500/20 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
                       onClick={() => setSelectedPack(pack)}
                     >
                       <div className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-2 py-1 rounded-full z-10 font-bold shadow-lg">
@@ -380,11 +380,11 @@ const PromosNatal = () => {
                             className="w-full aspect-square object-cover rounded-lg mb-3 group-hover:scale-105 transition-transform"
                           />
                         ) : (
-                          <div className="w-full aspect-square bg-red-100 rounded-lg mb-3 flex items-center justify-center">
+                          <div className="w-full aspect-square bg-red-500/20 rounded-lg mb-3 flex items-center justify-center">
                             <Star className="h-8 w-8 text-red-500" />
                           </div>
                         )}
-                        <h3 className="text-gray-900 font-semibold text-center">{pack.name}</h3>
+                        <h3 className="text-gray-100 font-semibold text-center">{pack.name}</h3>
                       </CardContent>
                     </Card>
                   ))}
@@ -397,7 +397,7 @@ const PromosNatal = () => {
             <div className="flex justify-center mb-6">
               <Button
                 variant="outline"
-                className="bg-white border-red-300 text-red-600 hover:bg-red-50"
+                className="bg-white/10 border-red-500/30 text-red-400 hover:bg-white/15"
                 onClick={() => setSelectedPack(null)}
               >
                 {t('promo.chooseAnotherPack')}
@@ -409,7 +409,7 @@ const PromosNatal = () => {
                 <img
                   src={selectedPack.cover_url}
                   alt={selectedPack.name}
-                  className="w-32 h-32 object-cover rounded-lg border-2 border-red-200 shadow-md"
+                  className="w-32 h-32 object-cover rounded-lg border-2 border-red-500/30 shadow-md"
                 />
               </div>
             )}
@@ -420,8 +420,8 @@ const PromosNatal = () => {
                 return (
                   <Card
                     key={option.type}
-                    className={`relative bg-white border-2 border-red-100 shadow-md ${
-                      option.highlighted ? "ring-2 ring-red-500 scale-105 shadow-xl border-red-300" : ""
+                    className={`relative bg-white/5 border border-red-500/20 shadow-md ${
+                      option.highlighted ? "ring-2 ring-red-500 scale-105 shadow-xl border-red-500/30" : ""
                     }`}
                   >
                     {option.highlighted && (
@@ -430,16 +430,16 @@ const PromosNatal = () => {
                       </div>
                     )}
                     {option.hasBonus && (
-                      <div className="absolute top-3 right-3 bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1 border border-amber-200">
+                      <div className="absolute top-3 right-3 bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1 border border-amber-500/30">
                         <Gift className="h-3 w-3" />
                         {t('plusBonus')}
                       </div>
                     )}
                     <CardHeader className="text-center pt-8">
-                      <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-3 border border-red-200">
-                        <IconComponent className="h-6 w-6 text-red-600" />
+                      <div className="mx-auto w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mb-3 border border-red-500/30">
+                        <IconComponent className="h-6 w-6 text-red-400" />
                       </div>
-                      <CardTitle className="text-lg text-gray-900 font-bold">{option.label}</CardTitle>
+                      <CardTitle className="text-lg text-gray-100 font-bold">{option.label}</CardTitle>
                       <div className="mt-4">
                         <div className="flex items-center justify-center gap-2 mb-1">
                           <span className="text-gray-500 line-through text-lg">
@@ -449,7 +449,7 @@ const PromosNatal = () => {
                             -{isRenewal ? '30' : discountPercent}%
                           </Badge>
                         </div>
-                        <span className="text-3xl font-bold text-green-600">
+                        <span className="text-3xl font-bold text-green-400">
                           {formatPrice(calculatePrice(option.type))}
                         </span>
                       </div>
@@ -457,8 +457,8 @@ const PromosNatal = () => {
                     <CardContent className="space-y-4">
                       <ul className="space-y-2">
                         {option.features.map((feature, i) => (
-                          <li key={i} className="flex items-start gap-2 text-gray-700 text-sm">
-                            <Check className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                          <li key={i} className="flex items-start gap-2 text-gray-400 text-sm">
+                            <Check className="h-4 w-4 text-green-400 mt-0.5 shrink-0" />
                             {feature}
                           </li>
                         ))}

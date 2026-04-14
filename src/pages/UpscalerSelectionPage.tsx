@@ -76,11 +76,11 @@ const UpscalerSelectionPage = () => {
 
               {/* Features */}
               <div className="flex flex-wrap gap-2 mb-3 sm:mb-6">
-                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-slate-500/20 text-gray-300 text-xs sm:text-sm">
+                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white/50/20 text-gray-300 text-xs sm:text-sm">
                   <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   Até 4x resolução
                 </span>
-                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-slate-500/20 text-gray-300 text-xs sm:text-sm">
+                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white/50/20 text-gray-300 text-xs sm:text-sm">
                   60-80 créditos
                 </span>
               </div>

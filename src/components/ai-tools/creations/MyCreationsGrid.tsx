@@ -67,7 +67,7 @@ const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
         <Button 
           variant="outline" 
           onClick={onRetry}
-          className="border-white/10 text-gray-300 hover:bg-slate-500/10"
+          className="border-white/10 text-gray-300 hover:bg-white/50/10"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
           Tentar novamente
@@ -106,9 +106,9 @@ const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="space-y-2">
-            <Skeleton className="aspect-square w-full bg-slate-500/10" />
-            <Skeleton className="h-4 w-3/4 bg-slate-500/10" />
-            <Skeleton className="h-3 w-1/2 bg-slate-500/10" />
+            <Skeleton className="aspect-square w-full bg-white/50/10" />
+            <Skeleton className="h-4 w-3/4 bg-white/50/10" />
+            <Skeleton className="h-3 w-1/2 bg-white/50/10" />
           </div>
         ))}
       </div>

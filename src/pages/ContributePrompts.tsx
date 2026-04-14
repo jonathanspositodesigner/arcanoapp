@@ -226,7 +226,7 @@ const ContributePrompts = () => {
         <Button
           variant="ghost"
           onClick={goBack}
-          className="mb-6 text-gray-300 hover:text-white hover:bg-slate-500/20"
+          className="mb-6 text-gray-300 hover:text-white hover:bg-white/50/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('contribute.back')}
@@ -277,7 +277,7 @@ const ContributePrompts = () => {
                 </SelectTrigger>
                 <SelectContent className="bg-[#111113] border-white/10">
                   {categories.map(cat => (
-                    <SelectItem key={cat.id} value={cat.name} className="text-gray-300 hover:bg-slate-500/20">{cat.name}</SelectItem>
+                    <SelectItem key={cat.id} value={cat.name} className="text-gray-300 hover:bg-white/50/20">{cat.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -311,7 +311,7 @@ const ContributePrompts = () => {
                       setTxtFileName("");
                       setPrompt("");
                     }}
-                    className="text-gray-400 hover:text-white hover:bg-slate-500/20"
+                    className="text-gray-400 hover:text-white hover:bg-white/50/20"
                   >
                     <X className="h-4 w-4" />
                   </Button>

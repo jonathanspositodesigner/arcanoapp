@@ -40,8 +40,8 @@ const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRem
                 )
               ) : (
                 <div className="w-full h-full bg-white/[0.02] flex flex-col items-center justify-center gap-0.5">
-                  <Film className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-700" />
-                  <span className="text-[7px] sm:text-[8px] text-gray-700">{index + 1}</span>
+                  <Film className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gray-400" />
+                  <span className="text-[7px] sm:text-[8px] text-gray-400">{index + 1}</span>
                 </div>
               )}
 

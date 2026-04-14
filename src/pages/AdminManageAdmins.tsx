@@ -367,7 +367,7 @@ const AdminManageAdmins = () => {
               ) : (
                 <div className="space-y-4">
                   <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-                    <p className="text-green-600 font-medium mb-3">Administrador criado com sucesso!</p>
+                    <p className="text-green-400 font-medium mb-3">Administrador criado com sucesso!</p>
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <Mail className="h-4 w-4 text-muted-foreground" />

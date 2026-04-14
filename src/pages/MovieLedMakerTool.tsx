@@ -577,7 +577,7 @@ const MovieLedMakerTool = () => {
                       <button
                         onClick={() => { setSelectedLibraryItem(null); setUploadedImage(null); setUploadedFileName(''); }}
                         disabled={isProcessing}
-                        className="h-7 w-7 rounded-lg bg-white/10 backdrop-blur-sm text-gray-200 hover:bg-red-500/40 transition-colors flex items-center justify-center"
+                        className="h-7 w-7 rounded-lg bg-white/10 backdrop-blur-sm text-gray-200 hover:bg-red-500/100/40 transition-colors flex items-center justify-center"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -590,7 +590,7 @@ const MovieLedMakerTool = () => {
                     data-tutorial-movieled="reference"
                     className="w-full h-[100px] lg:h-[120px] rounded-xl border border-dashed border-white/15 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/25 transition-all flex flex-col items-center justify-center gap-2 group"
                   >
-                    <div className="w-9 h-9 rounded-lg bg-slate-500/10 border border-white/15/20 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                    <div className="w-9 h-9 rounded-lg bg-white/50/10 border border-white/15/20 flex items-center justify-center group-hover:bg-white/10 transition-colors">
                       <Plus className="w-4 h-4 text-gray-400" />
                     </div>
                     <div className="text-center">
@@ -756,7 +756,7 @@ const MovieLedMakerTool = () => {
                     <Button
                       variant="ghost" size="sm"
                       onClick={cancelQueue}
-                      className="text-red-300 hover:text-red-100 hover:bg-red-500/20"
+                      className="text-red-300 hover:text-red-100 hover:bg-red-500/100/20"
                     >
                       Sair da fila
                     </Button>

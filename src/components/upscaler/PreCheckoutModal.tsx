@@ -78,7 +78,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const isOrange = colorScheme === 'orange';
   const accentBorder = isOrange ? 'border-[#EF672C]' : 'border-white/15';
   const accentBorderLight = isOrange ? 'border-[#EF672C]/30' : 'border-white/10';
-  const accentBg = isOrange ? 'bg-[#EF672C]/10' : 'bg-slate-500/10';
+  const accentBg = isOrange ? 'bg-[#EF672C]/10' : 'bg-white/50/10';
   const accentText = isOrange ? 'text-[#EF672C]' : 'text-gray-400';
   const accentTextLight = isOrange ? 'text-[#EF672C]/80' : 'text-gray-300';
   const btnGradient = isOrange ? 'from-[#EF672C] to-[#f65928]' : 'from-slate-500 to-slate-500';

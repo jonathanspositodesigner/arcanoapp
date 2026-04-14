@@ -193,7 +193,7 @@ const SavedConfigsSection: React.FC<Props> = ({ mode, settings, selectedCharacte
                 <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
               </div>
             ) : configs.length === 0 ? (
-              <p className="text-[11px] text-gray-600 text-center py-8">Nenhuma configuração salva</p>
+              <p className="text-[11px] text-gray-400 text-center py-8">Nenhuma configuração salva</p>
             ) : (
               configs.map(config => (
                 <div
@@ -203,13 +203,13 @@ const SavedConfigsSection: React.FC<Props> = ({ mode, settings, selectedCharacte
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-[11px] text-gray-300 font-medium truncate">{config.name}</p>
-                    <p className="text-[9px] text-gray-600">
+                    <p className="text-[9px] text-gray-400">
                       {new Date(config.created_at).toLocaleDateString('pt-BR')}
                     </p>
                   </div>
                   <button
                     onClick={e => { e.stopPropagation(); handleDelete(config.id); }}
-                    className="p-1 rounded hover:bg-red-500/20 transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-1 rounded hover:bg-red-500/100/20 transition-colors opacity-0 group-hover:opacity-100"
                   >
                     {deletingId === config.id
                       ? <Loader2 className="w-3 h-3 animate-spin text-gray-500" />
