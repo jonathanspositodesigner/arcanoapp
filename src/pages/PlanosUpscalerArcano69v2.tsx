@@ -489,7 +489,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
           <h3 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground tracking-tight mb-6">
             ACESSO <span className="text-muted-foreground">IMEDIATO</span>
           </h3>
-          <div className="max-w-4xl mx-auto rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 sm:px-8 py-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 sm:gap-4">
+          <div className="max-w-4xl mx-auto rounded-xl border border-border bg-white/[0.02] px-4 sm:px-8 py-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 sm:gap-4">
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <ShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
               <div className="text-left">

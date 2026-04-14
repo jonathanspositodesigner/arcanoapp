@@ -601,7 +601,7 @@ const ToolVersionLessons = () => {
                   onClick={() => toggleWatchedStatus(selectedLesson + 1)}
                   className={`w-full sm:w-auto ${
                     watchedLessons.includes(selectedLesson + 1) 
-                      ? 'bg-green-600 hover:bg-green-700 text-white' 
+                      ? 'bg-green-600 hover:bg-green-700 text-primary-foreground' 
                       : 'bg-accent border border-border text-muted-foreground hover:bg-green-600/20 hover:text-green-400 hover:border-green-500'
                   }`}
                 >
@@ -650,9 +650,9 @@ const ToolVersionLessons = () => {
                   {/* Lesson number or checkmark */}
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
                     watchedLessons.includes(index + 1)
-                      ? 'bg-green-500 text-white'
+                      ? 'bg-green-500 text-primary-foreground'
                       : selectedLesson === index 
-                        ? 'bg-slate-600 text-white' 
+                        ? 'bg-accent text-accent-foreground' 
                         : 'bg-accent text-muted-foreground'
                   }`}>
                     {watchedLessons.includes(index + 1) ? (

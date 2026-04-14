@@ -108,7 +108,7 @@ const ChangePasswordArtes = () => {
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-card/80 border-border/30">
           <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-[#2d4a5e] rounded-full flex items-center justify-center mb-4">
+            <div className="mx-auto w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-4">
               <Mail className="h-6 w-6 text-foreground" />
             </div>
             <CardTitle className="text-2xl text-foreground">Primeiro Acesso</CardTitle>
@@ -117,7 +117,7 @@ const ChangePasswordArtes = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-foreground font-medium bg-[#2d4a5e]/30 py-2 px-4 rounded-lg text-center">
+            <p className="text-foreground font-medium bg-primary/30 py-2 px-4 rounded-lg text-center">
               {emailParam}
             </p>
             <p className="text-muted-foreground text-sm text-center">
@@ -128,7 +128,7 @@ const ChangePasswordArtes = () => {
               <Button
                 onClick={handleRefreshSession}
                 variant="outline"
-                className="w-full border-border/50 text-foreground hover:bg-[#2d4a5e]/30"
+                className="w-full border-border/50 text-foreground hover:bg-primary/30"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Já cliquei no link
@@ -218,7 +218,7 @@ const ChangePasswordArtes = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-card/80 border-border/30">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-[#2d4a5e] rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-4">
             <Lock className="h-6 w-6 text-foreground" />
           </div>
           <CardTitle className="text-2xl text-foreground">{t('changePassword')}</CardTitle>
@@ -269,7 +269,7 @@ const ChangePasswordArtes = () => {
 
             <Button
               type="submit"
-              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
+              className="w-full bg-primary hover:bg-primary/80 text-foreground"
               disabled={isLoading}
             >
               {isLoading ? t('changing') : t('changePassword')}

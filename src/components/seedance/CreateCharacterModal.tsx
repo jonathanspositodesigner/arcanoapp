@@ -281,9 +281,9 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o && step !== 'generating') resetAndClose(); }}>
-      <DialogContent className="bg-background border-white/[0.08] max-w-[540px] w-[95vw] max-h-[90vh] overflow-y-auto p-4">
+      <DialogContent className="bg-background border-border max-w-[540px] w-[95vw] max-h-[90vh] overflow-y-auto p-4">
         <DialogHeader>
-          <DialogTitle className="text-gray-200 text-sm">
+          <DialogTitle className="text-foreground text-sm">
             ✨ Criar Personagem ({currentCount}/20)
           </DialogTitle>
         </DialogHeader>
@@ -378,7 +378,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
         {step === 'generating' && (
           <div className="flex flex-col items-center justify-center py-12 space-y-6">
             <div className="relative w-24 h-24">
-              <div className="absolute inset-0 rounded-full border-4 border-white/5" />
+              <div className="absolute inset-0 rounded-full border-4 border-border" />
               <svg className="w-24 h-24 -rotate-90" viewBox="0 0 96 96">
                 <circle cx="48" cy="48" r="44" fill="none" stroke="currentColor" strokeWidth="4" className="text-slate-400/30" />
                 <circle
@@ -433,7 +433,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                 value={characterName}
                 onChange={(e) => setCharacterName(e.target.value)}
                 placeholder="Ex: Meu Avatar Principal"
-                className="bg-black/20 border-white/[0.08] text-muted-foreground text-[12px]"
+                className="bg-black/20 border-border text-muted-foreground text-[12px]"
                 maxLength={50}
                 onKeyDown={(e) => e.key === 'Enter' && handleSave()}
               />
@@ -447,7 +447,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                   className={`flex-1 py-2 rounded-lg text-[12px] font-medium transition-all border ${
                     gender === 'male'
                       ? 'bg-blue-600/20 border-blue-500 text-blue-400'
-                      : 'bg-black/20 border-white/[0.08] text-muted-foreground hover:border-border'
+                      : 'bg-black/20 border-border text-muted-foreground hover:border-border'
                   }`}
                 >
                   ♂ Masculino
@@ -457,7 +457,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                   className={`flex-1 py-2 rounded-lg text-[12px] font-medium transition-all border ${
                     gender === 'female'
                       ? 'bg-pink-600/20 border-pink-500 text-pink-400'
-                      : 'bg-black/20 border-white/[0.08] text-muted-foreground hover:border-border'
+                      : 'bg-black/20 border-border text-muted-foreground hover:border-border'
                   }`}
                 >
                   ♀ Feminino

@@ -96,7 +96,7 @@ const ForgotPasswordArtes = () => {
 
             <Button
               type="submit"
-              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
+              className="w-full bg-primary hover:bg-primary/80 text-foreground"
               disabled={isLoading}
             >
               {isLoading ? t('sending') : t('sendRecoveryEmail')}

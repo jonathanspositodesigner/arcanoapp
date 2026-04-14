@@ -22,7 +22,7 @@ const Seedance2PromoBanner = () => {
               {t('banner.upscalerDescription')}
             </p>
             <div className="flex flex-row items-center gap-3 sm:gap-4">
-              <Button onClick={() => navigate("/seedance2")} className="bg-white/20 hover:bg-white/30 text-foreground border border-white/30 backdrop-blur-sm px-4 py-2 sm:px-8 sm:py-6 text-xs sm:text-base font-semibold rounded-lg transition-all hover:scale-105">
+              <Button onClick={() => navigate("/seedance2")} className="bg-white/20 hover:bg-white/30 text-foreground border border-border backdrop-blur-sm px-4 py-2 sm:px-8 sm:py-6 text-xs sm:text-base font-semibold rounded-lg transition-all hover:scale-105">
                 {t('banner.buyNow')}
               </Button>
             </div>

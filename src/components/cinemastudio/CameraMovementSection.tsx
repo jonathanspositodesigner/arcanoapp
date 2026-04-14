@@ -32,10 +32,10 @@ const CameraMovementSection: React.FC<Props> = ({ settings, updateSettings }) =>
       {movements.map((layer, i) => (
         <div key={i} className="flex items-center gap-1.5">
           <Select value={layer.type} onValueChange={v => updateLayer(i, { type: v })}>
-            <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-muted-foreground text-[11px] h-7">
+            <SelectTrigger className="flex-1 bg-black/20 border-border text-muted-foreground text-[11px] h-7">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-background border-white/[0.06] max-h-48">
+            <SelectContent className="bg-background border-border max-h-48">
               {MOVEMENT_TYPES.map(m => (
                 <SelectItem key={m} value={m} className="text-muted-foreground text-[11px]">{m}</SelectItem>
               ))}

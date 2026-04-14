@@ -53,11 +53,11 @@ const ArtesEventosDashboard = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className={`p-3 rounded-full ${isActive ? "bg-white/20" : "bg-primary/10"}`}>
-                    <TreePine className={`h-8 w-8 ${isActive ? "text-white" : "text-primary"}`} />
+                    <TreePine className={`h-8 w-8 ${isActive ? "text-foreground" : "text-primary"}`} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <h2 className={`text-xl font-bold ${isActive ? "text-white" : "text-foreground"}`}>
+                      <h2 className={`text-xl font-bold ${isActive ? "text-foreground" : "text-foreground"}`}>
                         {promoName || "Promoção de Fim de Ano"}
                       </h2>
                       {isActive && <Sparkles className="h-5 w-5 text-yellow-300 animate-pulse" />}

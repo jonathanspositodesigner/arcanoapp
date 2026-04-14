@@ -79,7 +79,7 @@ const StyleDropdown: React.FC<{
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-between w-full py-1.5 px-2 rounded-md bg-black/20 border border-white/[0.06] hover:border-white/[0.12] transition-colors"
+        className="flex items-center justify-between w-full py-1.5 px-2 rounded-md bg-black/20 border border-border hover:border-border transition-colors"
       >
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-[9px] text-muted-foreground uppercase tracking-[0.12em] font-semibold w-12 flex-shrink-0">{label}</span>
@@ -103,7 +103,7 @@ const StyleDropdown: React.FC<{
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-background border border-white/[0.08] rounded-lg shadow-xl max-h-[280px] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+          <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-background border border-border rounded-lg shadow-xl max-h-[280px] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
             {options.map(opt => {
               const isSelected = opt.value === selectedValue;
               return (
@@ -132,7 +132,7 @@ const StyleDropdown: React.FC<{
                     </div>
                   )}
                   <div className="text-left min-w-0">
-                    <span className={`text-[11px] font-medium block ${isSelected ? 'text-gray-200' : 'text-muted-foreground'}`}>
+                    <span className={`text-[11px] font-medium block ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
                       {opt.label}
                     </span>
                     <span className="text-[9px] text-muted-foreground block">{opt.description}</span>

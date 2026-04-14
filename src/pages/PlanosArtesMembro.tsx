@@ -323,7 +323,7 @@ const PlanosArtesMembro = () => {
                         className="w-full aspect-square object-cover rounded-lg mb-3"
                       />
                     ) : (
-                      <div className="w-full aspect-square bg-[#2d4a5e]/30 rounded-lg mb-3 flex items-center justify-center">
+                      <div className="w-full aspect-square bg-primary/30 rounded-lg mb-3 flex items-center justify-center">
                         <Star className="h-8 w-8 text-[#2d4a5e]" />
                       </div>
                     )}

@@ -700,7 +700,7 @@ const AdminUploadArtesMusicos = () => {
                         type="file"
                         accept="image/*"
                         onChange={handleAiReferenceImageChange}
-                        className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-white hover:file:bg-white/20"
+                        className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent file:text-primary-foreground hover:file:bg-white/20"
                       />
                       <p className="text-xs text-muted-foreground">
                         Esta imagem será disponibilizada para os usuários baixarem junto com o prompt

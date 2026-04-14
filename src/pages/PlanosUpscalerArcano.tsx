@@ -140,7 +140,7 @@ const StickyFooterBar = () => {
         </div>
         <button
           onClick={scrollToPlanos}
-          className="bg-amber-400 text-gray-100 font-bold text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-2 rounded-full hover:bg-amber-300 transition-colors shrink-0 shadow-lg shadow-amber-400/30"
+          className="bg-amber-400 text-foreground font-bold text-xs sm:text-sm px-4 sm:px-6 py-2 sm:py-2 rounded-full hover:bg-amber-300 transition-colors shrink-0 shadow-lg shadow-amber-400/30"
         >
           ADQUIRIR AGORA
         </button>

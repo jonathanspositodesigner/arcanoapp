@@ -360,7 +360,7 @@ const PlanosArtes = () => {
                     >
                       {pack.slug === 'pack-arcano-vol-4' && (
                         <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                          <Badge className="bg-[#2d4a5e] text-foreground text-[10px] px-1.5 py-0.5">Novo</Badge>
+                          <Badge className="bg-primary text-foreground text-[10px] px-1.5 py-0.5">Novo</Badge>
                           <Badge className="bg-amber-500/90 text-foreground text-[10px] px-1.5 py-0.5 leading-tight">Atualizando</Badge>
                         </div>
                       )}
@@ -378,7 +378,7 @@ const PlanosArtes = () => {
                             className="w-full aspect-square object-cover rounded-lg mb-3"
                           />
                         ) : (
-                          <div className="w-full aspect-square bg-[#2d4a5e]/30 rounded-lg mb-3 flex items-center justify-center">
+                          <div className="w-full aspect-square bg-primary/30 rounded-lg mb-3 flex items-center justify-center">
                             <Star className="h-8 w-8 text-[#2d4a5e]" />
                           </div>
                         )}
@@ -414,7 +414,7 @@ const PlanosArtes = () => {
                             className="w-full aspect-square object-cover rounded-lg mb-3"
                           />
                         ) : (
-                          <div className="w-full aspect-square bg-[#2d4a5e]/30 rounded-lg mb-3 flex items-center justify-center">
+                          <div className="w-full aspect-square bg-primary/30 rounded-lg mb-3 flex items-center justify-center">
                             <Star className="h-8 w-8 text-[#2d4a5e]" />
                           </div>
                         )}
@@ -431,7 +431,7 @@ const PlanosArtes = () => {
             <div className="max-w-lg mx-auto">
               <Card className="relative bg-card/80 border-border/30">
                 {selectedAccessType === 'vitalicio' && accessOptions.length > 1 && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2d4a5e] text-foreground px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-foreground px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
                     {t('bestValue')}
                   </div>
                 )}
@@ -461,7 +461,7 @@ const PlanosArtes = () => {
                         </Badge>
                       </div>
                     )}
-                    <span className={`text-3xl font-bold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
+                    <span className={`text-3xl font-bold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-primary-foreground'}`}>
                       {formatPrice(calculatePrice(selectedAccessType))}
                     </span>
                     <span className="text-muted-foreground text-sm block mt-1">{t('oneTimePayment')}</span>
@@ -479,7 +479,7 @@ const PlanosArtes = () => {
                           key={option.type}
                           className={`flex items-center justify-between gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                             selectedAccessType === option.type
-                              ? `border-border ${isRenewal ? 'bg-green-500/10' : hasNotificationDiscount ? 'bg-amber-500/10' : 'bg-[#2d4a5e]/10'}`
+                              ? `border-border ${isRenewal ? 'bg-green-500/10' : hasNotificationDiscount ? 'bg-amber-500/10' : 'bg-primary/10'}`
                               : 'border-border/30 hover:border-border/60'
                           }`}
                         >
@@ -487,7 +487,7 @@ const PlanosArtes = () => {
                             <RadioGroupItem value={option.type} className="border-border text-[#2d4a5e]" />
                             <span className="text-foreground font-medium">{option.label}</span>
                           </div>
-                          <span className={`font-semibold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
+                          <span className={`font-semibold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-primary-foreground'}`}>
                             {formatPrice(calculatePrice(option.type))}
                           </span>
                         </label>

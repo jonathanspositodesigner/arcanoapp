@@ -246,7 +246,7 @@ const BibliotecaArtesMusicos = () => {
       </Sheet>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5">
+        <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" className="lg:hidden text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => setSidebarOpen(true)}>
@@ -288,7 +288,7 @@ const BibliotecaArtesMusicos = () => {
                     <span className="hidden sm:inline">{t('musicos.header.becomeMember')}</span>
                     <span className="sm:hidden">{t('musicos.header.becomeMember')}</span>
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => navigate("/login-artes-musicos?redirect=/biblioteca-artes-musicos")} className="border-border text-muted-foreground hover:bg-accent hover:text-foreground hover:border-white/30">
+                  <Button variant="outline" size="sm" onClick={() => navigate("/login-artes-musicos?redirect=/biblioteca-artes-musicos")} className="border-border text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border">
                     <LogIn className="w-4 h-4 mr-1" />
                     <span className="hidden sm:inline">{t('musicos.header.login')}</span>
                   </Button>
@@ -325,7 +325,7 @@ const BibliotecaArtesMusicos = () => {
               <Button
                 variant={selectedCategory === "todos" ? "default" : "outline"}
                 onClick={() => setSelectedCategory("todos")}
-                className={`h-auto min-h-[44px] px-4 py-2.5 text-sm whitespace-normal text-center leading-tight ${selectedCategory === "todos" ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-foreground border-0" : "border-border text-muted-foreground hover:bg-accent hover:text-foreground hover:border-white/30 bg-transparent"}`}
+                className={`h-auto min-h-[44px] px-4 py-2.5 text-sm whitespace-normal text-center leading-tight ${selectedCategory === "todos" ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-foreground border-0" : "border-border text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border bg-transparent"}`}
               >
                 {t('musicos.content.all')}
               </Button>
@@ -336,7 +336,7 @@ const BibliotecaArtesMusicos = () => {
                     key={cat.id}
                     variant={selectedCategory === cat.slug ? "default" : "outline"}
                     onClick={() => setSelectedCategory(cat.slug)}
-                    className={`h-auto min-h-[44px] px-4 py-2.5 text-sm whitespace-normal text-center leading-tight flex-col sm:flex-row gap-1 ${selectedCategory === cat.slug ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-foreground border-0" : "border-border text-muted-foreground hover:bg-accent hover:text-foreground hover:border-white/30 bg-transparent"}`}
+                    className={`h-auto min-h-[44px] px-4 py-2.5 text-sm whitespace-normal text-center leading-tight flex-col sm:flex-row gap-1 ${selectedCategory === cat.slug ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-foreground border-0" : "border-border text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border bg-transparent"}`}
                   >
                     <span>{cat.name}</span>
                     {isLedCategory && <span className="text-[10px] bg-amber-500 text-foreground px-1.5 py-0.5 rounded font-medium">Pro+</span>}
@@ -414,7 +414,7 @@ const BibliotecaArtesMusicos = () => {
         </main>
 
         <Dialog open={!!selectedArte} onOpenChange={() => setSelectedArte(null)}>
-          <DialogContent className="max-w-md bg-[#161b22] border-border">
+          <DialogContent className="max-w-md bg-card border-border">
             <DialogHeader><DialogTitle className="text-foreground">{selectedArte?.title}</DialogTitle></DialogHeader>
             {selectedArte && (
               <div className="space-y-4">
@@ -428,7 +428,7 @@ const BibliotecaArtesMusicos = () => {
                 {selectedArte.is_ai_generated && selectedArte.ai_prompt && (
                   <div className="p-3 bg-accent rounded-lg border border-border">
                     <p className="text-xs text-muted-foreground mb-1">{t('musicos.modal.promptUsed')}</p>
-                    <p className="text-sm text-gray-200 mb-3">{selectedArte.ai_prompt}</p>
+                    <p className="text-sm text-foreground mb-3">{selectedArte.ai_prompt}</p>
                     <Button className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-foreground" size="sm" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { navigator.clipboard.writeText(selectedArte.ai_prompt!); toast.success(t('musicos.toast.promptCopied')); } }}>
                       <Copy className="w-4 h-4 mr-2" />{t('musicos.modal.copyPrompt')}
                     </Button>

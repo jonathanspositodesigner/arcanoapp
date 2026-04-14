@@ -324,7 +324,7 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
           </div>
 
           {/* Skip only - no Next button */}
-          <div className="flex justify-end mt-3 pt-2 border-t border-white/5">
+          <div className="flex justify-end mt-3 pt-2 border-t border-border">
             <button onClick={finishTutorial} className="text-[11px] text-muted-foreground hover:text-muted-foreground transition-colors">
               Pular tutorial
             </button>

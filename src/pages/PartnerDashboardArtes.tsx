@@ -258,7 +258,7 @@ const PartnerDashboardArtes = () => {
 
         {/* Upload Button */}
         <Button
-          className="w-full mb-6 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
+          className="w-full mb-6 bg-primary hover:bg-primary/80 text-foreground"
           onClick={() => navigate("/parceiro-upload-artes")}
         >
           <Upload className="h-4 w-4 mr-2" />
@@ -277,7 +277,7 @@ const PartnerDashboardArtes = () => {
               key={filter.key}
               variant={activeFilter === filter.key ? "default" : "outline"}
               className={activeFilter === filter.key 
-                ? "bg-[#2d4a5e] text-foreground" 
+                ? "bg-primary text-foreground" 
                 : "border-border/50 text-muted-foreground"}
               onClick={() => setActiveFilter(filter.key as FilterType)}
             >
@@ -419,7 +419,7 @@ const PartnerDashboardArtes = () => {
                 Cancelar
               </Button>
               <Button
-                className="flex-1 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
+                className="flex-1 bg-primary hover:bg-primary/80 text-foreground"
                 onClick={handleSaveEdit}
               >
                 Salvar

@@ -228,7 +228,7 @@ const ProfileSettingsArtes = () => {
             </div>
 
             <Button
-              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
+              className="w-full bg-primary hover:bg-primary/80 text-foreground"
               onClick={handleSaveProfile}
               disabled={isSaving}
             >
@@ -280,7 +280,7 @@ const ProfileSettingsArtes = () => {
                     </button>
                   </div>
                   <Button
-                    className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
+                    className="w-full bg-primary hover:bg-primary/80 text-foreground"
                     onClick={handleChangePassword}
                     disabled={isSaving || !currentPassword || !newPassword}
                   >

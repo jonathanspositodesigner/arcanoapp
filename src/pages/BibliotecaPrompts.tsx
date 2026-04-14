@@ -693,11 +693,11 @@ const BibliotecaPrompts = () => {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-4 mt-8">
-            <Button variant="outline" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="bg-accent border-border text-gray-200 hover:bg-accent0/20 hover:text-foreground disabled:opacity-50">
+            <Button variant="outline" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="bg-accent border-border text-foreground hover:bg-accent0/20 hover:text-foreground disabled:opacity-50">
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-muted-foreground">{currentPage} / {totalPages}</span>
-            <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="bg-accent border-border text-gray-200 hover:bg-accent0/20 hover:text-foreground disabled:opacity-50">
+            <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="bg-accent border-border text-foreground hover:bg-accent0/20 hover:text-foreground disabled:opacity-50">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -768,7 +768,7 @@ const BibliotecaPrompts = () => {
                   <Copy className="h-4 w-4 mr-2" />
                   {t('modal.copyPrompt')}
                 </Button>
-                <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl)} variant="outline" className="bg-accent border-border text-gray-200 hover:bg-accent0/20 hover:text-foreground">
+                <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl)} variant="outline" className="bg-accent border-border text-foreground hover:bg-accent0/20 hover:text-foreground">
                   <Download className="h-4 w-4 mr-2" />
                   {t('modal.download')}
                 </Button>
@@ -789,7 +789,7 @@ const BibliotecaPrompts = () => {
                         navigate('/arcano-cloner-tool', { state: { referenceImageUrl: selectedPrompt.imageUrl } });
                       }
                     }}
-                    className={`w-full ${selectedPrompt.isPremium && !isPremium ? 'bg-accent hover:bg-accent text-muted-foreground' : 'bg-gradient-to-r from-slate-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-white'}`}
+                    className={`w-full ${selectedPrompt.isPremium && !isPremium ? 'bg-accent hover:bg-accent text-muted-foreground' : 'bg-gradient-to-r from-slate-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-primary-foreground'}`}
                   >
                     {selectedPrompt.isPremium && !isPremium ? (
                       <><Lock className="h-4 w-4 mr-2" />Exclusivo Premium</>
@@ -819,10 +819,10 @@ const BibliotecaPrompts = () => {
                 <h3 className="font-semibold mb-2 text-muted-foreground">{t('modal.prompt')}</h3>
                 <div className="bg-background border border-border rounded-lg p-4 relative">
                   {revealedPrompts.has(String(selectedPrompt.id)) ? (
-                    <p className="text-gray-200 whitespace-pre-wrap text-sm">{selectedPrompt.prompt}</p>
+                    <p className="text-foreground whitespace-pre-wrap text-sm">{selectedPrompt.prompt}</p>
                   ) : (
                     <>
-                      <p className="text-gray-200 whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">{selectedPrompt.prompt}</p>
+                      <p className="text-foreground whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">{selectedPrompt.prompt}</p>
                       <div className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-lg">
                         <div className="text-center">
                           <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />

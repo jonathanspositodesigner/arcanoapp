@@ -235,7 +235,7 @@ const AdminPartnersArtes = () => {
 
         <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
           <DialogTrigger asChild>
-            <Button className="w-full mb-6 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground">
+            <Button className="w-full mb-6 bg-primary hover:bg-primary/80 text-foreground">
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Colaborador
             </Button>
@@ -279,7 +279,7 @@ const AdminPartnersArtes = () => {
                 />
               </div>
               <Button
-                className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
+                className="w-full bg-primary hover:bg-primary/80 text-foreground"
                 onClick={handleAddPartner}
               >
                 Criar Colaborador
@@ -391,7 +391,7 @@ const AdminPartnersArtes = () => {
                 />
               </div>
               <Button
-                className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
+                className="w-full bg-primary hover:bg-primary/80 text-foreground"
                 onClick={handleUpdatePartner}
               >
                 Salvar
@@ -438,7 +438,7 @@ const AdminPartnersArtes = () => {
               </div>
             </div>
             <Button
-              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
+              className="w-full bg-primary hover:bg-primary/80 text-foreground"
               onClick={() => setShowSuccessModal(false)}
             >
               Fechar

@@ -891,7 +891,7 @@ const BibliotecaArtes = () => {
                           </h3>
                           
                           {/* For bonus type: show action button instead of arte count */}
-                          {isBonusType ? <Button size="sm" className={`mt-2 text-xs ${isPremium ? 'bg-green-500 hover:bg-green-600' : 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90'} text-white`} onClick={handleBonusAction}>
+                          {isBonusType ? <Button size="sm" className={`mt-2 text-xs ${isPremium ? 'bg-green-500 hover:bg-green-600' : 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90'} text-primary-foreground`} onClick={handleBonusAction}>
                               {isPremium ? (pack.download_url ? <>
                                   <Download className="h-3 w-3 mr-1" />
                                   {t('buttons.downloadBonus')}

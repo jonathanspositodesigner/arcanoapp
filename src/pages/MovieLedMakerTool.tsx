@@ -569,7 +569,7 @@ const MovieLedMakerTool = () => {
                       <button
                         onClick={() => setShowLibrary(true)}
                         disabled={isProcessing}
-                        className="flex-1 h-7 text-[10px] rounded-lg bg-accent backdrop-blur-sm text-gray-200 hover:bg-white/20 transition-colors flex items-center justify-center gap-1"
+                        className="flex-1 h-7 text-[10px] rounded-lg bg-accent backdrop-blur-sm text-foreground hover:bg-white/20 transition-colors flex items-center justify-center gap-1"
                       >
                         <ImageIcon className="w-3 h-3" />
                         Trocar
@@ -577,7 +577,7 @@ const MovieLedMakerTool = () => {
                       <button
                         onClick={() => { setSelectedLibraryItem(null); setUploadedImage(null); setUploadedFileName(''); }}
                         disabled={isProcessing}
-                        className="h-7 w-7 rounded-lg bg-accent backdrop-blur-sm text-gray-200 hover:bg-red-500/100/40 transition-colors flex items-center justify-center"
+                        className="h-7 w-7 rounded-lg bg-accent backdrop-blur-sm text-foreground hover:bg-red-500/100/40 transition-colors flex items-center justify-center"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -588,7 +588,7 @@ const MovieLedMakerTool = () => {
                     onClick={() => setShowLibrary(true)}
                     disabled={isProcessing}
                     data-tutorial-movieled="reference"
-                    className="w-full h-[100px] lg:h-[120px] rounded-xl border border-dashed border-border bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/25 transition-all flex flex-col items-center justify-center gap-2 group"
+                    className="w-full h-[100px] lg:h-[120px] rounded-xl border border-dashed border-border bg-white/[0.03] hover:bg-white/[0.06] hover:border-border transition-all flex flex-col items-center justify-center gap-2 group"
                   >
                     <div className="w-9 h-9 rounded-lg bg-accent0/10 border border-border/20 flex items-center justify-center group-hover:bg-accent transition-colors">
                       <Plus className="w-4 h-4 text-muted-foreground" />
@@ -642,7 +642,7 @@ const MovieLedMakerTool = () => {
                           disabled={isProcessing}
                           className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                             selectedEngine === engine.id
-                              ? 'bg-accent text-white'
+                              ? 'bg-accent text-accent-foreground'
                               : 'text-muted-foreground hover:text-foreground'
                           }`}
                         >
@@ -651,10 +651,10 @@ const MovieLedMakerTool = () => {
                       ))}
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-white/8">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-border">
                         {currentEngine.duration} • {currentEngine.resolution}
                       </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-white/8 flex items-center gap-1">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-border flex items-center gap-1">
                         <Clock className="h-2.5 w-2.5" />
                         {currentEngine.time}
                       </span>
@@ -835,7 +835,7 @@ const MovieLedMakerTool = () => {
                       onClick={() => setSelectedEngine(engine.id)}
                       disabled={isProcessing}
                       className={`py-2 px-3 text-sm rounded-md transition-all font-medium ${
-                        selectedEngine === engine.id ? 'bg-accent text-white' : 'text-muted-foreground'
+                        selectedEngine === engine.id ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
                       }`}
                     >
                       {engine.name}
@@ -843,10 +843,10 @@ const MovieLedMakerTool = () => {
                   ))}
                 </div>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-white/8">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-border">
                     {currentEngine.duration} • {currentEngine.resolution}
                   </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-white/8 flex items-center gap-1">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-border flex items-center gap-1">
                     <Clock className="h-2.5 w-2.5" />
                     {currentEngine.time}
                   </span>

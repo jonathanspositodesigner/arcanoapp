@@ -458,7 +458,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                       selectedCardId === card.id
                         ? `${accentBorder} ${accentBg}`
-                        : 'border-border bg-accent hover:border-white/30'
+                        : 'border-border bg-accent hover:border-border'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -686,8 +686,8 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                       onClick={() => setPaymentMethod('PIX')}
                       className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 ${
                         paymentMethod === 'PIX'
-                          ? `${accentBorder} ${accentBg} text-white`
-                          : 'border-border bg-accent text-muted-foreground hover:border-white/30'
+                          ? `${accentBorder} ${accentBg} text-foreground`
+                          : 'border-border bg-accent text-muted-foreground hover:border-border'
                       }`}
                     >
                       <QrCode className="h-5 w-5 md:h-6 md:w-6" />
@@ -702,8 +702,8 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                       disabled={loading || isFormSubmitting}
                       className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 ${
                         paymentMethod === 'CREDIT_CARD'
-                          ? `${accentBorder} ${accentBg} text-white`
-                          : 'border-border bg-accent text-muted-foreground hover:border-white/30'
+                          ? `${accentBorder} ${accentBg} text-foreground`
+                          : 'border-border bg-accent text-muted-foreground hover:border-border'
                       }`}
                     >
                       <CreditCard className="h-5 w-5 md:h-6 md:w-6" />

@@ -432,10 +432,10 @@ const Planos2 = () => {
           {/* Billing Toggle */}
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
             <TabsList className="bg-background border border-border">
-              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white text-muted-foreground px-6">
+              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-primary-foreground text-muted-foreground px-6">
                 {t('planos.monthly')}
               </TabsTrigger>
-              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white text-muted-foreground px-6 relative flex items-center gap-2">
+              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-primary-foreground text-muted-foreground px-6 relative flex items-center gap-2">
                 {t('planos.annualInstallments')}
                 <span className="bg-gradient-to-r from-slate-600 to-pink-500 text-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
                   52% OFF
@@ -766,7 +766,7 @@ const Planos2 = () => {
         </div>
 
         {/* Trust Badges */}
-        <div className="max-w-4xl mx-auto mt-10 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 sm:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="max-w-4xl mx-auto mt-10 rounded-xl border border-border bg-white/[0.02] px-4 sm:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <ShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
             <div>

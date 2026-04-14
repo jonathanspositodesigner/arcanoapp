@@ -33,7 +33,7 @@ export const AnimatedCreditsDisplay = ({
   const getBalanceColorClass = () => {
     if (direction === 'up') return 'text-green-400';
     if (direction === 'down') return 'text-red-400';
-    return isUnlimited ? 'text-white' : '';
+    return isUnlimited ? 'text-foreground' : '';
   };
 
   const formattedValue = displayValue.toLocaleString('pt-BR');
@@ -53,7 +53,7 @@ export const AnimatedCreditsDisplay = ({
         "font-medium transition-colors duration-200",
         sizeClasses[size].text,
         isAnimating && direction && "animate-pulse",
-        getBalanceColorClass() || "text-white"
+        getBalanceColorClass() || "text-foreground"
       )}>
         {formattedValue}
       </span>

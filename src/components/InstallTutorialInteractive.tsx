@@ -411,7 +411,7 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
                     <span className="text-xs font-bold text-muted-foreground">A</span>
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-medium text-gray-100 dark:text-white">ArcanoApp</p>
+                    <p className="text-xs font-medium text-foreground dark:text-white">ArcanoApp</p>
                     <p className="text-[10px] text-muted-foreground">arcanoapp.voxvisual.com.br</p>
                   </div>
                   <X className="h-5 w-5 text-muted-foreground" />
@@ -444,11 +444,11 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
                 {/* List Options - with scroll indicator */}
                 <div className="bg-white dark:bg-gray-700 rounded-lg mx-2 mt-2 mb-2">
                   <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-600">
-                    <span className="text-xs text-gray-100 dark:text-white">Copiar</span>
+                    <span className="text-xs text-foreground dark:text-white">Copiar</span>
                     <div className="w-4 h-4 bg-gray-300 rounded" />
                   </div>
                   <div className="flex items-center justify-between px-3 py-2">
-                    <span className="text-xs text-gray-100 dark:text-white">Adicionar à Lista de leitura</span>
+                    <span className="text-xs text-foreground dark:text-white">Adicionar à Lista de leitura</span>
                     <div className="w-4 h-4 bg-gray-300 rounded" />
                   </div>
                 </div>
@@ -481,7 +481,7 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
                     <span className="text-xs font-bold text-muted-foreground">A</span>
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-medium text-gray-100 dark:text-white">ArcanoApp</p>
+                    <p className="text-xs font-medium text-foreground dark:text-white">ArcanoApp</p>
                     <p className="text-[10px] text-muted-foreground">arcanoapp.voxvisual.com.br</p>
                   </div>
                   <X className="h-5 w-5 text-muted-foreground" />
@@ -490,11 +490,11 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
                 {/* Options after scrolling */}
                 <div className="bg-white dark:bg-gray-700 rounded-lg mx-2 mt-2 mb-2">
                   <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-600">
-                    <span className="text-xs text-gray-100 dark:text-white">Adicionar aos favoritos</span>
+                    <span className="text-xs text-foreground dark:text-white">Adicionar aos favoritos</span>
                     <div className="w-4 h-4 text-muted-foreground">⭐</div>
                   </div>
                   <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-600">
-                    <span className="text-xs text-gray-100 dark:text-white">Buscar na página</span>
+                    <span className="text-xs text-foreground dark:text-white">Buscar na página</span>
                     <div className="w-4 h-4 text-muted-foreground">🔍</div>
                   </div>
                 </div>
@@ -514,7 +514,7 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
                 
                 <div className="bg-white dark:bg-gray-700 rounded-lg mx-2 mb-3">
                   <div className="flex items-center justify-between px-3 py-2">
-                    <span className="text-xs text-gray-100 dark:text-white">Imprimir</span>
+                    <span className="text-xs text-foreground dark:text-white">Imprimir</span>
                     <div className="w-4 h-4 text-muted-foreground">🖨️</div>
                   </div>
                 </div>
@@ -559,13 +559,13 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
         
         {/* In-App Browser Header (Instagram style) */}
         <div className="bg-white dark:bg-gray-900 px-3 py-2 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
-          <X className="h-5 w-5 text-gray-200 dark:text-white" />
+          <X className="h-5 w-5 text-foreground dark:text-white" />
           <div className="flex-1 text-center">
             <p className="text-[10px] text-muted-foreground">arcanoapp.voxvisual.com.br</p>
             <p className="text-[8px] text-pink-500">Instagram</p>
           </div>
           <div className="relative">
-            <MoreVertical className="h-5 w-5 text-gray-200 dark:text-white" />
+            <MoreVertical className="h-5 w-5 text-foreground dark:text-white" />
             {step === 0 && (
               <>
                 <span className="absolute -right-1 -top-1 flex h-4 w-4">

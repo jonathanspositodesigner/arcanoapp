@@ -821,7 +821,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         onClick={() => setVersion('standard')}
                         className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                           version === 'standard'
-                            ? 'bg-accent text-white'
+                            ? 'bg-accent text-accent-foreground'
                             : 'text-muted-foreground hover:text-foreground'
                         }`}
                       >
@@ -831,7 +831,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         onClick={() => setVersion('pro')}
                         className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                           version === 'pro'
-                            ? 'bg-accent text-white'
+                            ? 'bg-accent text-accent-foreground'
                             : 'text-muted-foreground hover:text-foreground'
                         }`}
                       >
@@ -877,7 +877,7 @@ const UpscalerArcanoTool: React.FC = () => {
                           onClick={() => setResolution('2k')}
                           className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
                             resolution === '2k'
-                              ? 'bg-accent text-white'
+                              ? 'bg-accent text-accent-foreground'
                               : 'text-muted-foreground hover:text-foreground'
                           }`}
                         >
@@ -887,7 +887,7 @@ const UpscalerArcanoTool: React.FC = () => {
                           onClick={() => setResolution('4k')}
                           className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
                             resolution === '4k'
-                              ? 'bg-accent text-white'
+                              ? 'bg-accent text-accent-foreground'
                               : 'text-muted-foreground hover:text-foreground'
                           }`}
                         >
@@ -923,7 +923,7 @@ const UpscalerArcanoTool: React.FC = () => {
                             min={0.01}
                             max={1}
                             step={0.01}
-                            className="w-full [&_[role=slider]]:bg-white [&_[role=slider]]:border-white/50 [&_.relative>div:first-child]:bg-white/20 [&_.relative>div:first-child>div]:bg-white/60"
+                            className="w-full [&_[role=slider]]:bg-white [&_[role=slider]]:border-border0 [&_.relative>div:first-child]:bg-white/20 [&_.relative>div:first-child>div]:bg-white/60"
                           />
                           <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
                             <span>Menos</span>
@@ -1287,7 +1287,7 @@ const UpscalerArcanoTool: React.FC = () => {
                             </div>
 
                             {/* Labels */}
-                            <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-black/90 border border-white/30 text-foreground text-xs font-bold z-20 pointer-events-none">
+                            <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-black/90 border border-border text-foreground text-xs font-bold z-20 pointer-events-none">
                               {t('upscalerTool.labels.before')}
                             </div>
                             <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-slate-600/90 border border-border text-foreground text-xs font-bold z-20 pointer-events-none">
@@ -1424,7 +1424,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   <button
                     onClick={() => setVersion('standard')}
                     className={`py-2 px-3 text-sm rounded-md transition-all font-medium ${
-                      version === 'standard' ? 'bg-accent text-white' : 'text-muted-foreground'
+                      version === 'standard' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
                     }`}
                   >
                     V3 Turbo
@@ -1432,7 +1432,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   <button
                     onClick={() => setVersion('pro')}
                     className={`py-2 px-3 text-sm rounded-md transition-all font-medium ${
-                      version === 'pro' ? 'bg-accent text-white' : 'text-muted-foreground'
+                      version === 'pro' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
                     }`}
                   >
                     V3 Pro
@@ -1448,7 +1448,7 @@ const UpscalerArcanoTool: React.FC = () => {
                     <button
                       onClick={() => setResolution('2k')}
                       className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
-                        resolution === '2k' ? 'bg-accent text-white' : 'text-muted-foreground'
+                        resolution === '2k' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
                       }`}
                     >
                       2K
@@ -1456,7 +1456,7 @@ const UpscalerArcanoTool: React.FC = () => {
                     <button
                       onClick={() => setResolution('4k')}
                       className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
-                        resolution === '4k' ? 'bg-accent text-white' : 'text-muted-foreground'
+                        resolution === '4k' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
                       }`}
                     >
                       4k

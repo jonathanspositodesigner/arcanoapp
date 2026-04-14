@@ -56,7 +56,7 @@ const CreditsPreviewPopover = ({
     ? 'text-green-400 font-bold'
     : direction === 'down'
       ? 'text-red-400 font-bold'
-      : 'text-white';
+      : 'text-foreground';
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

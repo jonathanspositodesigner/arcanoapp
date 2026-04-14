@@ -132,13 +132,13 @@ const PlanosArtesMusicos = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0f0f0f] via-[#1a1a2e] to-[#16213e]">
       <div className="container mx-auto px-4 py-6 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" onClick={goBack} className="text-muted-foreground hover:text-gray-200 hover:bg-accent0/20">
+          <Button variant="ghost" onClick={goBack} className="text-muted-foreground hover:text-foreground hover:bg-accent0/20">
             <ArrowLeft className="w-4 h-4 mr-2" />{t('plansMusicos.back')}
           </Button>
           <img src={baaLogo} alt="BAA" className="h-8 hidden sm:block" />
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => navigate('/login-artes-musicos')} className="gap-2 border-border text-muted-foreground hover:bg-accent0/20 hover:text-gray-200">
+          <Button variant="outline" onClick={() => navigate('/login-artes-musicos')} className="gap-2 border-border text-muted-foreground hover:bg-accent0/20 hover:text-foreground">
             <LogIn className="w-4 h-4" />
             <span className="hidden sm:inline">{t('plansMusicos.alreadySubscriber')}</span>
             <span className="sm:hidden">{t('plansMusicos.login')}</span>
@@ -151,8 +151,8 @@ const PlanosArtesMusicos = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">{t('plansMusicos.title')}</h1>
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
             <TabsList className="bg-accent0/10 border border-border">
-              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white px-6 text-muted-foreground">{t('plansMusicos.monthly')}</TabsTrigger>
-              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white px-6 text-muted-foreground relative">
+              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-primary-foreground px-6 text-muted-foreground">{t('plansMusicos.monthly')}</TabsTrigger>
+              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-primary-foreground px-6 text-muted-foreground relative">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] text-green-400 font-medium whitespace-nowrap">{t('plansMusicos.discount')}</span>
                 {t('plansMusicos.annual')}
               </TabsTrigger>
@@ -191,7 +191,7 @@ const PlanosArtesMusicos = () => {
                   const planName = encodeURIComponent(`${plan.name} ${billingPeriod === 'anual' ? 'Anual' : 'Mensal'}`);
                   navigate(`/aguardando-pagamento-musicos?checkout=${checkoutUrl}&plan=${planName}`);
                 }
-              }} className={`w-full mb-6 ${plan.popular ? "bg-slate-600 hover:bg-accent0 text-foreground" : "bg-accent0/20 hover:bg-accent0/30 text-gray-200"}`}>
+              }} className={`w-full mb-6 ${plan.popular ? "bg-slate-600 hover:bg-accent0 text-foreground" : "bg-accent0/20 hover:bg-accent0/30 text-foreground"}`}>
                 {(plan as any).hasTrial ? t('plansMusicos.freeTrial') : t('plansMusicos.subscribe')}
               </Button>
               <ul className="space-y-3 flex-1">
@@ -200,7 +200,7 @@ const PlanosArtesMusicos = () => {
                   return (
                     <li key={fIndex} className="flex items-start gap-2 text-sm">
                       {feature.included ? <Check className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" /> : <X className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />}
-                      <span className={`${feature.included ? "text-gray-200" : "text-orange-500"} ${(feature as any).bold ? "font-bold" : ""}`}>{feature.text}</span>
+                      <span className={`${feature.included ? "text-foreground" : "text-orange-500"} ${(feature as any).bold ? "font-bold" : ""}`}>{feature.text}</span>
                       {isLedFeature && !feature.included && <Badge className="ml-1 bg-amber-600 text-foreground text-[10px] px-1.5 py-0 h-4 border-0">{t('plansMusicos.badges.proPlusBadge')}</Badge>}
                       {isLedFeature && feature.included && <Monitor className="w-3 h-3 text-amber-400 shrink-0 ml-1" />}
                     </li>
@@ -212,7 +212,7 @@ const PlanosArtesMusicos = () => {
                   <p className="text-xs text-muted-foreground/60 mb-2 uppercase tracking-wide">{t('plansMusicos.features.extraBenefits')}</p>
                   <div className="flex items-center gap-2 text-sm">
                     <Sparkles className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-gray-200">{t('plansMusicos.features.allUnlocked')}</span>
+                    <span className="text-foreground">{t('plansMusicos.features.allUnlocked')}</span>
                   </div>
                 </div>
               )}

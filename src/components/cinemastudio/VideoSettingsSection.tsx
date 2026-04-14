@@ -29,7 +29,7 @@ const SegmentedControl: React.FC<{
           onClick={() => onChange(o)}
           className={`flex-1 py-1 text-[10px] rounded transition-all ${
             String(value) === String(o)
-              ? 'bg-white/[0.08] text-gray-200 font-medium'
+              ? 'bg-white/[0.08] text-foreground font-medium'
               : 'text-muted-foreground hover:text-muted-foreground'
           }`}
         >
@@ -80,7 +80,7 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings, mode 
               <button
                 onClick={() => updateSettings({ modelSpeed: 'fast' })}
                 className={`flex-1 py-1 text-[10px] rounded transition-all flex items-center justify-center gap-0.5 ${
-                  settings.modelSpeed === 'fast' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-muted-foreground hover:text-muted-foreground'
+                  settings.modelSpeed === 'fast' ? 'bg-white/[0.08] text-foreground font-medium' : 'text-muted-foreground hover:text-muted-foreground'
                 }`}
               >
                 Fast <Zap className="w-2.5 h-2.5" />
@@ -88,7 +88,7 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings, mode 
               <button
                 onClick={() => updateSettings({ modelSpeed: 'standard' })}
                 className={`flex-1 py-1 text-[10px] rounded transition-all ${
-                  settings.modelSpeed === 'standard' ? 'bg-white/[0.08] text-gray-200 font-medium' : 'text-muted-foreground hover:text-muted-foreground'
+                  settings.modelSpeed === 'standard' ? 'bg-white/[0.08] text-foreground font-medium' : 'text-muted-foreground hover:text-muted-foreground'
                 }`}
               >
                 Standard
@@ -100,10 +100,10 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings, mode 
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-16 flex-shrink-0">Rampa</span>
             <Select value={settings.speedRamp} onValueChange={v => updateSettings({ speedRamp: v })}>
-              <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-muted-foreground text-[11px] h-7">
+              <SelectTrigger className="flex-1 bg-black/20 border-border text-muted-foreground text-[11px] h-7">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-background border-white/[0.06]">
+              <SelectContent className="bg-background border-border">
                 {SPEED_RAMPS.map(s => (
                   <SelectItem key={s} value={s} className="text-muted-foreground text-[11px]">{s}</SelectItem>
                 ))}

@@ -106,7 +106,7 @@ const AdminFerramentas = () => {
             </TabsTrigger>
             <TabsTrigger 
               value="artes" 
-              className="text-sm sm:text-lg gap-2 py-3 data-[state=active]:bg-amber-500 data-[state=active]:text-white"
+              className="text-sm sm:text-lg gap-2 py-3 data-[state=active]:bg-amber-500 data-[state=active]:text-primary-foreground"
             >
               <Palette className="h-4 w-4 sm:h-5 sm:w-5" />
               <span>Biblioteca de Artes Arcanas</span>

@@ -131,7 +131,7 @@ export default function UpscalerMockup({
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                className="px-3 py-1 rounded-full text-xs font-medium bg-accent text-white/30 border border-border flex items-center gap-1.5 cursor-not-allowed opacity-60"
+                className="px-3 py-1 rounded-full text-xs font-medium bg-accent text-accent-foreground/30 border border-border flex items-center gap-1.5 cursor-not-allowed opacity-60"
                 onClick={(e) => {
                   e.preventDefault();
                   setShowProMessage(true);

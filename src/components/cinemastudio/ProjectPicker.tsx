@@ -97,7 +97,7 @@ const ProjectPicker: React.FC<Props> = ({
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="max-w-5xl mx-auto">
             <div className="mb-6">
-              <h1 className="text-lg sm:text-xl font-semibold text-gray-200">Meus Projetos</h1>
+              <h1 className="text-lg sm:text-xl font-semibold text-foreground">Meus Projetos</h1>
               <p className="text-xs text-muted-foreground mt-1">Até {MAX_PROJECTS} projetos • {projectCount}/{MAX_PROJECTS}</p>
             </div>
 
@@ -107,8 +107,8 @@ const ProjectPicker: React.FC<Props> = ({
                 onClick={() => atLimit ? undefined : setShowNewModal(true)}
                 className={`aspect-video rounded-xl overflow-hidden border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center gap-2
                   ${atLimit
-                    ? 'border-white/[0.04] cursor-not-allowed opacity-50'
-                    : 'border-white/[0.08] hover:border-white/[0.16] hover:scale-[1.02] hover:shadow-lg hover:shadow-white/5 cursor-pointer'
+                    ? 'border-border cursor-not-allowed opacity-50'
+                    : 'border-border hover:border-border hover:scale-[1.02] hover:shadow-lg hover:shadow-white/5 cursor-pointer'
                   } bg-gradient-to-br from-white/[0.02] to-white/[0.01]`}
               >
                 {atLimit ? (
@@ -179,7 +179,7 @@ const ProjectPicker: React.FC<Props> = ({
                           <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
                         </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-card border-white/[0.06] text-gray-200 min-w-[120px]">
+                      <DropdownMenuContent className="bg-card border-border text-foreground min-w-[120px]">
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation();
@@ -216,15 +216,15 @@ const ProjectPicker: React.FC<Props> = ({
 
         {/* Delete Confirmation */}
         <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
-          <AlertDialogContent className="bg-background border-white/[0.06] text-gray-200">
+          <AlertDialogContent className="bg-background border-border text-foreground">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-gray-100">Excluir {deleteTarget?.name}?</AlertDialogTitle>
+              <AlertDialogTitle className="text-foreground">Excluir {deleteTarget?.name}?</AlertDialogTitle>
               <AlertDialogDescription className="text-muted-foreground">
                 Esta ação não pode ser desfeita.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel className="bg-white/[0.04] border-white/[0.06] text-muted-foreground hover:bg-white/[0.08]">
+              <AlertDialogCancel className="bg-white/[0.04] border-border text-muted-foreground hover:bg-white/[0.08]">
                 Cancelar
               </AlertDialogCancel>
               <AlertDialogAction

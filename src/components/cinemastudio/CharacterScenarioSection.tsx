@@ -147,7 +147,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
         {/* Cenário selector */}
         <button
           onClick={() => { setScenarioModalOpen(true); setShowCreate(false); resetForm(); }}
-          className="flex items-center gap-2 w-full p-2 rounded-md bg-black/20 border border-white/[0.06] hover:border-white/[0.12] transition-colors"
+          className="flex items-center gap-2 w-full p-2 rounded-md bg-black/20 border border-border hover:border-border transition-colors"
         >
           {selectedScenario?.image_url ? (
             <img src={selectedScenario.image_url} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
@@ -175,16 +175,16 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
 
       {/* Scenario Modal */}
       <Dialog open={scenarioModalOpen} onOpenChange={open => { if (!open) setScenarioModalOpen(false); }}>
-        <DialogContent className="bg-background border-white/[0.08] max-w-[520px] w-[95vw] max-h-[85vh] overflow-y-auto p-4">
+        <DialogContent className="bg-background border-border max-w-[520px] w-[95vw] max-h-[85vh] overflow-y-auto p-4">
           <DialogHeader>
-            <DialogTitle className="text-gray-200 text-sm">🏔 Cenários</DialogTitle>
+            <DialogTitle className="text-foreground text-sm">🏔 Cenários</DialogTitle>
           </DialogHeader>
 
           {showCreate ? (
             <div className="space-y-3 pt-2">
               <div
                 onClick={() => fileRef.current?.click()}
-                className="w-full aspect-square rounded-lg border border-dashed border-white/[0.1] bg-black/20 flex items-center justify-center cursor-pointer hover:border-white/[0.2] transition-colors overflow-hidden"
+                className="w-full aspect-square rounded-lg border border-dashed border-border bg-black/20 flex items-center justify-center cursor-pointer hover:border-border transition-colors overflow-hidden"
               >
                 {newImagePreview ? (
                   <img src={newImagePreview} alt="" className="w-full h-full object-cover" />
@@ -196,18 +196,18 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                 )}
               </div>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-              <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome" className="bg-black/20 border-white/[0.08] text-muted-foreground text-[12px]" />
-              <Textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Descrição..." rows={3} className="bg-black/20 border-white/[0.08] text-muted-foreground text-[12px] resize-none" />
+              <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome" className="bg-black/20 border-border text-muted-foreground text-[12px]" />
+              <Textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Descrição..." rows={3} className="bg-black/20 border-border text-muted-foreground text-[12px] resize-none" />
               <div className="flex gap-2">
                 <Button variant="ghost" size="sm" onClick={() => { setShowCreate(false); resetForm(); }} className="flex-1 text-muted-foreground text-[11px]">Cancelar</Button>
-                <Button size="sm" onClick={handleSaveScenario} disabled={saving || !newName.trim() || !newImage} className="flex-1 bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 text-[11px]">
+                <Button size="sm" onClick={handleSaveScenario} disabled={saving || !newName.trim() || !newImage} className="flex-1 bg-white/[0.08] hover:bg-white/[0.14] text-foreground text-[11px]">
                   {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Salvar'}
                 </Button>
               </div>
             </div>
           ) : (
             <div className="space-y-3 pt-2">
-              <Button onClick={() => setShowCreate(true)} variant="outline" size="sm" className="w-full border-dashed border-white/[0.1] text-muted-foreground text-[11px] hover:bg-white/[0.04]">
+              <Button onClick={() => setShowCreate(true)} variant="outline" size="sm" className="w-full border-dashed border-border text-muted-foreground text-[11px] hover:bg-white/[0.04]">
                 <Plus className="w-3 h-3 mr-1" />
                 Criar novo cenário
               </Button>
@@ -255,9 +255,9 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                     );
                   })}
                   {Array.from({ length: 20 - scenarios.length }).map((_, i) => (
-                    <div key={`empty-${i}`} className="rounded-lg overflow-hidden border border-dashed border-white/[0.06]">
+                    <div key={`empty-${i}`} className="rounded-lg overflow-hidden border border-dashed border-border">
                       <div className="aspect-square bg-white/[0.02] flex items-center justify-center">
-                        <div className="w-3 h-3 rounded-full border border-white/[0.08]" />
+                        <div className="w-3 h-3 rounded-full border border-border" />
                       </div>
                       <div className="px-1 py-1 bg-black/20">
                         <span className="text-[9px] text-muted-foreground block text-center">—</span>

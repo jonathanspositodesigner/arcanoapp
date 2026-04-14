@@ -157,7 +157,7 @@ const ToolsHeader = ({
                     size="sm"
                     showCoin={true}
                     variant="text"
-                    className={isUnlimited ? 'text-white' : 'text-muted-foreground'}
+                    className={isUnlimited ? 'text-foreground' : 'text-muted-foreground'}
                     isUnlimited={isUnlimited}
                   />
                 </div>
