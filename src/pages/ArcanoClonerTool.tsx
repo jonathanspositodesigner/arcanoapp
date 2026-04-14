@@ -67,7 +67,7 @@ const ArcanoClonerTool: React.FC = () => {
   const [outputImage, setOutputImage] = useState<string | null>(null);
 
   // Aspect ratio state
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('3:4');
 
   // Creativity & custom prompt states
   const [creativity, setCreativity] = useState(20);
