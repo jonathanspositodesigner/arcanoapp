@@ -45,14 +45,16 @@ function isValidCPF(cpf: string): boolean {
 export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModalProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
   const [cpf, setCpf] = useState("");
-  const [errors, setErrors] = useState<{ name?: string; email?: string; cpf?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; email?: string; confirmEmail?: string; cpf?: string }>({});
 
   // Reset campos ao reabrir o modal
   useEffect(() => {
     if (open) {
       setName("");
       setEmail("");
+      setConfirmEmail("");
       setCpf("");
       setErrors({});
     }
@@ -64,6 +66,9 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
     const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail) e.email = "Preencha seu e-mail";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) e.email = "E-mail inválido";
+    const trimmedConfirm = confirmEmail.trim().toLowerCase();
+    if (!trimmedConfirm) e.confirmEmail = "Confirme seu e-mail";
+    else if (trimmedEmail !== trimmedConfirm) e.confirmEmail = "Os e-mails não coincidem. Confira e tente novamente.";
     const cpfDigits = cpf.replace(/\D/g, "");
     if (!cpfDigits) e.cpf = "Preencha seu CPF";
     else if (!isValidCPF(cpfDigits)) e.cpf = "CPF inválido";
@@ -120,11 +125,31 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
               type="email"
               placeholder="seu@email.com"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: undefined })); }}
+              onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: undefined, confirmEmail: undefined })); }}
               className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-fuchsia-500"
               disabled={loading}
+              autoComplete="off"
+              onPaste={(e) => e.preventDefault()}
             />
             {errors.email && <p className="text-red-400 text-xs">{errors.email}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="mp-confirm-email" className="text-white/70 flex items-center gap-2">
+              <Mail className="w-4 h-4" /> Confirme seu e-mail
+            </Label>
+            <Input
+              id="mp-confirm-email"
+              type="email"
+              placeholder="Digite seu e-mail novamente"
+              value={confirmEmail}
+              onChange={(e) => { setConfirmEmail(e.target.value); setErrors(prev => ({ ...prev, confirmEmail: undefined })); }}
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-fuchsia-500"
+              disabled={loading}
+              autoComplete="off"
+              onPaste={(e) => e.preventDefault()}
+            />
+            {errors.confirmEmail && <p className="text-red-400 text-xs">{errors.confirmEmail}</p>}
           </div>
 
           <div className="space-y-2">
