@@ -468,7 +468,7 @@ const PromosNatal = () => {
                           option.highlighted
                             ? "bg-gradient-to-r from-red-700 via-red-600 to-red-700 hover:from-red-600 hover:to-red-500"
                             : "bg-red-500 hover:bg-red-600"
-                        } text-white`}
+                        } text-primary-foreground`}
                         onClick={() => handleSelectOption(option.type)}
                       >
                         {option.buttonText}

@@ -686,7 +686,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                       onClick={() => setPaymentMethod('PIX')}
                       className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 ${
                         paymentMethod === 'PIX'
-                          ? `${accentBorder} ${accentBg} text-white`
+                          ? `${accentBorder} ${accentBg} text-foreground`
                           : 'border-border bg-accent text-muted-foreground hover:border-white/30'
                       }`}
                     >
@@ -702,7 +702,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                       disabled={loading || isFormSubmitting}
                       className={`flex flex-col items-center gap-1.5 md:gap-2 p-3 md:p-4 rounded-xl border-2 transition-all duration-200 ${
                         paymentMethod === 'CREDIT_CARD'
-                          ? `${accentBorder} ${accentBg} text-white`
+                          ? `${accentBorder} ${accentBg} text-foreground`
                           : 'border-border bg-accent text-muted-foreground hover:border-white/30'
                       }`}
                     >

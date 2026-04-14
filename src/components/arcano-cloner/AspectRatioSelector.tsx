@@ -72,7 +72,7 @@ const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
             >
               <span className={cn(
                 "transition-colors",
-                isSelected ? "text-white" : "text-muted-foreground"
+                isSelected ? "text-foreground" : "text-muted-foreground"
               )}>
                 {option.icon}
               </span>

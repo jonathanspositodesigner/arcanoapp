@@ -241,7 +241,7 @@ const FerramentasIA = () => {
                 hasAccess 
                   ? "bg-green-500 hover:bg-green-600" 
                   : "bg-gradient-to-r from-slate-500 to-slate-400 hover:opacity-90"
-              } text-white`}
+              } text-primary-foreground`}
             >
               {hasAccess ? (
                 <>

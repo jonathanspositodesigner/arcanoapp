@@ -350,7 +350,7 @@ const ClonerDemoAnimation: React.FC = () => {
                            : 'bg-accent border-border text-muted-foreground'
                        )}
                      >
-                       <span className={selectedRatio === opt.value ? 'text-white' : 'text-muted-foreground'}>
+                       <span className={selectedRatio === opt.value ? 'text-foreground' : 'text-muted-foreground'}>
                          {opt.icon}
                        </span>
                        <span className="text-[8px] font-medium leading-tight">{opt.label}</span>
