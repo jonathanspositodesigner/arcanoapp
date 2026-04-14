@@ -81,7 +81,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const [resolution, setResolution] = useState<'2k' | '4k'>('2k');
   const [useCustomPrompt, setUseCustomPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
-  const [promptCategory, setPromptCategory] = useState<PromptCategory>('pessoas_perto');
+  const [promptCategory, setPromptCategory] = useState<PromptCategory | null>(isMobile ? null : 'pessoas_perto');
   const [pessoasFraming, setPessoasFraming] = useState<PessoasFraming>('perto');
    const [comidaDetailLevel, setComidaDetailLevel] = useState(0.85);
    const [editingLevel, setEditingLevel] = useState(0.10);
@@ -198,10 +198,10 @@ const UpscalerArcanoTool: React.FC = () => {
   // Reset promptCategory when custom prompt is disabled
   useEffect(() => {
     if (!useCustomPrompt) {
-      setPromptCategory('pessoas_perto');
+      setPromptCategory(isMobile ? null : 'pessoas_perto');
       setPessoasFraming('perto');
     }
-  }, [useCustomPrompt]);
+  }, [useCustomPrompt, isMobile]);
 
   // Disable custom prompt when switching to standard version
   useEffect(() => {
@@ -211,7 +211,7 @@ const UpscalerArcanoTool: React.FC = () => {
   }, [version]);
 
   // Flag to check if we're in "De Longe" mode (full body photos use different WebApp)
-  const isLongeMode = pessoasFraming === 'longe' && promptCategory.startsWith('pessoas');
+  const isLongeMode = pessoasFraming === 'longe' && (promptCategory?.startsWith('pessoas') ?? false);
 
    // Flags for special workflows (Foto Antiga and Comida/Objeto)
    const isSpecialWorkflow = promptCategory === 'fotoAntiga' || promptCategory === 'comida' || promptCategory === 'logo' || promptCategory === 'render3d';
@@ -845,7 +845,7 @@ const UpscalerArcanoTool: React.FC = () => {
                     <div>
                       <span className="text-sm font-medium text-white mb-2 block">Tipo de Imagem</span>
                       <Select
-                        value={promptCategory.startsWith('pessoas') ? 'pessoas' : promptCategory}
+                        value={(promptCategory?.startsWith('pessoas') ?? false) ? 'pessoas' : (promptCategory ?? '')}
                         onValueChange={(value) => {
                           if (value === 'pessoas') {
                             setPromptCategory(`pessoas_${pessoasFraming}` as PromptCategory);
@@ -1541,7 +1541,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 {/* Tipo de Imagem */}
                 {(!useCustomPrompt || version === 'standard') && (
                   <Select
-                    value={promptCategory.startsWith('pessoas') ? 'pessoas' : promptCategory}
+                    value={promptCategory === null ? '' : (promptCategory.startsWith('pessoas') ? 'pessoas' : promptCategory)}
                     onValueChange={(value) => {
                       if (value === 'pessoas') {
                         setPromptCategory(`pessoas_${pessoasFraming}` as PromptCategory);
@@ -1551,7 +1551,7 @@ const UpscalerArcanoTool: React.FC = () => {
                     }}
                   >
                     <SelectTrigger className="w-full bg-black/40 border-white/10 text-white text-sm h-9">
-                      <SelectValue />
+                      <SelectValue placeholder="Escolha o tipo de imagem" />
                     </SelectTrigger>
                     <SelectContent className="bg-[#1a1a2e] border-white/10">
                       <SelectItem value="pessoas" className="text-white text-sm">Pessoas</SelectItem>
@@ -1567,7 +1567,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 <Button
                   className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
                   onClick={processImage}
-                  disabled={isSubmitting || !inputImage}
+                  disabled={isSubmitting || !inputImage || promptCategory === null}
                 >
                   {isSubmitting ? (
                     <>
