@@ -585,7 +585,7 @@ const BibliotecaPrompts = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-1.5 sm:p-3
                   max-sm:active:opacity-100">
                   {/* Title + badges */}
-                  <h3 className="font-bold text-[9px] sm:text-sm text-foreground line-clamp-1 sm:line-clamp-2 mb-1">{item.title}</h3>
+                  <h3 className="font-bold text-[9px] sm:text-sm text-white line-clamp-1 sm:line-clamp-2 mb-1">{item.title}</h3>
                   <div className="flex flex-wrap gap-0.5 sm:gap-1 mb-1 sm:mb-2">
                     {item.isPremium ? (
                       <Badge className="bg-purple-600/90 text-white border-0 text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0 leading-tight">
