@@ -81,7 +81,7 @@ const UpscalerArcanoTool: React.FC = () => {
   const [resolution, setResolution] = useState<'2k' | '4k'>('2k');
   const [useCustomPrompt, setUseCustomPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState('');
-  const [promptCategory, setPromptCategory] = useState<PromptCategory>('pessoas_perto');
+  const [promptCategory, setPromptCategory] = useState<PromptCategory | null>(isMobile ? null : 'pessoas_perto');
   const [pessoasFraming, setPessoasFraming] = useState<PessoasFraming>('perto');
    const [comidaDetailLevel, setComidaDetailLevel] = useState(0.85);
    const [editingLevel, setEditingLevel] = useState(0.10);
