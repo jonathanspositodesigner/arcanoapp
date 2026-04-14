@@ -16,10 +16,10 @@ type GenderFilter = 'homem' | 'mulher';
 const PLACEHOLDER_POSES: Record<GenderFilter, Array<{ id: string; label: string; color: string }>> = {
   homem: [
     { id: 'h1', label: 'Em Pé Casual', color: 'from-blue-600 to-blue-800' },
-    { id: 'h2', label: 'Braços Cruzados', color: 'from-indigo-600 to-indigo-800' },
+    { id: 'h2', label: 'Braços Cruzados', color: 'from-slate-600 to-slate-800' },
     { id: 'h3', label: 'Sentado', color: 'from-slate-600 to-slate-700' },
     { id: 'h4', label: 'Caminhando', color: 'from-slate-600 to-slate-700' },
-    { id: 'h5', label: 'Apontando', color: 'from-blue-700 to-indigo-900' },
+    { id: 'h5', label: 'Apontando', color: 'from-blue-700 to-slate-900' },
     { id: 'h6', label: 'Mãos no Bolso', color: 'from-slate-600 to-slate-800' },
     { id: 'h7', label: 'Pose Confiante', color: 'from-cyan-600 to-cyan-800' },
     { id: 'h8', label: 'Pose Executivo', color: 'from-gray-600 to-gray-800' },
@@ -72,7 +72,7 @@ const PoseLibraryModal: React.FC<PoseLibraryModalProps> = ({
             className={cn(
               "flex-1",
               filter === 'homem'
-                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0"
+                ? "bg-gradient-to-r from-slate-500 to-slate-700 text-white border-0"
                 : "bg-transparent border-white/10 text-gray-300 hover:bg-white/50/20"
             )}
           >

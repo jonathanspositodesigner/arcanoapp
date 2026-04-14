@@ -401,8 +401,8 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
         .snl-app *,.snl-app *::before,.snl-app *::after{box-sizing:border-box;margin:0;padding:0}
         .snl-app{
           --bg:#0c0d1a;--panel:#101220;--card:#161829;--input-bg:#0e0f1e;
-          --border:rgba(255,255,255,0.06);--border-hl:rgba(124,58,237,0.45);
-          --purple:#7c3aed;--purple-lt:#a78bfa;
+          --border:rgba(255,255,255,0.06);--border-hl:rgba(71,85,105,0.45);
+          --purple:#475569;--purple-lt:#94a3b8;
           --text-1:#eeeef5;--text-2:#7b7fa8;--text-3:#3d4060;
           --green:#34d399;--radius:12px;
           display:flex;flex-direction:column;height:calc(100vh - 56px);height:calc(100dvh - 56px);
@@ -428,7 +428,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
           background:var(--input-bg);border:1px solid var(--border);border-radius:var(--radius);
           cursor:pointer;transition:border-color 0.18s;position:relative;overflow:hidden;
         }
-        .snl-upload-item:hover{border-color:rgba(124,58,237,0.3)}
+        .snl-upload-item:hover{border-color:rgba(71,85,105,0.3)}
         .snl-upload-item.done{border-color:rgba(52,211,153,0.3)}
         .snl-upload-item input{position:absolute;inset:0;opacity:0;cursor:pointer}
         .snl-upload-thumb{
@@ -437,7 +437,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
         }
         .snl-upload-placeholder{
           width:32px;height:32px;border-radius:7px;background:var(--card);
-          border:1px dashed rgba(124,58,237,0.3);
+          border:1px dashed rgba(71,85,105,0.3);
           display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;
         }
         .snl-upload-info{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
@@ -467,8 +467,8 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
           font-size:11px;font-weight:700;cursor:pointer;text-align:center;
           transition:all 0.15s;letter-spacing:0.2px;
         }
-        .snl-style-pill:hover{border-color:rgba(124,58,237,0.3);color:var(--text-1)}
-        .snl-style-pill.on{background:rgba(124,58,237,0.14);border-color:var(--border-hl);color:var(--purple-lt)}
+        .snl-style-pill:hover{border-color:rgba(71,85,105,0.3);color:var(--text-1)}
+        .snl-style-pill.on{background:rgba(71,85,105,0.14);border-color:var(--border-hl);color:var(--purple-lt)}
         .snl-sidebar-scroll{
           flex:1;overflow-y:auto;padding:32px 24px 16px;display:flex;flex-direction:column;gap:26px;
         }
@@ -480,7 +480,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
           background:var(--purple);color:#fff;font-family:'Syne',sans-serif;
           font-size:13.5px;font-weight:700;letter-spacing:0.3px;cursor:pointer;
           display:flex;align-items:center;justify-content:center;gap:8px;
-          transition:opacity 0.18s,transform 0.12s;box-shadow:0 4px 24px rgba(124,58,237,0.28);
+          transition:opacity 0.18s,transform 0.12s;box-shadow:0 4px 24px rgba(71,85,105,0.28);
         }
         .snl-cta:hover{opacity:0.87}
         .snl-cta:active{transform:scale(0.98)}
@@ -637,7 +637,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
                 <button
                   className="snl-cta"
                   onClick={handleNewGeneration}
-                  style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.3)', color: '#a78bfa', flex: 1 }}
+                  style={{ background: 'rgba(71,85,105,0.15)', border: '1px solid rgba(71,85,105,0.3)', color: '#94a3b8', flex: 1 }}
                 >
                   Nova Selfie
                 </button>
@@ -681,7 +681,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
 
              {resultUrl ? (
                <div style={{ width: '100%', maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                 <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(124,58,237,0.2)', background: 'rgba(0,0,0,0.3)' }}>
+                 <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(71,85,105,0.2)', background: 'rgba(0,0,0,0.3)' }}>
                    <img
                      src={resultUrl}
                      alt="Selfie na Lua"
@@ -692,8 +692,8 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
                  </div>
               </div>
             ) : isProcessing ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, color: '#a78bfa' }}>
-                <div style={{ width: 80, height: 80, borderRadius: '50%', border: '2px solid rgba(124,58,237,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, color: '#94a3b8' }}>
+                <div style={{ width: 80, height: 80, borderRadius: '50%', border: '2px solid rgba(71,85,105,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Loader2 style={{ width: 32, height: 32, color: '#d946ef', animation: 'spin 1s linear infinite' }} />
                 </div>
                 {status === 'queued' && queuePosition > 0 ? (
@@ -704,7 +704,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
                 ) : (
                   <p style={{ fontSize: 14 }}>Gerando sua selfie...</p>
                 )}
-                <div style={{ width: 192, height: 6, borderRadius: 9999, background: 'rgba(124,58,237,0.2)', overflow: 'hidden' }}>
+                <div style={{ width: 192, height: 6, borderRadius: 9999, background: 'rgba(71,85,105,0.2)', overflow: 'hidden' }}>
                   <div style={{ height: '100%', borderRadius: 9999, background: '#d946ef', transition: 'width 0.7s', width: `${progress}%` }} />
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
@@ -712,7 +712,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
                     <button onClick={handleCancel} style={{ fontSize: 12, color: '#f87171', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}>Cancelar</button>
                   )}
                   {showReconcileButton && (
-                    <button onClick={handleReconcile} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#a78bfa', background: 'none', border: 'none', cursor: 'pointer' }}>
+                    <button onClick={handleReconcile} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer' }}>
                       <RefreshCw style={{ width: 12, height: 12 }} /> Verificar status
                     </button>
                   )}
@@ -722,7 +722,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, color: '#f87171' }}>
                 <p style={{ fontSize: 14, textAlign: 'center', fontWeight: 500 }}>{(() => { const info = getAIErrorMessage(errorMessage || ''); return info.message; })()}</p>
                 <p style={{ fontSize: 12, textAlign: 'center', color: 'rgba(248,113,113,0.7)' }}>{(() => { const info = getAIErrorMessage(errorMessage || ''); return info.solution; })()}</p>
-                <button onClick={resetJobState} style={{ fontSize: 12, color: '#a78bfa', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}>Tentar novamente</button>
+                <button onClick={resetJobState} style={{ fontSize: 12, color: '#94a3b8', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer' }}>Tentar novamente</button>
               </div>
             ) : showNoCredits ? (
               <div className="snl-empty">
@@ -733,7 +733,7 @@ Camera: Canon EOS R5, 14mm f/2.8 ultra-wide, 1/2000s, ISO 800. Focus on face, ba
                   onClick={() => navigate('/planos-2')}
                   style={{
                     marginTop: 8, padding: '10px 24px', borderRadius: 10,
-                    background: 'linear-gradient(135deg, #7c3aed, #3b82f6)', color: '#fff',
+                    background: 'linear-gradient(135deg, #475569, #3b82f6)', color: '#fff',
                     border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 13,
                     fontFamily: "'Syne', sans-serif",
                   }}

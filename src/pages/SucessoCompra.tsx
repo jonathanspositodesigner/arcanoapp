@@ -164,7 +164,7 @@ const SucessoCompra = () => {
                     "#3b82f6",
                     "#f59e0b",
                     "#ef4444",
-                    "#8b5cf6",
+                    "#64748b",
                     "#ec4899",
                   ][Math.floor(Math.random() * 6)],
                   transform: `rotate(${Math.random() * 360}deg)`,

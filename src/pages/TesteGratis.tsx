@@ -423,7 +423,7 @@ const TesteGratis = () => {
         {/* EMAIL SENT STATE */}
         {pageState === 'email_sent' && (
           <div className="text-center py-4">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 mb-4 shadow-lg shadow-blue-500/30">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-slate-500 to-slate-700 mb-4 shadow-lg shadow-blue-500/30">
               <Mail className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Verifique seu Email</h2>
