@@ -372,7 +372,7 @@ export default function UpscalerMockup({
             {beforeRes && afterRes && (
               <div className="mt-3 flex items-center justify-center gap-3">
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent border border-border">
-                  <span className="text-[10px] text-white/40 uppercase tracking-wider">Antes</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Antes</span>
                   <span className="text-xs font-mono text-muted-foreground">{beforeRes.w}×{beforeRes.h}</span>
                 </div>
                 <div className="flex items-center gap-1">
