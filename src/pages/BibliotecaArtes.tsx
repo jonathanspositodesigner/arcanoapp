@@ -886,7 +886,7 @@ const BibliotecaArtes = () => {
                         
                         {/* Overlay with pack info */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-3 sm:p-4">
-                          <h3 className="font-bold text-sm sm:text-lg text-foreground text-center leading-tight drop-shadow-lg">
+                          <h3 className="font-bold text-sm sm:text-lg text-white text-center leading-tight drop-shadow-lg">
                             {pack.name}
                           </h3>
                           
