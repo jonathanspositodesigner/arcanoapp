@@ -845,7 +845,7 @@ const UpscalerArcanoTool: React.FC = () => {
                     <div>
                       <span className="text-sm font-medium text-white mb-2 block">Tipo de Imagem</span>
                       <Select
-                        value={promptCategory.startsWith('pessoas') ? 'pessoas' : promptCategory}
+                        value={(promptCategory?.startsWith('pessoas') ?? false) ? 'pessoas' : (promptCategory ?? '')}
                         onValueChange={(value) => {
                           if (value === 'pessoas') {
                             setPromptCategory(`pessoas_${pessoasFraming}` as PromptCategory);
