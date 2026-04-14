@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Zap, Sparkles, Video, Star, LogIn, Smartphone, Menu, Users, X, ChevronDown, BookOpen, Settings, LogOut, Coins, Wand2, Home, ImagePlus, Gift } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ExternalLink, Zap, Sparkles, Video, Star, LogIn, Smartphone, Menu, Users, X, ChevronDown, BookOpen, Settings, LogOut, Coins, Wand2, Home, ImagePlus, Gift, Layout, Film, Palette, Shirt, MonitorPlay, Gem } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import ReferralModal from "@/components/ReferralModal";
@@ -17,28 +16,10 @@ interface AppSidebarProps {
 
 const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen = false }: AppSidebarProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation('prompts');
   const { logout } = useAuth();
-  const [aiSitesOpen, setAiSitesOpen] = useState(false);
-  const [aiToolsOpen, setAiToolsOpen] = useState(true);
   const [showReferralModal, setShowReferralModal] = useState(false);
-
-  const externalLinks = [
-    { name: t('sidebar.generateInChatGPT'), url: "https://chatgpt.com/", icon: Sparkles },
-    { name: t('sidebar.generateInNanoBanana'), url: "https://labs.google/fx/pt/tools/flow", icon: Sparkles },
-    { name: t('sidebar.generateInWhisk'), url: "https://labs.google/fx/pt/tools/whisk", icon: Sparkles },
-    { name: t('sidebar.generateInFlux2'), url: "https://www.runninghub.ai/workflow/1995538803421020162", icon: Sparkles },
-    { name: t('sidebar.generateVideoVEO3'), url: "https://labs.google/fx/pt/tools/flow", icon: Video },
-  ];
-
-  const aiToolLinks = [
-    { name: "Upscaler Arcano App", path: "/upscaler-arcano-tool", badge: null, badgeColor: null, disabled: false },
-    { name: "Arcano Cloner", path: "/arcano-cloner-tool", badge: null, badgeColor: null, disabled: false },
-    { name: "Pose Changer", path: "/pose-changer-tool", badge: null, badgeColor: null, disabled: false },
-    { name: "Veste AI", path: "/veste-ai-tool", badge: null, badgeColor: null, disabled: false },
-    { name: "MovieLed Maker", path: "/movieled-maker", badge: "Novo", badgeColor: "bg-emerald-600/20", textColor: "text-emerald-700 dark:text-emerald-400", disabled: false },
-    { name: "Forja de Selos 3D", path: "#", badge: "Em breve", badgeColor: "bg-muted/50", textColor: "text-foreground/70", disabled: true },
-  ];
 
   const handleLogout = async () => {
     await logout();
@@ -50,6 +31,15 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
     setSidebarOpen(false);
   };
 
+  const isActive = (path: string) => location.pathname === path;
+
+  const navItemClass = (path: string) =>
+    `w-full flex items-center text-left text-[13px] font-medium py-2.5 px-3 rounded-lg transition-colors ${
+      isActive(path)
+        ? 'bg-primary/10 text-primary font-semibold'
+        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+    }`;
+
   return (
     <>
       {/* Overlay */}
@@ -58,178 +48,100 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
       {/* Sidebar */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-40
-        w-72 ${fullScreen ? 'lg:h-full lg:min-h-0 lg:self-stretch' : 'min-h-screen'} bg-sidebar-background border-r border-border p-5 flex flex-col
+        w-64 ${fullScreen ? 'lg:h-full lg:min-h-0 lg:self-stretch' : 'min-h-screen'} bg-sidebar-background border-r border-border p-4 flex flex-col
         transform transition-transform duration-300 ease-in-out
         lg:pt-4
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        {/* Logo only on mobile sidebar */}
-        <div className="mb-4 flex justify-center lg:hidden">
-          <img alt="ArcanoApp" className="w-[60%] mb-2 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/')} src="/lovable-uploads/7fbeb2fd-d77d-4357-acff-1947c5565fad.png" />
+        {/* Logo */}
+        <div className="mb-6 flex justify-center">
+          <img alt="ArcanoApp" className="w-[50%] cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/')} src="/lovable-uploads/7fbeb2fd-d77d-4357-acff-1947c5565fad.png" />
         </div>
 
-        {/* Top section */}
-        <div className="space-y-2 flex-1 min-h-0 overflow-y-auto">
-          {/* Home Button */}
-          <button
-            onClick={() => handleNavAndClose("/")}
-            className="w-full flex items-center text-left text-[12px] font-medium text-muted-foreground hover:text-foreground py-2 px-2.5 rounded-lg hover:bg-accent transition-colors"
-          >
-            <Home className="h-3.5 w-3.5 mr-1.5" />
-            Home
+        {/* Scrollable content */}
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-1">
+
+          {/* PRINCIPAL */}
+          <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider px-3 mb-1">Principal</p>
+
+          <button onClick={() => handleNavAndClose("/biblioteca-prompts")} className={navItemClass("/biblioteca-prompts")}>
+            <Layout className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            Biblioteca
           </button>
 
-          <div className="border-t border-border" />
-
-          {/* Install App Button */}
-          <Button onClick={() => handleNavAndClose("/install-app")} variant="outline" className="w-full h-auto py-2 px-2.5 bg-accent/50 border-border text-foreground hover:bg-accent font-medium text-[11px] flex items-center justify-between">
-            <span className="flex items-center">
-              <Smartphone className="h-3 w-3 mr-1.5" />
-              {t('sidebar.installApp')}
-            </span>
-          </Button>
-
-          {/* Premium Badge */}
-          {isPremium && (
-            <div className="flex items-center justify-center gap-2 p-1.5 bg-gradient-to-r from-yellow-500/30 to-orange-500/30 rounded-lg border border-yellow-500/40">
-              <Star className="h-3 w-3 text-yellow-500" fill="currentColor" />
-              <span className="text-[11px] font-semibold text-yellow-600 dark:text-yellow-400">{t('sidebar.premiumActive')}</span>
-            </div>
-          )}
-
-          {/* Premium button for logged-in non-premium users */}
-          {user && !isPremium && (
-            <Button onClick={() => handleNavAndClose("/planos-2")} className="w-full h-auto py-2 px-2.5 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-primary-foreground font-medium text-[11px] flex items-center justify-between">
-              <span className="flex items-center">
-                <Star className="h-3 w-3 mr-1.5" fill="currentColor" />
-                {t('sidebar.becomePremium')}
-              </span>
-            </Button>
-          )}
-
-          {/* Login button only for non-logged users */}
-          {!user && (
-            <>
-              <Button onClick={() => handleNavAndClose("/planos-2")} className="w-full h-auto py-2 px-2.5 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-primary-foreground font-medium text-[11px] flex items-center justify-between">
-                <span className="flex items-center">
-                  <Star className="h-3 w-3 mr-1.5" fill="currentColor" />
-                  {t('sidebar.becomePremium')}
-                </span>
-              </Button>
-              <Button onClick={() => handleNavAndClose("/login")} variant="outline" className="w-full h-auto py-2 px-2.5 bg-accent/50 border-border text-foreground hover:bg-accent font-medium text-[11px] flex items-center justify-between">
-                <span className="flex items-center">
-                  <LogIn className="h-3 w-3 mr-1.5" />
-                  {t('sidebar.makeLogin')}
-                </span>
-              </Button>
-            </>
-          )}
-
-          <div className="my-3 border-t border-border" />
-
-          {/* Ferramentas de IA - Collapsible */}
-          <button
-            onClick={() => setAiToolsOpen(!aiToolsOpen)}
-            className="w-full flex items-center justify-between text-left text-[12px] font-semibold text-foreground hover:text-muted-foreground py-2 px-2.5 rounded-lg bg-secondary/50 hover:bg-secondary transition-colors"
-          >
-            <span className="flex items-center gap-1.5">
-              <Zap className="h-3.5 w-3.5 text-muted-foreground" />
-              {t('sidebar.aiTools')}
-            </span>
-            <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${aiToolsOpen ? 'rotate-180' : ''}`} />
+          <button onClick={() => handleNavAndClose("/ferramentas-ia-aplicativo")} className={navItemClass("/ferramentas-ia-aplicativo")}>
+            <Zap className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            Ferramentas IA
           </button>
 
-          {aiToolsOpen && (
-            <div className="space-y-1 pl-2">
-              {aiToolLinks.map(link => (
-                <button
-                  key={link.name}
-                  onClick={() => !link.disabled && handleNavAndClose(link.path)}
-                  disabled={link.disabled}
-                  className={`w-full flex items-center justify-between text-[11px] py-1.5 px-2.5 rounded-md transition-colors ${link.disabled ? 'text-muted-foreground/50 cursor-not-allowed' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}`}
-                >
-                  <span>{link.name}</span>
-                  {link.badge && (
-                    <span className={`text-[9px] font-bold ${link.badgeColor} ${link.textColor || 'text-foreground'} px-1.5 py-0.5 rounded-full leading-none`}>{link.badge}</span>
-                  )}
-                </button>
-              ))}
-              <button
-                onClick={() => handleNavAndClose("/ferramentas-ia-aplicativo")}
-                className="w-full flex items-center justify-center text-[11px] py-1.5 px-2.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors font-medium mt-1"
-              >
-                Ver todas →
-              </button>
-            </div>
-          )}
-
-          {/* Seedance 2 */}
-          <button
-            onClick={() => handleNavAndClose("/seedance2")}
-            className="w-full flex items-center justify-between text-left text-[12px] font-medium text-muted-foreground hover:text-foreground py-2 px-2.5 rounded-lg hover:bg-accent transition-colors"
-          >
-            <span className="flex items-center">
-              <Video className="h-3.5 w-3.5 mr-1.5" />
-              Seedance 2
-            </span>
-            <span className="text-[9px] font-bold bg-gradient-to-r from-red-500 to-orange-500 text-primary-foreground px-1.5 py-0.5 rounded-full leading-none animate-pulse">HOT</span>
+          <button onClick={() => handleNavAndClose("/seedance2")} className={navItemClass("/seedance2")}>
+            <Film className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            Seedance 2.0
+            <span className="ml-auto text-[9px] font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white px-1.5 py-0.5 rounded-full leading-none">Novo</span>
           </button>
 
-          {/* Biblioteca de Prompts */}
-          <button
-            onClick={() => handleNavAndClose("/biblioteca-prompts")}
-            className="w-full flex items-center text-left text-[12px] font-medium text-muted-foreground hover:text-foreground py-2 px-2.5 rounded-lg hover:bg-accent transition-colors"
-          >
-            <BookOpen className="h-3.5 w-3.5 mr-1.5" />
-            Biblioteca de Prompts
+          <button onClick={() => handleNavAndClose("/minhas-criacoes")} className={navItemClass("/minhas-criacoes")}>
+            <Sparkles className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            Minhas Criações
           </button>
 
-          {/* Gerar Imagem e Gerar Vídeo */}
-          <button
-            onClick={() => handleNavAndClose("/gerar-imagem")}
-            className="w-full flex items-center text-left text-[12px] font-medium text-muted-foreground hover:text-foreground py-2 px-2.5 rounded-lg hover:bg-accent transition-colors"
-          >
-            <ImagePlus className="h-3.5 w-3.5 mr-1.5" />
-            Gerar Imagem
-          </button>
-          <button
-            onClick={() => handleNavAndClose("/gerar-video")}
-            className="w-full flex items-center text-left text-[12px] font-medium text-muted-foreground hover:text-foreground py-2 px-2.5 rounded-lg hover:bg-accent transition-colors"
-          >
-            <Video className="h-3.5 w-3.5 mr-1.5" />
-            Gerar Vídeo
+          {/* FERRAMENTAS */}
+          <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider px-3 mt-4 mb-1">Ferramentas</p>
+
+          <button onClick={() => handleNavAndClose("/upscaler-arcano-tool")} className={navItemClass("/upscaler-arcano-tool")}>
+            <Wand2 className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            Upscaler Arcano
           </button>
 
-          {/* Sites de IA - Hidden for now, links preserved in externalLinks array above */}
+          <button onClick={() => handleNavAndClose("/arcano-cloner-tool")} className={navItemClass("/arcano-cloner-tool")}>
+            <Palette className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            Arcano Cloner
+          </button>
 
-          <div className="my-3 border-t border-border" />
+          <button onClick={() => handleNavAndClose("/pose-changer-tool")} className={navItemClass("/pose-changer-tool")}>
+            <ImagePlus className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            Pose Changer
+          </button>
 
-          {/* Créditos */}
+          <button onClick={() => handleNavAndClose("/veste-ai-tool")} className={navItemClass("/veste-ai-tool")}>
+            <Shirt className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            Veste AI
+          </button>
+
+          <button onClick={() => handleNavAndClose("/movieled-maker")} className={navItemClass("/movieled-maker")}>
+            <MonitorPlay className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            MovieLed Maker
+          </button>
+
+          {/* CONTA */}
+          <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider px-3 mt-4 mb-1">Conta</p>
+
+          <button onClick={() => handleNavAndClose("/planos-2")} className={navItemClass("/planos-2")}>
+            <Gem className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            Planos
+          </button>
+
           {user && (
-            <button
-              onClick={() => handleNavAndClose("/credit-history")}
-              className="w-full flex items-center text-left text-[12px] font-medium text-muted-foreground hover:text-foreground py-2 px-2.5 rounded-lg hover:bg-accent transition-colors"
-            >
-              <Coins className="h-3.5 w-3.5 mr-1.5" />
-              Meus Créditos
+            <button onClick={() => handleNavAndClose("/credit-history")} className={navItemClass("/credit-history")}>
+              <Coins className="h-4 w-4 mr-2.5 flex-shrink-0" />
+              Créditos
             </button>
           )}
 
-          {/* Configurações */}
           {user && (
-            <button
-              onClick={() => handleNavAndClose("/profile-settings")}
-              className="w-full flex items-center text-left text-[12px] font-medium text-muted-foreground hover:text-foreground py-2 px-2.5 rounded-lg hover:bg-accent transition-colors"
-            >
-              <Settings className="h-3.5 w-3.5 mr-1.5" />
-              Configurações
+            <button onClick={() => handleNavAndClose("/profile-settings")} className={navItemClass("/profile-settings")}>
+              <Settings className="h-4 w-4 mr-2.5 flex-shrink-0" />
+              Config
             </button>
           )}
+
+          {/* Divider */}
+          <div className="my-3 border-t border-border" />
 
           {/* Grupo WhatsApp */}
           <a href="https://chat.whatsapp.com/KkQmU8xiyda7KUSXiyc3pn" target="_blank" rel="noopener noreferrer" className="block">
-            <button className="w-full flex items-center text-left text-[12px] font-medium text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 py-2 px-2.5 rounded-lg hover:bg-emerald-500/15 transition-colors">
-              <Users className="h-3.5 w-3.5 mr-1.5" />
+            <button className="w-full flex items-center text-left text-[13px] font-medium text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 py-2.5 px-3 rounded-lg hover:bg-emerald-500/15 transition-colors">
+              <Users className="h-4 w-4 mr-2.5 flex-shrink-0" />
               Grupo do WhatsApp
             </button>
           </a>
@@ -240,9 +152,17 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
               onClick={() => setShowReferralModal(true)}
               className="w-full flex items-center text-left text-[13px] font-bold text-foreground py-2.5 px-3 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-all"
             >
-              <Gift className="h-4 w-4 mr-2 text-primary" />
+              <Gift className="h-4 w-4 mr-2.5 text-primary flex-shrink-0" />
               Ganhe 500 Créditos!
             </button>
+          )}
+
+          {/* Login for non-logged users */}
+          {!user && (
+            <Button onClick={() => handleNavAndClose("/login")} variant="outline" className="w-full h-auto py-2.5 px-3 bg-accent/50 border-border text-foreground hover:bg-accent font-medium text-[12px] flex items-center">
+              <LogIn className="h-4 w-4 mr-2.5" />
+              {t('sidebar.makeLogin')}
+            </Button>
           )}
         </div>
 
@@ -251,9 +171,9 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           <div className="pt-3 border-t border-border mt-3">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center text-left text-[12px] font-medium text-red-400 hover:text-red-300 py-2 px-2.5 rounded-lg hover:bg-red-500/10 transition-colors"
+              className="w-full flex items-center text-left text-[12px] font-medium text-red-400 hover:text-red-300 py-2 px-3 rounded-lg hover:bg-red-500/10 transition-colors"
             >
-              <LogOut className="h-3.5 w-3.5 mr-1.5" />
+              <LogOut className="h-3.5 w-3.5 mr-2" />
               Sair
             </button>
           </div>
