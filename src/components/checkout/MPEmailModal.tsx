@@ -45,14 +45,16 @@ function isValidCPF(cpf: string): boolean {
 export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModalProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
   const [cpf, setCpf] = useState("");
-  const [errors, setErrors] = useState<{ name?: string; email?: string; cpf?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; email?: string; confirmEmail?: string; cpf?: string }>({});
 
   // Reset campos ao reabrir o modal
   useEffect(() => {
     if (open) {
       setName("");
       setEmail("");
+      setConfirmEmail("");
       setCpf("");
       setErrors({});
     }
@@ -64,6 +66,9 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
     const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail) e.email = "Preencha seu e-mail";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) e.email = "E-mail inválido";
+    const trimmedConfirm = confirmEmail.trim().toLowerCase();
+    if (!trimmedConfirm) e.confirmEmail = "Confirme seu e-mail";
+    else if (trimmedEmail !== trimmedConfirm) e.confirmEmail = "Os e-mails não coincidem. Confira e tente novamente.";
     const cpfDigits = cpf.replace(/\D/g, "");
     if (!cpfDigits) e.cpf = "Preencha seu CPF";
     else if (!isValidCPF(cpfDigits)) e.cpf = "CPF inválido";
