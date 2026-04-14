@@ -211,7 +211,7 @@ const UpscalerArcanoTool: React.FC = () => {
   }, [version]);
 
   // Flag to check if we're in "De Longe" mode (full body photos use different WebApp)
-  const isLongeMode = pessoasFraming === 'longe' && promptCategory.startsWith('pessoas');
+  const isLongeMode = pessoasFraming === 'longe' && (promptCategory?.startsWith('pessoas') ?? false);
 
    // Flags for special workflows (Foto Antiga and Comida/Objeto)
    const isSpecialWorkflow = promptCategory === 'fotoAntiga' || promptCategory === 'comida' || promptCategory === 'logo' || promptCategory === 'render3d';
