@@ -756,12 +756,12 @@ const UpscalerArcanoTool: React.FC = () => {
     <AppLayout fullScreen>
 
       {/* Main Content - Two Column Layout */}
-      <div className={`flex-1 max-w-7xl w-full mx-auto px-4 py-4 flex flex-col h-full overflow-hidden ${isMobile ? 'pb-20' : ''}`}>
-        <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-5 flex-1 min-h-0">
+      <div className={`flex-1 max-w-7xl w-full mx-auto px-4 py-4 flex flex-col h-full ${isMobile ? 'overflow-y-auto pb-40' : 'overflow-hidden'}`}>
+        <div className={`grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-5 ${isMobile ? 'content-start' : 'flex-1 min-h-0'}`}>
           
           {/* Left Side - Controls Panel inside ONE card */}
           {/* On mobile: only show upload area. Controls move to bottom bar */}
-          <div className="lg:col-span-2 min-h-0 overflow-hidden">
+          <div className={`lg:col-span-2 ${isMobile ? 'overflow-visible' : 'min-h-0 overflow-hidden'}`}>
             <div className={`bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-5 ${isMobile ? '' : 'overflow-y-auto h-full max-h-full'}`}
               style={!isMobile ? { scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' } : undefined}
             >
