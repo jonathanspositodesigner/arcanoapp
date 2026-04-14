@@ -220,52 +220,53 @@ All colors MUST be HSL.
   }
 
   .light {
-    --background: 0 0% 98%;
-    --foreground: 230 15% 12%;
+    /* Arcano Light — Roxo #7B2FBE + fundo branco lavanda */
+    --background: 270 20% 98%;
+    --foreground: 270 25% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 230 15% 12%;
+    --card-foreground: 270 25% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 230 15% 12%;
+    --popover-foreground: 270 25% 10%;
 
-    --primary: 230 15% 12%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 272 61% 46%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 92%;
-    --secondary-foreground: 220 8% 30%;
+    --secondary: 270 20% 96%;
+    --secondary-foreground: 270 25% 20%;
 
-    --muted: 220 14% 94%;
-    --muted-foreground: 220 8% 45%;
+    --muted: 270 15% 95%;
+    --muted-foreground: 270 10% 45%;
 
-    --accent: 220 14% 92%;
-    --accent-foreground: 230 15% 12%;
+    --accent: 270 30% 97%;
+    --accent-foreground: 272 61% 46%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 87%;
-    --input: 220 13% 87%;
-    --ring: 230 15% 50%;
+    --border: 270 20% 90%;
+    --input: 270 20% 90%;
+    --ring: 272 61% 46%;
 
     --radius: 0.75rem;
 
-    --gradient-primary: linear-gradient(135deg, hsl(230 15% 12%) 0%, hsl(230 15% 25%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 14% 97%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(272 61% 46%) 0%, hsl(268 70% 32%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(270 20% 98%) 100%);
 
-    --shadow-card: 0 4px 12px hsla(220 15% 50% / 0.08);
-    --shadow-hover: 0 8px 24px hsla(220 15% 50% / 0.12);
+    --shadow-card: 0 1px 3px hsla(272 50% 30% / 0.04), 0 0 0 1px hsla(272 50% 30% / 0.03);
+    --shadow-hover: 0 4px 16px hsla(272 61% 46% / 0.12);
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    --sidebar-background: 0 0% 99%;
-    --sidebar-foreground: 230 15% 20%;
-    --sidebar-primary: 230 15% 12%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 220 14% 94%;
-    --sidebar-accent-foreground: 230 15% 20%;
-    --sidebar-border: 220 13% 90%;
-    --sidebar-ring: 230 15% 50%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 270 25% 10%;
+    --sidebar-primary: 272 61% 46%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 270 20% 96%;
+    --sidebar-accent-foreground: 270 25% 20%;
+    --sidebar-border: 270 20% 92%;
+    --sidebar-ring: 272 61% 46%;
   }
 }
 
@@ -276,7 +277,28 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  /* Theme-aware scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.3);
+  }
+
+  /* Theme-aware text selection */
+  ::selection {
+    background: hsl(var(--primary) / 0.15);
+    color: hsl(var(--foreground));
   }
 }
 
