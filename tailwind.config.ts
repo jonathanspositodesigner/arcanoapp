@@ -179,10 +179,10 @@ export default {
         },
         "pulse-glow": {
           "0%, 100%": {
-            boxShadow: "0 0 20px rgba(168, 85, 247, 0.4)",
+            boxShadow: "0 0 20px rgba(100, 116, 139, 0.4)",
           },
           "50%": {
-            boxShadow: "0 0 40px rgba(168, 85, 247, 0.6)",
+            boxShadow: "0 0 40px rgba(100, 116, 139, 0.6)",
           },
         },
         "marquee-scroll": {
