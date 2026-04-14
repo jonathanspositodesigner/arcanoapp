@@ -60,7 +60,7 @@ const MovieLedMakerTool = () => {
   const isTutorialTestUser = false; // Tutorial test mode disabled
 
   // Engine selection
-  const [selectedEngine, setSelectedEngine] = useState<string>('wan2.2');
+  const [selectedEngine, setSelectedEngine] = useState<string>('gemini-lite');
   const currentEngine = ENGINES.find(e => e.id === selectedEngine) || ENGINES[0];
 
   // Image input
