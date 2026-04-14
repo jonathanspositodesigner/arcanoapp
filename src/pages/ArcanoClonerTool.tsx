@@ -53,6 +53,8 @@ const ArcanoClonerTool: React.FC = () => {
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useCredits();
   const { getCreditCost } = useAIToolSettings();
   const creditCost = getCreditCost('Arcano Cloner', 80);
+  const isMobile = useIsMobile();
+  const [showMobileConfig, setShowMobileConfig] = useState(false);
   
   // Contexto global de jobs
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob, playNotificationSound } = useAIJob();
