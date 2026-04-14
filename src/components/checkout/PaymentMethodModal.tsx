@@ -23,7 +23,7 @@ const PaymentMethodModal = ({
   colorScheme = 'purple',
 }: PaymentMethodModalProps) => {
   const isOrange = colorScheme === 'orange';
-  const modalBg = isOrange ? 'bg-[#1a0a0a]' : 'bg-[#1A0A2E]';
+  const modalBg = isOrange ? 'bg-[#1a0a0a]' : 'bg-[#111113]';
   const borderAccent = isOrange ? 'border-[#EF672C]/30' : 'border-white/10';
   const descColor = isOrange ? 'text-orange-300/70' : 'text-gray-300';
   const btnBorder = isOrange ? 'border-[#EF672C]/30' : 'border-white/10';

@@ -17,7 +17,7 @@ import upscalerV2Image from "@/assets/upscaler-v1-5-card.png";
 interface ToolVersionBadge {
   text: string;
   icon: 'sparkles' | 'zap' | 'target' | 'star';
-  color: 'yellow' | 'blue' | 'purple' | 'green' | 'orange';
+  color: 'yellow' | 'blue' | 'dark' | 'green' | 'orange';
 }
 
 interface LocalizedVersionContent {

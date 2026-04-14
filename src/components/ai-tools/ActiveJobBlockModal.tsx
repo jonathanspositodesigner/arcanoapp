@@ -98,7 +98,7 @@ const ActiveJobBlockModal: React.FC<ActiveJobBlockModalProps> = ({
   if (showConfirmation) {
     return (
       <AlertDialog open={true} onOpenChange={() => setShowConfirmation(false)}>
-        <AlertDialogContent className="bg-[#1A0A2E] border-red-500/30">
+        <AlertDialogContent className="bg-[#111113] border-red-500/30">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-red-500/20 rounded-full">
@@ -159,7 +159,7 @@ const ActiveJobBlockModal: React.FC<ActiveJobBlockModalProps> = ({
   
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="bg-[#1A0A2E] border-white/10">
+      <AlertDialogContent className="bg-[#111113] border-white/10">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-yellow-500/20 rounded-full">

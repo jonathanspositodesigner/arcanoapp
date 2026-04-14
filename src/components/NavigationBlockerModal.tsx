@@ -35,7 +35,7 @@ const NavigationBlockerModal = ({
   
   return (
     <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onCancelLeave()}>
-      <AlertDialogContent className="bg-[#1A0A2E] border-white/10 text-white max-w-md">
+      <AlertDialogContent className="bg-[#111113] border-white/10 text-white max-w-md">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center">

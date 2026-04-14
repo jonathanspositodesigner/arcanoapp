@@ -227,7 +227,7 @@ const ProfileSettings = () => {
         </h1>
 
         {/* Profile Information */}
-        <Card className="p-6 bg-[#1A0A2E] border-white/10">
+        <Card className="p-6 bg-[#111113] border-white/10">
           <h2 className="text-lg font-semibold mb-4 text-white">{t('profile.personalInfo')}</h2>
           <form onSubmit={handleSaveProfile} className="space-y-4">
             {/* Avatar */}
@@ -399,7 +399,7 @@ const ProfileSettings = () => {
         />
 
         {/* Change Password */}
-        <Card className="p-6 bg-[#1A0A2E] border-white/10">
+        <Card className="p-6 bg-[#111113] border-white/10">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
             <Lock className="h-5 w-5 text-gray-400" />
             {t('changePassword')}
@@ -486,7 +486,7 @@ const ProfileSettings = () => {
 
         {/* Notification Settings - usa permission do browser como fonte de verdade */}
         {isSupported && (
-          <Card className="p-6 bg-[#1A0A2E] border-white/10">
+          <Card className="p-6 bg-[#111113] border-white/10">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
               <Bell className="h-5 w-5 text-gray-400" />
               {t('profile.notifications')}
@@ -528,7 +528,7 @@ const ProfileSettings = () => {
 
       {/* Disable Notifications Modal */}
       <Dialog open={showDisableModal} onOpenChange={setShowDisableModal}>
-        <DialogContent className="max-w-sm bg-[#1A0A2E] border-white/10">
+        <DialogContent className="max-w-sm bg-[#111113] border-white/10">
           <DialogHeader>
             <DialogTitle className="text-center flex items-center justify-center gap-2 text-white">
               <BellOff className="h-5 w-5 text-red-500" />

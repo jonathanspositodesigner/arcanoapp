@@ -70,7 +70,7 @@ interface ToolVersionSales {
 interface ToolVersionBadge {
   text: string;
   icon: 'sparkles' | 'zap' | 'target' | 'star';
-  color: 'yellow' | 'blue' | 'purple' | 'green' | 'orange';
+  color: 'yellow' | 'blue' | 'dark' | 'green' | 'orange';
 }
 
 // Localized content per language

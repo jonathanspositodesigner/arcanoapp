@@ -171,7 +171,7 @@ const PlanosCreditos = () => {
               return (
                 <Card 
                   key={tool.name}
-                  className="p-4 bg-[#1A0A2E] border-white/10 hover:border-white/15/40 transition-all duration-300"
+                  className="p-4 bg-[#111113] border-white/10 hover:border-white/15/40 transition-all duration-300"
                 >
                   <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${tool.color} flex items-center justify-center mx-auto mb-3`}>
                     <Icon className="w-5 h-5 text-white" />
@@ -243,7 +243,7 @@ const PlanosCreditos = () => {
               return (
                 <Card 
                   key={plan.credits}
-                  className={`relative p-6 bg-[#1A0A2E] border-white/10 flex flex-col items-center text-center transition-all duration-300 hover:scale-[1.02] hover:border-white/15/40 ${
+                  className={`relative p-6 bg-[#111113] border-white/10 flex flex-col items-center text-center transition-all duration-300 hover:scale-[1.02] hover:border-white/15/40 ${
                     plan.bestValue ? 'ring-2 ring-yellow-500/50 border-yellow-500/30' : ''
                   } ${plan.popular ? 'ring-2 ring-fuchsia-500/50 border-fuchsia-500/30' : ''}`}
                 >

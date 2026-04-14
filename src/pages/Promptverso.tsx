@@ -46,7 +46,7 @@ const Promptverso = () => {
 
         {/* Seção separada - Biblioteca de Artes Arcanas */}
         <div className="mt-10 sm:mt-14 pt-6 sm:pt-8 border-t border-white/10">
-          <Button onClick={() => setShowBAAModal(true)} size="lg" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 w-full sm:w-auto bg-[#1A0A2E] border-slate-500 text-gray-300 border-2 hover:text-white hover:bg-slate-500/20">
+          <Button onClick={() => setShowBAAModal(true)} size="lg" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 w-full sm:w-auto bg-[#111113] border-slate-500 text-gray-300 border-2 hover:text-white hover:bg-slate-500/20">
             <img alt="" className="mr-2 h-6 sm:h-7 w-auto object-contain" src="/lovable-uploads/53db2877-63c8-4fb8-bbf3-4aa471ca6154.png" />
             {t('promptverso.accessArtesLibrary')}
           </Button>
@@ -68,7 +68,7 @@ const Promptverso = () => {
 
       {/* Modal Biblioteca de Artes Arcanas */}
       <Dialog open={showBAAModal} onOpenChange={setShowBAAModal}>
-        <DialogContent className="sm:max-w-md bg-[#1A0A2E] border-white/10">
+        <DialogContent className="sm:max-w-md bg-[#111113] border-white/10">
           <DialogHeader>
             <DialogTitle className="text-center flex flex-col items-center gap-3 text-white">
               <img src={baaIcon} alt="Biblioteca de Artes Arcanas" className="h-16 w-auto" />

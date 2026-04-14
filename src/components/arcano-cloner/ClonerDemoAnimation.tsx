@@ -167,7 +167,7 @@ const ClonerDemoAnimation: React.FC = () => {
       </div>
 
       {/* Main mockup */}
-      <div className="relative bg-[#1A0A2E]/90 border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/40">
+      <div className="relative bg-[#111113]/90 border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/40">
         {/* Top bar */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-black/30">
           <div className="flex gap-1.5">

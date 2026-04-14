@@ -71,7 +71,7 @@ const MudarPose = () => {
         {/* Video Lessons */}
         <div className="space-y-8">
           {lessons.map((lesson, index) => (
-            <Card key={index} className="p-4 md:p-6 bg-[#1A0A2E]/50 border-white/10">
+            <Card key={index} className="p-4 md:p-6 bg-[#111113]/50 border-white/10">
               <h2 className="text-lg md:text-xl font-semibold text-white mb-4 flex items-center gap-2">
                 <Play className="h-5 w-5 text-gray-400" />
                 {t(lesson.titleKey)}

@@ -793,7 +793,7 @@ const AdminCreditsTab = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="border-slate-500 text-slate-500 hover:bg-purple-50"
+                  className="border-slate-500 text-slate-500 hover:bg-slate-50"
                   onClick={() => handleCreditAction('add_lifetime')}
                   disabled={isSubmitting || creditAmount <= 0}
                 >

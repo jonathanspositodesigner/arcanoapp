@@ -39,7 +39,7 @@ interface SignupFormProps {
   };
   
   // Styling variants
-  variant?: 'default' | 'dark' | 'purple' | 'teal';
+  variant?: 'default' | 'dark' | 'dark' | 'teal';
 }
 
 const variantStyles = {
@@ -82,7 +82,7 @@ const variantStyles = {
     stepDone: 'bg-emerald-500/60 text-white',
   },
   purple: {
-    container: 'bg-[#1A0A2E] border-white/10',
+    container: 'bg-[#111113] border-white/10',
     header: 'bg-green-500/20 border-b border-green-500/30',
     headerIcon: 'bg-green-500/30 text-green-400',
     headerTitle: 'text-green-400',

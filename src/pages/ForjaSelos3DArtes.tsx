@@ -80,7 +80,7 @@ const ForjaSelos3DArtes = () => {
   return (
     <div className="min-h-screen bg-[#111113]">
       {/* Header */}
-      <header className="bg-[#1A0A2E] border-b border-white/10 p-4">
+      <header className="bg-[#111113] border-b border-white/10 p-4">
         <div className="container mx-auto flex items-center gap-4">
           <Button
             variant="ghost"
@@ -104,7 +104,7 @@ const ForjaSelos3DArtes = () => {
       {/* Content */}
       <main className="container mx-auto p-4 md:p-6">
         {lessons.length === 0 ? (
-          <Card className="max-w-2xl mx-auto bg-[#1A0A2E]/50 border-white/10">
+          <Card className="max-w-2xl mx-auto bg-[#111113]/50 border-white/10">
             <CardContent className="p-8 text-center">
               <Play className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h2 className="text-xl font-semibold text-white mb-2">
@@ -118,7 +118,7 @@ const ForjaSelos3DArtes = () => {
         ) : (
           <div className="space-y-6 max-w-4xl mx-auto">
             {lessons.map((lesson, index) => (
-              <Card key={index} className="bg-[#1A0A2E]/50 border-white/10">
+              <Card key={index} className="bg-[#111113]/50 border-white/10">
                 <CardHeader>
                   <CardTitle className="text-lg text-white">{lesson.title}</CardTitle>
                 </CardHeader>

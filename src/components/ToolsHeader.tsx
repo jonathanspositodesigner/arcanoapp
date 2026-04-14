@@ -183,7 +183,7 @@ const ToolsHeader = ({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-56 bg-[#1A0A2E] border-white/10 text-white"
+                  className="w-56 bg-[#111113] border-white/10 text-white"
                 >
                   {/* User Info */}
                   <DropdownMenuLabel className="text-gray-300">

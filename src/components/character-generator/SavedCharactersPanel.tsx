@@ -140,7 +140,7 @@ const SavedCharactersPanel: React.FC<SavedCharactersPanelProps> = ({ userId, ref
                           <Trash2 className="w-3 h-3" />
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="bg-[#1A0A2E] border-white/10 text-white">
+                      <AlertDialogContent className="bg-[#111113] border-white/10 text-white">
                         <AlertDialogHeader>
                           <AlertDialogTitle>Remover avatar?</AlertDialogTitle>
                           <AlertDialogDescription className="text-gray-300">

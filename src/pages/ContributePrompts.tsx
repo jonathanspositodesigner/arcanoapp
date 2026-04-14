@@ -232,7 +232,7 @@ const ContributePrompts = () => {
           {t('contribute.back')}
         </Button>
 
-        <Card className="p-4 sm:p-8 bg-[#1A0A2E] border-white/10">
+        <Card className="p-4 sm:p-8 bg-[#111113] border-white/10">
           <div className="mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-gray-400 to-pink-400 bg-clip-text text-transparent mb-2">
               {t('contribute.title')}
@@ -275,7 +275,7 @@ const ContributePrompts = () => {
                 <SelectTrigger className="mt-2 bg-[#111113] border-white/10 text-white">
                   <SelectValue placeholder={t('contribute.selectCategory')} />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1A0A2E] border-white/10">
+                <SelectContent className="bg-[#111113] border-white/10">
                   {categories.map(cat => (
                     <SelectItem key={cat.id} value={cat.name} className="text-gray-300 hover:bg-slate-500/20">{cat.name}</SelectItem>
                   ))}

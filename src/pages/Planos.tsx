@@ -244,7 +244,7 @@ const Planos = () => {
 
           {/* Billing Toggle */}
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
-            <TabsList className="bg-[#1A0A2E] border border-white/10">
+            <TabsList className="bg-[#111113] border border-white/10">
               <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white text-gray-300 px-6">
                 {t('planos.monthly')}
               </TabsTrigger>
@@ -278,7 +278,7 @@ const Planos = () => {
             const isBestSeller = (plan as any).bestSeller;
             const savingsPercent = (plan as any).savingsPercent;
             return (
-            <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === currentPlans.length - 1 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-slate-500 shadow-lg shadow-slate-500/20" : "border border-white/10"}`}>
+            <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#111113] w-full ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === currentPlans.length - 1 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-slate-500 shadow-lg shadow-slate-500/20" : "border border-white/10"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-slate-600 to-pink-600 text-white px-4 py-1">
                   {t('planos.bestSeller')}
@@ -399,7 +399,7 @@ const Planos = () => {
 
       {/* Coming Soon Modal */}
       <Dialog open={showComingSoonModal} onOpenChange={setShowComingSoonModal}>
-        <DialogContent className="sm:max-w-md bg-[#1A0A2E] border-white/10">
+        <DialogContent className="sm:max-w-md bg-[#111113] border-white/10">
           <DialogHeader className="text-center">
             <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-slate-500/20 flex items-center justify-center">
               <Clock className="w-8 h-8 text-gray-400" />

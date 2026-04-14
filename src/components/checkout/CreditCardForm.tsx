@@ -207,7 +207,7 @@ const CreditCardForm = ({
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!busy) onOpenChange(v); }}>
-      <DialogContent className="sm:max-w-md bg-[#1A0A2E] border-white/10 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md bg-[#111113] border-white/10 max-h-[90vh] overflow-y-auto">
         {busy ? (
           <div className="flex flex-col items-center justify-center py-12 gap-4">
             <div className="relative">
@@ -330,9 +330,9 @@ const CreditCardForm = ({
                         onChange={(e) => setUf(e.target.value)}
                         className="flex h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
-                        <option value="" className="bg-[#1A0A2E]">UF</option>
+                        <option value="" className="bg-[#111113]">UF</option>
                         {UF_OPTIONS.map(u => (
-                          <option key={u} value={u} className="bg-[#1A0A2E]">{u}</option>
+                          <option key={u} value={u} className="bg-[#111113]">{u}</option>
                         ))}
                       </select>
                     </div>

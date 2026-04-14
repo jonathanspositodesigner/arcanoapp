@@ -495,7 +495,7 @@ export default function ArcanoClonerAuthModal({
               onSubmit={handleCheckEmail}
               onSignupClick={() => setStep('signup')}
               isLoading={isLoading}
-              variant="purple"
+              variant="dark"
               labels={{
                 emailPlaceholder: 'seu@email.com',
                 continue: 'Continuar',
@@ -514,7 +514,7 @@ export default function ArcanoClonerAuthModal({
                 onChangeEmail={() => setStep('email')}
                 forgotPasswordUrl={`/forgot-password?email=${encodeURIComponent(verifiedEmail)}&redirect=${encodeURIComponent(redirectPath)}`}
                 isLoading={isLoading}
-                variant="purple"
+                variant="dark"
                 labels={{
                   passwordPlaceholder: '••••••••',
                   signIn: 'Entrar',

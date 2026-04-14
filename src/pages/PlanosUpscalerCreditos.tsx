@@ -690,7 +690,7 @@ const PlanosUpscalerCreditos = () => {
               >
                 {/* Starter */}
                 <div className="flex flex-col h-full w-full">
-                  <Card className="relative p-8 flex flex-col rounded-xl bg-[#1A0A2E] border border-white/10 w-full h-full">
+                  <Card className="relative p-8 flex flex-col rounded-xl bg-[#111113] border border-white/10 w-full h-full">
                     <div className="text-center mb-5 min-h-[68px] flex flex-col items-center justify-center">
                       <h3 className="text-xl font-bold text-white">Starter</h3>
                       <p className="text-sm text-gray-400 mt-0.5">Pra quem quer testar sem compromisso!</p>
@@ -764,7 +764,7 @@ const PlanosUpscalerCreditos = () => {
 
                 {/* Pro - MAIS VENDIDO */}
                 <div className="flex flex-col h-full w-full">
-                  <Card className="relative p-8 flex flex-col rounded-xl bg-[#1A0A2E] border-2 border-lime-400 shadow-lg shadow-lime-400/30 w-full h-full">
+                  <Card className="relative p-8 flex flex-col rounded-xl bg-[#111113] border-2 border-lime-400 shadow-lg shadow-lime-400/30 w-full h-full">
                     <Badge className="absolute -top-3.5 left-1/2 -translate-x-1/2 border-0 text-sm whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-5 py-1.5">
                       MAIS VENDIDO
                     </Badge>
@@ -842,7 +842,7 @@ const PlanosUpscalerCreditos = () => {
 
                 {/* Studio - MELHOR CUSTO/BENEFÍCIO */}
                 <div className="flex flex-col h-full w-full">
-                  <Card className="relative p-8 flex flex-col rounded-xl bg-[#1A0A2E] border-2 border-slate-500 shadow-lg shadow-slate-500/20 w-full h-full">
+                  <Card className="relative p-8 flex flex-col rounded-xl bg-[#111113] border-2 border-slate-500 shadow-lg shadow-slate-500/20 w-full h-full">
                     <Badge className="absolute -top-3.5 left-1/2 -translate-x-1/2 border-0 text-sm whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-white px-5 py-1.5">
                       MELHOR CUSTO/BENEFÍCIO
                     </Badge>

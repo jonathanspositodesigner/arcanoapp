@@ -26,7 +26,7 @@ const NoCreditsModal = ({ isOpen, onClose, reason }: NoCreditsModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-[#1A0A2E] border-white/10">
+      <DialogContent className="sm:max-w-md bg-[#111113] border-white/10">
         <DialogHeader className="text-center">
           <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-gradient-to-r from-yellow-500/20 to-slate-400/20 flex items-center justify-center">
             <Coins className="w-8 h-8 text-yellow-500" />

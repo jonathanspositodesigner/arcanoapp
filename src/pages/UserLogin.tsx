@@ -60,7 +60,7 @@ const UserLogin = () => {
             onSubmit={auth.signup}
             onBackToLogin={auth.goToLogin}
             isLoading={auth.state.isLoading}
-            variant="purple"
+            variant="dark"
             labels={{
               title: t('signupModal.title'),
               subtitle: t('signupModal.subtitle'),
@@ -81,7 +81,7 @@ const UserLogin = () => {
         </DialogContent>
       </Dialog>
 
-      <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-white/10">
+      <Card className="w-full max-w-md p-8 bg-[#111113] border-white/10">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
@@ -119,7 +119,7 @@ const UserLogin = () => {
               onSubmit={auth.checkEmail}
               onSignupClick={auth.goToSignup}
               isLoading={auth.state.isLoading}
-              variant="purple"
+              variant="dark"
               labels={{
                 email: t('email'),
                 emailPlaceholder: t('email'),
@@ -139,7 +139,7 @@ const UserLogin = () => {
             onChangeEmail={auth.changeEmail}
             forgotPasswordUrl={auth.getForgotPasswordUrl()}
             isLoading={auth.state.isLoading}
-            variant="purple"
+            variant="dark"
             labels={{
               password: t('password'),
               passwordPlaceholder: t('password'),

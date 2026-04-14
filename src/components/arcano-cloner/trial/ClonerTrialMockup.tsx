@@ -68,7 +68,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
   // Result view with zoom/pan
   if (resultUrl) {
     return (
-      <div className="bg-[#1A0A2E]/80 border border-white/10 rounded-2xl p-4 md:p-6">
+      <div className="bg-[#111113]/80 border border-white/10 rounded-2xl p-4 md:p-6">
         <div className="text-center mb-4">
           <h3 className="text-white font-semibold text-lg">✨ Resultado</h3>
           <p className="text-gray-400 text-sm">Arraste para mover, use pinça para zoom</p>
@@ -116,7 +116,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
   // Processing view
   if (isProcessing) {
     return (
-      <div className="bg-[#1A0A2E]/80 border border-white/10 rounded-2xl p-6 md:p-8">
+      <div className="bg-[#111113]/80 border border-white/10 rounded-2xl p-6 md:p-8">
         <div className="flex flex-col items-center justify-center py-12 gap-6">
           <div className="relative">
             <Loader2 className="w-16 h-16 text-fuchsia-400 animate-spin" />
@@ -139,7 +139,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
 
   // Main interface
   return (
-    <div className="bg-[#1A0A2E]/80 border border-white/10 rounded-2xl p-4 md:p-6">
+    <div className="bg-[#111113]/80 border border-white/10 rounded-2xl p-4 md:p-6">
       {isActive && (
         <div className="flex items-center justify-between mb-4">
           <span className="text-gray-400 text-sm">Teste Grátis</span>

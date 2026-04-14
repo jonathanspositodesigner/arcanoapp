@@ -459,7 +459,7 @@ const ToolVersionLessons = () => {
 
         {/* Master's Journey Progress Bar - Only for upscaler tools */}
         {toolSlug === 'upscaller-arcano' && lessons.length >= 1 && (
-          <div className="mb-6 p-4 bg-[#1A0A2E]/50 border border-white/10 rounded-lg">
+          <div className="mb-6 p-4 bg-[#111113]/50 border border-white/10 rounded-lg">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-white flex items-center gap-2">
                 <Trophy className="h-4 w-4 text-yellow-500" />
@@ -531,7 +531,7 @@ const ToolVersionLessons = () => {
                     </Button>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="bg-[#1A0A2E] border-white/10 p-3 max-w-xs">
+                <TooltipContent side="bottom" className="bg-[#111113] border-white/10 p-3 max-w-xs">
                   <p className="text-sm text-gray-300">{tooltipMessage}</p>
                 </TooltipContent>
               </Tooltip>
@@ -551,7 +551,7 @@ const ToolVersionLessons = () => {
             {currentLesson && (
               <>
                 {/* Lesson Info - ABOVE video */}
-                <Card className="p-4 bg-[#1A0A2E]/50 border-white/10">
+                <Card className="p-4 bg-[#111113]/50 border-white/10">
                   <h2 className="text-base md:text-xl font-bold mb-2 flex items-center gap-2 flex-wrap text-white">
                     <Play className="h-5 w-5 text-gray-400" />
                     {currentLesson.title}
@@ -641,7 +641,7 @@ const ToolVersionLessons = () => {
             {lessons.map((lesson, index) => (
               <Card
                 key={index}
-                className={`p-3 cursor-pointer transition-all bg-[#1A0A2E]/50 border-white/10 hover:bg-slate-500/10 ${
+                className={`p-3 cursor-pointer transition-all bg-[#111113]/50 border-white/10 hover:bg-slate-500/10 ${
                   selectedLesson === index ? 'border-white/15 bg-slate-500/10' : ''
                 }`}
                 onClick={() => handleLessonClick(index)}

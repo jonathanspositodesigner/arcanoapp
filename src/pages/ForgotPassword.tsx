@@ -39,7 +39,7 @@ const ForgotPassword = () => {
   if (emailSent) {
     return (
       <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-white/10 text-center">
+        <Card className="w-full max-w-md p-8 bg-[#111113] border-white/10 text-center">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white mb-4">
             {t('emailSent.title')}
@@ -62,7 +62,7 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-white/10">
+      <Card className="w-full max-w-md p-8 bg-[#111113] border-white/10">
         <Button
           variant="ghost"
           onClick={() => navigate("/login")}

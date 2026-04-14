@@ -148,7 +148,7 @@ const ChangePassword = () => {
 
   return (
     <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-white/10">
+      <Card className="w-full max-w-md p-8 bg-[#111113] border-white/10">
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Lock className="h-8 w-8 text-gray-400" />

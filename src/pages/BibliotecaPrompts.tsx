@@ -706,7 +706,7 @@ const BibliotecaPrompts = () => {
 
       {/* Modals */}
       <Dialog open={showPremiumModal} onOpenChange={handleClosePremiumModal}>
-        <DialogContent className="max-w-lg bg-[#1A0A2E] border-white/10 text-white">
+        <DialogContent className="max-w-lg bg-[#111113] border-white/10 text-white">
           <div className="text-center p-6">
             <div className="w-20 h-20 mx-auto bg-gradient-to-r from-slate-600 to-blue-500 rounded-full flex items-center justify-center mb-4">
               <Star className="h-10 w-10 text-white" fill="currentColor" />
@@ -734,7 +734,7 @@ const BibliotecaPrompts = () => {
       </Dialog>
 
       <Dialog open={!!selectedPrompt} onOpenChange={() => handleCloseModal()}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-[#1A0A2E] border-white/10 text-white">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-[#111113] border-white/10 text-white">
           {selectedPrompt && (
             <div className="space-y-6">
               <div className="flex justify-between items-start">
@@ -839,7 +839,7 @@ const BibliotecaPrompts = () => {
       </Dialog>
 
       <Dialog open={showTutorialModal} onOpenChange={setShowTutorialModal}>
-        <DialogContent className="max-w-4xl bg-[#1A0A2E] border-white/10 p-0 overflow-hidden">
+        <DialogContent className="max-w-4xl bg-[#111113] border-white/10 p-0 overflow-hidden">
           <div className="aspect-video w-full">
             {tutorialUrl && (
               <iframe src={tutorialUrl} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
@@ -849,7 +849,7 @@ const BibliotecaPrompts = () => {
       </Dialog>
 
       <Dialog open={showLimitModal} onOpenChange={setShowLimitModal}>
-        <DialogContent className="max-w-md bg-[#1A0A2E] border-white/10 text-white">
+        <DialogContent className="max-w-md bg-[#111113] border-white/10 text-white">
           <div className="text-center p-6">
             <div className="w-20 h-20 mx-auto bg-orange-500/20 rounded-full flex items-center justify-center mb-4">
               <AlertTriangle className="h-10 w-10 text-orange-500" />

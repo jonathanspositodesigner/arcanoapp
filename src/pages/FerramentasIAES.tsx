@@ -107,7 +107,7 @@ const FerramentasIAES = () => {
     return (
       <Card 
         key={tool.id}
-        className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-white/20 transition-all group border border-white/10 shadow-md hover:shadow-xl bg-[#1A0A2E]/50"
+        className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-white/20 transition-all group border border-white/10 shadow-md hover:shadow-xl bg-[#111113]/50"
         onClick={() => handleToolClick(tool)}
       >
         <div className="aspect-[16/9] sm:aspect-[3/4] relative overflow-hidden">
@@ -184,7 +184,7 @@ const FerramentasIAES = () => {
 
       {/* Primeiro Acesso + Login Buttons - Only show when NOT logged in */}
       {!user && (
-        <div className="bg-[#1A0A2E] border-b border-white/10">
+        <div className="bg-[#111113] border-b border-white/10">
           <div className="container mx-auto px-4 py-3">
             <div className="flex gap-2">
               <Button

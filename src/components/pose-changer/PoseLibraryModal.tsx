@@ -55,7 +55,7 @@ const PoseLibraryModal: React.FC<PoseLibraryModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-[#1A0A2E] border-white/10 text-white max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-2xl bg-[#111113] border-white/10 text-white max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
             <Users className="w-5 h-5 text-gray-400" />

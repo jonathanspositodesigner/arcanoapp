@@ -22,7 +22,7 @@ interface LoginEmailStepProps {
   };
   
   // Styling variants
-  variant?: 'default' | 'dark' | 'purple' | 'teal';
+  variant?: 'default' | 'dark' | 'dark' | 'teal';
 }
 
 const variantStyles = {

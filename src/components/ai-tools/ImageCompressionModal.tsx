@@ -54,7 +54,7 @@ const ImageCompressionModal: React.FC<ImageCompressionModalProps> = ({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="bg-[#1A0A2E] border-white/10 max-w-md">
+      <AlertDialogContent className="bg-[#111113] border-white/10 max-w-md">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-yellow-500/20 rounded-full">

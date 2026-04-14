@@ -290,7 +290,7 @@ const FerramentasIAAplicativo = () => {
     return (
       <Card 
         key={tool.id}
-        className={`overflow-hidden transition-all group border border-white/10 shadow-md bg-[#1A0A2E]/50 ${
+        className={`overflow-hidden transition-all group border border-white/10 shadow-md bg-[#111113]/50 ${
           isComingSoon 
             ? "cursor-not-allowed opacity-70" 
             : "cursor-pointer hover:ring-2 hover:ring-white/20 hover:shadow-xl"

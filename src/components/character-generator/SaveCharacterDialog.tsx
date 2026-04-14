@@ -95,7 +95,7 @@ const SaveCharacterDialog: React.FC<SaveCharacterDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-[#1A0A2E] border-white/10 text-white sm:max-w-md">
+      <DialogContent className="bg-[#111113] border-white/10 text-white sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-white">Salvar Avatar</DialogTitle>
           <DialogDescription className="text-gray-300">

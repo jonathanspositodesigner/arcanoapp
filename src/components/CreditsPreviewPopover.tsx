@@ -99,7 +99,7 @@ const CreditsPreviewPopover = ({
         </button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-64 p-3 bg-[#1A0A2E] border-white/10"
+        className="w-64 p-3 bg-[#111113] border-white/10"
         align="end"
       >
         <div className="space-y-3">

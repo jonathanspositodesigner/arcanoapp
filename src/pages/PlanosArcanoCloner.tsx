@@ -487,7 +487,7 @@ const PlanosArcanoCloner = () => {
             </div>
 
             {/* Single pricing card */}
-            <Card className="relative p-8 flex flex-col rounded-xl bg-[#1A0A2E] border-2 border-fuchsia-500/50 shadow-lg shadow-fuchsia-500/20">
+            <Card className="relative p-8 flex flex-col rounded-xl bg-[#111113] border-2 border-fuchsia-500/50 shadow-lg shadow-fuchsia-500/20">
               {/* Badge */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <Badge className="bg-gradient-to-r from-slate-500 to-slate-500 text-white px-4 py-1 text-sm font-bold rounded-full">

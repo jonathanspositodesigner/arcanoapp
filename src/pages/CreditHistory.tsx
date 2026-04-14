@@ -93,7 +93,7 @@ const CreditHistory = () => {
         </h1>
 
         {/* Current Balance */}
-        <Card className="p-4 bg-[#1A0A2E] border-white/10">
+        <Card className="p-4 bg-[#111113] border-white/10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Coins className="h-5 w-5 text-yellow-400" />
@@ -120,7 +120,7 @@ const CreditHistory = () => {
         </Card>
 
         {/* Transaction List */}
-        <Card className="p-6 bg-[#1A0A2E] border-white/10">
+        <Card className="p-6 bg-[#111113] border-white/10">
           <h2 className="text-lg font-semibold text-white mb-4">Todas as Transações</h2>
 
           {loading ? (

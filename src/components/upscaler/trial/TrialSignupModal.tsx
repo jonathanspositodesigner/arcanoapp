@@ -86,7 +86,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="bg-[#1A0A2E] border-white/10 text-white max-w-md">
+      <DialogContent className="bg-[#111113] border-white/10 text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-center">
             {step === "form" ? "🎁 Libere 1 Teste Grátis" : "🔑 Digite o Código"}

@@ -73,7 +73,7 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown, isUnli
   const hasBreakdown = breakdown && (breakdown.monthly > 0 || breakdown.lifetime > 0);
 
   return (
-    <Card className="p-6 bg-[#1A0A2E] border-white/10">
+    <Card className="p-6 bg-[#111113] border-white/10">
       <h2 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
         <Coins className="h-5 w-5 text-yellow-400" />
         Créditos de IA

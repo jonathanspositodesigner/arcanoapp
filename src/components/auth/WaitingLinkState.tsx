@@ -22,7 +22,7 @@ interface WaitingLinkStateProps {
   };
   
   // Styling variants
-  variant?: 'default' | 'dark' | 'purple' | 'teal';
+  variant?: 'default' | 'dark' | 'dark' | 'teal';
 }
 
 const variantStyles = {
@@ -47,7 +47,7 @@ const variantStyles = {
     changeButton: 'text-white/60 hover:text-white',
   },
   purple: {
-    card: 'bg-[#1A0A2E] border-white/10',
+    card: 'bg-[#111113] border-white/10',
     iconBg: 'bg-slate-500/20',
     icon: 'text-gray-400',
     title: 'text-white',

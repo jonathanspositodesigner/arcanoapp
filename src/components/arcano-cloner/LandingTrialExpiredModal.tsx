@@ -55,7 +55,7 @@ export const LandingTrialExpiredModal = ({ userId, balance }: LandingTrialExpire
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="bg-[#1A0A2E] border-fuchsia-500/30 text-white max-w-md">
+      <DialogContent className="bg-[#111113] border-fuchsia-500/30 text-white max-w-md">
         <div className="text-center py-4">
           <div className="w-16 h-16 rounded-full bg-fuchsia-500/20 flex items-center justify-center mx-auto mb-4">
             <Sparkles className="w-8 h-8 text-fuchsia-400" />
