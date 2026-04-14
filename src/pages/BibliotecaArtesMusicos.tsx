@@ -160,7 +160,7 @@ const BibliotecaArtesMusicos = () => {
         {isSupported && !isSubscribed && (
           <Button
             variant="ghost"
-            className="w-full justify-start gap-3 text-muted-foreground hover:text-white hover:bg-gradient-to-r hover:from-slate-500/20 hover:to-pink-500/20 border border-transparent hover:border-border"
+            className="w-full justify-start gap-3 text-muted-foreground hover:text-white hover:bg-gradient-to-r hover:from-purple-500/20 hover:to-pink-500/20 border border-transparent hover:border-border"
             onClick={() => { handleActivateNotifications(); onClose?.(); }}
           >
             <Bell className="w-5 h-5 text-muted-foreground" />
@@ -307,7 +307,7 @@ const BibliotecaArtesMusicos = () => {
                   {t('musicos.sidebar.installApp')}
                 </Button>
               ) : isSupported && !isSubscribed ? (
-                <Button onClick={subscribe} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-white px-6 py-3 text-base font-semibold shadow-lg shadow-primary/10 animate-pulse">
+                <Button onClick={subscribe} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 text-base font-semibold shadow-lg shadow-primary/10 animate-pulse">
                   <Bell className="w-5 h-5 mr-2" />
                   {t('musicos.sidebar.activateNotifications')}
                 </Button>
@@ -429,7 +429,7 @@ const BibliotecaArtesMusicos = () => {
                   <div className="p-3 bg-accent rounded-lg border border-border">
                     <p className="text-xs text-muted-foreground mb-1">{t('musicos.modal.promptUsed')}</p>
                     <p className="text-sm text-foreground mb-3">{selectedArte.ai_prompt}</p>
-                    <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-white" size="sm" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { navigator.clipboard.writeText(selectedArte.ai_prompt!); toast.success(t('musicos.toast.promptCopied')); } }}>
+                    <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white" size="sm" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { navigator.clipboard.writeText(selectedArte.ai_prompt!); toast.success(t('musicos.toast.promptCopied')); } }}>
                       <Copy className="w-4 h-4 mr-2" />{t('musicos.modal.copyPrompt')}
                     </Button>
                   </div>
