@@ -139,11 +139,11 @@ const JobDebugModal: React.FC<JobDebugModalProps> = ({
         icon: <XCircle className="w-3 h-3" /> 
       },
       cancelled: { 
-        className: 'bg-gray-500/20 text-gray-400 border-gray-500/30', 
+        className: 'bg-white/50/20 text-gray-400 border-gray-500/30', 
         icon: <AlertCircle className="w-3 h-3" /> 
       },
       running: { 
-        className: 'bg-slate-500/20 text-gray-400 border-white/10', 
+        className: 'bg-white/50/20 text-gray-400 border-white/10', 
         icon: <Loader2 className="w-3 h-3 animate-spin" /> 
       },
       queued: { 

@@ -327,7 +327,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
               onClick={() => fileRef.current?.click()}
               className={`w-full aspect-[4/3] rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden ${
                 uploadedPreview 
-                  ? 'border-slate-500/50 bg-slate-500/5'
+                  ? 'border-slate-500/50 bg-white/50/5'
                   : 'border-white/10 bg-black/20 hover:border-white/20'
               }`}
             >

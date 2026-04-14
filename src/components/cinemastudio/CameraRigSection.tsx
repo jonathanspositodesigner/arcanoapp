@@ -232,7 +232,7 @@ const CameraRigSection: React.FC<Props> = ({ settings, updateSettings, mode = 'p
             onClick={() => updateSettings({ advancedCamera: !advancedOpen })}
             className={`flex items-center gap-1.5 w-full py-1.5 px-2 rounded-md border transition-colors text-[10px] ${
               advancedOpen
-                ? 'bg-slate-500/10 border-white/10 text-gray-400'
+                ? 'bg-white/50/10 border-white/10 text-gray-400'
                 : 'bg-black/20 border-white/[0.06] text-gray-600 hover:text-gray-400 hover:border-white/[0.12]'
             }`}
           >

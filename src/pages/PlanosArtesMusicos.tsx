@@ -132,13 +132,13 @@ const PlanosArtesMusicos = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#0f0f0f] via-[#1a1a2e] to-[#16213e]">
       <div className="container mx-auto px-4 py-6 flex justify-between items-center">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" onClick={goBack} className="text-gray-300 hover:text-gray-200 hover:bg-slate-500/20">
+          <Button variant="ghost" onClick={goBack} className="text-gray-300 hover:text-gray-200 hover:bg-white/50/20">
             <ArrowLeft className="w-4 h-4 mr-2" />{t('plansMusicos.back')}
           </Button>
           <img src={baaLogo} alt="BAA" className="h-8 hidden sm:block" />
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => navigate('/login-artes-musicos')} className="gap-2 border-white/10 text-gray-300 hover:bg-slate-500/20 hover:text-gray-200">
+          <Button variant="outline" onClick={() => navigate('/login-artes-musicos')} className="gap-2 border-white/10 text-gray-300 hover:bg-white/50/20 hover:text-gray-200">
             <LogIn className="w-4 h-4" />
             <span className="hidden sm:inline">{t('plansMusicos.alreadySubscriber')}</span>
             <span className="sm:hidden">{t('plansMusicos.login')}</span>
@@ -150,7 +150,7 @@ const PlanosArtesMusicos = () => {
         <div className="text-center mb-10">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">{t('plansMusicos.title')}</h1>
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
-            <TabsList className="bg-slate-500/10 border border-white/10">
+            <TabsList className="bg-white/50/10 border border-white/10">
               <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white px-6 text-gray-300">{t('plansMusicos.monthly')}</TabsTrigger>
               <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white px-6 text-gray-300 relative">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] text-green-400 font-medium whitespace-nowrap">{t('plansMusicos.discount')}</span>
@@ -191,7 +191,7 @@ const PlanosArtesMusicos = () => {
                   const planName = encodeURIComponent(`${plan.name} ${billingPeriod === 'anual' ? 'Anual' : 'Mensal'}`);
                   navigate(`/aguardando-pagamento-musicos?checkout=${checkoutUrl}&plan=${planName}`);
                 }
-              }} className={`w-full mb-6 ${plan.popular ? "bg-slate-600 hover:bg-slate-500 text-white" : "bg-slate-500/20 hover:bg-slate-500/30 text-gray-200"}`}>
+              }} className={`w-full mb-6 ${plan.popular ? "bg-slate-600 hover:bg-white/50 text-white" : "bg-white/50/20 hover:bg-white/50/30 text-gray-200"}`}>
                 {(plan as any).hasTrial ? t('plansMusicos.freeTrial') : t('plansMusicos.subscribe')}
               </Button>
               <ul className="space-y-3 flex-1">
@@ -239,13 +239,13 @@ const PlanosArtesMusicos = () => {
       <Dialog open={showComingSoonModal} onOpenChange={setShowComingSoonModal}>
         <DialogContent className="sm:max-w-md bg-[#1a1a2e] border-white/10">
           <DialogHeader className="text-center">
-            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-slate-500/20 flex items-center justify-center">
+            <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-white/50/20 flex items-center justify-center">
               <Clock className="w-8 h-8 text-gray-400" />
             </div>
             <DialogTitle className="text-2xl font-bold text-center text-white">{t('plansMusicos.comingSoon.title')}</DialogTitle>
             <DialogDescription className="text-center text-gray-400">{t('plansMusicos.comingSoon.description')}</DialogDescription>
           </DialogHeader>
-          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-slate-600 hover:bg-slate-500 text-white">{t('plansMusicos.comingSoon.understood')}</Button>
+          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-slate-600 hover:bg-white/50 text-white">{t('plansMusicos.comingSoon.understood')}</Button>
         </DialogContent>
       </Dialog>
     </div>

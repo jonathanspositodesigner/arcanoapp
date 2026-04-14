@@ -140,7 +140,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
               "flex-1",
               genderFilter === 'masculino'
                 ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0"
-                : "bg-transparent border-white/10 text-gray-300 hover:bg-slate-500/20"
+                : "bg-transparent border-white/10 text-gray-300 hover:bg-white/50/20"
             )}
           >
             <User className="w-4 h-4 mr-2" />
@@ -154,7 +154,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
               "flex-1",
               genderFilter === 'feminino'
                 ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white border-0"
-                : "bg-transparent border-white/10 text-gray-300 hover:bg-slate-500/20"
+                : "bg-transparent border-white/10 text-gray-300 hover:bg-white/50/20"
             )}
           >
             <User className="w-4 h-4 mr-2" />
@@ -174,7 +174,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
                 "text-xs whitespace-nowrap relative",
                 categoryFilter === cat.id
                   ? "bg-slate-600 text-white"
-                  : "text-gray-300 hover:bg-slate-500/20"
+                  : "text-gray-300 hover:bg-white/50/20"
               )}
             >
               {cat.label}
@@ -213,7 +213,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
                 </div>
 
                 {/* Hover overlay */}
-                <div className="absolute inset-0 bg-slate-500/0 group-hover:bg-slate-500/20 transition-colors flex items-center justify-center">
+                <div className="absolute inset-0 bg-white/50/0 group-hover:bg-white/50/20 transition-colors flex items-center justify-center">
                   <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-slate-600 px-3 py-1 rounded-full transition-opacity">
                     Selecionar
                   </span>

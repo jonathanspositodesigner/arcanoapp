@@ -536,7 +536,7 @@ const GerarImagemTool = () => {
             <p className="text-gray-300 text-sm">
               A geração de imagens está disponível a partir do plano <strong className="text-gray-400">Pro</strong>.
             </p>
-            <button onClick={goBack} className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-slate-500 text-white text-sm font-medium transition-colors">
+            <button onClick={goBack} className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-white/50 text-white text-sm font-medium transition-colors">
               Voltar
             </button>
           </div>
@@ -611,7 +611,7 @@ const GerarImagemTool = () => {
               )}
               {/* Progress bar */}
               <div className="w-48 h-1.5 rounded-full bg-white/5 overflow-hidden">
-                <div className="h-full rounded-full bg-slate-500 transition-all duration-700" style={{ width: `${progress}%` }} />
+                <div className="h-full rounded-full bg-white/50 transition-all duration-700" style={{ width: `${progress}%` }} />
               </div>
               {/* Cancel & reconcile */}
               <div className="flex gap-2">
@@ -723,7 +723,7 @@ const GerarImagemTool = () => {
                         type="button"
                         onClick={() => { setEngine(opt.value); setEngineDropdownOpen(false); }}
                         className={`flex items-center gap-2 w-full px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                          engine === opt.value ? 'text-gray-300 bg-slate-500/15' : 'text-gray-300 hover:bg-slate-500/15 hover:text-white'
+                          engine === opt.value ? 'text-gray-300 bg-white/50/15' : 'text-gray-300 hover:bg-white/50/15 hover:text-white'
                         }`}
                       >
                         {opt.label}
@@ -764,7 +764,7 @@ const GerarImagemTool = () => {
                           type="button"
                           onClick={() => { setAspectRatio(ratio); setAspectDropdownOpen(false); }}
                           className={`flex items-center gap-2 w-full px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                            isSelected ? 'text-gray-300 bg-slate-500/15' : 'text-gray-300 hover:bg-slate-500/15 hover:text-white'
+                            isSelected ? 'text-gray-300 bg-white/50/15' : 'text-gray-300 hover:bg-white/50/15 hover:text-white'
                           }`}
                         >
                           <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="flex-shrink-0">

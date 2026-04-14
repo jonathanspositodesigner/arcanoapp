@@ -355,7 +355,7 @@ const AdminManageArtesMusicos = () => {
               variant={mediaTypeFilter === 'video' ? 'default' : 'outline'} 
               size="sm" 
               onClick={() => setMediaTypeFilter('video')}
-              className={mediaTypeFilter === 'video' ? 'bg-slate-500 hover:bg-slate-600' : ''}
+              className={mediaTypeFilter === 'video' ? 'bg-white/50 hover:bg-slate-600' : ''}
             >
               <Video className="h-4 w-4 mr-1" />Vídeos
             </Button>
@@ -413,14 +413,14 @@ const AdminManageArtesMusicos = () => {
                     <SecureImage src={arte.image_url} alt={arte.title} className="w-full h-48 object-cover" isPremium={arte.is_premium || false} />
                   )}
                   <div className="absolute top-2 left-2">
-                    <Badge className={isVideo ? "bg-slate-500 text-white border-0" : "bg-blue-500 text-white border-0"}>
+                    <Badge className={isVideo ? "bg-white/50 text-white border-0" : "bg-blue-500 text-white border-0"}>
                       {isVideo ? <Video className="h-3 w-3 mr-1" /> : <Image className="h-3 w-3 mr-1" />}
                       {isVideo ? 'Vídeo' : 'Imagem'}
                     </Badge>
                   </div>
                   <div className="absolute top-2 right-2 flex gap-1">
                     {arte.is_ai_generated && (
-                      <Badge className="bg-slate-500 text-white border-0">
+                      <Badge className="bg-white/50 text-white border-0">
                         <Sparkles className="h-3 w-3 mr-1" />IA
                       </Badge>
                     )}
@@ -559,7 +559,7 @@ const AdminManageArtesMusicos = () => {
                       type="file" 
                       accept="image/*" 
                       onChange={handleNewAiReferenceChange}
-                      className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-500 file:text-white hover:file:bg-slate-400 mt-1" 
+                      className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white/50 file:text-white hover:file:bg-slate-400 mt-1" 
                     />
                     <p className="text-xs text-muted-foreground mt-1">
                       Imagem para o usuário baixar e usar junto com o prompt

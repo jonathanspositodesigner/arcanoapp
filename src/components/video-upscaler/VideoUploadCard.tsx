@@ -272,7 +272,7 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
         <div
           className={cn(
             "relative h-32 lg:h-auto lg:aspect-video flex flex-col items-center justify-center cursor-pointer transition-all",
-            !videoUrl && "hover:bg-slate-500/10",
+            !videoUrl && "hover:bg-white/50/10",
             disabled && "cursor-not-allowed"
           )}
           onDrop={handleDrop}
@@ -321,7 +321,7 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
             </>
           ) : (
             <div className="flex flex-col items-center gap-2 p-4">
-              <div className="w-12 h-12 rounded-lg bg-slate-500/20 border border-dashed border-slate-500/40 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-lg bg-white/50/20 border border-dashed border-slate-500/40 flex items-center justify-center">
                 <Upload className="w-6 h-6 text-gray-400" />
               </div>
               <div className="text-center">

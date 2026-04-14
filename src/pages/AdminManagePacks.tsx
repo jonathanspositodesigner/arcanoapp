@@ -2215,9 +2215,9 @@ const AdminManagePacks = () => {
                 </div>
 
                 {/* DESCONTO PARA MEMBROS BR (20% OFF) */}
-                <div className="border rounded-lg p-4 space-y-4 border-white/10 bg-slate-500/5">
+                <div className="border rounded-lg p-4 space-y-4 border-white/10 bg-white/50/5">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge className="bg-slate-500/20 text-slate-500">👑 20% OFF</Badge>
+                    <Badge className="bg-white/50/20 text-gray-400">👑 20% OFF</Badge>
                     <Label className="font-semibold">Desconto para Membros (Brasil)</Label>
                   </div>
                   <p className="text-xs text-muted-foreground mb-3">

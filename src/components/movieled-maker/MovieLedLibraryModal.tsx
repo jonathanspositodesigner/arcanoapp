@@ -200,9 +200,9 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
           )}
 
           <div className="flex items-center gap-2 mt-3 sm:mt-4 flex-shrink-0">
-            <div className="flex-1 h-px bg-slate-500/30" />
+            <div className="flex-1 h-px bg-white/50/30" />
             <span className="text-[10px] sm:text-xs text-gray-400/80">ou escolha da biblioteca</span>
-            <div className="flex-1 h-px bg-slate-500/30" />
+            <div className="flex-1 h-px bg-white/50/30" />
           </div>
 
           <div className="relative mt-3 flex-shrink-0">
@@ -212,7 +212,7 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
               placeholder="Buscar por palavra-chave..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-9 text-sm bg-slate-500/10 border-white/10 text-white placeholder:text-gray-500 focus:border-slate-400"
+              className="pl-10 h-9 text-sm bg-white/50/10 border-white/10 text-white placeholder:text-gray-500 focus:border-slate-400"
             />
           </div>
 
@@ -255,7 +255,7 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
                         </p>
                       </div>
 
-                      <div className="absolute inset-0 bg-slate-500/0 group-hover:bg-slate-500/10 transition-colors flex items-center justify-center">
+                      <div className="absolute inset-0 bg-white/50/0 group-hover:bg-white/50/10 transition-colors flex items-center justify-center">
                         <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-slate-600 px-3 py-1 rounded-full transition-opacity">
                           Selecionar
                         </span>
@@ -271,7 +271,7 @@ const MovieLedLibraryModal: React.FC<MovieLedLibraryModalProps> = ({
                       size="sm"
                       onClick={handleLoadMore}
                       disabled={isLoading}
-                      className="bg-slate-500/10 border-white/10 text-gray-300 hover:bg-slate-500/20 text-xs h-8"
+                      className="bg-white/50/10 border-white/10 text-gray-300 hover:bg-white/50/20 text-xs h-8"
                     >
                       {isLoading ? (
                         <>

@@ -297,7 +297,7 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
               <div
                 key={i}
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  i === currentStep ? 'w-6 bg-slate-500' : completedSteps.has(i) ? 'w-2 bg-green-500' : 'w-2 bg-white/15'
+                  i === currentStep ? 'w-6 bg-white/50' : completedSteps.has(i) ? 'w-2 bg-green-500' : 'w-2 bg-white/15'
                 }`}
               />
             ))}
@@ -316,7 +316,7 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
               <p className="text-xs text-gray-300 leading-relaxed">{step.description}</p>
 
               {/* Action hint - this is the key instruction */}
-              <div className="mt-2 flex items-center gap-2 bg-slate-500/10 border border-slate-500/15 rounded-lg px-3 py-1.5 animate-pulse">
+              <div className="mt-2 flex items-center gap-2 bg-white/50/10 border border-slate-500/15 rounded-lg px-3 py-1.5 animate-pulse">
                 <MousePointerClick className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
                 <span className="text-[11px] text-gray-300 font-medium">{step.action}</span>
               </div>

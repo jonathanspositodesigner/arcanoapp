@@ -72,7 +72,7 @@ const PreviewPanel: React.FC<Props> = ({
           ) : isProcessing ? (
             <div className="flex min-h-full flex-col items-center justify-center gap-3">
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-white/[0.04]">
-                <div className="h-full bg-gray-500/50 transition-all duration-500" style={{ width: `${progress}%` }} />
+                <div className="h-full bg-white/50/50 transition-all duration-500" style={{ width: `${progress}%` }} />
               </div>
               <Loader2 className="w-6 h-6 text-gray-500 animate-spin" />
               <div className="text-center">
@@ -105,7 +105,7 @@ const PreviewPanel: React.FC<Props> = ({
             />
           ) : (
             <div className="flex min-h-full flex-col items-center justify-center gap-2 text-center">
-              <Film className="w-8 h-8 text-gray-800" strokeWidth={1} />
+              <Film className="w-8 h-8 text-gray-200" strokeWidth={1} />
               <p className="text-[12px] text-gray-600">Sua cena aparecerá aqui</p>
             </div>
           )}
@@ -114,7 +114,7 @@ const PreviewPanel: React.FC<Props> = ({
 
       {status === 'idle' && (
         <div className="flex-shrink-0 px-3 pb-2 text-center">
-          <span className="text-[10px] text-gray-700">≈ {estimatedCredits} créditos</span>
+          <span className="text-[10px] text-gray-400">≈ {estimatedCredits} créditos</span>
         </div>
       )}
     </div>

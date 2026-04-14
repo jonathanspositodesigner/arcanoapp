@@ -385,7 +385,7 @@ const AdminPremiumMusicos = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-slate-500/20 rounded-full">
+              <div className="p-2 bg-white/50/20 rounded-full">
                 <Users className="h-5 w-5 text-slate-400" />
               </div>
               <div>

@@ -237,7 +237,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                             </div>
                           )}
                           {isSelected && (
-                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-slate-500 flex items-center justify-center">
+                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-white/50 flex items-center justify-center">
                               <span className="text-[8px] text-white font-bold">✓</span>
                             </div>
                           )}
@@ -260,7 +260,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                         <div className="w-3 h-3 rounded-full border border-white/[0.08]" />
                       </div>
                       <div className="px-1 py-1 bg-black/20">
-                        <span className="text-[9px] text-gray-700 block text-center">—</span>
+                        <span className="text-[9px] text-gray-400 block text-center">—</span>
                       </div>
                     </div>
                   ))}

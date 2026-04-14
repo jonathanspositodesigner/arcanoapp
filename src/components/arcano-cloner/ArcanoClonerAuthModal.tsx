@@ -471,8 +471,8 @@ export default function ArcanoClonerAuthModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-gradient-to-br from-[#1A0A2E] to-[#111113] border-white/10 text-white p-0 max-w-md overflow-hidden [&>button]:text-gray-300 [&>button]:hover:text-white">
         {/* Header */}
-        <div className="bg-slate-500/10 border-b border-white/10 p-6 text-center">
-          <div className="w-16 h-16 mx-auto rounded-full bg-slate-500/20 flex items-center justify-center mb-3">
+        <div className="bg-white/50/10 border-b border-white/10 p-6 text-center">
+          <div className="w-16 h-16 mx-auto rounded-full bg-white/50/20 flex items-center justify-center mb-3">
             <Gift className="w-8 h-8 text-gray-400" />
           </div>
           <h2 className="text-xl font-bold text-white">
@@ -562,7 +562,7 @@ export default function ArcanoClonerAuthModal({
 
               <Button
                 variant="outline"
-                className="w-full border-white/10 text-gray-300 hover:bg-slate-500/10"
+                className="w-full border-white/10 text-gray-300 hover:bg-white/50/10"
                 onClick={handleResendConfirmationEmail}
                 disabled={isResendingEmail || !pendingUserId}
               >
@@ -578,7 +578,7 @@ export default function ArcanoClonerAuthModal({
 
               <Button
                 variant="outline"
-                className="border-white/10 text-gray-300 hover:bg-slate-500/10"
+                className="border-white/10 text-gray-300 hover:bg-white/50/10"
                 onClick={() => setStep('email')}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />

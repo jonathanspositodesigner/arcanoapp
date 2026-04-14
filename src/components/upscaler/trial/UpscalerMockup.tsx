@@ -380,7 +380,7 @@ export default function UpscalerMockup({
                     <path d="M13 1l5 5m0 0l-5 5m5-5H2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-500/10 border border-white/10">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/50/10 border border-white/10">
                   <span className="text-[10px] text-gray-300 uppercase tracking-wider">Depois</span>
                   <span className="text-xs font-mono text-gray-300 font-semibold">{afterRes.w}×{afterRes.h}</span>
                   {afterRes.w * afterRes.h > beforeRes.w * beforeRes.h && (

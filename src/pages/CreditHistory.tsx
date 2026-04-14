@@ -81,7 +81,7 @@ const CreditHistory = () => {
         <Button
           variant="ghost"
           onClick={goBack}
-          className="mb-4 text-gray-300 hover:text-white hover:bg-slate-500/20"
+          className="mb-4 text-gray-300 hover:text-white hover:bg-white/50/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar
@@ -110,7 +110,7 @@ const CreditHistory = () => {
               />
               <button
                 onClick={() => navigate('/planos-creditos')}
-                className="h-8 w-8 flex items-center justify-center rounded hover:bg-slate-500/10"
+                className="h-8 w-8 flex items-center justify-center rounded hover:bg-white/50/10"
                 title="Comprar créditos"
               >
                 <PlusCircle className="w-5 h-5 text-gray-400" style={{ filter: 'drop-shadow(0 0 4px rgba(148, 163, 184, 0.5))' }} />

@@ -880,7 +880,7 @@ const AdminPackPurchases = () => {
                                 </div>
                                 <div className="flex items-center gap-1">
                                   {access.access_type === 'vitalicio' ? (
-                                    <Badge variant="outline" className="text-xs bg-slate-500/10 text-slate-500 border-white/10">
+                                    <Badge variant="outline" className="text-xs bg-white/50/10 text-gray-400 border-white/10">
                                       Acesso Vitalício
                                     </Badge>
                                   ) : access.expires_at ? (
@@ -1036,7 +1036,7 @@ const AdminPackPurchases = () => {
                     </TableCell>
                     <TableCell>
                       {client.has_vitalicio ? (
-                        <Badge variant="outline" className="bg-slate-500/10 text-slate-500 border-white/10 text-xs">Vitalício</Badge>
+                        <Badge variant="outline" className="bg-white/50/10 text-gray-400 border-white/10 text-xs">Vitalício</Badge>
                       ) : client.earliest_expiration ? (
                         <Badge 
                           variant="outline" 

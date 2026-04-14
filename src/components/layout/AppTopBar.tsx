@@ -38,7 +38,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
         <Button
           variant="ghost"
           size="icon"
-          className={`${isMobile ? 'text-white hover:bg-white/20' : 'text-gray-300 hover:text-white hover:bg-slate-500/20'} rounded-full`}
+          className={`${isMobile ? 'text-white hover:bg-white/20' : 'text-gray-300 hover:text-white hover:bg-white/50/20'} rounded-full`}
         >
           <User className="w-5 h-5" />
         </Button>
@@ -65,7 +65,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
           </div>
         )}
 
-        <DropdownMenuSeparator className="bg-slate-500/20" />
+        <DropdownMenuSeparator className="bg-white/50/20" />
 
         <div className="px-2 py-2 flex items-center justify-between">
           <span className="text-sm text-gray-300 flex items-center gap-2">
@@ -83,7 +83,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
             />
             <button
               onClick={() => navigate('/planos-creditos')}
-              className="p-1 rounded hover:bg-slate-500/10"
+              className="p-1 rounded hover:bg-white/50/10"
               title="Comprar créditos"
             >
               <PlusCircle className="w-4 h-4 text-gray-400" />
@@ -91,11 +91,11 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
           </div>
         </div>
 
-        <DropdownMenuSeparator className="bg-slate-500/20" />
+        <DropdownMenuSeparator className="bg-white/50/20" />
 
         <DropdownMenuItem
           onClick={() => navigate('/change-password')}
-          className="cursor-pointer hover:bg-slate-500/20 focus:bg-slate-500/20"
+          className="cursor-pointer hover:bg-white/50/20 focus:bg-white/50/20"
         >
           <Lock className="w-4 h-4 mr-2" />
           Alterar Senha
@@ -103,13 +103,13 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
 
         <DropdownMenuItem
           onClick={() => navigate('/profile-settings')}
-          className="cursor-pointer hover:bg-slate-500/20 focus:bg-slate-500/20"
+          className="cursor-pointer hover:bg-white/50/20 focus:bg-white/50/20"
         >
           <Settings className="w-4 h-4 mr-2" />
           Configurações
         </DropdownMenuItem>
 
-        <DropdownMenuSeparator className="bg-slate-500/20" />
+        <DropdownMenuSeparator className="bg-white/50/20" />
 
         <DropdownMenuItem
           onClick={onLogout}
@@ -130,14 +130,14 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
         </div>
         <div className="flex items-center gap-3">
           {user && (
-            <Button onClick={() => setShowCreationsModal(true)} variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-slate-500/20">
+            <Button onClick={() => setShowCreationsModal(true)} variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-white/50/20">
               <ImageIcon className="h-4 w-4 mr-2" />
               Minhas Criações
             </Button>
           )}
           {!user && (
             <>
-              <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-slate-500/20">
+              <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-white/50/20">
                 <LogIn className="h-4 w-4 mr-2" />
                 {t('header.login')}
               </Button>
@@ -160,7 +160,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
                 />
                 <button
                   onClick={() => navigate('/planos-creditos')}
-                  className="h-7 w-7 flex items-center justify-center rounded hover:bg-slate-500/10"
+                  className="h-7 w-7 flex items-center justify-center rounded hover:bg-white/50/10"
                   title="Comprar créditos"
                 >
                   <PlusCircle className="w-4 h-4 text-gray-400" style={{ filter: 'drop-shadow(0 0 4px rgba(148, 163, 184, 0.5))' }} />
@@ -182,7 +182,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
                 />
                 <button
                   onClick={() => navigate('/planos-creditos')}
-                  className="h-7 w-7 flex items-center justify-center rounded hover:bg-slate-500/10"
+                  className="h-7 w-7 flex items-center justify-center rounded hover:bg-white/50/10"
                   title="Comprar créditos"
                 >
                   <PlusCircle className="w-4 h-4 text-gray-400" style={{ filter: 'drop-shadow(0 0 4px rgba(148, 163, 184, 0.5))' }} />
@@ -203,7 +203,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
         </div>
         {!user && (
           <div className="flex items-center gap-2">
-            <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} size="sm" variant="ghost" className="text-gray-300 hover:bg-slate-500/20 text-xs">
+            <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} size="sm" variant="ghost" className="text-gray-300 hover:bg-white/50/20 text-xs">
               <LogIn className="h-4 w-4 mr-1" />
               {t('header.login')}
             </Button>
@@ -222,7 +222,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
               />
               <button
                 onClick={() => navigate('/planos-creditos')}
-                className="p-0.5 rounded hover:bg-slate-500/10"
+                className="p-0.5 rounded hover:bg-white/50/10"
                 title="Comprar créditos"
               >
                 <PlusCircle className="w-3.5 h-3.5 text-gray-400" />
@@ -244,7 +244,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
               />
               <button
                 onClick={() => navigate('/planos-creditos')}
-                className="p-0.5 rounded hover:bg-slate-500/10"
+                className="p-0.5 rounded hover:bg-white/50/10"
                 title="Comprar créditos"
               >
                 <PlusCircle className="w-3.5 h-3.5 text-gray-400" />

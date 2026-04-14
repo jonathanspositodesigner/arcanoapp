@@ -142,7 +142,7 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
         <div
           className={cn(
             "relative h-[120px] lg:h-[160px] cursor-pointer transition-all",
-            !image && "hover:bg-slate-500/10",
+            !image && "hover:bg-white/50/10",
             disabled && "cursor-not-allowed"
           )}
           onDrop={handleDrop}
@@ -170,7 +170,7 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
             /* Overlay absoluto para centralização perfeita */
             <div className="absolute inset-0 grid place-items-center pointer-events-none">
               <div className="flex flex-col items-center gap-1 text-center">
-                <div className="w-8 h-8 rounded-lg bg-slate-500/20 border border-dashed border-slate-500/40 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-white/50/20 border border-dashed border-slate-500/40 flex items-center justify-center">
                   <Upload className="w-4 h-4 text-gray-400" />
                 </div>
                 <p className="text-[10px] text-gray-300 font-medium">Arraste ou clique</p>
@@ -202,7 +202,7 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
             <Button
               variant="outline"
               size="sm"
-              className="w-full h-6 text-[10px] bg-slate-500/10 border-white/10 text-gray-300 hover:bg-slate-500/20 hover:text-white"
+              className="w-full h-6 text-[10px] bg-white/50/10 border-white/10 text-gray-300 hover:bg-white/50/20 hover:text-white"
               onClick={(e) => {
                 e.stopPropagation();
                 onOpenLibrary?.();

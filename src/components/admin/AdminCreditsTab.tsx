@@ -389,7 +389,7 @@ const AdminCreditsTab = () => {
       case 'monthly':
         return <Badge variant="secondary" className="text-[9px] px-1">Mensal</Badge>;
       case 'lifetime':
-        return <Badge variant="secondary" className="text-[9px] px-1 bg-slate-100 text-slate-600">Vitalício</Badge>;
+        return <Badge variant="secondary" className="text-[9px] px-1 bg-white/10 text-gray-400">Vitalício</Badge>;
       case 'mixed':
         return <Badge variant="secondary" className="text-[9px] px-1 bg-amber-100 text-amber-700">Misto</Badge>;
       default:
@@ -532,7 +532,7 @@ const AdminCreditsTab = () => {
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        <span className="text-slate-500 font-medium">
+                        <span className="text-gray-400 font-medium">
                           {formatNumber(user.lifetime_balance)}
                         </span>
                       </TableCell>
@@ -743,7 +743,7 @@ const AdminCreditsTab = () => {
                 </div>
                 <div className="p-3 border rounded-lg text-center">
                   <p className="text-sm text-muted-foreground">Vitalícios</p>
-                  <p className="text-xl font-bold text-slate-500">
+                  <p className="text-xl font-bold text-gray-400">
                     {formatNumber(selectedUser.lifetime_balance)}
                   </p>
                 </div>
@@ -793,7 +793,7 @@ const AdminCreditsTab = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="border-slate-500 text-slate-500 hover:bg-slate-50"
+                  className="border-slate-500 text-gray-400 hover:bg-white/5"
                   onClick={() => handleCreditAction('add_lifetime')}
                   disabled={isSubmitting || creditAmount <= 0}
                 >

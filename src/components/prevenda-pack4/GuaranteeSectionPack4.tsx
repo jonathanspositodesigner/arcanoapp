@@ -21,11 +21,11 @@ export const GuaranteeSectionPack4 = () => {
             </div>
             
             <div className="flex-1 text-center md:text-left">
-              <h2 className="text-2xl md:text-4xl font-black text-gray-900 mb-4">
+              <h2 className="text-2xl md:text-4xl font-black text-gray-100 mb-4">
                 Qual a minha garantia?
               </h2>
               
-              <p className="text-lg md:text-xl text-gray-700 font-medium mb-4">
+              <p className="text-lg md:text-xl text-gray-400 font-medium mb-4">
                 Você tem <span className="font-bold">7 dias de garantia incondicional</span>
               </p>
               
@@ -47,7 +47,7 @@ export const GuaranteeSectionPack4 = () => {
               </button>
               
               <div className="flex justify-center md:justify-start gap-3 md:gap-6 mt-6">
-                <div className="flex items-center gap-1 md:gap-2 text-gray-700">
+                <div className="flex items-center gap-1 md:gap-2 text-gray-400">
                   <ShieldCheck className="w-4 h-4 md:w-6 md:h-6 text-gray-600 flex-shrink-0" />
                   <div className="text-left">
                     <p className="text-[10px] md:text-xs font-bold leading-tight">Compra</p>
@@ -55,7 +55,7 @@ export const GuaranteeSectionPack4 = () => {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-1 md:gap-2 text-gray-700">
+                <div className="flex items-center gap-1 md:gap-2 text-gray-400">
                   <Award className="w-4 h-4 md:w-6 md:h-6 text-gray-600 flex-shrink-0" />
                   <div className="text-left">
                     <p className="text-[10px] md:text-xs font-bold leading-tight">Satisfação</p>
@@ -63,7 +63,7 @@ export const GuaranteeSectionPack4 = () => {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-1 md:gap-2 text-gray-700">
+                <div className="flex items-center gap-1 md:gap-2 text-gray-400">
                   <Lock className="w-4 h-4 md:w-6 md:h-6 text-gray-600 flex-shrink-0" />
                   <div className="text-left">
                     <p className="text-[10px] md:text-xs font-bold leading-tight">Privacidade</p>

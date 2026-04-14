@@ -76,7 +76,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-[10px] border-white/10 text-gray-300 hover:bg-slate-500/10"
+            className="h-7 text-[10px] border-white/10 text-gray-300 hover:bg-white/50/10"
             onClick={() => fileInputRef.current?.click()}
             disabled={isRefining || disabled}
           >
@@ -97,7 +97,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
         <Button
           variant="outline"
           size="sm"
-          className="flex-1 h-8 text-xs border-white/10 text-gray-300 hover:bg-slate-500/10"
+          className="flex-1 h-8 text-xs border-white/10 text-gray-300 hover:bg-white/50/10"
           onClick={onCancel}
           disabled={isRefining}
         >

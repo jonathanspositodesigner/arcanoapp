@@ -178,7 +178,7 @@ const UpscalerArcanoV2 = () => {
             variant="ghost"
             size="sm"
             onClick={goBack}
-            className="text-gray-300 hover:text-white hover:bg-slate-500/20 gap-2"
+            className="text-gray-300 hover:text-white hover:bg-white/50/20 gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="hidden sm:inline">Voltar para Home</span>
@@ -190,7 +190,7 @@ const UpscalerArcanoV2 = () => {
             variant="outline"
             size="sm"
             onClick={() => navigate(user ? '/minha-conta' : '/auth')}
-            className="border-white/10 text-gray-300 hover:text-white hover:bg-slate-500/20"
+            className="border-white/10 text-gray-300 hover:text-white hover:bg-white/50/20"
           >
             {user ? 'Minha Conta' : 'Login'}
           </Button>
@@ -396,8 +396,8 @@ const UpscalerArcanoV2 = () => {
               {lessons.map((lesson, index) => (
                 <Card
                   key={index}
-                  className={`p-3 cursor-pointer transition-all bg-[#111113]/50 border-white/10 hover:bg-slate-500/10 ${
-                    selectedLesson === index ? 'border-white/15 bg-slate-500/10' : ''
+                  className={`p-3 cursor-pointer transition-all bg-[#111113]/50 border-white/10 hover:bg-white/50/10 ${
+                    selectedLesson === index ? 'border-white/15 bg-white/50/10' : ''
                   }`}
                   onClick={() => handleLessonClick(index)}
                 >
@@ -440,8 +440,8 @@ const UpscalerArcanoV2 = () => {
               {lessons.length >= 4 && (
                 <div 
                   onClick={() => handleLessonClick(lessons.length - 1)}
-                  className="mt-4 px-3 py-1.5 bg-slate-500/20 border border-white/10 
-                             rounded-full cursor-pointer hover:bg-slate-500/30 transition-all 
+                  className="mt-4 px-3 py-1.5 bg-white/50/20 border border-white/10 
+                             rounded-full cursor-pointer hover:bg-white/50/30 transition-all 
                              inline-flex items-center gap-2 text-xs text-gray-300"
                 >
                   <AlertTriangle className="h-3 w-3" />

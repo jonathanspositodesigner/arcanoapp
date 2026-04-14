@@ -36,7 +36,7 @@ const ForgotPasswordArtesMusicos = () => {
             <div className="mx-auto w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4"><Mail className="h-8 w-8 text-green-400" /></div>
             <h2 className="text-xl font-bold text-white mb-2">{t('emailSent.title')}</h2>
             <p className="text-white/60 mb-6">{t('emailSent.checkInboxInstructionsMusicos')}</p>
-            <Button variant="outline" className="border-white/10 text-gray-400 hover:bg-slate-500/20" onClick={() => navigate("/login-artes-musicos")}>{t('emailSent.backToLogin')}</Button>
+            <Button variant="outline" className="border-white/10 text-gray-400 hover:bg-white/50/20" onClick={() => navigate("/login-artes-musicos")}>{t('emailSent.backToLogin')}</Button>
           </CardContent>
         </Card>
       </div>

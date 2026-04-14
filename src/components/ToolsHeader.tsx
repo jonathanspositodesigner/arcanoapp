@@ -74,7 +74,7 @@ const ToolsHeader = ({
             variant="ghost"
             size="icon"
             onClick={() => navigate('/')}
-            className="text-gray-300 hover:text-white hover:bg-slate-500/20"
+            className="text-gray-300 hover:text-white hover:bg-white/50/20"
             title="Página Inicial"
           >
             <Home className="w-5 h-5" />
@@ -85,7 +85,7 @@ const ToolsHeader = ({
               variant="ghost"
               size="icon"
               onClick={onBack}
-              className="text-gray-300 hover:text-white hover:bg-slate-500/20"
+              className="text-gray-300 hover:text-white hover:bg-white/50/20"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
@@ -122,7 +122,7 @@ const ToolsHeader = ({
               variant="ghost"
               size="sm"
               onClick={() => setShowCreationsModal(true)}
-              className="text-gray-300 hover:text-white hover:bg-slate-500/20 hidden sm:flex"
+              className="text-gray-300 hover:text-white hover:bg-white/50/20 hidden sm:flex"
             >
               <Library className="w-4 h-4 mr-2" />
               <span className="hidden md:inline">Minhas Criações</span>
@@ -134,7 +134,7 @@ const ToolsHeader = ({
               variant="outline"
               size="sm"
               onClick={() => navigate("/login-artes?redirect=" + encodeURIComponent(window.location.pathname))}
-              className="text-gray-300 border-white/10 hover:bg-slate-500/20 text-xs sm:text-sm"
+              className="text-gray-300 border-white/10 hover:bg-white/50/20 text-xs sm:text-sm"
             >
               <LogIn className="w-4 h-4 mr-1 sm:mr-2" />
               {t('ferramentas.login')}
@@ -163,7 +163,7 @@ const ToolsHeader = ({
                 </div>
                 <button
                   onClick={() => navigate('/planos-creditos')}
-                  className="h-7 w-7 flex items-center justify-center rounded hover:bg-slate-500/10"
+                  className="h-7 w-7 flex items-center justify-center rounded hover:bg-white/50/10"
                   title="Comprar créditos"
                 >
                   <PlusCircle className="w-4 h-4 text-gray-400" style={{ filter: 'drop-shadow(0 0 4px rgba(148, 163, 184, 0.5))' }} />
@@ -176,7 +176,7 @@ const ToolsHeader = ({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-gray-300 hover:text-white hover:bg-slate-500/20 rounded-full"
+                    className="text-gray-300 hover:text-white hover:bg-white/50/20 rounded-full"
                   >
                     <User className="w-5 h-5" />
                   </Button>
@@ -204,7 +204,7 @@ const ToolsHeader = ({
                     </div>
                   )}
 
-                  <DropdownMenuSeparator className="bg-slate-500/20" />
+                  <DropdownMenuSeparator className="bg-white/50/20" />
 
                   {/* Credits Display */}
                   <div className="px-2 py-2 flex items-center justify-between">
@@ -223,7 +223,7 @@ const ToolsHeader = ({
                       />
                       <button
                         onClick={() => navigate('/planos-creditos')}
-                        className="p-1 rounded hover:bg-slate-500/10"
+                        className="p-1 rounded hover:bg-white/50/10"
                         title="Comprar créditos"
                       >
                         <PlusCircle className="w-4 h-4 text-gray-400" />
@@ -231,23 +231,23 @@ const ToolsHeader = ({
                     </div>
                   </div>
 
-                  <DropdownMenuSeparator className="bg-slate-500/20" />
+                  <DropdownMenuSeparator className="bg-white/50/20" />
 
                   {/* Minhas Criações - acessível no mobile via dropdown */}
                   <DropdownMenuItem
                     onClick={() => setShowCreationsModal(true)}
-                    className="cursor-pointer hover:bg-slate-500/20 focus:bg-slate-500/20"
+                    className="cursor-pointer hover:bg-white/50/20 focus:bg-white/50/20"
                   >
                     <Library className="w-4 h-4 mr-2" />
                     Minhas Criações
                   </DropdownMenuItem>
 
-                  <DropdownMenuSeparator className="bg-slate-500/20" />
+                  <DropdownMenuSeparator className="bg-white/50/20" />
 
                   {/* Actions */}
                   <DropdownMenuItem
                     onClick={() => navigate('/change-password')}
-                    className="cursor-pointer hover:bg-slate-500/20 focus:bg-slate-500/20"
+                    className="cursor-pointer hover:bg-white/50/20 focus:bg-white/50/20"
                   >
                     <Lock className="w-4 h-4 mr-2" />
                     Alterar Senha
@@ -255,13 +255,13 @@ const ToolsHeader = ({
 
                   <DropdownMenuItem
                     onClick={() => navigate('/profile-settings')}
-                    className="cursor-pointer hover:bg-slate-500/20 focus:bg-slate-500/20"
+                    className="cursor-pointer hover:bg-white/50/20 focus:bg-white/50/20"
                   >
                     <Settings className="w-4 h-4 mr-2" />
                     Configurações
                   </DropdownMenuItem>
 
-                  <DropdownMenuSeparator className="bg-slate-500/20" />
+                  <DropdownMenuSeparator className="bg-white/50/20" />
 
                   <DropdownMenuItem
                     onClick={logout}

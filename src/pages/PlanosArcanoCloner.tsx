@@ -236,7 +236,7 @@ const PlanosArcanoCloner = () => {
               const IconComp = pain.icon;
               return (
                 <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-500/10 border border-white/10 flex items-center justify-center mb-4 shrink-0">
+                  <div className="w-12 h-12 rounded-2xl bg-white/50/10 border border-white/10 flex items-center justify-center mb-4 shrink-0">
                     <IconComp className="h-6 w-6 text-gray-400" />
                   </div>
                   <p className="text-white/80 text-base md:text-lg">{pain.text}</p>
@@ -275,15 +275,15 @@ const PlanosArcanoCloner = () => {
           </Suspense>
 
           <div className="mt-10 flex flex-nowrap justify-center gap-2">
-            <div className="inline-flex items-center gap-1.5 bg-slate-500/10 border border-white/10 rounded-full px-3 py-1.5 shrink-0">
+            <div className="inline-flex items-center gap-1.5 bg-white/50/10 border border-white/10 rounded-full px-3 py-1.5 shrink-0">
               <Zap className="h-3 w-3 text-gray-400 shrink-0" />
               <span className="text-gray-300 text-[11px] font-medium whitespace-nowrap">Motor de IA</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 bg-slate-500/10 border border-white/10 rounded-full px-3 py-1.5 shrink-0">
+            <div className="inline-flex items-center gap-1.5 bg-white/50/10 border border-white/10 rounded-full px-3 py-1.5 shrink-0">
               <MousePointerClick className="h-3 w-3 text-gray-400 shrink-0" />
               <span className="text-gray-300 text-[11px] font-medium whitespace-nowrap">Sem Prompt</span>
             </div>
-            <div className="inline-flex items-center gap-1.5 bg-slate-500/10 border border-white/10 rounded-full px-3 py-1.5 shrink-0">
+            <div className="inline-flex items-center gap-1.5 bg-white/50/10 border border-white/10 rounded-full px-3 py-1.5 shrink-0">
               <Clock className="h-3 w-3 text-gray-400 shrink-0" />
               <span className="text-gray-300 text-[11px] font-medium whitespace-nowrap">Em Segundos</span>
             </div>
@@ -333,7 +333,7 @@ const PlanosArcanoCloner = () => {
       <AnimatedSection className="px-4 py-10 md:py-14 bg-black/30">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-slate-500/10 border border-white/10 rounded-full px-4 py-1.5 mb-4">
+            <div className="inline-flex items-center gap-2 bg-white/50/10 border border-white/10 rounded-full px-4 py-1.5 mb-4">
               <BookOpen className="h-4 w-4 text-gray-400" />
               <span className="text-gray-300 text-sm font-semibold">BÔNUS 01</span>
             </div>
@@ -391,7 +391,7 @@ const PlanosArcanoCloner = () => {
       <AnimatedSection className="px-4 py-10 md:py-14 pb-16 md:pb-20 bg-black/30">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-slate-500/10 border border-white/10 rounded-full px-4 py-1.5 mb-4">
+            <div className="inline-flex items-center gap-2 bg-white/50/10 border border-white/10 rounded-full px-4 py-1.5 mb-4">
               <Gift className="h-4 w-4 text-gray-400" />
               <span className="text-gray-300 text-sm font-semibold">BÔNUS 02</span>
             </div>
@@ -439,7 +439,7 @@ const PlanosArcanoCloner = () => {
               const IconComp = item.icon;
               return (
                 <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col items-center text-center h-full">
-                  <div className="w-14 h-14 rounded-2xl bg-slate-500/10 flex items-center justify-center mb-4">
+                  <div className="w-14 h-14 rounded-2xl bg-white/50/10 flex items-center justify-center mb-4">
                     <IconComp className="w-7 h-7 text-gray-400" />
                   </div>
                   <h3 className="text-white font-semibold text-lg mb-2">{item.title}</h3>

@@ -105,7 +105,7 @@ const UpscalerChoiceModal = ({
                       e.stopPropagation();
                       handleUnlimitedClick();
                     }}
-                    className="w-full h-12 bg-slate-600 hover:bg-slate-500 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5 text-base"
+                    className="w-full h-12 bg-slate-600 hover:bg-white/50 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5 text-base"
                   >
                     Acessar Versão Ilimitada
                   </Button>
@@ -192,7 +192,7 @@ const UpscalerChoiceModal = ({
                 className="group relative bg-gradient-to-br from-[#1E1433] to-[#2A1B4D] rounded-xl border-2 border-white/10 hover:border-white/15 transition-all duration-300 cursor-pointer overflow-hidden hover:shadow-[0_0_30px_rgba(139,92,246,0.3)]"
               >
                 {/* Badge */}
-                <div className="absolute top-3 right-3 flex items-center gap-1 bg-slate-500/20 px-2 py-1 rounded-full">
+                <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/50/20 px-2 py-1 rounded-full">
                   <Crown className="w-3 h-3 text-yellow-400" />
                   <span className="text-[10px] text-yellow-400 font-medium">VITALÍCIO</span>
                 </div>
@@ -219,7 +219,7 @@ const UpscalerChoiceModal = ({
                       e.stopPropagation();
                       handleUnlimitedClick();
                     }}
-                    className="w-full h-11 bg-slate-600 hover:bg-slate-500 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5"
+                    className="w-full h-11 bg-slate-600 hover:bg-white/50 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5"
                   >
                     Acessar Versão Ilimitada
                   </Button>

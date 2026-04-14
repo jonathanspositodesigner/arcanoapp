@@ -47,12 +47,12 @@ const CameraMovementSection: React.FC<Props> = ({ settings, updateSettings }) =>
                 min={0} max={100} step={1}
                 value={[layer.intensity]}
                 onValueChange={([v]) => updateLayer(i, { intensity: v })}
-                className="[&_[data-radix-slider-track]]:bg-white/[0.06] [&_[data-radix-slider-track]]:h-1 [&_[data-radix-slider-range]]:bg-gray-500 [&_[data-radix-slider-thumb]]:border-gray-500 [&_[data-radix-slider-thumb]]:h-2.5 [&_[data-radix-slider-thumb]]:w-2.5"
+                className="[&_[data-radix-slider-track]]:bg-white/[0.06] [&_[data-radix-slider-track]]:h-1 [&_[data-radix-slider-range]]:bg-white/50 [&_[data-radix-slider-thumb]]:border-gray-500 [&_[data-radix-slider-thumb]]:h-2.5 [&_[data-radix-slider-thumb]]:w-2.5"
               />
             </div>
           )}
           {movements.length > 1 && (
-            <button onClick={() => removeLayer(i)} className="text-gray-700 hover:text-gray-400 transition-colors flex-shrink-0">
+            <button onClick={() => removeLayer(i)} className="text-gray-400 hover:text-gray-400 transition-colors flex-shrink-0">
               <X className="w-3 h-3" />
             </button>
           )}

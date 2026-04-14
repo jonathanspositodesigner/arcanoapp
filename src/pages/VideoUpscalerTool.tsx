@@ -614,7 +614,7 @@ const VideoUpscalerTool: React.FC = () => {
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-slate-500/10 border-2 border-dashed border-white/10 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-xl bg-white/50/10 border-2 border-dashed border-white/10 flex items-center justify-center">
                       <Video className="w-8 h-8 text-slate-400/40" />
                     </div>
                     <div className="text-center">
@@ -635,7 +635,7 @@ const VideoUpscalerTool: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 h-8 text-xs bg-slate-500/10 border-white/10 text-gray-300 hover:bg-slate-500/20"
+                    className="flex-1 h-8 text-xs bg-white/50/10 border-white/10 text-gray-300 hover:bg-white/50/20"
                     onClick={handleReset}
                   >
                     <RotateCcw className="w-3.5 h-3.5 mr-1.5" />

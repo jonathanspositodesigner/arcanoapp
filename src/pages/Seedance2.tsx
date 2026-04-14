@@ -471,7 +471,7 @@ export default function Seedance2() {
               <h1 className="text-lg sm:text-xl font-bold text-white">Seedance 2.0</h1>
               <button
                 onClick={() => setShowTutorial(true)}
-                className="flex items-center gap-1 rounded-md border border-white/10 bg-slate-500/10 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-gray-300 hover:bg-slate-500/20 transition-colors"
+                className="flex items-center gap-1 rounded-md border border-white/10 bg-white/50/10 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-gray-300 hover:bg-white/50/20 transition-colors"
               >
                 <Play className="h-3 w-3" />
                 Ver tutorial
@@ -481,7 +481,7 @@ export default function Seedance2() {
               <button
                 onClick={() => setGalleryTab("creations")}
                 className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
-                  galleryTab === "creations" ? "border-white/10 bg-slate-500/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                  galleryTab === "creations" ? "border-white/10 bg-white/50/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                 }`}
               >
                 Minhas Criações
@@ -489,7 +489,7 @@ export default function Seedance2() {
               <button
                 onClick={() => setGalleryTab("library")}
                 className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
-                  galleryTab === "library" ? "border-white/10 bg-slate-500/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                  galleryTab === "library" ? "border-white/10 bg-white/50/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                 }`}
               >
                 Biblioteca
@@ -537,7 +537,7 @@ export default function Seedance2() {
                     <p className="text-sm text-gray-500">Você ainda não tem criações. Veja os modelos ou digite um prompt para começar.</p>
                     <button
                       onClick={() => setGalleryTab("library")}
-                      className="rounded-lg border border-white/10 bg-slate-500/10 px-4 py-1.5 text-xs font-medium text-gray-300 transition-all hover:bg-slate-500/20"
+                      className="rounded-lg border border-white/10 bg-white/50/10 px-4 py-1.5 text-xs font-medium text-gray-300 transition-all hover:bg-white/50/20"
                     >
                       Explorar modelos
                     </button>
@@ -582,7 +582,7 @@ export default function Seedance2() {
                   {libraryItems.some(li => li.id === previewGen.id) && (
                     <button
                       onClick={() => handleUseLibraryItem(previewGen)}
-                      className="rounded-full bg-slate-600/80 px-4 py-2 text-sm font-medium text-white hover:bg-slate-500 transition-colors"
+                      className="rounded-full bg-slate-600/80 px-4 py-2 text-sm font-medium text-white hover:bg-white/50 transition-colors"
                     >
                       Usar modelo
                     </button>
@@ -724,7 +724,7 @@ export default function Seedance2() {
                           key={option.value}
                           onClick={() => handleModeChange(option.value)}
                           className={`rounded-md border px-2 py-1 text-[10px] font-medium transition-all ${
-                            mode === option.value ? "border-white/10 bg-slate-500/20 text-gray-300" : "border-transparent text-gray-500"
+                            mode === option.value ? "border-white/10 bg-white/50/20 text-gray-300" : "border-transparent text-gray-500"
                           }`}
                         >
                           {option.label}
@@ -815,7 +815,7 @@ export default function Seedance2() {
                           key={option.value}
                           onClick={() => handleModeChange(option.value)}
                           className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
-                            mode === option.value ? "border-white/10 bg-slate-500/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                            mode === option.value ? "border-white/10 bg-white/50/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                           }`}
                           title={option.desc}
                         >
@@ -873,7 +873,7 @@ export default function Seedance2() {
                         key={value}
                         onClick={() => setSpeed(value)}
                         className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
-                          speed === value ? "border-white/10 bg-slate-500/20 text-gray-300" : "border-transparent text-gray-500 hover:text-gray-300"
+                          speed === value ? "border-white/10 bg-white/50/20 text-gray-300" : "border-transparent text-gray-500 hover:text-gray-300"
                         }`}
                       >
                         {value === "standard" ? "Standard" : "Fast"}
@@ -909,7 +909,7 @@ export default function Seedance2() {
                         key={value}
                         onClick={() => setQuality(value)}
                         className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
-                          quality === value ? "border-white/10 bg-slate-500/20 text-gray-300" : "border-transparent text-gray-500 hover:text-gray-300"
+                          quality === value ? "border-white/10 bg-white/50/20 text-gray-300" : "border-transparent text-gray-500 hover:text-gray-300"
                         }`}
                       >
                         {value}
@@ -957,7 +957,7 @@ export default function Seedance2() {
                   onClick={() => { setRatio(item.value); setShowRatioModal(false); }}
                   className={`rounded-xl border px-3 py-2.5 text-xs font-medium transition-all ${
                     ratio === item.value
-                      ? "border-slate-500/40 bg-slate-500/20 text-gray-300"
+                      ? "border-slate-500/40 bg-white/50/20 text-gray-300"
                       : "border-white/[0.08] bg-white/[0.04] text-gray-400 hover:bg-white/[0.08]"
                   }`}
                 >
@@ -989,7 +989,7 @@ export default function Seedance2() {
               </button>
               <button
                 onClick={confirmFilePicker}
-                className="flex-1 rounded-xl bg-slate-600/80 py-2 text-xs font-medium text-white hover:bg-slate-500 transition-colors"
+                className="flex-1 rounded-xl bg-slate-600/80 py-2 text-xs font-medium text-white hover:bg-white/50 transition-colors"
               >
                 Entendi
               </button>
@@ -1039,7 +1039,7 @@ function UploadSlot({
       onDragOver={(e) => e.preventDefault()}
       onDrop={onDrop}
       onClick={onClickUpload}
-      className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-white/10 bg-black/30 text-base text-gray-500 transition-all duration-200 hover:border-white/10 hover:bg-slate-500/5 hover:text-gray-400 hover:scale-105"
+      className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-white/10 bg-black/30 text-base text-gray-500 transition-all duration-200 hover:border-white/10 hover:bg-white/50/5 hover:text-gray-400 hover:scale-105"
       style={{ width: dimension, height: dimension }}
     >
       +
@@ -1068,7 +1068,7 @@ function VideoCard({ gen, onPreview, onDownload, onUse }: { gen: Generation; onP
           {onUse && (
             <button
               onClick={(e) => { e.stopPropagation(); onUse(gen); }}
-              className="absolute bottom-2 left-2 right-2 z-10 rounded-lg bg-slate-600/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-slate-500"
+              className="absolute bottom-2 left-2 right-2 z-10 rounded-lg bg-slate-600/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-white/50"
             >
               Usar modelo
             </button>

@@ -422,7 +422,7 @@ const AbandonedCheckoutsContent = () => {
       contacted_whatsapp: "bg-green-500/20 text-green-500 border-green-500/30",
       contacted_email: "bg-blue-500/20 text-blue-500 border-blue-500/30",
       converted: "bg-emerald-500/20 text-emerald-500 border-emerald-500/30",
-      ignored: "bg-gray-500/20 text-gray-500 border-gray-500/30"
+      ignored: "bg-white/50/20 text-gray-500 border-gray-500/30"
     };
     
     const labels: Record<string, string> = {
@@ -654,7 +654,7 @@ const AbandonedCheckoutsContent = () => {
                           size="icon"
                           variant="ghost"
                           onClick={() => updateStatus(checkout.id, 'ignored')}
-                          className="h-8 w-8 text-gray-500 hover:text-gray-600 hover:bg-gray-500/10"
+                          className="h-8 w-8 text-gray-500 hover:text-gray-600 hover:bg-white/50/10"
                           title="Ignorar"
                         >
                           <X className="h-4 w-4" />

@@ -284,7 +284,7 @@ const PromosNatal = () => {
       <div className="max-w-6xl mx-auto relative z-10">
         <Button
           variant="ghost"
-          className="text-gray-700 hover:text-gray-900 hover:bg-white/50 mb-6"
+          className="text-gray-400 hover:text-gray-100 hover:bg-white/50 mb-6"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -313,7 +313,7 @@ const PromosNatal = () => {
             )}
           </div>
 
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 mt-2 sm:mt-4 px-2">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-100 mb-3 sm:mb-4 mt-2 sm:mt-4 px-2">
             {selectedPack 
               ? t('promo.discountOnPack', { percent: discountPercent, pack: selectedPack.name })
               : t('promo.choosePackWithDiscount', { percent: discountPercent })
@@ -328,7 +328,7 @@ const PromosNatal = () => {
           <div className="space-y-8">
             {packItems.length > 0 && (
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">{t('packsOfArts')}</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-100 mb-3 sm:mb-4">{t('packsOfArts')}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {packItems.map((pack) => (
                     <Card
@@ -351,7 +351,7 @@ const PromosNatal = () => {
                             <Gift className="h-8 w-8 text-red-500" />
                           </div>
                         )}
-                        <h3 className="text-gray-900 font-semibold text-center">{pack.name}</h3>
+                        <h3 className="text-gray-100 font-semibold text-center">{pack.name}</h3>
                       </CardContent>
                     </Card>
                   ))}
@@ -361,7 +361,7 @@ const PromosNatal = () => {
 
             {cursoItems.length > 0 && (
               <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 sm:mb-4">{t('courses')}</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-100 mb-3 sm:mb-4">{t('courses')}</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                   {cursoItems.map((pack) => (
                     <Card
@@ -384,7 +384,7 @@ const PromosNatal = () => {
                             <Star className="h-8 w-8 text-red-500" />
                           </div>
                         )}
-                        <h3 className="text-gray-900 font-semibold text-center">{pack.name}</h3>
+                        <h3 className="text-gray-100 font-semibold text-center">{pack.name}</h3>
                       </CardContent>
                     </Card>
                   ))}
@@ -439,7 +439,7 @@ const PromosNatal = () => {
                       <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-3 border border-red-200">
                         <IconComponent className="h-6 w-6 text-red-600" />
                       </div>
-                      <CardTitle className="text-lg text-gray-900 font-bold">{option.label}</CardTitle>
+                      <CardTitle className="text-lg text-gray-100 font-bold">{option.label}</CardTitle>
                       <div className="mt-4">
                         <div className="flex items-center justify-center gap-2 mb-1">
                           <span className="text-gray-500 line-through text-lg">
@@ -457,7 +457,7 @@ const PromosNatal = () => {
                     <CardContent className="space-y-4">
                       <ul className="space-y-2">
                         {option.features.map((feature, i) => (
-                          <li key={i} className="flex items-start gap-2 text-gray-700 text-sm">
+                          <li key={i} className="flex items-start gap-2 text-gray-400 text-sm">
                             <Check className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
                             {feature}
                           </li>

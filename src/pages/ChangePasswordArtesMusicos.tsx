@@ -105,7 +105,7 @@ const ChangePasswordArtesMusicos = () => {
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#2d1b4e] to-[#0f0f1a] flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-white/10">
           <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 bg-slate-500/30 rounded-full flex items-center justify-center mb-4">
+            <div className="mx-auto w-12 h-12 bg-white/50/30 rounded-full flex items-center justify-center mb-4">
               <Mail className="h-6 w-6 text-gray-400" />
             </div>
             <div className="flex items-center justify-center gap-2 mb-2">
@@ -117,7 +117,7 @@ const ChangePasswordArtesMusicos = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-white font-medium bg-slate-500/20 py-2 px-4 rounded-lg text-center">
+            <p className="text-white font-medium bg-white/50/20 py-2 px-4 rounded-lg text-center">
               {emailParam}
             </p>
             <p className="text-white/50 text-sm text-center">
@@ -128,7 +128,7 @@ const ChangePasswordArtesMusicos = () => {
               <Button
                 onClick={handleRefreshSession}
                 variant="outline"
-                className="w-full border-white/10 text-white hover:bg-slate-500/20"
+                className="w-full border-white/10 text-white hover:bg-white/50/20"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Já cliquei no link
@@ -218,7 +218,7 @@ const ChangePasswordArtesMusicos = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#2d1b4e] to-[#0f0f1a] flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-white/10">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-slate-500/30 rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto w-12 h-12 bg-white/50/30 rounded-full flex items-center justify-center mb-4">
             <Lock className="h-6 w-6 text-gray-400" />
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">

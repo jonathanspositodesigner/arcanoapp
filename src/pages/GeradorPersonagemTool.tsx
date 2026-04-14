@@ -766,11 +766,11 @@ const GeradorPersonagemTool: React.FC = () => {
                 </h3>
                 {viewedImage && (
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-300 hover:text-white hover:bg-slate-500/20" onClick={() => transformRef.current?.zoomOut(0.5)}>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-300 hover:text-white hover:bg-white/50/20" onClick={() => transformRef.current?.zoomOut(0.5)}>
                       <ZoomOut className="w-3.5 h-3.5" />
                     </Button>
                     <span className="text-[10px] text-gray-300 w-8 text-center">{Math.round(zoomLevel * 100)}%</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-300 hover:text-white hover:bg-slate-500/20" onClick={() => transformRef.current?.zoomIn(0.5)}>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-gray-300 hover:text-white hover:bg-white/50/20" onClick={() => transformRef.current?.zoomIn(0.5)}>
                       <ZoomIn className="w-3.5 h-3.5" />
                     </Button>
                   </div>
@@ -814,7 +814,7 @@ const GeradorPersonagemTool: React.FC = () => {
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-slate-500/10 border-2 border-dashed border-white/10 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-xl bg-white/50/10 border-2 border-dashed border-white/10 flex items-center justify-center">
                       <ImageIcon className="w-8 h-8 text-slate-400/40" />
                     </div>
                     <div className="text-center">
@@ -839,7 +839,7 @@ const GeradorPersonagemTool: React.FC = () => {
               {/* Action Buttons */}
               {viewedImage && status === 'completed' && (
                 <div className="border-t border-white/10 px-3 py-2 flex gap-2 flex-shrink-0">
-                  <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-white/15 text-white hover:bg-slate-500/90" onClick={handleReset}>
+                  <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-white/15 text-white hover:bg-white/50/90" onClick={handleReset}>
                     <RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova
                   </Button>
                   <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-500 hover:to-pink-500 text-white" onClick={() => setShowRefinePanel(true)}>

@@ -652,7 +652,7 @@ const cenarios: TestScenario[] = [
 // ==================== CATEGORIAS ====================
 const categoriaInfo: Record<string, { nome: string; cor: string; icon: React.ReactNode }> = {
   capacidade: { nome: '📊 Capacidade (Limite de 3)', cor: 'border-blue-500/30 bg-blue-500/5', icon: <Layers className="h-5 w-5 text-blue-400" /> },
-  fila: { nome: '📋 Fila FIFO', cor: 'border-white/10 bg-slate-500/5', icon: <ListOrdered className="h-5 w-5 text-gray-400" /> },
+  fila: { nome: '📋 Fila FIFO', cor: 'border-white/10 bg-white/50/5', icon: <ListOrdered className="h-5 w-5 text-gray-400" /> },
   usuario: { nome: '👤 Um Job por Usuário', cor: 'border-amber-500/30 bg-amber-500/5', icon: <Users className="h-5 w-5 text-amber-400" /> },
   erro: { nome: '❌ Tratamento de Erros', cor: 'border-red-500/30 bg-red-500/5', icon: <XCircle className="h-5 w-5 text-red-400" /> },
   creditos: { nome: '💳 Créditos e Reembolso', cor: 'border-green-500/30 bg-green-500/5', icon: <CreditCard className="h-5 w-5 text-green-400" /> },
