@@ -228,7 +228,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
 
           {/* Grupo WhatsApp */}
           <a href="https://chat.whatsapp.com/KkQmU8xiyda7KUSXiyc3pn" target="_blank" rel="noopener noreferrer" className="block">
-            <button className="w-full flex items-center text-left text-[12px] font-medium text-green-300 hover:text-green-200 py-2 px-2.5 rounded-lg hover:bg-green-500/20 transition-colors">
+            <button className="w-full flex items-center text-left text-[12px] font-medium text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 py-2 px-2.5 rounded-lg hover:bg-emerald-500/15 transition-colors">
               <Users className="h-3.5 w-3.5 mr-1.5" />
               Grupo do WhatsApp
             </button>
