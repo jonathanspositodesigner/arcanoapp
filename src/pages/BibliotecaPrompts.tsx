@@ -461,7 +461,7 @@ const BibliotecaPrompts = () => {
 
         {/* Page Title and Content Type Tabs */}
         <div className="mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-gray-400 to-pink-400 bg-clip-text text-transparent">{t('library.title')}</h2>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-gray-200 to-gray-400 bg-clip-text text-transparent">{t('library.title')}</h2>
           <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-gray-400">{t('library.description')}</p>
 
           {/* Content Type Tabs */}
@@ -630,7 +630,7 @@ const BibliotecaPrompts = () => {
                         }
                       }}
                       size="sm"
-                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1 sm:px-3 bg-gradient-to-r from-pink-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-white min-w-0"
+                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1 sm:px-3 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-white min-w-0"
                     >
                       <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
                       <span className="truncate">Gerar foto</span>
@@ -789,7 +789,7 @@ const BibliotecaPrompts = () => {
                         navigate('/arcano-cloner-tool', { state: { referenceImageUrl: selectedPrompt.imageUrl } });
                       }
                     }}
-                    className={`w-full ${selectedPrompt.isPremium && !isPremium ? 'bg-white/5 hover:bg-white/10 text-gray-300' : 'bg-gradient-to-r from-pink-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-white'}`}
+                    className={`w-full ${selectedPrompt.isPremium && !isPremium ? 'bg-white/5 hover:bg-white/10 text-gray-300' : 'bg-gradient-to-r from-slate-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-white'}`}
                   >
                     {selectedPrompt.isPremium && !isPremium ? (
                       <><Lock className="h-4 w-4 mr-2" />Exclusivo Premium</>
