@@ -795,7 +795,7 @@ const UpscalerArcanoTool: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-2 py-6">
+                  <div className="flex flex-col items-center justify-center text-center gap-2 py-6">
                     <Upload className="w-6 h-6 text-white/60" />
                     <p className="text-sm font-medium text-white">Arraste sua imagem aqui</p>
                     <p className="text-[10px] text-white/60">PNG, JPEG, WEBP - Máximo 10MB</p>
