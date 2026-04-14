@@ -557,9 +557,11 @@ const BibliotecaArtes = () => {
     }
   };
   return (
-    <AppLayout>
+    <>
       {/* Promo Natal Banner */}
       <PromoNatalBanner />
+
+      <div className={`min-h-screen bg-background flex ${isPromoActive ? 'pt-11' : ''}`}>
 
       <div className="flex min-h-0">
         {/* Overlay for mobile sidebar */}
