@@ -997,8 +997,8 @@ const UpscalerArcanoTool: React.FC = () => {
               )}
 
 
-              {/* Generate Button - always visible */}
-              {!isProcessing && status !== 'completed' && (
+              {/* Generate Button - DESKTOP ONLY (mobile has fixed bottom bar) */}
+              {!isMobile && !isProcessing && status !== 'completed' && (
                 <Button
                   className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
                   onClick={processImage}
@@ -1022,8 +1022,8 @@ const UpscalerArcanoTool: React.FC = () => {
                 </Button>
               )}
 
-              {/* Completed Actions */}
-              {status === 'completed' && (
+              {/* Completed Actions - DESKTOP ONLY */}
+              {!isMobile && status === 'completed' && (
                 <div className="space-y-2">
                   <Button
                     className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl"
@@ -1043,8 +1043,8 @@ const UpscalerArcanoTool: React.FC = () => {
                 </div>
               )}
 
-              {/* Error State */}
-              {status === 'error' && lastError && (
+              {/* Error State - DESKTOP ONLY */}
+              {!isMobile && status === 'error' && lastError && (
                 <div className="bg-red-950/30 border border-red-500/30 rounded-xl p-3">
                   <div className="flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
