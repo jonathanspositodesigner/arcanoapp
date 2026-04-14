@@ -485,7 +485,7 @@ const BibliotecaPrompts = () => {
                   <ChevronDown className="h-3.5 w-3.5 ml-1.5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="bg-[hsl(263,30%,15%)] border-white/10 min-w-[160px]">
+              <DropdownMenuContent align="start" className="bg-[#1c1c1e] border-white/10 min-w-[160px]">
                 {categories.map(cat => (
                   <DropdownMenuItem
                     key={cat}
