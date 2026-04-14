@@ -19,6 +19,9 @@ import { useTranslation } from "react-i18next";
 import ExpiredSubscriptionModal from "@/components/ExpiredSubscriptionModal";
 import ExpiringSubscriptionModal from "@/components/ExpiringSubscriptionModal";
 import Seedance2PromoBanner from "@/components/Seedance2PromoBanner";
+import arcanoClonerCover from "@/assets/arcano-cloner-cover.webp";
+import removerFundoCover from "@/assets/removedor-fundo-capa.png";
+import flyerMakerCover from "@/assets/flyer-maker-preview.webp";
 
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 import AppLayout from "@/components/layout/AppLayout";
@@ -469,39 +472,47 @@ const BibliotecaPrompts = () => {
             </Button>
           </div>
 
-          <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {[
-              { name: 'Upscaler Arcano', desc: 'Melhorar qualidade de imagens com IA', icon: '🔮', cost: 100, path: '/upscaler-arcano-tool', cover: 'https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/artes-premium/upscaler-arcano-cover.webp' },
-              { name: 'Arcano Cloner', desc: 'Crie ensaios fotográficos ultra realistas com IA', icon: '🎭', cost: 150, path: '/arcano-cloner-tool', cover: '/lovable-uploads/arcano-cloner-cover.webp' },
-              { name: 'Seedance 2.0', desc: 'Gerar vídeos IA', icon: '🎬', cost: 300, path: '/seedance2', cover: '', highlight: true },
-              { name: 'Gerar Imagem', desc: 'Crie imagens do zero com IA', icon: '🖼️', cost: 100, path: '/gerar-imagem', cover: '' },
-              { name: 'Gerar Vídeo', desc: 'Gere vídeos com Veo 3.1 e WAN 2.2', icon: '🎥', cost: 200, path: '/gerar-video', cover: '' },
-              { name: 'Veste AI', desc: 'Troque a roupa de qualquer foto com IA', icon: '👗', cost: 120, path: '/veste-ai-tool', cover: '' },
-              { name: 'Pose Changer', desc: 'Mude a pose de qualquer foto com IA', icon: '📐', cost: 100, path: '/pose-changer-tool', cover: '' },
-              { name: 'MovieLed Maker', desc: 'Gere movies para telão de LED com um clique', icon: '📺', cost: 200, path: '/movieled-maker', cover: '' },
-              { name: 'Remover Fundo', desc: 'Remova o fundo de qualquer imagem com IA', icon: '✂️', cost: 50, path: '/remover-fundo', cover: '' },
-              { name: 'Flyer Maker', desc: 'Crie flyers para eventos incríveis com IA', icon: '📄', cost: 100, path: '/flyer-maker', cover: '' },
+              { name: 'Upscaler Arcano', desc: 'Melhorar qualidade de imagens com IA', cost: 100, path: '/upscaler-arcano-tool', cover: 'https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/artes-premium/upscaler-arcano-cover.webp' },
+              { name: 'Arcano Cloner', desc: 'Crie ensaios fotográficos ultra realistas com IA', cost: 150, path: '/arcano-cloner-tool', cover: arcanoClonerCover },
+              { name: 'Seedance 2.0', desc: 'Gerar vídeos IA', cost: 300, path: '/seedance2', cover: '', highlight: true },
+              { name: 'Gerar Imagem', desc: 'Crie imagens do zero com IA', cost: 100, path: '/gerar-imagem', cover: '' },
+              { name: 'Gerar Vídeo', desc: 'Gere vídeos com Veo 3.1 e WAN 2.2', cost: 200, path: '/gerar-video', cover: '' },
+              { name: 'Veste AI', desc: 'Troque a roupa de qualquer foto com IA', cost: 120, path: '/veste-ai-tool', cover: '' },
+              { name: 'Pose Changer', desc: 'Mude a pose de qualquer foto com IA', cost: 100, path: '/pose-changer-tool', cover: '' },
+              { name: 'MovieLed Maker', desc: 'Gere movies para telão de LED com um clique', cost: 200, path: '/movieled-maker', cover: 'https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/prompts-cloudinary/references/BOTECO-DO-LUAN-ref.jpg' },
+              { name: 'Remover Fundo', desc: 'Remova o fundo de qualquer imagem com IA', cost: 50, path: '/remover-fundo', cover: removerFundoCover },
+              { name: 'Flyer Maker', desc: 'Crie flyers para eventos incríveis com IA', cost: 100, path: '/flyer-maker', cover: flyerMakerCover },
             ].map((tool) => (
-              <button
+              <div
                 key={tool.name}
                 onClick={() => navigate(tool.path)}
-                className={`flex-shrink-0 flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-card border transition-all duration-200 hover:-translate-y-0.5 min-w-[170px] sm:min-w-[185px] text-left ${
+                className={`flex-shrink-0 w-[200px] sm:w-[220px] rounded-xl overflow-hidden border bg-card cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-xl group ${
                   tool.highlight
-                    ? 'border-green-300 dark:border-green-700 hover:border-green-400 hover:shadow-md hover:shadow-green-500/10'
-                    : 'border-border hover:border-primary/30 hover:shadow-md hover:shadow-primary/5'
+                    ? 'border-green-400 dark:border-green-600 hover:shadow-green-500/20'
+                    : 'border-border hover:border-primary/30 hover:shadow-primary/10'
                 }`}
               >
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-accent flex items-center justify-center text-lg sm:text-xl flex-shrink-0">
-                  {tool.icon}
+                <div className="aspect-[16/9] relative overflow-hidden">
+                  {tool.cover ? (
+                    <img src={tool.cover} alt={tool.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+                      <Sparkles className="h-8 w-8 text-primary/50" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-2.5">
+                    <h3 className="font-bold text-xs sm:text-sm text-white leading-tight drop-shadow-lg">{tool.name}</h3>
+                  </div>
+                  <span className="absolute top-1.5 right-1.5 text-[9px] sm:text-[10px] font-bold text-white bg-black/50 backdrop-blur-sm px-1.5 py-0.5 rounded-full">
+                    🪙 {tool.cost}
+                  </span>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-[11.5px] sm:text-[12.5px] font-bold text-foreground truncate">{tool.name}</div>
-                  <div className="text-[10px] sm:text-[10.5px] text-muted-foreground truncate">{tool.desc}</div>
+                <div className="px-2.5 py-2">
+                  <p className="text-[10px] sm:text-[11px] text-muted-foreground line-clamp-2 leading-snug">{tool.desc}</p>
                 </div>
-                <span className="text-[10px] font-semibold text-primary bg-primary/5 dark:bg-primary/10 px-1.5 py-0.5 rounded-full flex-shrink-0 whitespace-nowrap">
-                  🪙 {tool.cost}
-                </span>
-              </button>
+              </div>
             ))}
           </div>
         </div>
