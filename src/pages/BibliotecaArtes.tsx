@@ -401,129 +401,119 @@ const BibliotecaArtes = () => {
           </Badge>}
       </div>;
   };
-  const SidebarContent = () => <div className="flex flex-col h-full py-4">
-      <div className="px-4 mb-6 flex justify-center">
-        <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/67562963-438f-4677-8000-81acb1886f7c.png" className="h-10 cursor-pointer hover:opacity-80 transition-opacity" />
-      </div>
-      
-      <nav className="flex-1 px-2 space-y-1">
-        {!isAppInstalled && <div className="mb-6">
-            <button onClick={() => {
-          navigate('/install-app');
-          setSidebarOpen(false);
-        }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left bg-gradient-to-r from-yellow-500 to-amber-600 text-white hover:from-yellow-600 hover:to-amber-700 shadow-md">
-              <Smartphone className="h-5 w-5" />
-              <span className="font-medium">{t('sidebar.installApp')}</span>
-            </button>
-          </div>}
+  const sidebarNavClass = (section: SidebarSection) =>
+    `w-full flex items-center text-left text-[13px] font-medium py-2.5 px-3 rounded-lg transition-colors ${
+      activeSection === section
+        ? 'bg-primary/10 text-primary font-semibold'
+        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+    }`;
 
-        <button onClick={() => {
-        changeSection('tutorial');
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'tutorial' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <BookOpen className="h-5 w-5" />
-          <span className="font-medium">{t('sidebar.tutorials')}</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {getPacksByType('tutorial').length}
-          </Badge>
+  const InternalSidebar = () => (
+    <aside className={`
+      fixed lg:static inset-y-0 left-0 z-40
+      w-64 lg:h-full lg:min-h-0 lg:self-stretch min-h-screen bg-sidebar-background border-r border-border p-4 flex flex-col
+      transform transition-transform duration-300 ease-in-out
+      lg:pt-4
+      ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+    `}>
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-1">
+        <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider px-3 mb-1">Navegação</p>
+
+        {!isAppInstalled && (
+          <button onClick={() => { navigate('/install-app'); setSidebarOpen(false); }}
+            className="w-full flex items-center text-left text-[13px] font-bold text-foreground py-2.5 px-3 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-all mb-2">
+            <Smartphone className="h-4 w-4 mr-2.5 text-primary flex-shrink-0" />
+            {t('sidebar.installApp')}
+          </button>
+        )}
+
+        <button onClick={() => { changeSection('tutorial'); setSidebarOpen(false); }} className={sidebarNavClass('tutorial')}>
+          <BookOpen className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.tutorials')}
+          <span className="ml-auto text-[10px] text-muted-foreground">{getPacksByType('tutorial').length}</span>
         </button>
 
-        <button onClick={() => {
-        changeSection('packs');
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'packs' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <Package className="h-5 w-5" />
-          <span className="font-medium">{t('sidebar.packs')}</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {getPacksByType('pack').length}
-          </Badge>
+        <button onClick={() => { changeSection('packs'); setSidebarOpen(false); }} className={sidebarNavClass('packs')}>
+          <Package className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.packs')}
+          <span className="ml-auto text-[10px] text-muted-foreground">{getPacksByType('pack').length}</span>
         </button>
 
-        <button onClick={() => {
-        changeSection('updates');
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'updates' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <RefreshCw className="h-5 w-5" />
-          <span className="font-medium">{t('sidebar.updates')}</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {getPacksByType('updates').length}
-          </Badge>
+        <button onClick={() => { changeSection('updates'); setSidebarOpen(false); }} className={sidebarNavClass('updates')}>
+          <RefreshCw className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.updates')}
+          <span className="ml-auto text-[10px] text-muted-foreground">{getPacksByType('updates').length}</span>
         </button>
 
-        <button onClick={() => {
-        changeSection('bonus');
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'bonus' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <Gift className="h-5 w-5" />
-          <span className="font-medium">{t('sidebar.bonus')}</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {getPacksByType('bonus').length}
-          </Badge>
+        <button onClick={() => { changeSection('bonus'); setSidebarOpen(false); }} className={sidebarNavClass('bonus')}>
+          <Gift className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.bonus')}
+          <span className="ml-auto text-[10px] text-muted-foreground">{getPacksByType('bonus').length}</span>
         </button>
 
-        <button onClick={() => {
-        changeSection('cursos');
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'cursos' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <GraduationCap className="h-5 w-5" />
-          <span className="font-medium">{t('sidebar.courses')}</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {getPacksByType('curso').length}
-          </Badge>
+        <button onClick={() => { changeSection('cursos'); setSidebarOpen(false); }} className={sidebarNavClass('cursos')}>
+          <GraduationCap className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.courses')}
+          <span className="ml-auto text-[10px] text-muted-foreground">{getPacksByType('curso').length}</span>
         </button>
 
-        <button onClick={() => {
-        changeSection('free-sample');
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'free-sample' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <Sparkles className="h-5 w-5" />
-          <span className="font-medium">{t('sidebar.freeSamples')}</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {getPacksByType('free-sample').length}
-          </Badge>
+        <button onClick={() => { changeSection('free-sample'); setSidebarOpen(false); }} className={sidebarNavClass('free-sample')}>
+          <Sparkles className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.freeSamples')}
+          <span className="ml-auto text-[10px] text-muted-foreground">{getPacksByType('free-sample').length}</span>
         </button>
 
-
-        <button onClick={() => {
-        changeSection('all-artes');
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'all-artes' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <LayoutGrid className="h-5 w-5" />
-          <span className="font-medium">{t('sidebar.viewAllArts')}</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {allArtes.length}
-          </Badge>
+        <button onClick={() => { changeSection('all-artes'); setSidebarOpen(false); }} className={sidebarNavClass('all-artes')}>
+          <LayoutGrid className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.viewAllArts')}
+          <span className="ml-auto text-[10px] text-muted-foreground">{allArtes.length}</span>
         </button>
-      </nav>
 
-      {/* WhatsApp Group Buttons */}
-      <div className="px-4 pt-4 border-t border-border space-y-3">
-        {userPacks.length > 0 ? <div className="space-y-2">
-            <p className="text-xs text-muted-foreground text-center">{t('messages.joinExclusiveGroup')}</p>
-            <Button onClick={() => window.open("https://chat.whatsapp.com/JOUGeS21VHq92hJWyxpOJC", "_blank")} size="sm" className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white">
-              <MessageCircle className="h-4 w-4 mr-2" />
+        {/* Divider */}
+        <div className="my-3 border-t border-border" />
+
+        {/* WhatsApp Group */}
+        {userPacks.length > 0 ? (
+          <a href="https://chat.whatsapp.com/JOUGeS21VHq92hJWyxpOJC" target="_blank" rel="noopener noreferrer" className="block">
+            <button className="w-full flex items-center text-left text-[13px] font-medium text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 py-2.5 px-3 rounded-lg hover:bg-emerald-500/15 transition-colors">
+              <MessageCircle className="h-4 w-4 mr-2.5 flex-shrink-0" />
               {t('messages.exclusiveGroup')}
-            </Button>
-          </div> : <div className="space-y-2">
-            <p className="text-xs text-muted-foreground text-center">{t('messages.joinFreeGroups')}</p>
-            <Button onClick={() => window.open("https://chat.whatsapp.com/DJz6BbLDbbK9MBX8YiTsbw", "_blank")} size="sm" className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white">
-              <MessageCircle className="h-4 w-4 mr-2" />
-              {t('messages.freeWhatsApp')}
-            </Button>
-            <Button onClick={() => window.open("https://t.me/+8NKj2KNvLPswZTIx", "_blank")} size="sm" className="w-full bg-[#0088cc] hover:bg-[#0077b5] text-white">
-              <Send className="h-4 w-4 mr-2" />
-              {t('messages.telegramAlerts')}
-            </Button>
-          </div>}
+            </button>
+          </a>
+        ) : (
+          <>
+            <a href="https://chat.whatsapp.com/DJz6BbLDbbK9MBX8YiTsbw" target="_blank" rel="noopener noreferrer" className="block">
+              <button className="w-full flex items-center text-left text-[13px] font-medium text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 py-2.5 px-3 rounded-lg hover:bg-emerald-500/15 transition-colors">
+                <MessageCircle className="h-4 w-4 mr-2.5 flex-shrink-0" />
+                {t('messages.freeWhatsApp')}
+              </button>
+            </a>
+            <a href="https://t.me/+8NKj2KNvLPswZTIx" target="_blank" rel="noopener noreferrer" className="block">
+              <button className="w-full flex items-center text-left text-[13px] font-medium text-blue-600 dark:text-blue-400 py-2.5 px-3 rounded-lg hover:bg-blue-500/15 transition-colors">
+                <Send className="h-4 w-4 mr-2.5 flex-shrink-0" />
+                {t('messages.telegramAlerts')}
+              </button>
+            </a>
+          </>
+        )}
+
+        <button onClick={() => navigate("/parceiro-login-artes")} className="w-full flex items-center text-left text-[13px] font-medium text-muted-foreground hover:text-foreground py-2.5 px-3 rounded-lg hover:bg-accent transition-colors">
+          <Users className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.collaboratorArea')}
+        </button>
       </div>
 
-      <div className="px-4 pt-4 border-t border-border mt-auto space-y-2">
-        <Button onClick={() => navigate("/parceiro-login-artes")} variant="ghost" size="sm" className="w-full justify-start text-muted-foreground hover:text-foreground">
-          <Users className="h-4 w-4 mr-2" />
-          {t('sidebar.collaboratorArea')}
-        </Button>
-      </div>
-    </div>;
+      {/* Logout */}
+      {user && (
+        <div className="pt-3 border-t border-border mt-3">
+          <button onClick={logout} className="w-full flex items-center text-left text-[12px] font-medium text-red-400 hover:text-red-300 py-2 px-3 rounded-lg hover:bg-red-500/10 transition-colors">
+            <LogOut className="h-3.5 w-3.5 mr-2" />
+            Sair
+          </button>
+        </div>
+      )}
+    </aside>
+  );
   const getSectionTitle = () => {
     switch (activeSection) {
       case 'packs':
