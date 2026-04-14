@@ -169,7 +169,7 @@ import { useUtmTracker } from "./hooks/useUtmTracker";
 
 // Loading fallback component
 const LoadingSpinner = () => (
-  <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex items-center justify-center">
+  <div className="min-h-screen bg-[#111113] flex items-center justify-center">
     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white/15"></div>
   </div>
 );
