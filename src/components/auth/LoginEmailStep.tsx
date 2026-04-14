@@ -45,7 +45,7 @@ const variantStyles = {
     text: 'text-gray-300',
   },
   teal: {
-    input: 'bg-[#0f0f1a] border-violet-500/30 text-white',
+    input: 'bg-[#0f0f1a] border-white/10 text-white',
     button: 'bg-violet-600 hover:bg-violet-700 text-white',
     signupButton: 'border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300',
     text: 'text-white/60',

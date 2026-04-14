@@ -602,7 +602,7 @@ const ToolVersionLessons = () => {
                   className={`w-full sm:w-auto ${
                     watchedLessons.includes(selectedLesson + 1) 
                       ? 'bg-green-600 hover:bg-green-700 text-white' 
-                      : 'bg-purple-900/60 border border-white/15 text-gray-300 hover:bg-green-600/20 hover:text-green-400 hover:border-green-500'
+                      : 'bg-white/5 border border-white/15 text-gray-300 hover:bg-green-600/20 hover:text-green-400 hover:border-green-500'
                   }`}
                 >
                   <Check className="h-4 w-4 mr-2" />
@@ -623,7 +623,7 @@ const ToolVersionLessons = () => {
                             ? handleToolButtonClick(button.url)
                             : handleRegularButtonClick(button.url)
                         }
-                        className="gap-2 bg-purple-900/60 border border-white/15 text-gray-300 hover:bg-slate-500/30 hover:text-white hover:border-white/15"
+                        className="gap-2 bg-white/5 border border-white/15 text-gray-300 hover:bg-slate-500/30 hover:text-white hover:border-white/15"
                       >
                         <ExternalLink className="w-4 h-4" />
                         {button.text}

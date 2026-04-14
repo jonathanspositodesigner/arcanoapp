@@ -789,7 +789,7 @@ const BibliotecaPrompts = () => {
                         navigate('/arcano-cloner-tool', { state: { referenceImageUrl: selectedPrompt.imageUrl } });
                       }
                     }}
-                    className={`w-full ${selectedPrompt.isPremium && !isPremium ? 'bg-purple-900/60 hover:bg-purple-900/80 text-gray-300' : 'bg-gradient-to-r from-pink-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-white'}`}
+                    className={`w-full ${selectedPrompt.isPremium && !isPremium ? 'bg-white/5 hover:bg-white/10 text-gray-300' : 'bg-gradient-to-r from-pink-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-white'}`}
                   >
                     {selectedPrompt.isPremium && !isPremium ? (
                       <><Lock className="h-4 w-4 mr-2" />Exclusivo Premium</>

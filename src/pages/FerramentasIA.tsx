@@ -282,7 +282,7 @@ const FerramentasIA = () => {
 
       {/* Button for VIP users: has upscaler pack AND (is prompts premium OR has credits) */}
       {hasUpscalerArcano && (promptsPlanType || credits > 0) && (
-        <div className="bg-gradient-to-r from-purple-900/50 to-fuchsia-900/50 border-b border-white/10">
+        <div className="bg-gradient-to-r from-white/5 to-slate-900/50 border-b border-white/10">
           <div className="container mx-auto px-4 py-3">
             <Button
               onClick={() => navigate('/ferramentas-ia-aplicativo')}

@@ -182,7 +182,7 @@ const UpscalerArcanoVersionSelect = () => {
   };
 
   const getVersionColors = (_version: ToolVersion, _isUnlocked: boolean) => {
-    return 'bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-white/10 hover:border-white/15';
+    return 'bg-gradient-to-br from-white/5 to-slate-700/30 border-white/10 hover:border-white/15';
   };
 
   return (
@@ -200,7 +200,7 @@ const UpscalerArcanoVersionSelect = () => {
             return (
               <Card 
                 key={version.id + '-' + version.name}
-                className={`relative overflow-hidden transition-all cursor-pointer group bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-white/10 hover:border-white/15`}
+                className={`relative overflow-hidden transition-all cursor-pointer group bg-gradient-to-br from-white/5 to-slate-700/30 border-white/10 hover:border-white/15`}
                 onClick={() => {
                   if (hasVersionAccess) {
                     handleVersionClick(version);

@@ -60,7 +60,7 @@ const RefinementCarousel: React.FC<RefinementCarouselProps> = ({ history, select
         {canScrollLeft && (
           <button
             onClick={() => scroll('left')}
-            className="absolute left-0 z-10 w-6 h-6 flex items-center justify-center bg-purple-900/80 border border-white/10 rounded-full text-gray-300 hover:text-white hover:bg-slate-800 transition-colors"
+            className="absolute left-0 z-10 w-6 h-6 flex items-center justify-center bg-white/10 border border-white/10 rounded-full text-gray-300 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
@@ -108,7 +108,7 @@ const RefinementCarousel: React.FC<RefinementCarouselProps> = ({ history, select
         {canScrollRight && (
           <button
             onClick={() => scroll('right')}
-            className="absolute right-0 z-10 w-6 h-6 flex items-center justify-center bg-purple-900/80 border border-white/10 rounded-full text-gray-300 hover:text-white hover:bg-slate-800 transition-colors"
+            className="absolute right-0 z-10 w-6 h-6 flex items-center justify-center bg-white/10 border border-white/10 rounded-full text-gray-300 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <ChevronRight className="w-3.5 h-3.5" />
           </button>

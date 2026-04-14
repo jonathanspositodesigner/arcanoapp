@@ -106,7 +106,7 @@ const SavedCharactersPanel: React.FC<SavedCharactersPanelProps> = ({ userId, ref
           ) : (
             <div className="grid grid-cols-2 gap-2">
               {characters.map((char) => (
-                <Card key={char.id} className="relative overflow-hidden border-white/10 bg-purple-900/10 group">
+                <Card key={char.id} className="relative overflow-hidden border-white/10 bg-white/5 group">
                   <div className="aspect-square">
                     <img
                       src={char.image_url}

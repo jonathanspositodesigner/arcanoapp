@@ -103,7 +103,7 @@ const ChangePasswordArtesMusicos = () => {
   if (sentParam === '1' && emailParam && !hasSession) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#2d1b4e] to-[#0f0f1a] flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-violet-500/30">
+        <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-white/10">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-violet-500/30 rounded-full flex items-center justify-center mb-4">
               <Mail className="h-6 w-6 text-violet-400" />
@@ -128,7 +128,7 @@ const ChangePasswordArtesMusicos = () => {
               <Button
                 onClick={handleRefreshSession}
                 variant="outline"
-                className="w-full border-violet-500/30 text-white hover:bg-violet-500/20"
+                className="w-full border-white/10 text-white hover:bg-violet-500/20"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Já cliquei no link
@@ -216,7 +216,7 @@ const ChangePasswordArtesMusicos = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#2d1b4e] to-[#0f0f1a] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-violet-500/30">
+      <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-white/10">
         <CardHeader className="text-center">
           <div className="mx-auto w-12 h-12 bg-violet-500/30 rounded-full flex items-center justify-center mb-4">
             <Lock className="h-6 w-6 text-violet-400" />
@@ -237,7 +237,7 @@ const ChangePasswordArtesMusicos = () => {
                 placeholder="Nova senha"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-[#0f0f1a] border-violet-500/30 text-white pr-10"
+                className="bg-[#0f0f1a] border-white/10 text-white pr-10"
                 required
               />
               <button
@@ -254,7 +254,7 @@ const ChangePasswordArtesMusicos = () => {
                 placeholder="Confirmar nova senha"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="bg-[#0f0f1a] border-violet-500/30 text-white pr-10"
+                className="bg-[#0f0f1a] border-white/10 text-white pr-10"
                 required
               />
               <button

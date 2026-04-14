@@ -167,7 +167,7 @@ const ClonerDemoAnimation: React.FC = () => {
       </div>
 
       {/* Main mockup */}
-      <div className="relative bg-[#1A0A2E]/90 border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-purple-900/40">
+      <div className="relative bg-[#1A0A2E]/90 border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/40">
         {/* Top bar */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-black/30">
           <div className="flex gap-1.5">
@@ -281,7 +281,7 @@ const ClonerDemoAnimation: React.FC = () => {
                                'rounded bg-slate-700/40 border border-white/10 flex items-center justify-center transition-all duration-300',
                                n === 4 ? 'border-fuchsia-500/60 bg-fuchsia-700/30 scale-105' : ''
                              )}>
-                               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-purple-400/40">
+                               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-gray-400/40">
                                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
                                </svg>
                              </div>
@@ -369,7 +369,7 @@ const ClonerDemoAnimation: React.FC = () => {
                   </p>
                   <span className="text-[9px] text-fuchsia-400 font-bold">50%</span>
                 </div>
-                <div className="h-1.5 bg-purple-900/60 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                   <div className="h-full w-1/2 bg-gradient-to-r from-slate-500 to-slate-400 rounded-full" />
                 </div>
               </div>
@@ -398,7 +398,7 @@ const ClonerDemoAnimation: React.FC = () => {
                   <span className="text-[10px] text-gray-400">Gerando sua imagem...</span>
                   <span className="text-[10px] text-fuchsia-400 font-bold">{Math.round(loadingProgress)}%</span>
                 </div>
-                <div className="h-1.5 bg-purple-900/60 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-slate-500 to-slate-400 rounded-full transition-all duration-100 ease-linear"
                     style={{ width: `${loadingProgress}%` }}

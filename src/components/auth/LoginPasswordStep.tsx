@@ -59,7 +59,7 @@ const variantStyles = {
     emailIcon: 'text-violet-400',
     emailText: 'text-white/80',
     changeBtn: 'text-violet-400 hover:text-violet-300',
-    input: 'bg-[#0f0f1a] border-violet-500/30 text-white',
+    input: 'bg-[#0f0f1a] border-white/10 text-white',
     button: 'bg-violet-600 hover:bg-violet-700 text-white',
     forgotLink: 'text-violet-400 hover:text-violet-300 underline',
   },

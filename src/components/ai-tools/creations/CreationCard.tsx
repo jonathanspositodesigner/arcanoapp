@@ -113,7 +113,7 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
   return (
     <Card className="overflow-hidden bg-white/5 border-white/10 hover:border-slate-500/50 transition-all group">
       {/* Media Preview */}
-      <div className="relative aspect-square bg-purple-950/50 flex items-center justify-center overflow-hidden">
+      <div className="relative aspect-square bg-white/5 flex items-center justify-center overflow-hidden">
         {imageError ? (
           <div className="flex flex-col items-center gap-2 text-gray-500 p-4">
             <AlertCircle className="w-8 h-8" />

@@ -730,7 +730,7 @@ const GerarVideoTool = () => {
                         <button
                           onClick={() => startFrameRef.current?.click()}
                           disabled={isGenerating}
-                          className="w-full h-16 rounded-lg border-2 border-dashed border-slate-500/40 hover:border-white/15/60 bg-purple-900/10 hover:bg-white/5 flex flex-col items-center justify-center gap-1 transition-colors"
+                          className="w-full h-16 rounded-lg border-2 border-dashed border-slate-500/40 hover:border-white/15/60 bg-white/5 hover:bg-white/5 flex flex-col items-center justify-center gap-1 transition-colors"
                         >
                           <Upload className="h-4 w-4 text-gray-400" />
                           <span className="text-[10px] text-gray-300">Enviar imagem</span>
@@ -764,7 +764,7 @@ const GerarVideoTool = () => {
                             <button
                               onClick={() => endFrameRef.current?.click()}
                               disabled={isGenerating}
-                              className="w-full h-16 rounded-lg border-2 border-dashed border-slate-500/40 hover:border-white/15/60 bg-purple-900/10 hover:bg-white/5 flex flex-col items-center justify-center gap-1 transition-colors"
+                              className="w-full h-16 rounded-lg border-2 border-dashed border-slate-500/40 hover:border-white/15/60 bg-white/5 hover:bg-white/5 flex flex-col items-center justify-center gap-1 transition-colors"
                             >
                               <Upload className="h-4 w-4 text-gray-400" />
                               <span className="text-[10px] text-gray-300">Enviar imagem</span>

@@ -319,7 +319,7 @@ const Planos = () => {
 
               <Button 
                 onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
-                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 text-white font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-purple-900/70 text-gray-300"}`}
+                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 text-white font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-white/10 text-gray-300"}`}
               >
                 {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>

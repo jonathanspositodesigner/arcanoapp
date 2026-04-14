@@ -390,7 +390,7 @@ const Planos2 = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 pb-16">
         {/* Limited Time Promo Banner with Countdown */}
-        <div className="max-w-6xl mx-auto mb-6 rounded-xl overflow-hidden border border-red-500/30 bg-gradient-to-r from-red-950/80 via-purple-950/60 to-red-950/80">
+        <div className="max-w-6xl mx-auto mb-6 rounded-xl overflow-hidden border border-red-500/30 bg-gradient-to-r from-red-950/80 via-slate-950/60 to-red-950/80">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3">
             {/* Left: Promo text */}
             <div className="flex items-center gap-2 animate-pulse">
@@ -546,7 +546,7 @@ const Planos2 = () => {
                         }
                       }}
                       disabled={isDisabled || isMPLoading}
-                      className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-slate-500/20 border border-slate-500/40 text-gray-300 cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-purple-900/70 text-gray-300"}`}
+                      className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-slate-500/20 border border-slate-500/40 text-gray-300 cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-white font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-white/10 text-gray-300"}`}
                     >
                       {buttonText}
                     </Button>

@@ -140,7 +140,7 @@ const ArtesMusicosMarketing = () => {
             isReordering && "[&>*]:ring-2 [&>*]:ring-violet-500/20 [&>*]:hover:ring-violet-500/40"
           )}>
             {/* Push Notification Analytics */}
-            <Card className="p-6 border-2 border-violet-500/30 relative" {...getDragProps("push-analytics")}>
+            <Card className="p-6 border-2 border-white/10 relative" {...getDragProps("push-analytics")}>
               {isReordering && (
                 <div className="absolute top-2 right-2 z-10 p-1 bg-violet-500/20 rounded-md">
                   <GripVertical className="h-4 w-4 text-violet-500" />

@@ -17,7 +17,7 @@ const RefinementTimeline: React.FC<RefinementTimelineProps> = ({ versions, selec
   return (
     <div className="px-3 py-2 border-t border-white/10 flex-shrink-0">
       <p className="text-[10px] text-gray-400 mb-1.5">Versões</p>
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-purple-500/30">
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-slate-500/30">
         {versions.map((v, i) => (
           <button
             key={i}

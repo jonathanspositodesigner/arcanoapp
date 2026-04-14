@@ -184,7 +184,7 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
     return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/80 pointer-events-auto" onClick={finishTutorial} />
-        <div className="relative z-10 bg-[#1e1e3a] border border-white/10 rounded-2xl p-6 shadow-2xl shadow-purple-900/40 max-w-xs w-full pointer-events-auto animate-scale-in text-center">
+        <div className="relative z-10 bg-[#1e1e3a] border border-white/10 rounded-2xl p-6 shadow-2xl shadow-black/40 max-w-xs w-full pointer-events-auto animate-scale-in text-center">
           <div className="text-4xl mb-3">🎬</div>
           <h2 className="text-lg font-bold text-white mb-1">Primeira vez aqui?</h2>
           <p className="text-xs text-gray-400 mb-5">Aprenda a usar em 5 passos rápidos.</p>
@@ -278,7 +278,7 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
           zIndex: 100,
         }}
       >
-        <div className="bg-[#1e1e3a] border border-white/10 rounded-2xl p-4 shadow-2xl shadow-purple-900/30 max-w-lg mx-auto">
+        <div className="bg-[#1e1e3a] border border-white/10 rounded-2xl p-4 shadow-2xl shadow-black/30 max-w-lg mx-auto">
           {/* Progress */}
           <div className="mb-3">
             <div className="flex items-center justify-between mb-1.5">

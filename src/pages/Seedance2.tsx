@@ -685,7 +685,7 @@ export default function Seedance2() {
                   disabled={!canGenerate() || uploading}
                   className={`group relative flex h-[44px] items-center justify-center gap-2 overflow-hidden rounded-xl px-4 text-sm font-semibold transition-all duration-300 ${
                     canGenerate() && !uploading
-                      ? "bg-gradient-to-r from-slate-600 to-slate-400 text-white shadow-lg shadow-purple-500/25 active:scale-[0.98]"
+                      ? "bg-gradient-to-r from-slate-600 to-slate-400 text-white shadow-lg shadow-slate-500/20 active:scale-[0.98]"
                       : "cursor-not-allowed bg-white/5 text-gray-600"
                   }`}
                 >
@@ -781,7 +781,7 @@ export default function Seedance2() {
                       disabled={!canGenerate() || uploading}
                       className={`group relative flex h-[48px] items-center justify-center gap-2.5 overflow-hidden rounded-xl px-5 text-sm font-semibold transition-all duration-300 ${
                         canGenerate() && !uploading
-                          ? "bg-gradient-to-r from-slate-600 to-slate-400 text-white shadow-lg shadow-purple-500/25 hover:shadow-gray-500 hover:scale-[1.02] active:scale-[0.98]"
+                          ? "bg-gradient-to-r from-slate-600 to-slate-400 text-white shadow-lg shadow-slate-500/20 hover:shadow-gray-500 hover:scale-[1.02] active:scale-[0.98]"
                           : "cursor-not-allowed bg-white/5 text-gray-600"
                       }`}
                     >
@@ -924,7 +924,7 @@ export default function Seedance2() {
                     type="range" min={4} max={15} step={1}
                     value={parseInt(duration)}
                     onChange={(e) => setDuration(e.target.value)}
-                    className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/10 accent-purple-500 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-slate-400"
+                    className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/10 accent-slate-500 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-slate-400"
                   />
                   <span className="min-w-[24px] text-center text-[11px] font-medium text-gray-300">{duration}s</span>
                 </div>

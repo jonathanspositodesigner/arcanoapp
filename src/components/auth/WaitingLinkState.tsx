@@ -57,7 +57,7 @@ const variantStyles = {
     changeButton: 'text-gray-400 hover:text-white',
   },
   teal: {
-    card: 'bg-[#1a1a2e]/80 border-violet-500/30',
+    card: 'bg-[#1a1a2e]/80 border-white/10',
     iconBg: 'bg-violet-500/20',
     icon: 'text-violet-400',
     title: 'text-white',
