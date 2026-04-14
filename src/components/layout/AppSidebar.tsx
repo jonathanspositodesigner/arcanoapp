@@ -53,10 +53,6 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
         lg:pt-4
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        {/* Logo */}
-        <div className="mb-6 flex justify-center">
-          <img alt="ArcanoApp" className="w-[50%] cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate('/')} src="/lovable-uploads/7fbeb2fd-d77d-4357-acff-1947c5565fad.png" />
-        </div>
 
         {/* Scrollable content */}
         <div className="flex-1 min-h-0 overflow-y-auto space-y-1">
