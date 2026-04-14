@@ -755,7 +755,7 @@ const UpscalerArcanoTool: React.FC = () => {
     <AppLayout fullScreen>
 
       {/* Main Content - Two Column Layout */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-4 flex flex-col h-full overflow-hidden">
+      <div className={`flex-1 max-w-7xl w-full mx-auto px-4 py-4 flex flex-col h-full overflow-hidden ${isMobile ? 'pb-20' : ''}`}>
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-5 flex-1 min-h-0">
           
           {/* Left Side - Controls Panel inside ONE card */}
@@ -997,8 +997,8 @@ const UpscalerArcanoTool: React.FC = () => {
               )}
 
 
-              {/* Generate Button - always visible */}
-              {!isProcessing && status !== 'completed' && (
+              {/* Generate Button - DESKTOP ONLY (mobile has fixed bottom bar) */}
+              {!isMobile && !isProcessing && status !== 'completed' && (
                 <Button
                   className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
                   onClick={processImage}
@@ -1022,8 +1022,8 @@ const UpscalerArcanoTool: React.FC = () => {
                 </Button>
               )}
 
-              {/* Completed Actions */}
-              {status === 'completed' && (
+              {/* Completed Actions - DESKTOP ONLY */}
+              {!isMobile && status === 'completed' && (
                 <div className="space-y-2">
                   <Button
                     className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl"
@@ -1043,8 +1043,8 @@ const UpscalerArcanoTool: React.FC = () => {
                 </div>
               )}
 
-              {/* Error State */}
-              {status === 'error' && lastError && (
+              {/* Error State - DESKTOP ONLY */}
+              {!isMobile && status === 'error' && lastError && (
                 <div className="bg-red-950/30 border border-red-500/30 rounded-xl p-3">
                   <div className="flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
@@ -1404,6 +1404,70 @@ const UpscalerArcanoTool: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* MOBILE FIXED BOTTOM BAR - Generate/Download/Error buttons */}
+      {isMobile && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#1a1a2e]/95 backdrop-blur-md border-t border-white/10 px-4 py-3 safe-area-pb">
+          {!isProcessing && status !== 'completed' && status !== 'error' && (
+            <Button
+              className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
+              onClick={processImage}
+              disabled={isSubmitting || !inputImage}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Iniciando...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Gerar Upscaling
+                  <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                    <Coins className="w-3.5 h-3.5" />
+                    {isLogoMode ? 50 : (version === 'pro' ? getCreditCost('Upscaler Pro', 80) : getCreditCost('Upscaler Arcano', 60))}
+                  </span>
+                </>
+              )}
+            </Button>
+          )}
+
+          {status === 'completed' && (
+            <div className="flex gap-2">
+              <Button
+                className="flex-1 py-4 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl"
+                onClick={downloadResult}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                {t('upscalerTool.buttons.downloadHD')}
+              </Button>
+              <Button
+                variant="outline"
+                className="py-4 px-4 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                onClick={resetTool}
+              >
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+
+          {status === 'error' && lastError && (
+            <div className="flex gap-2 items-center">
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-red-300 truncate">{lastError.message}</p>
+              </div>
+              <Button
+                variant="outline"
+                className="py-3 px-4 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg flex-shrink-0"
+                onClick={resetTool}
+              >
+                <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                Tentar
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* No Credits Modal */}
       <NoCreditsModal
