@@ -395,7 +395,7 @@ const BibliotecaArtes = () => {
           </Badge> : <Badge variant="outline" className="border-green-500 dark:text-green-400 text-green-600 text-[10px] sm:text-xs">
             {t('badges.free')}
           </Badge>}
-        {item.pack && <Badge className="bg-primary/80 text-foreground border-0 text-[10px] sm:text-xs">
+        {item.pack && <Badge className="bg-primary/80 text-white border-0 text-[10px] sm:text-xs">
             {item.pack}
           </Badge>}
       </div>;
