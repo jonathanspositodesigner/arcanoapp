@@ -613,160 +613,230 @@ const FlyerMakerTool: React.FC = () => {
 
   return (
     <AppLayout fullScreen>
-      <div className="h-full lg:overflow-hidden overflow-y-auto bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
+      <div className="h-full lg:overflow-hidden overflow-y-auto flex flex-col">
         {isProcessing && (
-          <div className="bg-amber-500/20 border-b border-amber-500/30 px-4 py-2 flex items-center justify-center gap-2">
+          <div className="bg-amber-500/20 border-b border-amber-500/50 px-4 py-2 flex items-center justify-center gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-400" />
             <span className="text-xs text-amber-200">Não feche esta página durante o processamento</span>
           </div>
         )}
 
-        <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden flex flex-col">
-          <div className="text-center py-3">
-            <h1 className="text-2xl lg:text-3xl font-bold text-white">Flyer Maker</h1>
-            <p className="text-sm text-purple-300 mt-1 max-w-lg mx-auto">Crie flyers profissionais a partir de uma referência e seus dados.</p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 flex-1 lg:min-h-0">
+        <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-4 overflow-y-auto lg:overflow-hidden flex flex-col">
+          <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-5 flex-1 lg:min-h-0">
             {/* INPUTS */}
-            <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto pr-1 custom-scrollbar">
-              {!refineMode ? (
-                <>
-                  <ReferenceImageCard 
-                    image={referenceImage} 
-                    onClearImage={() => { setReferenceImage(null); setReferenceFile(null); }} 
-                    onOpenLibrary={() => setShowPhotoLibrary(true)} 
-                    disabled={isProcessing}
-                    title="Flyer de Referência"
-                    emptyLabel="Escolher da biblioteca"
-                    emptySubLabel="Ou envie seu flyer"
-                  />
+            <div className="lg:col-span-2 min-h-0 overflow-hidden">
+              <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-4 overflow-y-auto h-full max-h-full"
+                style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}
+              >
+                {/* Title */}
+                <div>
+                  <h1 className="text-xl font-bold text-white">Flyer Maker</h1>
+                  <p className="text-xs text-gray-400 mt-1">Crie flyers profissionais a partir de uma referência e seus dados.</p>
+                </div>
 
-                  <Card className="p-3 bg-purple-900/20 border-purple-500/30">
-                    <Label className="text-xs text-purple-200 mb-2 block">Fotos dos Artistas (1-5)</Label>
-                    <div className="grid grid-cols-5 gap-1">
-                      {artistPhotos.map((photo, idx) => (
-                        <div key={idx} className="relative aspect-square rounded overflow-hidden group">
-                          <img src={photo.url} alt="" className="w-full h-full object-cover" />
-                          <button onClick={() => removeArtistPhoto(idx)} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity" disabled={isProcessing}>
+                {!refineMode ? (
+                  <>
+                    <ReferenceImageCard 
+                      image={referenceImage} 
+                      onClearImage={() => { setReferenceImage(null); setReferenceFile(null); }} 
+                      onOpenLibrary={() => setShowPhotoLibrary(true)} 
+                      disabled={isProcessing}
+                      title="Flyer de Referência"
+                      emptyLabel="Escolher da biblioteca"
+                      emptySubLabel="Ou envie seu flyer"
+                    />
+
+                    {/* Artist Photos */}
+                    <div className="border border-white/10 rounded-xl p-4 bg-black/30">
+                      <span className="text-sm font-medium text-white mb-2 block">Fotos dos Artistas (1-5)</span>
+                      <div className="grid grid-cols-5 gap-1.5">
+                        {artistPhotos.map((photo, idx) => (
+                          <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group">
+                            <img src={photo.url} alt="" className="w-full h-full object-cover" />
+                            <button onClick={() => removeArtistPhoto(idx)} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity" disabled={isProcessing}>
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                        {artistPhotos.length < 5 && (
+                          <label className={`aspect-square rounded-lg border-2 border-dashed border-white/15 flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
+                            <input type="file" accept="image/*" className="hidden" onChange={handleArtistPhotoUpload} disabled={isProcessing} />
+                            <Plus className="w-5 h-5 text-gray-400" />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Logo */}
+                    <div className="border border-white/10 rounded-xl p-4 bg-black/30">
+                      <span className="text-sm font-medium text-white mb-2 block">Logo do Local</span>
+                      {logoImage ? (
+                        <div className="relative h-20 rounded-lg overflow-hidden group">
+                          <img src={logoImage} alt="" className="w-full h-full object-contain bg-black/20" />
+                          <button onClick={() => { setLogoImage(null); setLogoFile(null); }} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity" disabled={isProcessing}>
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
-                      ))}
-                      {artistPhotos.length < 5 && (
-                        <label className={`aspect-square rounded border-2 border-dashed border-purple-500/30 flex items-center justify-center cursor-pointer hover:bg-purple-500/10 transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
-                          <input type="file" accept="image/*" className="hidden" onChange={handleArtistPhotoUpload} disabled={isProcessing} />
-                          <Plus className="w-5 h-5 text-purple-400" />
+                      ) : (
+                        <label className={`h-20 rounded-lg border-2 border-dashed border-white/15 flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
+                          <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={isProcessing} />
+                          <Upload className="w-5 h-5 text-gray-400 mb-1" />
+                          <span className="text-[10px] text-gray-500">Upload Logo</span>
                         </label>
                       )}
                     </div>
-                  </Card>
 
-                  <Card className="p-3 bg-purple-900/20 border-purple-500/30">
-                    <Label className="text-xs text-purple-200 mb-2 block">Logo do Local</Label>
-                    {logoImage ? (
-                      <div className="relative h-20 rounded overflow-hidden group">
-                        <img src={logoImage} alt="" className="w-full h-full object-contain bg-black/20" />
-                        <button onClick={() => { setLogoImage(null); setLogoFile(null); }} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity" disabled={isProcessing}>
-                          <Trash2 className="w-4 h-4" />
+                    {/* Text inputs */}
+                    <div className="space-y-2.5">
+                      <div>
+                        <span className="text-xs text-gray-400 mb-1 block">Data e Horário:</span>
+                        <Input placeholder="SEG.18.ABR - 18H" value={dateTimeLocation} onChange={e => setDateTimeLocation(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-white/10 text-white text-sm h-10 uppercase placeholder:text-gray-500" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-gray-400 mb-1 block">Título do Evento:</span>
+                        <Input placeholder="DEU FERIAS" value={title} onChange={e => setTitle(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-white/10 text-white text-sm h-10 uppercase placeholder:text-gray-500" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-gray-400 mb-1 block">Endereço:</span>
+                        <Input placeholder="ENDEREÇO DO LOCAL..." value={address} onChange={e => setAddress(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-white/10 text-white text-sm h-10 uppercase placeholder:text-gray-500" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-gray-400 mb-1 block">Nomes dos Artistas:</span>
+                        <Input placeholder="DJ ALOK - RASTA CHINELA..." value={artistNames} onChange={e => setArtistNames(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-white/10 text-white text-sm h-10 uppercase placeholder:text-gray-500" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-gray-400 mb-1 block">Rodapé / Promoção:</span>
+                        <Input placeholder="ENTRADA OFF PARA ELAS..." value={footerPromo} onChange={e => setFooterPromo(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-white/10 text-white text-sm h-10 uppercase placeholder:text-gray-500" />
+                      </div>
+                    </div>
+
+                    {/* Size Toggle */}
+                    <div>
+                      <span className="text-sm font-medium text-white mb-2 block">Tamanho</span>
+                      <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1">
+                        <button
+                          onClick={() => setImageSize('3:4')}
+                          className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
+                            imageSize === '3:4'
+                              ? 'bg-white/10 text-white'
+                              : 'text-gray-400 hover:text-white'
+                          }`}
+                          disabled={isProcessing}
+                        >
+                          Feed (3:4)
+                        </button>
+                        <button
+                          onClick={() => setImageSize('9:16')}
+                          className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
+                            imageSize === '9:16'
+                              ? 'bg-white/10 text-white'
+                              : 'text-gray-400 hover:text-white'
+                          }`}
+                          disabled={isProcessing}
+                        >
+                          Stories (9:16)
                         </button>
                       </div>
-                    ) : (
-                      <label className={`h-20 rounded border-2 border-dashed border-purple-500/30 flex flex-col items-center justify-center cursor-pointer hover:bg-purple-500/10 transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
-                        <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={isProcessing} />
-                        <Upload className="w-5 h-5 text-purple-400 mb-1" />
-                        <span className="text-[10px] text-purple-300">Upload Logo</span>
-                      </label>
+                    </div>
+
+                    <CreativitySlider value={creativity} onChange={setCreativity} disabled={isProcessing} max={5} showRecommendation={false} />
+
+                    {/* Generate Button */}
+                    {!isProcessing && status !== 'completed' && (
+                      <Button
+                        className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
+                        disabled={!canProcess || isSubmitting}
+                        onClick={handleProcess}
+                      >
+                        {isSubmitting ? (
+                          <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando...</>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Gerar Flyer
+                            <span className="ml-2 flex items-center gap-1 text-xs opacity-90"><Coins className="w-3.5 h-3.5" /> {creditCost}</span>
+                          </>
+                        )}
+                      </Button>
                     )}
-                  </Card>
 
-                  <div className="space-y-2">
-                    <div>
-                      <Label className="text-[10px] text-purple-300 mb-0.5 block">Data e Horário:</Label>
-                      <Input placeholder="SEG.18.ABR - 18H" value={dateTimeLocation} onChange={e => setDateTimeLocation(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8 uppercase" />
-                    </div>
-                    <div>
-                      <Label className="text-[10px] text-purple-300 mb-0.5 block">Título do Evento:</Label>
-                      <Input placeholder="DEU FERIAS" value={title} onChange={e => setTitle(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8 uppercase" />
-                    </div>
-                    <div>
-                      <Label className="text-[10px] text-purple-300 mb-0.5 block">Endereço:</Label>
-                      <Input placeholder="ENDEREÇO DO LOCAL..." value={address} onChange={e => setAddress(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8 uppercase" />
-                    </div>
-                    <div>
-                      <Label className="text-[10px] text-purple-300 mb-0.5 block">Nomes dos Artistas:</Label>
-                      <Input placeholder="DJ ALOK - RASTA CHINELA..." value={artistNames} onChange={e => setArtistNames(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8 uppercase" />
-                    </div>
-                    <div>
-                      <Label className="text-[10px] text-purple-300 mb-0.5 block">Rodapé / Promoção:</Label>
-                      <Input placeholder="ENTRADA OFF PARA ELAS..." value={footerPromo} onChange={e => setFooterPromo(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-purple-900/20 border-purple-500/30 text-white text-xs h-8 uppercase" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" onClick={() => setImageSize('3:4')} size="sm" className={`text-xs h-8 ${imageSize === '3:4' ? 'border-cyan-400 bg-purple-700/40 text-white' : 'border-purple-700/40 bg-purple-900/20 text-purple-400 hover:text-purple-200'}`} disabled={isProcessing}>Feed (3:4)</Button>
-                    <Button variant="outline" onClick={() => setImageSize('9:16')} size="sm" className={`text-xs h-8 ${imageSize === '9:16' ? 'border-cyan-400 bg-purple-700/40 text-white' : 'border-purple-700/40 bg-purple-900/20 text-purple-400 hover:text-purple-200'}`} disabled={isProcessing}>Stories (9:16)</Button>
-                  </div>
-
-                  <CreativitySlider value={creativity} onChange={setCreativity} disabled={isProcessing} max={5} showRecommendation={false} />
-
-                  <Button
-                    size="sm"
-                    className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs mt-2"
-                    disabled={!canProcess || isProcessing || isSubmitting}
-                    onClick={handleProcess}
-                  >
-                    {isSubmitting || isProcessing ? (
-                      <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Processando...</>
-                    ) : (
-                      <><Sparkles className="w-3.5 h-3.5 mr-1.5" /> Gerar Flyer <span className="ml-2 flex items-center gap-1 text-xs opacity-90"><Coins className="w-3 h-3" /> {creditCost}</span></>
+                    {/* Completed Actions */}
+                    {status === 'completed' && (
+                      <div className="space-y-2">
+                        <Button
+                          className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl"
+                          onClick={() => download({ url: outputImage!, filename: `flyer-${Date.now()}.png` })}
+                        >
+                          <Download className="w-4 h-4 mr-2" /> Baixar HD
+                        </Button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            variant="outline"
+                            className="w-full py-3 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                            onClick={handleNew}
+                          >
+                            <RefreshCw className="w-4 h-4 mr-2" /> Nova
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="w-full py-3 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                            onClick={() => setRefineMode(true)}
+                          >
+                            <Wand2 className="w-4 h-4 mr-2" /> Alterar
+                          </Button>
+                        </div>
+                      </div>
                     )}
-                  </Button>
 
-                  {status === 'waiting' && (
-                    <Button variant="outline" size="sm" className="w-full text-xs border-red-500/30 text-red-300 hover:bg-red-500/10" onClick={handleCancelQueue}>
-                      <XCircle className="w-3.5 h-3.5 mr-1.5" /> Sair da Fila
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <RefinePanel
-                  title="Fazer Alteração"
-                  buttonLabel="Fazer Alteração"
-                  loadingLabel="Alterando..."
-                  prompt={refinePrompt}
-                  onPromptChange={setRefinePrompt}
-                  referencePreview={refineReferencePreview}
-                  onReferenceChange={(file, preview) => {
-                    setRefineReferenceFile(file);
-                    setRefineReferencePreview(preview);
-                  }}
-                  onSubmit={handleRefine}
-                  onCancel={() => {
-                    setRefineMode(false);
-                    setRefinePrompt('');
-                    setRefineReferenceFile(null);
-                    setRefineReferencePreview(null);
-                  }}
-                  isRefining={isRefining}
-                />
-              )}
+                    {status === 'waiting' && (
+                      <Button
+                        variant="outline"
+                        className="w-full py-3 text-sm border-red-500/30 text-red-300 hover:bg-red-500/10 rounded-xl"
+                        onClick={handleCancelQueue}
+                      >
+                        <XCircle className="w-4 h-4 mr-2" /> Sair da Fila
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <RefinePanel
+                    title="Fazer Alteração"
+                    buttonLabel="Fazer Alteração"
+                    loadingLabel="Alterando..."
+                    prompt={refinePrompt}
+                    onPromptChange={setRefinePrompt}
+                    referencePreview={refineReferencePreview}
+                    onReferenceChange={(file, preview) => {
+                      setRefineReferenceFile(file);
+                      setRefineReferencePreview(preview);
+                    }}
+                    onSubmit={handleRefine}
+                    onCancel={() => {
+                      setRefineMode(false);
+                      setRefinePrompt('');
+                      setRefineReferenceFile(null);
+                      setRefineReferencePreview(null);
+                    }}
+                    isRefining={isRefining}
+                  />
+                )}
+              </div>
             </div>
 
             {/* OUTPUT */}
-            <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
-              <Card className="relative overflow-hidden bg-purple-900/20 border-purple-500/30 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
-                <div className="px-3 py-2 border-b border-purple-500/20 flex items-center justify-between flex-shrink-0">
-                  <h3 className="text-xs font-semibold text-white flex items-center gap-1.5"><ImageIcon className="w-3.5 h-3.5 text-fuchsia-400" /> Resultado</h3>
+            <div className="lg:col-span-5 min-h-0 overflow-hidden">
+              <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-[400px] h-full">
+                <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between flex-shrink-0">
+                  <h3 className="text-sm font-semibold text-white flex items-center gap-1.5"><ImageIcon className="w-4 h-4 text-gray-400" /> Resultado</h3>
                   {outputImage && (
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-purple-300 hover:text-white" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-3.5 h-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-purple-300 hover:text-white" onClick={() => transformRef.current?.zoomIn(0.5)}><ZoomIn className="w-3.5 h-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white" onClick={() => transformRef.current?.zoomIn(0.5)}><ZoomIn className="w-4 h-4" /></Button>
                     </div>
                   )}
                 </div>
 
-                <div className="relative flex-1 min-h-0 flex items-center justify-center">
+                <div className="relative flex-1 min-h-0 flex items-center justify-center p-4">
                   {outputImage ? (
                     <TransformWrapper ref={transformRef} initialScale={1} minScale={0.5} maxScale={4}>
                       <TransformComponent
@@ -779,39 +849,31 @@ const FlyerMakerTool: React.FC = () => {
                   ) : isRefining ? (
                     <div className="flex flex-col items-center p-8">
                       <div className="relative w-16 h-16 mb-4">
-                        <div className="absolute inset-0 rounded-full border-4 border-fuchsia-500/30"></div>
-                        <div className="absolute inset-0 rounded-full border-4 border-t-fuchsia-400 animate-spin"></div>
-                        <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-fuchsia-400" />
+                        <div className="absolute inset-0 rounded-full border-4 border-white/10"></div>
+                        <div className="absolute inset-0 rounded-full border-4 border-t-blue-400 animate-spin"></div>
+                        <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-blue-400" />
                       </div>
                       <p className="text-white font-medium mb-1">Refinando imagem...</p>
-                      <p className="text-xs text-purple-300 animate-pulse">A IA está modificando sua imagem</p>
+                      <p className="text-xs text-gray-400 animate-pulse">A IA está modificando sua imagem</p>
                     </div>
                   ) : (
                     <div className="text-center p-8">
                       {isProcessing ? (
                         <div className="flex flex-col items-center">
                           <div className="relative w-16 h-16 mb-4">
-                            <div className="absolute inset-0 rounded-full border-4 border-purple-500/30"></div>
-                            <div className="absolute inset-0 rounded-full border-4 border-t-fuchsia-500 animate-spin"></div>
+                            <div className="absolute inset-0 rounded-full border-4 border-white/10"></div>
+                            <div className="absolute inset-0 rounded-full border-4 border-t-blue-500 animate-spin"></div>
                           </div>
                           <p className="text-white font-medium mb-1">{status === 'uploading' ? 'Enviando imagens...' : status === 'waiting' ? `Na fila: Posição ${queuePosition}` : 'Processando IA...'}</p>
-                          <p className="text-xs text-purple-300 animate-pulse">{queueMessages[queueMessageIndex].text}</p>
-                          <div className="w-48 h-1 bg-purple-900/50 rounded-full mt-4 overflow-hidden"><div className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300" style={{ width: `${progress}%` }}></div></div>
+                          <p className="text-xs text-gray-400 animate-pulse">{queueMessages[queueMessageIndex].text}</p>
+                          <div className="w-48 h-1 bg-white/10 rounded-full mt-4 overflow-hidden"><div className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300" style={{ width: `${progress}%` }}></div></div>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center text-purple-400/50">
+                        <div className="flex flex-col items-center text-gray-500">
                           <ImageIcon className="w-16 h-16 mb-2" />
                           <p className="text-sm">O resultado aparecerá aqui</p>
                         </div>
                       )}
-                    </div>
-                  )}
-
-                  {outputImage && !isRefining && (
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-                      <Button onClick={handleNew} variant="outline" size="sm" className="text-xs h-8 border-purple-500/30 text-purple-300 bg-black/60 backdrop-blur-sm hover:bg-black/80"><RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Nova</Button>
-                      <Button onClick={() => setRefineMode(true)} variant="outline" size="sm" className="text-xs h-8 border-fuchsia-500/40 text-fuchsia-300 bg-black/60 backdrop-blur-sm hover:bg-black/80"><Wand2 className="w-3.5 h-3.5 mr-1.5" /> Fazer Alteração</Button>
-                      <Button onClick={() => download({ url: outputImage!, filename: `flyer-${Date.now()}.png` })} size="sm" className="text-xs h-8 bg-green-600/90 hover:bg-green-700 text-white backdrop-blur-sm"><Download className="w-3.5 h-3.5 mr-1.5" /> Baixar HD</Button>
                     </div>
                   )}
                 </div>
@@ -821,7 +883,7 @@ const FlyerMakerTool: React.FC = () => {
                   selectedIndex={selectedHistoryIndex}
                   onSelect={handleSelectVersion}
                 />
-              </Card>
+              </div>
             </div>
           </div>
         </div>
