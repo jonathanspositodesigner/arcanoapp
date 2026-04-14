@@ -506,7 +506,7 @@ const BibliotecaPrompts = () => {
               variant="outline"
               size="sm"
               onClick={() => handleCategorySelect("Seedance 2")}
-              className={`text-xs font-bold border-0 text-foreground ${
+              className={`text-xs font-bold border-0 text-white ${
                 selectedCategory === "Seedance 2"
                   ? "bg-gradient-to-r from-green-600 to-green-500 shadow-lg shadow-green-500/30"
                   : "bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400"
