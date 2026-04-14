@@ -91,9 +91,9 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
 
           {/* Premium Badge */}
           {isPremium && (
-            <div className="flex items-center justify-center gap-2 p-1.5 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg border border-yellow-500/30">
+            <div className="flex items-center justify-center gap-2 p-1.5 bg-gradient-to-r from-yellow-500/30 to-orange-500/30 rounded-lg border border-yellow-500/40">
               <Star className="h-3 w-3 text-yellow-500" fill="currentColor" />
-              <span className="text-[11px] font-semibold text-yellow-400">{t('sidebar.premiumActive')}</span>
+              <span className="text-[11px] font-semibold text-yellow-600 dark:text-yellow-400">{t('sidebar.premiumActive')}</span>
             </div>
           )}
 
