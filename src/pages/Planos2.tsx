@@ -490,19 +490,19 @@ const Planos2 = () => {
               {/* Price Section - fixed height */}
               <div className="text-center mb-2 h-[75px] flex flex-col justify-center">
                 {plan.originalPrice ? (
-                  <p className="text-muted-foreground line-through text-xs">
+                  <p className="text-foreground/70 line-through text-xs">
                     R${plan.originalPrice}{t('planos.perMonth')}
                   </p>
                 ) : (
                   <p className="text-transparent text-xs">.</p>
                 )}
                 <div className="flex items-baseline justify-center gap-0.5">
-                  <span className="text-muted-foreground text-sm">R$</span>
+                  <span className="text-foreground/80 text-sm">R$</span>
                   <span className="text-3xl font-bold text-foreground">{plan.price}</span>
-                  <span className="text-muted-foreground text-xs">{t('planos.perMonth')}</span>
+                  <span className="text-foreground/80 text-xs">{t('planos.perMonth')}</span>
                 </div>
                 {billingPeriod === "anual" && (plan as any).yearlyTotal ? (
-                  <p className="text-muted-foreground text-xs mt-1">
+                  <p className="text-foreground/75 text-xs mt-1">
                     R${(plan as any).yearlyTotal}{t('planos.perYear')}
                   </p>
                 ) : (
@@ -599,7 +599,7 @@ const Planos2 = () => {
                         <TooltipTrigger asChild>
                             <Info className="w-3 h-3 text-white/80 cursor-pointer ml-0.5" />
                         </TooltipTrigger>
-                        <TooltipContent side="top" className="bg-background border-border text-muted-foreground text-xs max-w-[200px]">
+                          <TooltipContent side="top" className="bg-popover border-border text-popover-foreground text-xs max-w-[200px]">
                           14.000 créditos para usar em ferramentas não ilimitadas por mês
                         </TooltipContent>
                       </Tooltip>
@@ -607,7 +607,7 @@ const Planos2 = () => {
                   )}
                 </span>
                 {(plan as any).images && (
-                  <span className="text-[9px] text-muted-foreground mt-0.5">≈ {typeof (plan as any).images === 'string' ? (plan as any).images : `${(plan as any).images} imagens/mês`}</span>
+                  <span className="text-[9px] text-foreground/75 mt-0.5">≈ {typeof (plan as any).images === 'string' ? (plan as any).images : `${(plan as any).images} imagens/mês`}</span>
                 )}
               </div>
 
@@ -634,9 +634,9 @@ const Planos2 = () => {
                       {feature.included ? (
                         <Check className="w-3 h-3 text-primary shrink-0 mt-0.5" />
                       ) : (
-                        <X className="w-3 h-3 text-muted-foreground shrink-0 mt-0.5" />
+                        <X className="w-3 h-3 text-foreground/60 shrink-0 mt-0.5" />
                       )}
-                      <span className={`${feature.included ? "text-foreground" : "text-muted-foreground"} flex items-center gap-1.5`}>
+                      <span className={`${feature.included ? "text-foreground" : "text-foreground/65"} flex items-center gap-1.5`}>
                         {(feature as any).iconType === 'video' && <Video className="w-3 h-3 shrink-0" />}
                         {(feature as any).iconType === 'image' && <ImageIcon className="w-3 h-3 shrink-0" />}
                         {feature.text}
@@ -647,13 +647,13 @@ const Planos2 = () => {
                         )}
                       </span>
                       {(feature as any).isAiTools && (
-                        <ChevronDown className={`w-3 h-3 shrink-0 mt-0.5 transition-transform duration-200 ${feature.included ? 'text-foreground' : 'text-muted-foreground'} ${expandedAiTools[plan.name] ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={`w-3 h-3 shrink-0 mt-0.5 transition-transform duration-200 ${feature.included ? 'text-foreground' : 'text-foreground/65'} ${expandedAiTools[plan.name] ? 'rotate-180' : ''}`} />
                       )}
                     </div>
                     {(feature as any).isAiTools && expandedAiTools[plan.name] && (
                       <ul className="ml-5 mt-1 space-y-0.5">
                         {aiToolsList.map((tool, tIndex) => (
-                          <li key={tIndex} className={`text-[10px] ${tIndex === aiToolsList.length - 1 ? 'text-muted-foreground italic' : 'text-muted-foreground'}`}>
+                          <li key={tIndex} className={`text-[10px] ${tIndex === aiToolsList.length - 1 ? 'text-foreground/70 italic' : 'text-foreground/70'}`}>
                             • {tool}
                           </li>
                         ))}
@@ -690,7 +690,7 @@ const Planos2 = () => {
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
             Compre um pacote de créditos avulsos
           </h2>
-          <p className="text-muted-foreground max-w-md mx-auto">
+          <p className="text-foreground/80 max-w-md mx-auto">
             Créditos <span className="text-primary font-semibold">vitalícios</span> que nunca expiram — use quando quiser!
           </p>
         </div>
@@ -726,10 +726,10 @@ const Planos2 = () => {
 
                 <div className="mb-1">
                   <span className="text-2xl sm:text-3xl font-bold text-foreground">{plan.credits}</span>
-                  <p className="text-muted-foreground text-sm">créditos</p>
+                  <p className="text-foreground/75 text-sm">créditos</p>
                 </div>
 
-                <p className="text-muted-foreground text-sm mb-3">{plan.description}</p>
+                <p className="text-foreground/75 text-sm mb-3">{plan.description}</p>
 
                 {plan.savings && (
                   <Badge className="bg-primary/10 border border-primary/30 text-primary font-semibold text-xs mb-2 gap-1">
@@ -745,10 +745,10 @@ const Planos2 = () => {
                 <div className="flex-1 flex flex-col justify-end w-full">
                   <div className="mb-4">
                     {plan.originalPrice && (
-                      <span className="text-sm text-muted-foreground line-through block mb-1">R$ {plan.originalPrice}</span>
+                      <span className="text-sm text-foreground/70 line-through block mb-1">R$ {plan.originalPrice}</span>
                     )}
                     <div>
-                      <span className="text-sm text-muted-foreground">R$ </span>
+                      <span className="text-sm text-foreground/80">R$ </span>
                       <span className="text-2xl font-bold text-foreground">{plan.price}</span>
                     </div>
                   </div>
@@ -770,30 +770,30 @@ const Planos2 = () => {
           <div className="flex items-center gap-3">
             <ShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
             <div>
-              <p className="text-foreground text-sm font-semibold leading-tight">Pagamento seguro</p>
-              <p className="text-muted-foreground text-xs">transmissão criptografada SSL</p>
+               <p className="text-foreground text-sm font-semibold leading-tight">Pagamento seguro</p>
+               <p className="text-foreground/75 text-xs">transmissão criptografada SSL</p>
             </div>
           </div>
           <div className="hidden sm:block w-px h-8 bg-accent" />
           <div className="flex items-center gap-3">
             <Zap className="w-5 h-5 text-muted-foreground shrink-0" />
             <div>
-              <p className="text-foreground text-sm font-semibold leading-tight">Pagamento instantâneo</p>
-              <p className="text-muted-foreground text-xs">Os pontos chegam instantaneamente.</p>
+               <p className="text-foreground text-sm font-semibold leading-tight">Pagamento instantâneo</p>
+               <p className="text-foreground/75 text-xs">Os pontos chegam instantaneamente.</p>
             </div>
           </div>
           <div className="hidden sm:block w-px h-8 bg-accent" />
           <div className="flex items-center gap-3">
             <Headset className="w-5 h-5 text-muted-foreground shrink-0" />
             <div>
-              <p className="text-foreground text-sm font-semibold leading-tight">Suporte 24 horas por dia, 7 dias por semana</p>
-              <p className="text-muted-foreground text-xs">Estamos à sua disposição a qualquer momento.</p>
+               <p className="text-foreground text-sm font-semibold leading-tight">Suporte 24 horas por dia, 7 dias por semana</p>
+               <p className="text-foreground/75 text-xs">Estamos à sua disposição a qualquer momento.</p>
             </div>
           </div>
         </div>
 
         <div className="mt-8 text-center">
-          <p className="text-muted-foreground text-sm max-w-lg mx-auto">
+          <p className="text-foreground/80 text-sm max-w-lg mx-auto">
             💡 Os créditos vitalícios são consumidos <strong className="text-foreground">após</strong> os créditos mensais da sua assinatura,
             garantindo que você aproveite ao máximo seu plano.
           </p>
