@@ -98,10 +98,16 @@ const Index = () => {
   const { isLatam } = useLocale();
   const { isPlanos2User, hasImageGeneration, planos2Subscription } = useAuth();
   const planos2Slug = planos2Subscription?.plan_slug ?? null;
-  const { breakdown: creditsBreakdown, isLoading: isCreditsLoading } = useCredits();
+  const { breakdown: creditsBreakdown, isLoading: isCreditsLoading, balance: credits, isUnlimited } = useCredits();
+  const { theme, toggleTheme } = useTheme();
 
   // Verificar se usuário está logado
   const isLoggedIn = !!user;
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.reload();
+  };
 
   const showNotificationButton = typeof window !== 'undefined' && 'Notification' in window && Notification.permission !== 'granted';
 
