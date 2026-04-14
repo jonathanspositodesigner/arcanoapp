@@ -146,12 +146,12 @@ const AdminMarketing = () => {
               {...getDragProps("push-analytics")}
             >
               {isReordering && (
-                <div className="absolute top-2 right-2 z-10 p-1 bg-indigo-500/20 rounded-md">
+                <div className="absolute top-2 right-2 z-10 p-1 bg-white/20/20 rounded-md">
                   <GripVertical className="h-4 w-4 text-indigo-500" />
                 </div>
               )}
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-indigo-500/20 rounded-full">
+                <div className="p-2 bg-white/20/20 rounded-full">
                   <Bell className="h-6 w-6 text-indigo-500" />
                 </div>
                 <div>
