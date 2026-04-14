@@ -268,7 +268,7 @@ const Index = () => {
       className="group bg-card border-2 border-green-500/30 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:border-green-500/50 relative"
     >
       {/* Badge de acesso */}
-      <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 z-10 flex items-center gap-1 px-1.5 md:px-2 py-0.5 md:py-1 rounded-full bg-green-500/90 text-foreground text-[9px] md:text-xs font-medium shadow-sm">
+      <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 z-10 flex items-center gap-1 px-1.5 md:px-2 py-0.5 md:py-1 rounded-full bg-green-600 text-primary-foreground text-[9px] md:text-xs font-medium shadow-sm">
         <Check className="h-2.5 w-2.5 md:h-3 md:w-3" />
         <span className="hidden sm:inline">{t('accessGranted')}</span>
       </div>
@@ -288,7 +288,7 @@ const Index = () => {
         <p className="text-[10px] md:text-[11px] text-muted-foreground mb-0.5">{card.category}</p>
         <h2 className="text-xs sm:text-xs md:text-sm font-semibold text-foreground mb-2 line-clamp-1">{card.title}</h2>
         <Button 
-          className="w-full bg-green-600 hover:bg-green-700 text-foreground text-[10px] sm:text-xs md:text-sm h-7 sm:h-8 md:h-10"
+          className="w-full bg-green-600 hover:bg-green-700 text-primary-foreground text-[10px] sm:text-xs md:text-sm h-7 sm:h-8 md:h-10"
           onClick={() => navigate(card.route)}
         >
           {t('access')}
@@ -370,7 +370,7 @@ const Index = () => {
             {showNotificationButton && (
               <button 
                 onClick={handleActivateNotifications} 
-                className="flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-md bg-gradient-to-r from-slate-500 to-slate-700 text-foreground text-[10px] sm:text-xs font-medium hover:from-slate-700 hover:to-slate-700 transition-all shadow-sm"
+                className="flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-md bg-gradient-to-r from-purple-600 to-purple-500 text-primary-foreground text-[10px] sm:text-xs font-medium hover:from-purple-500 hover:to-purple-400 transition-all shadow-sm"
               >
                 <Bell className="h-3 w-3" />
                 <span className="hidden sm:inline">{t('notifications')}</span>

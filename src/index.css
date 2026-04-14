@@ -220,33 +220,33 @@ All colors MUST be HSL.
   }
 
   .light {
-    /* Arcano Light — Roxo #7B2FBE + fundo branco lavanda */
+    /* Arcano Light — Roxo com contraste reforçado */
     --background: 270 20% 98%;
-    --foreground: 270 25% 10%;
+    --foreground: 270 30% 9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 270 25% 10%;
+    --card-foreground: 270 30% 9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 270 25% 10%;
+    --popover-foreground: 270 30% 9%;
 
     --primary: 272 61% 46%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 270 20% 96%;
-    --secondary-foreground: 270 25% 20%;
+    --secondary: 270 22% 92%;
+    --secondary-foreground: 270 30% 12%;
 
-    --muted: 270 15% 95%;
-    --muted-foreground: 270 10% 45%;
+    --muted: 270 18% 93%;
+    --muted-foreground: 270 14% 34%;
 
-    --accent: 270 30% 97%;
-    --accent-foreground: 272 61% 46%;
+    --accent: 270 22% 94%;
+    --accent-foreground: 270 28% 16%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 270 20% 90%;
-    --input: 270 20% 90%;
+    --border: 270 18% 84%;
+    --input: 270 18% 86%;
     --ring: 272 61% 46%;
 
     --radius: 0.75rem;
@@ -254,18 +254,18 @@ All colors MUST be HSL.
     --gradient-primary: linear-gradient(135deg, hsl(272 61% 46%) 0%, hsl(268 70% 32%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(270 20% 98%) 100%);
 
-    --shadow-card: 0 1px 3px hsla(272 50% 30% / 0.04), 0 0 0 1px hsla(272 50% 30% / 0.03);
-    --shadow-hover: 0 4px 16px hsla(272 61% 46% / 0.12);
+    --shadow-card: 0 1px 3px hsla(272 50% 30% / 0.05), 0 0 0 1px hsla(272 50% 30% / 0.05);
+    --shadow-hover: 0 6px 20px hsla(272 61% 46% / 0.14);
 
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 270 25% 10%;
+    --sidebar-foreground: 270 30% 10%;
     --sidebar-primary: 272 61% 46%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 270 20% 96%;
-    --sidebar-accent-foreground: 270 25% 20%;
-    --sidebar-border: 270 20% 92%;
+    --sidebar-accent: 270 22% 94%;
+    --sidebar-accent-foreground: 270 28% 16%;
+    --sidebar-border: 270 18% 86%;
     --sidebar-ring: 272 61% 46%;
   }
 }

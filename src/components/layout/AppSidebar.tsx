@@ -238,9 +238,9 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           {user && (
             <button
               onClick={() => setShowReferralModal(true)}
-              className="w-full flex items-center text-left text-[13px] font-bold text-yellow-200 hover:text-yellow-100 py-2.5 px-3 rounded-lg bg-yellow-500/15 border border-yellow-400/25 hover:bg-yellow-500/25 transition-all"
+              className="w-full flex items-center text-left text-[13px] font-bold text-foreground py-2.5 px-3 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-all"
             >
-              <Gift className="h-4 w-4 mr-2 text-yellow-300" />
+              <Gift className="h-4 w-4 mr-2 text-primary" />
               Ganhe 500 Créditos!
             </button>
           )}
