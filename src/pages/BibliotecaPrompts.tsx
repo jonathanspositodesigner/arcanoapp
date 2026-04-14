@@ -19,6 +19,9 @@ import { useTranslation } from "react-i18next";
 import ExpiredSubscriptionModal from "@/components/ExpiredSubscriptionModal";
 import ExpiringSubscriptionModal from "@/components/ExpiringSubscriptionModal";
 import Seedance2PromoBanner from "@/components/Seedance2PromoBanner";
+import arcanoClonerCover from "@/assets/arcano-cloner-cover.webp";
+import removerFundoCover from "@/assets/removedor-fundo-capa.png";
+import flyerMakerCover from "@/assets/flyer-maker-preview.webp";
 
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 import AppLayout from "@/components/layout/AppLayout";
