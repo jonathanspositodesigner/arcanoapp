@@ -149,7 +149,7 @@ const ClonerDemoAnimation: React.FC = () => {
                 ? 'bg-gradient-to-br from-slate-500 to-slate-500 text-foreground shadow-lg shadow-slate-500/20 scale-110'
                 : step > i
                 ? 'bg-accent text-muted-foreground border border-border'
-                : 'bg-accent text-white/30 border border-border'
+                : 'bg-accent text-accent-foreground/30 border border-border'
             )}>
               {step > i ? <Check className="w-4 h-4" /> : i + 1}
               {step === i && (

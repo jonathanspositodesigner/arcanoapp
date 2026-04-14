@@ -151,8 +151,8 @@ const PlanosArtesMusicos = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">{t('plansMusicos.title')}</h1>
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
             <TabsList className="bg-accent0/10 border border-border">
-              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white px-6 text-muted-foreground">{t('plansMusicos.monthly')}</TabsTrigger>
-              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white px-6 text-muted-foreground relative">
+              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-primary-foreground px-6 text-muted-foreground">{t('plansMusicos.monthly')}</TabsTrigger>
+              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-primary-foreground px-6 text-muted-foreground relative">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] text-green-400 font-medium whitespace-nowrap">{t('plansMusicos.discount')}</span>
                 {t('plansMusicos.annual')}
               </TabsTrigger>

@@ -99,7 +99,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
           className={cn(
             'flex-1 flex items-center justify-center gap-1.5 text-[10px] font-medium transition-colors',
             mode === 'character'
-              ? 'bg-slate-600 text-white'
+              ? 'bg-accent text-accent-foreground'
               : 'bg-accent text-muted-foreground hover:bg-accent'
           )}
           onClick={() => handleModeChange('character')}
@@ -113,7 +113,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
           className={cn(
             'flex-1 flex items-center justify-center gap-1.5 text-[10px] font-medium transition-colors',
             mode === 'photo'
-              ? 'bg-slate-600 text-white'
+              ? 'bg-accent text-accent-foreground'
               : 'bg-accent text-muted-foreground hover:bg-accent'
           )}
           onClick={() => handleModeChange('photo')}

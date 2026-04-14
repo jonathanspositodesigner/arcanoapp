@@ -432,10 +432,10 @@ const Planos2 = () => {
           {/* Billing Toggle */}
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
             <TabsList className="bg-background border border-border">
-              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white text-muted-foreground px-6">
+              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-primary-foreground text-muted-foreground px-6">
                 {t('planos.monthly')}
               </TabsTrigger>
-              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-white text-muted-foreground px-6 relative flex items-center gap-2">
+              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-primary-foreground text-muted-foreground px-6 relative flex items-center gap-2">
                 {t('planos.annualInstallments')}
                 <span className="bg-gradient-to-r from-slate-600 to-pink-500 text-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
                   52% OFF

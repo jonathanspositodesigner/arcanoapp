@@ -356,7 +356,7 @@ const UpscalerArcanoV2 = () => {
                     onClick={() => toggleWatchedStatus(selectedLesson + 1)}
                     className={`w-full sm:w-auto ${
                       watchedLessons.includes(selectedLesson + 1) 
-                        ? 'bg-green-600 hover:bg-green-700 text-white' 
+                        ? 'bg-green-600 hover:bg-green-700 text-primary-foreground' 
                         : 'border-border text-muted-foreground hover:bg-green-600/10 hover:text-green-500 hover:border-green-600'
                     }`}
                   >
@@ -405,9 +405,9 @@ const UpscalerArcanoV2 = () => {
                     {/* Lesson number or checkmark */}
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
                       watchedLessons.includes(index + 1)
-                        ? 'bg-green-500 text-white'
+                        ? 'bg-green-500 text-primary-foreground'
                         : selectedLesson === index 
-                          ? 'bg-slate-600 text-white' 
+                          ? 'bg-accent text-accent-foreground' 
                           : 'bg-accent text-muted-foreground'
                     }`}>
                       {watchedLessons.includes(index + 1) ? (

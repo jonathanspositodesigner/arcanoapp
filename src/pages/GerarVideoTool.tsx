@@ -824,7 +824,7 @@ const GerarVideoTool = () => {
                       disabled={isGenerating}
                       className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium transition-colors ${
                         generationMode === 'prompt_only' 
-                          ? 'bg-slate-600/60 text-white' 
+                          ? 'bg-accent/60 text-accent-foreground' 
                           : 'bg-accent text-muted-foreground hover:text-muted-foreground'
                       }`}
                     >
@@ -836,7 +836,7 @@ const GerarVideoTool = () => {
                       disabled={isGenerating}
                       className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium transition-colors ${
                         generationMode === 'with_frames' 
-                          ? 'bg-slate-600/60 text-white' 
+                          ? 'bg-accent/60 text-accent-foreground' 
                           : 'bg-accent text-muted-foreground hover:text-muted-foreground'
                       }`}
                     >

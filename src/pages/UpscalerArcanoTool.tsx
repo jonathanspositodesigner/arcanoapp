@@ -821,7 +821,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         onClick={() => setVersion('standard')}
                         className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                           version === 'standard'
-                            ? 'bg-accent text-white'
+                            ? 'bg-accent text-accent-foreground'
                             : 'text-muted-foreground hover:text-foreground'
                         }`}
                       >
@@ -831,7 +831,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         onClick={() => setVersion('pro')}
                         className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                           version === 'pro'
-                            ? 'bg-accent text-white'
+                            ? 'bg-accent text-accent-foreground'
                             : 'text-muted-foreground hover:text-foreground'
                         }`}
                       >
@@ -877,7 +877,7 @@ const UpscalerArcanoTool: React.FC = () => {
                           onClick={() => setResolution('2k')}
                           className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
                             resolution === '2k'
-                              ? 'bg-accent text-white'
+                              ? 'bg-accent text-accent-foreground'
                               : 'text-muted-foreground hover:text-foreground'
                           }`}
                         >
@@ -887,7 +887,7 @@ const UpscalerArcanoTool: React.FC = () => {
                           onClick={() => setResolution('4k')}
                           className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
                             resolution === '4k'
-                              ? 'bg-accent text-white'
+                              ? 'bg-accent text-accent-foreground'
                               : 'text-muted-foreground hover:text-foreground'
                           }`}
                         >
@@ -1424,7 +1424,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   <button
                     onClick={() => setVersion('standard')}
                     className={`py-2 px-3 text-sm rounded-md transition-all font-medium ${
-                      version === 'standard' ? 'bg-accent text-white' : 'text-muted-foreground'
+                      version === 'standard' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
                     }`}
                   >
                     V3 Turbo
@@ -1432,7 +1432,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   <button
                     onClick={() => setVersion('pro')}
                     className={`py-2 px-3 text-sm rounded-md transition-all font-medium ${
-                      version === 'pro' ? 'bg-accent text-white' : 'text-muted-foreground'
+                      version === 'pro' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
                     }`}
                   >
                     V3 Pro
@@ -1448,7 +1448,7 @@ const UpscalerArcanoTool: React.FC = () => {
                     <button
                       onClick={() => setResolution('2k')}
                       className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
-                        resolution === '2k' ? 'bg-accent text-white' : 'text-muted-foreground'
+                        resolution === '2k' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
                       }`}
                     >
                       2K
@@ -1456,7 +1456,7 @@ const UpscalerArcanoTool: React.FC = () => {
                     <button
                       onClick={() => setResolution('4k')}
                       className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
-                        resolution === '4k' ? 'bg-accent text-white' : 'text-muted-foreground'
+                        resolution === '4k' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
                       }`}
                     >
                       4k

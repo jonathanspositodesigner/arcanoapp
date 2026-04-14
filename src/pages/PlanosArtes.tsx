@@ -461,7 +461,7 @@ const PlanosArtes = () => {
                         </Badge>
                       </div>
                     )}
-                    <span className={`text-3xl font-bold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
+                    <span className={`text-3xl font-bold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-primary-foreground'}`}>
                       {formatPrice(calculatePrice(selectedAccessType))}
                     </span>
                     <span className="text-muted-foreground text-sm block mt-1">{t('oneTimePayment')}</span>
@@ -487,7 +487,7 @@ const PlanosArtes = () => {
                             <RadioGroupItem value={option.type} className="border-border text-[#2d4a5e]" />
                             <span className="text-foreground font-medium">{option.label}</span>
                           </div>
-                          <span className={`font-semibold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
+                          <span className={`font-semibold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-primary-foreground'}`}>
                             {formatPrice(calculatePrice(option.type))}
                           </span>
                         </label>
