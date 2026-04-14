@@ -1399,7 +1399,7 @@ const UpscalerArcanoTool: React.FC = () => {
                       Depois
                     </div>
                     {/* Hint text */}
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-muted-foreground bg-black/60 px-3 py-1 rounded-full z-10 pointer-events-none">
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white/80 bg-black/70 px-3 py-1 rounded-full z-10 pointer-events-none">
                       Arraste para comparar • Exemplo
                     </div>
                   </div>

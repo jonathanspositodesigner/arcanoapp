@@ -357,7 +357,7 @@ export default function UpscalerMockup({
                       </div>
 
                       {/* Labels */}
-                      <div className="absolute top-3 left-3 bg-black/80 text-foreground text-xs font-semibold px-3 py-1.5 rounded-full">
+                      <div className="absolute top-3 left-3 bg-black/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
                         Antes
                       </div>
                       <div className="absolute top-3 right-3 bg-gradient-to-r from-purple-500 to-purple-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
@@ -372,7 +372,7 @@ export default function UpscalerMockup({
             {beforeRes && afterRes && (
               <div className="mt-3 flex items-center justify-center gap-3">
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent border border-border">
-                  <span className="text-[10px] text-white/40 uppercase tracking-wider">Antes</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Antes</span>
                   <span className="text-xs font-mono text-muted-foreground">{beforeRes.w}×{beforeRes.h}</span>
                 </div>
                 <div className="flex items-center gap-1">
