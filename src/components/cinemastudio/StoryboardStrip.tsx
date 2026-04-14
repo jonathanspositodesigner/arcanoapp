@@ -15,7 +15,7 @@ const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRem
   const generatedCount = scenes.filter(s => !!s.outputUrl).length;
 
   return (
-    <div className="flex-shrink-0 border-t border-white/[0.04] bg-[#0a0a14] px-2 py-2 sm:px-3">
+    <div className="flex-shrink-0 border-t border-border bg-background px-2 py-2 sm:px-3">
       <div className="flex items-center gap-1.5 overflow-x-auto overflow-y-hidden pb-1 sm:gap-2" style={{ scrollbarWidth: 'thin' }}>
         {scenes.map((scene, index) => {
           const hasContent = !!scene.outputUrl;
@@ -29,7 +29,7 @@ const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRem
                 w-[68px] h-[46px] sm:w-[86px] sm:h-[56px] lg:w-[112px] lg:h-[72px]
                 ${isActive
                   ? 'ring-1 ring-gray-400/40'
-                  : 'border border-white/[0.04] hover:border-border'
+                  : 'border border-border hover:border-border'
                 }`}
             >
               {hasContent && scene.thumbnailUrl ? (

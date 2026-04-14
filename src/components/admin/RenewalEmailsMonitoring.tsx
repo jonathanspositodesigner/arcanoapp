@@ -337,8 +337,8 @@ const TemplateEditorTab = () => {
       {/* Preview Modal */}
       {previewDay !== null && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setPreviewDay(null)}>
-          <div className="bg-[#0d0015] rounded-xl max-w-[660px] w-full max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-[#0d0015] border-b border-border p-3 flex items-center justify-between z-10">
+          <div className="bg-background rounded-xl max-w-[660px] w-full max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-background border-b border-border p-3 flex items-center justify-between z-10">
               <span className="text-sm font-medium text-foreground">
                 Preview: {DAY_LABELS[previewDay]}
               </span>

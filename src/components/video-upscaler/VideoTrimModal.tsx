@@ -356,7 +356,7 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && !isProcessing && onClose()}>
-      <DialogContent className="sm:max-w-2xl bg-[#1a1625] border-border">
+      <DialogContent className="sm:max-w-2xl bg-card border-border">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-foreground">
             <Scissors className="w-5 h-5 text-muted-foreground" />

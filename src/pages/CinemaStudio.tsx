@@ -254,7 +254,7 @@ const CinemaStudio: React.FC = () => {
         </div>
 
         {isCompactLayout && (
-          <div className="flex flex-shrink-0 border-b border-white/[0.04] bg-background">
+          <div className="flex flex-shrink-0 border-b border-border bg-background">
             <button
               onClick={() => setMobileTab('controls')}
               className={`flex-1 py-2 text-[11px] font-medium transition-colors ${
@@ -281,7 +281,7 @@ const CinemaStudio: React.FC = () => {
             <div className={`${
               isCompactLayout
                 ? mobileTab === 'controls' ? 'flex min-h-0 flex-col' : 'hidden'
-                : 'flex min-h-0 flex-col border-r border-white/[0.04] bg-background'
+                : 'flex min-h-0 flex-col border-r border-border bg-background'
             } bg-background`}>
               <div className="flex-1 overflow-y-auto px-3 py-3" style={{ scrollbarWidth: 'none' }}>
                 <ControlPanel

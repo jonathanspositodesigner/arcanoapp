@@ -490,7 +490,7 @@ const PartnerUploadArtes = () => {
 
                 {currentIndex < mediaFiles.length - 1 ? (
                   <Button
-                    className="bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
+                    className="bg-primary hover:bg-primary/80 text-foreground"
                     onClick={goToNext}
                   >
                     Próximo
@@ -498,7 +498,7 @@ const PartnerUploadArtes = () => {
                   </Button>
                 ) : (
                   <Button
-                    className="bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
+                    className="bg-primary hover:bg-primary/80 text-foreground"
                     onClick={handleSubmitAll}
                     disabled={!allFieldsFilled || isSubmitting}
                   >
@@ -531,7 +531,7 @@ const PartnerUploadArtes = () => {
                 Enviar mais
               </Button>
               <Button
-                className="flex-1 bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
+                className="flex-1 bg-primary hover:bg-primary/80 text-foreground"
                 onClick={() => navigate("/parceiro-dashboard-artes")}
               >
                 Ver Dashboard

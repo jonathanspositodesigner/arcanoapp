@@ -613,7 +613,7 @@ export default function Seedance2() {
           )}
 
 
-          <div className="mt-4 shrink-0 rounded-2xl border border-border bg-[#0a0a18]/95 p-3 backdrop-blur-sm">
+          <div className="mt-4 shrink-0 rounded-2xl border border-border bg-background/95 p-3 backdrop-blur-sm">
             {mode !== "text" && (
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 {mode === "startend" && (
@@ -864,7 +864,7 @@ export default function Seedance2() {
             )}
 
             {showSettings && (
-              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-white/[0.04] bg-white/[0.02] px-3 py-2 animate-in fade-in slide-in-from-top-1 duration-200">
+              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-border bg-white/[0.02] px-3 py-2 animate-in fade-in slide-in-from-top-1 duration-200">
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Motor</span>
                   <div className="flex rounded-lg border border-border bg-white/[0.03] p-[2px]">

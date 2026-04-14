@@ -414,7 +414,7 @@ const BibliotecaArtesMusicos = () => {
         </main>
 
         <Dialog open={!!selectedArte} onOpenChange={() => setSelectedArte(null)}>
-          <DialogContent className="max-w-md bg-[#161b22] border-border">
+          <DialogContent className="max-w-md bg-card border-border">
             <DialogHeader><DialogTitle className="text-foreground">{selectedArte?.title}</DialogTitle></DialogHeader>
             {selectedArte && (
               <div className="space-y-4">

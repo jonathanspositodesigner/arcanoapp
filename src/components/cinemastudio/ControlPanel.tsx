@@ -96,7 +96,7 @@ const ControlPanel: React.FC<Props> = ({
             />
           </div>
 
-          <div className="border-t border-white/[0.04] my-1" />
+          <div className="border-t border-border my-1" />
 
           {/* 2. Textarea única */}
           <div className="space-y-2 pb-1">
@@ -109,34 +109,34 @@ const ControlPanel: React.FC<Props> = ({
             />
           </div>
 
-          <div className="border-t border-white/[0.04] my-1" />
+          <div className="border-t border-border my-1" />
 
           {/* Personagem e Cenário */}
           <Section title="Personagem e Cenário" emoji="👤" defaultOpen={false}>
             <CharacterScenarioSection settings={settings} updateSettings={updateSettings} onCharactersChange={onCharactersChange} onScenarioChange={onScenarioChange} />
           </Section>
 
-          <div className="border-t border-white/[0.04]" />
+          <div className="border-t border-border" />
 
           {/* 3. Câmera */}
           <Section title="Câmera" emoji="🎥" defaultOpen={false}>
             <CameraRigSection settings={settings} updateSettings={updateSettings} />
           </Section>
 
-          <div className="border-t border-white/[0.04]" />
+          <div className="border-t border-border" />
 
           {/* 4. Estilo — com thumbnails visuais */}
           <Section title="Estilo" emoji="🎨" defaultOpen={false}>
             <GenreMoodPhotoSection settings={settings} updateSettings={updateSettings} />
           </Section>
 
-          <div className="border-t border-white/[0.04]" />
+          <div className="border-t border-border" />
 
           {/* 5. Saída */}
           <Section title="Saída" emoji="⚙️" defaultOpen={false}>
             <VideoSettingsSection settings={settings} updateSettings={updateSettings} mode="photo" />
           </Section>
-          <div className="border-t border-white/[0.04] my-1" />
+          <div className="border-t border-border my-1" />
           <SavedConfigsSection mode="photo" settings={settings} selectedCharacters={selectedCharacters} selectedScenario={selectedScenario} onLoad={handleLoadConfig} />
         </>
       ) : (
@@ -156,47 +156,47 @@ const ControlPanel: React.FC<Props> = ({
             />
           </div>
 
-          <div className="border-t border-white/[0.04] my-1" />
+          <div className="border-t border-border my-1" />
 
           {/* 2. Prompt único */}
           <SceneSection settings={settings} updateSettings={updateSettings} />
 
-          <div className="border-t border-white/[0.04] my-1" />
+          <div className="border-t border-border my-1" />
 
           <Section title="Personagem e Cenário" emoji="👤" defaultOpen={false}>
             <CharacterScenarioSection settings={settings} updateSettings={updateSettings} onCharactersChange={onCharactersChange} onScenarioChange={onScenarioChange} />
           </Section>
 
-          <div className="border-t border-white/[0.04]" />
+          <div className="border-t border-border" />
 
           <Section title="Câmera" emoji="🎥" defaultOpen={false}>
             <CameraRigSection settings={settings} updateSettings={updateSettings} mode="video" />
           </Section>
 
-          <div className="border-t border-white/[0.04]" />
+          <div className="border-t border-border" />
 
           <Section title="Movimento" emoji="🎬" defaultOpen={true}>
             <CameraMovementSection settings={settings} updateSettings={updateSettings} />
           </Section>
 
-          <div className="border-t border-white/[0.04]" />
+          <div className="border-t border-border" />
 
           <Section title="Estilo" emoji="🎨" defaultOpen={false}>
             <GenreMoodSection settings={settings} updateSettings={updateSettings} />
           </Section>
 
-          <div className="border-t border-white/[0.04]" />
+          <div className="border-t border-border" />
 
           <Section title="Saída" emoji="⚙️" defaultOpen={false}>
             <VideoSettingsSection settings={settings} updateSettings={updateSettings} />
           </Section>
 
-          <div className="border-t border-white/[0.04] my-1" />
+          <div className="border-t border-border my-1" />
           <SavedConfigsSection mode="video" settings={settings} selectedCharacters={selectedCharacters} selectedScenario={selectedScenario} onLoad={handleLoadConfig} />
         </>
       )}
 
-      <div className="border-t border-white/[0.04]" />
+      <div className="border-t border-border" />
 
       {/* Toggle do prompt montado */}
       <div className="pt-1">

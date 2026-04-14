@@ -110,7 +110,7 @@ const ResetPasswordArtes = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-card/80 border-border/30">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-[#2d4a5e] rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-4">
             <Lock className="h-6 w-6 text-foreground" />
           </div>
           <CardTitle className="text-2xl text-foreground">{t('newPasswordTitle')}</CardTitle>
@@ -161,7 +161,7 @@ const ResetPasswordArtes = () => {
 
             <Button
               type="submit"
-              className="w-full bg-[#2d4a5e] hover:bg-[#3d5a6e] text-foreground"
+              className="w-full bg-primary hover:bg-primary/80 text-foreground"
               disabled={isLoading}
             >
               {isLoading ? t('saving') : t('saveNewPassword')}
