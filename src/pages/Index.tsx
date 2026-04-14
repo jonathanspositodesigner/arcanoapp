@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { Check, Smartphone, Bell, ExternalLink, Clock, RefreshCw } from "lucide-react";
+import { Check, Smartphone, Bell, ExternalLink, Clock, RefreshCw, ShieldCheck, Users } from "lucide-react";
 import { toast } from "sonner";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import { FadeIn, StaggeredAnimation } from "@/hooks/useScrollAnimation";
@@ -352,6 +352,24 @@ const Index = () => {
           <img alt="ArcanoApp" className="h-5 sm:h-6" src={logoHorizontal} />
           
           <div className="flex items-center gap-1.5 sm:gap-2">
+            <button
+              onClick={() => navigate("/admin-login")}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all text-[10px] sm:text-xs"
+              title="Acesso Administrador"
+            >
+              <ShieldCheck className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">Admin</span>
+            </button>
+
+            <button
+              onClick={() => navigate("/parceiro-login-unificado")}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all text-[10px] sm:text-xs"
+              title="Acesso Colaborador"
+            >
+              <Users className="h-3.5 w-3.5" />
+              <span className="hidden md:inline">Colaborador</span>
+            </button>
+
             {isAppInstalled ? (
               <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-green-500/10 border border-green-500/30 text-green-400">
                 <Check className="h-3 w-3" />
