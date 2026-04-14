@@ -574,7 +574,7 @@ const BibliotecaPrompts = () => {
                   className="absolute top-1.5 left-1.5 flex items-center gap-0.5 rounded-full backdrop-blur-sm px-1.5 py-0.5 z-10 transition-colors bg-destructive"
                 >
                   <Heart
-                    className={`h-3 w-3 sm:h-3.5 sm:w-3.5 transition-colors ${userLikes.has(String(item.id)) ? 'text-red-500 fill-red-500' : 'text-destructive'}`}
+                    className={`h-3 w-3 sm:h-3.5 sm:w-3.5 transition-colors ${userLikes.has(String(item.id)) ? 'text-red-500 fill-red-500' : 'text-primary-foreground'}`}
                   />
                   <span className="text-[9px] sm:text-[10px] font-medium text-white/90">
                     {likeCounts[String(item.id)] || 0}
