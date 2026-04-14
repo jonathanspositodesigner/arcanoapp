@@ -55,12 +55,12 @@ const variantStyles = {
     forgotLink: 'text-gray-400 hover:text-gray-300 underline',
   },
   teal: {
-    emailBox: 'bg-violet-500/10 border border-white/10/20',
+    emailBox: 'bg-slate-500/10 border border-white/10/20',
     emailIcon: 'text-gray-400',
     emailText: 'text-white/80',
     changeBtn: 'text-gray-400 hover:text-gray-300',
     input: 'bg-[#0f0f1a] border-white/10 text-white',
-    button: 'bg-violet-600 hover:bg-violet-700 text-white',
+    button: 'bg-slate-600 hover:bg-violet-700 text-white',
     forgotLink: 'text-gray-400 hover:text-gray-300 underline',
   },
 };

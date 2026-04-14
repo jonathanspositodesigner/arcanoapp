@@ -108,7 +108,7 @@ const variantStyles = {
     headerSubtitle: 'text-white/70',
     label: 'text-white/80',
     input: 'bg-[#0f0f1a] border-white/10 text-white',
-    alert: 'bg-violet-500/10 border-white/10',
+    alert: 'bg-slate-500/10 border-white/10',
     alertIcon: 'text-slate-400',
     alertText: 'text-violet-200',
     button: 'bg-emerald-500 hover:bg-emerald-600 text-white',

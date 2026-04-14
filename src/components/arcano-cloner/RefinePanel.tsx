@@ -45,7 +45,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2 p-3 bg-fuchsia-900/20 border border-white/10 rounded-lg">
+    <div className="flex flex-col gap-2 p-3 bg-white/5 border border-white/10 rounded-lg">
       <h4 className="text-xs font-semibold text-gray-300 flex items-center gap-1.5">
         <Wand2 className="w-3.5 h-3.5" />
         {panelTitle}

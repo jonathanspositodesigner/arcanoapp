@@ -456,7 +456,7 @@ const ClonerDemoAnimation: React.FC = () => {
             {/* Large avatar */}
             <div className="relative mb-5">
               <div className="absolute -inset-4 rounded-full bg-white/10 blur-xl animate-pulse" />
-              <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-fuchsia-400/80 to-slate-500/70 border-2 border-white/15 flex items-center justify-center shadow-2xl shadow-slate-500/30">
+              <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-slate-400 to-slate-500/70 border-2 border-white/15 flex items-center justify-center shadow-2xl shadow-slate-500/30">
                 <svg viewBox="0 0 24 24" className="w-16 h-16 fill-gray-200">
                   <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
                 </svg>

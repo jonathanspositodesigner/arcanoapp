@@ -366,7 +366,7 @@ export default function UpscalerTrialSection() {
                     </div>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-fuchsia-500/25"
+                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-slate-500/20"
                       onClick={openSignup}
                     >
                       <Sparkles className="w-5 h-5 mr-2" />
@@ -383,7 +383,7 @@ export default function UpscalerTrialSection() {
                     </p>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-fuchsia-500/25"
+                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-slate-500/20"
                       onClick={scrollToPricing}
                     >
                       <ShoppingCart className="w-5 h-5 mr-2" />

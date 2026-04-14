@@ -420,7 +420,7 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
                   ) : plan.bestSeller ? (
                     <Crown className="w-8 h-8 lg:w-10 lg:h-10 text-lime-400" />
                   ) : plan.hasCountdown ? (
-                    <Flame className="w-8 h-8 lg:w-10 lg:h-10 text-fuchsia-500" />
+                    <Flame className="w-8 h-8 lg:w-10 lg:h-10 text-slate-400" />
                   ) : (
                     <Rocket className="w-8 h-8 lg:w-10 lg:h-10 text-white/60" />
                   )}
@@ -802,7 +802,7 @@ const PlanosUpscalerArcano69v2 = () => {
               <h1 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3 md:mb-4 leading-[1.25]">
                 {t('tools:upscaler.hero.title1')}{' '}
                 <br className="hidden md:block" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
                   {t('tools:upscaler.hero.title2')}
                 </span>
               </h1>
@@ -929,7 +929,7 @@ const PlanosUpscalerArcano69v2 = () => {
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">{t('tools:upscaler.targetAudience.titlePart2')}</span>
+                  {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">{t('tools:upscaler.targetAudience.titlePart2')}</span>
                 </h2>
               </AnimatedSection>
               

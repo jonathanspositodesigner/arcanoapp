@@ -815,7 +815,7 @@ const GeradorPersonagemTool: React.FC = () => {
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                     <div className="w-16 h-16 rounded-xl bg-slate-500/10 border-2 border-dashed border-white/10 flex items-center justify-center">
-                      <ImageIcon className="w-8 h-8 text-fuchsia-500/40" />
+                      <ImageIcon className="w-8 h-8 text-slate-400/40" />
                     </div>
                     <div className="text-center">
                       <p className="text-sm text-gray-300">O resultado aparecerá aqui</p>

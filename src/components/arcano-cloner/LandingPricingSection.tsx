@@ -199,7 +199,7 @@ const LandingPricingSection = () => {
                   {plan.bestSeller ? (
                     <Crown className="w-8 h-8 lg:w-10 lg:h-10 text-lime-400" />
                   ) : plan.hasCountdown ? (
-                    <Flame className="w-8 h-8 lg:w-10 lg:h-10 text-fuchsia-500" />
+                    <Flame className="w-8 h-8 lg:w-10 lg:h-10 text-slate-400" />
                   ) : (
                     <Rocket className="w-8 h-8 lg:w-10 lg:h-10 text-white/60" />
                   )}

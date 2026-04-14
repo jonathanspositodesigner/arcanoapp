@@ -392,7 +392,7 @@ const UpgradeUpscalerV3 = () => {
           <h1 className="font-space-grotesk font-bold text-3xl md:text-5xl lg:text-5xl xl:text-6xl text-white mb-5 leading-[1.15]">
             Você já sabe que funciona.
             <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
               Agora vai descobrir o que é 10x mais rápido.
             </span>
           </h1>
@@ -440,7 +440,7 @@ const UpgradeUpscalerV3 = () => {
         <div className="max-w-5xl mx-auto text-center">
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
-              O que mudou no <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">V3</span>
+              O que mudou no <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">V3</span>
             </h2>
             <p className="text-white/50 text-sm md:text-base mb-12">
               Dois recursos. Impacto real no seu fluxo de trabalho.
@@ -540,7 +540,7 @@ const UpgradeUpscalerV3 = () => {
                       <th className="py-4 px-5 text-xs font-bold uppercase tracking-wider text-white/40">Recurso</th>
                       <th className="py-4 px-4 text-xs font-bold uppercase tracking-wider text-white/40 text-center">V2</th>
                       <th className="py-4 px-4 text-xs font-bold uppercase tracking-wider text-center">
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400 font-extrabold">V3</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-slate-400 font-extrabold">V3</span>
                       </th>
                     </tr>
                   </thead>
@@ -776,7 +776,7 @@ const UpgradeUpscalerV3 = () => {
             <h2 className="font-space-grotesk font-bold text-3xl md:text-4xl lg:text-5xl text-white mb-5 leading-[1.15]">
               Você já sabe que funciona.
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
                 Agora é hora de ir mais rápido.
               </span>
             </h2>

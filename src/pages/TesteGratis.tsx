@@ -231,13 +231,13 @@ const TesteGratis = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
-                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-fuchsia-500/20"
+                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-slate-500/20"
                 />
               </div>
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-fuchsia-500/25"
+                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-slate-500/20"
               >
                 {loading ? (
                   <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Verificando...</>
@@ -282,7 +282,7 @@ const TesteGratis = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
-                    className="pl-10 pr-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-fuchsia-500/20"
+                    className="pl-10 pr-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-slate-500/20"
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -292,7 +292,7 @@ const TesteGratis = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-fuchsia-500/25"
+                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-slate-500/20"
               >
                 {loading ? (
                   <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Entrando...</>
@@ -329,7 +329,7 @@ const TesteGratis = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     disabled={loading}
-                    className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-fuchsia-500/20"
+                    className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-slate-500/20"
                   />
                 </div>
               </div>
@@ -355,7 +355,7 @@ const TesteGratis = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
-                    className="pl-10 pr-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-fuchsia-500/20"
+                    className="pl-10 pr-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-slate-500/20"
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -365,7 +365,7 @@ const TesteGratis = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-fuchsia-500/25"
+                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-slate-500/20"
               >
                 {loading ? (
                   <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Criando conta...</>

@@ -140,14 +140,14 @@ const ResgatarCreditos = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={status === 'checking'}
-                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-fuchsia-500/20"
+                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-white/15 focus:ring-2 focus:ring-slate-500/20"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={status === 'checking'}
-                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-fuchsia-500/25"
+                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-slate-500/20"
               >
                 {status === 'checking' ? (
                   <>

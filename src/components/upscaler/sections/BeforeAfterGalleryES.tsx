@@ -83,7 +83,7 @@ export const BeforeAfterGalleryES = ({ onZoomClick, isMobile = false }: BeforeAf
       
       <div className="max-w-6xl mx-auto relative">
         <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-3 md:mb-4 tracking-wide">
-          {t('tools:upscaler.beforeAfter.title')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">{t('tools:upscaler.beforeAfter.anyImage')}</span>
+          {t('tools:upscaler.beforeAfter.title')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">{t('tools:upscaler.beforeAfter.anyImage')}</span>
         </h2>
         <p className="text-white/60 text-center text-sm md:text-lg mb-10 md:mb-14 max-w-2xl mx-auto">
           {t('tools:upscaler.beforeAfter.subtitle')}

@@ -19,8 +19,8 @@ const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ 
     artista: [
       { id: 'm-a1', label: 'Look Palco', color: 'from-slate-600 to-slate-700' },
       { id: 'm-a2', label: 'Estilo Rockstar', color: 'from-red-600 to-red-800' },
-      { id: 'm-a3', label: 'Visual Artístico', color: 'from-slate-600 to-fuchsia-800' },
-      { id: 'm-a4', label: 'Outfit Show', color: 'from-slate-600 to-violet-800' },
+      { id: 'm-a3', label: 'Visual Artístico', color: 'from-slate-600 to-slate-700' },
+      { id: 'm-a4', label: 'Outfit Show', color: 'from-slate-600 to-slate-700' },
     ],
     politico: [
       { id: 'm-p1', label: 'Terno Político', color: 'from-blue-700 to-blue-900' },
@@ -38,7 +38,7 @@ const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ 
       { id: 'm-f1', label: 'Terno Clássico', color: 'from-gray-700 to-gray-900' },
       { id: 'm-f2', label: 'Camisa Social', color: 'from-blue-700 to-blue-900' },
       { id: 'm-f3', label: 'Blazer', color: 'from-indigo-700 to-indigo-900' },
-      { id: 'm-f4', label: 'Gravata & Colete', color: 'from-violet-700 to-violet-900' },
+      { id: 'm-f4', label: 'Gravata & Colete', color: 'from-slate-700 to-slate-800' },
     ],
     empresarial: [
       { id: 'm-emp1', label: 'Look Executivo', color: 'from-slate-800 to-black' },
@@ -57,8 +57,8 @@ const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ 
     artista: [
       { id: 'f-a1', label: 'Look Diva', color: 'from-slate-600 to-slate-700' },
       { id: 'f-a2', label: 'Visual Popstar', color: 'from-pink-600 to-pink-800' },
-      { id: 'f-a3', label: 'Estilo Cantora', color: 'from-slate-600 to-fuchsia-800' },
-      { id: 'f-a4', label: 'Outfit Show', color: 'from-slate-600 to-violet-800' },
+      { id: 'f-a3', label: 'Estilo Cantora', color: 'from-slate-600 to-slate-700' },
+      { id: 'f-a4', label: 'Outfit Show', color: 'from-slate-600 to-slate-700' },
     ],
     politico: [
       { id: 'f-p1', label: 'Tailleur Político', color: 'from-blue-700 to-blue-900' },
@@ -76,7 +76,7 @@ const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ 
       { id: 'f-f1', label: 'Blazer Feminino', color: 'from-gray-700 to-gray-900' },
       { id: 'f-f2', label: 'Vestido Social', color: 'from-blue-700 to-blue-900' },
       { id: 'f-f3', label: 'Saia & Blusa', color: 'from-indigo-700 to-indigo-900' },
-      { id: 'f-f4', label: 'Tailleur', color: 'from-violet-700 to-violet-900' },
+      { id: 'f-f4', label: 'Tailleur', color: 'from-slate-700 to-slate-800' },
     ],
     empresarial: [
       { id: 'f-emp1', label: 'Look Executiva', color: 'from-slate-800 to-black' },
@@ -87,7 +87,7 @@ const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ 
     casual: [
       { id: 'f-c1', label: 'Blusa Básica', color: 'from-pink-600 to-pink-800' },
       { id: 'f-c2', label: 'Jeans & Top', color: 'from-rose-600 to-rose-800' },
-      { id: 'f-c3', label: 'Vestido Casual', color: 'from-slate-600 to-fuchsia-800' },
+      { id: 'f-c3', label: 'Vestido Casual', color: 'from-slate-600 to-slate-700' },
       { id: 'f-c4', label: 'Moletom Cropped', color: 'from-slate-600 to-slate-700' },
     ],
   },

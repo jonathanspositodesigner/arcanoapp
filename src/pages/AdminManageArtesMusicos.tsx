@@ -355,7 +355,7 @@ const AdminManageArtesMusicos = () => {
               variant={mediaTypeFilter === 'video' ? 'default' : 'outline'} 
               size="sm" 
               onClick={() => setMediaTypeFilter('video')}
-              className={mediaTypeFilter === 'video' ? 'bg-violet-500 hover:bg-violet-600' : ''}
+              className={mediaTypeFilter === 'video' ? 'bg-slate-500 hover:bg-slate-600' : ''}
             >
               <Video className="h-4 w-4 mr-1" />Vídeos
             </Button>
@@ -413,7 +413,7 @@ const AdminManageArtesMusicos = () => {
                     <SecureImage src={arte.image_url} alt={arte.title} className="w-full h-48 object-cover" isPremium={arte.is_premium || false} />
                   )}
                   <div className="absolute top-2 left-2">
-                    <Badge className={isVideo ? "bg-violet-500 text-white border-0" : "bg-blue-500 text-white border-0"}>
+                    <Badge className={isVideo ? "bg-slate-500 text-white border-0" : "bg-blue-500 text-white border-0"}>
                       {isVideo ? <Video className="h-3 w-3 mr-1" /> : <Image className="h-3 w-3 mr-1" />}
                       {isVideo ? 'Vídeo' : 'Imagem'}
                     </Badge>

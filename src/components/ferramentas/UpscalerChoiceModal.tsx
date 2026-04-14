@@ -156,7 +156,7 @@ const UpscalerChoiceModal = ({
                   </h3>
 
                   {/* Description */}
-                  <p className="text-fuchsia-200/70 text-sm text-center leading-relaxed mb-5">
+                  <p className="text-gray-400 text-sm text-center leading-relaxed mb-5">
                     Nova versão <span className="text-gray-300 font-medium">mais fácil de usar</span>. Consome créditos por uso.
                   </p>
 
