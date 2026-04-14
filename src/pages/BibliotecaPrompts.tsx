@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -95,6 +95,7 @@ const BibliotecaPrompts = () => {
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
 
+  const toolsScrollRef = useRef<HTMLDivElement>(null);
   const { allPrompts, getFilteredPrompts } = useOptimizedPrompts();
   const { searchTerm, setSearchTerm, expandedTerms, isSearching } = useSmartSearch();
 
@@ -472,8 +473,8 @@ const BibliotecaPrompts = () => {
               {t('library.seeAll', 'Ver todas')} →
             </Button>
           </div>
-
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="relative group/carousel">
+            <div ref={toolsScrollRef} className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {[
               { name: 'Upscaler Arcano', desc: 'Melhorar qualidade de imagens com IA', cost: 60, path: '/upscaler-arcano-tool', cover: upscalerHeroCover },
               { name: 'Arcano Cloner', desc: 'Crie ensaios fotográficos ultra realistas com IA', cost: 75, path: '/arcano-cloner-tool', cover: arcanoClonerCover },
@@ -519,6 +520,20 @@ const BibliotecaPrompts = () => {
                 </div>
               </div>
             ))}
+            </div>
+            {/* Carousel arrows */}
+            <button
+              onClick={() => { if (toolsScrollRef.current) toolsScrollRef.current.scrollBy({ left: -440, behavior: 'smooth' }); }}
+              className="hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 z-10 w-8 h-8 rounded-full bg-card border border-border shadow-lg items-center justify-center text-foreground hover:bg-accent transition-colors opacity-0 group-hover/carousel:opacity-100"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => { if (toolsScrollRef.current) toolsScrollRef.current.scrollBy({ left: 440, behavior: 'smooth' }); }}
+              className="hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 z-10 w-8 h-8 rounded-full bg-card border border-border shadow-lg items-center justify-center text-foreground hover:bg-accent transition-colors opacity-0 group-hover/carousel:opacity-100"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
           </div>
         </div>
         {/* Page Title and Content Type Tabs */}
