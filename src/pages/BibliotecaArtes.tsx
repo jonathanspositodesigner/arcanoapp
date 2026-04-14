@@ -733,13 +733,6 @@ const BibliotecaArtes = () => {
           </div>
         </header>
 
-        {/* First Access Button - Mobile Only (below header, above title) */}
-        {!user && <div className="md:hidden px-4 pt-4">
-            <Button onClick={() => navigate('/login-artes?redirect=/biblioteca-artes')} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white animate-pulse">
-              <UserCheck className="h-4 w-4 mr-2" />
-              Já é cliente? Primeiro acesso aqui!
-            </Button>
-          </div>}
 
         {/* Main Content */}
         <div className="p-4 lg:p-6">
@@ -1579,10 +1572,6 @@ const BibliotecaArtes = () => {
           })()}
         </DialogContent>
       </Dialog>
-
-
-      {/* Push Notification Prompt */}
-      <PushNotificationPrompt />
 
     </div>
   </>;
