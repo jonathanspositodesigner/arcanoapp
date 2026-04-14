@@ -110,7 +110,6 @@ const UpscalerArcanoTool: React.FC = () => {
   const [noCreditsReason, setNoCreditsReason] = useState<'not_logged' | 'insufficient'>('insufficient');
   const [currentQueueCombo, setCurrentQueueCombo] = useState(0);
   const [showMobileConfig, setShowMobileConfig] = useState(false);
-  const [currentQueueCombo, setCurrentQueueCombo] = useState(0);
 
   // CRITICAL: Instant button lock to prevent duplicate clicks
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
