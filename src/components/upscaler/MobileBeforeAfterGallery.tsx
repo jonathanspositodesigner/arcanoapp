@@ -140,10 +140,10 @@ export const MobileBeforeAfterGallery = ({ items }: MobileBeforeAfterGalleryProp
         </div>
 
         {/* Labels */}
-        <div className="absolute top-3 left-3 bg-black/60 text-foreground text-[10px] font-medium px-2.5 py-1 rounded-full z-10">
+        <div className="absolute top-3 left-3 bg-black/70 text-white text-[10px] font-medium px-2.5 py-1 rounded-full z-10">
           Antes
         </div>
-        <div className="absolute top-3 right-3 bg-white/15 text-foreground text-[10px] font-medium px-2.5 py-1 rounded-full z-10">
+        <div className="absolute top-3 right-3 bg-white/20 text-white text-[10px] font-medium px-2.5 py-1 rounded-full z-10 backdrop-blur-sm">
           Depois
         </div>
       </div>

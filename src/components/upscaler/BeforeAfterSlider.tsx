@@ -167,12 +167,12 @@ export const BeforeAfterSlider = ({
         </div>
 
         {/* Labels */}
-        <div className={`absolute left-3 bg-black/60 text-foreground font-medium rounded-full ${
+        <div className={`absolute left-3 bg-black/70 text-white font-medium rounded-full ${
           compact ? 'top-2 text-[8px] px-1.5 py-0.5' : 'top-3 text-[10px] px-2.5 py-1'
         }`}>
           {t('tools:upscaler.beforeAfter.before')}
         </div>
-        <div className={`absolute right-3 bg-white/15 text-foreground font-medium rounded-full ${
+        <div className={`absolute right-3 bg-white/20 text-white font-medium rounded-full backdrop-blur-sm ${
           compact ? 'top-2 text-[8px] px-1.5 py-0.5' : 'top-3 text-[10px] px-2.5 py-1'
         }`}>
           {t('tools:upscaler.beforeAfter.after')}

@@ -357,7 +357,7 @@ export default function UpscalerMockup({
                       </div>
 
                       {/* Labels */}
-                      <div className="absolute top-3 left-3 bg-black/80 text-foreground text-xs font-semibold px-3 py-1.5 rounded-full">
+                      <div className="absolute top-3 left-3 bg-black/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
                         Antes
                       </div>
                       <div className="absolute top-3 right-3 bg-gradient-to-r from-purple-500 to-purple-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
