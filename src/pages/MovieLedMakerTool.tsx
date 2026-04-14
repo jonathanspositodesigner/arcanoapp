@@ -643,7 +643,7 @@ const MovieLedMakerTool = () => {
                           className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                             selectedEngine === engine.id
                               ? 'bg-accent text-white'
-                              : 'text-muted-foreground hover:text-white'
+                              : 'text-muted-foreground hover:text-foreground'
                           }`}
                         >
                           {engine.name}
@@ -883,7 +883,7 @@ const MovieLedMakerTool = () => {
                 </Button>
                 <button
                   onClick={() => setShowMobileConfig(!showMobileConfig)}
-                  className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-white transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Settings className="w-3.5 h-3.5" />
                   Configurações

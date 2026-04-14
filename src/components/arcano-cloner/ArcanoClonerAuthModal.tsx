@@ -69,7 +69,7 @@ function SimpleSignupForm({ defaultEmail, onSubmit, onBackToLogin, isLoading: fo
         <button
           type="button"
           onClick={() => setShowPwd(!showPwd)}
-          className="absolute right-3 top-[calc(50%+4px)] text-muted-foreground hover:text-white"
+          className="absolute right-3 top-[calc(50%+4px)] text-muted-foreground hover:text-foreground"
         >
           {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
@@ -118,7 +118,7 @@ function SimpleSignupForm({ defaultEmail, onSubmit, onBackToLogin, isLoading: fo
         <button
           type="button"
           onClick={onBackToLogin}
-          className="text-muted-foreground hover:text-white text-sm flex items-center justify-center gap-1 mx-auto"
+          className="text-muted-foreground hover:text-foreground text-sm flex items-center justify-center gap-1 mx-auto"
         >
           <ArrowLeft className="w-3 h-3" />
           Já tenho conta
@@ -469,7 +469,7 @@ export default function ArcanoClonerAuthModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-gradient-to-br from-[#1A0A2E] to-[#111113] border-border text-white p-0 max-w-md overflow-hidden [&>button]:text-muted-foreground [&>button]:hover:text-white">
+      <DialogContent className="bg-gradient-to-br from-[#1A0A2E] to-[#111113] border-border text-white p-0 max-w-md overflow-hidden [&>button]:text-muted-foreground [&>button]:hover:text-foreground">
         {/* Header */}
         <div className="bg-accent0/10 border-b border-border p-6 text-center">
           <div className="w-16 h-16 mx-auto rounded-full bg-accent0/20 flex items-center justify-center mb-3">

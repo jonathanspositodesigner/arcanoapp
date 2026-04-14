@@ -76,7 +76,7 @@ const BibliotecaArtesHub = () => {
       </div>
 
       {/* Link para voltar */}
-      <button onClick={() => navigate("/")} className="mt-8 text-sm text-muted-foreground hover:text-white transition-colors underline">
+      <button onClick={() => navigate("/")} className="mt-8 text-sm text-muted-foreground hover:text-foreground transition-colors underline">
         {t('artesHub.backToHome')}
       </button>
     </div>

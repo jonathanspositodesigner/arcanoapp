@@ -246,7 +246,7 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
       {/* Skip button */}
       <button
         onClick={finishTutorial}
-        className="absolute top-3 right-3 z-[100] flex items-center gap-1.5 text-muted-foreground hover:text-white text-xs pointer-events-auto transition-colors"
+        className="absolute top-3 right-3 z-[100] flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-xs pointer-events-auto transition-colors"
       >
         <X className="h-3.5 w-3.5" />
         Pular

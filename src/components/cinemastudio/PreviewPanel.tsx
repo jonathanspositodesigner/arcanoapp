@@ -56,13 +56,13 @@ const PreviewPanel: React.FC<Props> = ({
                 <div className="flex items-center gap-2 flex-wrap justify-end">
                   <button
                     onClick={downloadResult}
-                    className="text-[11px] text-muted-foreground hover:text-white flex items-center gap-1 transition-colors"
+                    className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
                   >
                     <Download className="w-3 h-3" /> Baixar
                   </button>
                   <button
                     onClick={resetTool}
-                    className="text-[11px] text-muted-foreground hover:text-white flex items-center gap-1 transition-colors"
+                    className="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
                   >
                     <RotateCcw className="w-3 h-3" />
                   </button>

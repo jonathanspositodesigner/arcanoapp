@@ -56,7 +56,7 @@ const PartnerLoginArtes = () => {
         <CardHeader className="text-center">
           <Button
             variant="ghost"
-            className="absolute left-4 top-4 text-muted-foreground hover:text-white"
+            className="absolute left-4 top-4 text-muted-foreground hover:text-foreground"
             onClick={() => navigate("/biblioteca-artes")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -110,7 +110,7 @@ const PartnerLoginArtes = () => {
             <Button
               type="button"
               variant="ghost"
-              className="text-muted-foreground hover:text-white text-sm"
+              className="text-muted-foreground hover:text-foreground text-sm"
               onClick={() => navigate("/admin-login")}
             >
               <Shield className="h-4 w-4 mr-2" />

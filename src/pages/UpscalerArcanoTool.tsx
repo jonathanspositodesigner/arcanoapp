@@ -822,7 +822,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                           version === 'standard'
                             ? 'bg-accent text-white'
-                            : 'text-muted-foreground hover:text-white'
+                            : 'text-muted-foreground hover:text-foreground'
                         }`}
                       >
                         V3 Turbo
@@ -832,7 +832,7 @@ const UpscalerArcanoTool: React.FC = () => {
                         className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                           version === 'pro'
                             ? 'bg-accent text-white'
-                            : 'text-muted-foreground hover:text-white'
+                            : 'text-muted-foreground hover:text-foreground'
                         }`}
                       >
                         V3 Pro
@@ -878,7 +878,7 @@ const UpscalerArcanoTool: React.FC = () => {
                           className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
                             resolution === '2k'
                               ? 'bg-accent text-white'
-                              : 'text-muted-foreground hover:text-white'
+                              : 'text-muted-foreground hover:text-foreground'
                           }`}
                         >
                           2K
@@ -888,7 +888,7 @@ const UpscalerArcanoTool: React.FC = () => {
                           className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
                             resolution === '4k'
                               ? 'bg-accent text-white'
-                              : 'text-muted-foreground hover:text-white'
+                              : 'text-muted-foreground hover:text-foreground'
                           }`}
                         >
                           4k
@@ -1589,7 +1589,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 {/* Configurações toggle */}
                 <button
                   onClick={() => setShowMobileConfig(!showMobileConfig)}
-                  className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-white transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Settings className="w-3.5 h-3.5" />
                   Configurações

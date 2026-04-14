@@ -35,7 +35,7 @@ const RefineSelector: React.FC<RefineSelectorProps> = ({
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6 text-muted-foreground hover:text-white hover:bg-accent0/20"
+          className="h-6 w-6 text-muted-foreground hover:text-foreground hover:bg-accent0/20"
           onClick={onCancel}
           disabled={isProcessing}
         >
@@ -57,7 +57,7 @@ const RefineSelector: React.FC<RefineSelectorProps> = ({
                 h-10 rounded-lg text-sm font-bold transition-all
                 ${isSelected
                   ? 'bg-slate-600 text-white border-2 border-border shadow-lg shadow-slate-500/20'
-                  : 'bg-slate-800/50 text-muted-foreground border border-border hover:bg-slate-700/50 hover:text-white'
+                  : 'bg-slate-800/50 text-muted-foreground border border-border hover:bg-slate-700/50 hover:text-foreground'
                 }
                 disabled:opacity-50 disabled:cursor-not-allowed
               `}

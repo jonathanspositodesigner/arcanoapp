@@ -228,7 +228,7 @@ const OnboardingTutorial = ({ onComplete }: OnboardingTutorialProps) => {
       {/* Skip button - always on top and clickable */}
       <button
         onClick={handleSkip}
-        className="absolute top-3 right-3 z-[100] flex items-center gap-1 text-foreground hover:text-white text-sm pointer-events-auto"
+        className="absolute top-3 right-3 z-[100] flex items-center gap-1 text-foreground hover:text-foreground text-sm pointer-events-auto"
       >
         <X className="h-4 w-4" />
         {t("onboarding.skip")}

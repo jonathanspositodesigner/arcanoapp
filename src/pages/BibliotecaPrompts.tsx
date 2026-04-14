@@ -693,11 +693,11 @@ const BibliotecaPrompts = () => {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-4 mt-8">
-            <Button variant="outline" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="bg-accent border-border text-gray-200 hover:bg-accent0/20 hover:text-white disabled:opacity-50">
+            <Button variant="outline" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="bg-accent border-border text-gray-200 hover:bg-accent0/20 hover:text-foreground disabled:opacity-50">
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-muted-foreground">{currentPage} / {totalPages}</span>
-            <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="bg-accent border-border text-gray-200 hover:bg-accent0/20 hover:text-white disabled:opacity-50">
+            <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="bg-accent border-border text-gray-200 hover:bg-accent0/20 hover:text-foreground disabled:opacity-50">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -742,7 +742,7 @@ const BibliotecaPrompts = () => {
                   <h2 className="text-2xl font-bold text-white">{selectedPrompt.title}</h2>
                   <div className="mt-2">{getBadgeContent(selectedPrompt)}</div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={handleCloseModal} className="text-muted-foreground hover:text-white hover:bg-accent0/20">
+                <Button variant="ghost" size="icon" onClick={handleCloseModal} className="text-muted-foreground hover:text-foreground hover:bg-accent0/20">
                   <X className="h-5 w-5" />
                 </Button>
               </div>
@@ -768,7 +768,7 @@ const BibliotecaPrompts = () => {
                   <Copy className="h-4 w-4 mr-2" />
                   {t('modal.copyPrompt')}
                 </Button>
-                <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl)} variant="outline" className="bg-accent border-border text-gray-200 hover:bg-accent0/20 hover:text-white">
+                <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl)} variant="outline" className="bg-accent border-border text-gray-200 hover:bg-accent0/20 hover:text-foreground">
                   <Download className="h-4 w-4 mr-2" />
                   {t('modal.download')}
                 </Button>

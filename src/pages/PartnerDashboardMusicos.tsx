@@ -240,7 +240,7 @@ const PartnerDashboardMusicos = () => {
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
-              className="text-muted-foreground hover:text-white"
+              className="text-muted-foreground hover:text-foreground"
               onClick={() => navigate("/parceiro-plataformas")}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -252,7 +252,7 @@ const PartnerDashboardMusicos = () => {
           </div>
           <Button
             variant="ghost"
-            className="text-muted-foreground hover:text-white"
+            className="text-muted-foreground hover:text-foreground"
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4 mr-2" />
@@ -366,7 +366,7 @@ const PartnerDashboardMusicos = () => {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="flex-1 border-pink-500/50 text-muted-foreground hover:text-white"
+                        className="flex-1 border-pink-500/50 text-muted-foreground hover:text-foreground"
                         onClick={() => openEditModal(arte)}
                         disabled={arte.approved === true}
                       >

@@ -122,14 +122,14 @@ export const FullscreenModal = ({
             <>
               {/* Zoom controls */}
               <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-full px-3 py-1.5 border border-border">
-                <button onClick={() => zoomOut()} className="p-1.5 text-muted-foreground hover:text-white transition-colors">
+                <button onClick={() => zoomOut()} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
                   <ZoomOut className="w-5 h-5" />
                 </button>
-                <button onClick={() => zoomIn()} className="p-1.5 text-muted-foreground hover:text-white transition-colors">
+                <button onClick={() => zoomIn()} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
                   <ZoomIn className="w-5 h-5" />
                 </button>
                 <div className="w-px h-5 bg-white/20 mx-1" />
-                <button onClick={() => resetTransform()} className="p-1.5 text-muted-foreground hover:text-white transition-colors">
+                <button onClick={() => resetTransform()} className="p-1.5 text-muted-foreground hover:text-foreground transition-colors">
                   <Maximize2 className="w-4 h-4" />
                 </button>
               </div>

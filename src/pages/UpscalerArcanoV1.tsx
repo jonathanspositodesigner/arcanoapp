@@ -196,7 +196,7 @@ const UpscalerArcanoV1 = () => {
             variant="ghost"
             size="icon"
             onClick={goBack}
-            className="shrink-0 text-muted-foreground hover:text-white hover:bg-accent0/20"
+            className="shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent0/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

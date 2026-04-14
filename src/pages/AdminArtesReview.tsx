@@ -209,7 +209,7 @@ const AdminArtesReview = () => {
                       </Button>
                     )}
                     {(status === "pending" || status === "approved") && (
-                      <Button onClick={() => handleRejectPartner(arte.id)} variant="outline" className="flex-1 text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-white">
+                      <Button onClick={() => handleRejectPartner(arte.id)} variant="outline" className="flex-1 text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-foreground">
                         <XCircle className="h-4 w-4 mr-2" />Recusar
                       </Button>
                     )}

@@ -727,7 +727,7 @@ const FlyerMakerTool: React.FC = () => {
                           className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                             imageSize === '3:4'
                               ? 'bg-accent text-white'
-                              : 'text-muted-foreground hover:text-white'
+                              : 'text-muted-foreground hover:text-foreground'
                           }`}
                           disabled={isProcessing}
                         >
@@ -738,7 +738,7 @@ const FlyerMakerTool: React.FC = () => {
                           className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                             imageSize === '9:16'
                               ? 'bg-accent text-white'
-                              : 'text-muted-foreground hover:text-white'
+                              : 'text-muted-foreground hover:text-foreground'
                           }`}
                           disabled={isProcessing}
                         >
@@ -838,8 +838,8 @@ const FlyerMakerTool: React.FC = () => {
                   <h3 className="text-sm font-semibold text-white flex items-center gap-1.5"><ImageIcon className="w-4 h-4 text-muted-foreground" /> Resultado</h3>
                   {outputImage && (
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-white" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-4 h-4" /></Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-white" onClick={() => transformRef.current?.zoomIn(0.5)}><ZoomIn className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-4 h-4" /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => transformRef.current?.zoomIn(0.5)}><ZoomIn className="w-4 h-4" /></Button>
                     </div>
                   )}
                 </div>

@@ -66,7 +66,7 @@ const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                 "border text-center",
                 isSelected
                   ? "bg-gradient-to-r from-slate-600 to-slate-500 border-border text-white"
-                  : "bg-accent border-border text-muted-foreground hover:bg-accent0/20 hover:text-white",
+                  : "bg-accent border-border text-muted-foreground hover:bg-accent0/20 hover:text-foreground",
                 disabled && "opacity-50 cursor-not-allowed"
               )}
             >

@@ -222,7 +222,7 @@ const AdminPartnersArtes = () => {
         <div className="flex items-center justify-between mb-6">
           <Button
             variant="ghost"
-            className="text-muted-foreground hover:text-white"
+            className="text-muted-foreground hover:text-foreground"
             onClick={() => navigate("/admin-artes-eventos/ferramentas")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

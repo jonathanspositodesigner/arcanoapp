@@ -56,7 +56,7 @@ const UserLoginArtesMusicos = () => {
         <CardHeader className="text-center">
           <Button 
             variant="ghost" 
-            className="absolute left-4 top-4 text-muted-foreground hover:text-white" 
+            className="absolute left-4 top-4 text-muted-foreground hover:text-foreground" 
             onClick={() => navigate("/")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />{t('back')}

@@ -147,7 +147,7 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown, isUnli
             <Button
               variant="ghost"
               onClick={() => navigate('/credit-history')}
-              className="w-full text-muted-foreground hover:text-white hover:bg-accent0/20 justify-between"
+              className="w-full text-muted-foreground hover:text-foreground hover:bg-accent0/20 justify-between"
             >
               Ver todas as transações
               <ChevronRight className="h-4 w-4" />

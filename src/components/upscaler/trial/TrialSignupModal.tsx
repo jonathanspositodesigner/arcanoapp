@@ -106,7 +106,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
                 placeholder="Seu nome completo"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="bg-accent border-border text-white placeholder:text-white/30"
+                className="bg-accent border-border text-white placeholder:text-muted-foreground"
               />
             </div>
 
@@ -118,7 +118,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
                 placeholder="seu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-accent border-border text-white placeholder:text-white/30"
+                className="bg-accent border-border text-white placeholder:text-muted-foreground"
               />
             </div>
 

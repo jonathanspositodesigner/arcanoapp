@@ -233,7 +233,7 @@ const BannerCarousel = () => {
                   {isVideoBanner(item) && (
                     <button 
                       onClick={() => handleButtonClick(item.secondaryLink)}
-                      className="text-foreground hover:text-white text-[10px] sm:text-sm underline underline-offset-2 transition-colors"
+                      className="text-foreground hover:text-foreground text-[10px] sm:text-sm underline underline-offset-2 transition-colors"
                     >
                       {item.secondaryText}
                     </button>

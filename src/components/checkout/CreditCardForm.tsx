@@ -215,7 +215,7 @@ const CreditCardForm = ({
                   value={cardNumber}
                   onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
                   placeholder="0000 0000 0000 0000"
-                  className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 text-lg tracking-wider"
+                  className="bg-input border-border text-foreground placeholder:text-muted-foreground text-lg tracking-wider"
                   maxLength={19}
                   inputMode="numeric"
                   autoComplete="cc-number"
@@ -228,7 +228,7 @@ const CreditCardForm = ({
                   value={cardName}
                   onChange={(e) => setCardName(e.target.value.toUpperCase())}
                   placeholder="NOME COMPLETO"
-                  className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 uppercase"
+                  className="bg-input border-border text-foreground placeholder:text-muted-foreground uppercase"
                   autoComplete="cc-name"
                 />
               </div>
@@ -240,7 +240,7 @@ const CreditCardForm = ({
                     value={expMonth}
                     onChange={(e) => setExpMonth(e.target.value.replace(/\D/g, "").slice(0, 2))}
                     placeholder="MM"
-                    className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 text-center"
+                    className="bg-input border-border text-foreground placeholder:text-muted-foreground text-center"
                     maxLength={2}
                     inputMode="numeric"
                     autoComplete="cc-exp-month"
@@ -252,7 +252,7 @@ const CreditCardForm = ({
                     value={expYear}
                     onChange={(e) => setExpYear(e.target.value.replace(/\D/g, "").slice(0, 2))}
                     placeholder="AA"
-                    className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 text-center"
+                    className="bg-input border-border text-foreground placeholder:text-muted-foreground text-center"
                     maxLength={2}
                     inputMode="numeric"
                     autoComplete="cc-exp-year"
@@ -264,7 +264,7 @@ const CreditCardForm = ({
                     value={cvv}
                     onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
                     placeholder="000"
-                    className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 text-center"
+                    className="bg-input border-border text-foreground placeholder:text-muted-foreground text-center"
                     maxLength={4}
                     inputMode="numeric"
                     type="password"
@@ -288,7 +288,7 @@ const CreditCardForm = ({
                         value={cep}
                         onChange={(e) => handleCepChange(e.target.value)}
                         placeholder="00000-000"
-                        className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 text-sm"
+                        className="bg-input border-border text-foreground placeholder:text-muted-foreground text-sm"
                         maxLength={9}
                         inputMode="numeric"
                       />
@@ -315,7 +315,7 @@ const CreditCardForm = ({
                         value={street}
                         onChange={(e) => setStreet(e.target.value)}
                         placeholder="Rua / Av."
-                        className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 text-sm"
+                        className="bg-input border-border text-foreground placeholder:text-muted-foreground text-sm"
                         disabled={cepLoading}
                       />
                     </div>
@@ -325,7 +325,7 @@ const CreditCardForm = ({
                         value={number}
                         onChange={(e) => setNumber(e.target.value)}
                         placeholder="123"
-                        className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 text-sm"
+                        className="bg-input border-border text-foreground placeholder:text-muted-foreground text-sm"
                       />
                     </div>
                   </div>
@@ -336,7 +336,7 @@ const CreditCardForm = ({
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       placeholder="Cidade"
-                      className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 text-sm"
+                      className="bg-input border-border text-foreground placeholder:text-muted-foreground text-sm"
                       disabled={cepLoading}
                     />
                   </div>

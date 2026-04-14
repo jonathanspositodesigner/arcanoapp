@@ -766,11 +766,11 @@ const GeradorPersonagemTool: React.FC = () => {
                 </h3>
                 {viewedImage && (
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-white hover:bg-accent0/20" onClick={() => transformRef.current?.zoomOut(0.5)}>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground hover:bg-accent0/20" onClick={() => transformRef.current?.zoomOut(0.5)}>
                       <ZoomOut className="w-3.5 h-3.5" />
                     </Button>
                     <span className="text-[10px] text-muted-foreground w-8 text-center">{Math.round(zoomLevel * 100)}%</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-white hover:bg-accent0/20" onClick={() => transformRef.current?.zoomIn(0.5)}>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground hover:bg-accent0/20" onClick={() => transformRef.current?.zoomIn(0.5)}>
                       <ZoomIn className="w-3.5 h-3.5" />
                     </Button>
                   </div>

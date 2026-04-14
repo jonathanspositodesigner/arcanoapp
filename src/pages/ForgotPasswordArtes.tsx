@@ -72,7 +72,7 @@ const ForgotPasswordArtes = () => {
         <CardHeader className="text-center">
           <Button
             variant="ghost"
-            className="absolute left-4 top-4 text-muted-foreground hover:text-white"
+            className="absolute left-4 top-4 text-muted-foreground hover:text-foreground"
             onClick={() => navigate("/login-artes")}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

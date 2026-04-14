@@ -149,7 +149,7 @@ const BibliotecaArtesMusicos = () => {
         {!isAppInstalled && (
           <Button
             variant="ghost"
-            className="w-full justify-start gap-3 text-muted-foreground hover:text-white hover:bg-gradient-to-r hover:from-amber-500/20 hover:to-yellow-500/20 border border-transparent hover:border-amber-500/30"
+            className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground hover:bg-gradient-to-r hover:from-amber-500/20 hover:to-yellow-500/20 border border-transparent hover:border-amber-500/30"
             onClick={() => { navigate("/instalar-app"); onClose?.(); }}
           >
             <Smartphone className="w-5 h-5 text-amber-400" />
@@ -160,7 +160,7 @@ const BibliotecaArtesMusicos = () => {
         {isSupported && !isSubscribed && (
           <Button
             variant="ghost"
-            className="w-full justify-start gap-3 text-muted-foreground hover:text-white hover:bg-gradient-to-r hover:from-slate-500/20 hover:to-pink-500/20 border border-transparent hover:border-border"
+            className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground hover:bg-gradient-to-r hover:from-slate-500/20 hover:to-pink-500/20 border border-transparent hover:border-border"
             onClick={() => { handleActivateNotifications(); onClose?.(); }}
           >
             <Bell className="w-5 h-5 text-muted-foreground" />
@@ -170,7 +170,7 @@ const BibliotecaArtesMusicos = () => {
 
         <Button
           variant="ghost"
-          className="w-full justify-start gap-3 text-muted-foreground hover:text-white hover:bg-accent"
+          className="w-full justify-start gap-3 text-muted-foreground hover:text-foreground hover:bg-accent"
           onClick={() => { navigate("/perfil-artes", { state: { from: 'musicos' } }); onClose?.(); }}
         >
           <User className="w-5 h-5" />
@@ -181,7 +181,7 @@ const BibliotecaArtesMusicos = () => {
           <CollapsibleTrigger asChild>
             <Button
               variant="ghost"
-              className="w-full justify-between gap-3 text-muted-foreground hover:text-white hover:bg-gradient-to-r hover:from-cyan-500/20 hover:to-blue-500/20 border border-transparent hover:border-cyan-500/30"
+              className="w-full justify-between gap-3 text-muted-foreground hover:text-foreground hover:bg-gradient-to-r hover:from-cyan-500/20 hover:to-blue-500/20 border border-transparent hover:border-cyan-500/30"
             >
               <div className="flex items-center gap-3">
                 <Sparkles className="w-5 h-5 text-cyan-400" />
@@ -196,7 +196,7 @@ const BibliotecaArtesMusicos = () => {
                 key={tool.name}
                 variant="ghost"
                 size="sm"
-                className="w-full justify-start gap-2 text-muted-foreground hover:text-white hover:bg-accent text-sm"
+                className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground hover:bg-accent text-sm"
                 onClick={() => { window.open(tool.url, '_blank'); onClose?.(); }}
               >
                 <tool.icon className="w-4 h-4" />
@@ -249,10 +249,10 @@ const BibliotecaArtesMusicos = () => {
         <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="lg:hidden text-muted-foreground hover:text-white hover:bg-accent" onClick={() => setSidebarOpen(true)}>
+              <Button variant="ghost" size="icon" className="lg:hidden text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => setSidebarOpen(true)}>
                 <Menu className="w-5 h-5" />
               </Button>
-              <Button variant="ghost" size="icon" onClick={goBack} className="text-muted-foreground hover:text-white hover:bg-accent">
+              <Button variant="ghost" size="icon" onClick={goBack} className="text-muted-foreground hover:text-foreground hover:bg-accent">
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <img src={baaLogo} alt="BAA" className="h-8" />
@@ -272,11 +272,11 @@ const BibliotecaArtesMusicos = () => {
                       </span>
                     )}
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => navigate("/perfil-artes", { state: { from: 'musicos' } })} className="text-muted-foreground hover:text-white hover:bg-accent">
+                  <Button variant="ghost" size="sm" onClick={() => navigate("/perfil-artes", { state: { from: 'musicos' } })} className="text-muted-foreground hover:text-foreground hover:bg-accent">
                     <Settings className="w-4 h-4 mr-1" />
                     <span className="hidden sm:inline">{t('musicos.header.profile')}</span>
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-white hover:bg-accent">
+                  <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-foreground hover:bg-accent">
                     <LogOut className="w-4 h-4 mr-1" />
                     <span className="hidden sm:inline">{t('musicos.header.logout')}</span>
                   </Button>
@@ -288,7 +288,7 @@ const BibliotecaArtesMusicos = () => {
                     <span className="hidden sm:inline">{t('musicos.header.becomeMember')}</span>
                     <span className="sm:hidden">{t('musicos.header.becomeMember')}</span>
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => navigate("/login-artes-musicos?redirect=/biblioteca-artes-musicos")} className="border-border text-muted-foreground hover:bg-accent hover:text-white hover:border-white/30">
+                  <Button variant="outline" size="sm" onClick={() => navigate("/login-artes-musicos?redirect=/biblioteca-artes-musicos")} className="border-border text-muted-foreground hover:bg-accent hover:text-foreground hover:border-white/30">
                     <LogIn className="w-4 h-4 mr-1" />
                     <span className="hidden sm:inline">{t('musicos.header.login')}</span>
                   </Button>
@@ -325,7 +325,7 @@ const BibliotecaArtesMusicos = () => {
               <Button
                 variant={selectedCategory === "todos" ? "default" : "outline"}
                 onClick={() => setSelectedCategory("todos")}
-                className={`h-auto min-h-[44px] px-4 py-2.5 text-sm whitespace-normal text-center leading-tight ${selectedCategory === "todos" ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0" : "border-border text-muted-foreground hover:bg-accent hover:text-white hover:border-white/30 bg-transparent"}`}
+                className={`h-auto min-h-[44px] px-4 py-2.5 text-sm whitespace-normal text-center leading-tight ${selectedCategory === "todos" ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0" : "border-border text-muted-foreground hover:bg-accent hover:text-foreground hover:border-white/30 bg-transparent"}`}
               >
                 {t('musicos.content.all')}
               </Button>
@@ -336,7 +336,7 @@ const BibliotecaArtesMusicos = () => {
                     key={cat.id}
                     variant={selectedCategory === cat.slug ? "default" : "outline"}
                     onClick={() => setSelectedCategory(cat.slug)}
-                    className={`h-auto min-h-[44px] px-4 py-2.5 text-sm whitespace-normal text-center leading-tight flex-col sm:flex-row gap-1 ${selectedCategory === cat.slug ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0" : "border-border text-muted-foreground hover:bg-accent hover:text-white hover:border-white/30 bg-transparent"}`}
+                    className={`h-auto min-h-[44px] px-4 py-2.5 text-sm whitespace-normal text-center leading-tight flex-col sm:flex-row gap-1 ${selectedCategory === cat.slug ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0" : "border-border text-muted-foreground hover:bg-accent hover:text-foreground hover:border-white/30 bg-transparent"}`}
                   >
                     <span>{cat.name}</span>
                     {isLedCategory && <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-medium">Pro+</span>}

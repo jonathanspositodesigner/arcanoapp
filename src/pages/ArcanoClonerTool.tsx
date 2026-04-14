@@ -1205,7 +1205,7 @@ const ArcanoClonerTool: React.FC = () => {
                 </Button>
                 <button
                   onClick={() => setShowMobileConfig(!showMobileConfig)}
-                  className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-white transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Settings className="w-3.5 h-3.5" />
                   Configurações

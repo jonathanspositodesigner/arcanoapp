@@ -399,9 +399,9 @@ const RemoverFundoTool: React.FC = () => {
                   <h3 className="text-xs font-semibold text-white flex items-center gap-1.5"><ImageIcon className="w-3.5 h-3.5 text-muted-foreground" />Resultado</h3>
                   {outputImage && (
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-white hover:bg-accent0/20" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-3.5 h-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground hover:bg-accent0/20" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-3.5 h-3.5" /></Button>
                       <span className="text-[10px] text-muted-foreground w-8 text-center">{Math.round(zoomLevel * 100)}%</span>
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-white hover:bg-accent0/20" onClick={() => transformRef.current?.zoomIn(0.5)}><ZoomIn className="w-3.5 h-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-foreground hover:bg-accent0/20" onClick={() => transformRef.current?.zoomIn(0.5)}><ZoomIn className="w-3.5 h-3.5" /></Button>
                     </div>
                   )}
                 </div>

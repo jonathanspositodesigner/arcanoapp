@@ -108,7 +108,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
               placeholder="Seu nome completo"
               value={name}
               onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: undefined })); }}
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 focus:border-ring"
+              className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring"
               autoFocus
               disabled={loading}
             />
@@ -125,7 +125,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
               placeholder="seu@email.com"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: undefined, confirmEmail: undefined })); }}
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 focus:border-ring"
+              className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring"
               disabled={loading}
               autoComplete="off"
               onPaste={(e) => e.preventDefault()}
@@ -143,7 +143,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
               placeholder="Digite seu e-mail novamente"
               value={confirmEmail}
               onChange={(e) => { setConfirmEmail(e.target.value); setErrors(prev => ({ ...prev, confirmEmail: undefined })); }}
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 focus:border-ring"
+              className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring"
               disabled={loading}
               autoComplete="off"
               onPaste={(e) => e.preventDefault()}
@@ -162,7 +162,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
               placeholder="000.000.000-00"
               value={cpf}
               onChange={(e) => { setCpf(formatCPF(e.target.value)); setErrors(prev => ({ ...prev, cpf: undefined })); }}
-              className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 focus:border-ring"
+              className="bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-ring"
               disabled={loading}
               maxLength={14}
             />

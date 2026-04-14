@@ -421,7 +421,7 @@ const ToolVersionLessons = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/')}
-                className="text-white hover:text-white hover:bg-accent0/20 gap-2"
+                className="text-white hover:text-foreground hover:bg-accent0/20 gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
                 <span className="hidden sm:inline">Voltar para Home</span>
@@ -623,7 +623,7 @@ const ToolVersionLessons = () => {
                             ? handleToolButtonClick(button.url)
                             : handleRegularButtonClick(button.url)
                         }
-                        className="gap-2 bg-accent border border-border text-muted-foreground hover:bg-accent0/30 hover:text-white hover:border-border"
+                        className="gap-2 bg-accent border border-border text-muted-foreground hover:bg-accent0/30 hover:text-foreground hover:border-border"
                       >
                         <ExternalLink className="w-4 h-4" />
                         {button.text}

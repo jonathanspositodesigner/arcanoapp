@@ -278,7 +278,7 @@ const PartnerUploadArtes = () => {
       <div className="max-w-2xl mx-auto">
         <Button
           variant="ghost"
-          className="text-muted-foreground hover:text-white mb-6"
+          className="text-muted-foreground hover:text-foreground mb-6"
           onClick={() => navigate("/parceiro-dashboard-artes")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />

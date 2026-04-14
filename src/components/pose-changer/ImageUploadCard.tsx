@@ -202,7 +202,7 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
             <Button
               variant="outline"
               size="sm"
-              className="w-full h-6 text-[10px] bg-accent0/10 border-border text-muted-foreground hover:bg-accent0/20 hover:text-white"
+              className="w-full h-6 text-[10px] bg-accent0/10 border-border text-muted-foreground hover:bg-accent0/20 hover:text-foreground"
               onClick={(e) => {
                 e.stopPropagation();
                 onOpenLibrary?.();

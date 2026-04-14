@@ -85,7 +85,7 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
           <button
             onClick={onOpenLibrary}
             disabled={disabled}
-            className="w-full h-6 text-[10px] rounded-md bg-accent0/10 border border-border text-muted-foreground hover:bg-accent0/20 hover:text-white transition-colors flex items-center justify-center gap-1"
+            className="w-full h-6 text-[10px] rounded-md bg-accent0/10 border border-border text-muted-foreground hover:bg-accent0/20 hover:text-foreground transition-colors flex items-center justify-center gap-1"
           >
             <ImageIcon className="w-3 h-3" />
             Trocar Imagem

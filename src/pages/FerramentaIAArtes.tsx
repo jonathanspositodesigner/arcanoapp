@@ -129,7 +129,7 @@ const FerramentaIAArtes = () => {
             variant="ghost"
             size="icon"
             onClick={locale === 'es' ? () => navigate(toolsHomePath) : goBack}
-            className="text-muted-foreground hover:text-white hover:bg-accent0/20"
+            className="text-muted-foreground hover:text-foreground hover:bg-accent0/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -177,7 +177,7 @@ const FerramentaIAArtes = () => {
             variant="ghost"
             size="icon"
             onClick={locale === 'es' ? () => navigate(toolsHomePath) : goBack}
-            className="text-muted-foreground hover:text-white hover:bg-accent0/20"
+            className="text-muted-foreground hover:text-foreground hover:bg-accent0/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

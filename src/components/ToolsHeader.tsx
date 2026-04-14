@@ -74,7 +74,7 @@ const ToolsHeader = ({
             variant="ghost"
             size="icon"
             onClick={() => navigate('/')}
-            className="text-muted-foreground hover:text-white hover:bg-accent0/20"
+            className="text-muted-foreground hover:text-foreground hover:bg-accent0/20"
             title="Página Inicial"
           >
             <Home className="w-5 h-5" />
@@ -85,7 +85,7 @@ const ToolsHeader = ({
               variant="ghost"
               size="icon"
               onClick={onBack}
-              className="text-muted-foreground hover:text-white hover:bg-accent0/20"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent0/20"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
@@ -122,7 +122,7 @@ const ToolsHeader = ({
               variant="ghost"
               size="sm"
               onClick={() => setShowCreationsModal(true)}
-              className="text-muted-foreground hover:text-white hover:bg-accent0/20 hidden sm:flex"
+              className="text-muted-foreground hover:text-foreground hover:bg-accent0/20 hidden sm:flex"
             >
               <Library className="w-4 h-4 mr-2" />
               <span className="hidden md:inline">Minhas Criações</span>
@@ -176,7 +176,7 @@ const ToolsHeader = ({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-muted-foreground hover:text-white hover:bg-accent0/20 rounded-full"
+                    className="text-muted-foreground hover:text-foreground hover:bg-accent0/20 rounded-full"
                   >
                     <User className="w-5 h-5" />
                   </Button>

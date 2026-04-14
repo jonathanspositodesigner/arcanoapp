@@ -215,7 +215,7 @@ const ProfileSettings = () => {
         <Button
           variant="ghost"
           onClick={goBack}
-          className="mb-4 text-muted-foreground hover:text-white hover:bg-accent0/20"
+          className="mb-4 text-muted-foreground hover:text-foreground hover:bg-accent0/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('back')}
@@ -420,7 +420,7 @@ const ProfileSettings = () => {
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -443,7 +443,7 @@ const ProfileSettings = () => {
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -466,7 +466,7 @@ const ProfileSettings = () => {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -477,7 +477,7 @@ const ProfileSettings = () => {
               type="submit"
               disabled={isPasswordLoading}
               variant="outline"
-              className="w-full border-border text-muted-foreground hover:bg-accent0/20 hover:text-white"
+              className="w-full border-border text-muted-foreground hover:bg-accent0/20 hover:text-foreground"
             >
               {isPasswordLoading ? t('changing') : t('changePassword')}
             </Button>
@@ -497,7 +497,7 @@ const ProfileSettings = () => {
                   <span>{t('profile.notificationsEnabled')}</span>
                   <button
                     onClick={() => setShowDisableModal(true)}
-                    className="text-xs text-muted-foreground hover:text-white underline transition-colors"
+                    className="text-xs text-muted-foreground hover:text-foreground underline transition-colors"
                   >
                     {t('profile.deactivate')}
                   </button>
@@ -573,7 +573,7 @@ const ProfileSettings = () => {
                 }
               }}
               disabled={pushLoading}
-              className="w-full text-xs text-muted-foreground hover:text-white underline transition-colors text-center py-2"
+              className="w-full text-xs text-muted-foreground hover:text-foreground underline transition-colors text-center py-2"
             >
               {pushLoading ? t('disableNotifications.deactivating') : t('disableNotifications.loseBenefits')}
             </button>

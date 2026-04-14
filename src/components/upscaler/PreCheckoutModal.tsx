@@ -430,7 +430,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close */}
-          <button onClick={onClose} className="absolute top-3 right-3 md:top-4 md:right-4 p-1.5 md:p-2 text-muted-foreground hover:text-white transition-colors z-10">
+          <button onClick={onClose} className="absolute top-3 right-3 md:top-4 md:right-4 p-1.5 md:p-2 text-muted-foreground hover:text-foreground transition-colors z-10">
             <X className="h-4 w-4 md:h-5 md:w-5" />
           </button>
 
@@ -514,7 +514,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
               {/* Switch to full form */}
               <button
                 onClick={() => setShowFullForm(true)}
-                className="w-full text-center text-muted-foreground hover:text-white text-sm transition-colors py-2"
+                className="w-full text-center text-muted-foreground hover:text-foreground text-sm transition-colors py-2"
               >
                 Usar outro método de pagamento →
               </button>

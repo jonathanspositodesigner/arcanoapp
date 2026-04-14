@@ -47,7 +47,7 @@ const ForgotPasswordArtesMusicos = () => {
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#2d1b4e] to-[#0f0f1a] flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-card/80 border-border relative">
         <CardHeader className="text-center">
-          <Button variant="ghost" className="absolute left-4 top-4 text-muted-foreground hover:text-white" onClick={() => navigate("/login-artes-musicos")}><ArrowLeft className="h-4 w-4 mr-2" />{t('back')}</Button>
+          <Button variant="ghost" className="absolute left-4 top-4 text-muted-foreground hover:text-foreground" onClick={() => navigate("/login-artes-musicos")}><ArrowLeft className="h-4 w-4 mr-2" />{t('back')}</Button>
           <div className="flex items-center justify-center gap-2 mb-2 mt-4"><Music className="h-5 w-5 text-muted-foreground" /></div>
           <CardTitle className="text-2xl text-white">{t('forgotPasswordCard.title')}</CardTitle>
           <CardDescription className="text-muted-foreground">{t('forgotPasswordCard.description')}</CardDescription>

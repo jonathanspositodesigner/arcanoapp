@@ -85,7 +85,7 @@ const UserLogin = () => {
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
-          className="mb-6 text-muted-foreground hover:text-white hover:bg-accent0/20"
+          className="mb-6 text-muted-foreground hover:text-foreground hover:bg-accent0/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('back')}

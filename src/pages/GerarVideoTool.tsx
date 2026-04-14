@@ -605,7 +605,7 @@ const GerarVideoTool = () => {
         <div className="sticky top-0 z-10 bg-[#0f0a15]/90 backdrop-blur-md border-b border-border px-4 py-3">
           <div className="flex items-center justify-between max-w-4xl mx-auto">
             <div className="flex items-center gap-3">
-              <button onClick={goBack} className="text-muted-foreground hover:text-white transition-colors">
+              <button onClick={goBack} className="text-muted-foreground hover:text-foreground transition-colors">
                 <ArrowLeft className="h-5 w-5" />
               </button>
               <div>
@@ -785,7 +785,7 @@ const GerarVideoTool = () => {
                       onChange={(e) => setPrompt(e.target.value)}
                       placeholder={generationMode === 'with_frames' ? "Descreva a transição entre os frames..." : "Descreva o vídeo que você quer gerar..."}
                       rows={1}
-                      className="w-full bg-accent border border-slate-500/25 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-400/50 resize-none focus:outline-none focus:border-border transition-colors"
+                      className="w-full bg-accent border border-slate-500/25 rounded-xl px-3 py-2 text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none focus:border-border transition-colors"
                       style={{ minHeight: '36px', maxHeight: '80px' }}
                       disabled={isGenerating}
                       onInput={(e) => {

@@ -377,11 +377,11 @@ const Planos2 = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="container mx-auto px-4 py-6 flex justify-between items-center">
-        <Button variant="ghost" onClick={() => navigate('/biblioteca-prompts')} className="text-muted-foreground hover:text-white hover:bg-accent0/20">
+        <Button variant="ghost" onClick={() => navigate('/biblioteca-prompts')} className="text-muted-foreground hover:text-foreground hover:bg-accent0/20">
           <ArrowLeft className="w-4 h-4 mr-2" />
           {t('planos.back')}
         </Button>
-        <Button variant="outline" onClick={() => navigate('/login')} className="gap-2 border-border text-muted-foreground hover:bg-accent0/20 hover:text-white">
+        <Button variant="outline" onClick={() => navigate('/login')} className="gap-2 border-border text-muted-foreground hover:bg-accent0/20 hover:text-foreground">
           <LogIn className="w-4 h-4" />
           {t('planos.alreadyPremium')}
         </Button>

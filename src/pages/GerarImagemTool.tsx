@@ -552,7 +552,7 @@ const GerarImagemTool = () => {
         <div className="sticky top-0 z-10 bg-[#0f0a15]/90 backdrop-blur-md border-b border-border px-4 py-3">
           <div className="flex items-center justify-between max-w-4xl mx-auto">
             <div className="flex items-center gap-3">
-              <button onClick={goBack} className="text-muted-foreground hover:text-white transition-colors">
+              <button onClick={goBack} className="text-muted-foreground hover:text-foreground transition-colors">
                 <ArrowLeft className="h-5 w-5" />
               </button>
               <div>
@@ -671,7 +671,7 @@ const GerarImagemTool = () => {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isProcessing || referenceImages.length >= 5}
-                className="relative flex-shrink-0 w-9 h-9 rounded-full border border-border bg-accent flex items-center justify-center text-muted-foreground hover:text-white hover:border-border/60 transition-colors disabled:opacity-40 self-end mb-0.5"
+                className="relative flex-shrink-0 w-9 h-9 rounded-full border border-border bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border/60 transition-colors disabled:opacity-40 self-end mb-0.5"
               >
                 <Paperclip className="h-4 w-4" />
                 {referenceImages.length > 0 && (
@@ -688,7 +688,7 @@ const GerarImagemTool = () => {
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Descreva a imagem que você quer gerar..."
                 rows={2}
-                className="flex-1 bg-accent border border-slate-500/25 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-slate-400/50 resize-none focus:outline-none focus:border-border transition-colors [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                className="flex-1 bg-accent border border-slate-500/25 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-muted-foreground resize-none focus:outline-none focus:border-border transition-colors [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                 style={{ minHeight: '56px', maxHeight: '100px', overflow: 'auto' }}
                 disabled={isProcessing}
                 onInput={(e) => {
@@ -723,7 +723,7 @@ const GerarImagemTool = () => {
                         type="button"
                         onClick={() => { setEngine(opt.value); setEngineDropdownOpen(false); }}
                         className={`flex items-center gap-2 w-full px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                          engine === opt.value ? 'text-muted-foreground bg-accent0/15' : 'text-muted-foreground hover:bg-accent0/15 hover:text-white'
+                          engine === opt.value ? 'text-muted-foreground bg-accent0/15' : 'text-muted-foreground hover:bg-accent0/15 hover:text-foreground'
                         }`}
                       >
                         {opt.label}
@@ -764,7 +764,7 @@ const GerarImagemTool = () => {
                           type="button"
                           onClick={() => { setAspectRatio(ratio); setAspectDropdownOpen(false); }}
                           className={`flex items-center gap-2 w-full px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                            isSelected ? 'text-muted-foreground bg-accent0/15' : 'text-muted-foreground hover:bg-accent0/15 hover:text-white'
+                            isSelected ? 'text-muted-foreground bg-accent0/15' : 'text-muted-foreground hover:bg-accent0/15 hover:text-foreground'
                           }`}
                         >
                           <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="flex-shrink-0">

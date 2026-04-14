@@ -514,7 +514,7 @@ export default function Seedance2() {
                     <p className="text-sm text-white font-medium truncate">{selectedModel.title}</p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">Selecione seu personagem e clique em Gerar</p>
                   </div>
-                  <button onClick={() => setSelectedModel(null)} className="shrink-0 p-1 rounded-full hover:bg-accent text-muted-foreground hover:text-white transition-colors">
+                  <button onClick={() => setSelectedModel(null)} className="shrink-0 p-1 rounded-full hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
                     <X className="h-4 w-4" />
                   </button>
                 </div>
@@ -661,7 +661,7 @@ export default function Seedance2() {
                       className="flex h-[28px] cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-border bg-black/30 px-3 text-[10px] text-muted-foreground transition-colors hover:border-border"
                     >
                       {refVideos.length > 0 ? `${refVideos.length} vídeo(s)` : "+ vídeo"}
-                      {refVideos.length > 0 && <button onClick={(e) => { e.stopPropagation(); setRefVideos([]); }} className="ml-1 text-muted-foreground hover:text-white">×</button>}
+                      {refVideos.length > 0 && <button onClick={(e) => { e.stopPropagation(); setRefVideos([]); }} className="ml-1 text-muted-foreground hover:text-foreground">×</button>}
                     </div>
                     <div
                       onDragOver={(e) => e.preventDefault()}
@@ -670,7 +670,7 @@ export default function Seedance2() {
                       className="flex h-[28px] cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-border bg-black/30 px-3 text-[10px] text-muted-foreground transition-colors hover:border-border"
                     >
                       {refAudios.length > 0 ? `${refAudios.length} áudio(s)` : "+ áudio"}
-                      {refAudios.length > 0 && <button onClick={(e) => { e.stopPropagation(); setRefAudios([]); }} className="ml-1 text-muted-foreground hover:text-white">×</button>}
+                      {refAudios.length > 0 && <button onClick={(e) => { e.stopPropagation(); setRefAudios([]); }} className="ml-1 text-muted-foreground hover:text-foreground">×</button>}
                     </div>
                   </>
                 )}
@@ -756,7 +756,7 @@ export default function Seedance2() {
                             <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-600 rotate-45 rounded-sm" />
                             <div className="flex items-center gap-2 relative">
                               <span className="text-[11px] sm:text-sm text-white font-bold drop-shadow-sm">👆 Adicione seu rosto aqui!</span>
-                              <button onClick={() => setShowCharacterTip(false)} className="text-muted-foreground hover:text-white text-sm shrink-0 font-bold">✕</button>
+                              <button onClick={() => setShowCharacterTip(false)} className="text-muted-foreground hover:text-foreground text-sm shrink-0 font-bold">✕</button>
                             </div>
                           </div>
                         </div>
@@ -851,7 +851,7 @@ export default function Seedance2() {
                             <div className="relative rounded-xl px-4 py-2.5 shadow-[0_0_20px_rgba(148,163,184,0.4)] whitespace-nowrap bg-gradient-to-r from-slate-600 via-slate-500 to-slate-500 animate-pulse-glow">
                               <div className="flex items-center gap-2 relative">
                                 <span className="text-sm text-white font-bold drop-shadow-sm">👆 Adicione seu rosto aqui!</span>
-                                <button onClick={() => setShowCharacterTip(false)} className="text-muted-foreground hover:text-white text-sm shrink-0 font-bold">✕</button>
+                                <button onClick={() => setShowCharacterTip(false)} className="text-muted-foreground hover:text-foreground text-sm shrink-0 font-bold">✕</button>
                               </div>
                             </div>
                           </div>
@@ -1028,7 +1028,7 @@ function UploadSlot({
       <div className="relative overflow-hidden rounded-lg border border-border" style={{ width: dimension, height: dimension }}>
         <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
         {onRemove && (
-          <button onClick={onRemove} className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/70 text-[10px] text-muted-foreground hover:text-white">×</button>
+          <button onClick={onRemove} className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-black/70 text-[10px] text-muted-foreground hover:text-foreground">×</button>
         )}
       </div>
     );
@@ -1060,7 +1060,7 @@ function VideoCard({ gen, onPreview, onDownload, onUse }: { gen: Generation; onP
           <HoverVideo src={gen.videoUrl} prompt={gen.prompt} ratio={gen.ratio} duration={gen.duration} />
           <button
             onClick={(e) => { e.stopPropagation(); onDownload?.(gen.videoUrl!, gen.prompt); }}
-            className="absolute top-2 right-2 z-10 rounded-full bg-black/60 p-1.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-black/80 hover:text-white hover:scale-110"
+            className="absolute top-2 right-2 z-10 rounded-full bg-black/60 p-1.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-black/80 hover:text-foreground hover:scale-110"
             title="Baixar vídeo"
           >
             <Download className="h-4 w-4" />

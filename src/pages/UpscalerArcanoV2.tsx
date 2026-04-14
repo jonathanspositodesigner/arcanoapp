@@ -178,7 +178,7 @@ const UpscalerArcanoV2 = () => {
             variant="ghost"
             size="sm"
             onClick={goBack}
-            className="text-muted-foreground hover:text-white hover:bg-accent0/20 gap-2"
+            className="text-muted-foreground hover:text-foreground hover:bg-accent0/20 gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="hidden sm:inline">Voltar para Home</span>
@@ -190,7 +190,7 @@ const UpscalerArcanoV2 = () => {
             variant="outline"
             size="sm"
             onClick={() => navigate(user ? '/minha-conta' : '/auth')}
-            className="border-border text-muted-foreground hover:text-white hover:bg-accent0/20"
+            className="border-border text-muted-foreground hover:text-foreground hover:bg-accent0/20"
           >
             {user ? 'Minha Conta' : 'Login'}
           </Button>

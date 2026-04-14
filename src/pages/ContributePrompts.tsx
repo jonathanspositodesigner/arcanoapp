@@ -226,7 +226,7 @@ const ContributePrompts = () => {
         <Button
           variant="ghost"
           onClick={goBack}
-          className="mb-6 text-muted-foreground hover:text-white hover:bg-accent0/20"
+          className="mb-6 text-muted-foreground hover:text-foreground hover:bg-accent0/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('contribute.back')}
@@ -311,7 +311,7 @@ const ContributePrompts = () => {
                       setTxtFileName("");
                       setPrompt("");
                     }}
-                    className="text-muted-foreground hover:text-white hover:bg-accent0/20"
+                    className="text-muted-foreground hover:text-foreground hover:bg-accent0/20"
                   >
                     <X className="h-4 w-4" />
                   </Button>

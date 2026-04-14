@@ -162,7 +162,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
       onClick={onClick}
       title={title}
       className={`p-1.5 rounded hover:bg-accent transition-colors ${
-        active ? "bg-white/20 text-white" : "text-muted-foreground hover:text-white"
+        active ? "bg-white/20 text-white" : "text-muted-foreground hover:text-foreground"
       }`}
     >
       {children}
@@ -223,7 +223,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
                   key={size}
                   type="button"
                   onClick={() => setFontSize(size)}
-                  className="block w-full text-left px-3 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-white"
+                  className="block w-full text-left px-3 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
                 >
                   {size}
                 </button>
@@ -400,7 +400,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
               Remover
             </Button>
           )}
-          <button type="button" onClick={() => setShowLinkInput(false)} className="text-muted-foreground hover:text-white">
+          <button type="button" onClick={() => setShowLinkInput(false)} className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -419,7 +419,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
           <Button size="sm" className="h-7 text-xs" onClick={addImage}>
             Inserir
           </Button>
-          <button type="button" onClick={() => setShowImageInput(false)} className="text-muted-foreground hover:text-white">
+          <button type="button" onClick={() => setShowImageInput(false)} className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
         </div>

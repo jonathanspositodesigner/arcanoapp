@@ -182,7 +182,7 @@ const ProfileSettingsArtes = () => {
       <div className="max-w-lg mx-auto">
         <Button
           variant="ghost"
-          className="text-muted-foreground hover:text-white mb-6"
+          className="text-muted-foreground hover:text-foreground mb-6"
           onClick={() => navigate(fromMusicos ? "/biblioteca-artes-musicos" : "/biblioteca-artes")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -258,7 +258,7 @@ const ProfileSettingsArtes = () => {
                     <button
                       type="button"
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
@@ -274,7 +274,7 @@ const ProfileSettingsArtes = () => {
                     <button
                       type="button"
                       onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
                       {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>

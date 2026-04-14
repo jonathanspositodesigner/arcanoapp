@@ -138,7 +138,7 @@ const ChangePasswordArtes = () => {
                 onClick={handleResendLink}
                 disabled={resendCooldown > 0 || isResending}
                 variant="ghost"
-                className="w-full text-muted-foreground hover:text-white"
+                className="w-full text-muted-foreground hover:text-foreground"
               >
                 {isResending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {resendCooldown > 0 
@@ -149,7 +149,7 @@ const ChangePasswordArtes = () => {
               <Button
                 onClick={() => navigate(-1)}
                 variant="ghost"
-                className="w-full text-white/40 hover:text-white"
+                className="w-full text-white/40 hover:text-foreground"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Usar outro email
@@ -240,7 +240,7 @@ const ChangePasswordArtes = () => {
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
@@ -257,7 +257,7 @@ const ChangePasswordArtes = () => {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>

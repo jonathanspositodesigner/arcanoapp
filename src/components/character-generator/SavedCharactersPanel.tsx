@@ -83,7 +83,7 @@ const SavedCharactersPanel: React.FC<SavedCharactersPanelProps> = ({ userId, ref
       <Button
         variant="ghost"
         size="sm"
-        className="w-full justify-between text-muted-foreground hover:text-white hover:bg-accent text-xs"
+        className="w-full justify-between text-muted-foreground hover:text-foreground hover:bg-accent text-xs"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <span className="flex items-center gap-1.5">
