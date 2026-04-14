@@ -420,6 +420,99 @@ const Index = () => {
               <RefreshCw className={`h-3.5 w-3.5 ${isUpdating ? 'animate-spin' : ''}`} />
               <span className="hidden md:inline">Atualizar</span>
             </button>
+
+            {/* Login / User Menu */}
+            {isLoggedIn ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1 px-2 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all">
+                    <User className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-popover border-border text-popover-foreground">
+                  <DropdownMenuLabel className="text-muted-foreground">
+                    <div className="flex flex-col gap-1">
+                      <span className="font-medium text-foreground">
+                        {user?.email?.split('@')[0] || 'Meu Perfil'}
+                      </span>
+                      <span className="text-xs text-muted-foreground font-normal">
+                        {user?.email}
+                      </span>
+                    </div>
+                  </DropdownMenuLabel>
+
+                  <DropdownMenuSeparator className="bg-border" />
+
+                  <div className="px-2 py-2 flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Coins className="w-4 h-4 text-yellow-400" />
+                      Créditos
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <AnimatedCreditsDisplay 
+                        credits={credits}
+                        isLoading={isCreditsLoading}
+                        size="sm"
+                        showCoin={false}
+                        variant="badge"
+                        isUnlimited={isUnlimited}
+                      />
+                      <button
+                        onClick={() => navigate('/planos-creditos')}
+                        className="p-1 rounded hover:bg-accent"
+                        title="Comprar créditos"
+                      >
+                        <PlusCircle className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <DropdownMenuSeparator className="bg-border" />
+
+                  <DropdownMenuItem
+                    onClick={() => navigate('/change-password')}
+                    className="cursor-pointer hover:bg-accent focus:bg-accent"
+                  >
+                    <Lock className="w-4 h-4 mr-2" />
+                    Alterar Senha
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={() => navigate('/profile-settings')}
+                    className="cursor-pointer hover:bg-accent focus:bg-accent"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Configurações
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={(e) => { e.preventDefault(); toggleTheme(); }}
+                    className="cursor-pointer hover:bg-accent focus:bg-accent"
+                  >
+                    {theme === "dark" ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+                    {theme === "dark" ? "Tema Claro" : "Tema Escuro"}
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator className="bg-border" />
+
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="cursor-pointer text-red-400 hover:bg-red-500/20 focus:bg-red-500/20 focus:text-red-400"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-[10px] sm:text-xs font-medium hover:bg-primary/90 transition-all"
+              >
+                <LogIn className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Entrar</span>
+              </button>
+            )}
           </div>
         </div>
       </header>
