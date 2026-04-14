@@ -486,7 +486,7 @@ const BibliotecaPrompts = () => {
               { name: 'Pose Changer', desc: 'Mude a pose de qualquer foto com IA', cost: 60, path: '/pose-changer-tool', cover: 'https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/pack-covers/45b9a004-d682-4d86-89d0-09a736040fa9.jpg' },
               { name: 'MovieLed Maker', desc: 'Gere movies para telão de LED com um clique', cost: 500, path: '/movieled-maker', cover: 'https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/prompts-cloudinary/references/BOTECO-DO-LUAN-ref.jpg' },
               { name: 'Remover Fundo', desc: 'Remova o fundo de qualquer imagem com IA', cost: 5, path: '/remover-fundo', cover: removerFundoCover },
-              { name: 'Flyer Maker', desc: 'Crie flyers para eventos incríveis com IA', cost: 100, path: '/flyer-maker', cover: flyerMakerCover },
+              
             ].map((tool) => (
               <div
                 key={tool.name}
