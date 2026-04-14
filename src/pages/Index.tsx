@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useIsAppInstalled } from "@/hooks/useIsAppInstalled";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { Check, Smartphone, Bell, ExternalLink, Clock, RefreshCw, ShieldCheck, Users } from "lucide-react";
+import { Check, Smartphone, Bell, ExternalLink, Clock, RefreshCw, ShieldCheck, Users, User, LogIn, LogOut, Lock, Settings, Sun, Moon, Coins, PlusCircle, Phone } from "lucide-react";
 import { toast } from "sonner";
 import logoHorizontal from "@/assets/logo_horizontal.png";
 import { FadeIn, StaggeredAnimation } from "@/hooks/useScrollAnimation";
