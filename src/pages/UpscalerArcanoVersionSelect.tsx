@@ -48,7 +48,6 @@ const ICON_MAP = {
 const COLOR_MAP = {
   yellow: 'bg-yellow-500/30 text-yellow-300',
   blue: 'bg-blue-500/30 text-blue-300',
-  ,
   green: 'bg-green-500/30 text-green-300',
   orange: 'bg-orange-500/30 text-orange-300',
    gray: 'bg-gray-500/30 text-gray-300',
