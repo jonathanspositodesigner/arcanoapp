@@ -288,7 +288,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
         )}
         <button
           onClick={openModal}
-          className="flex items-center gap-2 w-full p-2 rounded-md bg-black/20 border border-border hover:border-white/[0.12] transition-colors"
+          className="flex items-center gap-2 w-full p-2 rounded-md bg-black/20 border border-border hover:border-border transition-colors"
         >
           <div className="w-8 h-8 rounded bg-white/[0.04] flex items-center justify-center flex-shrink-0">
             {selectedCharacters.length > 0 ? <Plus className="w-3.5 h-3.5 text-muted-foreground" /> : <User className="w-3.5 h-3.5 text-muted-foreground" />}
@@ -363,7 +363,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
               <div className="space-y-3 pt-2">
                 <div
                   onClick={() => fileRef.current?.click()}
-                  className="w-full aspect-square rounded-lg border border-dashed border-border bg-black/20 flex items-center justify-center cursor-pointer hover:border-white/[0.2] transition-colors overflow-hidden"
+                  className="w-full aspect-square rounded-lg border border-dashed border-border bg-black/20 flex items-center justify-center cursor-pointer hover:border-border transition-colors overflow-hidden"
                 >
                   {newImagePreview ? (
                     <img src={newImagePreview} alt="" className="w-full h-full object-cover" />

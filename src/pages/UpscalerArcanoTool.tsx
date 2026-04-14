@@ -1287,7 +1287,7 @@ const UpscalerArcanoTool: React.FC = () => {
                             </div>
 
                             {/* Labels */}
-                            <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-black/90 border border-white/30 text-foreground text-xs font-bold z-20 pointer-events-none">
+                            <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-black/90 border border-border text-foreground text-xs font-bold z-20 pointer-events-none">
                               {t('upscalerTool.labels.before')}
                             </div>
                             <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-slate-600/90 border border-border text-foreground text-xs font-bold z-20 pointer-events-none">

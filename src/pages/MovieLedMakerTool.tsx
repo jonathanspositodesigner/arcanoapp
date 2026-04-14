@@ -588,7 +588,7 @@ const MovieLedMakerTool = () => {
                     onClick={() => setShowLibrary(true)}
                     disabled={isProcessing}
                     data-tutorial-movieled="reference"
-                    className="w-full h-[100px] lg:h-[120px] rounded-xl border border-dashed border-border bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/25 transition-all flex flex-col items-center justify-center gap-2 group"
+                    className="w-full h-[100px] lg:h-[120px] rounded-xl border border-dashed border-border bg-white/[0.03] hover:bg-white/[0.06] hover:border-border transition-all flex flex-col items-center justify-center gap-2 group"
                   >
                     <div className="w-9 h-9 rounded-lg bg-accent0/10 border border-border/20 flex items-center justify-center group-hover:bg-accent transition-colors">
                       <Plus className="w-4 h-4 text-muted-foreground" />
@@ -651,10 +651,10 @@ const MovieLedMakerTool = () => {
                       ))}
                     </div>
                     <div className="mt-2 flex flex-wrap gap-2">
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-white/8">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-border">
                         {currentEngine.duration} • {currentEngine.resolution}
                       </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-white/8 flex items-center gap-1">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-border flex items-center gap-1">
                         <Clock className="h-2.5 w-2.5" />
                         {currentEngine.time}
                       </span>
@@ -843,10 +843,10 @@ const MovieLedMakerTool = () => {
                   ))}
                 </div>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-white/8">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-border">
                     {currentEngine.duration} • {currentEngine.resolution}
                   </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-white/8 flex items-center gap-1">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-accent text-muted-foreground border border-border flex items-center gap-1">
                     <Clock className="h-2.5 w-2.5" />
                     {currentEngine.time}
                   </span>

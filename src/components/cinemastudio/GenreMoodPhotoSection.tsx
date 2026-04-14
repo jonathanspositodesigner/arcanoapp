@@ -79,7 +79,7 @@ const StyleDropdown: React.FC<{
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-between w-full py-1.5 px-2 rounded-md bg-black/20 border border-border hover:border-white/[0.12] transition-colors"
+        className="flex items-center justify-between w-full py-1.5 px-2 rounded-md bg-black/20 border border-border hover:border-border transition-colors"
       >
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-[9px] text-muted-foreground uppercase tracking-[0.12em] font-semibold w-12 flex-shrink-0">{label}</span>

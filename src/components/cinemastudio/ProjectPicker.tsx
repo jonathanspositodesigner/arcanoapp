@@ -108,7 +108,7 @@ const ProjectPicker: React.FC<Props> = ({
                 className={`aspect-video rounded-xl overflow-hidden border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center gap-2
                   ${atLimit
                     ? 'border-border cursor-not-allowed opacity-50'
-                    : 'border-border hover:border-white/[0.16] hover:scale-[1.02] hover:shadow-lg hover:shadow-white/5 cursor-pointer'
+                    : 'border-border hover:border-border hover:scale-[1.02] hover:shadow-lg hover:shadow-white/5 cursor-pointer'
                   } bg-gradient-to-br from-white/[0.02] to-white/[0.01]`}
               >
                 {atLimit ? (
