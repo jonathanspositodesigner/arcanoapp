@@ -40,19 +40,16 @@ serve(async (req) => {
     });
   }
 
-  const userClient = createClient(supabaseUrl, supabaseAnon, {
-    global: { headers: { Authorization: authHeader } },
-  });
   const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
 
   const token = authHeader.replace("Bearer ", "");
-  const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
-  if (claimsError || !claimsData?.claims) {
+  const { data: { user }, error: userError } = await serviceClient.auth.getUser(token);
+  if (userError || !user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-  const userId = claimsData.claims.sub as string;
+  const userId = user.id;
 
   try {
     const { prompt, model, aspect_ratio, reference_images, source } = await req.json();

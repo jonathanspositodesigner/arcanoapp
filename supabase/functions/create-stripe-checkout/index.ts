@@ -22,13 +22,13 @@ serve(async (req) => {
       );
     }
     const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.49.1");
-    const supabaseAuth = createClient(
+    const supabaseService = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
-    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(authHeader.replace('Bearer ', ''));
-    if (claimsError || !claimsData?.claims?.sub) {
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabaseService.auth.getUser(token);
+    if (userError || !user) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized: invalid token' }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
