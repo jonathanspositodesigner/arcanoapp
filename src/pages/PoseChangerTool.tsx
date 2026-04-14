@@ -540,7 +540,7 @@ const PoseChangerTool: React.FC = () => {
                   {/* Generate Button - DESKTOP */}
                   {!isProcessing && status !== 'completed' && (
                     <Button
-                      className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-slate-500 hover:from-blue-600 hover:to-slate-600 rounded-xl shadow-lg disabled:opacity-50"
+                      className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white rounded-xl shadow-lg disabled:opacity-50"
                       disabled={!canProcess || isSubmitting}
                       onClick={handleProcess}
                     >
@@ -730,7 +730,7 @@ const PoseChangerTool: React.FC = () => {
             {/* Idle state */}
             {!isProcessing && status !== 'completed' && status !== 'error' && (
               <Button
-                className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-slate-500 hover:from-blue-600 hover:to-slate-600 rounded-xl shadow-lg disabled:opacity-50"
+                className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white rounded-xl shadow-lg disabled:opacity-50"
                 disabled={!canProcess || isSubmitting}
                 onClick={handleProcess}
               >
