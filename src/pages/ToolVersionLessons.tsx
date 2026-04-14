@@ -351,7 +351,7 @@ const ToolVersionLessons = () => {
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-foreground">{toolName}</h1>
           <p className="text-muted-foreground">{t('versionSelect.loginRequired')}</p>
-          <Button onClick={() => navigate(loginPath)} className="bg-gradient-to-r from-slate-600 to-blue-500">
+          <Button onClick={() => navigate(loginPath)} className="bg-gradient-to-r from-purple-600 to-purple-500">
             {t('ferramentas.login')}
           </Button>
         </div>
@@ -378,7 +378,7 @@ const ToolVersionLessons = () => {
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-foreground">{toolName}</h1>
           <p className="text-muted-foreground">{t('versionSelect.noAccess')}</p>
-          <Button onClick={() => navigate(plansPath)} className="bg-gradient-to-r from-slate-600 to-blue-500">
+          <Button onClick={() => navigate(plansPath)} className="bg-gradient-to-r from-purple-600 to-purple-500">
             {t('ferramentas.seePlans')}
           </Button>
         </div>
@@ -398,7 +398,7 @@ const ToolVersionLessons = () => {
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-foreground">{t('toolLessons.versionNotFound')}</h1>
           <p className="text-muted-foreground">{t('toolLessons.versionNotFoundDesc')}</p>
-          <Button onClick={() => navigate(toolSelectPath)} className="bg-gradient-to-r from-slate-600 to-blue-500">
+          <Button onClick={() => navigate(toolSelectPath)} className="bg-gradient-to-r from-purple-600 to-purple-500">
             {t('upscaler.back')}
           </Button>
         </div>

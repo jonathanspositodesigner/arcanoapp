@@ -430,7 +430,7 @@ const BibliotecaPrompts = () => {
 
   const getBadgeContent = (item: PromptItem) => {
     return <div className="flex flex-wrap gap-1">
-      {item.isPremium ? <Badge className="bg-gradient-to-r from-slate-600 to-blue-500 text-foreground border-0 text-[10px] sm:text-xs">
+      {item.isPremium ? <Badge className="bg-gradient-to-r from-purple-600 to-purple-500 text-foreground border-0 text-[10px] sm:text-xs">
         <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" fill="currentColor" />
         {t('badges.premium')}
       </Badge> : <Badge variant="outline" className="border-green-500 text-green-400 text-[10px] sm:text-xs">
@@ -708,7 +708,7 @@ const BibliotecaPrompts = () => {
       <Dialog open={showPremiumModal} onOpenChange={handleClosePremiumModal}>
         <DialogContent className="max-w-lg bg-background border-border text-foreground">
           <div className="text-center p-6">
-            <div className="w-20 h-20 mx-auto bg-gradient-to-r from-slate-600 to-blue-500 rounded-full flex items-center justify-center mb-4">
+            <div className="w-20 h-20 mx-auto bg-gradient-to-r from-purple-600 to-purple-500 rounded-full flex items-center justify-center mb-4">
               <Star className="h-10 w-10 text-foreground" fill="currentColor" />
             </div>
             <h2 className="text-2xl font-bold mb-2">{t('premiumModal.title')}</h2>
@@ -725,7 +725,7 @@ const BibliotecaPrompts = () => {
                 </div>
               </div>
             )}
-            <Button onClick={() => navigate("/planos-2")} className="w-full bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-500 hover:to-blue-400 text-foreground py-6 text-lg">
+            <Button onClick={() => navigate("/planos-2")} className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-foreground py-6 text-lg">
               <Star className="h-5 w-5 mr-2" fill="currentColor" />
               {t('premiumModal.becomePremium')}
             </Button>

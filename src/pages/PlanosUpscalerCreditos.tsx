@@ -709,7 +709,7 @@ const PlanosUpscalerCreditos = () => {
                       Comprar
                     </Button>
                     <div className="flex flex-col items-center mb-6 h-[57px]">
-                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-foreground bg-gradient-to-r from-slate-600 to-blue-500">
+                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-foreground bg-gradient-to-r from-purple-600 to-purple-500">
                         <Sparkles className="w-4 h-4" />
                         30 upscalers
                       </span>
@@ -787,7 +787,7 @@ const PlanosUpscalerCreditos = () => {
                       Comprar
                     </Button>
                     <div className="flex flex-col items-center mb-6 h-[57px]">
-                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-foreground bg-gradient-to-r from-slate-600 to-blue-500">
+                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-foreground bg-gradient-to-r from-purple-600 to-purple-500">
                         <Sparkles className="w-4 h-4" />
                         70 upscalers
                       </span>
@@ -843,7 +843,7 @@ const PlanosUpscalerCreditos = () => {
                 {/* Studio - MELHOR CUSTO/BENEFÍCIO */}
                 <div className="flex flex-col h-full w-full">
                   <Card className="relative p-8 flex flex-col rounded-xl bg-background border-2 border-slate-500 shadow-lg shadow-slate-500/20 w-full h-full">
-                    <Badge className="absolute -top-3.5 left-1/2 -translate-x-1/2 border-0 text-sm whitespace-nowrap bg-gradient-to-r from-slate-600 to-blue-500 text-foreground px-5 py-1.5">
+                    <Badge className="absolute -top-3.5 left-1/2 -translate-x-1/2 border-0 text-sm whitespace-nowrap bg-gradient-to-r from-purple-600 to-purple-500 text-foreground px-5 py-1.5">
                       MELHOR CUSTO/BENEFÍCIO
                     </Badge>
                     <div className="text-center mb-5 min-h-[68px] flex flex-col items-center justify-center">
@@ -860,12 +860,12 @@ const PlanosUpscalerCreditos = () => {
                     </div>
                     <Button 
                       onClick={() => window.open(appendUtmToUrl("https://payfast.greenn.com.br/fz9ce38/offer/SQCSxN"), "_blank")}
-                      className="w-full mb-5 text-lg h-14 bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-700 hover:to-blue-600 text-foreground font-semibold"
+                      className="w-full mb-5 text-lg h-14 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-foreground font-semibold"
                     >
                       Comprar
                     </Button>
                     <div className="flex flex-col items-center mb-6 h-[57px]">
-                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-foreground bg-gradient-to-r from-slate-600 to-blue-500">
+                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-foreground bg-gradient-to-r from-purple-600 to-purple-500">
                         <Sparkles className="w-4 h-4" />
                         200 upscalers
                       </span>
