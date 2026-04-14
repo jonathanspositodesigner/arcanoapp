@@ -355,7 +355,7 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
       <div className="bg-white dark:bg-gray-900 rounded-[2rem] overflow-hidden">
         {/* Status Bar */}
         <div className="h-6 bg-white/10 dark:bg-gray-800 flex items-center justify-between px-6">
-          <span className="text-[10px] text-gray-600 font-medium">9:41</span>
+          <span className="text-[10px] text-gray-400 font-medium">9:41</span>
           <div className="flex items-center gap-1">
             <div className="w-4 h-2 bg-gray-600 rounded-sm" />
           </div>
@@ -367,7 +367,7 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
           {/* URL Bar */}
           <div className="flex-1 bg-white dark:bg-gray-700 rounded-full h-8 flex items-center px-3 gap-2">
             <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0" />
-            <span className="text-[10px] text-gray-600 dark:text-gray-400 truncate">arcanoapp.voxvisual.com.br</span>
+            <span className="text-[10px] text-gray-400 dark:text-gray-400 truncate">arcanoapp.voxvisual.com.br</span>
           </div>
           {/* Share Button - Highlighted on step 0 */}
           <div className="relative">
@@ -408,7 +408,7 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
                 {/* Site Info Header */}
                 <div className="flex items-center gap-3 p-3 border-b border-gray-200 dark:border-gray-700">
                   <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-lg flex items-center justify-center">
-                    <span className="text-xs font-bold text-gray-600">A</span>
+                    <span className="text-xs font-bold text-gray-400">A</span>
                   </div>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-gray-100 dark:text-white">ArcanoApp</p>
@@ -424,19 +424,19 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
                       <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-[10px]">📡</span>
                       </div>
-                      <span className="text-[8px] text-gray-600">AirDrop</span>
+                      <span className="text-[8px] text-gray-400">AirDrop</span>
                     </div>
                     <div className="flex flex-col items-center gap-1 min-w-[50px]">
                       <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
                         <span className="text-white text-[10px]">💬</span>
                       </div>
-                      <span className="text-[8px] text-gray-600">Mensagens</span>
+                      <span className="text-[8px] text-gray-400">Mensagens</span>
                     </div>
                     <div className="flex flex-col items-center gap-1 min-w-[50px]">
                       <div className="w-10 h-10 bg-blue-400 rounded-full flex items-center justify-center">
                         <span className="text-white text-[10px]">✉️</span>
                       </div>
-                      <span className="text-[8px] text-gray-600">E-mail</span>
+                      <span className="text-[8px] text-gray-400">E-mail</span>
                     </div>
                   </div>
                 </div>
@@ -478,7 +478,7 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
                 {/* Site Info Header */}
                 <div className="flex items-center gap-3 p-3 border-b border-gray-200 dark:border-gray-700">
                   <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-lg flex items-center justify-center">
-                    <span className="text-xs font-bold text-gray-600">A</span>
+                    <span className="text-xs font-bold text-gray-400">A</span>
                   </div>
                   <div className="flex-1">
                     <p className="text-xs font-medium text-gray-100 dark:text-white">ArcanoApp</p>
@@ -530,7 +530,7 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
           <div className="w-6 h-6 border-2 border-blue-500 rounded flex items-center justify-center">
             <span className="text-[10px] text-blue-500 font-bold">2</span>
           </div>
-          <MoreVertical className="h-5 w-5 text-gray-600" />
+          <MoreVertical className="h-5 w-5 text-gray-400" />
         </div>
         
         {/* Home Indicator */}
@@ -551,7 +551,7 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
       <div className="bg-white dark:bg-gray-900 rounded-[2rem] overflow-hidden">
         {/* Status Bar */}
         <div className="h-6 bg-white/10 dark:bg-gray-800 flex items-center justify-between px-6">
-          <span className="text-[10px] text-gray-600 font-medium">9:41</span>
+          <span className="text-[10px] text-gray-400 font-medium">9:41</span>
           <div className="flex items-center gap-1">
             <div className="w-4 h-2 bg-gray-600 rounded-sm" />
           </div>
@@ -561,7 +561,7 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
         <div className="bg-white dark:bg-gray-900 px-3 py-2 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
           <X className="h-5 w-5 text-gray-200 dark:text-white" />
           <div className="flex-1 text-center">
-            <p className="text-[10px] text-gray-600">arcanoapp.voxvisual.com.br</p>
+            <p className="text-[10px] text-gray-400">arcanoapp.voxvisual.com.br</p>
             <p className="text-[8px] text-pink-500">Instagram</p>
           </div>
           <div className="relative">
@@ -595,7 +595,7 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
             <div className="absolute top-0 right-2 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 animate-scale-in w-48">
               <div className="py-1">
                 <div className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 dark:hover:bg-gray-700">
-                  <Share className="h-4 w-4 text-gray-600" />
+                  <Share className="h-4 w-4 text-gray-400" />
                   <span className="text-sm text-gray-400 dark:text-gray-300">Compartilhar</span>
                 </div>
                 <div className="flex items-center gap-3 px-4 py-3 bg-primary/10 relative">
@@ -607,7 +607,7 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
                   </span>
                 </div>
                 <div className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 dark:hover:bg-gray-700">
-                  <Plus className="h-4 w-4 text-gray-600" />
+                  <Plus className="h-4 w-4 text-gray-400" />
                   <span className="text-sm text-gray-400 dark:text-gray-300">Copiar link</span>
                 </div>
               </div>
@@ -634,9 +634,9 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
         
         {/* Bottom Navigation (Instagram style) */}
         <div className="h-12 bg-white dark:bg-gray-900 flex items-center justify-around px-6 border-t border-gray-200 dark:border-gray-700">
-          <ChevronLeft className="h-5 w-5 text-gray-600" />
+          <ChevronLeft className="h-5 w-5 text-gray-400" />
           <ChevronRight className="h-5 w-5 text-gray-400" />
-          <Share className="h-5 w-5 text-gray-600" />
+          <Share className="h-5 w-5 text-gray-400" />
           <div className="w-5 h-5 rounded-full bg-gradient-to-br from-pink-500 to-yellow-500" />
         </div>
         
@@ -662,7 +662,7 @@ const AndroidMockup = ({ step }: { step: number }) => (
             <span className="text-[10px] text-gray-500 truncate">arcanoapp.voxvisual.com.br</span>
           </div>
           <div className="relative">
-            <MoreVertical className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+            <MoreVertical className="h-5 w-5 text-gray-400 dark:text-gray-300" />
             {/* Pulse indicator for Step 1 */}
             {step === 0 && (
               <>

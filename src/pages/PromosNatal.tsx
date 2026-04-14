@@ -264,7 +264,7 @@ const PromosNatal = () => {
 
   if (loading || promoLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-red-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#111113] via-[#111113] to-[#111113] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
       </div>
     );
@@ -273,12 +273,12 @@ const PromosNatal = () => {
   const accessOptions = getAccessOptions();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-white p-2 sm:p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#111113] via-[#111113] to-[#111113] p-2 sm:p-4 relative overflow-hidden">
       {/* Animated background effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-red-300/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-40 h-40 bg-rose-300/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-40 left-1/4 w-36 h-36 bg-red-200/40 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute top-20 left-10 w-32 h-32 bg-red-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-40 h-40 bg-red-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-40 left-1/4 w-36 h-36 bg-red-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
       </div>
 
       <div className="max-w-6xl mx-auto relative z-10">
@@ -294,7 +294,7 @@ const PromosNatal = () => {
         {/* Promo Banner */}
         <div className="text-center mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 sm:gap-4 mb-4 sm:mb-6">
-            <div className="inline-flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-lg font-bold shadow-lg shadow-red-200">
+            <div className="inline-flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-lg font-bold shadow-lg shadow-red-500/20">
               <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
               <span className="hidden sm:inline">{promoName}</span>
               <span className="sm:hidden">{t('promo.yearEndPromo')}</span>
@@ -319,7 +319,7 @@ const PromosNatal = () => {
               : t('promo.choosePackWithDiscount', { percent: discountPercent })
             }
           </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-gray-400 max-w-2xl mx-auto">
             {t('promo.specialOfferDescription')}
           </p>
         </div>
@@ -333,7 +333,7 @@ const PromosNatal = () => {
                   {packItems.map((pack) => (
                     <Card
                       key={pack.id}
-                      className="bg-white border-2 border-red-100 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
+                      className="bg-white border-2 border-red-500/20 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
                       onClick={() => setSelectedPack(pack)}
                     >
                       <div className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-2 py-1 rounded-full z-10 font-bold shadow-lg">
@@ -366,7 +366,7 @@ const PromosNatal = () => {
                   {cursoItems.map((pack) => (
                     <Card
                       key={pack.id}
-                      className="bg-white border-2 border-red-100 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
+                      className="bg-white border-2 border-red-500/20 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
                       onClick={() => setSelectedPack(pack)}
                     >
                       <div className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-2 py-1 rounded-full z-10 font-bold shadow-lg">
@@ -420,7 +420,7 @@ const PromosNatal = () => {
                 return (
                   <Card
                     key={option.type}
-                    className={`relative bg-white border-2 border-red-100 shadow-md ${
+                    className={`relative bg-white border-2 border-red-500/20 shadow-md ${
                       option.highlighted ? "ring-2 ring-red-500 scale-105 shadow-xl border-red-300" : ""
                     }`}
                   >

@@ -113,8 +113,8 @@ const ProjectPicker: React.FC<Props> = ({
               >
                 {atLimit ? (
                   <>
-                    <Lock className="w-6 h-6 text-gray-600" />
-                    <span className="text-[11px] text-gray-600 font-medium">Limite atingido</span>
+                    <Lock className="w-6 h-6 text-gray-400" />
+                    <span className="text-[11px] text-gray-400 font-medium">Limite atingido</span>
                     <span className="text-[9px] text-gray-400">{projectCount}/{MAX_PROJECTS}</span>
                   </>
                 ) : (

@@ -50,7 +50,7 @@ const Section: React.FC<SectionProps> = ({ title, emoji, defaultOpen = true, chi
         <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-[0.12em] flex items-center gap-1.5">
           <span className="text-xs">{emoji}</span> {title}
         </span>
-        <ChevronDown className={`w-3 h-3 text-gray-600 transition-transform duration-200 ${open ? '' : '-rotate-90'}`} />
+        <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform duration-200 ${open ? '' : '-rotate-90'}`} />
       </button>
       <div className={`transition-all duration-200 ${open ? 'max-h-[4000px] opacity-100 pb-2' : 'max-h-0 opacity-0 overflow-hidden'}`}>
         {children}
@@ -105,7 +105,7 @@ const ControlPanel: React.FC<Props> = ({
               onChange={e => updateSettings({ scenePrompt: e.target.value.slice(0, 1024) })}
               placeholder="Descreva sua cena, personagem e ambiente..."
               rows={3}
-              className="bg-black/20 border-white/[0.06] text-gray-300 text-[12px] min-h-[60px] resize-none placeholder:text-gray-600 focus:min-h-[100px] transition-all duration-200"
+              className="bg-black/20 border-white/[0.06] text-gray-300 text-[12px] min-h-[60px] resize-none placeholder:text-gray-400 focus:min-h-[100px] transition-all duration-200"
             />
           </div>
 
@@ -202,7 +202,7 @@ const ControlPanel: React.FC<Props> = ({
       <div className="pt-1">
         <button
           onClick={() => setShowPrompt(!showPrompt)}
-          className="flex items-center gap-1.5 text-[10px] text-gray-600 hover:text-gray-400 transition-colors py-1"
+          className="flex items-center gap-1.5 text-[10px] text-gray-400 hover:text-gray-400 transition-colors py-1"
         >
           {showPrompt ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
           {showPrompt ? 'Ocultar prompt' : 'Ver prompt montado'}
@@ -218,7 +218,7 @@ const ControlPanel: React.FC<Props> = ({
               onClick={copyPrompt}
               className="absolute top-1.5 right-1.5 p-1 rounded hover:bg-white/5 transition-colors"
             >
-              <Copy className="w-3 h-3 text-gray-600" />
+              <Copy className="w-3 h-3 text-gray-400" />
             </button>
           </div>
         )}

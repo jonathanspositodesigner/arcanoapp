@@ -77,11 +77,11 @@ const PreviewPanel: React.FC<Props> = ({
               <Loader2 className="w-6 h-6 text-gray-500 animate-spin" />
               <div className="text-center">
                 <p className="text-[12px] text-gray-400">Processando sua cena...</p>
-                <p className="text-[11px] text-gray-600 mt-0.5">{formatTime(elapsedTime)}</p>
+                <p className="text-[11px] text-gray-400 mt-0.5">{formatTime(elapsedTime)}</p>
               </div>
               <button
                 onClick={cancelGeneration}
-                className="text-[10px] text-gray-600 hover:text-gray-400 transition-colors"
+                className="text-[10px] text-gray-400 hover:text-gray-400 transition-colors"
               >
                 Cancelar
               </button>
@@ -106,7 +106,7 @@ const PreviewPanel: React.FC<Props> = ({
           ) : (
             <div className="flex min-h-full flex-col items-center justify-center gap-2 text-center">
               <Film className="w-8 h-8 text-gray-200" strokeWidth={1} />
-              <p className="text-[12px] text-gray-600">Sua cena aparecerá aqui</p>
+              <p className="text-[12px] text-gray-400">Sua cena aparecerá aqui</p>
             </div>
           )}
         </div>

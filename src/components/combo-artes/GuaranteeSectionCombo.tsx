@@ -9,7 +9,7 @@ export const GuaranteeSectionCombo = () => {
   return (
     <section className="py-16 px-4 bg-gradient-to-b from-black to-[#0a0505]">
       <div className="max-w-5xl mx-auto">
-        <div className="bg-gradient-to-br from-gray-200 to-gray-300 rounded-3xl p-6 md:p-12 shadow-2xl">
+        <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-3xl p-6 md:p-12 shadow-2xl">
           <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
             <div className="flex-shrink-0">
               <img 
@@ -29,11 +29,11 @@ export const GuaranteeSectionCombo = () => {
                 Você tem <span className="font-bold">7 dias de garantia incondicional</span>
               </p>
               
-              <p className="text-gray-600 mb-3 leading-relaxed">
+              <p className="text-gray-400 mb-3 leading-relaxed">
                 Garantimos sua segurança com uma plataforma de pagamento altamente segura.
               </p>
               
-              <p className="text-gray-600 mb-6 leading-relaxed">
+              <p className="text-gray-400 mb-6 leading-relaxed">
                 Você também conta com <span className="font-semibold">7 dias de garantia para reembolso</span>
               </p>
               
@@ -48,7 +48,7 @@ export const GuaranteeSectionCombo = () => {
               
               <div className="flex justify-center md:justify-start gap-3 md:gap-6 mt-6">
                 <div className="flex items-center gap-1 md:gap-2 text-gray-400">
-                  <ShieldCheck className="w-4 h-4 md:w-6 md:h-6 text-gray-600 flex-shrink-0" />
+                  <ShieldCheck className="w-4 h-4 md:w-6 md:h-6 text-gray-400 flex-shrink-0" />
                   <div className="text-left">
                     <p className="text-[10px] md:text-xs font-bold leading-tight">Compra</p>
                     <p className="text-[10px] md:text-xs leading-tight">Segura</p>
@@ -56,7 +56,7 @@ export const GuaranteeSectionCombo = () => {
                 </div>
                 
                 <div className="flex items-center gap-1 md:gap-2 text-gray-400">
-                  <Award className="w-4 h-4 md:w-6 md:h-6 text-gray-600 flex-shrink-0" />
+                  <Award className="w-4 h-4 md:w-6 md:h-6 text-gray-400 flex-shrink-0" />
                   <div className="text-left">
                     <p className="text-[10px] md:text-xs font-bold leading-tight">Satisfação</p>
                     <p className="text-[10px] md:text-xs leading-tight">Garantida</p>
@@ -64,7 +64,7 @@ export const GuaranteeSectionCombo = () => {
                 </div>
                 
                 <div className="flex items-center gap-1 md:gap-2 text-gray-400">
-                  <Lock className="w-4 h-4 md:w-6 md:h-6 text-gray-600 flex-shrink-0" />
+                  <Lock className="w-4 h-4 md:w-6 md:h-6 text-gray-400 flex-shrink-0" />
                   <div className="text-left">
                     <p className="text-[10px] md:text-xs font-bold leading-tight">Privacidade</p>
                     <p className="text-[10px] md:text-xs leading-tight">Protegida</p>

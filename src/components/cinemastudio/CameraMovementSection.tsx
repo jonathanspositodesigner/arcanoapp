@@ -62,7 +62,7 @@ const CameraMovementSection: React.FC<Props> = ({ settings, updateSettings }) =>
       {movements.length < 3 && (
         <button
           onClick={addLayer}
-          className="flex items-center gap-1 text-[10px] text-gray-600 hover:text-gray-400 transition-colors pt-0.5"
+          className="flex items-center gap-1 text-[10px] text-gray-400 hover:text-gray-400 transition-colors pt-0.5"
         >
           <Plus className="w-3 h-3" /> Adicionar movimento
         </button>

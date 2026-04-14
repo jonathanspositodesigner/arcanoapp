@@ -8,7 +8,7 @@ export const FooterSection = () => {
         <p className="text-gray-500 text-xs mb-4">
           CNPJ: 56.413.822/0001-59
         </p>
-        <p className="text-gray-600 text-xs">
+        <p className="text-gray-400 text-xs">
           Todos os direitos reservados © {new Date().getFullYear()}
         </p>
       </div>

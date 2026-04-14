@@ -163,7 +163,7 @@ export const PricingCardsSectionPack4 = () => {
 
                 <ul className="space-y-2.5 mb-6 flex-grow">
                   {plan.features.map((feature, index) => (
-                    <li key={index} className={`flex items-center gap-2.5 ${feature.unavailable ? 'text-gray-600 line-through' : 'text-gray-300'}`}>
+                    <li key={index} className={`flex items-center gap-2.5 ${feature.unavailable ? 'text-gray-400 line-through' : 'text-gray-300'}`}>
                       {feature.unavailable ? (
                         <X className="w-4 h-4 flex-shrink-0 text-red-500" />
                       ) : (

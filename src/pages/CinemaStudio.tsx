@@ -214,7 +214,7 @@ const CinemaStudio: React.FC = () => {
             {projectManager.activeProject && (
               <div className="flex items-center gap-1.5">
                 {lastSavedText && (
-                  <span className="text-[9px] text-gray-600 hidden sm:inline">{lastSavedText}</span>
+                  <span className="text-[9px] text-gray-400 hidden sm:inline">{lastSavedText}</span>
                 )}
                 <button
                   onClick={handleManualSave}
@@ -235,7 +235,7 @@ const CinemaStudio: React.FC = () => {
                 onClick={studio.handleGenerate}
                 disabled={!studio.canGenerate}
                 size="sm"
-                className="h-7 px-2.5 sm:px-3 text-[11px] bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 border-0 disabled:opacity-30 disabled:text-gray-600"
+                className="h-7 px-2.5 sm:px-3 text-[11px] bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 border-0 disabled:opacity-30 disabled:text-gray-400"
               >
                 {studio.isSubmitting ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
@@ -258,7 +258,7 @@ const CinemaStudio: React.FC = () => {
             <button
               onClick={() => setMobileTab('controls')}
               className={`flex-1 py-2 text-[11px] font-medium transition-colors ${
-                mobileTab === 'controls' ? 'text-gray-200 border-b border-gray-400' : 'text-gray-600'
+                mobileTab === 'controls' ? 'text-gray-200 border-b border-gray-400' : 'text-gray-400'
               }`}
             >
               Controles
@@ -266,7 +266,7 @@ const CinemaStudio: React.FC = () => {
             <button
               onClick={() => setMobileTab('preview')}
               className={`flex-1 py-2 text-[11px] font-medium transition-colors ${
-                mobileTab === 'preview' ? 'text-gray-200 border-b border-gray-400' : 'text-gray-600'
+                mobileTab === 'preview' ? 'text-gray-200 border-b border-gray-400' : 'text-gray-400'
               }`}
             >
               Pré-visualização

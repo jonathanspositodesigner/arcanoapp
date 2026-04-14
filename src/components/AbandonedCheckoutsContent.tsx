@@ -654,7 +654,7 @@ const AbandonedCheckoutsContent = () => {
                           size="icon"
                           variant="ghost"
                           onClick={() => updateStatus(checkout.id, 'ignored')}
-                          className="h-8 w-8 text-gray-500 hover:text-gray-600 hover:bg-white/50/10"
+                          className="h-8 w-8 text-gray-500 hover:text-gray-400 hover:bg-white/50/10"
                           title="Ignorar"
                         >
                           <X className="h-4 w-4" />
