@@ -100,7 +100,7 @@ const TesteCloner = () => {
               <br className="hidden md:block" />
               profissionais com IA{" "}
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">
                 sem prompt, sem complicação
               </span>
             </h1>
@@ -115,7 +115,7 @@ const TesteCloner = () => {
             <FadeIn duration={700}>
               <button
                 onClick={() => setShowModal(true)}
-                className="mb-6 px-8 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold text-sm md:text-base transition-all pointer-events-auto"
+                className="mb-6 px-8 py-3 rounded-xl bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-sm md:text-base transition-all pointer-events-auto"
               >
                 🚀 Iniciar Teste Grátis
               </button>
@@ -148,7 +148,7 @@ const TesteCloner = () => {
             <AnimatedSection as="div" delay={100}>
               <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3">
                 Tudo feito com um clique,{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">sem prompt!</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">sem prompt!</span>
               </h2>
               <p className="text-white/50 text-sm mb-10">
                 Resultados reais de clientes usando o Arcano Cloner
@@ -203,7 +203,7 @@ const TesteCloner = () => {
                     key={`r1-${setIndex}-${num}`}
                     src={`/images/results/result-${num}.webp`}
                     alt={`Resultado ${num}`}
-                    className="w-[255px] md:w-[234px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 object-cover"
+                    className="w-[255px] md:w-[234px] shrink-0 aspect-[3/4] rounded-2xl border border-white/10 object-cover"
                     loading="lazy"
                   />
                 ))
@@ -222,7 +222,7 @@ const TesteCloner = () => {
                     key={`r2-${setIndex}-${num}`}
                     src={`/images/results/result-${num}.webp`}
                     alt={`Resultado ${num}`}
-                    className="w-[255px] md:w-[234px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 object-cover"
+                    className="w-[255px] md:w-[234px] shrink-0 aspect-[3/4] rounded-2xl border border-white/10 object-cover"
                     loading="lazy"
                   />
                 ))

@@ -55,12 +55,12 @@ const RefinementCarousel: React.FC<RefinementCarouselProps> = ({ history, select
 
   return (
     <div className="relative px-1 py-2">
-      <p className="text-[10px] text-purple-300/70 mb-1.5 px-1">Histórico de versões</p>
+      <p className="text-[10px] text-gray-400 mb-1.5 px-1">Histórico de versões</p>
       <div className="relative flex items-center">
         {canScrollLeft && (
           <button
             onClick={() => scroll('left')}
-            className="absolute left-0 z-10 w-6 h-6 flex items-center justify-center bg-purple-900/80 border border-purple-500/30 rounded-full text-purple-300 hover:text-white hover:bg-purple-800 transition-colors"
+            className="absolute left-0 z-10 w-6 h-6 flex items-center justify-center bg-white/10 border border-white/10 rounded-full text-gray-300 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
           </button>
@@ -85,7 +85,7 @@ const RefinementCarousel: React.FC<RefinementCarouselProps> = ({ history, select
                   "w-16 h-16 rounded-lg overflow-hidden border-2 transition-all",
                   index === selectedIndex
                     ? "border-fuchsia-500 shadow-[0_0_8px_rgba(217,70,239,0.4)]"
-                    : "border-purple-500/30 hover:border-purple-400/50"
+                    : "border-white/10 hover:border-white/15"
                 )}
               >
                 <img
@@ -97,7 +97,7 @@ const RefinementCarousel: React.FC<RefinementCarouselProps> = ({ history, select
               </div>
               <span className={cn(
                 "text-[9px] font-medium max-w-[64px] truncate",
-                index === selectedIndex ? "text-fuchsia-400" : "text-purple-400"
+                index === selectedIndex ? "text-fuchsia-400" : "text-gray-400"
               )}>
                 {item.label}
               </span>
@@ -108,7 +108,7 @@ const RefinementCarousel: React.FC<RefinementCarouselProps> = ({ history, select
         {canScrollRight && (
           <button
             onClick={() => scroll('right')}
-            className="absolute right-0 z-10 w-6 h-6 flex items-center justify-center bg-purple-900/80 border border-purple-500/30 rounded-full text-purple-300 hover:text-white hover:bg-purple-800 transition-colors"
+            className="absolute right-0 z-10 w-6 h-6 flex items-center justify-center bg-white/10 border border-white/10 rounded-full text-gray-300 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <ChevronRight className="w-3.5 h-3.5" />
           </button>

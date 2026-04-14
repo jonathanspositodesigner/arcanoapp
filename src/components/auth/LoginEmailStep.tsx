@@ -22,7 +22,7 @@ interface LoginEmailStepProps {
   };
   
   // Styling variants
-  variant?: 'default' | 'dark' | 'purple' | 'teal';
+  variant?: 'default' | 'dark' | 'dark' | 'teal';
 }
 
 const variantStyles = {
@@ -39,13 +39,13 @@ const variantStyles = {
     text: 'text-white/60',
   },
   purple: {
-    input: 'bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400',
-    button: 'bg-purple-600 hover:bg-purple-700 text-white',
+    input: 'bg-[#111113] border-white/10 text-white placeholder:text-gray-400',
+    button: 'bg-slate-600 hover:bg-slate-700 text-white',
     signupButton: 'border-green-500/50 text-green-400 hover:bg-green-500/20',
-    text: 'text-purple-300',
+    text: 'text-gray-300',
   },
   teal: {
-    input: 'bg-[#0f0f1a] border-violet-500/30 text-white',
+    input: 'bg-[#0f0f1a] border-white/10 text-white',
     button: 'bg-violet-600 hover:bg-violet-700 text-white',
     signupButton: 'border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300',
     text: 'text-white/60',

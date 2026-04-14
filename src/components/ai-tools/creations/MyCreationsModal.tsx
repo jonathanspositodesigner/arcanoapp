@@ -44,19 +44,19 @@ const MyCreationsModal: React.FC<MyCreationsModalProps> = ({ open, onClose }) =>
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[85vh] flex flex-col bg-[#0D0221] border-purple-500/30 p-0">
+      <DialogContent className="max-w-4xl h-[85vh] flex flex-col bg-[#111113] border-white/10 p-0">
         {/* Header */}
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-purple-500/20 shrink-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-white/10 shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2 text-xl text-white">
-              <Library className="w-5 h-5 text-purple-400" />
+              <Library className="w-5 h-5 text-gray-400" />
               Minhas Criações
             </DialogTitle>
             <Button
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="text-purple-300 hover:text-white hover:bg-purple-500/20"
+              className="text-gray-300 hover:text-white hover:bg-slate-500/20"
             >
               <X className="w-5 h-5" />
             </Button>
@@ -81,8 +81,8 @@ const MyCreationsModal: React.FC<MyCreationsModalProps> = ({ open, onClose }) =>
                 className={cn(
                   "gap-2 transition-all",
                   mediaType === filter.value
-                    ? "bg-purple-500/30 border-purple-500/50 text-white"
-                    : "bg-transparent border-purple-500/20 text-purple-300 hover:bg-purple-500/10"
+                    ? "bg-slate-500/30 border-slate-500/50 text-white"
+                    : "bg-transparent border-white/10 text-gray-300 hover:bg-slate-500/10"
                 )}
               >
                 {filter.icon}

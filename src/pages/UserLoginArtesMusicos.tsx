@@ -52,7 +52,7 @@ const UserLoginArtesMusicos = () => {
         </DialogContent>
       </Dialog>
 
-      <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-violet-500/30">
+      <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-white/10">
         <CardHeader className="text-center">
           <Button 
             variant="ghost" 

@@ -7,7 +7,7 @@ const Seedance2PromoBanner = () => {
   const { t } = useTranslation("prompts");
 
   return (
-    <div className="mb-6 sm:mb-8 relative w-full rounded-2xl overflow-hidden border border-purple-500/20">
+    <div className="mb-6 sm:mb-8 relative w-full rounded-2xl overflow-hidden border border-white/10">
       <div className="relative w-full aspect-[4/3] sm:aspect-[16/5]">
         <video className="absolute inset-0 w-full h-full object-cover" autoPlay loop muted playsInline>
           <source src="/videos/seedance2-promo.mp4" type="video/mp4" />

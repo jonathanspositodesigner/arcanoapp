@@ -268,8 +268,8 @@ const FerramentasIAAplicativo = () => {
 
   if (loading || isPremiumLoading || isPromptsLoading) {
     return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
       </div>
     );
   }
@@ -290,10 +290,10 @@ const FerramentasIAAplicativo = () => {
     return (
       <Card 
         key={tool.id}
-        className={`overflow-hidden transition-all group border border-purple-500/20 shadow-md bg-[#1A0A2E]/50 ${
+        className={`overflow-hidden transition-all group border border-white/10 shadow-md bg-[#111113]/50 ${
           isComingSoon 
             ? "cursor-not-allowed opacity-70" 
-            : "cursor-pointer hover:ring-2 hover:ring-purple-400 hover:shadow-xl"
+            : "cursor-pointer hover:ring-2 hover:ring-white/20 hover:shadow-xl"
         }`}
         onClick={handleCardClick}
       >
@@ -316,7 +316,7 @@ const FerramentasIAAplicativo = () => {
             <div className={`w-full h-full flex items-center justify-center ${
               isComingSoon 
                 ? "bg-gradient-to-br from-gray-500 to-gray-600" 
-                : "bg-gradient-to-br from-purple-500 to-fuchsia-600"
+                : "bg-gradient-to-br from-slate-500 to-slate-500"
             }`}>
               {tool.slug === "arcano-cloner" || tool.slug === "flyer-maker" ? (
                 <Users className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
@@ -350,7 +350,7 @@ const FerramentasIAAplicativo = () => {
                   className={`w-full text-[11px] sm:text-sm h-8 sm:h-9 font-medium ${
                     hasAccess
                       ? "bg-green-500 hover:bg-green-600" 
-                      : "bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90"
+                      : "bg-gradient-to-r from-slate-500 to-slate-400 hover:opacity-90"
                   } text-white`}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -383,7 +383,7 @@ const FerramentasIAAplicativo = () => {
 
       {/* Content - Single grid with all tools */}
       <main className="container mx-auto px-4 py-8">
-        <p className="text-purple-300 text-center mb-8 max-w-2xl mx-auto hidden sm:block">
+        <p className="text-gray-300 text-center mb-8 max-w-2xl mx-auto hidden sm:block">
           {t('ferramentas.description')}
         </p>
 
@@ -395,8 +395,8 @@ const FerramentasIAAplicativo = () => {
 
         {tools.length === 0 && (
           <div className="text-center py-16">
-            <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-            <p className="text-purple-300">{t('ferramentas.noToolsAvailable')}</p>
+            <Sparkles className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-300">{t('ferramentas.noToolsAvailable')}</p>
           </div>
         )}
       </main>

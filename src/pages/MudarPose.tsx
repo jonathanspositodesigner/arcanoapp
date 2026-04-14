@@ -54,8 +54,8 @@ const MudarPose = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-500"></div>
       </div>
     );
   }
@@ -71,9 +71,9 @@ const MudarPose = () => {
         {/* Video Lessons */}
         <div className="space-y-8">
           {lessons.map((lesson, index) => (
-            <Card key={index} className="p-4 md:p-6 bg-[#1A0A2E]/50 border-purple-500/20">
+            <Card key={index} className="p-4 md:p-6 bg-[#111113]/50 border-white/10">
               <h2 className="text-lg md:text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                <Play className="h-5 w-5 text-purple-400" />
+                <Play className="h-5 w-5 text-gray-400" />
                 {t(lesson.titleKey)}
               </h2>
               

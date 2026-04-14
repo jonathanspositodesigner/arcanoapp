@@ -94,8 +94,8 @@ const FerramentasIAES = () => {
 
   if (loading || isPremiumLoading || isPromptsLoading) {
     return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
       </div>
     );
   }
@@ -107,7 +107,7 @@ const FerramentasIAES = () => {
     return (
       <Card 
         key={tool.id}
-        className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all group border border-purple-500/20 shadow-md hover:shadow-xl bg-[#1A0A2E]/50"
+        className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-white/20 transition-all group border border-white/10 shadow-md hover:shadow-xl bg-[#111113]/50"
         onClick={() => handleToolClick(tool)}
       >
         <div className="aspect-[16/9] sm:aspect-[3/4] relative overflow-hidden">
@@ -118,7 +118,7 @@ const FerramentasIAES = () => {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
               <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
             </div>
           )}
@@ -145,7 +145,7 @@ const FerramentasIAES = () => {
               className={`mt-3 w-full text-sm font-medium ${
                 hasAccess 
                   ? "bg-green-500 hover:bg-green-600" 
-                  : "bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90"
+                  : "bg-gradient-to-r from-slate-500 to-slate-400 hover:opacity-90"
               } text-white`}
             >
               {hasAccess ? (
@@ -167,12 +167,12 @@ const FerramentasIAES = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D0221]">
+    <div className="min-h-screen bg-[#111113]">
       {/* Header - Simplificado sem botões de navegação */}
-      <header className="sticky top-0 z-50 bg-[#0D0221]/95 backdrop-blur-lg border-b border-purple-500/20">
+      <header className="sticky top-0 z-50 bg-[#111113]/95 backdrop-blur-lg border-b border-white/10">
         <div className="container mx-auto px-4 py-3 flex items-center justify-center">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <h1 className="text-base sm:text-xl font-bold text-white">
@@ -184,7 +184,7 @@ const FerramentasIAES = () => {
 
       {/* Primeiro Acesso + Login Buttons - Only show when NOT logged in */}
       {!user && (
-        <div className="bg-[#1A0A2E] border-b border-purple-500/20">
+        <div className="bg-[#111113] border-b border-white/10">
           <div className="container mx-auto px-4 py-3">
             <div className="flex gap-2">
               <Button
@@ -198,7 +198,7 @@ const FerramentasIAES = () => {
               <Button
                 onClick={() => navigate('/login-artes?redirect=/ferramentas-ia-es')}
                 variant="outline"
-                className="flex-1 border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+                className="flex-1 border-white/10 text-gray-300 hover:bg-slate-500/20"
                 size="sm"
               >
                 <LogIn className="w-4 h-4 mr-2" />
@@ -211,7 +211,7 @@ const FerramentasIAES = () => {
 
       {/* Content */}
       <main className="container mx-auto px-4 py-8">
-        <p className="text-purple-300 text-center mb-8 max-w-2xl mx-auto hidden sm:block">
+        <p className="text-gray-300 text-center mb-8 max-w-2xl mx-auto hidden sm:block">
           {t('ferramentas.description')}
         </p>
 
@@ -232,7 +232,7 @@ const FerramentasIAES = () => {
         {toolsWithoutAccess.length > 0 && (
           <section>
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-400" />
+              <Sparkles className="w-5 h-5 text-gray-400" />
               {t('ferramentas.availableForPurchase')}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -243,8 +243,8 @@ const FerramentasIAES = () => {
 
         {tools.length === 0 && (
           <div className="text-center py-16">
-            <Sparkles className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-            <p className="text-purple-300">{t('ferramentas.noToolsAvailable')}</p>
+            <Sparkles className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-300">{t('ferramentas.noToolsAvailable')}</p>
           </div>
         )}
       </main>

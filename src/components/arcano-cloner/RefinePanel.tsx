@@ -55,13 +55,13 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
         value={prompt}
         onChange={(e) => onPromptChange(e.target.value)}
         placeholder="Escreva aqui o que vc quer modificar na imagem"
-        className="min-h-[70px] text-xs bg-purple-900/30 border-purple-500/30 text-white placeholder:text-purple-400 resize-none"
+        className="min-h-[70px] text-xs bg-white/5 border-white/10 text-white placeholder:text-gray-400 resize-none"
         disabled={isRefining || disabled}
       />
 
       {/* Optional reference image */}
       <div>
-        <label className="text-[10px] text-purple-300 mb-1 block">Imagem extra (opcional)</label>
+        <label className="text-[10px] text-gray-300 mb-1 block">Imagem extra (opcional)</label>
         {referencePreview ? (
           <div className="relative w-16 h-16 rounded-md overflow-hidden border border-fuchsia-500/40">
             <img src={referencePreview} alt="Ref" className="w-full h-full object-cover" />
@@ -76,7 +76,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-[10px] border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
+            className="h-7 text-[10px] border-white/10 text-gray-300 hover:bg-slate-500/10"
             onClick={() => fileInputRef.current?.click()}
             disabled={isRefining || disabled}
           >
@@ -97,7 +97,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
         <Button
           variant="outline"
           size="sm"
-          className="flex-1 h-8 text-xs border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
+          className="flex-1 h-8 text-xs border-white/10 text-gray-300 hover:bg-slate-500/10"
           onClick={onCancel}
           disabled={isRefining}
         >
@@ -105,7 +105,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
         </Button>
         <Button
           size="sm"
-          className="flex-1 h-8 text-xs bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white"
+          className="flex-1 h-8 text-xs bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white"
           onClick={onSubmit}
           disabled={isRefining || !prompt.trim() || disabled}
         >

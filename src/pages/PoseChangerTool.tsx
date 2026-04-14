@@ -540,7 +540,7 @@ const PoseChangerTool: React.FC = () => {
                   {/* Generate Button - DESKTOP */}
                   {!isProcessing && status !== 'completed' && (
                     <Button
-                      className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
+                      className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-slate-500 hover:from-blue-600 hover:to-slate-600 rounded-xl shadow-lg disabled:opacity-50"
                       disabled={!canProcess || isSubmitting}
                       onClick={handleProcess}
                     >
@@ -678,21 +678,21 @@ const PoseChangerTool: React.FC = () => {
                   </TransformWrapper>
                 ) : isProcessing ? (
                   <div className="flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
+                    <Loader2 className="w-12 h-12 text-gray-400 animate-spin" />
                     <div className="text-center">
                       <p className="text-lg font-medium text-white">
                         {currentQueueMessage.emoji} {currentQueueMessage.text}
                       </p>
                       {status === 'waiting' && queuePosition > 0 && (
-                        <p className="text-sm text-purple-300/70 mt-1">Posição na fila: #{queuePosition}</p>
+                        <p className="text-sm text-gray-400 mt-1">Posição na fila: #{queuePosition}</p>
                       )}
                       {status === 'processing' && (
-                        <p className="text-sm text-purple-300/70 mt-1">{Math.round(progress)}% concluído</p>
+                        <p className="text-sm text-gray-400 mt-1">{Math.round(progress)}% concluído</p>
                       )}
                     </div>
-                    <div className="w-48 h-2 bg-purple-900/50 rounded-full overflow-hidden">
+                    <div className="w-48 h-2 bg-white/5 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                        className="h-full bg-gradient-to-r from-slate-500 to-pink-500 transition-all duration-500"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -706,7 +706,7 @@ const PoseChangerTool: React.FC = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/20 flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-fuchsia-500/20 flex items-center justify-center">
                       <ImageIcon className="w-10 h-10 text-fuchsia-400" />
                     </div>
                     <div>
@@ -730,7 +730,7 @@ const PoseChangerTool: React.FC = () => {
             {/* Idle state */}
             {!isProcessing && status !== 'completed' && status !== 'error' && (
               <Button
-                className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
+                className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-slate-500 hover:from-blue-600 hover:to-slate-600 rounded-xl shadow-lg disabled:opacity-50"
                 disabled={!canProcess || isSubmitting}
                 onClick={handleProcess}
               >
@@ -756,7 +756,7 @@ const PoseChangerTool: React.FC = () => {
             {isProcessing && (
               <div className="flex gap-2">
                 <div className="flex-1 flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 text-purple-400 animate-spin flex-shrink-0" />
+                  <Loader2 className="w-4 h-4 text-gray-400 animate-spin flex-shrink-0" />
                   <p className="text-xs text-white truncate">
                     {status === 'waiting' ? `Fila #${queuePosition}` : `${Math.round(progress)}%`}
                   </p>

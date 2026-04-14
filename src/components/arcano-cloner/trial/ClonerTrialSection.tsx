@@ -336,29 +336,29 @@ export default function ClonerTrialSection() {
               <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center gap-6 z-10">
                 {phase === "locked" ? (
                   <>
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
                       <Sparkles className="w-10 h-10 text-white" />
                     </div>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-fuchsia-500/25"
+                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-fuchsia-500/25"
                       onClick={openSignup}
                     >
                       <Sparkles className="w-5 h-5 mr-2" />
                       Fazer Teste Grátis
                     </Button>
-                    <p className="text-purple-300/60 text-sm">1 geração gratuita • Sem compromisso</p>
+                    <p className="text-gray-300/60 text-sm">1 geração gratuita • Sem compromisso</p>
                   </>
                 ) : (
                   <div className="text-center px-6 max-w-md">
                     <div className="text-4xl mb-4">🏆</div>
                     <h3 className="text-2xl font-bold text-white mb-3">Teste Concluído!</h3>
-                    <p className="text-purple-200/80 mb-6">
+                    <p className="text-gray-300/80 mb-6">
                       Você viu o poder do Arcano Cloner. Garanta acesso completo para transformar todas as suas fotos!
                     </p>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-fuchsia-500/25"
+                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-fuchsia-500/25"
                       onClick={scrollToPricing}
                     >
                       <ShoppingCart className="w-5 h-5 mr-2" />

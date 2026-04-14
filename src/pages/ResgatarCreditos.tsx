@@ -102,7 +102,7 @@ const ResgatarCreditos = () => {
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-fuchsia-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-slate-500/10 rounded-full blur-3xl" />
       </div>
 
       {/* Logo */}
@@ -114,18 +114,18 @@ const ResgatarCreditos = () => {
       </div>
 
       {/* Main Card */}
-      <Card className="relative z-10 w-full max-w-md bg-[#1a1025] border-2 border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)] p-6 sm:p-8">
+      <Card className="relative z-10 w-full max-w-md bg-[#1a1025] border-2 border-slate-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)] p-6 sm:p-8">
         {status === 'idle' || status === 'checking' ? (
           <>
             {/* Header */}
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 mb-4 shadow-lg shadow-fuchsia-500/30">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4 shadow-lg shadow-fuchsia-500/30">
                 <Gift className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">
                 Resgate seus Créditos
               </h2>
-              <p className="text-purple-300 text-sm">
+              <p className="text-gray-300 text-sm">
                 1.500 créditos mensais para usar nas Ferramentas de IA
               </p>
             </div>
@@ -140,14 +140,14 @@ const ResgatarCreditos = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={status === 'checking'}
-                  className="pl-10 h-12 bg-[#0d0912] border-2 border-purple-600/50 text-white placeholder:text-purple-400/60 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20"
+                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={status === 'checking'}
-                className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-base shadow-lg shadow-fuchsia-500/25"
+                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-fuchsia-500/25"
               >
                 {status === 'checking' ? (
                   <>
@@ -164,7 +164,7 @@ const ResgatarCreditos = () => {
             </form>
 
             {/* Info */}
-            <p className="text-center text-purple-400 text-xs mt-4">
+            <p className="text-center text-gray-400 text-xs mt-4">
               Disponível apenas para quem comprou o Upscaler Arcano Vitalício
             </p>
           </>
@@ -180,7 +180,7 @@ const ResgatarCreditos = () => {
             <p className="text-green-400 text-lg font-semibold mb-2">
               {creditsAdded.toLocaleString('pt-BR')} créditos adicionados!
             </p>
-            <p className="text-purple-300 text-sm mb-6">
+            <p className="text-gray-300 text-sm mb-6">
               Redirecionando para as Ferramentas de IA...
             </p>
             <div className="flex justify-center">
@@ -204,7 +204,7 @@ const ResgatarCreditos = () => {
               {errorReason === 'already_claimed' ? (
                 <Button
                   onClick={() => navigate('/ferramentas-ia-aplicativo')}
-                  className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold"
+                  className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold"
                 >
                   Ir para a ferramenta
                   <ArrowRight className="w-5 h-5 ml-2" />
@@ -213,7 +213,7 @@ const ResgatarCreditos = () => {
                 <>
                   <Button
                     onClick={handleViewPlans}
-                    className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold"
+                    className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold"
                   >
                     Ver Planos de Créditos
                     <ArrowRight className="w-5 h-5 ml-2" />
@@ -226,7 +226,7 @@ const ResgatarCreditos = () => {
                       setErrorReason(null);
                       setEmail('');
                     }}
-                    className="w-full h-10 border-purple-500/50 bg-purple-900/50 text-white hover:bg-purple-800/70"
+                    className="w-full h-10 border-slate-500/50 bg-white/5 text-white hover:bg-slate-800/70"
                   >
                     Tentar outro email
                   </Button>
@@ -238,7 +238,7 @@ const ResgatarCreditos = () => {
       </Card>
 
       {/* Footer */}
-      <p className="relative z-10 text-purple-400/50 text-xs mt-8">
+      <p className="relative z-10 text-gray-500 text-xs mt-8">
         © {new Date().getFullYear()} ArcanoApp
       </p>
     </div>

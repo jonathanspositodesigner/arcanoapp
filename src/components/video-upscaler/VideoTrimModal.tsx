@@ -356,10 +356,10 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && !isProcessing && onClose()}>
-      <DialogContent className="sm:max-w-2xl bg-[#1a1625] border-purple-500/30">
+      <DialogContent className="sm:max-w-2xl bg-[#1a1625] border-white/10">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white">
-            <Scissors className="w-5 h-5 text-purple-400" />
+            <Scissors className="w-5 h-5 text-gray-400" />
             Cortar Vídeo
           </DialogTitle>
         </DialogHeader>
@@ -386,7 +386,7 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
 
           {/* Trim Controls */}
           <div className="space-y-3 px-2">
-            <p className="text-sm text-purple-200">
+            <p className="text-sm text-gray-300">
               Selecione até {MAX_TRIM_DURATION} segundos do vídeo:
             </p>
             
@@ -402,8 +402,8 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
             </div>
 
             <div className="flex items-center justify-between text-xs">
-              <span className="text-purple-300">0s</span>
-              <div className="flex items-center gap-2 bg-purple-500/20 px-3 py-1.5 rounded-full">
+              <span className="text-gray-300">0s</span>
+              <div className="flex items-center gap-2 bg-slate-500/20 px-3 py-1.5 rounded-full">
                 <span className="text-white font-medium">
                   {formatTime(range[0])} → {formatTime(range[1])}
                 </span>
@@ -416,20 +416,20 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
                   {selectedDuration.toFixed(1)}s
                 </span>
               </div>
-              <span className="text-purple-300">{formatTime(videoDuration)}</span>
+              <span className="text-gray-300">{formatTime(videoDuration)}</span>
             </div>
           </div>
 
           {/* Progress bar during processing */}
           {isProcessing && (
             <div className="px-2">
-              <div className="w-full bg-purple-900/30 rounded-full h-2">
+              <div className="w-full bg-white/5 rounded-full h-2">
                 <div 
-                  className="bg-purple-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-slate-500 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <p className="text-center text-xs text-purple-300 mt-1">
+              <p className="text-center text-xs text-gray-300 mt-1">
                 Processando... {progress}%
               </p>
             </div>
@@ -450,7 +450,7 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
               <Button
                 onClick={handleSave}
                 disabled={selectedDuration > MAX_TRIM_DURATION}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-6"
+                className="bg-slate-600 hover:bg-slate-700 text-white px-6"
               >
                 Salvar Vídeo
               </Button>

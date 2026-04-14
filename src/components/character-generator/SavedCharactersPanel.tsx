@@ -83,7 +83,7 @@ const SavedCharactersPanel: React.FC<SavedCharactersPanelProps> = ({ userId, ref
       <Button
         variant="ghost"
         size="sm"
-        className="w-full justify-between text-purple-300 hover:text-white hover:bg-purple-900/30 text-xs"
+        className="w-full justify-between text-gray-300 hover:text-white hover:bg-white/5 text-xs"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <span className="flex items-center gap-1.5">
@@ -97,16 +97,16 @@ const SavedCharactersPanel: React.FC<SavedCharactersPanelProps> = ({ userId, ref
         <div className="mt-2 space-y-2 max-h-[300px] overflow-y-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-4">
-              <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
+              <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
             </div>
           ) : characters.length === 0 ? (
-            <p className="text-center text-purple-400 text-xs py-4">
+            <p className="text-center text-gray-400 text-xs py-4">
               Nenhum avatar salvo ainda
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-2">
               {characters.map((char) => (
-                <Card key={char.id} className="relative overflow-hidden border-purple-500/20 bg-purple-900/10 group">
+                <Card key={char.id} className="relative overflow-hidden border-white/10 bg-white/5 group">
                   <div className="aspect-square">
                     <img
                       src={char.image_url}
@@ -118,7 +118,7 @@ const SavedCharactersPanel: React.FC<SavedCharactersPanelProps> = ({ userId, ref
                         const parent = target.parentElement;
                         if (parent && !parent.querySelector('.avatar-fallback')) {
                           const fallback = document.createElement('div');
-                          fallback.className = 'avatar-fallback w-full h-full flex items-center justify-center bg-purple-900/40 text-purple-300 text-[10px] text-center p-1';
+                          fallback.className = 'avatar-fallback w-full h-full flex items-center justify-center bg-white/5 text-gray-300 text-[10px] text-center p-1';
                           fallback.textContent = char.name;
                           parent.appendChild(fallback);
                         }
@@ -140,15 +140,15 @@ const SavedCharactersPanel: React.FC<SavedCharactersPanelProps> = ({ userId, ref
                           <Trash2 className="w-3 h-3" />
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="bg-[#1A0A2E] border-purple-500/30 text-white">
+                      <AlertDialogContent className="bg-[#111113] border-white/10 text-white">
                         <AlertDialogHeader>
                           <AlertDialogTitle>Remover avatar?</AlertDialogTitle>
-                          <AlertDialogDescription className="text-purple-300">
+                          <AlertDialogDescription className="text-gray-300">
                             Tem certeza que deseja remover "{char.name}"? Esta ação não pode ser desfeita.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel className="border-purple-500/30 text-purple-200 hover:bg-purple-900/30">Cancelar</AlertDialogCancel>
+                          <AlertDialogCancel className="border-white/10 text-gray-300 hover:bg-white/5">Cancelar</AlertDialogCancel>
                           <AlertDialogAction
                             className="bg-red-600 hover:bg-red-700 text-white"
                             onClick={() => handleDelete(char.id)}

@@ -51,7 +51,7 @@ const UserLogin = () => {
   }, [navigate, redirectTo]);
 
   return (
-    <div className="min-h-screen bg-[#0D0221] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
       {/* Signup Modal */}
       <Dialog open={auth.state.step === 'signup'} onOpenChange={(open) => !open && auth.goToLogin()}>
         <DialogContent className="max-w-md p-0 overflow-hidden border-0">
@@ -60,7 +60,7 @@ const UserLogin = () => {
             onSubmit={auth.signup}
             onBackToLogin={auth.goToLogin}
             isLoading={auth.state.isLoading}
-            variant="purple"
+            variant="dark"
             labels={{
               title: t('signupModal.title'),
               subtitle: t('signupModal.subtitle'),
@@ -81,11 +81,11 @@ const UserLogin = () => {
         </DialogContent>
       </Dialog>
 
-      <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-purple-500/20">
+      <Card className="w-full max-w-md p-8 bg-[#111113] border-white/10">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
-          className="mb-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
+          className="mb-6 text-gray-300 hover:text-white hover:bg-slate-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('back')}
@@ -98,7 +98,7 @@ const UserLogin = () => {
               {t('premiumArea')}
             </h1>
           </div>
-          <p className="text-purple-300">
+          <p className="text-gray-300">
             {t('premiumAreaDescription')}
           </p>
         </div>
@@ -119,7 +119,7 @@ const UserLogin = () => {
               onSubmit={auth.checkEmail}
               onSignupClick={auth.goToSignup}
               isLoading={auth.state.isLoading}
-              variant="purple"
+              variant="dark"
               labels={{
                 email: t('email'),
                 emailPlaceholder: t('email'),
@@ -139,7 +139,7 @@ const UserLogin = () => {
             onChangeEmail={auth.changeEmail}
             forgotPasswordUrl={auth.getForgotPasswordUrl()}
             isLoading={auth.state.isLoading}
-            variant="purple"
+            variant="dark"
             labels={{
               password: t('password'),
               passwordPlaceholder: t('password'),

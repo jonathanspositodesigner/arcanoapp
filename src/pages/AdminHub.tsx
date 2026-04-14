@@ -122,8 +122,8 @@ const AdminHub = () => {
       subtitle: "Músicos & Artistas",
       description: "Gerenciar artes para músicos, bandas e artistas",
       icon: Music,
-      color: "from-violet-500 to-purple-500",
-      borderColor: "border-violet-500/30",
+      color: "from-violet-500 to-slate-400",
+      borderColor: "border-white/10",
       hoverBorder: "hover:border-violet-500/60",
       path: "/admin-artes-musicos"
     },
@@ -133,7 +133,7 @@ const AdminHub = () => {
       subtitle: "Biblioteca de Prompts",
       description: "Gerenciar prompts, categorias e assinaturas premium",
       icon: FileText,
-      color: "from-primary to-purple-600",
+      color: "from-primary to-slate-500",
       borderColor: "border-primary/30",
       hoverBorder: "hover:border-primary/60",
       path: "/admin-prompts"

@@ -197,7 +197,7 @@ const TesteGratis = () => {
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-fuchsia-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-slate-500/10 rounded-full blur-3xl" />
       </div>
 
       {/* Logo */}
@@ -209,18 +209,18 @@ const TesteGratis = () => {
       </div>
 
       {/* Main Card */}
-      <Card className="relative z-10 w-full max-w-md bg-[#1a1025] border-2 border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)] p-6 sm:p-8">
+      <Card className="relative z-10 w-full max-w-md bg-[#1a1025] border-2 border-slate-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)] p-6 sm:p-8">
 
         {/* EMAIL STATE */}
         {(pageState === 'email') && (
           <>
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 mb-4 shadow-lg shadow-fuchsia-500/30">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4 shadow-lg shadow-fuchsia-500/30">
                 <Gift className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Teste Grátis</h2>
-              <p className="text-purple-300 text-sm">Ganhe 180 créditos para usar nas Ferramentas de IA</p>
-              <p className="text-purple-400/80 text-xs mt-1">⏳ Créditos válidos por 24 horas</p>
+              <p className="text-gray-300 text-sm">Ganhe 180 créditos para usar nas Ferramentas de IA</p>
+              <p className="text-gray-400/80 text-xs mt-1">⏳ Créditos válidos por 24 horas</p>
             </div>
             <form onSubmit={checkEligibility} className="space-y-4">
               <div className="relative">
@@ -231,13 +231,13 @@ const TesteGratis = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
-                  className="pl-10 h-12 bg-[#0d0912] border-2 border-purple-600/50 text-white placeholder:text-purple-400/60 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20"
+                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20"
                 />
               </div>
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-base shadow-lg shadow-fuchsia-500/25"
+                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-fuchsia-500/25"
               >
                 {loading ? (
                   <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Verificando...</>
@@ -253,27 +253,27 @@ const TesteGratis = () => {
         {pageState === 'login' && (
           <>
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 mb-4 shadow-lg shadow-fuchsia-500/30">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4 shadow-lg shadow-fuchsia-500/30">
                 <Lock className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Faça Login</h2>
-              <p className="text-purple-300 text-sm">Digite sua senha para resgatar seus 180 créditos</p>
+              <p className="text-gray-300 text-sm">Digite sua senha para resgatar seus 180 créditos</p>
             </div>
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <Label className="text-purple-300 text-sm">Email</Label>
+                <Label className="text-gray-300 text-sm">Email</Label>
                 <div className="relative mt-1">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-fuchsia-400" />
                   <Input
                     type="email"
                     value={email}
                     readOnly
-                    className="pl-10 h-12 bg-[#0d0912] border-2 border-purple-600/30 text-purple-300 opacity-70"
+                    className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/30 text-gray-300 opacity-70"
                   />
                 </div>
               </div>
               <div>
-                <Label className="text-purple-300 text-sm">Senha</Label>
+                <Label className="text-gray-300 text-sm">Senha</Label>
                 <div className="relative mt-1">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-fuchsia-400" />
                   <Input
@@ -282,9 +282,9 @@ const TesteGratis = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
-                    className="pl-10 pr-10 h-12 bg-[#0d0912] border-2 border-purple-600/50 text-white placeholder:text-purple-400/60 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20"
+                    className="pl-10 pr-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20"
                   />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400">
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
@@ -292,7 +292,7 @@ const TesteGratis = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-base shadow-lg shadow-fuchsia-500/25"
+                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-fuchsia-500/25"
               >
                 {loading ? (
                   <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Entrando...</>
@@ -300,7 +300,7 @@ const TesteGratis = () => {
                   <>Entrar e Resgatar<ArrowRight className="w-5 h-5 ml-2" /></>
                 )}
               </Button>
-              <button type="button" onClick={() => { setPageState('email'); setPassword(''); }} className="w-full text-sm text-purple-400 hover:text-purple-300 mt-2">
+              <button type="button" onClick={() => { setPageState('email'); setPassword(''); }} className="w-full text-sm text-gray-400 hover:text-gray-300 mt-2">
                 ← Voltar
               </button>
             </form>
@@ -311,16 +311,16 @@ const TesteGratis = () => {
         {pageState === 'signup' && (
           <>
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 mb-4 shadow-lg shadow-fuchsia-500/30">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4 shadow-lg shadow-fuchsia-500/30">
                 <User className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Crie sua Conta</h2>
-              <p className="text-purple-300 text-sm">Cadastre-se para ganhar 180 créditos grátis</p>
-              <p className="text-purple-400/80 text-xs mt-1">⏳ Créditos válidos por 24 horas</p>
+              <p className="text-gray-300 text-sm">Cadastre-se para ganhar 180 créditos grátis</p>
+              <p className="text-gray-400/80 text-xs mt-1">⏳ Créditos válidos por 24 horas</p>
             </div>
             <form onSubmit={handleSignup} className="space-y-4">
               <div>
-                <Label className="text-purple-300 text-sm">Nome</Label>
+                <Label className="text-gray-300 text-sm">Nome</Label>
                 <div className="relative mt-1">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-fuchsia-400" />
                   <Input
@@ -329,24 +329,24 @@ const TesteGratis = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     disabled={loading}
-                    className="pl-10 h-12 bg-[#0d0912] border-2 border-purple-600/50 text-white placeholder:text-purple-400/60 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20"
+                    className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20"
                   />
                 </div>
               </div>
               <div>
-                <Label className="text-purple-300 text-sm">Email</Label>
+                <Label className="text-gray-300 text-sm">Email</Label>
                 <div className="relative mt-1">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-fuchsia-400" />
                   <Input
                     type="email"
                     value={email}
                     readOnly
-                    className="pl-10 h-12 bg-[#0d0912] border-2 border-purple-600/30 text-purple-300 opacity-70"
+                    className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/30 text-gray-300 opacity-70"
                   />
                 </div>
               </div>
               <div>
-                <Label className="text-purple-300 text-sm">Senha</Label>
+                <Label className="text-gray-300 text-sm">Senha</Label>
                 <div className="relative mt-1">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-fuchsia-400" />
                   <Input
@@ -355,9 +355,9 @@ const TesteGratis = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
-                    className="pl-10 pr-10 h-12 bg-[#0d0912] border-2 border-purple-600/50 text-white placeholder:text-purple-400/60 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20"
+                    className="pl-10 pr-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-gray-500 focus:border-fuchsia-500 focus:ring-2 focus:ring-fuchsia-500/20"
                   />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400">
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
@@ -365,7 +365,7 @@ const TesteGratis = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-base shadow-lg shadow-fuchsia-500/25"
+                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base shadow-lg shadow-fuchsia-500/25"
               >
                 {loading ? (
                   <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Criando conta...</>
@@ -373,7 +373,7 @@ const TesteGratis = () => {
                   <>Criar Conta<ArrowRight className="w-5 h-5 ml-2" /></>
                 )}
               </Button>
-              <button type="button" onClick={() => { setPageState('email'); setPassword(''); setName(''); }} className="w-full text-sm text-purple-400 hover:text-purple-300 mt-2">
+              <button type="button" onClick={() => { setPageState('email'); setPassword(''); setName(''); }} className="w-full text-sm text-gray-400 hover:text-gray-300 mt-2">
                 ← Voltar
               </button>
             </form>
@@ -390,7 +390,7 @@ const TesteGratis = () => {
             <p className="text-red-400 text-sm mb-6">Você já resgatou uma promoção anteriormente.</p>
             <Button
               onClick={() => navigate('/ferramentas-ia-aplicativo')}
-              className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold"
+              className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold"
             >
               Ir para as Ferramentas de IA
               <ArrowRight className="w-5 h-5 ml-2" />
@@ -403,7 +403,7 @@ const TesteGratis = () => {
           <div className="text-center py-8">
             <Loader2 className="w-12 h-12 text-fuchsia-400 animate-spin mx-auto mb-4" />
             <h2 className="text-xl font-bold text-white mb-2">Resgatando créditos...</h2>
-            <p className="text-purple-300 text-sm">Aguarde um momento</p>
+            <p className="text-gray-300 text-sm">Aguarde um momento</p>
           </div>
         )}
 
@@ -415,7 +415,7 @@ const TesteGratis = () => {
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Parabéns! 🎉</h2>
             <p className="text-green-400 text-lg font-semibold mb-2">180 créditos adicionados!</p>
-            <p className="text-purple-300 text-sm mb-6">Redirecionando para as Ferramentas de IA...</p>
+            <p className="text-gray-300 text-sm mb-6">Redirecionando para as Ferramentas de IA...</p>
             <Loader2 className="w-6 h-6 text-fuchsia-400 animate-spin mx-auto" />
           </div>
         )}
@@ -427,17 +427,17 @@ const TesteGratis = () => {
               <Mail className="w-10 h-10 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-white mb-2">Verifique seu Email</h2>
-            <p className="text-purple-300 text-sm mb-2">
+            <p className="text-gray-300 text-sm mb-2">
               Enviamos um link de confirmação para:
             </p>
             <p className="text-fuchsia-400 font-semibold mb-4">{email}</p>
-            <p className="text-purple-400 text-xs mb-6">
+            <p className="text-gray-400 text-xs mb-6">
               Após confirmar seu email, faça login nesta página para resgatar seus 180 créditos.
             </p>
             <Button
               onClick={() => { setPageState('email'); setPassword(''); setName(''); }}
               variant="outline"
-              className="w-full h-10 border-purple-500/50 bg-purple-900/50 text-white hover:bg-purple-800/70"
+              className="w-full h-10 border-slate-500/50 bg-white/5 text-white hover:bg-slate-800/70"
             >
               Voltar para o início
             </Button>
@@ -446,7 +446,7 @@ const TesteGratis = () => {
       </Card>
 
       {/* Footer */}
-      <p className="relative z-10 text-purple-400/50 text-xs mt-8">
+      <p className="relative z-10 text-gray-500 text-xs mt-8">
         © {new Date().getFullYear()} ArcanoApp
       </p>
     </div>

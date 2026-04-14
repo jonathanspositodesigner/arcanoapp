@@ -665,7 +665,7 @@ const MovieLedMakerTool = () => {
                   {status !== 'completed' && status !== 'error' && !isProcessing && (
                     <Button
                       data-tutorial-movieled="generate"
-                      className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
+                      className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-slate-500 hover:from-blue-600 hover:to-slate-600 rounded-xl shadow-lg disabled:opacity-50"
                       onClick={handleGenerate}
                       disabled={isSubmitting || !canGenerate}
                     >
@@ -751,7 +751,7 @@ const MovieLedMakerTool = () => {
                     <div>
                       <p className="text-xl font-bold text-yellow-300">🔥 Na fila!</p>
                       <p className="text-3xl font-bold text-white mt-2">Posição {queuePosition}</p>
-                      <p className="text-sm text-purple-300/70 mt-2">Aguarde, já já é sua vez!</p>
+                      <p className="text-sm text-gray-400 mt-2">Aguarde, já já é sua vez!</p>
                     </div>
                     <Button
                       variant="ghost" size="sm"
@@ -773,12 +773,12 @@ const MovieLedMakerTool = () => {
                   </div>
                 ) : (status === 'uploading' || status === 'processing') && !isQueued ? (
                   <div className="flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
+                    <Loader2 className="w-12 h-12 text-gray-400 animate-spin" />
                     <div className="text-center">
                       <p className="text-lg font-medium text-white">
                         {status === 'uploading' ? 'Enviando imagem...' : 'Gerando movie para telão...'}
                       </p>
-                      <p className="text-sm text-purple-300/70">
+                      <p className="text-sm text-gray-400">
                         Tempo estimado: {currentEngine.time}
                       </p>
                     </div>
@@ -801,7 +801,7 @@ const MovieLedMakerTool = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/20 flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-fuchsia-500/20 flex items-center justify-center">
                       <Video className="w-10 h-10 text-fuchsia-400" />
                     </div>
                     <div>
@@ -861,7 +861,7 @@ const MovieLedMakerTool = () => {
             {!isProcessing && status !== 'completed' && status !== 'error' && (
               <>
                 <Button
-                  className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
+                  className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-slate-500 hover:from-blue-600 hover:to-slate-600 rounded-xl shadow-lg disabled:opacity-50"
                   onClick={handleGenerate}
                   disabled={isSubmitting || !canGenerate}
                 >
@@ -896,7 +896,7 @@ const MovieLedMakerTool = () => {
             {isProcessing && (
               <div className="flex gap-2">
                 <div className="flex-1 flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 text-purple-400 animate-spin flex-shrink-0" />
+                  <Loader2 className="w-4 h-4 text-gray-400 animate-spin flex-shrink-0" />
                   <p className="text-xs text-white truncate">
                     {isQueued ? `Fila #${queuePosition}` : 'Gerando movie...'}
                   </p>

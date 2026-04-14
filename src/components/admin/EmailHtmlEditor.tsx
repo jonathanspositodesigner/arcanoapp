@@ -433,7 +433,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
             key={v.value}
             type="button"
             onClick={() => insertVariable(v.value)}
-            className="px-2 py-0.5 text-xs bg-purple-900/40 text-purple-300 rounded hover:bg-purple-800/60 transition-colors border border-purple-700/30"
+            className="px-2 py-0.5 text-xs bg-white/5 text-gray-300 rounded hover:bg-slate-800/60 transition-colors border border-slate-700/30"
           >
             {v.label}
           </button>

@@ -115,7 +115,7 @@ const StyleDropdown: React.FC<{
                   }}
                   className={`flex items-center gap-2.5 w-full px-2 py-2 transition-colors ${
                     isSelected
-                      ? 'bg-white/[0.06] border-l-2 border-purple-500'
+                      ? 'bg-white/[0.06] border-l-2 border-slate-500'
                       : 'hover:bg-white/[0.04] border-l-2 border-transparent'
                   }`}
                 >

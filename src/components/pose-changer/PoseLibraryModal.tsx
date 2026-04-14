@@ -18,7 +18,7 @@ const PLACEHOLDER_POSES: Record<GenderFilter, Array<{ id: string; label: string;
     { id: 'h1', label: 'Em Pé Casual', color: 'from-blue-600 to-blue-800' },
     { id: 'h2', label: 'Braços Cruzados', color: 'from-indigo-600 to-indigo-800' },
     { id: 'h3', label: 'Sentado', color: 'from-violet-600 to-violet-800' },
-    { id: 'h4', label: 'Caminhando', color: 'from-purple-600 to-purple-800' },
+    { id: 'h4', label: 'Caminhando', color: 'from-slate-600 to-slate-700' },
     { id: 'h5', label: 'Apontando', color: 'from-blue-700 to-indigo-900' },
     { id: 'h6', label: 'Mãos no Bolso', color: 'from-slate-600 to-slate-800' },
     { id: 'h7', label: 'Pose Confiante', color: 'from-cyan-600 to-cyan-800' },
@@ -27,8 +27,8 @@ const PLACEHOLDER_POSES: Record<GenderFilter, Array<{ id: string; label: string;
   mulher: [
     { id: 'm1', label: 'Em Pé Elegante', color: 'from-pink-600 to-pink-800' },
     { id: 'm2', label: 'Mãos na Cintura', color: 'from-rose-600 to-rose-800' },
-    { id: 'm3', label: 'Sentada', color: 'from-fuchsia-600 to-fuchsia-800' },
-    { id: 'm4', label: 'Pose Fashion', color: 'from-purple-600 to-purple-800' },
+    { id: 'm3', label: 'Sentada', color: 'from-slate-600 to-fuchsia-800' },
+    { id: 'm4', label: 'Pose Fashion', color: 'from-slate-600 to-slate-700' },
     { id: 'm5', label: 'Caminhando', color: 'from-pink-700 to-rose-900' },
     { id: 'm6', label: 'Braços Cruzados', color: 'from-violet-600 to-violet-800' },
     { id: 'm7', label: 'Pose Casual', color: 'from-magenta-600 to-magenta-800' },
@@ -55,10 +55,10 @@ const PoseLibraryModal: React.FC<PoseLibraryModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-[#1A0A2E] border-purple-500/30 text-white max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-2xl bg-[#111113] border-white/10 text-white max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
-            <Users className="w-5 h-5 text-purple-400" />
+            <Users className="w-5 h-5 text-gray-400" />
             Biblioteca de Poses de Referência
           </DialogTitle>
         </DialogHeader>
@@ -73,7 +73,7 @@ const PoseLibraryModal: React.FC<PoseLibraryModalProps> = ({
               "flex-1",
               filter === 'homem'
                 ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0"
-                : "bg-transparent border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+                : "bg-transparent border-white/10 text-gray-300 hover:bg-slate-500/20"
             )}
           >
             <User className="w-4 h-4 mr-2" />
@@ -87,7 +87,7 @@ const PoseLibraryModal: React.FC<PoseLibraryModalProps> = ({
               "flex-1",
               filter === 'mulher'
                 ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white border-0"
-                : "bg-transparent border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+                : "bg-transparent border-white/10 text-gray-300 hover:bg-slate-500/20"
             )}
           >
             <User className="w-4 h-4 mr-2" />
@@ -102,7 +102,7 @@ const PoseLibraryModal: React.FC<PoseLibraryModalProps> = ({
               <button
                 key={pose.id}
                 onClick={() => handleSelectPose(pose.id)}
-                className="group relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-purple-500/30 hover:border-purple-400 transition-all hover:scale-105"
+                className="group relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-white/10 hover:border-white/15 transition-all hover:scale-105"
               >
                 {/* Placeholder gradient background */}
                 <div className={cn(
@@ -123,8 +123,8 @@ const PoseLibraryModal: React.FC<PoseLibraryModalProps> = ({
                 </div>
 
                 {/* Hover overlay */}
-                <div className="absolute inset-0 bg-purple-500/0 group-hover:bg-purple-500/20 transition-colors flex items-center justify-center">
-                  <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-purple-600 px-3 py-1 rounded-full transition-opacity">
+                <div className="absolute inset-0 bg-slate-500/0 group-hover:bg-slate-500/20 transition-colors flex items-center justify-center">
+                  <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-slate-600 px-3 py-1 rounded-full transition-opacity">
                     Selecionar
                   </span>
                 </div>
@@ -133,7 +133,7 @@ const PoseLibraryModal: React.FC<PoseLibraryModalProps> = ({
           </div>
 
           {/* Info text */}
-          <p className="text-xs text-purple-400 text-center mt-4 pb-2">
+          <p className="text-xs text-gray-400 text-center mt-4 pb-2">
             💡 Clique em uma pose para usá-la como referência
           </p>
         </div>

@@ -73,7 +73,7 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown, isUnli
   const hasBreakdown = breakdown && (breakdown.monthly > 0 || breakdown.lifetime > 0);
 
   return (
-    <Card className="p-6 bg-[#1A0A2E] border-purple-500/20">
+    <Card className="p-6 bg-[#111113] border-white/10">
       <h2 className="text-lg font-semibold mb-4 text-white flex items-center gap-2">
         <Coins className="h-5 w-5 text-yellow-400" />
         Créditos de IA
@@ -81,7 +81,7 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown, isUnli
       
       {/* Current Balance */}
       <div className="flex items-center justify-between mb-2">
-        <p className="text-purple-300">Saldo total</p>
+        <p className="text-gray-300">Saldo total</p>
         <AnimatedCreditsDisplay 
           credits={credits} 
           isLoading={creditsLoading}
@@ -96,7 +96,7 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown, isUnli
       {hasBreakdown && !creditsLoading && (
         <div className="flex flex-wrap gap-2 mb-4 text-xs">
           {breakdown.monthly > 0 && (
-            <span className="px-2 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+            <span className="px-2 py-1 rounded-full bg-slate-500/20 text-gray-300 border border-white/10">
               📅 {breakdown.monthly.toLocaleString('pt-BR')} mensais
             </span>
           )}
@@ -109,24 +109,24 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown, isUnli
       )}
 
       {/* Latest Transaction */}
-      <div className="border-t border-purple-500/20 pt-4">
-        <h3 className="text-sm font-medium text-purple-300 flex items-center gap-2 mb-3">
+      <div className="border-t border-white/10 pt-4">
+        <h3 className="text-sm font-medium text-gray-300 flex items-center gap-2 mb-3">
           <History className="h-4 w-4" />
           Histórico de Transações
         </h3>
 
         {transactionsLoading ? (
           <div className="flex items-center justify-center py-3">
-            <Loader2 className="h-4 w-4 animate-spin text-purple-400" />
+            <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
           </div>
         ) : latestTransaction ? (
           <div className="space-y-3">
             <div 
-              className="flex items-center justify-between py-2 px-3 rounded-lg bg-purple-900/20"
+              className="flex items-center justify-between py-2 px-3 rounded-lg bg-white/5"
             >
               <div className="flex items-center gap-3">
                 {latestTransaction.amount < 0 ? (
-                  <Zap className="h-4 w-4 text-purple-400" />
+                  <Zap className="h-4 w-4 text-gray-400" />
                 ) : (
                   <TrendingUp className="h-4 w-4 text-green-400" />
                 )}
@@ -134,12 +134,12 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown, isUnli
                   <p className="text-sm text-white">
                     {latestTransaction.description || (latestTransaction.transaction_type === 'consumption' ? 'Uso do Upscaler' : 'Recarga de créditos')}
                   </p>
-                  <p className="text-xs text-purple-400">
+                  <p className="text-xs text-gray-400">
                     {formatDate(latestTransaction.created_at)}
                   </p>
                 </div>
               </div>
-              <span className={`text-sm font-medium ${latestTransaction.amount < 0 ? 'text-purple-400' : 'text-green-400'}`}>
+              <span className={`text-sm font-medium ${latestTransaction.amount < 0 ? 'text-gray-400' : 'text-green-400'}`}>
                 {latestTransaction.amount > 0 ? '+' : ''}{Math.abs(latestTransaction.amount).toLocaleString('pt-BR')}
               </span>
             </div>
@@ -147,23 +147,23 @@ export const CreditsCard = ({ credits, creditsLoading, userId, breakdown, isUnli
             <Button
               variant="ghost"
               onClick={() => navigate('/credit-history')}
-              className="w-full text-purple-300 hover:text-white hover:bg-purple-500/20 justify-between"
+              className="w-full text-gray-300 hover:text-white hover:bg-slate-500/20 justify-between"
             >
               Ver todas as transações
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         ) : (
-          <p className="text-sm text-purple-400 text-center py-3">
+          <p className="text-sm text-gray-400 text-center py-3">
             Nenhuma transação encontrada
           </p>
         )}
       </div>
 
-      <div className="border-t border-purple-500/20 pt-4 mt-4">
+      <div className="border-t border-white/10 pt-4 mt-4">
         <Button
           onClick={() => navigate('/planos-creditos')}
-          className="w-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:opacity-90 text-white font-medium"
+          className="w-full bg-gradient-to-r from-slate-500 to-slate-500 hover:opacity-90 text-white font-medium"
         >
           <PlusCircle className="w-4 h-4 mr-2" />
           Comprar Créditos

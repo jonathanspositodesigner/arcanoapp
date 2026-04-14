@@ -58,7 +58,7 @@ const BADGE_ICONS = [
 const BADGE_COLORS = [
   { value: 'yellow', label: 'Amarelo', className: 'bg-yellow-500/30 text-yellow-300' },
   { value: 'blue', label: 'Azul', className: 'bg-blue-500/30 text-blue-300' },
-  { value: 'purple', label: 'Roxo', className: 'bg-purple-500/30 text-purple-300' },
+  { value: 'purple', label: 'Roxo', className: 'bg-slate-500/30 text-gray-300' },
   { value: 'green', label: 'Verde', className: 'bg-green-500/30 text-green-300' },
   { value: 'orange', label: 'Laranja', className: 'bg-orange-500/30 text-orange-300' },
 ];
@@ -291,7 +291,7 @@ const ToolVersionEditor = ({
       </div>
 
       {/* Language Selector Tabs */}
-      <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg border border-blue-500/20">
+      <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-blue-500/10 to-slate-400/10 rounded-lg border border-blue-500/20">
         <Languages className="w-4 h-4 text-blue-400" />
         <Label className="text-sm font-semibold text-blue-400 mr-2">Idioma:</Label>
         <div className="flex gap-1">
@@ -786,8 +786,8 @@ const ToolVersionEditor = ({
               </div>
 
               {/* Membros */}
-              <div className="border rounded-lg p-4 space-y-4 border-purple-500/30 bg-purple-500/5">
-                <Badge className="bg-purple-500/20 text-purple-600">👑 20% OFF - Membros</Badge>
+              <div className="border rounded-lg p-4 space-y-4 border-white/10 bg-slate-500/5">
+                <Badge className="bg-slate-500/20 text-slate-500">👑 20% OFF - Membros</Badge>
                 <div className="space-y-3">
                   {currentVersion.sales.enabled_6_meses && (
                     <div>

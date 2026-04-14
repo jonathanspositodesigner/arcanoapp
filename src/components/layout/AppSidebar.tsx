@@ -37,7 +37,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
     { name: "Pose Changer", path: "/pose-changer-tool", badge: null, badgeColor: null, disabled: false },
     { name: "Veste AI", path: "/veste-ai-tool", badge: null, badgeColor: null, disabled: false },
     { name: "MovieLed Maker", path: "/movieled-maker", badge: "Novo", badgeColor: "bg-green-500/30", textColor: "text-green-300", disabled: false },
-    { name: "Forja de Selos 3D", path: "#", badge: "Em breve", badgeColor: "bg-purple-400/30", textColor: "text-purple-300", disabled: true },
+    { name: "Forja de Selos 3D", path: "#", badge: "Em breve", badgeColor: "bg-slate-400/30", textColor: "text-gray-300", disabled: true },
   ];
 
   const handleLogout = async () => {
@@ -58,7 +58,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
       {/* Sidebar */}
       <aside className={`
         fixed lg:static inset-y-0 left-0 z-40
-        w-72 ${fullScreen ? 'lg:h-full lg:min-h-0 lg:self-stretch' : 'min-h-screen'} bg-[#1A0A2E] border-r border-purple-500/20 p-5 flex flex-col
+        w-72 ${fullScreen ? 'lg:h-full lg:min-h-0 lg:self-stretch' : 'min-h-screen'} bg-[#111113] border-r border-white/10 p-5 flex flex-col
         transform transition-transform duration-300 ease-in-out
         lg:pt-4
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -73,16 +73,16 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           {/* Home Button */}
           <button
             onClick={() => handleNavAndClose("/")}
-            className="w-full flex items-center text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+            className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-slate-500/20 transition-colors"
           >
             <Home className="h-3.5 w-3.5 mr-1.5" />
             Home
           </button>
 
-          <div className="border-t border-purple-400/30" />
+          <div className="border-t border-white/10" />
 
           {/* Install App Button */}
-          <Button onClick={() => handleNavAndClose("/install-app")} variant="outline" className="w-full h-auto py-2 px-2.5 bg-purple-900/50 border-purple-400/50 text-white hover:bg-purple-500/30 font-medium text-[11px] flex items-center justify-between">
+          <Button onClick={() => handleNavAndClose("/install-app")} variant="outline" className="w-full h-auto py-2 px-2.5 bg-white/5 border-white/15 text-white hover:bg-slate-500/30 font-medium text-[11px] flex items-center justify-between">
             <span className="flex items-center">
               <Smartphone className="h-3 w-3 mr-1.5" />
               {t('sidebar.installApp')}
@@ -99,7 +99,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
 
           {/* Premium button for logged-in non-premium users */}
           {user && !isPremium && (
-            <Button onClick={() => handleNavAndClose("/planos-2")} className="w-full h-auto py-2 px-2.5 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white font-medium text-[11px] flex items-center justify-between">
+            <Button onClick={() => handleNavAndClose("/planos-2")} className="w-full h-auto py-2 px-2.5 bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-500 hover:to-blue-400 text-white font-medium text-[11px] flex items-center justify-between">
               <span className="flex items-center">
                 <Star className="h-3 w-3 mr-1.5" fill="currentColor" />
                 {t('sidebar.becomePremium')}
@@ -110,13 +110,13 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           {/* Login button only for non-logged users */}
           {!user && (
             <>
-              <Button onClick={() => handleNavAndClose("/planos-2")} className="w-full h-auto py-2 px-2.5 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white font-medium text-[11px] flex items-center justify-between">
+              <Button onClick={() => handleNavAndClose("/planos-2")} className="w-full h-auto py-2 px-2.5 bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-500 hover:to-blue-400 text-white font-medium text-[11px] flex items-center justify-between">
                 <span className="flex items-center">
                   <Star className="h-3 w-3 mr-1.5" fill="currentColor" />
                   {t('sidebar.becomePremium')}
                 </span>
               </Button>
-              <Button onClick={() => handleNavAndClose("/login")} variant="outline" className="w-full h-auto py-2 px-2.5 bg-purple-900/50 border-purple-400/50 text-white hover:bg-purple-500/30 font-medium text-[11px] flex items-center justify-between">
+              <Button onClick={() => handleNavAndClose("/login")} variant="outline" className="w-full h-auto py-2 px-2.5 bg-white/5 border-white/15 text-white hover:bg-slate-500/30 font-medium text-[11px] flex items-center justify-between">
                 <span className="flex items-center">
                   <LogIn className="h-3 w-3 mr-1.5" />
                   {t('sidebar.makeLogin')}
@@ -125,12 +125,12 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
             </>
           )}
 
-          <div className="my-3 border-t border-purple-400/30" />
+          <div className="my-3 border-t border-white/10" />
 
           {/* Ferramentas de IA - Collapsible */}
           <button
             onClick={() => setAiToolsOpen(!aiToolsOpen)}
-            className="w-full flex items-center justify-between text-left text-[12px] font-semibold text-white hover:text-purple-200 py-2 px-2.5 rounded-lg bg-gradient-to-r from-fuchsia-500/20 to-purple-600/20 hover:from-fuchsia-500/30 hover:to-purple-600/30 transition-colors"
+            className="w-full flex items-center justify-between text-left text-[12px] font-semibold text-white hover:text-gray-300 py-2 px-2.5 rounded-lg bg-gradient-to-r from-slate-500/20 to-slate-500/20 hover:from-slate-500/30 hover:to-slate-500/30 transition-colors"
           >
             <span className="flex items-center gap-1.5">
               <Zap className="h-3.5 w-3.5 text-fuchsia-400" />
@@ -146,7 +146,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
                   key={link.name}
                   onClick={() => !link.disabled && handleNavAndClose(link.path)}
                   disabled={link.disabled}
-                  className={`w-full flex items-center justify-between text-[11px] py-1.5 px-2.5 rounded-md transition-colors ${link.disabled ? 'text-purple-400/50 cursor-not-allowed' : 'text-purple-200 hover:text-white hover:bg-purple-500/20'}`}
+                  className={`w-full flex items-center justify-between text-[11px] py-1.5 px-2.5 rounded-md transition-colors ${link.disabled ? 'text-gray-500 cursor-not-allowed' : 'text-gray-300 hover:text-white hover:bg-slate-500/20'}`}
                 >
                   <span>{link.name}</span>
                   {link.badge && (
@@ -156,7 +156,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
               ))}
               <button
                 onClick={() => handleNavAndClose("/ferramentas-ia-aplicativo")}
-                className="w-full flex items-center justify-center text-[11px] py-1.5 px-2.5 rounded-md text-fuchsia-300 hover:text-white hover:bg-purple-500/20 transition-colors font-medium mt-1"
+                className="w-full flex items-center justify-center text-[11px] py-1.5 px-2.5 rounded-md text-fuchsia-300 hover:text-white hover:bg-slate-500/20 transition-colors font-medium mt-1"
               >
                 Ver todas →
               </button>
@@ -166,7 +166,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           {/* Seedance 2 */}
           <button
             onClick={() => handleNavAndClose("/seedance2")}
-            className="w-full flex items-center justify-between text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+            className="w-full flex items-center justify-between text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-slate-500/20 transition-colors"
           >
             <span className="flex items-center">
               <Video className="h-3.5 w-3.5 mr-1.5" />
@@ -178,7 +178,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           {/* Biblioteca de Prompts */}
           <button
             onClick={() => handleNavAndClose("/biblioteca-prompts")}
-            className="w-full flex items-center text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+            className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-slate-500/20 transition-colors"
           >
             <BookOpen className="h-3.5 w-3.5 mr-1.5" />
             PromptClub
@@ -187,14 +187,14 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           {/* Gerar Imagem e Gerar Vídeo */}
           <button
             onClick={() => handleNavAndClose("/gerar-imagem")}
-            className="w-full flex items-center text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+            className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-slate-500/20 transition-colors"
           >
             <ImagePlus className="h-3.5 w-3.5 mr-1.5" />
             Gerar Imagem
           </button>
           <button
             onClick={() => handleNavAndClose("/gerar-video")}
-            className="w-full flex items-center text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+            className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-slate-500/20 transition-colors"
           >
             <Video className="h-3.5 w-3.5 mr-1.5" />
             Gerar Vídeo
@@ -202,13 +202,13 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
 
           {/* Sites de IA - Hidden for now, links preserved in externalLinks array above */}
 
-          <div className="my-3 border-t border-purple-400/30" />
+          <div className="my-3 border-t border-white/10" />
 
           {/* Créditos */}
           {user && (
             <button
               onClick={() => handleNavAndClose("/credit-history")}
-              className="w-full flex items-center text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+              className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-slate-500/20 transition-colors"
             >
               <Coins className="h-3.5 w-3.5 mr-1.5" />
               Meus Créditos
@@ -219,7 +219,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           {user && (
             <button
               onClick={() => handleNavAndClose("/profile-settings")}
-              className="w-full flex items-center text-left text-[12px] font-medium text-purple-200 hover:text-white py-2 px-2.5 rounded-lg hover:bg-purple-500/20 transition-colors"
+              className="w-full flex items-center text-left text-[12px] font-medium text-gray-300 hover:text-white py-2 px-2.5 rounded-lg hover:bg-slate-500/20 transition-colors"
             >
               <Settings className="h-3.5 w-3.5 mr-1.5" />
               Configurações
@@ -248,7 +248,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
 
         {/* Logout button at the bottom */}
         {user && (
-          <div className="pt-3 border-t border-purple-400/30 mt-3">
+          <div className="pt-3 border-t border-white/10 mt-3">
             <button
               onClick={handleLogout}
               className="w-full flex items-center text-left text-[12px] font-medium text-red-400 hover:text-red-300 py-2 px-2.5 rounded-lg hover:bg-red-500/10 transition-colors"

@@ -120,7 +120,7 @@ export default function UpscalerMockup({
     <div className="w-full max-w-2xl mx-auto rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm overflow-hidden">
       {/* Header */}
       <div className="px-6 py-4 border-b border-white/10 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
           <Wand2 className="w-4 h-4 text-white" />
         </div>
         <span className="text-white font-semibold text-lg">Upscaler Arcano</span>
@@ -217,7 +217,7 @@ export default function UpscalerMockup({
                     : 'border border-white/10 text-white/50 hover:bg-white/10'
                 }`}
               >
-                <div className="w-8 h-8 rounded bg-purple-900/50 flex items-center justify-center border border-purple-500/30 relative">
+                <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center border border-white/10 relative">
                   <svg width="24" height="24" viewBox="0 0 48 48" fill="none" className="text-current">
                     <circle cx="24" cy="20" r="14" fill="currentColor" opacity="0.85" />
                     <ellipse cx="24" cy="48" rx="18" ry="14" fill="currentColor" opacity="0.55" />
@@ -233,7 +233,7 @@ export default function UpscalerMockup({
                     : 'border border-white/10 text-white/50 hover:bg-white/10'
                 }`}
               >
-                <div className="w-8 h-8 rounded bg-purple-900/50 flex items-center justify-center border border-purple-500/30 relative">
+                <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center border border-white/10 relative">
                   <svg width="24" height="24" viewBox="0 0 48 48" fill="none" className="text-current">
                     <circle cx="24" cy="14" r="5" fill="currentColor" opacity="0.85" />
                     <rect x="20" y="19" width="8" height="12" rx="3" fill="currentColor" opacity="0.75" />
@@ -255,7 +255,7 @@ export default function UpscalerMockup({
                 <Sparkles className="w-3.5 h-3.5 text-fuchsia-400" />
                 <span className="text-xs font-medium text-white">Nível de Detalhes</span>
               </div>
-              <span className="text-xs text-purple-300 font-mono">{Math.round(comidaDetailLevel * 100)}%</span>
+              <span className="text-xs text-gray-300 font-mono">{Math.round(comidaDetailLevel * 100)}%</span>
             </div>
             <Slider
               value={[comidaDetailLevel]}
@@ -265,7 +265,7 @@ export default function UpscalerMockup({
               step={0.01}
               className="w-full"
             />
-            <div className="flex justify-between text-[10px] text-purple-300/50 mt-1">
+            <div className="flex justify-between text-[10px] text-gray-300/50 mt-1">
               <span>Mais Fiel</span>
               <span>Mais Criativo</span>
             </div>
@@ -360,7 +360,7 @@ export default function UpscalerMockup({
                       <div className="absolute top-3 left-3 bg-black/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
                         Antes
                       </div>
-                      <div className="absolute top-3 right-3 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
+                      <div className="absolute top-3 right-3 bg-gradient-to-r from-slate-500 to-slate-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
                         Depois
                       </div>
                     </div>
@@ -391,7 +391,7 @@ export default function UpscalerMockup({
                 </div>
               </div>
             )}
-            <p className="text-center text-[10px] text-purple-300/40 mt-2">Pinça ou scroll para dar zoom • Clique duplo para alternar</p>
+            <p className="text-center text-[10px] text-gray-300/40 mt-2">Pinça ou scroll para dar zoom • Clique duplo para alternar</p>
           </div>
         ) : (status === 'uploading' || status === 'processing') ? (
           /* PROCESSING: Progress indicator */
@@ -401,18 +401,18 @@ export default function UpscalerMockup({
               <p className="text-lg font-medium text-white">
                 {status === 'uploading' ? 'Enviando imagem...' : 'Processando...'}
               </p>
-              <p className="text-sm text-purple-300/70">
+              <p className="text-sm text-gray-400">
                 Isso pode levar até 2 minutos
               </p>
             </div>
             {/* Progress bar */}
-            <div className="w-48 h-2 bg-purple-900/50 rounded-full overflow-hidden">
+            <div className="w-48 h-2 bg-white/5 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-fuchsia-500 to-purple-500 transition-all duration-500"
+                className="h-full bg-gradient-to-r from-slate-500 to-slate-400 transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <span className="text-xs text-purple-300/50">{Math.round(progress)}%</span>
+            <span className="text-xs text-gray-300/50">{Math.round(progress)}%</span>
           </div>
         ) : previewUrl ? (
           /* PREVIEW: Show uploaded image */
@@ -426,7 +426,7 @@ export default function UpscalerMockup({
               isActive ? "hover:border-fuchsia-500/50 hover:bg-white/10 cursor-pointer" : "cursor-default"
             }`}
           >
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center">
               <Upload className="w-8 h-8 text-fuchsia-400" />
             </div>
             <div className="text-center">
@@ -452,7 +452,7 @@ export default function UpscalerMockup({
       {/* Generate button */}
       <div className="px-6 pb-6">
         <Button
-          className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-base rounded-xl border-0"
+          className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-base rounded-xl border-0"
           disabled={!isActive || isProcessing || (!uploadedFile && !resultUrl)}
           onClick={onGenerate}
         >

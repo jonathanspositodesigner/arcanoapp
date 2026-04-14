@@ -327,7 +327,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
               onClick={() => fileRef.current?.click()}
               className={`w-full aspect-[4/3] rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden ${
                 uploadedPreview 
-                  ? 'border-purple-500/50 bg-purple-500/5'
+                  ? 'border-slate-500/50 bg-slate-500/5'
                   : 'border-white/10 bg-black/20 hover:border-white/20'
               }`}
             >
@@ -366,7 +366,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
             <Button
               onClick={handleGenerate}
               disabled={!uploadedFile || currentCount >= 20}
-              className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white text-[12px]"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white text-[12px]"
             >
               <span className="mr-1">✦</span>
               Gerar Personagem
@@ -380,10 +380,10 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
             <div className="relative w-24 h-24">
               <div className="absolute inset-0 rounded-full border-4 border-white/5" />
               <svg className="w-24 h-24 -rotate-90" viewBox="0 0 96 96">
-                <circle cx="48" cy="48" r="44" fill="none" stroke="currentColor" strokeWidth="4" className="text-purple-500/30" />
+                <circle cx="48" cy="48" r="44" fill="none" stroke="currentColor" strokeWidth="4" className="text-slate-400/30" />
                 <circle
                   cx="48" cy="48" r="44" fill="none" stroke="currentColor" strokeWidth="4"
-                  className="text-purple-500 transition-all duration-500"
+                  className="text-slate-400 transition-all duration-500"
                   strokeDasharray={`${2 * Math.PI * 44}`}
                   strokeDashoffset={`${2 * Math.PI * 44 * (1 - progress / 100)}`}
                   strokeLinecap="round"
@@ -397,7 +397,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
               <p className="text-sm text-gray-300 font-medium">Gerando personagem...</p>
               <p className="text-[10px] text-gray-500 mt-1">Isso pode levar até 2 minutos</p>
             </div>
-            <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
+            <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
           </div>
         )}
 
@@ -419,7 +419,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
               )}
               {generatedImageUrl && (
                 <div className="text-center">
-                  <div className="w-24 h-24 rounded-lg overflow-hidden border border-purple-500/30">
+                  <div className="w-24 h-24 rounded-lg overflow-hidden border border-white/10">
                     <img src={generatedImageUrl} alt="Referência" className="w-full h-full object-cover" />
                   </div>
                   <p className="text-[9px] text-gray-500 mt-1">Referência IA</p>
@@ -478,7 +478,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                 size="sm"
                 onClick={handleSave}
                 disabled={!characterName.trim() || !gender || saving}
-                className="flex-1 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white text-[11px]"
+                className="flex-1 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white text-[11px]"
               >
                 {saving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
                 Salvar Personagem

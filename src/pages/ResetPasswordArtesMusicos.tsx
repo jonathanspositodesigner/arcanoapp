@@ -108,7 +108,7 @@ const ResetPasswordArtesMusicos = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#2d1b4e] to-[#0f0f1a] flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-violet-500/30">
+      <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-white/10">
         <CardHeader className="text-center">
           <div className="mx-auto w-12 h-12 bg-violet-500/30 rounded-full flex items-center justify-center mb-4">
             <Lock className="h-6 w-6 text-violet-400" />
@@ -129,7 +129,7 @@ const ResetPasswordArtesMusicos = () => {
                 placeholder={t('newPassword')}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-[#0f0f1a] border-violet-500/30 text-white pr-10"
+                className="bg-[#0f0f1a] border-white/10 text-white pr-10"
                 required
               />
               <button
@@ -146,7 +146,7 @@ const ResetPasswordArtesMusicos = () => {
                 placeholder={t('confirmNewPassword')}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="bg-[#0f0f1a] border-violet-500/30 text-white pr-10"
+                className="bg-[#0f0f1a] border-white/10 text-white pr-10"
                 required
               />
               <button

@@ -29,13 +29,13 @@ const RefineSelector: React.FC<RefineSelectorProps> = ({
   const canSubmit = selected.length > 0 && !isProcessing && !disabled;
 
   return (
-    <div className="bg-purple-900/40 border border-purple-500/30 rounded-lg p-4 space-y-3">
+    <div className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold text-white">Escolha as imagens que quer trocar</p>
         <Button
           variant="ghost"
           size="icon"
-          className="h-6 w-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
+          className="h-6 w-6 text-gray-300 hover:text-white hover:bg-slate-500/20"
           onClick={onCancel}
           disabled={isProcessing}
         >
@@ -57,7 +57,7 @@ const RefineSelector: React.FC<RefineSelectorProps> = ({
                 h-10 rounded-lg text-sm font-bold transition-all
                 ${isSelected
                   ? 'bg-fuchsia-600 text-white border-2 border-fuchsia-400 shadow-lg shadow-fuchsia-500/30'
-                  : 'bg-purple-800/50 text-purple-300 border border-purple-500/30 hover:bg-purple-700/50 hover:text-white'
+                  : 'bg-slate-800/50 text-gray-300 border border-white/10 hover:bg-slate-700/50 hover:text-white'
                 }
                 disabled:opacity-50 disabled:cursor-not-allowed
               `}
@@ -70,8 +70,8 @@ const RefineSelector: React.FC<RefineSelectorProps> = ({
 
       {/* Selection Preview */}
       {selected.length > 0 && (
-        <div className="bg-purple-800/30 border border-purple-500/20 rounded-md px-3 py-1.5">
-          <p className="text-[10px] text-purple-400 mb-0.5">Selecionados:</p>
+        <div className="bg-slate-800/30 border border-white/10 rounded-md px-3 py-1.5">
+          <p className="text-[10px] text-gray-400 mb-0.5">Selecionados:</p>
           <p className="text-xs text-white font-mono">{selectionText}</p>
         </div>
       )}
@@ -79,7 +79,7 @@ const RefineSelector: React.FC<RefineSelectorProps> = ({
       {/* Submit */}
       <Button
         size="sm"
-        className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-medium text-xs disabled:opacity-50"
+        className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-medium text-xs disabled:opacity-50"
         disabled={!canSubmit}
         onClick={() => onSubmit(selectionText)}
       >

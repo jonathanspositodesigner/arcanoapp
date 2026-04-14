@@ -41,7 +41,7 @@ const TestimonialCard = ({ result }: { result: UserResult }) => (
           {result.avatar ? (
             <img src={result.avatar} alt={result.name} width="40" height="40" loading="lazy" className="w-10 h-10 rounded-full border border-white/10 object-cover flex-shrink-0" />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500/30 to-purple-500/30 border border-white/10 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500/30 to-slate-400/30 border border-white/10 flex items-center justify-center flex-shrink-0">
               <User className="w-5 h-5 text-fuchsia-400" />
             </div>
           )}

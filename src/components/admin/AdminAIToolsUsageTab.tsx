@@ -594,7 +594,7 @@ const AdminAIToolsUsageTab = () => {
       case 'free_trial':
         return <Badge className="bg-slate-500/20 text-slate-400 border-slate-500/30">Trial Gratuito</Badge>;
       case 'premium':
-        return <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">Premium</Badge>;
+        return <Badge className="bg-slate-500/20 text-gray-400 border-white/10">Premium</Badge>;
       case 'premium_credits':
         return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Premium + Créditos</Badge>;
     }
@@ -673,7 +673,7 @@ const AdminAIToolsUsageTab = () => {
       'uploading_user_image': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
       'uploading_reference_image': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
       'creating_task': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-      'webhook_received': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+      'webhook_received': 'bg-slate-500/20 text-gray-400 border-white/10',
       'downloading_result': 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30',
       'consuming_credits': 'bg-red-500/20 text-red-400 border-red-500/30',
     };
@@ -911,7 +911,7 @@ const AdminAIToolsUsageTab = () => {
 
           <Card>
             <CardContent className="p-4 flex items-center gap-3">
-              <Cpu className="h-6 w-6 text-purple-500" />
+              <Cpu className="h-6 w-6 text-slate-400" />
               <div>
                 <p className="text-xs text-muted-foreground">Tempo médio de processamento</p>
                 <p className="text-lg font-bold">{formatDuration(Math.round(summary.avg_processing_seconds))}</p>

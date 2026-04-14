@@ -221,7 +221,7 @@ const ArcanoClonerTeste = () => {
               <br className="hidden md:block" />
               profissionais com IA{" "}
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">
                 sem prompt, sem complicação
               </span>
             </h1>
@@ -268,9 +268,9 @@ const ArcanoClonerTeste = () => {
             {painPoints.map((pain, index) => {
               const IconComp = pain.icon;
               return (
-                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-purple-500/30 transition-all duration-300 flex flex-col items-center justify-center h-full">
-                  <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4 shrink-0">
-                    <IconComp className="h-6 w-6 text-purple-400" />
+                <div key={index} className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 text-center hover:border-white/10 transition-all duration-300 flex flex-col items-center justify-center h-full">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-500/10 border border-white/10 flex items-center justify-center mb-4 shrink-0">
+                    <IconComp className="h-6 w-6 text-gray-400" />
                   </div>
                   <p className="text-white/80 text-base md:text-lg">{pain.text}</p>
                 </div>
@@ -278,7 +278,7 @@ const ArcanoClonerTeste = () => {
             })}
           </StaggeredAnimation>
           <AnimatedSection as="div" delay={400}>
-            <div className="mt-10 md:mt-12 bg-gradient-to-r from-fuchsia-500/10 to-purple-600/10 border border-fuchsia-500/30 rounded-3xl p-8 text-center">
+            <div className="mt-10 md:mt-12 bg-gradient-to-r from-slate-500/10 to-slate-500/10 border border-fuchsia-500/30 rounded-3xl p-8 text-center">
               <Sparkles className="h-8 w-8 text-fuchsia-400 mx-auto mb-4" />
               <p className="text-xl md:text-2xl text-white font-semibold">
                 Com o Arcano Cloner você resolve tudo isso
@@ -298,7 +298,7 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
               <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
                 Gere suas fotos{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">sem gastar com ensaios</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">sem gastar com ensaios</span>
              </h2>
             <p className="text-white/50 text-center text-sm mb-10">Todas as imagens abaixo foram feitas com o Arcano Cloner</p>
           </AnimatedSection>
@@ -406,7 +406,7 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3">
               Tudo feito com um clique,{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">sem prompt!</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">sem prompt!</span>
             </h2>
             <p className="text-white/50 text-sm mb-10">
               Resultados reais de clientes usando o Arcano Cloner
@@ -551,7 +551,7 @@ const ArcanoClonerTeste = () => {
                     key={`r1-${setIndex}-${num}`}
                     src={`/images/results/result-${num}.webp`}
                     alt={`Resultado ${num}`}
-                    className="w-[255px] md:w-[234px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 object-cover"
+                    className="w-[255px] md:w-[234px] shrink-0 aspect-[3/4] rounded-2xl border border-white/10 object-cover"
                     loading="lazy"
                   />
                 ))
@@ -570,7 +570,7 @@ const ArcanoClonerTeste = () => {
                     key={`r2-${setIndex}-${num}`}
                     src={`/images/results/result-${num}.webp`}
                     alt={`Resultado ${num}`}
-                    className="w-[255px] md:w-[234px] shrink-0 aspect-[3/4] rounded-2xl border border-purple-500/20 object-cover"
+                    className="w-[255px] md:w-[234px] shrink-0 aspect-[3/4] rounded-2xl border border-white/10 object-cover"
                     loading="lazy"
                   />
                 ))

@@ -146,7 +146,7 @@ const ClonerDemoAnimation: React.FC = () => {
             <div className={cn(
               'relative w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500',
               step === i
-                ? 'bg-gradient-to-br from-fuchsia-500 to-purple-600 text-white shadow-lg shadow-fuchsia-500/40 scale-110'
+                ? 'bg-gradient-to-br from-slate-500 to-slate-500 text-white shadow-lg shadow-fuchsia-500/40 scale-110'
                 : step > i
                 ? 'bg-fuchsia-500/30 text-fuchsia-300 border border-fuchsia-500/40'
                 : 'bg-white/5 text-white/30 border border-white/10'
@@ -167,9 +167,9 @@ const ClonerDemoAnimation: React.FC = () => {
       </div>
 
       {/* Main mockup */}
-      <div className="relative bg-[#1A0A2E]/90 border border-purple-500/30 rounded-2xl overflow-hidden shadow-2xl shadow-purple-900/40">
+      <div className="relative bg-[#111113]/90 border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/40">
         {/* Top bar */}
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-purple-500/20 bg-black/30">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-black/30">
           <div className="flex gap-1.5">
             <span className="w-3 h-3 rounded-full bg-red-500/70" />
             <span className="w-3 h-3 rounded-full bg-yellow-500/70" />
@@ -217,14 +217,14 @@ const ClonerDemoAnimation: React.FC = () => {
                    'relative border-2 border-dashed rounded-xl overflow-hidden transition-all duration-300',
                    step === 0
                      ? 'border-fuchsia-500/70 shadow-lg shadow-fuchsia-500/20'
-                     : 'border-purple-500/30',
+                     : 'border-white/10',
                  )}>
-                   <div className="aspect-square bg-purple-900/20 relative">
+                   <div className="aspect-square bg-white/5 relative">
                      {/* Skeleton representation when empty */}
                      {!faceVisible && (
                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                         <Upload className="w-7 h-7 text-purple-400/60" />
-                         <span className="text-[10px] text-purple-300/50 font-medium">Sua Foto</span>
+                         <Upload className="w-7 h-7 text-gray-500" />
+                         <span className="text-[10px] text-gray-300/50 font-medium">Sua Foto</span>
                        </div>
                      )}
                      {/* Skeleton filled state */}
@@ -234,18 +234,18 @@ const ClonerDemoAnimation: React.FC = () => {
                          faceVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
                        )}>
                          {/* Face silhouette skeleton */}
-                         <div className="flex-1 flex items-center justify-center bg-purple-800/30">
+                         <div className="flex-1 flex items-center justify-center bg-slate-800/30">
                            <div className="relative flex flex-col items-center gap-1.5">
                              {/* Head circle */}
-                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/50 to-fuchsia-500/40 border border-fuchsia-400/30 flex items-center justify-center">
+                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500/50 to-slate-400/40 border border-fuchsia-400/30 flex items-center justify-center">
                                <svg viewBox="0 0 24 24" className="w-6 h-6 fill-fuchsia-300/60">
                                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
                                </svg>
                              </div>
                              {/* Skeleton lines */}
                              <div className="space-y-1">
-                               <div className="h-1.5 w-16 rounded-full bg-purple-500/30 animate-pulse" />
-                               <div className="h-1 w-10 mx-auto rounded-full bg-purple-500/20 animate-pulse" style={{ animationDelay: '150ms' }} />
+                               <div className="h-1.5 w-16 rounded-full bg-slate-500/30 animate-pulse" />
+                               <div className="h-1 w-10 mx-auto rounded-full bg-slate-500/20 animate-pulse" style={{ animationDelay: '150ms' }} />
                              </div>
                            </div>
                          </div>
@@ -263,13 +263,13 @@ const ClonerDemoAnimation: React.FC = () => {
                    'relative border-2 border-dashed rounded-xl overflow-hidden transition-all duration-300',
                    step === 1
                      ? 'border-fuchsia-500/70 shadow-lg shadow-fuchsia-500/20'
-                     : 'border-purple-500/30',
+                     : 'border-white/10',
                  )}>
-                   <div className="aspect-square bg-purple-900/20 relative">
+                   <div className="aspect-square bg-white/5 relative">
                      {!refVisible && step !== 1 && (
                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                         <Image className="w-7 h-7 text-purple-400/60" />
-                         <span className="text-[10px] text-purple-300/50 font-medium">Referência</span>
+                         <Image className="w-7 h-7 text-gray-500" />
+                         <span className="text-[10px] text-gray-300/50 font-medium">Referência</span>
                        </div>
                      )}
                      {/* Library grid skeleton simulation on step 1 */}
@@ -278,10 +278,10 @@ const ClonerDemoAnimation: React.FC = () => {
                          <div className="grid grid-cols-3 gap-1 h-full">
                            {[0,1,2,3,4,5].map(n => (
                              <div key={n} className={cn(
-                               'rounded bg-purple-700/40 border border-purple-500/20 flex items-center justify-center transition-all duration-300',
+                               'rounded bg-slate-700/40 border border-white/10 flex items-center justify-center transition-all duration-300',
                                n === 4 ? 'border-fuchsia-500/60 bg-fuchsia-700/30 scale-105' : ''
                              )}>
-                               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-purple-400/40">
+                               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-gray-400/40">
                                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
                                </svg>
                              </div>
@@ -295,20 +295,20 @@ const ClonerDemoAnimation: React.FC = () => {
                          'absolute inset-0 flex flex-col transition-all duration-700',
                          refVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
                        )}>
-                         <div className="flex-1 flex items-center justify-center bg-purple-800/30">
+                         <div className="flex-1 flex items-center justify-center bg-slate-800/30">
                            <div className="relative flex flex-col items-center gap-1.5">
                              {/* Landscape/photo icon skeleton */}
-                             <div className="w-12 h-9 rounded-lg bg-gradient-to-br from-purple-500/40 to-fuchsia-500/30 border border-fuchsia-400/30 flex items-center justify-center overflow-hidden">
+                             <div className="w-12 h-9 rounded-lg bg-gradient-to-br from-slate-500/40 to-slate-400/30 border border-fuchsia-400/30 flex items-center justify-center overflow-hidden">
                                {/* Simulated sky/ground */}
-                               <div className="w-full h-1/2 bg-purple-600/30" />
-                               <div className="absolute bottom-0 w-full h-1/2 bg-purple-800/30" />
+                               <div className="w-full h-1/2 bg-slate-600/30" />
+                               <div className="absolute bottom-0 w-full h-1/2 bg-slate-800/30" />
                                <svg viewBox="0 0 24 24" className="absolute w-6 h-6 fill-fuchsia-300/50">
                                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
                                </svg>
                              </div>
                              <div className="space-y-1">
-                               <div className="h-1.5 w-14 rounded-full bg-purple-500/30 animate-pulse" />
-                               <div className="h-1 w-8 mx-auto rounded-full bg-purple-500/20 animate-pulse" style={{ animationDelay: '200ms' }} />
+                               <div className="h-1.5 w-14 rounded-full bg-slate-500/30 animate-pulse" />
+                               <div className="h-1 w-8 mx-auto rounded-full bg-slate-500/20 animate-pulse" style={{ animationDelay: '200ms' }} />
                              </div>
                            </div>
                          </div>
@@ -324,13 +324,13 @@ const ClonerDemoAnimation: React.FC = () => {
 
               {/* Aspect ratio selector */}
               <div className={cn(
-                'bg-purple-900/20 border rounded-lg p-2.5 transition-all duration-300',
+                'bg-white/5 border rounded-lg p-2.5 transition-all duration-300',
                 step === 2
                   ? 'border-fuchsia-500/50 shadow-md shadow-fuchsia-500/10'
-                  : 'border-purple-500/30',
+                  : 'border-white/10',
               )}>
                 <p className="text-[10px] font-semibold text-white/70 mb-2 flex items-center gap-1.5">
-                  <RectangleVertical className="w-3 h-3 text-purple-400" />
+                  <RectangleVertical className="w-3 h-3 text-gray-400" />
                   Proporção
                 </p>
                 <div className="grid grid-cols-4 gap-1.5">
@@ -346,11 +346,11 @@ const ClonerDemoAnimation: React.FC = () => {
                        className={cn(
                          'flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-lg border text-center transition-all duration-300',
                          selectedRatio === opt.value
-                           ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 border-fuchsia-500 text-white scale-105'
-                           : 'bg-purple-900/30 border-purple-500/30 text-purple-300'
+                           ? 'bg-gradient-to-r from-slate-600 to-slate-500 border-fuchsia-500 text-white scale-105'
+                           : 'bg-white/5 border-white/10 text-gray-300'
                        )}
                      >
-                       <span className={selectedRatio === opt.value ? 'text-white' : 'text-purple-400'}>
+                       <span className={selectedRatio === opt.value ? 'text-white' : 'text-gray-400'}>
                          {opt.icon}
                        </span>
                        <span className="text-[8px] font-medium leading-tight">{opt.label}</span>
@@ -361,16 +361,16 @@ const ClonerDemoAnimation: React.FC = () => {
               </div>
 
               {/* Creativity slider placeholder */}
-              <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-2.5">
+              <div className="bg-white/5 border border-white/10 rounded-lg p-2.5">
                 <div className="flex items-center justify-between mb-1.5">
                   <p className="text-[10px] font-semibold text-white/70 flex items-center gap-1">
-                    <Zap className="w-3 h-3 text-purple-400" />
+                    <Zap className="w-3 h-3 text-gray-400" />
                     Criatividade
                   </p>
                   <span className="text-[9px] text-fuchsia-400 font-bold">50%</span>
                 </div>
-                <div className="h-1.5 bg-purple-900/60 rounded-full overflow-hidden">
-                  <div className="h-full w-1/2 bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-full" />
+                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full w-1/2 bg-gradient-to-r from-slate-500 to-slate-400 rounded-full" />
                 </div>
               </div>
 
@@ -379,7 +379,7 @@ const ClonerDemoAnimation: React.FC = () => {
                 ref={genBtnRef}
                 className={cn(
                   'w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-200',
-                  'bg-gradient-to-r from-fuchsia-600 to-purple-600 shadow-lg shadow-fuchsia-500/30',
+                  'bg-gradient-to-r from-slate-600 to-slate-500 shadow-lg shadow-fuchsia-500/30',
                   step === 3 && buttonClicked ? 'scale-95 brightness-110' : 'scale-100',
                 )}
               >
@@ -395,12 +395,12 @@ const ClonerDemoAnimation: React.FC = () => {
                 step === 3 && buttonClicked ? 'opacity-100' : 'opacity-0'
               )}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] text-purple-300/70">Gerando sua imagem...</span>
+                  <span className="text-[10px] text-gray-400">Gerando sua imagem...</span>
                   <span className="text-[10px] text-fuchsia-400 font-bold">{Math.round(loadingProgress)}%</span>
                 </div>
-                <div className="h-1.5 bg-purple-900/60 rounded-full overflow-hidden">
+                <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-fuchsia-500 to-purple-500 rounded-full transition-all duration-100 ease-linear"
+                    className="h-full bg-gradient-to-r from-slate-500 to-slate-400 rounded-full transition-all duration-100 ease-linear"
                     style={{ width: `${loadingProgress}%` }}
                   />
                 </div>
@@ -409,10 +409,10 @@ const ClonerDemoAnimation: React.FC = () => {
 
             {/* Right panel - static placeholder */}
             <div className="md:col-span-2">
-              <div className="relative rounded-xl overflow-hidden border-2 border-purple-500/20 opacity-30">
-                <div className="aspect-square bg-purple-900/30 flex flex-col items-center justify-center gap-2">
-                  <Sparkles className="w-8 h-8 text-purple-400/30" />
-                  <span className="text-[10px] text-purple-300/30">Resultado</span>
+              <div className="relative rounded-xl overflow-hidden border-2 border-white/10 opacity-30">
+                <div className="aspect-square bg-white/5 flex flex-col items-center justify-center gap-2">
+                  <Sparkles className="w-8 h-8 text-gray-400/30" />
+                  <span className="text-[10px] text-gray-300/30">Resultado</span>
                 </div>
               </div>
             </div>
@@ -456,7 +456,7 @@ const ClonerDemoAnimation: React.FC = () => {
             {/* Large avatar */}
             <div className="relative mb-5">
               <div className="absolute -inset-4 rounded-full bg-fuchsia-500/25 blur-xl animate-pulse" />
-              <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-fuchsia-400/80 to-purple-600/70 border-2 border-fuchsia-400/80 flex items-center justify-center shadow-2xl shadow-fuchsia-500/60">
+              <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-fuchsia-400/80 to-slate-500/70 border-2 border-fuchsia-400/80 flex items-center justify-center shadow-2xl shadow-fuchsia-500/60">
                 <svg viewBox="0 0 24 24" className="w-16 h-16 fill-fuchsia-100/90">
                   <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
                 </svg>
@@ -485,7 +485,7 @@ const ClonerDemoAnimation: React.FC = () => {
             </div>
 
             {/* Download button */}
-            <div className="bg-gradient-to-r from-fuchsia-600 to-purple-600 rounded-xl px-6 py-3 flex items-center gap-2 shadow-lg shadow-fuchsia-500/40">
+            <div className="bg-gradient-to-r from-slate-600 to-slate-500 rounded-xl px-6 py-3 flex items-center gap-2 shadow-lg shadow-fuchsia-500/40">
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v4h5.66V9h3.84L12 2z"/></svg>
               <span className="text-sm text-white font-bold">Baixar Imagem</span>
             </div>

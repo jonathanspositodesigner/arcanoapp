@@ -461,7 +461,7 @@ const AdminManageArtes = () => {
               variant={mediaTypeFilter === 'video' ? 'default' : 'outline'} 
               size="sm" 
               onClick={() => setMediaTypeFilter('video')}
-              className={mediaTypeFilter === 'video' ? 'bg-purple-500 hover:bg-purple-600' : ''}
+              className={mediaTypeFilter === 'video' ? 'bg-slate-500 hover:bg-slate-600' : ''}
             >
               🎬 Vídeos
             </Button>
@@ -743,7 +743,7 @@ const AdminManageArtes = () => {
                             value="after_effects" 
                             checked={editMotionType === 'after_effects'} 
                             onChange={() => setEditMotionType('after_effects')}
-                            className="w-4 h-4 text-purple-500"
+                            className="w-4 h-4 text-slate-400"
                           />
                           <span className="text-sm">🎬 Motion After Effects</span>
                         </label>

@@ -18,9 +18,9 @@ const CreativitySlider: React.FC<CreativitySliderProps> = ({
   showRecommendation = true,
 }) => {
   return (
-    <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-2">
+    <div className="bg-white/5 border border-white/10 rounded-lg p-2">
       <p className="text-[10px] font-semibold text-white mb-2 flex items-center gap-1.5">
-        <Sparkles className="w-3 h-3 text-purple-400" />
+        <Sparkles className="w-3 h-3 text-gray-400" />
         Criatividade da IA
       </p>
       
@@ -36,13 +36,13 @@ const CreativitySlider: React.FC<CreativitySliderProps> = ({
         />
         
         <div className="flex items-center justify-between mt-1.5">
-          <span className="text-[9px] text-purple-400">Mais fiel</span>
-          <span className="text-[10px] font-bold text-white bg-purple-600/40 rounded px-1.5 py-0.5">
+          <span className="text-[9px] text-gray-400">Mais fiel</span>
+          <span className="text-[10px] font-bold text-white bg-slate-600/40 rounded px-1.5 py-0.5">
             {value}
           </span>
-          <span className="text-[9px] text-purple-400">Muito criativo</span>
+          <span className="text-[9px] text-gray-400">Muito criativo</span>
         </div>
-        {showRecommendation && <p className="text-[9px] text-purple-300/70 text-center mt-1">Recomendado: entre 0 e 30</p>}
+        {showRecommendation && <p className="text-[9px] text-gray-400 text-center mt-1">Recomendado: entre 0 e 30</p>}
       </div>
     </div>
   );

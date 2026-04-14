@@ -22,7 +22,7 @@ export const LandingTrialSignupSection = () => {
           </div>
           <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-white mb-3">
             Teste{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">
               grátis agora mesmo
             </span>
           </h2>
@@ -33,7 +33,7 @@ export const LandingTrialSignupSection = () => {
 
         <Button
           onClick={() => setShowModal(true)}
-          className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold py-6 rounded-xl text-base"
+          className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold py-6 rounded-xl text-base"
         >
           🚀 Ir para o Arcano Cloner
         </Button>

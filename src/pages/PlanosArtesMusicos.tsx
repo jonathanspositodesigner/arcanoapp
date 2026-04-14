@@ -138,7 +138,7 @@ const PlanosArtesMusicos = () => {
           <img src={baaLogo} alt="BAA" className="h-8 hidden sm:block" />
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => navigate('/login-artes-musicos')} className="gap-2 border-violet-500/30 text-violet-300 hover:bg-violet-500/20 hover:text-violet-100">
+          <Button variant="outline" onClick={() => navigate('/login-artes-musicos')} className="gap-2 border-white/10 text-violet-300 hover:bg-violet-500/20 hover:text-violet-100">
             <LogIn className="w-4 h-4" />
             <span className="hidden sm:inline">{t('plansMusicos.alreadySubscriber')}</span>
             <span className="sm:hidden">{t('plansMusicos.login')}</span>
@@ -150,7 +150,7 @@ const PlanosArtesMusicos = () => {
         <div className="text-center mb-10">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">{t('plansMusicos.title')}</h1>
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
-            <TabsList className="bg-violet-500/10 border border-violet-500/30">
+            <TabsList className="bg-violet-500/10 border border-white/10">
               <TabsTrigger value="mensal" className="data-[state=active]:bg-violet-600 data-[state=active]:text-white px-6 text-violet-300">{t('plansMusicos.monthly')}</TabsTrigger>
               <TabsTrigger value="anual" className="data-[state=active]:bg-violet-600 data-[state=active]:text-white px-6 text-violet-300 relative">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] text-green-400 font-medium whitespace-nowrap">{t('plansMusicos.discount')}</span>
@@ -160,7 +160,7 @@ const PlanosArtesMusicos = () => {
           </Tabs>
         </div>
 
-        <div className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-5xl mx-auto py-[13px] px-px my-[20px]">
+        <div className="bg-gradient-to-r from-violet-600 to-slate-500 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-5xl mx-auto py-[13px] px-px my-[20px]">
           <span className="text-white font-semibold tracking-wide">{t('plansMusicos.discountBanner', { percent: billingPeriod === "anual" ? "40" : "20" })}</span>
         </div>
 
@@ -237,7 +237,7 @@ const PlanosArtesMusicos = () => {
       </div>
 
       <Dialog open={showComingSoonModal} onOpenChange={setShowComingSoonModal}>
-        <DialogContent className="sm:max-w-md bg-[#1a1a2e] border-violet-500/30">
+        <DialogContent className="sm:max-w-md bg-[#1a1a2e] border-white/10">
           <DialogHeader className="text-center">
             <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-violet-500/20 flex items-center justify-center">
               <Clock className="w-8 h-8 text-violet-400" />

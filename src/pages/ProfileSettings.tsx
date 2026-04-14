@@ -202,8 +202,8 @@ const ProfileSettings = () => {
 
   if (premiumLoading) {
     return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-500"></div>
       </div>
     );
   }
@@ -215,25 +215,25 @@ const ProfileSettings = () => {
         <Button
           variant="ghost"
           onClick={goBack}
-          className="mb-4 text-purple-300 hover:text-white hover:bg-purple-500/20"
+          className="mb-4 text-gray-300 hover:text-white hover:bg-slate-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('back')}
         </Button>
 
         <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <User className="h-6 w-6 text-purple-400" />
+          <User className="h-6 w-6 text-gray-400" />
           {t('profile.title')}
         </h1>
 
         {/* Profile Information */}
-        <Card className="p-6 bg-[#1A0A2E] border-purple-500/20">
+        <Card className="p-6 bg-[#111113] border-white/10">
           <h2 className="text-lg font-semibold mb-4 text-white">{t('profile.personalInfo')}</h2>
           <form onSubmit={handleSaveProfile} className="space-y-4">
             {/* Avatar */}
             <div className="flex items-center gap-4">
               <div className="relative">
-                <div className="w-20 h-20 rounded-full bg-purple-900/50 flex items-center justify-center overflow-hidden">
+                <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center overflow-hidden">
                   {avatarPreview || avatarUrl ? (
                     <img 
                       src={avatarPreview || avatarUrl} 
@@ -241,10 +241,10 @@ const ProfileSettings = () => {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <User className="h-10 w-10 text-purple-400" />
+                    <User className="h-10 w-10 text-gray-400" />
                   )}
                 </div>
-                <label className="absolute -bottom-1 -right-1 bg-purple-600 text-white rounded-full p-1.5 cursor-pointer hover:bg-purple-700">
+                <label className="absolute -bottom-1 -right-1 bg-slate-600 text-white rounded-full p-1.5 cursor-pointer hover:bg-slate-700">
                   <Camera className="h-4 w-4" />
                   <input
                     type="file"
@@ -255,105 +255,105 @@ const ProfileSettings = () => {
                 </label>
               </div>
               <div>
-                <p className="text-sm text-purple-300">
+                <p className="text-sm text-gray-300">
                   {t('profile.clickToChangePhoto')}
                 </p>
-                <p className="text-xs text-purple-400">
+                <p className="text-xs text-gray-400">
                   {t('profile.maxSize')}
                 </p>
               </div>
             </div>
 
             <div>
-              <Label htmlFor="email" className="text-purple-200">{t('email')}</Label>
+              <Label htmlFor="email" className="text-gray-300">{t('email')}</Label>
               <Input
                 id="email"
                 type="email"
                 value={user?.email || ""}
                 disabled
-                className="mt-2 bg-[#0D0221] border-purple-500/30 text-purple-400"
+                className="mt-2 bg-[#111113] border-white/10 text-gray-400"
               />
             </div>
 
             <div>
-              <Label htmlFor="name" className="text-purple-200">{t('name')}</Label>
+              <Label htmlFor="name" className="text-gray-300">{t('name')}</Label>
               <Input
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('signupModal.namePlaceholder')}
-                className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                className="mt-2 bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
               />
             </div>
 
             <div>
-              <Label htmlFor="phone" className="text-purple-200">{t('phone')}</Label>
+              <Label htmlFor="phone" className="text-gray-300">{t('phone')}</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="(00) 00000-0000"
-                className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                className="mt-2 bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
               />
             </div>
 
             <div>
-              <Label htmlFor="cpf" className="text-purple-200">CPF</Label>
+              <Label htmlFor="cpf" className="text-gray-300">CPF</Label>
               <Input
                 id="cpf"
                 type="text"
                 value={cpf}
                 onChange={(e) => setCpf(e.target.value)}
                 placeholder="000.000.000-00"
-                className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                className="mt-2 bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
               />
             </div>
 
-            <div className="border-t border-purple-500/20 pt-4 mt-4">
-              <h3 className="text-sm font-semibold text-purple-300 mb-3">📍 Endereço</h3>
+            <div className="border-t border-white/10 pt-4 mt-4">
+              <h3 className="text-sm font-semibold text-gray-300 mb-3">📍 Endereço</h3>
               
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="addressLine" className="text-purple-200">Endereço</Label>
+                  <Label htmlFor="addressLine" className="text-gray-300">Endereço</Label>
                   <Input
                     id="addressLine"
                     type="text"
                     value={addressLine}
                     onChange={(e) => setAddressLine(e.target.value)}
                     placeholder="Rua, número, complemento"
-                    className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                    className="mt-2 bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="addressZip" className="text-purple-200">CEP</Label>
+                    <Label htmlFor="addressZip" className="text-gray-300">CEP</Label>
                     <Input
                       id="addressZip"
                       type="text"
                       value={addressZip}
                       onChange={(e) => setAddressZip(e.target.value)}
                       placeholder="00000-000"
-                      className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                      className="mt-2 bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="addressCity" className="text-purple-200">Cidade</Label>
+                    <Label htmlFor="addressCity" className="text-gray-300">Cidade</Label>
                     <Input
                       id="addressCity"
                       type="text"
                       value={addressCity}
                       onChange={(e) => setAddressCity(e.target.value)}
                       placeholder="Sua cidade"
-                      className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                      className="mt-2 bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label htmlFor="addressState" className="text-purple-200">Estado</Label>
+                  <Label htmlFor="addressState" className="text-gray-300">Estado</Label>
                   <Input
                     id="addressState"
                     type="text"
@@ -361,20 +361,20 @@ const ProfileSettings = () => {
                     onChange={(e) => setAddressState(e.target.value)}
                     placeholder="SP"
                     maxLength={2}
-                    className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400 w-24"
+                    className="mt-2 bg-[#111113] border-white/10 text-white placeholder:text-gray-400 w-24"
                   />
                 </div>
               </div>
             </div>
 
             <div>
-              <Label htmlFor="bio" className="text-purple-200">{t('profile.aboutYou')}</Label>
+              <Label htmlFor="bio" className="text-gray-300">{t('profile.aboutYou')}</Label>
               <Textarea
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder={t('profile.aboutYouPlaceholder')}
-                className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                className="mt-2 bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
                 rows={3}
               />
             </div>
@@ -382,7 +382,7 @@ const ProfileSettings = () => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+              className="w-full bg-slate-600 hover:bg-slate-700 text-white"
             >
               <Save className="h-4 w-4 mr-2" />
               {isLoading ? t('saving') : t('profile.saveChanges')}
@@ -399,14 +399,14 @@ const ProfileSettings = () => {
         />
 
         {/* Change Password */}
-        <Card className="p-6 bg-[#1A0A2E] border-purple-500/20">
+        <Card className="p-6 bg-[#111113] border-white/10">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
-            <Lock className="h-5 w-5 text-purple-400" />
+            <Lock className="h-5 w-5 text-gray-400" />
             {t('changePassword')}
           </h2>
           <form onSubmit={handleChangePassword} className="space-y-4">
             <div>
-              <Label htmlFor="currentPassword" className="text-purple-200">{t('currentPassword')}</Label>
+              <Label htmlFor="currentPassword" className="text-gray-300">{t('currentPassword')}</Label>
               <div className="relative mt-2">
                 <Input
                   id="currentPassword"
@@ -415,12 +415,12 @@ const ProfileSettings = () => {
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                  className="bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
                 />
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
                 >
                   {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -428,7 +428,7 @@ const ProfileSettings = () => {
             </div>
 
             <div>
-              <Label htmlFor="newPasswordProfile" className="text-purple-200">{t('newPassword')}</Label>
+              <Label htmlFor="newPasswordProfile" className="text-gray-300">{t('newPassword')}</Label>
               <div className="relative mt-2">
                 <Input
                   id="newPasswordProfile"
@@ -438,12 +438,12 @@ const ProfileSettings = () => {
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                  className="bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
                 >
                   {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -451,7 +451,7 @@ const ProfileSettings = () => {
             </div>
 
             <div>
-              <Label htmlFor="confirmPasswordProfile" className="text-purple-200">{t('confirmNewPassword')}</Label>
+              <Label htmlFor="confirmPasswordProfile" className="text-gray-300">{t('confirmNewPassword')}</Label>
               <div className="relative mt-2">
                 <Input
                   id="confirmPasswordProfile"
@@ -461,12 +461,12 @@ const ProfileSettings = () => {
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                  className="bg-[#111113] border-white/10 text-white placeholder:text-gray-400"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
                 >
                   {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -477,7 +477,7 @@ const ProfileSettings = () => {
               type="submit"
               disabled={isPasswordLoading}
               variant="outline"
-              className="w-full border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white"
+              className="w-full border-white/10 text-gray-300 hover:bg-slate-500/20 hover:text-white"
             >
               {isPasswordLoading ? t('changing') : t('changePassword')}
             </Button>
@@ -486,18 +486,18 @@ const ProfileSettings = () => {
 
         {/* Notification Settings - usa permission do browser como fonte de verdade */}
         {isSupported && (
-          <Card className="p-6 bg-[#1A0A2E] border-purple-500/20">
+          <Card className="p-6 bg-[#111113] border-white/10">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
-              <Bell className="h-5 w-5 text-purple-400" />
+              <Bell className="h-5 w-5 text-gray-400" />
               {t('profile.notifications')}
             </h2>
-            <div className="text-sm text-purple-300">
+            <div className="text-sm text-gray-300">
               {hasPermission ? (
                 <div className="flex items-center justify-between">
                   <span>{t('profile.notificationsEnabled')}</span>
                   <button
                     onClick={() => setShowDisableModal(true)}
-                    className="text-xs text-purple-400 hover:text-white underline transition-colors"
+                    className="text-xs text-gray-400 hover:text-white underline transition-colors"
                   >
                     {t('profile.deactivate')}
                   </button>
@@ -528,7 +528,7 @@ const ProfileSettings = () => {
 
       {/* Disable Notifications Modal */}
       <Dialog open={showDisableModal} onOpenChange={setShowDisableModal}>
-        <DialogContent className="max-w-sm bg-[#1A0A2E] border-purple-500/30">
+        <DialogContent className="max-w-sm bg-[#111113] border-white/10">
           <DialogHeader>
             <DialogTitle className="text-center flex items-center justify-center gap-2 text-white">
               <BellOff className="h-5 w-5 text-red-500" />
@@ -537,10 +537,10 @@ const ProfileSettings = () => {
           </DialogHeader>
           
           <div className="py-4">
-            <p className="text-purple-300 text-sm text-center mb-6">
+            <p className="text-gray-300 text-sm text-center mb-6">
               {t('disableNotifications.description')}
             </p>
-            <ul className="text-purple-300 text-sm space-y-2 mb-6">
+            <ul className="text-gray-300 text-sm space-y-2 mb-6">
               <li className="flex items-center gap-2">
                 <span className="text-yellow-500">•</span>
                 {t('disableNotifications.newContent')}
@@ -573,7 +573,7 @@ const ProfileSettings = () => {
                 }
               }}
               disabled={pushLoading}
-              className="w-full text-xs text-purple-400 hover:text-white underline transition-colors text-center py-2"
+              className="w-full text-xs text-gray-400 hover:text-white underline transition-colors text-center py-2"
             >
               {pushLoading ? t('disableNotifications.deactivating') : t('disableNotifications.loseBenefits')}
             </button>

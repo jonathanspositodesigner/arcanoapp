@@ -24,13 +24,13 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
 }) => {
   return (
     <Card className={cn(
-      "relative overflow-hidden bg-purple-900/20 border-purple-500/30 flex-shrink-0",
+      "relative overflow-hidden bg-white/5 border-white/10 flex-shrink-0",
       disabled && "opacity-50 cursor-not-allowed"
     )}>
       {/* Header - same as ImageUploadCard */}
-      <div className="px-2 py-1 border-b border-purple-500/20">
+      <div className="px-2 py-1 border-b border-white/10">
         <h3 className="text-[10px] font-semibold text-white flex items-center gap-1">
-          <ImageIcon className="w-3 h-3 text-purple-400" />
+          <ImageIcon className="w-3 h-3 text-gray-400" />
            {title}
         </h3>
       </div>
@@ -39,7 +39,7 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
       <div
         className={cn(
           "relative min-h-[120px] h-[120px] lg:min-h-[160px] lg:h-[160px] transition-all",
-          !image && "cursor-pointer hover:bg-purple-500/10",
+          !image && "cursor-pointer hover:bg-slate-500/10",
           disabled && "cursor-not-allowed"
         )}
         onClick={!image && !disabled ? onOpenLibrary : undefined}
@@ -72,8 +72,8 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
               <div className="w-8 h-8 rounded-lg bg-fuchsia-500/20 border border-dashed border-fuchsia-500/40 flex items-center justify-center">
                 <Plus className="w-4 h-4 text-fuchsia-400" />
               </div>
-              <p className="text-[10px] text-purple-200 font-medium">{emptyLabel}</p>
-              <p className="text-[9px] text-purple-400">{emptySubLabel}</p>
+              <p className="text-[10px] text-gray-300 font-medium">{emptyLabel}</p>
+              <p className="text-[9px] text-gray-400">{emptySubLabel}</p>
             </div>
           </div>
         )}
@@ -81,11 +81,11 @@ const ReferenceImageCard: React.FC<ReferenceImageCardProps> = ({
 
       {/* Change button when image selected - same style as library button */}
       {image && (
-        <div className="px-2 py-1 border-t border-purple-500/20">
+        <div className="px-2 py-1 border-t border-white/10">
           <button
             onClick={onOpenLibrary}
             disabled={disabled}
-            className="w-full h-6 text-[10px] rounded-md bg-purple-500/10 border border-purple-500/30 text-purple-200 hover:bg-purple-500/20 hover:text-white transition-colors flex items-center justify-center gap-1"
+            className="w-full h-6 text-[10px] rounded-md bg-slate-500/10 border border-white/10 text-gray-300 hover:bg-slate-500/20 hover:text-white transition-colors flex items-center justify-center gap-1"
           >
             <ImageIcon className="w-3 h-3" />
             Trocar Imagem

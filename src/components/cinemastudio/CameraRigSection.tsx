@@ -93,7 +93,7 @@ const CameraStyleDropdown: React.FC<{
                   }}
                   className={`flex items-center gap-2.5 w-full px-2 py-2 transition-colors ${
                     isSelected
-                      ? 'bg-white/[0.06] border-l-2 border-purple-500'
+                      ? 'bg-white/[0.06] border-l-2 border-slate-500'
                       : 'hover:bg-white/[0.04] border-l-2 border-transparent'
                   }`}
                 >
@@ -232,7 +232,7 @@ const CameraRigSection: React.FC<Props> = ({ settings, updateSettings, mode = 'p
             onClick={() => updateSettings({ advancedCamera: !advancedOpen })}
             className={`flex items-center gap-1.5 w-full py-1.5 px-2 rounded-md border transition-colors text-[10px] ${
               advancedOpen
-                ? 'bg-purple-500/10 border-purple-500/30 text-purple-400'
+                ? 'bg-slate-500/10 border-white/10 text-gray-400'
                 : 'bg-black/20 border-white/[0.06] text-gray-600 hover:text-gray-400 hover:border-white/[0.12]'
             }`}
           >
@@ -242,7 +242,7 @@ const CameraRigSection: React.FC<Props> = ({ settings, updateSettings, mode = 'p
           </button>
 
           {advancedOpen && (
-            <div className="pl-1 border-l border-purple-500/20 ml-1">
+            <div className="pl-1 border-l border-white/10 ml-1">
               <CameraControls settings={settings} updateSettings={updateSettings} />
             </div>
           )}

@@ -23,7 +23,7 @@ interface LoginPasswordStepProps {
   };
   
   // Styling variants
-  variant?: 'default' | 'dark' | 'purple' | 'teal';
+  variant?: 'default' | 'dark' | 'dark' | 'teal';
 }
 
 const variantStyles = {
@@ -46,20 +46,20 @@ const variantStyles = {
     forgotLink: 'text-[#2d4a5e] hover:underline',
   },
   purple: {
-    emailBox: 'bg-purple-500/10 border border-purple-500/20',
-    emailIcon: 'text-purple-400',
+    emailBox: 'bg-slate-500/10 border border-white/10',
+    emailIcon: 'text-gray-400',
     emailText: 'text-white',
-    changeBtn: 'text-purple-400 hover:text-purple-300',
-    input: 'bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400',
-    button: 'bg-purple-600 hover:bg-purple-700 text-white',
-    forgotLink: 'text-purple-400 hover:text-purple-300 underline',
+    changeBtn: 'text-gray-400 hover:text-gray-300',
+    input: 'bg-[#111113] border-white/10 text-white placeholder:text-gray-400',
+    button: 'bg-slate-600 hover:bg-slate-700 text-white',
+    forgotLink: 'text-gray-400 hover:text-gray-300 underline',
   },
   teal: {
     emailBox: 'bg-violet-500/10 border border-violet-500/20',
     emailIcon: 'text-violet-400',
     emailText: 'text-white/80',
     changeBtn: 'text-violet-400 hover:text-violet-300',
-    input: 'bg-[#0f0f1a] border-violet-500/30 text-white',
+    input: 'bg-[#0f0f1a] border-white/10 text-white',
     button: 'bg-violet-600 hover:bg-violet-700 text-white',
     forgotLink: 'text-violet-400 hover:text-violet-300 underline',
   },

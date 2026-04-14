@@ -33,7 +33,7 @@ const HeroCarouselBackground = () => {
       {/* Gradient overlay - only bottom half */}
       <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0f0a15] via-[#0f0a15]/60 to-transparent" />
       {/* Purple tint overlay - only bottom portion */}
-      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-purple-900/40 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-white/5 to-transparent" />
     </div>
   );
 };

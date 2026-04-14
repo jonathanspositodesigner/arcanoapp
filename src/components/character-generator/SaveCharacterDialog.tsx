@@ -95,27 +95,27 @@ const SaveCharacterDialog: React.FC<SaveCharacterDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-[#1A0A2E] border-purple-500/30 text-white sm:max-w-md">
+      <DialogContent className="bg-[#111113] border-white/10 text-white sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-white">Salvar Avatar</DialogTitle>
-          <DialogDescription className="text-purple-300">
+          <DialogDescription className="text-gray-300">
             Dê um nome para salvar este avatar na sua galeria.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
-          <div className="mx-auto w-32 h-32 rounded-lg overflow-hidden border border-purple-500/30">
+          <div className="mx-auto w-32 h-32 rounded-lg overflow-hidden border border-white/10">
             <img src={imageUrl} alt="Avatar" className="w-full h-full object-cover" />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="character-name" className="text-purple-200 text-sm">Nome do Avatar</Label>
+            <Label htmlFor="character-name" className="text-gray-300 text-sm">Nome do Avatar</Label>
             <Input
               id="character-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Guerreiro Medieval"
-              className="bg-purple-900/30 border-purple-500/30 text-white placeholder:text-purple-400"
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-400"
               maxLength={50}
               onKeyDown={(e) => e.key === 'Enter' && handleSave()}
             />
@@ -123,13 +123,13 @@ const SaveCharacterDialog: React.FC<SaveCharacterDialogProps> = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} className="border-purple-500/30 text-purple-200 hover:bg-purple-900/30">
+          <Button variant="outline" onClick={onClose} className="border-white/10 text-gray-300 hover:bg-white/5">
             Cancelar
           </Button>
           <Button
             onClick={handleSave}
             disabled={!name.trim() || isSaving}
-            className="bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white"
+            className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white"
           >
             {isSaving ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />

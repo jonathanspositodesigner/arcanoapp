@@ -39,7 +39,7 @@ interface SignupFormProps {
   };
   
   // Styling variants
-  variant?: 'default' | 'dark' | 'purple' | 'teal';
+  variant?: 'default' | 'dark' | 'dark' | 'teal';
 }
 
 const variantStyles = {
@@ -82,22 +82,22 @@ const variantStyles = {
     stepDone: 'bg-emerald-500/60 text-white',
   },
   purple: {
-    container: 'bg-[#1A0A2E] border-purple-500/20',
+    container: 'bg-[#111113] border-white/10',
     header: 'bg-green-500/20 border-b border-green-500/30',
     headerIcon: 'bg-green-500/30 text-green-400',
     headerTitle: 'text-green-400',
-    headerSubtitle: 'text-purple-300',
-    label: 'text-purple-200',
-    input: 'bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400',
+    headerSubtitle: 'text-gray-300',
+    label: 'text-gray-300',
+    input: 'bg-[#111113] border-white/10 text-white placeholder:text-gray-400',
     alert: 'bg-yellow-500/10 border-yellow-500/30',
     alertIcon: 'text-yellow-500',
     alertText: 'text-yellow-400',
     button: 'bg-green-600 hover:bg-green-700 text-white',
-    backButton: 'text-purple-400 hover:text-white hover:bg-purple-500/20',
+    backButton: 'text-gray-400 hover:text-white hover:bg-slate-500/20',
     progressBg: 'bg-green-500/20',
     progressFill: 'bg-green-500',
     stepActive: 'bg-green-500 text-white',
-    stepInactive: 'bg-purple-500/20 text-purple-400',
+    stepInactive: 'bg-slate-500/20 text-gray-400',
     stepDone: 'bg-green-500/60 text-white',
   },
   teal: {
@@ -107,8 +107,8 @@ const variantStyles = {
     headerTitle: 'text-emerald-400',
     headerSubtitle: 'text-white/70',
     label: 'text-white/80',
-    input: 'bg-[#0f0f1a] border-violet-500/30 text-white',
-    alert: 'bg-violet-500/10 border-violet-500/30',
+    input: 'bg-[#0f0f1a] border-white/10 text-white',
+    alert: 'bg-violet-500/10 border-white/10',
     alertIcon: 'text-violet-500',
     alertText: 'text-violet-200',
     button: 'bg-emerald-500 hover:bg-emerald-600 text-white',

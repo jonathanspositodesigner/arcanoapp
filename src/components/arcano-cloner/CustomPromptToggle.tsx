@@ -19,10 +19,10 @@ const CustomPromptToggle: React.FC<CustomPromptToggleProps> = ({
   disabled = false,
 }) => {
   return (
-    <div className="bg-purple-900/20 border border-purple-500/30 rounded-lg p-2">
+    <div className="bg-white/5 border border-white/10 rounded-lg p-2">
       <div className="flex items-center justify-between">
         <p className="text-[10px] font-semibold text-white flex items-center gap-1.5">
-          <MessageSquare className="w-3 h-3 text-purple-400" />
+          <MessageSquare className="w-3 h-3 text-gray-400" />
           Instruções Personalizadas
         </p>
         <Switch
@@ -39,7 +39,7 @@ const CustomPromptToggle: React.FC<CustomPromptToggleProps> = ({
           onChange={(e) => onPromptChange(e.target.value)}
           placeholder="Ex: Use roupas vermelhas, cenário na praia..."
           disabled={disabled}
-          className="mt-2 min-h-[60px] max-h-[80px] text-xs bg-purple-950/40 border-purple-500/30 text-white placeholder:text-purple-400/50 resize-none"
+          className="mt-2 min-h-[60px] max-h-[80px] text-xs bg-white/5 border-white/10 text-white placeholder:text-gray-500 resize-none"
           maxLength={500}
         />
       )}

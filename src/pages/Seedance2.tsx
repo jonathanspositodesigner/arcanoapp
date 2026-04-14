@@ -471,7 +471,7 @@ export default function Seedance2() {
               <h1 className="text-lg sm:text-xl font-bold text-white">Seedance 2.0</h1>
               <button
                 onClick={() => setShowTutorial(true)}
-                className="flex items-center gap-1 rounded-md border border-purple-500/30 bg-purple-500/10 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-purple-300 hover:bg-purple-500/20 transition-colors"
+                className="flex items-center gap-1 rounded-md border border-white/10 bg-slate-500/10 px-2 py-0.5 text-[10px] sm:text-xs font-medium text-gray-300 hover:bg-slate-500/20 transition-colors"
               >
                 <Play className="h-3 w-3" />
                 Ver tutorial
@@ -481,7 +481,7 @@ export default function Seedance2() {
               <button
                 onClick={() => setGalleryTab("creations")}
                 className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
-                  galleryTab === "creations" ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                  galleryTab === "creations" ? "border-white/10 bg-slate-500/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                 }`}
               >
                 Minhas Criações
@@ -489,7 +489,7 @@ export default function Seedance2() {
               <button
                 onClick={() => setGalleryTab("library")}
                 className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
-                  galleryTab === "library" ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                  galleryTab === "library" ? "border-white/10 bg-slate-500/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                 }`}
               >
                 Biblioteca
@@ -537,7 +537,7 @@ export default function Seedance2() {
                     <p className="text-sm text-gray-500">Você ainda não tem criações. Veja os modelos ou digite um prompt para começar.</p>
                     <button
                       onClick={() => setGalleryTab("library")}
-                      className="rounded-lg border border-purple-500/30 bg-purple-500/10 px-4 py-1.5 text-xs font-medium text-purple-300 transition-all hover:bg-purple-500/20"
+                      className="rounded-lg border border-white/10 bg-slate-500/10 px-4 py-1.5 text-xs font-medium text-gray-300 transition-all hover:bg-slate-500/20"
                     >
                       Explorar modelos
                     </button>
@@ -582,7 +582,7 @@ export default function Seedance2() {
                   {libraryItems.some(li => li.id === previewGen.id) && (
                     <button
                       onClick={() => handleUseLibraryItem(previewGen)}
-                      className="rounded-full bg-purple-600/80 px-4 py-2 text-sm font-medium text-white hover:bg-purple-500 transition-colors"
+                      className="rounded-full bg-slate-600/80 px-4 py-2 text-sm font-medium text-white hover:bg-slate-500 transition-colors"
                     >
                       Usar modelo
                     </button>
@@ -685,7 +685,7 @@ export default function Seedance2() {
                   disabled={!canGenerate() || uploading}
                   className={`group relative flex h-[44px] items-center justify-center gap-2 overflow-hidden rounded-xl px-4 text-sm font-semibold transition-all duration-300 ${
                     canGenerate() && !uploading
-                      ? "bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 active:scale-[0.98]"
+                      ? "bg-gradient-to-r from-slate-600 to-slate-400 text-white shadow-lg shadow-slate-500/20 active:scale-[0.98]"
                       : "cursor-not-allowed bg-white/5 text-gray-600"
                   }`}
                 >
@@ -710,7 +710,7 @@ export default function Seedance2() {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
                   placeholder="Descreva o vídeo que deseja gerar..."
-                  className="min-h-[60px] max-h-[100px] resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white outline-none placeholder:text-gray-600 focus:border-purple-500/40"
+                  className="min-h-[60px] max-h-[100px] resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white outline-none placeholder:text-gray-600 focus:border-slate-500/40"
                   rows={2}
                 />
                 <span className="text-right text-[10px] text-gray-600 -mt-1">{prompt.length}/2000</span>
@@ -724,7 +724,7 @@ export default function Seedance2() {
                           key={option.value}
                           onClick={() => handleModeChange(option.value)}
                           className={`rounded-md border px-2 py-1 text-[10px] font-medium transition-all ${
-                            mode === option.value ? "border-purple-500/30 bg-purple-500/20 text-purple-300" : "border-transparent text-gray-500"
+                            mode === option.value ? "border-white/10 bg-slate-500/20 text-gray-300" : "border-transparent text-gray-500"
                           }`}
                         >
                           {option.label}
@@ -752,8 +752,8 @@ export default function Seedance2() {
                       />
                       {showCharacterTip && selectedCharacters.length === 0 && (
                         <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 animate-bounce">
-                          <div className="relative rounded-xl px-4 py-2.5 shadow-[0_0_20px_rgba(147,51,234,0.5)] whitespace-nowrap bg-gradient-to-r from-purple-600 via-fuchsia-500 to-purple-600 animate-pulse-glow">
-                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-purple-600 rotate-45 rounded-sm" />
+                          <div className="relative rounded-xl px-4 py-2.5 shadow-[0_0_20px_rgba(147,51,234,0.5)] whitespace-nowrap bg-gradient-to-r from-slate-600 via-fuchsia-500 to-slate-500 animate-pulse-glow">
+                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-600 rotate-45 rounded-sm" />
                             <div className="flex items-center gap-2 relative">
                               <span className="text-[11px] sm:text-sm text-white font-bold drop-shadow-sm">👆 Adicione seu rosto aqui!</span>
                               <button onClick={() => setShowCharacterTip(false)} className="text-white/70 hover:text-white text-sm shrink-0 font-bold">✕</button>
@@ -772,7 +772,7 @@ export default function Seedance2() {
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
                     placeholder="Descreva o vídeo que deseja gerar..."
-                    className="min-h-[80px] max-h-[160px] min-w-0 resize-y rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none transition-all placeholder:text-gray-600 focus:border-purple-500/40 focus:min-h-[100px]"
+                    className="min-h-[80px] max-h-[160px] min-w-0 resize-y rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-white outline-none transition-all placeholder:text-gray-600 focus:border-slate-500/40 focus:min-h-[100px]"
                     rows={3}
                   />
                   <div className="flex flex-col gap-2">
@@ -781,11 +781,11 @@ export default function Seedance2() {
                       disabled={!canGenerate() || uploading}
                       className={`group relative flex h-[48px] items-center justify-center gap-2.5 overflow-hidden rounded-xl px-5 text-sm font-semibold transition-all duration-300 ${
                         canGenerate() && !uploading
-                          ? "bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                          ? "bg-gradient-to-r from-slate-600 to-slate-400 text-white shadow-lg shadow-slate-500/20 hover:shadow-gray-500 hover:scale-[1.02] active:scale-[0.98]"
                           : "cursor-not-allowed bg-white/5 text-gray-600"
                       }`}
                     >
-                      <span className="absolute inset-0 bg-gradient-to-r from-purple-400/0 via-white/10 to-purple-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                      <span className="absolute inset-0 bg-gradient-to-r from-gray-400/0 via-white/10 to-gray-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                       {uploading ? "Enviando..." : hasActiveJob ? (
                         <>
                           <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -815,7 +815,7 @@ export default function Seedance2() {
                           key={option.value}
                           onClick={() => handleModeChange(option.value)}
                           className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
-                            mode === option.value ? "border-purple-500/30 bg-purple-500/20 text-purple-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                            mode === option.value ? "border-white/10 bg-slate-500/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                           }`}
                           title={option.desc}
                         >
@@ -848,7 +848,7 @@ export default function Seedance2() {
                         />
                         {showCharacterTip && selectedCharacters.length === 0 && (
                           <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 animate-bounce">
-                            <div className="relative rounded-xl px-4 py-2.5 shadow-[0_0_20px_rgba(147,51,234,0.5)] whitespace-nowrap bg-gradient-to-r from-purple-600 via-fuchsia-500 to-purple-600 animate-pulse-glow">
+                            <div className="relative rounded-xl px-4 py-2.5 shadow-[0_0_20px_rgba(147,51,234,0.5)] whitespace-nowrap bg-gradient-to-r from-slate-600 via-fuchsia-500 to-slate-500 animate-pulse-glow">
                               <div className="flex items-center gap-2 relative">
                                 <span className="text-sm text-white font-bold drop-shadow-sm">👆 Adicione seu rosto aqui!</span>
                                 <button onClick={() => setShowCharacterTip(false)} className="text-white/70 hover:text-white text-sm shrink-0 font-bold">✕</button>
@@ -873,7 +873,7 @@ export default function Seedance2() {
                         key={value}
                         onClick={() => setSpeed(value)}
                         className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
-                          speed === value ? "border-purple-500/30 bg-purple-500/20 text-purple-300" : "border-transparent text-gray-500 hover:text-gray-300"
+                          speed === value ? "border-white/10 bg-slate-500/20 text-gray-300" : "border-transparent text-gray-500 hover:text-gray-300"
                         }`}
                       >
                         {value === "standard" ? "Standard" : "Fast"}
@@ -889,7 +889,7 @@ export default function Seedance2() {
                   <select
                     value={ratio}
                     onChange={(e) => setRatio(e.target.value as Ratio)}
-                    className="hidden sm:block rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white outline-none hover:border-purple-500/30 cursor-pointer [&>option]:bg-black [&>option]:text-white"
+                    className="hidden sm:block rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-white outline-none hover:border-white/10 cursor-pointer [&>option]:bg-black [&>option]:text-white"
                   >
                     {RATIOS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                   </select>
@@ -909,7 +909,7 @@ export default function Seedance2() {
                         key={value}
                         onClick={() => setQuality(value)}
                         className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all ${
-                          quality === value ? "border-purple-500/30 bg-purple-500/20 text-purple-300" : "border-transparent text-gray-500 hover:text-gray-300"
+                          quality === value ? "border-white/10 bg-slate-500/20 text-gray-300" : "border-transparent text-gray-500 hover:text-gray-300"
                         }`}
                       >
                         {value}
@@ -924,9 +924,9 @@ export default function Seedance2() {
                     type="range" min={4} max={15} step={1}
                     value={parseInt(duration)}
                     onChange={(e) => setDuration(e.target.value)}
-                    className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/10 accent-purple-500 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-purple-400"
+                    className="h-1 flex-1 cursor-pointer appearance-none rounded-full bg-white/10 accent-slate-500 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-slate-400"
                   />
-                  <span className="min-w-[24px] text-center text-[11px] font-medium text-purple-300">{duration}s</span>
+                  <span className="min-w-[24px] text-center text-[11px] font-medium text-gray-300">{duration}s</span>
                 </div>
 
                 <div className="h-4 w-px bg-white/[0.06]" />
@@ -957,7 +957,7 @@ export default function Seedance2() {
                   onClick={() => { setRatio(item.value); setShowRatioModal(false); }}
                   className={`rounded-xl border px-3 py-2.5 text-xs font-medium transition-all ${
                     ratio === item.value
-                      ? "border-purple-500/40 bg-purple-500/20 text-purple-300"
+                      ? "border-slate-500/40 bg-slate-500/20 text-gray-300"
                       : "border-white/[0.08] bg-white/[0.04] text-gray-400 hover:bg-white/[0.08]"
                   }`}
                 >
@@ -978,7 +978,7 @@ export default function Seedance2() {
               O Seedance 2 <span className="font-medium text-white">não aceita imagens com rostos reais</span> de pessoas.
             </p>
             <p className="mb-4 text-xs leading-relaxed text-gray-400">
-              Se quiser adicionar um rosto, crie um <span className="font-medium text-purple-400">Personagem</span> usando o botão abaixo do prompt.
+              Se quiser adicionar um rosto, crie um <span className="font-medium text-gray-400">Personagem</span> usando o botão abaixo do prompt.
             </p>
             <div className="flex gap-2">
               <button
@@ -989,7 +989,7 @@ export default function Seedance2() {
               </button>
               <button
                 onClick={confirmFilePicker}
-                className="flex-1 rounded-xl bg-purple-600/80 py-2 text-xs font-medium text-white hover:bg-purple-500 transition-colors"
+                className="flex-1 rounded-xl bg-slate-600/80 py-2 text-xs font-medium text-white hover:bg-slate-500 transition-colors"
               >
                 Entendi
               </button>
@@ -1039,7 +1039,7 @@ function UploadSlot({
       onDragOver={(e) => e.preventDefault()}
       onDrop={onDrop}
       onClick={onClickUpload}
-      className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-white/10 bg-black/30 text-base text-gray-500 transition-all duration-200 hover:border-purple-500/30 hover:bg-purple-500/5 hover:text-purple-400 hover:scale-105"
+      className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-white/10 bg-black/30 text-base text-gray-500 transition-all duration-200 hover:border-white/10 hover:bg-slate-500/5 hover:text-gray-400 hover:scale-105"
       style={{ width: dimension, height: dimension }}
     >
       +
@@ -1068,7 +1068,7 @@ function VideoCard({ gen, onPreview, onDownload, onUse }: { gen: Generation; onP
           {onUse && (
             <button
               onClick={(e) => { e.stopPropagation(); onUse(gen); }}
-              className="absolute bottom-2 left-2 right-2 z-10 rounded-lg bg-purple-600/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-purple-500"
+              className="absolute bottom-2 left-2 right-2 z-10 rounded-lg bg-slate-600/80 px-2 py-1 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 transition-all hover:bg-slate-500"
             >
               Usar modelo
             </button>

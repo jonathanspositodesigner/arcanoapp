@@ -752,7 +752,7 @@ const FlyerMakerTool: React.FC = () => {
                     {/* Generate Button */}
                     {!isProcessing && status !== 'completed' && (
                       <Button
-                        className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
+                        className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-slate-500 hover:from-blue-600 hover:to-slate-600 rounded-xl shadow-lg disabled:opacity-50"
                         disabled={!canProcess || isSubmitting}
                         onClick={handleProcess}
                       >
@@ -874,7 +874,7 @@ const FlyerMakerTool: React.FC = () => {
                           </div>
                           <p className="text-white font-medium mb-1">{status === 'uploading' ? 'Enviando imagens...' : status === 'waiting' ? `Na fila: Posição ${queuePosition}` : 'Processando IA...'}</p>
                           <p className="text-xs text-gray-400 animate-pulse">{queueMessages[queueMessageIndex].text}</p>
-                          <div className="w-48 h-1 bg-white/10 rounded-full mt-4 overflow-hidden"><div className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300" style={{ width: `${progress}%` }}></div></div>
+                          <div className="w-48 h-1 bg-white/10 rounded-full mt-4 overflow-hidden"><div className="h-full bg-gradient-to-r from-blue-500 to-slate-400 transition-all duration-300" style={{ width: `${progress}%` }}></div></div>
                         </div>
                       ) : (
                         <div className="flex flex-col items-center text-gray-500">

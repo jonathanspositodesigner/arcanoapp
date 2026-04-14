@@ -22,7 +22,7 @@ interface WaitingLinkStateProps {
   };
   
   // Styling variants
-  variant?: 'default' | 'dark' | 'purple' | 'teal';
+  variant?: 'default' | 'dark' | 'dark' | 'teal';
 }
 
 const variantStyles = {
@@ -47,17 +47,17 @@ const variantStyles = {
     changeButton: 'text-white/60 hover:text-white',
   },
   purple: {
-    card: 'bg-[#1A0A2E] border-purple-500/20',
-    iconBg: 'bg-purple-500/20',
-    icon: 'text-purple-400',
+    card: 'bg-[#111113] border-white/10',
+    iconBg: 'bg-slate-500/20',
+    icon: 'text-gray-400',
     title: 'text-white',
-    email: 'text-purple-400 font-medium',
-    description: 'text-purple-300',
-    resendButton: 'bg-purple-600 hover:bg-purple-700 text-white',
-    changeButton: 'text-purple-400 hover:text-white',
+    email: 'text-gray-400 font-medium',
+    description: 'text-gray-300',
+    resendButton: 'bg-slate-600 hover:bg-slate-700 text-white',
+    changeButton: 'text-gray-400 hover:text-white',
   },
   teal: {
-    card: 'bg-[#1a1a2e]/80 border-violet-500/30',
+    card: 'bg-[#1a1a2e]/80 border-white/10',
     iconBg: 'bg-violet-500/20',
     icon: 'text-violet-400',
     title: 'text-white',

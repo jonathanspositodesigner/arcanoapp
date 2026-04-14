@@ -70,7 +70,7 @@ interface ToolVersionSales {
 interface ToolVersionBadge {
   text: string;
   icon: 'sparkles' | 'zap' | 'target' | 'star';
-  color: 'yellow' | 'blue' | 'purple' | 'green' | 'orange';
+  color: 'yellow' | 'blue' | 'dark' | 'green' | 'orange';
 }
 
 // Localized content per language
@@ -1267,7 +1267,7 @@ const AdminManagePacks = () => {
                   className="h-auto py-4 flex flex-col items-center gap-2"
                   onClick={() => handleTypeSelect('ferramentas_ia')}
                 >
-                  <Cpu className="w-8 h-8 text-purple-500" />
+                  <Cpu className="w-8 h-8 text-slate-400" />
                   <span className="font-medium">Ferramentas de IA</span>
                   <span className="text-xs text-muted-foreground">Ferramentas de inteligência artificial</span>
                 </Button>
@@ -2215,9 +2215,9 @@ const AdminManagePacks = () => {
                 </div>
 
                 {/* DESCONTO PARA MEMBROS BR (20% OFF) */}
-                <div className="border rounded-lg p-4 space-y-4 border-purple-500/30 bg-purple-500/5">
+                <div className="border rounded-lg p-4 space-y-4 border-white/10 bg-slate-500/5">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge className="bg-purple-500/20 text-purple-600">👑 20% OFF</Badge>
+                    <Badge className="bg-slate-500/20 text-slate-500">👑 20% OFF</Badge>
                     <Label className="font-semibold">Desconto para Membros (Brasil)</Label>
                   </div>
                   <p className="text-xs text-muted-foreground mb-3">

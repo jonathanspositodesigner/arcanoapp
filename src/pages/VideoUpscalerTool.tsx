@@ -435,7 +435,7 @@ const VideoUpscalerTool: React.FC = () => {
 
   return (
     <AppLayout fullScreen>
-      <div className="h-full lg:overflow-hidden overflow-y-auto bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
+      <div className="h-full lg:overflow-hidden overflow-y-auto bg-gradient-to-br from-[#111113] via-[#1A0A2E] to-[#16082A] flex flex-col">
 
       {/* Warning banner during processing */}
       {isProcessing && (
@@ -451,7 +451,7 @@ const VideoUpscalerTool: React.FC = () => {
         {/* Tool intro - full width centered */}
         <div className="text-center py-3">
           <h1 className="text-2xl lg:text-3xl font-bold text-white">Video Upscaler</h1>
-          <p className="text-sm text-purple-300 mt-1 max-w-lg mx-auto">Aumente a qualidade dos seus vídeos com IA. Transforme vídeos em alta resolução mantendo a fluidez.</p>
+          <p className="text-sm text-gray-300 mt-1 max-w-lg mx-auto">Aumente a qualidade dos seus vídeos com IA. Transforme vídeos em alta resolução mantendo a fluidez.</p>
         </div>
 
         {/* Main Grid Layout */}
@@ -469,9 +469,9 @@ const VideoUpscalerTool: React.FC = () => {
             />
 
             {/* Specifications Info */}
-            <Card className="bg-purple-900/20 border-purple-500/30 p-3">
+            <Card className="bg-white/5 border-white/10 p-3">
               <h4 className="text-xs font-semibold text-white mb-2">Especificações</h4>
-              <ul className="text-[10px] text-purple-300 space-y-1">
+              <ul className="text-[10px] text-gray-300 space-y-1">
                 <li>• Resolução máxima: 1280px</li>
                 <li>• Duração máxima: 10 segundos</li>
                 <li>• Formatos: MP4, WebM, MOV</li>
@@ -481,7 +481,7 @@ const VideoUpscalerTool: React.FC = () => {
             {/* Action Button */}
             <Button
               size="sm"
-              className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-medium py-2 text-xs disabled:opacity-50"
               disabled={!canProcess || isProcessing || isSubmitting}
               onClick={handleProcess}
             >
@@ -543,11 +543,11 @@ const VideoUpscalerTool: React.FC = () => {
 
           {/* Right Side - Result Viewer (5/7 on desktop ~72%) */}
           <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
-            <Card className="relative overflow-hidden bg-purple-900/20 border-purple-500/30 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
+            <Card className="relative overflow-hidden bg-white/5 border-white/10 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
               {/* Header */}
-              <div className="px-3 py-2 border-b border-purple-500/20 flex items-center justify-between flex-shrink-0">
+              <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between flex-shrink-0">
                 <h3 className="text-xs font-semibold text-white flex items-center gap-1.5">
-                  <Video className="w-3.5 h-3.5 text-purple-400" />
+                  <Video className="w-3.5 h-3.5 text-gray-400" />
                   Resultado
                 </h3>
               </div>
@@ -566,8 +566,8 @@ const VideoUpscalerTool: React.FC = () => {
                 ) : isProcessing ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                     <div className="relative">
-                      <div className="w-14 h-14 rounded-full border-4 border-purple-500/30 border-t-purple-500 animate-spin" />
-                      <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-purple-400" />
+                      <div className="w-14 h-14 rounded-full border-4 border-white/10 border-t-slate-500 animate-spin" />
+                      <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-gray-400" />
                     </div>
                     <div className="text-center">
                       <p className="text-sm text-white font-medium flex items-center gap-2">
@@ -575,20 +575,20 @@ const VideoUpscalerTool: React.FC = () => {
                         <span>{currentQueueMessage.text}</span>
                       </p>
                       {status === 'waiting' && queuePosition > 0 && (
-                        <p className="text-xs text-purple-300 mt-1">
+                        <p className="text-xs text-gray-300 mt-1">
                           Posição na fila: #{queuePosition}
                         </p>
                       )}
                       {status === 'processing' && (
-                        <p className="text-xs text-purple-300 mt-0.5">
+                        <p className="text-xs text-gray-300 mt-0.5">
                           {Math.round(progress)}% concluído
                         </p>
                       )}
                     </div>
                     {/* Progress bar */}
-                    <div className="w-36 h-1.5 bg-purple-900/50 rounded-full overflow-hidden">
+                    <div className="w-36 h-1.5 bg-white/5 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300"
+                        className="h-full bg-gradient-to-r from-slate-500 to-slate-400 transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -605,7 +605,7 @@ const VideoUpscalerTool: React.FC = () => {
                       <Button
                         variant="link"
                         size="sm"
-                        className="text-xs text-purple-400"
+                        className="text-xs text-gray-400"
                         onClick={handleReset}
                       >
                         Tentar novamente
@@ -614,14 +614,14 @@ const VideoUpscalerTool: React.FC = () => {
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-purple-500/10 border-2 border-dashed border-purple-500/30 flex items-center justify-center">
-                      <Video className="w-8 h-8 text-purple-500/40" />
+                    <div className="w-16 h-16 rounded-xl bg-slate-500/10 border-2 border-dashed border-white/10 flex items-center justify-center">
+                      <Video className="w-8 h-8 text-slate-400/40" />
                     </div>
                     <div className="text-center">
-                      <p className="text-sm text-purple-300">
+                      <p className="text-sm text-gray-300">
                         O resultado aparecerá aqui
                       </p>
-                      <p className="text-xs text-purple-400 mt-0.5">
+                      <p className="text-xs text-gray-400 mt-0.5">
                         Envie o vídeo e clique em "Upscale"
                       </p>
                     </div>
@@ -635,7 +635,7 @@ const VideoUpscalerTool: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 h-8 text-xs bg-purple-500/10 border-purple-500/30 text-purple-200 hover:bg-purple-500/20"
+                    className="flex-1 h-8 text-xs bg-slate-500/10 border-white/10 text-gray-300 hover:bg-slate-500/20"
                     onClick={handleReset}
                   >
                     <RotateCcw className="w-3.5 h-3.5 mr-1.5" />

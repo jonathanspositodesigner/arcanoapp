@@ -17,9 +17,9 @@ type CategoryFilter = 'artista' | 'politico' | 'esportivo' | 'formal' | 'empresa
 const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ id: string; label: string; color: string }>>> = {
   masculino: {
     artista: [
-      { id: 'm-a1', label: 'Look Palco', color: 'from-purple-600 to-purple-800' },
+      { id: 'm-a1', label: 'Look Palco', color: 'from-slate-600 to-slate-700' },
       { id: 'm-a2', label: 'Estilo Rockstar', color: 'from-red-600 to-red-800' },
-      { id: 'm-a3', label: 'Visual Artístico', color: 'from-fuchsia-600 to-fuchsia-800' },
+      { id: 'm-a3', label: 'Visual Artístico', color: 'from-slate-600 to-fuchsia-800' },
       { id: 'm-a4', label: 'Outfit Show', color: 'from-violet-600 to-violet-800' },
     ],
     politico: [
@@ -55,9 +55,9 @@ const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ 
   },
   feminino: {
     artista: [
-      { id: 'f-a1', label: 'Look Diva', color: 'from-purple-600 to-purple-800' },
+      { id: 'f-a1', label: 'Look Diva', color: 'from-slate-600 to-slate-700' },
       { id: 'f-a2', label: 'Visual Popstar', color: 'from-pink-600 to-pink-800' },
-      { id: 'f-a3', label: 'Estilo Cantora', color: 'from-fuchsia-600 to-fuchsia-800' },
+      { id: 'f-a3', label: 'Estilo Cantora', color: 'from-slate-600 to-fuchsia-800' },
       { id: 'f-a4', label: 'Outfit Show', color: 'from-violet-600 to-violet-800' },
     ],
     politico: [
@@ -87,8 +87,8 @@ const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ 
     casual: [
       { id: 'f-c1', label: 'Blusa Básica', color: 'from-pink-600 to-pink-800' },
       { id: 'f-c2', label: 'Jeans & Top', color: 'from-rose-600 to-rose-800' },
-      { id: 'f-c3', label: 'Vestido Casual', color: 'from-fuchsia-600 to-fuchsia-800' },
-      { id: 'f-c4', label: 'Moletom Cropped', color: 'from-purple-600 to-purple-800' },
+      { id: 'f-c3', label: 'Vestido Casual', color: 'from-slate-600 to-fuchsia-800' },
+      { id: 'f-c4', label: 'Moletom Cropped', color: 'from-slate-600 to-slate-700' },
     ],
   },
 };
@@ -122,10 +122,10 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl bg-[#1A0A2E] border-purple-500/30 text-white max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-2xl bg-[#111113] border-white/10 text-white max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
-            <Shirt className="w-5 h-5 text-purple-400" />
+            <Shirt className="w-5 h-5 text-gray-400" />
             Biblioteca de Roupas
           </DialogTitle>
         </DialogHeader>
@@ -140,7 +140,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
               "flex-1",
               genderFilter === 'masculino'
                 ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0"
-                : "bg-transparent border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+                : "bg-transparent border-white/10 text-gray-300 hover:bg-slate-500/20"
             )}
           >
             <User className="w-4 h-4 mr-2" />
@@ -154,7 +154,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
               "flex-1",
               genderFilter === 'feminino'
                 ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white border-0"
-                : "bg-transparent border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+                : "bg-transparent border-white/10 text-gray-300 hover:bg-slate-500/20"
             )}
           >
             <User className="w-4 h-4 mr-2" />
@@ -173,8 +173,8 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
               className={cn(
                 "text-xs whitespace-nowrap relative",
                 categoryFilter === cat.id
-                  ? "bg-purple-600 text-white"
-                  : "text-purple-300 hover:bg-purple-500/20"
+                  ? "bg-slate-600 text-white"
+                  : "text-gray-300 hover:bg-slate-500/20"
               )}
             >
               {cat.label}
@@ -192,7 +192,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
               <button
                 key={item.id}
                 onClick={() => handleSelectClothing(item.id)}
-                className="group relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-purple-500/30 hover:border-purple-400 transition-all hover:scale-105"
+                className="group relative aspect-[3/4] rounded-xl overflow-hidden border-2 border-white/10 hover:border-white/15 transition-all hover:scale-105"
               >
                 {/* Placeholder gradient background */}
                 <div className={cn(
@@ -213,8 +213,8 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
                 </div>
 
                 {/* Hover overlay */}
-                <div className="absolute inset-0 bg-purple-500/0 group-hover:bg-purple-500/20 transition-colors flex items-center justify-center">
-                  <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-purple-600 px-3 py-1 rounded-full transition-opacity">
+                <div className="absolute inset-0 bg-slate-500/0 group-hover:bg-slate-500/20 transition-colors flex items-center justify-center">
+                  <span className="opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-slate-600 px-3 py-1 rounded-full transition-opacity">
                     Selecionar
                   </span>
                 </div>
@@ -223,7 +223,7 @@ const ClothingLibraryModal: React.FC<ClothingLibraryModalProps> = ({
           </div>
 
           {/* Info text */}
-          <p className="text-xs text-purple-400 text-center mt-4 pb-2">
+          <p className="text-xs text-gray-400 text-center mt-4 pb-2">
             👕 Clique em uma roupa para usá-la como referência
           </p>
         </div>

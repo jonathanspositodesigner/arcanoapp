@@ -73,7 +73,7 @@ export function FloatingToolsNav() {
   return (
     <>
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-2 py-2 rounded-2xl shadow-lg shadow-primary/20 border border-primary/20"
-        style={{ background: 'linear-gradient(135deg, hsl(263 56% 20% / 0.95), hsl(273 50% 28% / 0.95))' }}
+        style={{ background: 'linear-gradient(135deg, hsl(220 10% 12% / 0.95), hsl(220 10% 18% / 0.95))' }}
       >
         {navItems.map((item) => {
           const isAction = 'action' in item;

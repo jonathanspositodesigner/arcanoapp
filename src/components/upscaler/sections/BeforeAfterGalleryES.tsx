@@ -31,7 +31,7 @@ export const BeforeAfterGalleryES = ({ onZoomClick, isMobile = false }: BeforeAf
       after: isMobile ? "/images/upscaler-foto-depois-mobile.webp" : upscalerFotoDepois,
       label: t('tools:upscaler.beforeAfter.photoImproved4K'),
       badge: t('tools:upscaler.beforeAfter.badges.photo'),
-      badgeColor: "from-fuchsia-500 to-pink-500",
+      badgeColor: "from-slate-500 to-pink-500",
       aspectRatio: "2/3"
     },
     {
@@ -39,7 +39,7 @@ export const BeforeAfterGalleryES = ({ onZoomClick, isMobile = false }: BeforeAf
       after: isMobile ? "/images/upscaler-selo-depois-mobile.webp" : upscalerSeloDepois,
       label: t('tools:upscaler.beforeAfter.seal3DHD'),
       badge: t('tools:upscaler.beforeAfter.badges.seals3D'),
-      badgeColor: "from-purple-500 to-violet-600",
+      badgeColor: "from-slate-500 to-violet-600",
       aspectRatio: "2/3"
     },
     {
@@ -79,11 +79,11 @@ export const BeforeAfterGalleryES = ({ onZoomClick, isMobile = false }: BeforeAf
   return (
     <section className="px-3 md:px-4 py-16 md:py-20 relative overflow-hidden">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-fuchsia-500/5 via-purple-500/5 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-500/5 via-slate-500/5 to-transparent pointer-events-none" />
       
       <div className="max-w-6xl mx-auto relative">
         <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-3 md:mb-4 tracking-wide">
-          {t('tools:upscaler.beforeAfter.title')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">{t('tools:upscaler.beforeAfter.anyImage')}</span>
+          {t('tools:upscaler.beforeAfter.title')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">{t('tools:upscaler.beforeAfter.anyImage')}</span>
         </h2>
         <p className="text-white/60 text-center text-sm md:text-lg mb-10 md:mb-14 max-w-2xl mx-auto">
           {t('tools:upscaler.beforeAfter.subtitle')}

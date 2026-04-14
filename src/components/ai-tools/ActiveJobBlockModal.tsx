@@ -98,7 +98,7 @@ const ActiveJobBlockModal: React.FC<ActiveJobBlockModalProps> = ({
   if (showConfirmation) {
     return (
       <AlertDialog open={true} onOpenChange={() => setShowConfirmation(false)}>
-        <AlertDialogContent className="bg-[#1A0A2E] border-red-500/30">
+        <AlertDialogContent className="bg-[#111113] border-red-500/30">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 bg-red-500/20 rounded-full">
@@ -108,7 +108,7 @@ const ActiveJobBlockModal: React.FC<ActiveJobBlockModalProps> = ({
                 ⚠️ Atenção: Você perderá seus créditos!
               </AlertDialogTitle>
             </div>
-            <AlertDialogDescription className="text-purple-200/70 space-y-4">
+            <AlertDialogDescription className="text-gray-300/70 space-y-4">
               <div className="bg-red-900/30 rounded-lg p-4 border border-red-500/30">
                 <p className="text-red-300 font-medium text-center">
                   O processamento já iniciou no servidor.
@@ -118,7 +118,7 @@ const ActiveJobBlockModal: React.FC<ActiveJobBlockModalProps> = ({
                 </p>
               </div>
               
-              <p className="text-sm text-center text-purple-200/60">
+              <p className="text-sm text-center text-gray-300/60">
                 Tem certeza que deseja cancelar e perder os créditos?
               </p>
             </AlertDialogDescription>
@@ -128,7 +128,7 @@ const ActiveJobBlockModal: React.FC<ActiveJobBlockModalProps> = ({
             <Button
               variant="outline"
               onClick={() => setShowConfirmation(false)}
-              className="border-purple-500/30 text-purple-200 hover:bg-purple-500/10"
+              className="border-white/10 text-gray-300 hover:bg-slate-500/10"
             >
               Não, aguardar conclusão
             </Button>
@@ -159,7 +159,7 @@ const ActiveJobBlockModal: React.FC<ActiveJobBlockModalProps> = ({
   
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="bg-[#1A0A2E] border-purple-500/30">
+      <AlertDialogContent className="bg-[#111113] border-white/10">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-yellow-500/20 rounded-full">
@@ -169,17 +169,17 @@ const ActiveJobBlockModal: React.FC<ActiveJobBlockModalProps> = ({
               Trabalho em Andamento
             </AlertDialogTitle>
           </div>
-          <AlertDialogDescription className="text-purple-200/70 space-y-4">
+          <AlertDialogDescription className="text-gray-300/70 space-y-4">
             <p>
               Você já tem um trabalho em processamento no{' '}
-              <strong className="text-purple-300">{activeTool}</strong>.
+              <strong className="text-gray-300">{activeTool}</strong>.
             </p>
             
             {/* Job details */}
             {activeStatus && (
-              <div className="bg-purple-900/30 rounded-lg p-4 border border-purple-500/20">
+              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-purple-200/60">Status atual:</span>
+                  <span className="text-sm text-gray-300/60">Status atual:</span>
                   <Badge 
                     variant="outline" 
                     className={`flex items-center gap-1.5 ${
@@ -215,7 +215,7 @@ const ActiveJobBlockModal: React.FC<ActiveJobBlockModalProps> = ({
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
           <AlertDialogAction
             onClick={onClose}
-            className="bg-purple-600 hover:bg-purple-700 text-white"
+            className="bg-slate-600 hover:bg-slate-700 text-white"
           >
             Entendi
           </AlertDialogAction>

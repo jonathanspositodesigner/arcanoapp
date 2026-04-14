@@ -33,7 +33,7 @@ const ArtesMusicosFerramentas = () => {
         {/* Stats Cards - Disabled */}
         <div className="grid grid-cols-1 gap-4 mb-6">
           <Card className="p-6 bg-gradient-to-r from-violet-500/10 to-violet-500/5 border-violet-500/20 opacity-60 cursor-not-allowed relative">
-            <Badge className="absolute top-2 right-2 bg-violet-500/20 text-violet-600 border-violet-500/30">
+            <Badge className="absolute top-2 right-2 bg-violet-500/20 text-violet-600 border-white/10">
               Em breve
             </Badge>
             <div className="flex items-center gap-4">
@@ -61,7 +61,7 @@ const ArtesMusicosFerramentas = () => {
             onClick={() => navigate("/admin-upload-artes-musicos")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-              <div className="p-2 sm:p-4 bg-gradient-to-r from-violet-500 to-purple-500 rounded-full">
+              <div className="p-2 sm:p-4 bg-gradient-to-r from-violet-500 to-slate-400 rounded-full">
                 <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Enviar Arte</h2>
@@ -96,11 +96,11 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card className="p-3 sm:p-8 opacity-60 cursor-not-allowed relative">
-            <Badge className="absolute top-2 right-2 bg-violet-500/20 text-violet-600 border-violet-500/30 text-[10px] sm:text-xs">
+            <Badge className="absolute top-2 right-2 bg-violet-500/20 text-violet-600 border-white/10 text-[10px] sm:text-xs">
               Em breve
             </Badge>
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-              <div className="p-2 sm:p-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full">
+              <div className="p-2 sm:p-4 bg-gradient-to-r from-slate-500 to-pink-500 rounded-full">
                 <Package className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Packs</h2>
@@ -135,7 +135,7 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card className="p-3 sm:p-8 opacity-60 cursor-not-allowed relative">
-            <Badge className="absolute top-2 right-2 bg-violet-500/20 text-violet-600 border-violet-500/30 text-[10px] sm:text-xs">
+            <Badge className="absolute top-2 right-2 bg-violet-500/20 text-violet-600 border-white/10 text-[10px] sm:text-xs">
               Em breve
             </Badge>
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">

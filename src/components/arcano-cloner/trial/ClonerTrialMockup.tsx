@@ -68,13 +68,13 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
   // Result view with zoom/pan
   if (resultUrl) {
     return (
-      <div className="bg-[#1A0A2E]/80 border border-purple-500/30 rounded-2xl p-4 md:p-6">
+      <div className="bg-[#111113]/80 border border-white/10 rounded-2xl p-4 md:p-6">
         <div className="text-center mb-4">
           <h3 className="text-white font-semibold text-lg">✨ Resultado</h3>
-          <p className="text-purple-300/70 text-sm">Arraste para mover, use pinça para zoom</p>
+          <p className="text-gray-400 text-sm">Arraste para mover, use pinça para zoom</p>
         </div>
         
-        <div className="relative rounded-xl overflow-hidden border border-purple-500/20 bg-black/30 aspect-square max-w-md mx-auto">
+        <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black/30 aspect-square max-w-md mx-auto">
           <TransformWrapper
             initialScale={1}
             minScale={0.5}
@@ -116,7 +116,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
   // Processing view
   if (isProcessing) {
     return (
-      <div className="bg-[#1A0A2E]/80 border border-purple-500/30 rounded-2xl p-6 md:p-8">
+      <div className="bg-[#111113]/80 border border-white/10 rounded-2xl p-6 md:p-8">
         <div className="flex flex-col items-center justify-center py-12 gap-6">
           <div className="relative">
             <Loader2 className="w-16 h-16 text-fuchsia-400 animate-spin" />
@@ -124,13 +124,13 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
           </div>
           <div className="text-center">
             <h3 className="text-white font-semibold text-lg mb-2">Processando sua imagem...</h3>
-            <p className="text-purple-300/70 text-sm mb-4">
+            <p className="text-gray-400 text-sm mb-4">
               {status === 'uploading' ? 'Enviando imagens...' : 'Gerando seu clone perfeito...'}
             </p>
           </div>
           <div className="w-full max-w-xs">
-            <Progress value={progress} className="h-2 bg-purple-900/50" />
-            <p className="text-purple-400 text-xs text-center mt-2">{Math.round(progress)}%</p>
+            <Progress value={progress} className="h-2 bg-white/5" />
+            <p className="text-gray-400 text-xs text-center mt-2">{Math.round(progress)}%</p>
           </div>
         </div>
       </div>
@@ -139,10 +139,10 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
 
   // Main interface
   return (
-    <div className="bg-[#1A0A2E]/80 border border-purple-500/30 rounded-2xl p-4 md:p-6">
+    <div className="bg-[#111113]/80 border border-white/10 rounded-2xl p-4 md:p-6">
       {isActive && (
         <div className="flex items-center justify-between mb-4">
-          <span className="text-purple-300/70 text-sm">Teste Grátis</span>
+          <span className="text-gray-400 text-sm">Teste Grátis</span>
           <span className="text-xs bg-fuchsia-500/20 text-fuchsia-300 px-2 py-1 rounded-full">
             {usesRemaining} {usesRemaining === 1 ? 'teste restante' : 'testes restantes'}
           </span>
@@ -154,17 +154,17 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
         {/* User image */}
         <div className="space-y-2">
           <p className="text-[10px] font-semibold text-white flex items-center gap-1.5">
-            <Upload className="w-3 h-3 text-purple-400" />
+            <Upload className="w-3 h-3 text-gray-400" />
             Sua Foto
           </p>
           <div
-            className="aspect-[3/4] rounded-xl border-2 border-dashed border-purple-500/30 bg-purple-900/20 flex items-center justify-center cursor-pointer hover:border-fuchsia-500/50 transition-colors overflow-hidden"
+            className="aspect-[3/4] rounded-xl border-2 border-dashed border-white/10 bg-white/5 flex items-center justify-center cursor-pointer hover:border-fuchsia-500/50 transition-colors overflow-hidden"
             onClick={() => userInputRef.current?.click()}
           >
             {userImage ? (
               <img src={userImage} alt="Sua foto" className="w-full h-full object-cover" />
             ) : (
-              <div className="flex flex-col items-center gap-2 text-purple-400">
+              <div className="flex flex-col items-center gap-2 text-gray-400">
                 <Upload className="w-8 h-8" />
                 <span className="text-[10px]">Enviar foto</span>
               </div>
@@ -176,11 +176,11 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
         {/* Reference image */}
         <div className="space-y-2">
           <p className="text-[10px] font-semibold text-white flex items-center gap-1.5">
-            <ImageIcon className="w-3 h-3 text-purple-400" />
+            <ImageIcon className="w-3 h-3 text-gray-400" />
             Referência
           </p>
           {referenceImage ? (
-            <div className="relative aspect-[3/4] rounded-xl border-2 border-purple-500/30 bg-purple-900/20 overflow-hidden group">
+            <div className="relative aspect-[3/4] rounded-xl border-2 border-white/10 bg-white/5 overflow-hidden group">
               <img src={referenceImage} alt="Referência" className="w-full h-full object-cover" />
               <button
                 type="button"
@@ -192,11 +192,11 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
             </div>
           ) : (
             <div
-              className="aspect-[3/4] rounded-xl border-2 border-dashed border-purple-500/30 bg-purple-900/20 flex flex-col items-center justify-center cursor-pointer hover:border-fuchsia-500/50 transition-colors gap-3"
+              className="aspect-[3/4] rounded-xl border-2 border-dashed border-white/10 bg-white/5 flex flex-col items-center justify-center cursor-pointer hover:border-fuchsia-500/50 transition-colors gap-3"
               onClick={() => onOpenLibrary?.()}
             >
-              <ImageIcon className="w-8 h-8 text-purple-400" />
-              <span className="text-[10px] text-purple-400 text-center px-2">Escolher da biblioteca ou enviar</span>
+              <ImageIcon className="w-8 h-8 text-gray-400" />
+              <span className="text-[10px] text-gray-400 text-center px-2">Escolher da biblioteca ou enviar</span>
             </div>
           )}
           <input ref={refInputRef} type="file" accept="image/*" className="hidden" onChange={handleRefFileChange} />
@@ -222,7 +222,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
         <Button
           onClick={onGenerate}
           disabled={!userImage || !referenceImage || isProcessing}
-          className="w-full h-12 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold text-base rounded-xl shadow-lg shadow-fuchsia-500/25 disabled:opacity-50"
+          className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold text-base rounded-xl shadow-lg shadow-fuchsia-500/25 disabled:opacity-50"
         >
           <ImageIcon className="w-5 h-5 mr-2" />
           Gerar Imagem
