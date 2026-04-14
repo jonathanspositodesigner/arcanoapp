@@ -774,7 +774,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
               {/* Upload Area */}
               <div 
-                className="bg-black/60 border border-border border-dashed rounded-xl p-6 cursor-pointer hover:bg-black/80 transition-colors"
+                className="bg-black/70 border border-white/10 border-dashed rounded-xl p-6 cursor-pointer hover:bg-black/80 transition-colors"
                 onClick={() => fileInputRef.current?.click()}
                 onDrop={handleDrop}
                 onDragOver={(e) => e.preventDefault()}
@@ -783,11 +783,11 @@ const UpscalerArcanoTool: React.FC = () => {
                   <div className="flex items-center gap-3">
                     <img src={inputImage} alt="Preview" className="w-12 h-12 object-cover rounded-lg" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-foreground truncate">{inputFileName || 'Imagem selecionada'}</p>
+                      <p className="text-xs text-white truncate">{inputFileName || 'Imagem selecionada'}</p>
                       <div className="flex items-center gap-2">
-                        <p className="text-[10px] text-muted-foreground">Clique para trocar</p>
+                        <p className="text-[10px] text-white/60">Clique para trocar</p>
                         {inputDimensions && (
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-[10px] text-white/60">
                             📐 {inputDimensions.w}x{inputDimensions.h}
                           </span>
                         )}
@@ -796,9 +796,9 @@ const UpscalerArcanoTool: React.FC = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-2 py-6">
-                    <Upload className="w-6 h-6 text-muted-foreground" />
-                    <p className="text-sm font-medium text-foreground">Arraste sua imagem aqui</p>
-                    <p className="text-[10px] text-muted-foreground">PNG, JPEG, WEBP - Máximo 10MB</p>
+                    <Upload className="w-6 h-6 text-white/60" />
+                    <p className="text-sm font-medium text-white">Arraste sua imagem aqui</p>
+                    <p className="text-[10px] text-white/60">PNG, JPEG, WEBP - Máximo 10MB</p>
                   </div>
                 )}
                 <input
