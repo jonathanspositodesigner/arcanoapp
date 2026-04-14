@@ -755,7 +755,7 @@ const UpscalerArcanoTool: React.FC = () => {
     <AppLayout fullScreen>
 
       {/* Main Content - Two Column Layout */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-4 flex flex-col h-full overflow-hidden">
+      <div className={`flex-1 max-w-7xl w-full mx-auto px-4 py-4 flex flex-col h-full overflow-hidden ${isMobile ? 'pb-20' : ''}`}>
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-5 flex-1 min-h-0">
           
           {/* Left Side - Controls Panel inside ONE card */}
