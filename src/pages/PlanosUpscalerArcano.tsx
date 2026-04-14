@@ -829,7 +829,7 @@ const PlanosUpscalerArcano = () => {
                     )}
 
                     <div className="flex flex-col items-center mb-5 lg:mb-6 mt-3 gap-1.5">
-                      <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs lg:text-sm font-bold text-foreground bg-gradient-to-r from-purple-600 to-purple-500">
+                      <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs lg:text-sm font-bold text-primary-foreground bg-gradient-to-r from-purple-600 to-purple-500">
                         <Sparkles className="w-3.5 h-3.5" />
                         {plan.credits}
                       </span>
@@ -853,7 +853,7 @@ const PlanosUpscalerArcano = () => {
                       <div className="mt-4 pt-4 border-t border-border/20">
                         <div className="flex items-center gap-2 mb-2.5">
                           <span className="text-sm">🎁</span>
-                          <span className="text-xs lg:text-sm font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+                          <span className="text-xs lg:text-sm font-bold bg-gradient-to-r dark:from-amber-400 dark:to-orange-400 from-amber-600 to-orange-600 bg-clip-text text-transparent">
                             BÔNUS EXCLUSIVO
                           </span>
                         </div>
@@ -942,7 +942,7 @@ const PlanosUpscalerArcano = () => {
           <LazySection rootMargin="1200px">
           {/* Fullscreen scroll-driven gallery - all devices */}
           <div>
-            <h2 className="text-center text-3xl md:text-5xl font-black py-12 bg-clip-text text-transparent bg-gradient-to-r from-slate-500 to-slate-500 uppercase tracking-tight">
+            <h2 className="text-center text-3xl md:text-5xl font-black py-12 bg-clip-text text-transparent bg-gradient-to-r dark:from-slate-500 dark:to-slate-500 from-purple-700 to-purple-500 uppercase tracking-tight">
               Melhorado com o Upscaler Arcano
             </h2>
             <Suspense fallback={<div className="h-screen bg-accent animate-pulse" />}>

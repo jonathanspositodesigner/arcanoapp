@@ -316,7 +316,7 @@ const BibliotecaArtesMusicos = () => {
           )}
 
           <div className="text-center mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent mb-2">{t('musicos.content.title')}</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r dark:from-white dark:via-gray-100 dark:to-gray-300 from-purple-700 via-purple-600 to-purple-500 bg-clip-text text-transparent mb-2">{t('musicos.content.title')}</h1>
             <p className="text-muted-foreground">{t('musicos.content.subtitle')}</p>
           </div>
 

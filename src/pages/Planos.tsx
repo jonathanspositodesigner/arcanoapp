@@ -238,7 +238,7 @@ const Planos = () => {
         </AnimatedSection>
 
         <AnimatedSection animation="fade-up" className="text-center mb-10" as="div">
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-400 to-pink-400 bg-clip-text text-transparent mb-6">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r dark:from-gray-400 dark:to-pink-400 from-purple-700 to-pink-600 bg-clip-text text-transparent mb-6">
             {t('planos.title')}
           </h1>
 

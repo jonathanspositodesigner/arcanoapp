@@ -234,7 +234,7 @@ const ContributePrompts = () => {
 
         <Card className="p-4 sm:p-8 bg-background border-border">
           <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-gray-400 to-pink-400 bg-clip-text text-transparent mb-2">
+            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r dark:from-gray-400 dark:to-pink-400 from-purple-700 to-pink-600 bg-clip-text text-transparent mb-2">
               {t('contribute.title')}
             </h1>
             <p className="text-muted-foreground text-base sm:text-lg">

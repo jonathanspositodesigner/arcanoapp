@@ -423,7 +423,7 @@ const Planos2 = () => {
         </div>
 
         <AnimatedSection animation="fade-up" className="text-center mb-10" as="div">
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-400 to-pink-400 bg-clip-text text-transparent mb-6">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r dark:from-gray-400 dark:to-pink-400 from-purple-700 to-pink-600 bg-clip-text text-transparent mb-6">
             {t('planos.title')}
           </h1>
 
@@ -590,7 +590,7 @@ const Planos2 = () => {
 
               {/* Badge de Créditos - fixed height */}
               <div className="flex flex-col items-center mb-4 h-[44px]">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-foreground bg-gradient-to-r from-purple-600 to-purple-500">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-primary-foreground bg-gradient-to-r from-purple-600 to-purple-500">
                   <Sparkles className="w-2.5 h-2.5" />
                   {(plan as any).credits}/mês
                   {String((plan as any).credits).toLowerCase().includes('ilimitado') && (

@@ -709,7 +709,7 @@ const PlanosUpscalerCreditos = () => {
                       Comprar
                     </Button>
                     <div className="flex flex-col items-center mb-6 h-[57px]">
-                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-foreground bg-gradient-to-r from-purple-600 to-purple-500">
+                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-primary-foreground bg-gradient-to-r from-purple-600 to-purple-500">
                         <Sparkles className="w-4 h-4" />
                         30 upscalers
                       </span>
@@ -787,7 +787,7 @@ const PlanosUpscalerCreditos = () => {
                       Comprar
                     </Button>
                     <div className="flex flex-col items-center mb-6 h-[57px]">
-                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-foreground bg-gradient-to-r from-purple-600 to-purple-500">
+                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-primary-foreground bg-gradient-to-r from-purple-600 to-purple-500">
                         <Sparkles className="w-4 h-4" />
                         70 upscalers
                       </span>
@@ -865,7 +865,7 @@ const PlanosUpscalerCreditos = () => {
                       Comprar
                     </Button>
                     <div className="flex flex-col items-center mb-6 h-[57px]">
-                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-foreground bg-gradient-to-r from-purple-600 to-purple-500">
+                      <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-primary-foreground bg-gradient-to-r from-purple-600 to-purple-500">
                         <Sparkles className="w-4 h-4" />
                         200 upscalers
                       </span>
