@@ -1413,8 +1413,6 @@ const BibliotecaArtes = () => {
           })()}
         </DialogContent>
       </Dialog>
-
-      </div>
     </AppLayout>
   );
 };
