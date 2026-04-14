@@ -642,7 +642,7 @@ const MovieLedMakerTool = () => {
                           disabled={isProcessing}
                           className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
                             selectedEngine === engine.id
-                              ? 'bg-accent text-accent-foreground'
+                              ? 'bg-primary text-primary-foreground shadow-sm'
                               : 'text-muted-foreground hover:text-foreground'
                           }`}
                         >
@@ -835,7 +835,7 @@ const MovieLedMakerTool = () => {
                       onClick={() => setSelectedEngine(engine.id)}
                       disabled={isProcessing}
                       className={`py-2 px-3 text-sm rounded-md transition-all font-medium ${
-                        selectedEngine === engine.id ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'
+                        selectedEngine === engine.id ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground'
                       }`}
                     >
                       {engine.name}
