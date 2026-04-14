@@ -49,12 +49,12 @@ export const CreditsFAQSection = () => {
             <AccordionItem
               key={index}
               value={`faq-${index}`}
-              className="bg-white/[0.03] border border-border rounded-xl px-5 data-[state=open]:border-slate-500/40 transition-colors"
+              className="bg-card/80 border border-border rounded-xl px-5 shadow-sm data-[state=open]:border-primary/40 transition-colors"
             >
-              <AccordionTrigger className="text-left text-white/90 text-sm md:text-base font-medium hover:no-underline py-4">
+              <AccordionTrigger className="text-left text-foreground text-sm md:text-base font-medium hover:no-underline py-4">
                 {item.question}
               </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground text-sm pb-4">
+              <AccordionContent className="text-foreground/80 text-sm pb-4">
                 {item.answer}
               </AccordionContent>
             </AccordionItem>
