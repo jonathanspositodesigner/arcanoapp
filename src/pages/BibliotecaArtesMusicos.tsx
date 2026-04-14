@@ -246,7 +246,7 @@ const BibliotecaArtesMusicos = () => {
       </Sheet>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5">
+        <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" className="lg:hidden text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => setSidebarOpen(true)}>
@@ -428,7 +428,7 @@ const BibliotecaArtesMusicos = () => {
                 {selectedArte.is_ai_generated && selectedArte.ai_prompt && (
                   <div className="p-3 bg-accent rounded-lg border border-border">
                     <p className="text-xs text-muted-foreground mb-1">{t('musicos.modal.promptUsed')}</p>
-                    <p className="text-sm text-gray-200 mb-3">{selectedArte.ai_prompt}</p>
+                    <p className="text-sm text-foreground mb-3">{selectedArte.ai_prompt}</p>
                     <Button className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-foreground" size="sm" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { navigator.clipboard.writeText(selectedArte.ai_prompt!); toast.success(t('musicos.toast.promptCopied')); } }}>
                       <Copy className="w-4 h-4 mr-2" />{t('musicos.modal.copyPrompt')}
                     </Button>

@@ -29,7 +29,7 @@ const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRem
                 w-[68px] h-[46px] sm:w-[86px] sm:h-[56px] lg:w-[112px] lg:h-[72px]
                 ${isActive
                   ? 'ring-1 ring-gray-400/40'
-                  : 'border border-white/[0.04] hover:border-white/[0.08]'
+                  : 'border border-white/[0.04] hover:border-border'
                 }`}
             >
               {hasContent && scene.thumbnailUrl ? (

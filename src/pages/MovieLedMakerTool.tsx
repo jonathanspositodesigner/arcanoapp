@@ -569,7 +569,7 @@ const MovieLedMakerTool = () => {
                       <button
                         onClick={() => setShowLibrary(true)}
                         disabled={isProcessing}
-                        className="flex-1 h-7 text-[10px] rounded-lg bg-accent backdrop-blur-sm text-gray-200 hover:bg-white/20 transition-colors flex items-center justify-center gap-1"
+                        className="flex-1 h-7 text-[10px] rounded-lg bg-accent backdrop-blur-sm text-foreground hover:bg-white/20 transition-colors flex items-center justify-center gap-1"
                       >
                         <ImageIcon className="w-3 h-3" />
                         Trocar
@@ -577,7 +577,7 @@ const MovieLedMakerTool = () => {
                       <button
                         onClick={() => { setSelectedLibraryItem(null); setUploadedImage(null); setUploadedFileName(''); }}
                         disabled={isProcessing}
-                        className="h-7 w-7 rounded-lg bg-accent backdrop-blur-sm text-gray-200 hover:bg-red-500/100/40 transition-colors flex items-center justify-center"
+                        className="h-7 w-7 rounded-lg bg-accent backdrop-blur-sm text-foreground hover:bg-red-500/100/40 transition-colors flex items-center justify-center"
                       >
                         <X className="w-3 h-3" />
                       </button>

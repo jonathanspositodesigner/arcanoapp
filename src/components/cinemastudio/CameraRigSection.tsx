@@ -59,7 +59,7 @@ const CameraStyleDropdown: React.FC<{
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-between w-full py-1.5 px-2 rounded-md bg-black/20 border border-white/[0.06] hover:border-white/[0.12] transition-colors"
+        className="flex items-center justify-between w-full py-1.5 px-2 rounded-md bg-black/20 border border-border hover:border-white/[0.12] transition-colors"
       >
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-[9px] text-muted-foreground uppercase tracking-[0.12em] font-semibold w-12 flex-shrink-0">{label}</span>
@@ -81,7 +81,7 @@ const CameraStyleDropdown: React.FC<{
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-background border border-white/[0.08] rounded-lg shadow-xl max-h-[280px] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+          <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-background border border-border rounded-lg shadow-xl max-h-[280px] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
             {options.map(opt => {
               const isSelected = opt.value === selectedValue;
               return (
@@ -104,7 +104,7 @@ const CameraStyleDropdown: React.FC<{
                     loading="lazy"
                   />
                   <div className="text-left min-w-0">
-                    <span className={`text-[11px] font-medium block ${isSelected ? 'text-gray-200' : 'text-muted-foreground'}`}>
+                    <span className={`text-[11px] font-medium block ${isSelected ? 'text-foreground' : 'text-muted-foreground'}`}>
                       {opt.label}
                     </span>
                     <span className="text-[9px] text-muted-foreground block">{opt.description}</span>
@@ -135,7 +135,7 @@ const SegmentedControl: React.FC<{
           onClick={() => onChange(o)}
           className={`flex-1 py-1 text-[10px] rounded transition-all ${
             value === o
-              ? 'bg-white/[0.08] text-gray-200 font-medium'
+              ? 'bg-white/[0.08] text-foreground font-medium'
               : 'text-muted-foreground hover:text-muted-foreground'
           }`}
         >
@@ -152,10 +152,10 @@ const CameraControls: React.FC<{ settings: CinemaSettings; updateSettings: (p: P
     <div className="flex items-center gap-2">
       <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-14 flex-shrink-0">Corpo</span>
       <Select value={settings.cameraBody} onValueChange={v => updateSettings({ cameraBody: v })}>
-        <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-muted-foreground text-[11px] h-7">
+        <SelectTrigger className="flex-1 bg-black/20 border-border text-muted-foreground text-[11px] h-7">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent className="bg-background border-white/[0.06]">
+        <SelectContent className="bg-background border-border">
           {CAMERA_BODIES.map(c => (
             <SelectItem key={c.value} value={c.value} className="text-muted-foreground text-[11px]">
               {c.value}
@@ -169,10 +169,10 @@ const CameraControls: React.FC<{ settings: CinemaSettings; updateSettings: (p: P
     <div className="flex items-center gap-2">
       <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-14 flex-shrink-0">Lente</span>
       <Select value={settings.lensType} onValueChange={v => updateSettings({ lensType: v })}>
-        <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-muted-foreground text-[11px] h-7">
+        <SelectTrigger className="flex-1 bg-black/20 border-border text-muted-foreground text-[11px] h-7">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent className="bg-background border-white/[0.06]">
+        <SelectContent className="bg-background border-border">
           {LENS_TYPES.map(l => (
             <SelectItem key={l} value={l} className="text-muted-foreground text-[11px]">
               {l}
@@ -233,7 +233,7 @@ const CameraRigSection: React.FC<Props> = ({ settings, updateSettings, mode = 'p
             className={`flex items-center gap-1.5 w-full py-1.5 px-2 rounded-md border transition-colors text-[10px] ${
               advancedOpen
                 ? 'bg-accent0/10 border-border text-muted-foreground'
-                : 'bg-black/20 border-white/[0.06] text-muted-foreground hover:text-muted-foreground hover:border-white/[0.12]'
+                : 'bg-black/20 border-border text-muted-foreground hover:text-muted-foreground hover:border-white/[0.12]'
             }`}
           >
             <Settings2 className="w-3 h-3" />

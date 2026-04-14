@@ -382,7 +382,7 @@ const ArcanoClonerTeste = () => {
                   cloner: "Grupo VIP e Suporte Ativo",
                 },
               ].map((row, i) => (
-                <div key={i} className="grid grid-cols-3 border-b border-white/5 last:border-b-0">
+                <div key={i} className="grid grid-cols-3 border-b border-border last:border-b-0">
                   <div className="px-4 py-5 text-foreground font-semibold text-sm flex items-center">{row.feature}</div>
                   <div className="px-4 py-5 flex flex-col items-center justify-center text-center gap-1">
                     <span className="text-red-400 text-lg">✕</span>

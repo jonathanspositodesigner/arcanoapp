@@ -59,7 +59,7 @@ const BibliotecaArtesHub = () => {
           </div>
           
           {/* Title */}
-          <h2 className="relative z-10 text-xl sm:text-2xl font-bold text-gray-200 mb-2">
+          <h2 className="relative z-10 text-xl sm:text-2xl font-bold text-foreground mb-2">
             {t('artesHub.musicosTitle')}
           </h2>
           

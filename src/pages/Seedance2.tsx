@@ -477,7 +477,7 @@ export default function Seedance2() {
                 Ver tutorial
               </button>
             </div>
-            <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
+            <div className="flex rounded-lg border border-border bg-white/[0.03] p-[2px]">
               <button
                 onClick={() => setGalleryTab("creations")}
                 className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
@@ -497,10 +497,10 @@ export default function Seedance2() {
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl border border-white/5 bg-black/10 sm:min-h-[300px] lg:min-h-[420px]">
+          <div className="flex-1 min-h-0 overflow-y-auto rounded-2xl border border-border bg-black/10 sm:min-h-[300px] lg:min-h-[420px]">
             {/* Selected model preview from library */}
             {selectedModel && (
-              <div className="p-3 border-b border-white/5">
+              <div className="p-3 border-b border-border">
                 <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-green-900/30 to-green-700/10 border border-green-500/30 p-3">
                   <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden shrink-0 border border-green-500/40">
                     {selectedModel.thumbnail.match(/\.(mp4|webm|mov)/i) ? (
@@ -613,7 +613,7 @@ export default function Seedance2() {
           )}
 
 
-          <div className="mt-4 shrink-0 rounded-2xl border border-white/5 bg-[#0a0a18]/95 p-3 backdrop-blur-sm">
+          <div className="mt-4 shrink-0 rounded-2xl border border-border bg-[#0a0a18]/95 p-3 backdrop-blur-sm">
             {mode !== "text" && (
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 {mode === "startend" && (
@@ -710,7 +710,7 @@ export default function Seedance2() {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
                   placeholder="Descreva o vídeo que deseja gerar..."
-                  className="min-h-[60px] max-h-[100px] resize-none rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-slate-500/40"
+                  className="min-h-[60px] max-h-[100px] resize-none rounded-xl border border-border bg-white/[0.04] px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-slate-500/40"
                   rows={2}
                 />
                 <span className="text-right text-[10px] text-muted-foreground -mt-1">{prompt.length}/2000</span>
@@ -718,7 +718,7 @@ export default function Seedance2() {
                 <div className="flex flex-wrap items-center gap-2">
                   <div className="flex items-center gap-1">
                     <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Modo</span>
-                    <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
+                    <div className="flex rounded-lg border border-border bg-white/[0.03] p-[2px]">
                       {MODE_OPTIONS.map((option) => (
                         <button
                           key={option.value}
@@ -735,7 +735,7 @@ export default function Seedance2() {
 
                   <button
                     onClick={() => setShowSettings(!showSettings)}
-                    className="flex items-center gap-1 rounded-lg border border-white/[0.06] bg-white/[0.03] px-2 py-1 text-[10px] font-medium text-muted-foreground"
+                    className="flex items-center gap-1 rounded-lg border border-border bg-white/[0.03] px-2 py-1 text-[10px] font-medium text-muted-foreground"
                   >
                     Config
                     <ChevronDown className={`h-3 w-3 transition-transform ${showSettings ? "rotate-180" : ""}`} />
@@ -772,7 +772,7 @@ export default function Seedance2() {
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
                     placeholder="Descreva o vídeo que deseja gerar..."
-                    className="min-h-[80px] max-h-[160px] min-w-0 resize-y rounded-xl border border-white/[0.08] bg-white/[0.04] px-3.5 py-2.5 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-slate-500/40 focus:min-h-[100px]"
+                    className="min-h-[80px] max-h-[160px] min-w-0 resize-y rounded-xl border border-border bg-white/[0.04] px-3.5 py-2.5 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-slate-500/40 focus:min-h-[100px]"
                     rows={3}
                   />
                   <div className="flex flex-col gap-2">
@@ -809,7 +809,7 @@ export default function Seedance2() {
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 pb-1">
                   <div className="flex items-center gap-1.5 group/ctrl">
                     <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Modo</span>
-                    <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
+                    <div className="flex rounded-lg border border-border bg-white/[0.03] p-[2px]">
                       {MODE_OPTIONS.map((option) => (
                         <button
                           key={option.value}
@@ -829,7 +829,7 @@ export default function Seedance2() {
 
                   <button
                     onClick={() => setShowSettings(!showSettings)}
-                    className="flex items-center gap-1 rounded-lg border border-white/[0.06] bg-white/[0.03] px-3 py-1 text-[11px] font-medium text-muted-foreground transition-all duration-200 hover:border-white/[0.1] hover:text-muted-foreground"
+                    className="flex items-center gap-1 rounded-lg border border-border bg-white/[0.03] px-3 py-1 text-[11px] font-medium text-muted-foreground transition-all duration-200 hover:border-border hover:text-muted-foreground"
                   >
                     Configurações
                     <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${showSettings ? "rotate-180" : ""}`} />
@@ -867,7 +867,7 @@ export default function Seedance2() {
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-white/[0.04] bg-white/[0.02] px-3 py-2 animate-in fade-in slide-in-from-top-1 duration-200">
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Motor</span>
-                  <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
+                  <div className="flex rounded-lg border border-border bg-white/[0.03] p-[2px]">
                     {(["standard", "fast"] as Speed[]).map((value) => (
                       <button
                         key={value}
@@ -889,13 +889,13 @@ export default function Seedance2() {
                   <select
                     value={ratio}
                     onChange={(e) => setRatio(e.target.value as Ratio)}
-                    className="hidden sm:block rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-foreground outline-none hover:border-border cursor-pointer [&>option]:bg-black [&>option]:text-white"
+                    className="hidden sm:block rounded-lg border border-border bg-black px-2 py-1 text-[11px] text-foreground outline-none hover:border-border cursor-pointer [&>option]:bg-black [&>option]:text-white"
                   >
                     {RATIOS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                   </select>
                   <button
                     onClick={() => setShowRatioModal(true)}
-                    className="sm:hidden rounded-lg border border-white/[0.08] bg-black px-2 py-1 text-[11px] text-foreground"
+                    className="sm:hidden rounded-lg border border-border bg-black px-2 py-1 text-[11px] text-foreground"
                   >
                     {RATIOS.find((r) => r.value === ratio)?.label || ratio}
                   </button>
@@ -903,7 +903,7 @@ export default function Seedance2() {
 
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Qualidade</span>
-                  <div className="flex rounded-lg border border-white/[0.06] bg-white/[0.03] p-[2px]">
+                  <div className="flex rounded-lg border border-border bg-white/[0.03] p-[2px]">
                     {(["480p", "720p"] as Quality[]).map((value) => (
                       <button
                         key={value}
@@ -958,7 +958,7 @@ export default function Seedance2() {
                   className={`rounded-xl border px-3 py-2.5 text-xs font-medium transition-all ${
                     ratio === item.value
                       ? "border-slate-500/40 bg-accent0/20 text-muted-foreground"
-                      : "border-white/[0.08] bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08]"
+                      : "border-border bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08]"
                   }`}
                 >
                   {item.label}

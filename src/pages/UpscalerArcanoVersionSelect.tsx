@@ -249,7 +249,7 @@ const UpscalerArcanoVersionSelect = () => {
                        Em Breve
                      </div>
                    ) : isLegacyVersion ? (
-                     <div className="flex items-center gap-1.5 bg-gray-600/80 backdrop-blur-sm text-gray-200 px-3 py-1 rounded-full text-xs font-medium">
+                     <div className="flex items-center gap-1.5 bg-gray-600/80 backdrop-blur-sm text-foreground px-3 py-1 rounded-full text-xs font-medium">
                        Versão defasada
                      </div>
                    ) : (

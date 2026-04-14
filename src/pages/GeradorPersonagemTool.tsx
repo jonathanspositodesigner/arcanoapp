@@ -648,7 +648,7 @@ const GeradorPersonagemTool: React.FC = () => {
           <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
             {/* Instructions */}
             <div className="bg-accent border border-border rounded-lg p-3 mb-1">
-              <p className="text-xs text-gray-200 font-medium mb-0.5">📸 Envie 4 fotos do mesmo rosto</p>
+              <p className="text-xs text-foreground font-medium mb-0.5">📸 Envie 4 fotos do mesmo rosto</p>
               <p className="text-[10px] text-muted-foreground leading-relaxed">Para gerar um avatar com alta fidelidade.</p>
             </div>
             <button

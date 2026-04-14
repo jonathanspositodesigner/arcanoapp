@@ -153,9 +153,9 @@ const SavedConfigsSection: React.FC<Props> = ({ mode, settings, selectedCharacte
 
       {/* Save Dialog */}
       <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-        <DialogContent className="bg-background border-white/[0.06] max-w-[360px]">
+        <DialogContent className="bg-background border-border max-w-[360px]">
           <DialogHeader>
-            <DialogTitle className="text-sm text-gray-200">
+            <DialogTitle className="text-sm text-foreground">
               Salvar Configuração ({mode === 'photo' ? 'Foto' : 'Vídeo'})
             </DialogTitle>
           </DialogHeader>
@@ -164,14 +164,14 @@ const SavedConfigsSection: React.FC<Props> = ({ mode, settings, selectedCharacte
               value={configName}
               onChange={e => setConfigName(e.target.value.slice(0, 40))}
               placeholder="Nome da configuração..."
-              className="bg-black/30 border-white/[0.06] text-muted-foreground text-xs h-8"
+              className="bg-black/30 border-border text-muted-foreground text-xs h-8"
               onKeyDown={e => e.key === 'Enter' && handleSave()}
             />
             <Button
               onClick={handleSave}
               disabled={saving || !configName.trim()}
               size="sm"
-              className="w-full h-8 text-[11px] bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 border-0"
+              className="w-full h-8 text-[11px] bg-white/[0.08] hover:bg-white/[0.14] text-foreground border-0"
             >
               {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Salvar'}
             </Button>
@@ -181,9 +181,9 @@ const SavedConfigsSection: React.FC<Props> = ({ mode, settings, selectedCharacte
 
       {/* Load Dialog */}
       <Dialog open={showLoadDialog} onOpenChange={setShowLoadDialog}>
-        <DialogContent className="bg-background border-white/[0.06] max-w-[420px] max-h-[70vh]">
+        <DialogContent className="bg-background border-border max-w-[420px] max-h-[70vh]">
           <DialogHeader>
-            <DialogTitle className="text-sm text-gray-200">
+            <DialogTitle className="text-sm text-foreground">
               Configurações Salvas ({mode === 'photo' ? 'Foto' : 'Vídeo'})
             </DialogTitle>
           </DialogHeader>

@@ -105,7 +105,7 @@ const PreviewPanel: React.FC<Props> = ({
             />
           ) : (
             <div className="flex min-h-full flex-col items-center justify-center gap-2 text-center">
-              <Film className="w-8 h-8 text-gray-200" strokeWidth={1} />
+              <Film className="w-8 h-8 text-foreground" strokeWidth={1} />
               <p className="text-[12px] text-muted-foreground">Sua cena aparecerá aqui</p>
             </div>
           )}

@@ -553,7 +553,7 @@ const UpgradeUpscalerV3 = () => {
                       ["Upscale em Lote (10 imgs)", false, true],
                       ["Acesso à V2 incluso", "—", true],
                     ].map(([feature, v2, v3], i) => (
-                      <tr key={i} className="border-b border-white/5 last:border-b-0 hover:bg-white/[0.02] transition-colors">
+                      <tr key={i} className="border-b border-border last:border-b-0 hover:bg-white/[0.02] transition-colors">
                         <td className="py-3.5 px-5 text-sm font-medium text-foreground">{feature as string}</td>
                         <td className="py-3.5 px-4 text-center">
                           {v2 === true ? (
@@ -795,7 +795,7 @@ const UpgradeUpscalerV3 = () => {
       </section>
 
       {/* FOOTER */}
-      <footer className="py-8 px-4 text-center text-xs text-white/30 border-t border-white/5">
+      <footer className="py-8 px-4 text-center text-xs text-white/30 border-t border-border">
         <p>© {new Date().getFullYear()} Arcano · Todos os direitos reservados</p>
       </footer>
 

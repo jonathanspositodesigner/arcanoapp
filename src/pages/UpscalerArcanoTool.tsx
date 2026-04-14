@@ -923,7 +923,7 @@ const UpscalerArcanoTool: React.FC = () => {
                             min={0.01}
                             max={1}
                             step={0.01}
-                            className="w-full [&_[role=slider]]:bg-white [&_[role=slider]]:border-white/50 [&_.relative>div:first-child]:bg-white/20 [&_.relative>div:first-child>div]:bg-white/60"
+                            className="w-full [&_[role=slider]]:bg-white [&_[role=slider]]:border-border0 [&_.relative>div:first-child]:bg-white/20 [&_.relative>div:first-child>div]:bg-white/60"
                           />
                           <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
                             <span>Menos</span>

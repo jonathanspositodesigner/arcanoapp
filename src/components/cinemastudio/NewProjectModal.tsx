@@ -33,9 +33,9 @@ const NewProjectModal: React.FC<Props> = ({ isOpen, onClose, onCreate }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="bg-background border-white/[0.06] text-gray-200 max-w-md">
+      <DialogContent className="bg-background border-border text-foreground max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-gray-100 text-lg">Novo Projeto</DialogTitle>
+          <DialogTitle className="text-foreground text-lg">Novo Projeto</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div>
@@ -44,7 +44,7 @@ const NewProjectModal: React.FC<Props> = ({ isOpen, onClose, onCreate }) => {
               value={name}
               onChange={(e) => setName(e.target.value.slice(0, 50))}
               placeholder="Ex: Clipe Vitor Hugo, Campanha Verão..."
-              className="bg-white/[0.04] border-white/[0.06] text-gray-200 placeholder:text-muted-foreground"
+              className="bg-white/[0.04] border-border text-foreground placeholder:text-muted-foreground"
               onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
               autoFocus
             />
@@ -53,7 +53,7 @@ const NewProjectModal: React.FC<Props> = ({ isOpen, onClose, onCreate }) => {
           <Button
             onClick={handleCreate}
             disabled={!name.trim() || creating}
-            className="w-full bg-white/[0.08] hover:bg-white/[0.14] text-gray-200 border-0"
+            className="w-full bg-white/[0.08] hover:bg-white/[0.14] text-foreground border-0"
           >
             {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Criar Projeto'}
           </Button>

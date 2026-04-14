@@ -766,7 +766,7 @@ const Planos2 = () => {
         </div>
 
         {/* Trust Badges */}
-        <div className="max-w-4xl mx-auto mt-10 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 sm:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="max-w-4xl mx-auto mt-10 rounded-xl border border-border bg-white/[0.02] px-4 sm:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <ShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
             <div>
