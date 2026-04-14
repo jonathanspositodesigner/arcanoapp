@@ -262,7 +262,7 @@ const UpscalerArcanoVersionSelect = () => {
 
                 {/* Version Badge - top left */}
                 <div className="absolute top-4 left-4">
-                  <div className={`px-4 py-1.5 rounded-full text-sm font-black shadow-lg bg-white text-gray-100`}>
+                  <div className={`px-4 py-1.5 rounded-full text-sm font-black shadow-lg bg-white text-black`}>
                     {getVersionName(version)}
                   </div>
                 </div>
