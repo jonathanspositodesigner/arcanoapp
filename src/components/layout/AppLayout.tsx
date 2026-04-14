@@ -31,7 +31,7 @@ const AppLayout = ({ children, fullScreen = false }: AppLayoutProps) => {
   }, [user]);
 
   return (
-    <div className={`${fullScreen ? 'h-screen flex flex-col overflow-hidden' : 'min-h-screen'} bg-[#111113]`}>
+    <div className={`${fullScreen ? 'h-screen flex flex-col overflow-hidden' : 'min-h-screen'} bg-background`}>
       <AppTopBar
         user={user}
         isPremium={isPremium}
