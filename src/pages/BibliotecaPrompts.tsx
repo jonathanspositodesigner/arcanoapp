@@ -430,18 +430,11 @@ const BibliotecaPrompts = () => {
 
   const getBadgeContent = (item: PromptItem) => {
     return <div className="flex flex-wrap gap-1">
-      {item.isPremium ? <Badge className="bg-gradient-to-r from-purple-600 to-purple-500 text-white border-0 text-[10px] sm:text-xs">
-        <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" fill="currentColor" />
-        {t('badges.premium')}
-      </Badge> : <Badge variant="outline" className="border-green-500 dark:text-green-400 text-green-600 text-[10px] sm:text-xs">
-        {t('badges.free')}
-      </Badge>}
-      {item.tutorialUrl && <Badge className="bg-red-600 text-white border-0 text-[10px] sm:text-xs">
-        <Youtube className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
-        {t('badges.tutorial')}
-      </Badge>}
       {item.isCommunity && <Badge variant="secondary" className="bg-accent text-muted-foreground text-[10px] sm:text-xs">
         {t('badges.community')}
+      </Badge>}
+      {item.category && <Badge variant="outline" className="text-[10px] sm:text-xs text-muted-foreground">
+        {getCategoryDisplayName(item.category)}
       </Badge>}
     </div>;
   };
@@ -459,6 +452,59 @@ const BibliotecaPrompts = () => {
         {/* Banner Seedance 2 com Vídeo */}
         <Seedance2PromoBanner />
 
+        {/* ===== AI Tools Quick Access Strip ===== */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
+              <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              {t('library.aiTools', 'Ferramentas IA')}
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/ferramentas-ia-aplicativo')}
+              className="text-xs text-primary hover:text-primary/80 font-semibold"
+            >
+              {t('library.seeAll', 'Ver todas')} →
+            </Button>
+          </div>
+
+          <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {[
+              { name: 'Upscaler Arcano', desc: 'Melhorar qualidade de imagens com IA', icon: '🔮', cost: 100, path: '/upscaler-arcano-tool', cover: 'https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/artes-premium/upscaler-arcano-cover.webp' },
+              { name: 'Arcano Cloner', desc: 'Crie ensaios fotográficos ultra realistas com IA', icon: '🎭', cost: 150, path: '/arcano-cloner-tool', cover: '/lovable-uploads/arcano-cloner-cover.webp' },
+              { name: 'Seedance 2.0', desc: 'Gerar vídeos IA', icon: '🎬', cost: 300, path: '/seedance2', cover: '', highlight: true },
+              { name: 'Gerar Imagem', desc: 'Crie imagens do zero com IA', icon: '🖼️', cost: 100, path: '/gerar-imagem', cover: '' },
+              { name: 'Gerar Vídeo', desc: 'Gere vídeos com Veo 3.1 e WAN 2.2', icon: '🎥', cost: 200, path: '/gerar-video', cover: '' },
+              { name: 'Veste AI', desc: 'Troque a roupa de qualquer foto com IA', icon: '👗', cost: 120, path: '/veste-ai-tool', cover: '' },
+              { name: 'Pose Changer', desc: 'Mude a pose de qualquer foto com IA', icon: '📐', cost: 100, path: '/pose-changer-tool', cover: '' },
+              { name: 'MovieLed Maker', desc: 'Gere movies para telão de LED com um clique', icon: '📺', cost: 200, path: '/movieled-maker', cover: '' },
+              { name: 'Remover Fundo', desc: 'Remova o fundo de qualquer imagem com IA', icon: '✂️', cost: 50, path: '/remover-fundo', cover: '' },
+              { name: 'Flyer Maker', desc: 'Crie flyers para eventos incríveis com IA', icon: '📄', cost: 100, path: '/flyer-maker', cover: '' },
+            ].map((tool) => (
+              <button
+                key={tool.name}
+                onClick={() => navigate(tool.path)}
+                className={`flex-shrink-0 flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-card border transition-all duration-200 hover:-translate-y-0.5 min-w-[170px] sm:min-w-[185px] text-left ${
+                  tool.highlight
+                    ? 'border-green-300 dark:border-green-700 hover:border-green-400 hover:shadow-md hover:shadow-green-500/10'
+                    : 'border-border hover:border-primary/30 hover:shadow-md hover:shadow-primary/5'
+                }`}
+              >
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-accent flex items-center justify-center text-lg sm:text-xl flex-shrink-0">
+                  {tool.icon}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11.5px] sm:text-[12.5px] font-bold text-foreground truncate">{tool.name}</div>
+                  <div className="text-[10px] sm:text-[10.5px] text-muted-foreground truncate">{tool.desc}</div>
+                </div>
+                <span className="text-[10px] font-semibold text-primary bg-primary/5 dark:bg-primary/10 px-1.5 py-0.5 rounded-full flex-shrink-0 whitespace-nowrap">
+                  🪙 {tool.cost}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
         {/* Page Title and Content Type Tabs */}
         <div className="mb-6 sm:mb-8">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r dark:from-gray-200 dark:to-gray-400 from-purple-700 to-purple-500 bg-clip-text text-transparent">{t('library.title')}</h2>
@@ -586,18 +632,6 @@ const BibliotecaPrompts = () => {
                   max-sm:active:opacity-100">
                   {/* Title + badges */}
                   <h3 className="font-bold text-[9px] sm:text-sm text-white line-clamp-1 sm:line-clamp-2 mb-1">{item.title}</h3>
-                  <div className="flex flex-wrap gap-0.5 sm:gap-1 mb-1 sm:mb-2">
-                    {item.isPremium ? (
-                      <Badge className="bg-purple-600/90 text-white border-0 text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0 leading-tight">
-                        <Star className="h-2 w-2 sm:h-2.5 sm:w-2.5 mr-0.5" fill="currentColor" />
-                        Pro
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-green-600/80 text-white border-0 text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0 leading-tight">
-                        Free
-                      </Badge>
-                    )}
-                  </div>
                   {/* Action buttons */}
                   <div className="flex gap-1">
                     <Button
