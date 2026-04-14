@@ -853,7 +853,7 @@ const PlanosUpscalerArcano = () => {
                       <div className="mt-4 pt-4 border-t border-border/20">
                         <div className="flex items-center gap-2 mb-2.5">
                           <span className="text-sm">🎁</span>
-                          <span className="text-xs lg:text-sm font-bold bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+                          <span className="text-xs lg:text-sm font-bold bg-gradient-to-r dark:from-amber-400 dark:to-orange-400 from-amber-600 to-orange-600 bg-clip-text text-transparent">
                             BÔNUS EXCLUSIVO
                           </span>
                         </div>
