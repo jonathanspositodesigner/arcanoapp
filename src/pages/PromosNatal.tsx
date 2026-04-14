@@ -284,7 +284,7 @@ const PromosNatal = () => {
       <div className="max-w-6xl mx-auto relative z-10">
         <Button
           variant="ghost"
-          className="text-gray-400 hover:text-gray-100 hover:bg-white/50 mb-6"
+          className="text-gray-400 hover:text-gray-100 hover:bg-white/10 mb-6"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -333,7 +333,7 @@ const PromosNatal = () => {
                   {packItems.map((pack) => (
                     <Card
                       key={pack.id}
-                      className="bg-white border-2 border-red-500/20 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
+                      className="bg-white/5 border border-red-500/20 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
                       onClick={() => setSelectedPack(pack)}
                     >
                       <div className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-2 py-1 rounded-full z-10 font-bold shadow-lg">
@@ -366,7 +366,7 @@ const PromosNatal = () => {
                   {cursoItems.map((pack) => (
                     <Card
                       key={pack.id}
-                      className="bg-white border-2 border-red-500/20 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
+                      className="bg-white/5 border border-red-500/20 cursor-pointer hover:ring-2 hover:ring-red-500 hover:shadow-xl transition-all relative overflow-hidden group shadow-md"
                       onClick={() => setSelectedPack(pack)}
                     >
                       <div className="absolute top-2 right-2 bg-gradient-to-r from-red-600 to-red-500 text-white text-xs px-2 py-1 rounded-full z-10 font-bold shadow-lg">
@@ -397,7 +397,7 @@ const PromosNatal = () => {
             <div className="flex justify-center mb-6">
               <Button
                 variant="outline"
-                className="bg-white border-red-300 text-red-600 hover:bg-red-50"
+                className="bg-white/10 border-red-500/30 text-red-400 hover:bg-white/15"
                 onClick={() => setSelectedPack(null)}
               >
                 {t('promo.chooseAnotherPack')}
@@ -420,7 +420,7 @@ const PromosNatal = () => {
                 return (
                   <Card
                     key={option.type}
-                    className={`relative bg-white border-2 border-red-500/20 shadow-md ${
+                    className={`relative bg-white/5 border border-red-500/20 shadow-md ${
                       option.highlighted ? "ring-2 ring-red-500 scale-105 shadow-xl border-red-300" : ""
                     }`}
                   >
