@@ -132,7 +132,7 @@ const YouTubeFacade = ({ videoId }: { videoId: string }) => {
   }, []);
 
   return (
-    <div className="w-full max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto mb-10 rounded-2xl overflow-hidden border border-border shadow-2xl shadow-white/5 bg-black">
+    <div className="w-full max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto mb-10 rounded-2xl overflow-hidden border border-border shadow-2xl shadow-primary/5 bg-black">
       <div className="relative w-full aspect-video">
         {showIframe ? (
           <iframe
@@ -264,7 +264,7 @@ const TestimonialsGallery = () => {
         {DEPO_IMAGES.map((src, i) => (
           <div
             key={i}
-            className={`rounded-2xl overflow-hidden border-2 border-border hover:border-border transition-all duration-300 hover:scale-[1.03] shadow-lg shadow-black/30 hover:shadow-white/5 ${isDesktop ? 'cursor-pointer' : ''}`}
+            className={`rounded-2xl overflow-hidden border-2 border-border hover:border-border transition-all duration-300 hover:scale-[1.03] shadow-lg shadow-black/30 hover:shadow-primary/5 ${isDesktop ? 'cursor-pointer' : ''}`}
             onClick={() => openLightbox(i)}
           >
             <img
@@ -524,7 +524,7 @@ const UpgradeUpscalerV3 = () => {
       {/* COMPARATIVO V2 vs V3 - Lazy */}
       <div ref={comparativoRef}>
         {showComparativo ? (
-          <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+          <AnimatedSection className="px-4 py-16 md:py-20 bg-muted/50">
             <div className="max-w-3xl mx-auto text-center">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground mb-3 tracking-wide">
@@ -623,7 +623,7 @@ const UpgradeUpscalerV3 = () => {
       {/* SOCIAL PROOF - Lazy */}
       <div ref={socialProofRef}>
         {showSocialProof ? (
-          <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+          <AnimatedSection className="px-4 py-16 md:py-20 bg-muted/50">
             <div className="max-w-4xl mx-auto text-center">
               <AnimatedSection as="div" delay={100}>
                 <div className="inline-flex items-center gap-2 bg-white/[0.07] border border-border rounded-full px-4 py-2 mb-6">
@@ -732,7 +732,7 @@ const UpgradeUpscalerV3 = () => {
       {/* FAQ - Lazy */}
       <div ref={faqRef}>
         {showFaq ? (
-          <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+          <AnimatedSection className="px-4 py-16 md:py-20 bg-muted/50">
             <div className="max-w-3xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-10 tracking-wide">

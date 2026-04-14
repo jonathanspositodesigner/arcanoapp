@@ -366,7 +366,7 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
 
         <div className="space-y-4">
           {/* Video Preview */}
-          <div className="relative bg-black/40 rounded-lg overflow-hidden">
+          <div className="relative bg-muted rounded-lg overflow-hidden">
             {videoUrl && (
               <video
                 ref={videoRef}
@@ -450,7 +450,7 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
               <Button
                 onClick={handleSave}
                 disabled={selectedDuration > MAX_TRIM_DURATION}
-                className="bg-slate-600 hover:bg-slate-700 text-foreground px-6"
+                className="bg-secondary hover:bg-secondary text-foreground px-6"
               >
                 Salvar Vídeo
               </Button>

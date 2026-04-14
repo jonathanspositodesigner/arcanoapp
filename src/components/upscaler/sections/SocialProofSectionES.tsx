@@ -90,8 +90,8 @@ export const SocialProofSectionES = ({ onZoomClick, isMobile = false }: SocialPr
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="-left-4 h-10 w-10 bg-accent0 hover:bg-slate-600 border-none text-foreground shadow-lg shadow-slate-500/20" />
-            <CarouselNext className="-right-4 h-10 w-10 bg-accent0 hover:bg-slate-600 border-none text-foreground shadow-lg shadow-slate-500/20" />
+            <CarouselPrevious className="-left-4 h-10 w-10 bg-accent0 hover:bg-secondary border-none text-foreground shadow-lg shadow-primary/10" />
+            <CarouselNext className="-right-4 h-10 w-10 bg-accent0 hover:bg-secondary border-none text-foreground shadow-lg shadow-primary/10" />
           </Carousel>
         </div>
 

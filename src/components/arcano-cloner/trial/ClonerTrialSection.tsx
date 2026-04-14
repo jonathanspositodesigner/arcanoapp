@@ -301,7 +301,7 @@ export default function ClonerTrialSection() {
   };
 
   return (
-    <div className="px-4 py-16 md:py-20 bg-black/30">
+    <div className="px-4 py-16 md:py-20 bg-muted/50">
       <div className="max-w-3xl mx-auto">
         <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-foreground text-center mb-3">
           Quer <span className="text-muted-foreground">testar antes</span> de comprar?
@@ -341,7 +341,7 @@ export default function ClonerTrialSection() {
                     </div>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-slate-500/20"
+                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-primary/10"
                       onClick={openSignup}
                     >
                       <Sparkles className="w-5 h-5 mr-2" />
@@ -358,7 +358,7 @@ export default function ClonerTrialSection() {
                     </p>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-slate-500/20"
+                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-primary/10"
                       onClick={scrollToPricing}
                     >
                       <ShoppingCart className="w-5 h-5 mr-2" />

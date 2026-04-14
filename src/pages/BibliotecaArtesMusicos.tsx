@@ -307,7 +307,7 @@ const BibliotecaArtesMusicos = () => {
                   {t('musicos.sidebar.installApp')}
                 </Button>
               ) : isSupported && !isSubscribed ? (
-                <Button onClick={subscribe} className="bg-gradient-to-r from-slate-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-foreground px-6 py-3 text-base font-semibold shadow-lg shadow-slate-500/20 animate-pulse">
+                <Button onClick={subscribe} className="bg-gradient-to-r from-slate-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-foreground px-6 py-3 text-base font-semibold shadow-lg shadow-primary/10 animate-pulse">
                   <Bell className="w-5 h-5 mr-2" />
                   {t('musicos.sidebar.activateNotifications')}
                 </Button>
@@ -375,7 +375,7 @@ const BibliotecaArtesMusicos = () => {
                       {isVideo(arte.image_url) ? (
                         <div className="relative w-full h-full">
                           <video src={arte.image_url} className="w-full h-full object-cover" muted loop autoPlay playsInline />
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
                             <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center"><Play className="w-6 h-6 text-foreground fill-white" /></div>
                           </div>
                         </div>
@@ -437,8 +437,8 @@ const BibliotecaArtesMusicos = () => {
                 {selectedArte.is_ai_generated && selectedArte.ai_reference_image_url && (
                   <div className="p-3 bg-accent0/10 rounded-lg border border-border">
                     <p className="text-xs text-muted-foreground mb-2">{t('musicos.modal.referenceImage')}</p>
-                    <img src={selectedArte.ai_reference_image_url} alt="Referência para IA" className="w-full max-h-40 object-contain rounded-lg mb-2 bg-black/20" />
-                    <Button className="w-full bg-accent0 hover:bg-slate-600 text-foreground" size="sm" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { window.open(selectedArte.ai_reference_image_url!, '_blank'); } }}>
+                    <img src={selectedArte.ai_reference_image_url} alt="Referência para IA" className="w-full max-h-40 object-contain rounded-lg mb-2 bg-muted/50" />
+                    <Button className="w-full bg-accent0 hover:bg-secondary text-foreground" size="sm" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { window.open(selectedArte.ai_reference_image_url!, '_blank'); } }}>
                       <Download className="w-4 h-4 mr-2" />{t('musicos.modal.downloadReference')}
                     </Button>
                   </div>

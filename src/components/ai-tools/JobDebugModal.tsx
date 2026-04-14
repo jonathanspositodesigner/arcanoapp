@@ -242,7 +242,7 @@ const JobDebugModal: React.FC<JobDebugModalProps> = ({
                       <Copy className="w-3 h-3" />
                     </Button>
                   </div>
-                  <pre className="text-xs text-red-300 whitespace-pre-wrap break-all font-mono bg-black/20 p-2 rounded">
+                  <pre className="text-xs text-red-300 whitespace-pre-wrap break-all font-mono bg-muted/50 p-2 rounded">
                     {job.error_message}
                   </pre>
                 </div>
@@ -306,7 +306,7 @@ const JobDebugModal: React.FC<JobDebugModalProps> = ({
                               </p>
                             </div>
                             {Object.keys(entry).filter(k => !['step', 'timestamp'].includes(k)).length > 0 && (
-                              <pre className="text-xs text-muted-foreground mt-1 font-mono bg-black/20 p-2 rounded overflow-x-auto">
+                              <pre className="text-xs text-muted-foreground mt-1 font-mono bg-muted/50 p-2 rounded overflow-x-auto">
                                 {JSON.stringify(
                                   Object.fromEntries(
                                     Object.entries(entry).filter(([k]) => !['step', 'timestamp'].includes(k))
@@ -337,7 +337,7 @@ const JobDebugModal: React.FC<JobDebugModalProps> = ({
                           Copiar
                         </Button>
                       </div>
-                      <pre className="text-xs font-mono bg-black/40 p-3 rounded-lg overflow-x-auto whitespace-pre-wrap">
+                      <pre className="text-xs font-mono bg-muted p-3 rounded-lg overflow-x-auto whitespace-pre-wrap">
                         {JSON.stringify(job.raw_api_response, null, 2)}
                       </pre>
                     </div>
@@ -362,7 +362,7 @@ const JobDebugModal: React.FC<JobDebugModalProps> = ({
                           Copiar
                         </Button>
                       </div>
-                      <pre className="text-xs font-mono bg-black/40 p-3 rounded-lg overflow-x-auto whitespace-pre-wrap">
+                      <pre className="text-xs font-mono bg-muted p-3 rounded-lg overflow-x-auto whitespace-pre-wrap">
                         {JSON.stringify(job.raw_webhook_payload, null, 2)}
                       </pre>
                     </div>

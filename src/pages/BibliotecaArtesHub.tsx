@@ -54,7 +54,7 @@ const BibliotecaArtesHub = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-slate-500/10 to-slate-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           
           {/* Icon */}
-          <div className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center rounded-full bg-gradient-to-br from-slate-500 to-slate-500 shadow-lg shadow-slate-500/20 group-hover:shadow-slate-400/20 transition-all">
+          <div className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center rounded-full bg-gradient-to-br from-slate-500 to-slate-500 shadow-lg shadow-primary/10 group-hover:shadow-slate-400/20 transition-all">
             <Music className="w-10 h-10 sm:w-12 sm:h-12 text-foreground" />
           </div>
           

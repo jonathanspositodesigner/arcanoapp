@@ -143,7 +143,7 @@ const TesteCloner = () => {
 
       {/* ==================== TUDO FEITO COM UM CLIQUE ==================== */}
       <LazySection rootMargin="100px">
-        <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+        <AnimatedSection className="px-4 py-16 md:py-20 bg-muted/50">
           <div className="max-w-7xl mx-auto text-center">
             <AnimatedSection as="div" delay={100}>
               <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-3">

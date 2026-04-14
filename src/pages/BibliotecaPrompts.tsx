@@ -466,11 +466,11 @@ const BibliotecaPrompts = () => {
 
           {/* Content Type Tabs */}
           <div className="flex gap-2 mb-3">
-            <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => { setContentType("exclusive"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "exclusive" ? "bg-slate-600 hover:bg-slate-700 text-foreground" : "bg-accent hover:bg-accent0/20 border-border text-muted-foreground"}`}>
+            <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => { setContentType("exclusive"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "exclusive" ? "bg-secondary hover:bg-secondary text-foreground" : "bg-accent hover:bg-accent0/20 border-border text-muted-foreground"}`}>
               <Star className="h-3.5 w-3.5 mr-1.5" />
               {t('library.exclusiveFiles')}
             </Button>
-            <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => { setContentType("community"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "community" ? "bg-slate-600 hover:bg-slate-700 text-foreground" : "bg-accent hover:bg-accent0/20 border-border text-muted-foreground"}`}>
+            <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => { setContentType("community"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "community" ? "bg-secondary hover:bg-secondary text-foreground" : "bg-accent hover:bg-accent0/20 border-border text-muted-foreground"}`}>
               <Users className="h-3.5 w-3.5 mr-1.5" />
               {t('library.community')}
             </Button>
@@ -492,7 +492,7 @@ const BibliotecaPrompts = () => {
                     onClick={() => handleCategorySelect(cat)}
                     className={`text-xs cursor-pointer ${
                       selectedCategory === cat
-                        ? "bg-slate-600 text-foreground"
+                        ? "bg-secondary text-foreground"
                         : "text-muted-foreground hover:bg-accent0/20"
                     }`}
                   >
@@ -571,7 +571,7 @@ const BibliotecaPrompts = () => {
                 {/* Like button - always visible */}
                 <button
                   onClick={(e) => toggleLike(e, String(item.id))}
-                  className="absolute top-1.5 left-1.5 flex items-center gap-0.5 rounded-full bg-black/50 backdrop-blur-sm px-1.5 py-0.5 z-10 hover:bg-black/70 transition-colors"
+                  className="absolute top-1.5 left-1.5 flex items-center gap-0.5 rounded-full bg-muted/70 backdrop-blur-sm px-1.5 py-0.5 z-10 hover:bg-black/70 transition-colors"
                 >
                   <Heart
                     className={`h-3 w-3 sm:h-3.5 sm:w-3.5 transition-colors ${userLikes.has(String(item.id)) ? 'text-red-500 fill-red-500' : 'text-foreground'}`}
@@ -603,7 +603,7 @@ const BibliotecaPrompts = () => {
                     <Button
                       onClick={(e) => { e.stopPropagation(); canAccess ? copyToClipboard(item) : handleItemClick(item); }}
                       size="sm"
-                      className="flex-1 h-5 sm:h-7 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-slate-600 hover:bg-slate-700 text-foreground min-w-0"
+                      className="flex-1 h-5 sm:h-7 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-secondary hover:bg-secondary text-foreground min-w-0"
                     >
                       <Copy className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
                       <span className="truncate">Copiar</span>
@@ -764,7 +764,7 @@ const BibliotecaPrompts = () => {
                 </div>
               )}
               <div className="flex flex-wrap gap-3">
-                <Button onClick={() => copyToClipboard(selectedPrompt)} className="flex-1 bg-slate-600 hover:bg-slate-700 text-foreground">
+                <Button onClick={() => copyToClipboard(selectedPrompt)} className="flex-1 bg-secondary hover:bg-secondary text-foreground">
                   <Copy className="h-4 w-4 mr-2" />
                   {t('modal.copyPrompt')}
                 </Button>

@@ -251,7 +251,7 @@ const BannerCarousel = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-foreground h-7 w-7 sm:h-10 sm:w-10 rounded-full"
+            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 bg-muted hover:bg-black/60 text-foreground h-7 w-7 sm:h-10 sm:w-10 rounded-full"
             onClick={prevSlide}
           >
             <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -259,7 +259,7 @@ const BannerCarousel = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-foreground h-7 w-7 sm:h-10 sm:w-10 rounded-full"
+            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-muted hover:bg-black/60 text-foreground h-7 w-7 sm:h-10 sm:w-10 rounded-full"
             onClick={nextSlide}
           >
             <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />

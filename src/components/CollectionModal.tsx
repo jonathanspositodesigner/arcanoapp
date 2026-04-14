@@ -394,7 +394,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
                       autoPlay
                       playsInline
                     />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
                       <Play className="h-8 w-8 text-foreground" fill="currentColor" />
                     </div>
                   </div>
@@ -486,7 +486,7 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
         <DialogContent className="max-w-3xl p-0 overflow-hidden bg-black">
           <button 
             onClick={() => setShowTutorialModal(false)} 
-            className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-foreground hover:bg-black/70 transition-colors"
+            className="absolute right-3 top-3 z-10 rounded-full bg-muted/70 p-1.5 text-foreground hover:bg-black/70 transition-colors"
           >
             <X className="h-4 w-4" />
           </button>

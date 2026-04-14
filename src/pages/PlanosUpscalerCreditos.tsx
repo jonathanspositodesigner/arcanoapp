@@ -161,7 +161,7 @@ const FullscreenModal = ({
 const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
   <Button
     onClick={onClick}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-primary/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-primary/10"
   >
     {t('tools:upscaler.cta')}
     <ArrowRight className="h-5 w-5 ml-2" />
@@ -512,7 +512,7 @@ const PlanosUpscalerCreditos = () => {
           </section>
 
           {/* SEÇÃO DA DOR */}
-          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
+          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-muted/50">
             <div className="max-w-5xl mx-auto">
               <AnimatedSection as="div" className="text-center" delay={100}>
                 <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-8 md:mb-12">
@@ -582,7 +582,7 @@ const PlanosUpscalerCreditos = () => {
           </Suspense>
 
           {/* PARA QUEM É */}
-          <AnimatedSection className="px-4 py-20 bg-black/30">
+          <AnimatedSection className="px-4 py-20 bg-muted/50">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-12">
@@ -629,7 +629,7 @@ const PlanosUpscalerCreditos = () => {
                         <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-slate-500/50 to-transparent" />
                       )}
                       
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-foreground font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-foreground font-bold text-lg mb-4 shadow-lg shadow-primary/10">
                         {index + 1}
                       </div>
                       <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
@@ -842,7 +842,7 @@ const PlanosUpscalerCreditos = () => {
 
                 {/* Studio - MELHOR CUSTO/BENEFÍCIO */}
                 <div className="flex flex-col h-full w-full">
-                  <Card className="relative p-8 flex flex-col rounded-xl bg-background border-2 border-slate-500 shadow-lg shadow-slate-500/20 w-full h-full">
+                  <Card className="relative p-8 flex flex-col rounded-xl bg-background border-2 border-slate-500 shadow-lg shadow-primary/10 w-full h-full">
                     <Badge className="absolute -top-3.5 left-1/2 -translate-x-1/2 border-0 text-sm whitespace-nowrap bg-gradient-to-r from-purple-600 to-purple-500 text-foreground px-5 py-1.5">
                       MELHOR CUSTO/BENEFÍCIO
                     </Badge>

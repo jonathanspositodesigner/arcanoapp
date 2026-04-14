@@ -164,7 +164,7 @@ const SavedConfigsSection: React.FC<Props> = ({ mode, settings, selectedCharacte
               value={configName}
               onChange={e => setConfigName(e.target.value.slice(0, 40))}
               placeholder="Nome da configuração..."
-              className="bg-black/30 border-border text-muted-foreground text-xs h-8"
+              className="bg-muted/50 border-border text-muted-foreground text-xs h-8"
               onKeyDown={e => e.key === 'Enter' && handleSave()}
             />
             <Button

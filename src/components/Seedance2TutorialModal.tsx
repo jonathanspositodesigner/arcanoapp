@@ -59,7 +59,7 @@ const Seedance2TutorialModal = ({ open, onClose }: Seedance2TutorialModalProps) 
                   alt="Tutorial thumbnail"
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors" />
+                <div className="absolute inset-0 bg-muted/50 group-hover:bg-muted transition-colors" />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/90 group-hover:bg-white group-hover:scale-110 transition-all flex items-center justify-center shadow-2xl">
                     <Play className="h-7 w-7 sm:h-9 sm:w-9 text-black ml-1" fill="black" />

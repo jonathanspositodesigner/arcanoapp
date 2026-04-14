@@ -352,8 +352,8 @@ const RemoverFundoTool: React.FC = () => {
                 </h3>
                 {inputImage ? (
                   <div className="relative">
-                    <img src={inputImage} alt="Input" className="w-full rounded-lg max-h-48 object-contain bg-black/30" />
-                    <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 bg-black/50 hover:bg-black/70 text-foreground" onClick={() => { setInputImage(null); setInputFile(null); setOutputImage(null); }}>
+                    <img src={inputImage} alt="Input" className="w-full rounded-lg max-h-48 object-contain bg-muted/50" />
+                    <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 bg-muted/70 hover:bg-black/70 text-foreground" onClick={() => { setInputImage(null); setInputFile(null); setOutputImage(null); }}>
                       <XCircle className="w-4 h-4" />
                     </Button>
                   </div>

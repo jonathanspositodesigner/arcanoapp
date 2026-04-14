@@ -481,7 +481,7 @@ export default function Seedance2() {
               <button
                 onClick={() => setGalleryTab("creations")}
                 className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
-                  galleryTab === "creations" ? "border-border bg-accent0/20 text-muted-foreground shadow-sm shadow-white/5" : "border-transparent text-muted-foreground hover:text-muted-foreground hover:bg-white/[0.04]"
+                  galleryTab === "creations" ? "border-border bg-accent0/20 text-muted-foreground shadow-sm shadow-primary/5" : "border-transparent text-muted-foreground hover:text-muted-foreground hover:bg-white/[0.04]"
                 }`}
               >
                 Minhas Criações
@@ -489,7 +489,7 @@ export default function Seedance2() {
               <button
                 onClick={() => setGalleryTab("library")}
                 className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
-                  galleryTab === "library" ? "border-border bg-accent0/20 text-muted-foreground shadow-sm shadow-white/5" : "border-transparent text-muted-foreground hover:text-muted-foreground hover:bg-white/[0.04]"
+                  galleryTab === "library" ? "border-border bg-accent0/20 text-muted-foreground shadow-sm shadow-primary/5" : "border-transparent text-muted-foreground hover:text-muted-foreground hover:bg-white/[0.04]"
                 }`}
               >
                 Biblioteca
@@ -658,7 +658,7 @@ export default function Seedance2() {
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={handleVideoDrop}
                       onClick={() => refVideos.length < 3 && openFilePicker("video/mp4,video/quicktime", (url) => setRefVideos((prev) => [...prev, url]))}
-                      className="flex h-[28px] cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-border bg-black/30 px-3 text-[10px] text-muted-foreground transition-colors hover:border-border"
+                      className="flex h-[28px] cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-border bg-muted/50 px-3 text-[10px] text-muted-foreground transition-colors hover:border-border"
                     >
                       {refVideos.length > 0 ? `${refVideos.length} vídeo(s)` : "+ vídeo"}
                       {refVideos.length > 0 && <button onClick={(e) => { e.stopPropagation(); setRefVideos([]); }} className="ml-1 text-muted-foreground hover:text-foreground">×</button>}
@@ -667,7 +667,7 @@ export default function Seedance2() {
                       onDragOver={(e) => e.preventDefault()}
                       onDrop={handleAudioDrop}
                       onClick={() => refAudios.length < 3 && openFilePicker("audio/mpeg,audio/wav", (url) => setRefAudios((prev) => [...prev, url]))}
-                      className="flex h-[28px] cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-border bg-black/30 px-3 text-[10px] text-muted-foreground transition-colors hover:border-border"
+                      className="flex h-[28px] cursor-pointer items-center justify-center gap-1 rounded-lg border border-dashed border-border bg-muted/50 px-3 text-[10px] text-muted-foreground transition-colors hover:border-border"
                     >
                       {refAudios.length > 0 ? `${refAudios.length} áudio(s)` : "+ áudio"}
                       {refAudios.length > 0 && <button onClick={(e) => { e.stopPropagation(); setRefAudios([]); }} className="ml-1 text-muted-foreground hover:text-foreground">×</button>}
@@ -685,7 +685,7 @@ export default function Seedance2() {
                   disabled={!canGenerate() || uploading}
                   className={`group relative flex h-[44px] items-center justify-center gap-2 overflow-hidden rounded-xl px-4 text-sm font-semibold transition-all duration-300 ${
                     canGenerate() && !uploading
-                      ? "bg-gradient-to-r from-slate-600 to-slate-400 text-foreground shadow-lg shadow-slate-500/20 active:scale-[0.98]"
+                      ? "bg-gradient-to-r from-slate-600 to-slate-400 text-foreground shadow-lg shadow-primary/10 active:scale-[0.98]"
                       : "cursor-not-allowed bg-accent text-muted-foreground"
                   }`}
                 >
@@ -753,7 +753,7 @@ export default function Seedance2() {
                       {showCharacterTip && selectedCharacters.length === 0 && (
                         <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 animate-bounce">
                           <div className="relative rounded-xl px-4 py-2.5 shadow-[0_0_20px_rgba(148,163,184,0.4)] whitespace-nowrap bg-gradient-to-r from-slate-600 via-slate-500 to-slate-500 animate-pulse-glow">
-                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-600 rotate-45 rounded-sm" />
+                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-secondary rotate-45 rounded-sm" />
                             <div className="flex items-center gap-2 relative">
                               <span className="text-[11px] sm:text-sm text-foreground font-bold drop-shadow-sm">👆 Adicione seu rosto aqui!</span>
                               <button onClick={() => setShowCharacterTip(false)} className="text-muted-foreground hover:text-foreground text-sm shrink-0 font-bold">✕</button>
@@ -781,7 +781,7 @@ export default function Seedance2() {
                       disabled={!canGenerate() || uploading}
                       className={`group relative flex h-[48px] items-center justify-center gap-2.5 overflow-hidden rounded-xl px-5 text-sm font-semibold transition-all duration-300 ${
                         canGenerate() && !uploading
-                          ? "bg-gradient-to-r from-slate-600 to-slate-400 text-foreground shadow-lg shadow-slate-500/20 hover:shadow-gray-500 hover:scale-[1.02] active:scale-[0.98]"
+                          ? "bg-gradient-to-r from-slate-600 to-slate-400 text-foreground shadow-lg shadow-primary/10 hover:shadow-gray-500 hover:scale-[1.02] active:scale-[0.98]"
                           : "cursor-not-allowed bg-accent text-muted-foreground"
                       }`}
                     >
@@ -815,7 +815,7 @@ export default function Seedance2() {
                           key={option.value}
                           onClick={() => handleModeChange(option.value)}
                           className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
-                            mode === option.value ? "border-border bg-accent0/20 text-muted-foreground shadow-sm shadow-white/5" : "border-transparent text-muted-foreground hover:text-muted-foreground hover:bg-white/[0.04]"
+                            mode === option.value ? "border-border bg-accent0/20 text-muted-foreground shadow-sm shadow-primary/5" : "border-transparent text-muted-foreground hover:text-muted-foreground hover:bg-white/[0.04]"
                           }`}
                           title={option.desc}
                         >
@@ -1039,7 +1039,7 @@ function UploadSlot({
       onDragOver={(e) => e.preventDefault()}
       onDrop={onDrop}
       onClick={onClickUpload}
-      className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-border bg-black/30 text-base text-muted-foreground transition-all duration-200 hover:border-border hover:bg-accent0/5 hover:text-muted-foreground hover:scale-105"
+      className="flex cursor-pointer items-center justify-center rounded-lg border border-dashed border-border bg-muted/50 text-base text-muted-foreground transition-all duration-200 hover:border-border hover:bg-accent0/5 hover:text-muted-foreground hover:scale-105"
       style={{ width: dimension, height: dimension }}
     >
       +

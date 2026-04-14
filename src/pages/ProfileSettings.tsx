@@ -244,7 +244,7 @@ const ProfileSettings = () => {
                     <User className="h-10 w-10 text-muted-foreground" />
                   )}
                 </div>
-                <label className="absolute -bottom-1 -right-1 bg-slate-600 text-foreground rounded-full p-1.5 cursor-pointer hover:bg-slate-700">
+                <label className="absolute -bottom-1 -right-1 bg-secondary text-foreground rounded-full p-1.5 cursor-pointer hover:bg-secondary">
                   <Camera className="h-4 w-4" />
                   <input
                     type="file"
@@ -382,7 +382,7 @@ const ProfileSettings = () => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-slate-600 hover:bg-slate-700 text-foreground"
+              className="w-full bg-secondary hover:bg-secondary text-foreground"
             >
               <Save className="h-4 w-4 mr-2" />
               {isLoading ? t('saving') : t('profile.saveChanges')}

@@ -84,7 +84,7 @@ export const HeroBeforeAfterSlider = ({
     <div className="space-y-3">
       <div 
         ref={containerRef}
-        className="relative w-full aspect-[3/4] md:aspect-[4/3] rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-border shadow-2xl shadow-white/5"
+        className="relative w-full aspect-[3/4] md:aspect-[4/3] rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-border shadow-2xl shadow-primary/5"
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}

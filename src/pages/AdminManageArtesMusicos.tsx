@@ -355,7 +355,7 @@ const AdminManageArtesMusicos = () => {
               variant={mediaTypeFilter === 'video' ? 'default' : 'outline'} 
               size="sm" 
               onClick={() => setMediaTypeFilter('video')}
-              className={mediaTypeFilter === 'video' ? 'bg-accent0 hover:bg-slate-600' : ''}
+              className={mediaTypeFilter === 'video' ? 'bg-accent0 hover:bg-secondary' : ''}
             >
               <Video className="h-4 w-4 mr-1" />Vídeos
             </Button>

@@ -340,7 +340,7 @@ export default function UpscalerTrialSection() {
   };
 
   return (
-    <div className="px-4 py-20 bg-black/30">
+    <div className="px-4 py-20 bg-muted/50">
       <div className="max-w-4xl mx-auto">
         <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-4">
           Ainda na dúvida? <span className="text-muted-foreground">Faça um teste gratuito!</span>
@@ -366,7 +366,7 @@ export default function UpscalerTrialSection() {
                     </div>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-slate-500/20"
+                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-primary/10"
                       onClick={openSignup}
                     >
                       <Sparkles className="w-5 h-5 mr-2" />
@@ -383,7 +383,7 @@ export default function UpscalerTrialSection() {
                     </p>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-slate-500/20"
+                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-primary/10"
                       onClick={scrollToPricing}
                     >
                       <ShoppingCart className="w-5 h-5 mr-2" />

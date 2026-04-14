@@ -474,7 +474,7 @@ const AdminUploadArtesMusicos = () => {
               {allFieldsFilled && (
                 <Button 
                   onClick={handleSubmitAll} 
-                  className="w-full mt-6 bg-slate-600 hover:bg-accent0" 
+                  className="w-full mt-6 bg-secondary hover:bg-accent0" 
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Enviando..." : "Enviar Todos"}
@@ -754,7 +754,7 @@ const AdminUploadArtesMusicos = () => {
                 <Button 
                   onClick={handleSaveSingleItem} 
                   disabled={isSubmitting || !isCurrentItemComplete(currentMedia)}
-                  className="bg-slate-600 hover:bg-accent0"
+                  className="bg-secondary hover:bg-accent0"
                 >
                   {isSubmitting ? "Enviando..." : "Enviar Este"}
                 </Button>
@@ -789,7 +789,7 @@ const AdminUploadArtesMusicos = () => {
               </Button>
               <Button 
                 onClick={() => setShowSuccessModal(false)}
-                className="bg-slate-600 hover:bg-accent0"
+                className="bg-secondary hover:bg-accent0"
               >
                 Enviar Mais
               </Button>

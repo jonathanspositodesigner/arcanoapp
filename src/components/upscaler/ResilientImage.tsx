@@ -247,7 +247,7 @@ export const ResilientImage = ({
     <div className={cn("relative w-full h-full overflow-hidden", className)} style={style}>
       {/* Loading indicator during compression */}
       {isCompressing && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-10 rounded-lg">
+        <div className="absolute inset-0 flex items-center justify-center bg-muted z-10 rounded-lg">
           <div className="text-center space-y-2">
             <div className="w-8 h-8 mx-auto border-2 border-white/30 border-t-white rounded-full animate-spin" />
             <p className="text-foreground text-xs">

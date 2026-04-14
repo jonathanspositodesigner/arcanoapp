@@ -153,7 +153,7 @@ const StickyFooterBar = () => {
 const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
   <Button
     onClick={onClick}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-primary/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-primary/10"
   >
     {t('tools:upscaler.cta')}
     <ArrowRight className="h-5 w-5 ml-2" />
@@ -654,7 +654,7 @@ const PlanosUpscalerArcano = () => {
                       {index < steps.length - 1 && (
                         <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-slate-500/50 to-transparent" />
                       )}
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-foreground font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-foreground font-bold text-lg mb-4 shadow-lg shadow-primary/10">
                         {index + 1}
                       </div>
                       <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
@@ -679,7 +679,7 @@ const PlanosUpscalerArcano = () => {
 
           {/* PARA QUEM É */}
           <LazySection rootMargin="100px">
-          <AnimatedSection className="px-4 py-20 bg-black/30">
+          <AnimatedSection className="px-4 py-20 bg-muted/50">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-12">
@@ -760,7 +760,7 @@ const PlanosUpscalerArcano = () => {
                   key={plan.key}
                   className={`relative rounded-3xl overflow-visible shadow-2xl ${plan.desktopOrder} ${
                     plan.isLifetime
-                      ? "bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-border shadow-white/5"
+                      ? "bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-border shadow-primary/5"
                       : plan.bestSeller
                       ? "bg-white/[0.03] border-2 border-lime-400 shadow-[0_0_40px_-8px_rgba(163,230,53,0.25)]"
                       : plan.bestValue
@@ -958,7 +958,7 @@ const PlanosUpscalerArcano = () => {
           <div className="flex justify-center px-4 md:px-6 pt-6 pb-14 md:pb-12">
             <Button
               onClick={() => document.getElementById("planos")?.scrollIntoView({ behavior: "smooth" })}
-              className="w-full max-w-[90%] md:max-w-md h-auto px-5 md:px-8 py-4 md:py-6 text-sm sm:text-base md:text-lg leading-snug text-center whitespace-normal break-words font-bold rounded-2xl md:rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20 active:scale-95"
+              className="w-full max-w-[90%] md:max-w-md h-auto px-5 md:px-8 py-4 md:py-6 text-sm sm:text-base md:text-lg leading-snug text-center whitespace-normal break-words font-bold rounded-2xl md:rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-primary/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-primary/10 active:scale-95"
             >
               🚀 Quero melhorar minhas imagens agora
             </Button>

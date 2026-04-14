@@ -328,7 +328,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
               className={`w-full aspect-[4/3] rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden ${
                 uploadedPreview 
                   ? 'border-slate-500/50 bg-accent0/5'
-                  : 'border-border bg-black/20 hover:border-border'
+                  : 'border-border bg-muted/50 hover:border-border'
               }`}
             >
               {uploadedPreview ? (
@@ -433,7 +433,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                 value={characterName}
                 onChange={(e) => setCharacterName(e.target.value)}
                 placeholder="Ex: Meu Avatar Principal"
-                className="bg-black/20 border-border text-muted-foreground text-[12px]"
+                className="bg-muted/50 border-border text-muted-foreground text-[12px]"
                 maxLength={50}
                 onKeyDown={(e) => e.key === 'Enter' && handleSave()}
               />
@@ -447,7 +447,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                   className={`flex-1 py-2 rounded-lg text-[12px] font-medium transition-all border ${
                     gender === 'male'
                       ? 'bg-blue-600/20 border-blue-500 text-blue-400'
-                      : 'bg-black/20 border-border text-muted-foreground hover:border-border'
+                      : 'bg-muted/50 border-border text-muted-foreground hover:border-border'
                   }`}
                 >
                   ♂ Masculino
@@ -457,7 +457,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
                   className={`flex-1 py-2 rounded-lg text-[12px] font-medium transition-all border ${
                     gender === 'female'
                       ? 'bg-pink-600/20 border-pink-500 text-pink-400'
-                      : 'bg-black/20 border-border text-muted-foreground hover:border-border'
+                      : 'bg-muted/50 border-border text-muted-foreground hover:border-border'
                   }`}
                 >
                   ♀ Feminino

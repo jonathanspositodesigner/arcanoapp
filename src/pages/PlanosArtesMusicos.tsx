@@ -151,8 +151,8 @@ const PlanosArtesMusicos = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6">{t('plansMusicos.title')}</h1>
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
             <TabsList className="bg-accent0/10 border border-border">
-              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-primary-foreground px-6 text-muted-foreground">{t('plansMusicos.monthly')}</TabsTrigger>
-              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-primary-foreground px-6 text-muted-foreground relative">
+              <TabsTrigger value="mensal" className="data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground px-6 text-muted-foreground">{t('plansMusicos.monthly')}</TabsTrigger>
+              <TabsTrigger value="anual" className="data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground px-6 text-muted-foreground relative">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] text-green-400 font-medium whitespace-nowrap">{t('plansMusicos.discount')}</span>
                 {t('plansMusicos.annual')}
               </TabsTrigger>
@@ -191,7 +191,7 @@ const PlanosArtesMusicos = () => {
                   const planName = encodeURIComponent(`${plan.name} ${billingPeriod === 'anual' ? 'Anual' : 'Mensal'}`);
                   navigate(`/aguardando-pagamento-musicos?checkout=${checkoutUrl}&plan=${planName}`);
                 }
-              }} className={`w-full mb-6 ${plan.popular ? "bg-slate-600 hover:bg-accent0 text-foreground" : "bg-accent0/20 hover:bg-accent0/30 text-foreground"}`}>
+              }} className={`w-full mb-6 ${plan.popular ? "bg-secondary hover:bg-accent0 text-foreground" : "bg-accent0/20 hover:bg-accent0/30 text-foreground"}`}>
                 {(plan as any).hasTrial ? t('plansMusicos.freeTrial') : t('plansMusicos.subscribe')}
               </Button>
               <ul className="space-y-3 flex-1">
@@ -245,7 +245,7 @@ const PlanosArtesMusicos = () => {
             <DialogTitle className="text-2xl font-bold text-center text-foreground">{t('plansMusicos.comingSoon.title')}</DialogTitle>
             <DialogDescription className="text-center text-muted-foreground">{t('plansMusicos.comingSoon.description')}</DialogDescription>
           </DialogHeader>
-          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-slate-600 hover:bg-accent0 text-foreground">{t('plansMusicos.comingSoon.understood')}</Button>
+          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-secondary hover:bg-accent0 text-foreground">{t('plansMusicos.comingSoon.understood')}</Button>
         </DialogContent>
       </Dialog>
     </div>

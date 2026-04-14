@@ -395,7 +395,7 @@ export default function UpscalerMockup({
           </div>
         ) : (status === 'uploading' || status === 'processing') ? (
           /* PROCESSING: Progress indicator */
-          <div className="flex flex-col items-center justify-center gap-4 h-64 rounded-xl border-2 border-border/20 bg-black/30">
+          <div className="flex flex-col items-center justify-center gap-4 h-64 rounded-xl border-2 border-border/20 bg-muted/50">
             <Loader2 className="w-12 h-12 text-muted-foreground animate-spin" />
             <div className="text-center">
               <p className="text-lg font-medium text-foreground">
@@ -417,7 +417,7 @@ export default function UpscalerMockup({
         ) : previewUrl ? (
           /* PREVIEW: Show uploaded image */
           <div className="relative rounded-xl overflow-hidden border border-border">
-            <img src={previewUrl} alt="Preview" className="w-full h-64 object-contain bg-black/50" />
+            <img src={previewUrl} alt="Preview" className="w-full h-64 object-contain bg-muted/70" />
           </div>
         ) : (
           /* EMPTY: Upload area */

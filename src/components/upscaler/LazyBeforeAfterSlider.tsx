@@ -125,7 +125,7 @@ export const LazyBeforeAfterSlider = ({
       
       <div className="relative bg-accent border border-border rounded-3xl p-4 hover:border-border transition-all duration-300 hover:transform hover:scale-[1.02]">
         {badge && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-black/50 backdrop-blur-sm text-muted-foreground border border-border rounded-lg px-3 py-1 text-xs font-medium whitespace-nowrap">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-muted/70 backdrop-blur-sm text-muted-foreground border border-border rounded-lg px-3 py-1 text-xs font-medium whitespace-nowrap">
             {badge}
           </div>
         )}

@@ -559,7 +559,7 @@ const MovieLedMakerTool = () => {
                   Telão de Referência
                 </span>
                 {(selectedLibraryItem || uploadedImage) ? (
-                  <div className="relative rounded-xl overflow-hidden border border-border bg-black/30" data-tutorial-movieled="reference">
+                  <div className="relative rounded-xl overflow-hidden border border-border bg-muted/50" data-tutorial-movieled="reference">
                     <img
                       src={getEffectiveImageUrl() || ''}
                       alt="Telão de referência"
@@ -613,7 +613,7 @@ const MovieLedMakerTool = () => {
                     onChange={(e) => setInputText(e.target.value)}
                     placeholder="Ex: DJ MARCOS"
                     disabled={isProcessing}
-                    className="bg-black/40 border-border text-foreground placeholder:text-muted-foreground text-sm flex-1"
+                    className="bg-muted border-border text-foreground placeholder:text-muted-foreground text-sm flex-1"
                     maxLength={50}
                   />
                   <button
@@ -634,7 +634,7 @@ const MovieLedMakerTool = () => {
                   {/* Engine Selector */}
                   <div>
                     <span className="text-sm font-medium text-foreground mb-2 block">Motor</span>
-                    <div className="grid grid-cols-2 gap-0 bg-black/40 border border-border rounded-lg p-1" data-tutorial-movieled="engine">
+                    <div className="grid grid-cols-2 gap-0 bg-muted border border-border rounded-lg p-1" data-tutorial-movieled="engine">
                       {ENGINES.map(engine => (
                         <button
                           key={engine.id}
@@ -828,7 +828,7 @@ const MovieLedMakerTool = () => {
               {/* Engine Selector */}
               <div>
                 <span className="text-xs font-medium text-muted-foreground mb-1.5 block">Motor</span>
-                <div className="grid grid-cols-2 gap-0 bg-black/40 border border-border rounded-lg p-1">
+                <div className="grid grid-cols-2 gap-0 bg-muted border border-border rounded-lg p-1">
                   {ENGINES.map(engine => (
                     <button
                       key={engine.id}

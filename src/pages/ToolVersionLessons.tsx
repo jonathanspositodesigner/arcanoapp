@@ -432,7 +432,7 @@ const ToolVersionLessons = () => {
               <Button
                 size="sm"
                 onClick={() => navigate(user ? '/minha-conta' : '/auth')}
-                className="bg-slate-600 hover:bg-slate-700 text-foreground border-0"
+                className="bg-secondary hover:bg-secondary text-foreground border-0"
               >
                 {user ? 'Minha Conta' : 'Login'}
               </Button>
@@ -732,7 +732,7 @@ const ToolVersionLessons = () => {
           <AlertDialogFooter className="flex flex-col gap-2 mt-4 sm:flex-row">
             <AlertDialogCancel 
               onClick={handleContinueWatching}
-              className="flex-1 bg-slate-600 hover:bg-slate-700 text-foreground border-0 order-1 sm:order-1"
+              className="flex-1 bg-secondary hover:bg-secondary text-foreground border-0 order-1 sm:order-1"
             >
               {t('toolLessons.continueWatching')}
             </AlertDialogCancel>

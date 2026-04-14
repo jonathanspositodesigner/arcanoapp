@@ -108,7 +108,7 @@ const ProjectPicker: React.FC<Props> = ({
                 className={`aspect-video rounded-xl overflow-hidden border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center gap-2
                   ${atLimit
                     ? 'border-border cursor-not-allowed opacity-50'
-                    : 'border-border hover:border-border hover:scale-[1.02] hover:shadow-lg hover:shadow-white/5 cursor-pointer'
+                    : 'border-border hover:border-border hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/5 cursor-pointer'
                   } bg-gradient-to-br from-white/[0.02] to-white/[0.01]`}
               >
                 {atLimit ? (
@@ -129,7 +129,7 @@ const ProjectPicker: React.FC<Props> = ({
               {projects.map((project) => (
                 <div
                   key={project.id}
-                  className="aspect-video rounded-xl overflow-hidden relative group cursor-pointer bg-card transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-white/5 hover:ring-1 hover:ring-white/[0.08]"
+                  className="aspect-video rounded-xl overflow-hidden relative group cursor-pointer bg-card transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/5 hover:ring-1 hover:ring-white/[0.08]"
                   onClick={() => onSelectProject(project.id)}
                 >
                   {/* Cover */}
@@ -174,7 +174,7 @@ const ProjectPicker: React.FC<Props> = ({
                       <DropdownMenuTrigger asChild>
                         <button
                           onClick={(e) => e.stopPropagation()}
-                          className="p-1 rounded-md bg-black/50 hover:bg-black/70 transition-colors"
+                          className="p-1 rounded-md bg-muted/70 hover:bg-black/70 transition-colors"
                         >
                           <MoreVertical className="w-3.5 h-3.5 text-muted-foreground" />
                         </button>

@@ -83,7 +83,7 @@ export const AnimatedCreditsDisplay = ({
           "font-medium flex items-center gap-1.5 transition-colors duration-200",
           isUnlimited 
             ? "bg-emerald-600/80 text-foreground border border-emerald-400/30" 
-            : "bg-slate-600 text-foreground",
+            : "bg-secondary text-foreground",
           sizeClasses[size].badge,
           direction && "bg-opacity-90",
           className

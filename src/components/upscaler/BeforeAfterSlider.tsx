@@ -97,7 +97,7 @@ export const BeforeAfterSlider = ({
     <div className="space-y-3">
       <div 
         ref={containerRef}
-        className="relative w-full rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-border shadow-2xl shadow-white/5"
+        className="relative w-full rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-border shadow-2xl shadow-primary/5"
         onDragStart={(e) => e.preventDefault()}
         style={{ aspectRatio: getAspectRatio() }}
         onMouseDown={handleMouseDown}

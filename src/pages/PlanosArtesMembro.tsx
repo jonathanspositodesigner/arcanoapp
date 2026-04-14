@@ -408,7 +408,7 @@ const PlanosArtesMembro = () => {
                         ))}
                       </ul>
                       <Button
-                        className="w-full bg-gradient-to-r from-slate-500 to-slate-400 hover:from-slate-600 hover:to-slate-500 text-foreground font-bold shadow-lg shadow-slate-500/20"
+                        className="w-full bg-gradient-to-r from-slate-500 to-slate-400 hover:from-slate-600 hover:to-slate-500 text-foreground font-bold shadow-lg shadow-primary/10"
                         onClick={() => handleSelectOption(selectedAccessType)}
                         disabled={isCheckoutSubmitting}
                       >

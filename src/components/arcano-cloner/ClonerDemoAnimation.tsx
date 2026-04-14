@@ -146,7 +146,7 @@ const ClonerDemoAnimation: React.FC = () => {
             <div className={cn(
               'relative w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500',
               step === i
-                ? 'bg-gradient-to-br from-slate-500 to-slate-500 text-foreground shadow-lg shadow-slate-500/20 scale-110'
+                ? 'bg-gradient-to-br from-slate-500 to-slate-500 text-foreground shadow-lg shadow-primary/10 scale-110'
                 : step > i
                 ? 'bg-accent text-muted-foreground border border-border'
                 : 'bg-accent text-accent-foreground/30 border border-border'
@@ -169,7 +169,7 @@ const ClonerDemoAnimation: React.FC = () => {
       {/* Main mockup */}
       <div className="relative bg-background/90 border border-border rounded-2xl overflow-hidden shadow-2xl shadow-black/40">
         {/* Top bar */}
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-black/30">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/50">
           <div className="flex gap-1.5">
             <span className="w-3 h-3 rounded-full bg-red-500/70" />
             <span className="w-3 h-3 rounded-full bg-yellow-500/70" />
@@ -216,7 +216,7 @@ const ClonerDemoAnimation: React.FC = () => {
                  <div ref={faceCardRef} className={cn(
                    'relative border-2 border-dashed rounded-xl overflow-hidden transition-all duration-300',
                    step === 0
-                     ? 'border-border shadow-lg shadow-white/5'
+                     ? 'border-border shadow-lg shadow-primary/5'
                      : 'border-border',
                  )}>
                    <div className="aspect-square bg-accent relative">
@@ -262,7 +262,7 @@ const ClonerDemoAnimation: React.FC = () => {
                  <div ref={refCardRef} className={cn(
                    'relative border-2 border-dashed rounded-xl overflow-hidden transition-all duration-300',
                    step === 1
-                     ? 'border-border shadow-lg shadow-white/5'
+                     ? 'border-border shadow-lg shadow-primary/5'
                      : 'border-border',
                  )}>
                    <div className="aspect-square bg-accent relative">
@@ -326,7 +326,7 @@ const ClonerDemoAnimation: React.FC = () => {
               <div className={cn(
                 'bg-accent border rounded-lg p-2.5 transition-all duration-300',
                 step === 2
-                  ? 'border-border/50 shadow-md shadow-white/5'
+                  ? 'border-border/50 shadow-md shadow-primary/5'
                   : 'border-border',
               )}>
                 <p className="text-[10px] font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
@@ -379,7 +379,7 @@ const ClonerDemoAnimation: React.FC = () => {
                 ref={genBtnRef}
                 className={cn(
                   'w-full py-3 rounded-xl font-bold text-sm text-foreground transition-all duration-200',
-                  'bg-gradient-to-r from-slate-600 to-slate-500 shadow-lg shadow-slate-500/20',
+                  'bg-gradient-to-r from-slate-600 to-slate-500 shadow-lg shadow-primary/10',
                   step === 3 && buttonClicked ? 'scale-95 brightness-110' : 'scale-100',
                 )}
               >
@@ -485,7 +485,7 @@ const ClonerDemoAnimation: React.FC = () => {
             </div>
 
             {/* Download button */}
-            <div className="bg-gradient-to-r from-slate-600 to-slate-500 rounded-xl px-6 py-3 flex items-center gap-2 shadow-lg shadow-slate-500/20">
+            <div className="bg-gradient-to-r from-slate-600 to-slate-500 rounded-xl px-6 py-3 flex items-center gap-2 shadow-lg shadow-primary/10">
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v4h5.66V9h3.84L12 2z"/></svg>
               <span className="text-sm text-foreground font-bold">Baixar Imagem</span>
             </div>

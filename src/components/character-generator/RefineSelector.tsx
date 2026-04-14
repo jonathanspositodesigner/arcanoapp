@@ -56,8 +56,8 @@ const RefineSelector: React.FC<RefineSelectorProps> = ({
               className={`
                 h-10 rounded-lg text-sm font-bold transition-all
                 ${isSelected
-                  ? 'bg-slate-600 text-foreground border-2 border-border shadow-lg shadow-slate-500/20'
-                  : 'bg-slate-800/50 text-muted-foreground border border-border hover:bg-slate-700/50 hover:text-foreground'
+                  ? 'bg-secondary text-foreground border-2 border-border shadow-lg shadow-primary/10'
+                  : 'bg-slate-800/50 text-muted-foreground border border-border hover:bg-secondary/80/50 hover:text-foreground'
                 }
                 disabled:opacity-50 disabled:cursor-not-allowed
               `}

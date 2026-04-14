@@ -227,16 +227,16 @@ function getStepsForConfig(device: DeviceType, browser: BrowserType, t: (key: st
 const IOSMockup = ({ step }: { step: number }) => (
   <div className="relative w-full max-w-[280px] mx-auto">
     {/* iPhone Frame */}
-    <div className="bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl">
+    <div className="bg-card rounded-[2.5rem] p-2 shadow-2xl">
       {/* Screen */}
       <div className="bg-accent dark:bg-gray-800 rounded-[2rem] overflow-hidden">
         {/* Status Bar */}
         <div className="h-6 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-          <div className="w-20 h-4 bg-gray-900 rounded-full" />
+          <div className="w-20 h-4 bg-card rounded-full" />
         </div>
         
         {/* Safari Content */}
-        <div className="h-[320px] bg-white dark:bg-gray-900 relative">
+        <div className="h-[320px] bg-white dark:bg-card relative">
           {/* URL Bar */}
           <div className="h-10 bg-accent dark:bg-gray-800 flex items-center px-3 gap-2">
             <div className="flex-1 bg-white dark:bg-gray-700 rounded-lg h-7 flex items-center px-2">
@@ -288,7 +288,7 @@ const IOSMockup = ({ step }: { step: number }) => (
           
           {/* Add to Home Popup - Step 3 */}
           {step === 2 && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center animate-fade-in">
+            <div className="absolute inset-0 bg-muted/70 flex items-center justify-center animate-fade-in">
               <div className="bg-white dark:bg-gray-800 rounded-xl w-[90%] p-4 shadow-xl">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
@@ -350,9 +350,9 @@ const IOSMockup = ({ step }: { step: number }) => (
 const IOSChromeMockup = ({ step }: { step: number }) => (
   <div className="relative w-full max-w-[280px] mx-auto">
     {/* iPhone Frame */}
-    <div className="bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl">
+    <div className="bg-card rounded-[2.5rem] p-2 shadow-2xl">
       {/* Screen */}
-      <div className="bg-white dark:bg-gray-900 rounded-[2rem] overflow-hidden">
+      <div className="bg-white dark:bg-card rounded-[2rem] overflow-hidden">
         {/* Status Bar */}
         <div className="h-6 bg-accent dark:bg-gray-800 flex items-center justify-between px-6">
           <span className="text-[10px] text-muted-foreground font-medium">9:41</span>
@@ -389,7 +389,7 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
         </div>
         
         {/* Chrome Content Area */}
-        <div className="h-[280px] bg-white dark:bg-gray-900 relative">
+        <div className="h-[280px] bg-white dark:bg-card relative">
           {/* Page Content Placeholder */}
           <div className="p-4 space-y-3">
             <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
@@ -400,7 +400,7 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
           
           {/* iOS Share Sheet - Step 2 (scroll to find option) */}
           {step === 1 && (
-            <div className="absolute inset-0 bg-black/40">
+            <div className="absolute inset-0 bg-muted">
               <div className="absolute bottom-0 left-0 right-0 bg-accent dark:bg-gray-800 rounded-t-xl animate-slide-up">
                 {/* Drag Handle */}
                 <div className="w-10 h-1 bg-gray-400 rounded-full mx-auto mt-2" />
@@ -470,7 +470,7 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
           
           {/* iOS Share Sheet Scrolled - Step 3 (showing Add to Home Screen) */}
           {step === 2 && (
-            <div className="absolute inset-0 bg-black/40">
+            <div className="absolute inset-0 bg-muted">
               <div className="absolute bottom-0 left-0 right-0 bg-accent dark:bg-gray-800 rounded-t-xl animate-fade-in">
                 {/* Drag Handle */}
                 <div className="w-10 h-1 bg-gray-400 rounded-full mx-auto mt-2" />
@@ -534,8 +534,8 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
         </div>
         
         {/* Home Indicator */}
-        <div className="h-5 bg-white dark:bg-gray-900 flex items-center justify-center">
-          <div className="w-32 h-1 bg-gray-900 dark:bg-accent rounded-full" />
+        <div className="h-5 bg-white dark:bg-card flex items-center justify-center">
+          <div className="w-32 h-1 bg-card dark:bg-accent rounded-full" />
         </div>
       </div>
     </div>
@@ -546,9 +546,9 @@ const IOSChromeMockup = ({ step }: { step: number }) => (
 const InAppBrowserMockup = ({ step }: { step: number }) => (
   <div className="relative w-full max-w-[280px] mx-auto">
     {/* iPhone Frame */}
-    <div className="bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl">
+    <div className="bg-card rounded-[2.5rem] p-2 shadow-2xl">
       {/* Screen */}
-      <div className="bg-white dark:bg-gray-900 rounded-[2rem] overflow-hidden">
+      <div className="bg-white dark:bg-card rounded-[2rem] overflow-hidden">
         {/* Status Bar */}
         <div className="h-6 bg-accent dark:bg-gray-800 flex items-center justify-between px-6">
           <span className="text-[10px] text-muted-foreground font-medium">9:41</span>
@@ -558,7 +558,7 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
         </div>
         
         {/* In-App Browser Header (Instagram style) */}
-        <div className="bg-white dark:bg-gray-900 px-3 py-2 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-card px-3 py-2 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
           <X className="h-5 w-5 text-foreground dark:text-white" />
           <div className="flex-1 text-center">
             <p className="text-[10px] text-muted-foreground">arcanoapp.voxvisual.com.br</p>
@@ -616,7 +616,7 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
           
           {/* Success Message - Step 3 */}
           {step === 2 && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center animate-fade-in">
+            <div className="absolute inset-0 bg-muted/70 flex items-center justify-center animate-fade-in">
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 mx-4 text-center shadow-xl">
                 <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Check className="h-8 w-8 text-green-400" />
@@ -633,7 +633,7 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
         </div>
         
         {/* Bottom Navigation (Instagram style) */}
-        <div className="h-12 bg-white dark:bg-gray-900 flex items-center justify-around px-6 border-t border-gray-200 dark:border-gray-700">
+        <div className="h-12 bg-white dark:bg-card flex items-center justify-around px-6 border-t border-gray-200 dark:border-gray-700">
           <ChevronLeft className="h-5 w-5 text-muted-foreground" />
           <ChevronRight className="h-5 w-5 text-muted-foreground" />
           <Share className="h-5 w-5 text-muted-foreground" />
@@ -641,8 +641,8 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
         </div>
         
         {/* Home Indicator */}
-        <div className="h-5 bg-white dark:bg-gray-900 flex items-center justify-center">
-          <div className="w-32 h-1 bg-gray-900 dark:bg-accent rounded-full" />
+        <div className="h-5 bg-white dark:bg-card flex items-center justify-center">
+          <div className="w-32 h-1 bg-card dark:bg-accent rounded-full" />
         </div>
       </div>
     </div>
@@ -653,7 +653,7 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
 const AndroidMockup = ({ step }: { step: number }) => (
   <div className="relative w-full max-w-[280px] mx-auto">
     {/* Android Frame */}
-    <div className="bg-gray-900 rounded-[1.5rem] p-1.5 shadow-2xl">
+    <div className="bg-card rounded-[1.5rem] p-1.5 shadow-2xl">
       {/* Screen */}
       <div className="bg-accent dark:bg-gray-800 rounded-[1.25rem] overflow-hidden">
         {/* Chrome Tab Bar */}
@@ -680,7 +680,7 @@ const AndroidMockup = ({ step }: { step: number }) => (
         </div>
         
         {/* Page Content */}
-        <div className="h-[320px] bg-white dark:bg-gray-900 relative">
+        <div className="h-[320px] bg-white dark:bg-card relative">
           <div className="p-4 space-y-3">
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
@@ -710,7 +710,7 @@ const AndroidMockup = ({ step }: { step: number }) => (
           
           {/* Install Popup - Step 3 */}
           {step === 2 && (
-            <div className="absolute inset-0 bg-black/50 flex items-end animate-fade-in">
+            <div className="absolute inset-0 bg-muted/70 flex items-end animate-fade-in">
               <div className="bg-white dark:bg-gray-800 rounded-t-2xl w-full p-4 shadow-xl animate-slide-up">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
@@ -786,7 +786,7 @@ const DesktopMockup = ({ step, browser }: { step: number; browser: BrowserType }
       </div>
       
       {/* Browser Content */}
-      <div className="h-[200px] bg-white dark:bg-gray-900 relative">
+      <div className="h-[200px] bg-white dark:bg-card relative">
         <div className="p-4 space-y-2">
           <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
           <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
@@ -821,7 +821,7 @@ const DesktopMockup = ({ step, browser }: { step: number; browser: BrowserType }
         
         {/* Success - Step 3 */}
         {step === 2 && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center animate-fade-in">
+          <div className="absolute inset-0 bg-muted/70 flex items-center justify-center animate-fade-in">
             <div className="bg-white dark:bg-gray-800 rounded-xl p-6 text-center animate-scale-in">
               <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Check className="h-8 w-8 text-foreground" />

@@ -55,7 +55,7 @@ const ForgotPasswordArtesMusicos = () => {
         <CardContent>
           <form onSubmit={handleSendResetEmail} className="space-y-4">
             <Input type="email" placeholder={t('forgotPasswordCard.emailPlaceholder')} value={email} onChange={(e) => setEmail(e.target.value)} className="bg-card border-border text-foreground" required />
-            <Button type="submit" className="w-full bg-slate-600 hover:bg-slate-700 text-foreground" disabled={isLoading}>{isLoading ? t('sending') : t('forgotPasswordCard.sendRecoveryEmail')}</Button>
+            <Button type="submit" className="w-full bg-secondary hover:bg-secondary text-foreground" disabled={isLoading}>{isLoading ? t('sending') : t('forgotPasswordCard.sendRecoveryEmail')}</Button>
           </form>
         </CardContent>
       </Card>

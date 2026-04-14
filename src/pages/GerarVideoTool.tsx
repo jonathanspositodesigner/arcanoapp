@@ -588,7 +588,7 @@ const GerarVideoTool = () => {
             </p>
             <button
               onClick={goBack}
-              className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-accent0 text-foreground text-sm font-medium transition-colors"
+              className="mt-4 px-6 py-2.5 rounded-full bg-secondary hover:bg-accent0 text-foreground text-sm font-medium transition-colors"
             >
               Voltar
             </button>
@@ -631,7 +631,7 @@ const GerarVideoTool = () => {
         <div className="flex-1 flex items-center justify-center p-4">
           {resultUrl ? (
             <div className="w-full max-w-2xl">
-              <div className="rounded-2xl overflow-hidden border border-border bg-black/30 shadow-2xl">
+              <div className="rounded-2xl overflow-hidden border border-border bg-muted/50 shadow-2xl">
                 <video src={resultUrl} controls autoPlay className="w-full h-auto" />
               </div>
             </div>
@@ -717,7 +717,7 @@ const GerarVideoTool = () => {
                         {isVeoModel ? 'Imagem de Referência' : '1º Frame (início)'}
                       </p>
                       {startFrame ? (
-                        <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
+                        <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-muted/50">
                           <img src={startFrame.preview} alt={isVeoModel ? 'Imagem de referência' : 'Primeiro frame'} className="w-full h-full object-cover" />
                           <button 
                             onClick={() => setStartFrame(null)} 
@@ -751,7 +751,7 @@ const GerarVideoTool = () => {
                             {isVeoModel ? 'Último Frame (opcional)' : 'Último Frame (fim)'}
                           </p>
                           {endFrame ? (
-                            <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
+                            <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-muted/50">
                               <img src={endFrame.preview} alt="Último frame" className="w-full h-full object-cover" />
                               <button 
                                 onClick={() => setEndFrame(null)} 

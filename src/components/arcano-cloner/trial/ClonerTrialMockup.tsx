@@ -74,7 +74,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
           <p className="text-muted-foreground text-sm">Arraste para mover, use pinça para zoom</p>
         </div>
         
-        <div className="relative rounded-xl overflow-hidden border border-border bg-black/30 aspect-square max-w-md mx-auto">
+        <div className="relative rounded-xl overflow-hidden border border-border bg-muted/50 aspect-square max-w-md mx-auto">
           <TransformWrapper
             initialScale={1}
             minScale={0.5}
@@ -222,7 +222,7 @@ const ClonerTrialMockup: React.FC<ClonerTrialMockupProps> = ({
         <Button
           onClick={onGenerate}
           disabled={!userImage || !referenceImage || isProcessing}
-          className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-base rounded-xl shadow-lg shadow-slate-500/20 disabled:opacity-50"
+          className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-base rounded-xl shadow-lg shadow-primary/10 disabled:opacity-50"
         >
           <ImageIcon className="w-5 h-5 mr-2" />
           Gerar Imagem

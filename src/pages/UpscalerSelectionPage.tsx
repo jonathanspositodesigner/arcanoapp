@@ -31,7 +31,7 @@ const UpscalerSelectionPage = () => {
       <main className="container mx-auto px-4 py-4 sm:py-8 md:py-16">
         {/* Hero Section */}
         <div className="text-center mb-6 sm:mb-12">
-          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-3 sm:mb-6 shadow-lg shadow-slate-500/20">
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-3 sm:mb-6 shadow-lg shadow-primary/10">
             <Sparkles className="w-6 h-6 sm:w-10 sm:h-10 text-foreground" />
           </div>
           <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-4">
@@ -47,14 +47,14 @@ const UpscalerSelectionPage = () => {
           {/* Image Upscaler Card */}
           <button
             onClick={handleSelectImage}
-            className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-[#1A0A2E] to-[#111113] p-4 sm:p-8 text-left transition-all duration-300 hover:border-border/60 hover:shadow-xl hover:shadow-white/5 hover:scale-[1.02]"
+            className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-[#1A0A2E] to-[#111113] p-4 sm:p-8 text-left transition-all duration-300 hover:border-border/60 hover:shadow-xl hover:shadow-primary/5 hover:scale-[1.02]"
           >
             {/* Glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-slate-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             
             {/* Icon */}
             <div className="relative mb-3 sm:mb-6">
-              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-blue-500 to-slate-500 shadow-lg shadow-white/5 group-hover:shadow-gray-500 transition-shadow">
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-blue-500 to-slate-500 shadow-lg shadow-primary/5 group-hover:shadow-gray-500 transition-shadow">
                 <Image className="w-5 h-5 sm:w-8 sm:h-8 text-foreground" />
               </div>
             </div>
@@ -99,14 +99,14 @@ const UpscalerSelectionPage = () => {
           {/* Video Upscaler Card */}
           <button
             onClick={handleSelectVideo}
-            className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-[#1A0A2E] to-[#111113] p-4 sm:p-8 text-left transition-all duration-300 hover:border-white-400/60 hover:shadow-xl hover:shadow-white/5 hover:scale-[1.02]"
+            className="group relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-[#1A0A2E] to-[#111113] p-4 sm:p-8 text-left transition-all duration-300 hover:border-white-400/60 hover:shadow-xl hover:shadow-primary/5 hover:scale-[1.02]"
           >
             {/* Glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-slate-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             
             {/* Icon */}
             <div className="relative mb-3 sm:mb-6">
-              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-slate-500 to-pink-600 shadow-lg shadow-white/5 group-hover:shadow-slate-500/20 transition-shadow">
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-slate-500 to-pink-600 shadow-lg shadow-primary/5 group-hover:shadow-primary/10 transition-shadow">
                 <Video className="w-5 h-5 sm:w-8 sm:h-8 text-foreground" />
               </div>
             </div>

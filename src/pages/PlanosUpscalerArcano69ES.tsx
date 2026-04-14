@@ -40,7 +40,7 @@ interface ToolData {
 const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
   <Button
     onClick={onClick}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-primary/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-primary/10"
   >
     {t('tools:upscaler.cta')}
     <ArrowRight className="h-5 w-5 ml-2" />
@@ -325,7 +325,7 @@ const PlanosUpscalerArcano69ES = () => {
           </section>
 
           {/* SEÇÃO DA DOR */}
-          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
+          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-muted/50">
             <div className="max-w-5xl mx-auto">
               <AnimatedSection as="div" className="text-center" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-8 md:mb-12 tracking-wide">
@@ -395,7 +395,7 @@ const PlanosUpscalerArcano69ES = () => {
           </Suspense>
 
           {/* PARA QUEM É */}
-          <AnimatedSection className="px-4 py-20 bg-black/30">
+          <AnimatedSection className="px-4 py-20 bg-muted/50">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">
@@ -442,7 +442,7 @@ const PlanosUpscalerArcano69ES = () => {
                         <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-slate-500/50 to-transparent" />
                       )}
                       
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-foreground font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-foreground font-bold text-lg mb-4 shadow-lg shadow-primary/10">
                         {index + 1}
                       </div>
                       <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
@@ -461,9 +461,9 @@ const PlanosUpscalerArcano69ES = () => {
           <LazySocialProofWrapper locale="es" onZoomClick={openModal} isMobile={isMobile} />
 
           {/* SEÇÃO DE PREÇO E CTA - Com Card */}
-          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30" animation="scale">
+          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-muted/50" animation="scale">
             <div className="max-w-lg mx-auto">
-              <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-border rounded-3xl overflow-hidden shadow-2xl shadow-white/5">
+              <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-border rounded-3xl overflow-hidden shadow-2xl shadow-primary/5">
                 <CardContent className="p-5 md:p-8 text-center">
                   {/* Badge de desconto - 24% OFF para LATAM */}
                   <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-foreground border-0 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-sm md:text-lg font-bold mb-4 md:mb-6">
@@ -539,7 +539,7 @@ const PlanosUpscalerArcano69ES = () => {
           </AnimatedSection>
 
           {/* BENEFÍCIOS (O QUE FAZ) */}
-          <AnimatedSection className="px-4 py-20 bg-black/30">
+          <AnimatedSection className="px-4 py-20 bg-muted/50">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">
