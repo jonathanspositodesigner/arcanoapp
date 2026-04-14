@@ -281,7 +281,7 @@ const CreateCharacterModal: React.FC<CreateCharacterModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o && step !== 'generating') resetAndClose(); }}>
-      <DialogContent className="bg-[#141420] border-white/[0.08] max-w-[540px] w-[95vw] max-h-[90vh] overflow-y-auto p-4">
+      <DialogContent className="bg-background border-white/[0.08] max-w-[540px] w-[95vw] max-h-[90vh] overflow-y-auto p-4">
         <DialogHeader>
           <DialogTitle className="text-gray-200 text-sm">
             ✨ Criar Personagem ({currentCount}/20)

@@ -153,7 +153,7 @@ const SavedConfigsSection: React.FC<Props> = ({ mode, settings, selectedCharacte
 
       {/* Save Dialog */}
       <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-        <DialogContent className="bg-[#12121a] border-white/[0.06] max-w-[360px]">
+        <DialogContent className="bg-background border-white/[0.06] max-w-[360px]">
           <DialogHeader>
             <DialogTitle className="text-sm text-gray-200">
               Salvar Configuração ({mode === 'photo' ? 'Foto' : 'Vídeo'})
@@ -181,7 +181,7 @@ const SavedConfigsSection: React.FC<Props> = ({ mode, settings, selectedCharacte
 
       {/* Load Dialog */}
       <Dialog open={showLoadDialog} onOpenChange={setShowLoadDialog}>
-        <DialogContent className="bg-[#12121a] border-white/[0.06] max-w-[420px] max-h-[70vh]">
+        <DialogContent className="bg-background border-white/[0.06] max-w-[420px] max-h-[70vh]">
           <DialogHeader>
             <DialogTitle className="text-sm text-gray-200">
               Configurações Salvas ({mode === 'photo' ? 'Foto' : 'Vídeo'})

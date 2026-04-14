@@ -20,7 +20,7 @@ const GenreMoodSection: React.FC<Props> = ({ settings, updateSettings }) => {
           <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-muted-foreground text-[11px] h-7">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-[#141420] border-white/[0.06]">
+          <SelectContent className="bg-background border-white/[0.06]">
             {GENRES.map(g => (
               <SelectItem key={g} value={g} className="text-muted-foreground text-[11px]">{g}</SelectItem>
             ))}
@@ -35,7 +35,7 @@ const GenreMoodSection: React.FC<Props> = ({ settings, updateSettings }) => {
           <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-muted-foreground text-[11px] h-7">
             <SelectValue placeholder="Nenhum" />
           </SelectTrigger>
-          <SelectContent className="bg-[#141420] border-white/[0.06]">
+          <SelectContent className="bg-background border-white/[0.06]">
             <SelectItem value="none" className="text-muted-foreground text-[11px]">Nenhum</SelectItem>
             {MOODS.map(m => (
               <SelectItem key={m} value={m} className="text-muted-foreground text-[11px]">{m}</SelectItem>
@@ -51,7 +51,7 @@ const GenreMoodSection: React.FC<Props> = ({ settings, updateSettings }) => {
           <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-muted-foreground text-[11px] h-7">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-[#141420] border-white/[0.06]">
+          <SelectContent className="bg-background border-white/[0.06]">
             {COLOR_GRADES.map(c => (
               <SelectItem key={c} value={c} className="text-muted-foreground text-[11px]">{c}</SelectItem>
             ))}

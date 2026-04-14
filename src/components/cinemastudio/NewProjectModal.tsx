@@ -33,7 +33,7 @@ const NewProjectModal: React.FC<Props> = ({ isOpen, onClose, onCreate }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="bg-[#12121e] border-white/[0.06] text-gray-200 max-w-md">
+      <DialogContent className="bg-background border-white/[0.06] text-gray-200 max-w-md">
         <DialogHeader>
           <DialogTitle className="text-gray-100 text-lg">Novo Projeto</DialogTitle>
         </DialogHeader>

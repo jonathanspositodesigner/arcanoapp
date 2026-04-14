@@ -643,11 +643,11 @@ const GerarImagemTool = () => {
         </div>
 
         {/* Bottom bar */}
-        <div className="sticky bottom-0 z-20 bg-[#120e1a]/95 backdrop-blur-xl border-t border-slate-500/15 w-full">
+        <div className="sticky bottom-0 z-20 bg-background/95 backdrop-blur-xl border-t border-slate-500/15 w-full">
           {/* Reference images strip */}
           {referenceImages.length > 0 && (
             <div className="px-3 pt-2">
-              <div className="max-w-3xl mx-auto flex gap-2 items-center bg-[#1a1525]/90 rounded-xl p-2 border border-border overflow-x-auto">
+              <div className="max-w-3xl mx-auto flex gap-2 items-center bg-card/90 rounded-xl p-2 border border-border overflow-x-auto">
                 {referenceImages.map((img, idx) => (
                   <div key={idx} className="relative w-14 h-14 rounded-lg overflow-visible flex-shrink-0">
                     <img src={img.preview} alt="" className="w-full h-full object-cover rounded-lg border border-border" />

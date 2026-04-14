@@ -172,7 +172,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
   return (
     <div className="border border-border rounded-lg overflow-hidden">
       {/* Toolbar */}
-      <div className="bg-[#150828] border-b border-border p-1.5 flex flex-wrap gap-0.5 items-center">
+      <div className="bg-background border-b border-border p-1.5 flex flex-wrap gap-0.5 items-center">
         {/* Undo/Redo */}
         <ToolbarButton onClick={() => editor.chain().focus().undo().run()} title="Desfazer">
           <Undo className="h-4 w-4" />
@@ -217,7 +217,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
             </div>
           </ToolbarButton>
           {showFontSize && (
-            <div className="absolute top-full left-0 mt-1 bg-[#1e0a3c] border border-border rounded-lg shadow-xl z-20 py-1 min-w-[80px]">
+            <div className="absolute top-full left-0 mt-1 bg-background border border-border rounded-lg shadow-xl z-20 py-1 min-w-[80px]">
               {FONT_SIZES.map((size) => (
                 <button
                   key={size}
@@ -272,7 +272,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
             <Palette className="h-4 w-4" />
           </ToolbarButton>
           {showColorPicker && (
-            <div className="absolute top-full left-0 mt-1 bg-[#1e0a3c] border border-border rounded-lg shadow-xl z-20 p-2 w-[180px]">
+            <div className="absolute top-full left-0 mt-1 bg-background border border-border rounded-lg shadow-xl z-20 p-2 w-[180px]">
               <div className="grid grid-cols-6 gap-1">
                 {PRESET_COLORS.map((color) => (
                   <button
@@ -384,7 +384,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
 
       {/* Link input */}
       {showLinkInput && (
-        <div className="bg-[#150828] border-b border-border p-2 flex gap-2 items-center">
+        <div className="bg-background border-b border-border p-2 flex gap-2 items-center">
           <Input
             value={linkUrl}
             onChange={(e) => setLinkUrl(e.target.value)}
@@ -408,7 +408,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
 
       {/* Image input */}
       {showImageInput && (
-        <div className="bg-[#150828] border-b border-border p-2 flex gap-2 items-center">
+        <div className="bg-background border-b border-border p-2 flex gap-2 items-center">
           <Input
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
@@ -426,7 +426,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
       )}
 
       {/* Variables bar */}
-      <div className="bg-[#150828]/50 border-b border-border px-2 py-1 flex gap-1 flex-wrap items-center">
+      <div className="bg-background/50 border-b border-border px-2 py-1 flex gap-1 flex-wrap items-center">
         <span className="text-xs text-muted-foreground mr-1">Variáveis:</span>
         {VARIABLE_BUTTONS.map((v) => (
           <button
@@ -445,7 +445,7 @@ export const EmailHtmlEditor = ({ value, onChange }: EmailHtmlEditorProps) => {
         <textarea
           value={sourceCode}
           onChange={(e) => setSourceCode(e.target.value)}
-          className="w-full min-h-[300px] p-4 bg-[#1e0a3c] text-muted-foreground font-mono text-xs resize-y focus:outline-none"
+          className="w-full min-h-[300px] p-4 bg-background text-muted-foreground font-mono text-xs resize-y focus:outline-none"
           spellCheck={false}
         />
       ) : (

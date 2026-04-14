@@ -948,7 +948,7 @@ export default function Seedance2() {
       {/* Ratio picker modal - mobile */}
       {showRatioModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:hidden" onClick={() => setShowRatioModal(false)}>
-          <div className="w-full max-w-sm rounded-t-2xl border-t border-border bg-[#111] p-4 animate-in slide-in-from-bottom duration-200" onClick={(e) => e.stopPropagation()}>
+          <div className="w-full max-w-sm rounded-t-2xl border-t border-border bg-background p-4 animate-in slide-in-from-bottom duration-200" onClick={(e) => e.stopPropagation()}>
             <p className="mb-3 text-center text-xs font-medium text-muted-foreground">Escolha o tamanho</p>
             <div className="grid grid-cols-2 gap-2">
               {RATIOS.map((item) => (
@@ -972,7 +972,7 @@ export default function Seedance2() {
       {/* Face warning modal */}
       {showFaceWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowFaceWarning(null)}>
-          <div className="mx-4 w-full max-w-sm rounded-2xl border border-border bg-[#111] p-5" onClick={(e) => e.stopPropagation()}>
+          <div className="mx-4 w-full max-w-sm rounded-2xl border border-border bg-background p-5" onClick={(e) => e.stopPropagation()}>
             <p className="mb-2 text-sm font-semibold text-white">⚠️ Atenção</p>
             <p className="mb-1 text-xs leading-relaxed text-muted-foreground">
               O Seedance 2 <span className="font-medium text-white">não aceita imagens com rostos reais</span> de pessoas.

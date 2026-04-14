@@ -693,7 +693,7 @@ const GerarVideoTool = () => {
         <input ref={endFrameRef} type="file" accept="image/*" onChange={handleFrameSelect('end')} className="hidden" />
 
         {/* Bottom bar */}
-        <div className="sticky bottom-0 z-20 bg-[#120e1a]/95 backdrop-blur-xl border-t border-slate-500/15 w-full">
+        <div className="sticky bottom-0 z-20 bg-background/95 backdrop-blur-xl border-t border-slate-500/15 w-full">
           <div className="max-w-3xl mx-auto px-3 py-3 space-y-2.5">
 
             {/* When result is showing: Download + Novo buttons */}
@@ -852,7 +852,7 @@ const GerarVideoTool = () => {
                         <ChevronDown className="h-3 w-3 text-muted-foreground" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="bg-[#1a1525] border-border">
+                    <DropdownMenuContent align="start" className="bg-card border-border">
                       {availableModels.map(model => (
                         <DropdownMenuItem
                           key={model.id}
@@ -884,7 +884,7 @@ const GerarVideoTool = () => {
                           <ChevronDown className="h-3 w-3 text-muted-foreground" />
                         </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="bg-[#1a1525] border-border">
+                      <DropdownMenuContent align="start" className="bg-card border-border">
                         {ASPECT_RATIOS.map(ratio => (
                           <DropdownMenuItem
                             key={ratio}

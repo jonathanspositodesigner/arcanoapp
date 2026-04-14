@@ -81,7 +81,7 @@ const CameraStyleDropdown: React.FC<{
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-[#141420] border border-white/[0.08] rounded-lg shadow-xl max-h-[280px] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+          <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-background border border-white/[0.08] rounded-lg shadow-xl max-h-[280px] overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
             {options.map(opt => {
               const isSelected = opt.value === selectedValue;
               return (
@@ -155,7 +155,7 @@ const CameraControls: React.FC<{ settings: CinemaSettings; updateSettings: (p: P
         <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-muted-foreground text-[11px] h-7">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent className="bg-[#141420] border-white/[0.06]">
+        <SelectContent className="bg-background border-white/[0.06]">
           {CAMERA_BODIES.map(c => (
             <SelectItem key={c.value} value={c.value} className="text-muted-foreground text-[11px]">
               {c.value}
@@ -172,7 +172,7 @@ const CameraControls: React.FC<{ settings: CinemaSettings; updateSettings: (p: P
         <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-muted-foreground text-[11px] h-7">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent className="bg-[#141420] border-white/[0.06]">
+        <SelectContent className="bg-background border-white/[0.06]">
           {LENS_TYPES.map(l => (
             <SelectItem key={l} value={l} className="text-muted-foreground text-[11px]">
               {l}

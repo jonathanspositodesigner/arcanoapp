@@ -235,18 +235,18 @@ const BibliotecaArtesMusicos = () => {
         <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-gradient-to-br from-slate-500/10 to-pink-500/10 rounded-full blur-3xl" />
       </div>
 
-      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 bg-[#0a0a0a]/90 backdrop-blur-xl border-r border-border z-40">
+      <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 bg-background/90 backdrop-blur-xl border-r border-border z-40">
         <SidebarContent />
       </aside>
 
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="w-72 p-0 bg-[#0a0a0a]/95 backdrop-blur-xl border-border">
+        <SheetContent side="left" className="w-72 p-0 bg-background/95 backdrop-blur-xl border-border">
           <SidebarContent onClose={() => setSidebarOpen(false)} />
         </SheetContent>
       </Sheet>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/5">
+        <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5">
           <div className="container mx-auto px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" className="lg:hidden text-muted-foreground hover:text-foreground hover:bg-accent" onClick={() => setSidebarOpen(true)}>

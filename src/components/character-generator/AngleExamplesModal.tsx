@@ -21,7 +21,7 @@ const examples = [
 const AngleExamplesModal: React.FC<AngleExamplesModalProps> = ({ open, onOpenChange }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#1a1025] border-border w-[calc(100%-32px)] max-w-md rounded-xl p-4">
+      <DialogContent className="bg-card border-border w-[calc(100%-32px)] max-w-md rounded-xl p-4">
         <DialogHeader>
           <DialogTitle className="text-white text-sm text-center">📸 Exemplo de cada ângulo</DialogTitle>
         </DialogHeader>

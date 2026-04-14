@@ -114,7 +114,7 @@ const ResgatarCreditos = () => {
       </div>
 
       {/* Main Card */}
-      <Card className="relative z-10 w-full max-w-md bg-[#1a1025] border-2 border-slate-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)] p-6 sm:p-8">
+      <Card className="relative z-10 w-full max-w-md bg-card border-2 border-slate-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)] p-6 sm:p-8">
         {status === 'idle' || status === 'checking' ? (
           <>
             {/* Header */}
@@ -140,7 +140,7 @@ const ResgatarCreditos = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={status === 'checking'}
-                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
+                  className="pl-10 h-12 bg-background border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                 />
               </div>
 

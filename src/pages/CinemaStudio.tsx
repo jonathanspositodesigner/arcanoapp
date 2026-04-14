@@ -176,8 +176,8 @@ const CinemaStudio: React.FC = () => {
   // ━━━ STUDIO VIEW ━━━
   return (
     <AppLayout fullScreen>
-      <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#08080f]">
-        <div className="h-12 flex-shrink-0 flex items-center justify-between px-3 bg-[#0c0c16]" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
+      <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
+        <div className="h-12 flex-shrink-0 flex items-center justify-between px-3 bg-background" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
           <div className="flex items-center gap-2.5 min-w-0">
             <button onClick={handleBackToPicker} className="p-1.5 rounded-md hover:bg-accent transition-colors flex-shrink-0">
               <ArrowLeft className="w-4 h-4 text-muted-foreground" />
@@ -254,7 +254,7 @@ const CinemaStudio: React.FC = () => {
         </div>
 
         {isCompactLayout && (
-          <div className="flex flex-shrink-0 border-b border-white/[0.04] bg-[#0c0c16]">
+          <div className="flex flex-shrink-0 border-b border-white/[0.04] bg-background">
             <button
               onClick={() => setMobileTab('controls')}
               className={`flex-1 py-2 text-[11px] font-medium transition-colors ${
@@ -281,8 +281,8 @@ const CinemaStudio: React.FC = () => {
             <div className={`${
               isCompactLayout
                 ? mobileTab === 'controls' ? 'flex min-h-0 flex-col' : 'hidden'
-                : 'flex min-h-0 flex-col border-r border-white/[0.04] bg-[#0c0c16]'
-            } bg-[#0c0c16]`}>
+                : 'flex min-h-0 flex-col border-r border-white/[0.04] bg-background'
+            } bg-background`}>
               <div className="flex-1 overflow-y-auto px-3 py-3" style={{ scrollbarWidth: 'none' }}>
                 <ControlPanel
                   mode={studio.mode}
@@ -308,7 +308,7 @@ const CinemaStudio: React.FC = () => {
               isCompactLayout
                 ? mobileTab === 'preview' ? 'flex min-h-0 flex-col' : 'hidden'
                 : 'flex min-h-0 flex-col'
-            } min-w-0 overflow-hidden bg-[#08080f]`}>
+            } min-w-0 overflow-hidden bg-background`}>
               <div className="flex-1 min-h-0 overflow-hidden">
                 <PreviewPanel
                   mode={studio.mode}

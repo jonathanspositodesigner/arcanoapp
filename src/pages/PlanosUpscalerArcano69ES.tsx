@@ -260,7 +260,7 @@ const PlanosUpscalerArcano69ES = () => {
       {/* Se já tem acesso */}
       {hasAccess ? (
         <div className="max-w-lg mx-auto px-4 py-12">
-          <Card className="bg-[#1a0f25]/80 border-green-500/50 rounded-3xl">
+          <Card className="bg-background/80 border-green-500/50 rounded-3xl">
             <CardContent className="p-8 text-center">
               <Badge className="bg-green-500 text-white text-lg px-6 py-3 rounded-full mb-6">
                 <Check className="h-5 w-5 mr-2" />

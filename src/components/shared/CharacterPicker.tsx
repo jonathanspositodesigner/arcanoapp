@@ -319,7 +319,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
   function renderModal() {
     return (
       <Dialog open={modalOpen} onOpenChange={open => { if (!open) setModalOpen(false); }}>
-        <DialogContent className="bg-[#141420] border-white/[0.08] max-w-[520px] w-[95vw] max-h-[85vh] overflow-y-auto p-4">
+        <DialogContent className="bg-background border-white/[0.08] max-w-[520px] w-[95vw] max-h-[85vh] overflow-y-auto p-4">
           <DialogHeader>
             <DialogTitle className="text-gray-200 text-sm">
               {useSavedCharacters 

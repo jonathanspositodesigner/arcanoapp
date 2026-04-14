@@ -103,7 +103,7 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings, mode 
               <SelectTrigger className="flex-1 bg-black/20 border-white/[0.06] text-muted-foreground text-[11px] h-7">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-[#141420] border-white/[0.06]">
+              <SelectContent className="bg-background border-white/[0.06]">
                 {SPEED_RAMPS.map(s => (
                   <SelectItem key={s} value={s} className="text-muted-foreground text-[11px]">{s}</SelectItem>
                 ))}

@@ -73,7 +73,7 @@ const ProjectPicker: React.FC<Props> = ({
   if (isLoading) {
     return (
       <AppLayout fullScreen>
-        <div className="flex h-full items-center justify-center bg-[#08080f]">
+        <div className="flex h-full items-center justify-center bg-background">
           <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       </AppLayout>
@@ -82,9 +82,9 @@ const ProjectPicker: React.FC<Props> = ({
 
   return (
     <AppLayout fullScreen>
-      <div className="flex h-full flex-col overflow-hidden bg-[#08080f]">
+      <div className="flex h-full flex-col overflow-hidden bg-background">
         {/* Header */}
-        <div className="h-12 flex-shrink-0 flex items-center justify-between px-4 bg-[#0c0c16]" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
+        <div className="h-12 flex-shrink-0 flex items-center justify-between px-4 bg-background" style={{ boxShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
           <div className="flex items-center gap-2.5">
             <button onClick={() => navigate(-1)} className="p-1.5 rounded-md hover:bg-accent transition-colors">
               <ArrowLeft className="w-4 h-4 text-muted-foreground" />
@@ -216,7 +216,7 @@ const ProjectPicker: React.FC<Props> = ({
 
         {/* Delete Confirmation */}
         <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
-          <AlertDialogContent className="bg-[#12121e] border-white/[0.06] text-gray-200">
+          <AlertDialogContent className="bg-background border-white/[0.06] text-gray-200">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-gray-100">Excluir {deleteTarget?.name}?</AlertDialogTitle>
               <AlertDialogDescription className="text-muted-foreground">

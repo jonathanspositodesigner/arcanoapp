@@ -209,7 +209,7 @@ const TesteGratis = () => {
       </div>
 
       {/* Main Card */}
-      <Card className="relative z-10 w-full max-w-md bg-[#1a1025] border-2 border-slate-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)] p-6 sm:p-8">
+      <Card className="relative z-10 w-full max-w-md bg-card border-2 border-slate-500/50 shadow-[0_0_30px_rgba(168,85,247,0.15)] p-6 sm:p-8">
 
         {/* EMAIL STATE */}
         {(pageState === 'email') && (
@@ -231,7 +231,7 @@ const TesteGratis = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
-                  className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
+                  className="pl-10 h-12 bg-background border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                 />
               </div>
               <Button
@@ -268,7 +268,7 @@ const TesteGratis = () => {
                     type="email"
                     value={email}
                     readOnly
-                    className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/30 text-muted-foreground opacity-70"
+                    className="pl-10 h-12 bg-background border-2 border-slate-600/30 text-muted-foreground opacity-70"
                   />
                 </div>
               </div>
@@ -282,7 +282,7 @@ const TesteGratis = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
-                    className="pl-10 pr-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
+                    className="pl-10 pr-10 h-12 bg-background border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -329,7 +329,7 @@ const TesteGratis = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     disabled={loading}
-                    className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
+                    className="pl-10 h-12 bg-background border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                   />
                 </div>
               </div>
@@ -341,7 +341,7 @@ const TesteGratis = () => {
                     type="email"
                     value={email}
                     readOnly
-                    className="pl-10 h-12 bg-[#0d0912] border-2 border-slate-600/30 text-muted-foreground opacity-70"
+                    className="pl-10 h-12 bg-background border-2 border-slate-600/30 text-muted-foreground opacity-70"
                   />
                 </div>
               </div>
@@ -355,7 +355,7 @@ const TesteGratis = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
-                    className="pl-10 pr-10 h-12 bg-[#0d0912] border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
+                    className="pl-10 pr-10 h-12 bg-background border-2 border-slate-600/50 text-white placeholder:text-muted-foreground focus:border-border focus:ring-2 focus:ring-slate-500/20"
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
