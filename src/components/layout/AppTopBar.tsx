@@ -151,7 +151,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
                 <LogIn className="h-4 w-4 mr-2" />
                 {t('header.login')}
               </Button>
-              <Button onClick={() => navigate("/planos-2")} size="sm" className="bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-500 hover:to-blue-400 text-primary-foreground">
+              <Button onClick={() => navigate("/planos-2")} size="sm" className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-primary-foreground">
                 <Star className="h-3 w-3 mr-2" fill="currentColor" />
                 {t('header.becomePremium')}
               </Button>
@@ -159,7 +159,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
           )}
           {user && !isPremium && (
             <>
-              <Button onClick={() => navigate("/planos-2")} size="sm" className="bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-500 hover:to-blue-400 text-primary-foreground">
+              <Button onClick={() => navigate("/planos-2")} size="sm" className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-primary-foreground">
                 <Star className="h-3 w-3 mr-2" fill="currentColor" />
                 {t('header.becomePremium')}
               </Button>
@@ -217,7 +217,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
               <LogIn className="h-4 w-4 mr-1" />
               {t('header.login')}
             </Button>
-            <Button onClick={() => navigate("/planos-2")} size="sm" className="bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-500 hover:to-blue-400 text-primary-foreground text-xs">
+            <Button onClick={() => navigate("/planos-2")} size="sm" className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-primary-foreground text-xs">
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium
             </Button>
