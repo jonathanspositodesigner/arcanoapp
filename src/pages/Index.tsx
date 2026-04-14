@@ -394,6 +394,16 @@ const Index = () => {
                 <span className="hidden sm:inline">{t('notifications')}</span>
               </button>
             )}
+
+            <button
+              onClick={handleManualUpdate}
+              disabled={isUpdating}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-all text-[10px] sm:text-xs disabled:opacity-50"
+              title="Atualizar app"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isUpdating ? 'animate-spin' : ''}`} />
+              <span className="hidden md:inline">Atualizar</span>
+            </button>
           </div>
         </div>
       </header>
@@ -530,17 +540,6 @@ const Index = () => {
         onSignupEnd={() => { signupInProgressRef.current = false; }}
       />
 
-      {/* App Version + Atualizar */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
-        <button
-          onClick={handleManualUpdate}
-          disabled={isUpdating}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/90 hover:bg-primary text-primary-foreground text-xs font-medium shadow-lg shadow-primary/25 backdrop-blur-sm transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${isUpdating ? 'animate-spin' : ''}`} />
-          Atualizar app
-        </button>
-      </div>
     </div>
   );
 };
