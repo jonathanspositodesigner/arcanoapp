@@ -518,24 +518,6 @@ const Index = () => {
             </>
           )}
 
-          {/* Links de acesso */}
-          <FadeIn delay={600} duration={600}>
-            <div className="mt-10 flex items-center justify-center gap-4">
-              <button 
-                onClick={() => navigate("/admin-login")} 
-                className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
-              >
-                {t('adminAccess')}
-              </button>
-              <span className="text-muted-foreground">•</span>
-              <button 
-                onClick={() => navigate("/parceiro-login-unificado")} 
-                className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
-              >
-                {t('collaboratorAccess')}
-              </button>
-            </div>
-          </FadeIn>
         </div>
       </main>
 
